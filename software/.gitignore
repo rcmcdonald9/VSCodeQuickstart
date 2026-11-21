@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+yolo11n*.pt
+yolo11n_ncnn_model/

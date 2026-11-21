@@ -1,0 +1,79 @@
+# Pip robot dog — runtime configuration.
+# Geometry here MUST match cad/params.scad (all lengths in mm).
+
+robot:
+  name: Pip
+  wake_words: ["hey pip", "pip", "hey dog"]
+
+geometry:
+  hip_x: 95          # bx  — hip X offset from body centre
+  hip_y: 39          # by  — roll axis Y offset
+  l1: 49.5           # abduction offset (roll axis -> foot plane)
+  l2: 100            # upper leg (hip pitch axis -> knee)
+  l3: 100            # lower leg (knee -> foot ball centre)
+  foot_radius: 11
+
+# PCA9685 channel + direction (+1/-1) + "center" joint angle (deg) for every
+# joint. "center" is the joint angle the leg is in when the servo is at its
+# mid-point (1500 us). Assemble the legs in the stand pose with all servos
+# centred (`python -m robodog.calibrate --center`), then fine-tune `trim`.
+servos:
+  driver: pca9685          # pca9685 | mock
+  i2c_address: 0x40
+  min_pulse_us: 500
+  max_pulse_us: 2500
+  actuation_range: 180     # use 270 if you bought 270° servos
+  legs:
+    FR:
+      roll:  {channel: 0,  dir: 1,  center: 0,   trim: 0, min: -35, max: 35}
+      pitch: {channel: 1,  dir: 1,  center: 30,  trim: 0, min: -50, max: 110}
+      knee:  {channel: 2,  dir: 1,  center: -60, trim: 0, min: -145, max: -15}
+    FL:
+      roll:  {channel: 4,  dir: -1, center: 0,   trim: 0, min: -35, max: 35}
+      pitch: {channel: 5,  dir: -1, center: 30,  trim: 0, min: -50, max: 110}
+      knee:  {channel: 6,  dir: -1, center: -60, trim: 0, min: -145, max: -15}
+    RR:
+      roll:  {channel: 8,  dir: -1, center: 0,   trim: 0, min: -35, max: 35}
+      pitch: {channel: 9,  dir: 1,  center: 30,  trim: 0, min: -50, max: 110}
+      knee:  {channel: 10, dir: 1,  center: -60, trim: 0, min: -145, max: -15}
+    RL:
+      roll:  {channel: 12, dir: 1,  center: 0,   trim: 0, min: -35, max: 35}
+      pitch: {channel: 13, dir: -1, center: 30,  trim: 0, min: -50, max: 110}
+      knee:  {channel: 14, dir: -1, center: -60, trim: 0, min: -145, max: -15}
+
+motion:
+  control_hz: 50
+  stand_height: 170        # hip axis -> foot ball centre, mm
+  step_height: 30
+  gait_period_s: 0.45      # one full trot cycle
+  max_step_mm: 55
+  max_speed_mm_s: 180
+  max_yaw_deg_s: 50
+  accel_mm_s2: 400         # velocity ramp, keeps the gait smooth
+
+sensors:
+  tof: vl53l1x             # vl53l1x | none
+  imu: none                # mpu6050 | none
+  stop_distance_mm: 250    # forward motion is blocked closer than this
+
+vision:
+  camera: picamera2        # picamera2 | opencv | mock
+  resolution: [640, 480]
+  detector: yolo           # yolo | none
+  yolo_model: yolo11n_ncnn_model   # run scripts/export_yolo.sh once on the Pi
+  confidence: 0.45
+  fps: 8
+
+speech:
+  stt: vosk                # vosk | text (type commands in the terminal)
+  vosk_model: ~/models/vosk-model-small-en-us-0.15
+  mic_device: null         # null = default ALSA input
+  tts: piper               # piper | espeak | print
+  piper_voice: ~/models/piper/en_US-lessac-medium.onnx
+
+brain:
+  provider: claude         # claude | local  (local = offline keyword commands only)
+  model: claude-opus-5-5
+  effort: low              # low keeps voice replies snappy; raise for harder tasks
+  max_tool_rounds: 12
+  conversation_idle_reset_s: 300

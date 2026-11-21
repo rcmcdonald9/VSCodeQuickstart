@@ -1,0 +1,19 @@
+# Start Pip automatically at boot:
+#   sudo cp software/scripts/robodog.service /etc/systemd/system/
+#   (edit User= and the paths below if your username/repo path differ)
+#   sudo systemctl enable --now robodog
+[Unit]
+Description=Pip robot dog
+After=network-online.target sound.target
+Wants=network-online.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/VSCodeQuickstart/software
+EnvironmentFile=-/home/pi/.config/robodog.env
+ExecStart=/home/pi/VSCodeQuickstart/software/.venv/bin/python -m robodog
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
