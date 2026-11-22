@@ -17,6 +17,7 @@ A small (about 21 cm hip-to-hip, ~1.5 kg) four-legged robot dog that you print o
 | [`docs/WIRING.md`](docs/WIRING.md) | Power and GPIO wiring, servo channel map |
 | [`docs/ASSEMBLY.md`](docs/ASSEMBLY.md) | Step-by-step build and calibration |
 | [`docs/SOFTWARE.md`](docs/SOFTWARE.md) | Architecture, running it, setting up Claude, tuning |
+| [`docs/ASSEMBLY_FIRST_DESIGN.md`](docs/ASSEMBLY_FIRST_DESIGN.md) | **v2 direction:** the robot redesigned around cheap automated assembly |
 
 ## The plan, end to end
 
