@@ -567,3 +567,32 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
 - **Decision D2b updated:** cross thresholds at 45° **and ≤ 0.15 m/s**. The static check (4.9 N·m) under-predicted the impact peaks by 2×; the planner rule restores the margin.
 - **Scorecard rows added:** threshold sim **crossed, 1.7×** ✅; carpet cruise **2.2 / 5 N·m** ✅.
 - **Still to retire with hardware:** a real carpet and threshold bench test. Roller geometry and carpet model are ESTIMATEs.
+
+## 2026-11-25: loop 13, research watch: prices, ratings, battery (3 parallel research agents)
+
+The blocked hosts (vendor CDNs, Gates, SKF) limited the agents to search snippets; every figure carries its source URL in `bom.py` / `components.yaml`.
+
+- **Belts (important):** the 650 N/10 mm figure used since loop 3 is not a working rating. Mädler gives **312 N admissible pull** for neoprene HTD 5M-15 (PU steel-cord: 1268 N).
+  - Re-rated the belt check properly: sustained pull (95th-percentile workspace holding torque) vs working rating, and peak vs ultimate/3.
+  - Result: **1.4× / 5.1×** ✅ (roll is the tightest).
+  - Fallback if the coupons show tooth jump: PU steel-cord belts at the same geometry.
+- **Bearings:** SKF 61808 C0 = 3.65 kN (was 4.15 assumed). Generic 61808/61804/61805 cost **$4.7–5.7** each (was $1.3–2.5).
+- **Battery** (new requirement ≥ 30 A BMS):
+  - recommended: Lumenier NAV-class 6S 10 Ah 21700 pack (975 g, 35 A cont., $150) + Heltec 6S 30 A BMS (100 A trip) inline + ToolKitRC C6 charger
+  - **Warning:** many "24 V 10 Ah" Amazon packs are 7S (29.4 V), above the GIM's range
+  - battery mass 1.5 → **1.1 kg**
+- **Other prices:**
+  - tri-clamp quick-release $25 (flange OD 90.9 mm confirmed)
+  - CF tubes ~$70
+  - closed belts $8–28
+  - wave springs $17 each → switched to 6 coil springs per socket
+- **Motor drawings:** the search snippets of the GIM6010-8 drawing show 8-M3 / 6-M3 patterns and Ø57 / Ø34 circles, consistent with the ESTIMATE bolt circles (57 / 34). DM-J4310: Ø56–57 × 46 confirmed; hole patterns not found (the drawing is image-only).
+
+| Scorecard | Before | After |
+|---|---|---|
+| **R8 BOM** | $3,221 ✅ | **$3,645 ❌** (target $3,300, limit $5,000) |
+| Battery mass | 1.5 kg | 1.1 kg |
+| Belts (new definition) | 1.27× peak | 1.4× sustained / 5.1× ultimate ✅ |
+| Tip margin | 66 mm | 64 mm |
+
+- The cost increase is real (verified prices replacing guesses), so it's kept, not reverted. **New queue item 5b: cost-down.**

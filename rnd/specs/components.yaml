@@ -71,6 +71,10 @@ timing_belt_htd5m:
   profile: HTD 5M (5 mm pitch, curvilinear tooth), fiberglass cord, neoprene
   allowable_tension_n_per_10mm: 650       # "maximum allowable tensile strength" (vendor tables; confirm with Gates/Optibelt manual)
   ultimate_tension_n_per_10mm: 2600
+  # loop 13 research: Mädler neoprene HTD 5M-15 "admissible pull" 312 N (continuous working tension, the conservative figure);
+  # Mädler PU steel-cord 5M-15 1268 N (open length); Gates GT2 5M-15 Ta 434 N. The 650 N/10 mm above is NOT a working rating.
+  working_tension_n_15mm: 312             # https://www.maedlernorthamerica.com/partshop/neoprene-timing-belt-htd-5m-width-15mm-5m-15-open-length-pn-17330000/
+  working_tension_pu_steel_n_15mm: 1268   # https://www.maedlernorthamerica.com/partshop/polyurethane-timing-belt-htd-5m-width-15mm-5m-15-open-length-pn-17366300/
   min_pulley_d_mm: 25                     # vendor minimum; 16T PD = 25.5 mm
   standard_widths_mm: [9, 15, 25]
   thickness_mm: 3.6

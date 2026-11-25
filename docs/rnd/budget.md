@@ -3,10 +3,10 @@
 | Module | Mass (kg) | Target (R3) | Status |
 |---|---|---|---|
 | base | 6.31 | ≤ 8 | ✅ |
-| battery | 1.50 | ≤ 3 | ✅ |
+| battery | 1.10 | ≤ 3 | ✅ |
 | upper | 7.58 | ≤ 10 | ✅ |
 | arm (each, detachable) | 3.87 | ≤ 10 | ✅ |
-| **total robot** | **23.14** | | |
+| **total robot** | **22.74** | | |
 
 **base detail**
 

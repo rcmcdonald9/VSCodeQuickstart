@@ -21,7 +21,7 @@ MU_THRUST = 0.06                         # PTFE thrust washer between the spring
 HAND_TWIST_OK = 3.0                      # N·m: comfortable one-hand twist with thumb tabs (jar-lid scale; ESTIMATE)
 
 # Socket bearings: one pair per socket. SKF thin-section catalogue values (ESTIMATE: verify the supplier's data)
-BEARINGS = {"61808": dict(d=40, D=52, B=7, C0=4150.0, price=2.0),
+BEARINGS = {"61808": dict(d=40, D=52, B=7, C0=3650.0, price=4.71),   # loop 13: SKF 61808 C0 3.65 kN (Applied/MROSupply); NSK 6808 5.55 kN
             "61805": dict(d=25, D=37, B=7, C0=2600.0, price=1.5)}
 BEARING_SPAN = {"KX74": 16.0, "KX56": 14.0, "KX44": 12.0}   # mm between the bearings of a pair
 

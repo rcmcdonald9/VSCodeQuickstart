@@ -26,12 +26,12 @@
 
 | Socket | Interface | Bending moment (N·m) | Bearing pair | Max radial load per bearing | Static safety C0/P0 |
 |---|---|---|---|---|---|
-| shoulder_roll | KX74 | 14.4 | 2 × 61808 | 918 N | 4.5 ✅ |
-| upper_yaw | KX74 | 12.2 | 2 × 61808 | 780 N | 5.3 ✅ |
-| elbow | KX74 | 7.1 | 2 × 61808 | 454 N | 9.1 ✅ |
+| shoulder_roll | KX74 | 14.4 | 2 × 61808 | 918 N | 4.0 ✅ |
+| upper_yaw | KX74 | 12.2 | 2 × 61808 | 780 N | 4.7 ✅ |
+| elbow | KX74 | 7.1 | 2 × 61808 | 454 N | 8.0 ✅ |
 | wrist_pitch | KX56 | 1.8 | 2 × 61805 | 137 N | 19.0 ✅ |
 | wrist_roll | KX44 | 1.2 | 2 × 61805 | 110 N | 23.5 ✅ |
-| drive wheel | KX74 | 3.3 | 2 × 61808 | 261 N | 15.9 ✅ |
+| drive wheel | KX74 | 3.3 | 2 × 61808 | 261 N | 14.0 ✅ |
 
 ## Arm-detach coupling KX-V (loop 7)
 

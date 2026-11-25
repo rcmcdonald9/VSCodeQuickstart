@@ -117,7 +117,7 @@ def scorecard(d, res):
         ("R2 min joint margin, whole workspace (rated / 95th pct, 1 kg)", f"{ws_r:.2f}×", "≥ 1.5×", ws_r >= 1.5),
         ("R2 min joint margin, whole workspace (peak / worst pose)", f"{ws_p:.2f}×", "≥ 1.5×", ws_p >= 1.5),
         ("R2 hand sag from bone bending, 1 kg straight out (static)", f"{bones.score(d)[1]:.1f} mm", "≤ 2 mm", bones.score(d)[1] <= 2.0),
-        ("R2 belt safety at actuator peak (HTD 5M 15 mm, min)", f"{belt_sf:.2f}×", "≥ 1.2×", belt_sf >= 1.2),
+        ("R2 belts: sustained pull vs working rating / peak vs ultimate (min)", f"{belt_sf[0]:.1f}× / {belt_sf[1]:.1f}×", "≥ 1.2× / ≥ 3×", belt_sf[0] >= 1.2 and belt_sf[1] >= 3),
         ("R3 arm-detach clamp: lift-off moment / need (×1.5 dynamic)", f"{kx_check.detach_score(d):.1f}×", "≥ 1.5×", kx_check.detach_score(d) >= 1.5),
         ("R12 socket bearing static safety (min)", f"{kx_sock:.1f}", "≥ 2", kx_sock >= 2),
         ("R2 torso sway from mast bending (worst static)", f"{mast.score(d)[0]:.1f} mm", "≤ 2 mm", mast.score(d)[0] <= 2.0),

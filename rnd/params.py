@@ -84,7 +84,7 @@ class Base:
     electronics_mass: float = 0.35 # DC-DC, CAN, flow sensor, wiring, e-stop
     lidar_mass: float = 0.15
     coupling_mass: float = 0.25    # upper/base coupling + cam lever + connector
-    battery_mass: float = 1.5      # 6S 10 Ah (components.yaml)
+    battery_mass: float = 1.10     # loop 13: Lumenier NAV-class 6S 10 Ah 21700 pack 975 g + 30 A BMS + printed sleeve (was 1.5 ESTIMATE)
     battery_wh: float = 222.0
 
 

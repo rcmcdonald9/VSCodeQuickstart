@@ -105,9 +105,13 @@ Next (the hourly loop resumes here):
     - omni-roller contact model for carpet and thresholds
     - second task: two-handed box lift
     - battery-runtime simulation over a task day
-5. **Research watch:**
-    - verify the ESTIMATE prices and bearing/belt ratings against catalogues (Gates and SKF manuals are blocked here)
-    - look for a 6S pack with a ≥ 30 A BMS
+5. ✅ Research watch (loop 13): prices, belt and bearing ratings, battery (see the log).
+5b. **Cost-down (R8 now $3,645 vs $3,300):**
+    - bearings from AliExpress (~$1–2 vs $4.7–5.7 → −$150, unverified)
+    - cheaper closed belts (Bestorq $7.67)
+    - wrist cameras vs the head camera budget
+    - the 2nd wrist DM-J4310 vs a GIM
+    - a 2-belt lift alternative?
 6. **Milestone M1 (desk-arm build package):** ask the owner whether to buy one arm's actuators for a bench test.
 
 **Earlier queue history** is in [RND_LOG.md](RND_LOG.md).
