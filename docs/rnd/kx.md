@@ -11,6 +11,7 @@
 | Size | Flange OD | Ball / PCD | Pins | Contact angle β | Preload | Twist | Collar OD |
 |---|---|---|---|---|---|---|---|
 | KX74 | 74 | Ø10 / 58 | 6 × Ø5×14 | 20° | 160 N over a 1.0 mm stroke | 35° | 98 |
+| KX56 | 56 | Ø8 / 43 | 6 × Ø4×11 | 20° | 140 N over a 1.0 mm stroke | 35° | 78 |
 | KX44 | 44 | Ø6 / 31 | 6 × Ø3×8 | 20° | 80 N over a 1.0 mm stroke | 35° | 64 |
 
 ## Loads and stresses
@@ -18,17 +19,17 @@
 | Interface + actuator | Rated / peak (N·m) | Slip torque | Ball-on-pin stress, rated / peak (limit 4,200 MPa) | Same ball in a **printed** groove, rated (PETG yield ~50 MPa) | Twist to lock, greased / dry | Lug shear / tooth bending (PETG) |
 |---|---|---|---|---|---|---|
 | KX74 + GIM6010-8 | 5.00 / 11.00 | 12.7 N·m ✅ | 3,226 / 3,554 MPa ✅ | 170 MPa ❌ (3× yield) | 2.1 / 2.7 N·m ✅ | 1.3 / 14 MPa |
-| KX74 + DM-J4310-2EC_V1.1 | 3.00 / 7.00 | 12.7 N·m ✅ | 3,100 / 3,342 MPa ✅ | 164 MPa ❌ (3× yield) | 2.1 / 2.7 N·m ✅ | 1.3 / 14 MPa |
+| KX56 + DM-J4310-2EC_V1.1 | 3.00 / 7.00 | 8.3 N·m ✅ | 3,555 / 3,933 MPa ✅ | 188 MPa ❌ (4× yield) | 1.4 / 1.8 N·m ✅ | 1.7 / 17 MPa |
 | KX44 + STS3215-C018 | 0.98 / 2.94 | 3.4 N·m ✅ | 3,506 / 3,966 MPa ✅ | 185 MPa ❌ (4× yield) | 0.6 / 0.8 N·m ✅ | 1.2 / 12 MPa |
 
 ## Socket bearings (one pair per socket)
 
 | Socket | Interface | Bending moment (N·m) | Bearing pair | Max radial load per bearing | Static safety C0/P0 |
 |---|---|---|---|---|---|
-| shoulder_roll | KX74 | 11.7 | 2 × 61808 | 745 N | 5.6 ✅ |
-| upper_yaw | KX74 | 9.9 | 2 × 61808 | 628 N | 6.6 ✅ |
-| elbow | KX74 | 6.0 | 2 × 61808 | 384 N | 10.8 ✅ |
-| wrist_pitch | KX74 | 1.5 | 2 × 61808 | 97 N | 42.7 ✅ |
+| shoulder_roll | KX74 | 12.5 | 2 × 61808 | 799 N | 5.2 ✅ |
+| upper_yaw | KX56 | 10.4 | 2 × 61805 | 754 N | 3.4 ✅ |
+| elbow | KX74 | 6.2 | 2 × 61808 | 396 N | 10.5 ✅ |
+| wrist_pitch | KX56 | 1.5 | 2 × 61805 | 110 N | 23.6 ✅ |
 | wrist_roll | KX44 | 1.0 | 2 × 61805 | 86 N | 30.2 ✅ |
 | drive wheel | KX74 | 3.3 | 2 × 61808 | 261 N | 15.9 ✅ |
 

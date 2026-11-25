@@ -41,7 +41,7 @@ def build_xml(d: Design) -> str:
         <geom type="sphere" size="0.04" mass="{m['shoulder_pitch']*0.3}" rgba=".1 .1 .1 1"/>
         <body name="roll_{side}" pos="0 {s*0.05} 0">
           <joint name="roll_{side}" axis="{s} 0 0" range="{JR['roll'][0]} {JR['roll'][1]}"/>
-          <geom type="sphere" size="0.038" mass="{m['shoulder_roll']}" rgba=".1 .1 .1 1"/>
+          <geom type="sphere" size="0.038" mass="{m['shoulder_roll'] + a.shoulder_stage_mass}" rgba=".1 .1 .1 1"/>
           <body name="upper_{side}" pos="0 0 -0.07">
             <joint name="yaw_{side}" axis="0 0 1" range="{JR['yaw'][0]} {JR['yaw'][1]}"/>
             <geom type="sphere" size="0.03" pos="0 0 0" mass="{m['upper_yaw']}" rgba=".1 .1 .1 1"/>
@@ -71,7 +71,7 @@ def build_xml(d: Design) -> str:
         </body>
       </body>"""
 
-    torso_m = u.carriage_mass + u.torso_struct_mass + u.compute_mass + u.cable_mass
+    torso_m = u.carriage_mass + u.torso_struct_mass + u.compute_mass + u.cable_mass + 2 * (a.shoulder_stage_mass + a.spring_module_mass)
     spine_m = u.spine_len * u.spine_mass_per_m + u.handle_mass + b.coupling_mass / 2
     return f"""<mujoco model="pip_v4_twin">
   <compiler angle="degree"/>

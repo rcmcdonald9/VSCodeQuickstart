@@ -93,6 +93,9 @@ class KX:
 # Cartridge M (GIM6010-8, DM-J4310). Cartridge S (STS3215).
 KX74 = KX("KX74", od=74, face_t=7, ball_d=10.0, ball_pcd=58, pin_d=5.0, pin_len=14,
           lug_reach=6, lug_w=14, lug_t=3.0, tooth_t=2.4, preload_n=160)
+# DM-J4310 (Ø57, 7 N·m peak): KX74 is oversized for the wrist and upper-arm yaw (loop 4 mass pass)
+KX56 = KX("KX56", od=56, face_t=6, ball_d=8.0, ball_pcd=43, pin_d=4.0, pin_len=11,
+          lug_reach=5, lug_w=11, lug_t=2.5, tooth_t=2.2, preload_n=140)
 KX44 = KX("KX44", od=44, face_t=5, ball_d=6.0, ball_pcd=31, pin_d=3.0, pin_len=8,
           lug_reach=4, lug_w=9, lug_t=2.5, tooth_t=2.0, preload_n=80)
 BALL_ANG = (90, 210, 330)

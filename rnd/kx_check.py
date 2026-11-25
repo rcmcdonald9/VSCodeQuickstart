@@ -9,7 +9,7 @@ import math
 
 from .arm_sizing import point_masses
 from .params import BASELINE, Design, act, G
-from .parts.kx import KX, KX44, KX74
+from .parts.kx import KX, KX44, KX56, KX74
 
 E_STEEL, NU_STEEL = 210e3, 0.30          # MPa
 E_PETG, NU_PETG = 2.1e3, 0.38            # MPa, printed PETG (ESTIMATE; datasheet 2.0–2.2 GPa)
@@ -23,7 +23,7 @@ HAND_TWIST_OK = 3.0                      # N·m: comfortable one-hand twist with
 # Socket bearings: one pair per socket. SKF thin-section catalogue values (ESTIMATE: verify the supplier's data)
 BEARINGS = {"61808": dict(d=40, D=52, B=7, C0=4150.0, price=2.0),
             "61805": dict(d=25, D=37, B=7, C0=2600.0, price=1.5)}
-BEARING_SPAN = {"KX74": 16.0, "KX44": 12.0}   # mm between the bearings of a pair
+BEARING_SPAN = {"KX74": 16.0, "KX56": 14.0, "KX44": 12.0}   # mm between the bearings of a pair
 
 
 def e_star(e1, n1, e2, n2):
@@ -75,9 +75,9 @@ def printed_stresses(kx: KX, torque_nm):
 
 
 def interface_rows(d: Design = BASELINE):
-    users = {"KX74": ["GIM6010-8", "DM-J4310-2EC_V1.1"], "KX44": ["STS3215-C018"]}
+    users = {"KX74": ["GIM6010-8"], "KX56": ["DM-J4310-2EC_V1.1"], "KX44": ["STS3215-C018"]}
     rows = []
-    for kx in (KX74, KX44):
+    for kx in (KX74, KX56, KX44):
         for a in users[kx.name]:
             s = act(a)
             f_r, f_p = contact_forces(kx, s["rated"]), contact_forces(kx, s["peak"])
@@ -100,8 +100,9 @@ def socket_loads(d: Design = BASELINE):
         ob = [(m, x - x0) for n, m, x in pts if x > x0 + 1e-9]
         moment = sum(m * G * r for m, r in ob)
         weight = sum(m * G for m, _ in ob)
-        kx = KX44 if d.arm.joints[j][0].startswith("STS") else KX74
-        brg = "61805" if kx is KX44 else "61808"
+        n = d.arm.joints[j][0]
+        kx = KX44 if n.startswith("STS") else (KX56 if n.startswith("DM-J4310") else KX74)
+        brg = "61808" if kx is KX74 else "61805"
         f_brg = moment * 1000 / BEARING_SPAN[kx.name] + weight / 2
         out.append(dict(joint=j, kx=kx.name, moment=moment, brg=brg, f=f_brg, s0=BEARINGS[brg]["C0"] / f_brg))
     # drive wheels: robot weight / 3 wheels on uneven floor, ×2 for bumps, wheel centre 30 mm out from the socket
@@ -124,7 +125,7 @@ def report(d: Design = BASELINE) -> str:
          "The same 1.15× peak slip margin then needs 160 N of preload instead of 250 N. Twist effort drops from 4.2–6.3 to 2.1–2.7 N·m, "
          "and peak contact stress drops from 4,227 to ~3,550 MPa.", "",
          "## Geometry", "", "| Size | Flange OD | Ball / PCD | Pins | Contact angle β | Preload | Twist | Collar OD |", "|---|---|---|---|---|---|---|---|"]
-    for kx in (KX74, KX44):
+    for kx in (KX74, KX56, KX44):
         L.append(f"| {kx.name} | {kx.od:.0f} | Ø{kx.ball_d:.0f} / {kx.ball_pcd:.0f} | 6 × Ø{kx.pin_d:.0f}×{kx.pin_len:.0f} | {kx.beta_deg:.0f}° | "
                  f"{kx.preload_n:.0f} N over a {kx.stroke:.1f} mm stroke | {kx.twist_deg:.0f}° | {2 * kx.r_collar_out:.0f} |")
     L += ["", "## Loads and stresses", "",

@@ -142,3 +142,34 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
 - **New finding:** a GIM-driven joint is **~100 mm wide** along its axis (cartridge 56 mm + pulley hub 44 mm). The twin's capsule arm is thinner, so collision-free reach may be slightly optimistic. The twin v1 must use the real widths.
 - **Scorecard:** new row "belt safety at peak" **1.41×** ✅. All other rows unchanged (reach 98 %, upper 9.5 kg, cost $2,900).
 - **Next:** bones around the sockets, with CAD masses replacing estimates; then the shoulder module + spring.
+
+## 2026-11-25: loop 4, arm bones from CAD; the mass budget breaks and is re-split
+
+**Picked:** arm bones (queue #3). The bone masses were the largest unverified ESTIMATE behind R3 (carry) and R2 (joint margins).
+
+- **CAD (`rnd/parts/arm.py`):**
+  - **Upper bone:** Ø72 neck tube into an elbow housing. The housing holds the elbow cartridge 70 mm above the elbow axis, its pulley hub, the belt and the 40T pulley hub on 2 × 61808 bearings.
+  - **Forearm:** a side link. The wrist cartridge's output faces back toward the arm's centre plane, so the hand has ~0 lateral offset and swings beside the link rather than into it.
+  - Arm assembly render: [img/arm_v0.png](rnd/img/arm_v0.png). This is a functional layout, not the industrial design.
+- **Mass from CAD vs estimate (per arm structure):**
+
+| | Estimate | CAD v0 (2.4 mm walls, KX74 everywhere) | CAD v0.1 (1.6 mm walls, KX56 for DM-J4310, hollow elbow shaft) |
+|---|---|---|---|
+| Bones + sockets + hubs + bearings | 0.45 kg | 1.14 kg | **0.93 kg** |
+
+  The estimate left out the sockets, hubs and bearings (0.38 kg per arm). The shoulder stages were never counted either; they're now an ESTIMATE of 0.30 kg per stage plus 0.15 kg of spring per arm.
+- **New interface size KX56** (DM-J4310): slip 8.3 N·m (1.19× peak), twist 1.4–1.8 N·m, collar Ø78 instead of Ø98.
+- **Scorecard, before → after:**
+
+| Metric | Before | After |
+|---|---|---|
+| Upper module | 9.5 kg ✅ | 11.9 kg assembled ❌ → **re-split: core 6.2 kg ✅ + 2 arms of 2.8 kg ✅** |
+| Total robot | 16.8 kg | **19.2 kg** |
+| Joint margin min (rated) | 1.70× | **1.57×** ✅ |
+| Tip margin | 70 mm | **72 mm** ✅ (heavier torso) |
+| Socket bearing safety | 5.6 | **3.4** ✅ (yaw socket moved to the smaller 61805 pair) |
+| 15 mm threshold torque | 3.7 N·m (stale hard-coded value) | **4.2 N·m** of 5 rated ✅ (now computed from mass) |
+
+- **Decision D1 changed:** arms detach at the shoulder-pitch KX. It's the same twist-collar as every joint, plus a blind-mate plug (new queue 6b). That also serves the owner's "swap arms and hands over time" goal.
+- **Thin margins to watch:** base 5.8/6 kg; threshold torque 4.2/5 N·m (heavier robot); joint margin 1.57/1.5×.
+- **Next:** shoulder module CAD (it replaces the last big mass ESTIMATE); arm mass diet.

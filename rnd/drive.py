@@ -15,10 +15,24 @@ def step_force(w: float, r: float, h: float) -> float:
     return w * math.sqrt(2 * r * h - h * h) / (r - h)
 
 
+def robot_mass(d: Design = BASELINE) -> float:
+    from .budget import upper_total
+    mb = mass_budget(d)
+    return upper_total(mb) + sum(m for k in ("base", "battery") for _, m in mb[k]) + d.arm.payload * 2
+
+
+def threshold_torque_45(d: Design = BASELINE, h: float = 0.015) -> float:
+    n = 4 if d.base.layout == "xdrive" else 3
+    r = d.base.wheel_d / 2
+    F = step_force(robot_mass(d) * G / n, r, h)
+    return F / math.cos(math.radians(45)) * r
+
+
 def report(d: Design = BASELINE) -> str:
     b = d.base
     mb = mass_budget(d)
-    mass = sum(m for v in mb.values() for _, m in v) + d.arm.payload * 2
+    from .budget import upper_total
+    mass = upper_total(mb) + sum(m for k in ('base', 'battery') for _, m in mb[k]) + d.arm.payload * 2
     W = mass * G
     n = 4 if b.layout == "xdrive" else 3
     r = b.wheel_d / 2
@@ -42,7 +56,7 @@ def report(d: Design = BASELINE) -> str:
     v_fwd = mot["speed"] * r
     a_motor = n * mot["rated"] / r / mass
     L += ["", "**Catch:** a wheel rolling *sideways* meets the step with its small rollers (~25 mm, ESTIMATE). It can't climb more than a few mm on its own; the other wheels have to drag it over.",
-          "**Rule for the planner:** cross thresholds at a **45° heading**, so every wheel uses its full diameter. That needs ≤ 3.5 N·m per wheel for 15 mm, within rating. "
+          "**Rule for the planner:** cross thresholds at a **45° heading**, so every wheel uses its full diameter. That needs ≤ " + f"{threshold_torque_45(d):.1f}" + " N·m per wheel for 15 mm, within rating. "
           "**Must be bench-tested** (Phase-1 base test); fallback is 8\" dual-row omni wheels (bigger rollers).", "",
           "## Speed and acceleration", "",
           f"- Forward speed at rated motor speed: **{v_fwd:.2f} m/s** (2 side wheels drive straight); at 45° heading {v_fwd*math.cos(math.radians(45)):.2f} m/s. Max motor speed allows ~{act(b.wheel_motor)['speed']*0+ 420*2*math.pi/60*r:.1f} m/s. R6 (0.8 m/s) ✅",

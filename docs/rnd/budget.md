@@ -2,34 +2,11 @@
 
 | Module | Mass (kg) | Target (R3) | Status |
 |---|---|---|---|
-| upper | 9.47 | ≤ 10 | ✅ |
 | base | 5.83 | ≤ 6 | ✅ |
 | battery | 1.50 | ≤ 3 | ✅ |
-| **total** | **16.80** | | |
-
-**upper detail**
-
-| Item | kg |
-|---|---|
-| lift motor | 0.900 |
-| torso | 0.900 |
-| 2× arm bones+shells | 0.900 |
-| spine extrusion | 0.848 |
-| 2× arm shoulder_pitch | 0.776 |
-| 2× arm shoulder_roll | 0.776 |
-| 2× arm elbow | 0.776 |
-| head | 0.600 |
-| 2× arm upper_yaw | 0.600 |
-| 2× arm wrist_pitch | 0.600 |
-| compute | 0.450 |
-| carriage | 0.350 |
-| cables | 0.250 |
-| 2× gripper mechanism | 0.200 |
-| coupling (upper half) | 0.125 |
-| 2× arm wrist_roll | 0.110 |
-| 2× arm gripper | 0.110 |
-| handle | 0.100 |
-| 2× wrist camera | 0.100 |
+| upper | 6.20 | ≤ 10 | ✅ |
+| arm (each, detachable) | 2.85 | ≤ 10 | ✅ |
+| **total robot** | **19.22** | | |
 
 **base detail**
 
@@ -42,6 +19,37 @@
 | electronics | 0.350 |
 | lidar | 0.150 |
 | coupling (base half) | 0.125 |
+
+**upper detail**
+
+| Item | kg |
+|---|---|
+| lift motor | 0.900 |
+| torso | 0.900 |
+| 2× shoulder pitch stage + spring | 0.900 |
+| spine extrusion | 0.848 |
+| 2× arm shoulder_pitch | 0.776 |
+| head | 0.600 |
+| compute | 0.450 |
+| carriage | 0.350 |
+| cables | 0.250 |
+| coupling (upper half) | 0.125 |
+| handle | 0.100 |
+
+**arm (each, detachable) detail**
+
+| Item | kg |
+|---|---|
+| arm bones+shells | 0.910 |
+| arm shoulder_roll | 0.388 |
+| arm elbow | 0.388 |
+| arm upper_yaw | 0.300 |
+| arm wrist_pitch | 0.300 |
+| roll stage | 0.300 |
+| gripper mechanism | 0.100 |
+| arm wrist_roll | 0.055 |
+| arm gripper | 0.055 |
+| wrist camera | 0.050 |
 
 **Actuators:** 20 joints, ≈ **$1,550** at mid list price.
 

@@ -48,8 +48,8 @@ class Arm:
         "gripper":        ("STS3215-C018", 1.0),
     })
     spring_assist: float = 0.85    # fraction of the arm's own gravity moment the shoulder spring cancels
-    bone_mass_upper: float = 0.26  # printed bones + shells, kg (ESTIMATE, scaled to 0.30 m)
-    bone_mass_fore: float = 0.19
+    bone_mass_upper: float = 0.59  # FROM CAD (loop 4, rnd/parts/arm.py): shell 0.26 + yaw KX56 socket + elbow KX74 socket + pulley hubs + bearings (was 0.26 ESTIMATE)
+    bone_mass_fore: float = 0.32   # FROM CAD (loop 4): side-link shell 0.21 + wrist KX56 socket + bearings + fasteners (was 0.19 ESTIMATE)
     gripper_mech_mass: float = 0.10
     wrist_cam_mass: float = 0.05
     payload: float = 1.0           # kg at the grasp point (R2)
@@ -57,6 +57,9 @@ class Arm:
     # upper arm, just past the yaw joint, and drives the elbow through a long belt (precedent: Berkeley Blue moves
     # motors back along belts). The elbow then carries only a pulley hub + bearings.
     elbow_motor_at: float | None = None
+    shoulder_stage_mass: float = 0.30  # per shoulder belt stage (pitch, roll): KX74 socket + pulley hubs + bearings + housing
+                                       # share. ESTIMATE scaled from the elbow-stage CAD (loop 4)
+    spring_module_mass: float = 0.15   # shoulder gravity-assist spring + cam (ESTIMATE, stays on the torso)
     elbow_hub_mass: float = 0.12   # big pulley + hub + 2×61808 + tensioner when the motor is remote (ESTIMATE)
     wrist_pitch_range_deg: float = 120.0   # ±140 folded the hand into the forearm (collision study); ±120 is realistic and reaches more
 
@@ -92,6 +95,9 @@ class Upper:
     head_mass: float = 0.60        # 2×STS3215 + Gemini 336 + display + mic + speaker + shell
     cable_mass: float = 0.25
     handle_mass: float = 0.10
+    # Carry split: each arm detaches at its shoulder-pitch KX socket (one collar twist + a blind-mate plug).
+    # The pitch cartridge, its stage and the spring stay on the torso; everything outboard is the "arm" piece.
+    arms_detach: bool = True
 
 
 @dataclass

@@ -64,6 +64,14 @@ def main():
         export_stl(p, str(OUT / f"asm_{n}.stl"))
     (OUT / "asm_elbow.txt").write_text("\n".join(f"asm_{n} {c}" for n, (_, c) in el.items()))
     asm.update(el)
+    from . import arm as arm_mod
+    ar = arm_mod.assembly()
+    for n, p, _ in ar:
+        export_stl(p, str(OUT / f"asm_arm_{n}.stl"))
+    (OUT / "asm_arm.txt").write_text("\n".join(f"asm_arm_{n} {c}" for n, _, c in ar))
+    printable.update({"arm_upper_bone_unsplit": arm_mod.upper_bone(), "arm_forearm": arm_mod.forearm()})
+    for n in ("arm_upper_bone_unsplit", "arm_forearm"):
+        export_stl(printable[n], str(OUT / f"{n}.stl"))
     print("exported", len(printable), "printable parts and", len(asm), "assembly bodies to", OUT)
 
 
