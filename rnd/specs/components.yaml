@@ -1,0 +1,68 @@
+# Pip v4 non-actuator component specs (T01). ESTIMATE = unverified.
+omni_wheel_6in:
+  part: AndyMark 6 in. DuraOmni (am-3154)
+  diameter_mm: 152.4
+  rollers: "10 × gray TPU, 77-80A"
+  load_capacity_lb: 120
+  mass_kg: 0.45            # 0.99 lb
+  bore: "1.125 in × 0.36 in deep, 0.96 in thru; 6 holes on 1.875 in bolt circle"
+  price_usd: [29.0, 37.5]
+  variants: {am-3290_half_inch_bearing: {price_usd: 44.0, mass_lb: 1.2}}
+  carpet: "Designed for carpet/compliant surfaces (FRC fields are carpet)"
+  sources:
+    - https://www.andymark.com/product-p/am-3154.htm
+    - https://www.robotshop.com/products/6-duraomni-wheel
+    - https://www.andymark.com:443/products/6-in-duraomni-wheel-with-1-2-in-bearings
+    - https://docs.revrobotics.com/duo-build/motion/wheels
+
+battery:
+  decision: "24 V class (6S Li-ion, 25.2 V max) — matches GIM6010-8 (≤28 V) and Damiao 24 V variants"
+  candidate_6s_10ah:
+    voltage: "22.2 V nominal / 25.2 V full"
+    energy_wh: 222
+    mass_kg: 1.5           # Aegis 24 V 10 Ah 18650 listing (3.3 lb)
+    price_usd: null        # not found — ESTIMATE $80-140
+    sources:
+      - https://www.walmart.com/ip/445124685
+      - https://quartzcomponents.com/products/24v-10ah-li-ion-nmc-battery-pack
+  rejected_48v_ebike_10ah:
+    mass_kg: [2.7, 4.05]
+    price_usd: [160, 200]
+    reason: "48 V exceeds GIM6010-8 manual range; 2-3x heavier than a 6S pack (hurts R3 carry)"
+    sources:
+      - https://www.walmart.com/ip/48V-10AH-Ebike-Battery-with-Charger-48v-Battery-1000W-48V-Lithium-Battery-for-Electric-Bike-Tricycle/13548406595
+      - https://www.goldsupplier.com/provide/p171776891.html
+  bms_boards_6s: {price_usd: [6.5, 7.3], current_a: [10, 15], note: "for a self-built pack; prefer a commercial pack"}
+
+depth_camera:
+  head_option_gemini_336: {price_usd: 310, mass_g: 99, min_range_m: 0.10, max_range_m: 20, fov_deg: 110, iface: USB3-C,
+    sources: [https://wiki.seeedstudio.com/orbbec_gemini336/, https://www.roboticscenter.ai/compare/cameras]}
+  wrist_option_realsense_d405: {price_usd: 419, mass_g: [40, 58], range_m: [0.07, 0.5], dims_mm: [42, 42, 23],
+    sources: [https://www.roboticscenter.ai/compare/cameras, https://openelab.io/blogs/learn/depth-camera-comparison-orbbec-vs-realsense]}
+  realsense_d435i: {price_usd: 419, mass_g: [72, 75], min_range_m: 0.28}
+
+wrist_camera_rgb:
+  budget_global_shutter_usb2_1mp: {price_usd: 59.99, source: https://www.arducam.com/arducam-2-3mp-color-global-shutter-usb3-uvc-camera-module-with-onboard-isp-for-robotics-and-machine-vision.html}
+  ar0234_global_shutter_usb3_2_3mp: {price_usd: [139.99, 154.99], fov_deg_diag: 95, source: https://www.arducam.com/arducam-2-3mp-color-global-shutter-usb3-uvc-camera-module-with-onboard-isp-for-robotics-and-machine-vision.html}
+  generic_usb_rolling_shutter: {price_usd: [20, 35], note: ESTIMATE — what most LeRobot builds use}
+
+lidar_2d:
+  rplidar_c1: {price_usd: [69, 80], mass_g: [110, 180], range_m: 12, blind_m: 0.05, ros: "official ROS/ROS2",
+    sources: [https://waveshare.com/RPLIDAR-C1.htm, https://www.dfrobot.com/product-2803.html]}
+  ldrobot_ld19: {price_aud: 209.95, accuracy: "±45 mm (some sources 10 mm std)", ros: "community + LDROBOT ROS2",
+    sources: [https://core-electronics.com.au/dtof-ld19-laser-lidar-sensor-kit-12m.html.plain.md, https://waveshare.com/wiki/DTOF_LIDAR_LD19]}
+
+optical_flow_odometry:
+  part: Pimoroni PAA5100JE near optical flow (SPI)
+  working_height_mm: [15, 35]
+  price_usd: [25, 37]
+  notes: "Needs height calibration; fuse with IMU + lidar; TEST ON CARPET (pile height changes the reading)"
+  sources:
+    - https://shop.pimoroni.com/products/paa5100je-optical-tracking-spi-breakout
+    - https://ca.robotshop.com/products/paa5100je-near-optical-flow-spi-breakout
+
+can_fd_adapter:
+  candlelight_fd: {price_eur: 46, linux: "gs_usb, CAN-FD since kernel 5.18", source: https://pengutronix.de/en/blog/2023-08-17-candlelight-fd-open-hardware-usb-to-can-fd-interface.html}
+  canable_2_clones: {price_usd: [35, 81], caveat: "candlelight firmware on CANable 2.0 may not support FD frames", source: https://canable.io/index.html}
+  waveshare_usb_can_fd: {price_usd: 127, source: https://waveshare.com/usb-can-fd.htm}
+  note: "GIM6010-8 and DM-J4310 use classic CAN 1 Mbps — CAN-FD not required. A classic-CAN adapter (~$35) works; keep FD-capable for the future."

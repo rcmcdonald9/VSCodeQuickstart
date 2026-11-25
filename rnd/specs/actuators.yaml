@@ -1,0 +1,121 @@
+# Pip v4 actuator specs (T01). Every value has a source; ESTIMATE = unverified.
+# Prices are retailer snapshots (2026-11), shipping/tax extra.
+GIM6010-8:
+  role: cartridge M (shoulders, elbows, base wheels)
+  maker: SteadyWin
+  gear_ratio: 8
+  voltage_nominal_v: 24
+  voltage_range_v: "12-28 per manual; some retailers list 12-56 (driver variant). DESIGN TO <=28 V"
+  rated_torque_nm: 5
+  peak_torque_nm: 11
+  rated_speed_rpm: 120     # after reduction, ±10 %
+  max_speed_rpm: 420       # after reduction, ±10 %
+  mass_g: 388              # with SDC104 driver (370 g without)
+  outer_diameter_mm: 80    # retailer description; confirm with installation drawing (ESTIMATE until drawing checked)
+  interface: "CAN + USB-C (SDC104 driver), integrated driver + encoder"
+  continuous_current_a: 10.5
+  price_usd: [70, 95]
+  notes: >
+    Some Amazon variants differ (48 V/4.6 N·m/17.9 N·m locking). Buy the 24 V SDC104 version and verify on arrival.
+  sources:
+    - https://sdalal1.github.io/assets/pdf/SteadyWin_GIM6010-8_Manual_rev1.pdf
+    - https://actuatorlist.com/actuators/steadywin-gim6010-8
+    - https://www.roboticscenter.ai/store/product/steadywin-gim6010-8-planetary-reducer-servo-motor/
+    - https://openelab.io/products/steadywin-gim6010-8-robot-motor
+    - https://www.amazon.com/Planetary-Robotic-Exoskeleton-Control-GIM6010-8/dp/B0DKF9P4TC
+
+DM-J4310-2EC_V1.1:
+  role: cartridge M-light (upper-arm yaw, wrist pitch upgrade)
+  maker: Damiao
+  gear_ratio: 10
+  voltage_nominal_v: 24     # 48 V variant exists (no-load 450 rpm @48 V on V1.2)
+  rated_torque_nm: 3
+  peak_torque_nm: 7
+  rated_speed_rpm: 120
+  no_load_speed_rpm: 200    # @24 V
+  mass_g: 300
+  dimensions_mm: {diameter: 56-57, height: 46}
+  interface: "CAN 1 Mbps (MIT/position/speed modes), UART config, dual encoder (output-absolute)"
+  current_a: {nominal: 2.5, peak: 7.5}
+  price_usd: [125, 179]
+  notes: "V1.2 torque figures conflict between sellers (3.5/12.5 N·m likely = J4310P). Use V1.1 numbers."
+  sources:
+    - https://rcdrone.top/products/damiao-dm-j4310-2ec-v1-1-servo-motor
+    - https://www.roboticscenter.ai/store/product/damiao-dm-j4310-2ec-v11
+    - https://aifitlab.com/products/damiao-dm-j4310-2ec-v1-1-servo-motor
+    - https://openelab.com/products/damiao-brushless-servo-dm-j4310
+
+DM-J4340P-2EC:
+  role: high-ratio option (shoulder pitch / elbow if GIM6010 margin is short)
+  maker: Damiao
+  gear_ratio: 40
+  rated_torque_nm: 9
+  peak_torque_nm: 27
+  rated_speed_rpm: 36
+  no_load_speed_rpm: {24v: 52, 48v: 100}
+  mass_g: [362, 375]
+  current_a: {nominal: 2.5, peak: 8}
+  price_usd: [175, 187]
+  notes: "One table shows 12/40 N·m (likely another variant). Slow (36 rpm) — fine for shoulder lift, poor for fast motion; less back-drivable."
+  sources:
+    - https://rcdrone.top/products/damiao-dm-j4340p-2ec-servo-motor
+    - https://openelab.com/products/damiao-brushless-servo-dm-j4340p
+    - https://store.foxtech.com/dm-j4340p-2ec-mit-driven-brushless-servo-joint-motor
+    - https://www.roboticscenter.ai/es/store/product/damiao-dm-j4340p-2ec
+
+DM-J8009P-2EC:
+  role: heavy shoulder upgrade (drop-in cartridge L)
+  maker: Damiao
+  gear_ratio: 9
+  voltage_nominal_v: 24     # selection manual also shows 48 V figures (truncated table)
+  rated_torque_nm: 20
+  peak_torque_nm: 40
+  rated_speed_rpm: 100      # @24 V (200 @48 V on sister model; inferred)
+  current_a: {nominal: 20, peak: 50}
+  mass_g: 1000              # ESTIMATE (store shipping weight)
+  bearing: crossed roller on output
+  price_usd: [395, 480]
+  sources:
+    - https://www.roboticscenter.ai/store/product/damiaoj8009
+    - https://aifitlab.com/collections/damiao/products/damiao-dm-j8009p-2ec-servo-motor
+    - https://f.foxtech.com/manual/DM-J8009P-2EC.pdf
+    - https://rcdrone.top/products/damiao-dm-j8009p-2ec-servo-motor
+
+STS3215-C018:
+  role: cartridge S (wrist roll/pitch, gripper, head pan/tilt)
+  maker: Feetech (Waveshare sells as ST3215)
+  gear_ratio: 345
+  voltage_range_v: "4-14 (12 V nominal)"
+  stall_torque_nm: 2.94     # 30 kg·cm @12 V
+  rated_torque_nm: 0.98     # 10 kg·cm
+  speed: "0.222 s/60° @12 V ≈ 45 rpm"
+  stall_current_a: 2.7
+  idle_current_a: 0.18
+  mass_g: 55
+  dimensions_mm: {l: 45.4, w: 24.8, h: 35}
+  interface: "TTL half-duplex serial bus, 1 Mbps, 4096-count magnetic encoder"
+  price_usd: [17, 22]
+  sources:
+    - https://robotshop.com/products/feetech-12v-30kgcm-magnetic-encoding-servo-sts3215
+    - https://www.dfrobot.com/product-2962.html
+    - https://evelta.com/sts3215-c018-12v-30kg-cm-dual-shaft-ttl-serial-servo-metal-gears-magnetic-encoder/
+    - https://servodatabase.com/servo/feetech/sts3215
+    - "geometry: SO-ARM100 STS3215 CAD (measured in this repo, cad/params.scad)"
+
+lift_stepper_options:
+  closed_loop_kit:
+    part: StepperOnline TS-series 2.0 N·m NEMA23 closed-loop (23HS30-5004D-E1000) + CL57T driver
+    price_usd: 88.46
+    gross_mass_kg: 3.0       # kit incl. driver, cables, packaging
+    brake: none
+  brake_motor:
+    part: NEMA23 2.0 N·m with 24 V electromagnetic brake (23HS30-5004D-B280)
+    price_usd: 40.90
+    closed_loop: "not confirmed"
+  closed_loop_with_brake:
+    part: 23HS22-4004D-E1000-B280 (1.2 N·m, 2.8 N·m brake)
+  decision_needed: "T09 — belt+brake motor vs self-locking lead screw; brake keeps torso from dropping when power is off"
+  sources:
+    - https://www.omc-stepperonline.com/ts-series-1-axis-2-0nm-283-28oz-in-nema-23-closed-loop-stepper-kit-w-2m-cable-1-clts20
+    - https://www.omc-stepperonline.com/nema-23-stepper-motor-2-0nm-283-22oz-in-with-24v-4-5w-electromagnetic-brake-23hs30-5004d-b280
+    - https://www.omc-stepperonline.com/s-series-nema-23-closed-loop-stepper-motor-1-2nm-169-97oz-in-with-2-8nm-396-51oz-in-electromagnetic-brake-23hs22-4004d-e1000-b280
