@@ -437,3 +437,35 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
 | **Total robot** | **22.9** |
 
 - New scorecard rows (cached from the last `python -m rnd.assembly_check`): R13 printability 59/59 ✅, clashes 0 ✅.
+
+## Build-out step 6: twin v1, dynamic fetch task within the real actuator limits
+
+`rnd/sim.py` → [rnd/sim.md](rnd/sim.md), [video](rnd/img/sim_fetch.mp4), [frames](rnd/img/sim_fetch_frames.png).
+
+**Model:**
+- MuJoCo, derived from the kinematic twin (CAD collision hulls).
+- Holonomic base force-limited to the four GIM omni wheels.
+- Every joint a position servo capped at its real peak torque (motor × belt × efficiency); lift capped by the GIM on a 20T pulley.
+- Coupled two-finger gripper (μ 1.0, 50 N squeeze).
+- 0.35 kg can on the floor; 0.75 m table that the robot must not touch.
+
+**Task:** drive 0.4 m → reach → descend → grasp → lift → carry → drive 0.7 m → place on the table → release → retract → back away → tuck.
+
+**Debugging (each failure was real, not tuned away):**
+
+| # | Failure | Cause | Fix |
+|---|---|---|---|
+| 1 | Can knocked over at the pick | Gripper command inverted (the sim's own bug) | Fixed the command |
+| 2 | Can slid out on the way down | Can slipped 25 mm in the hand during the carry | Squeeze at full rated force; place height from the measured in-hand offset (wrist-camera stand-in) |
+| 3 | Can dragged after release | Uncoupled fingers let the can's weight push the pair sideways | Coupled fingers (rack-and-pinion behaviour) |
+| 4 | Idle arm through the table | The table didn't collide with the robot | Table collides; the idle arm parks pitched back; contacts are counted |
+| 5 | Can knocked over at retract | Wrist spun on retract and the fingers dragged the can | IK continuity term; fingers open to 120 mm; back away before tucking |
+| 6 | Can drifted 30 mm in the grip | **The joint-space carry swung the hand through 80° of tilt.** A planning lesson for the AI phase: carry moves must be Cartesian with the orientation held | Cartesian carry with the hand held down |
+
+**Result:**
+- **Can placed upright on the table, 0 robot–table contacts.**
+- Peak actuator use ≤ 33 % of peak (shoulder pitch, gripper).
+- Continuous use ≤ 37 % of rated, except the gripper squeeze at 61 %.
+- Min dynamic tip margin **78 mm**.
+- **Robustness:** ±15 mm perception error × 0.2–0.6 kg → **8/8 succeed** open-loop and **8/8** with the wrist-camera re-measure (σ 3 mm, ESTIMATE).
+- Scorecard rows added (cached from the last `python -m rnd.sim`).

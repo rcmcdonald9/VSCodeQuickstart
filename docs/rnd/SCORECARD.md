@@ -27,4 +27,8 @@
 | R10 assembly time | see the build package (estimate) | ≤ 4 h | — |
 | R13 printed pieces that fit the P2S (256 mm) | 59/59 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
+| Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
+| Twin v1: robustness (±15 mm perception error, 0.2–0.6 kg) | 8/8 | all | ✅ |
+| Twin v1: worst actuator use, peak / continuous (RMS vs rated) | 33% / 61% | ≤ 80 % / ≤ 70 % | ✅ |
+| Twin v1: min dynamic tip margin (ZMP) | 78 mm | ≥ 30 mm | ✅ |
 | R11 looks | concept render only | owner approval | — |
