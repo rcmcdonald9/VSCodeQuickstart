@@ -104,6 +104,15 @@ Done so far: T01 specs ✅, toolchain v0 (`rnd/`) ✅, budgets v0 ✅, drivetrai
 7. **Electrical architecture:** 24 V single-line diagram, e-stop chain, fusing, BMS, DC-DC sizing, CAN topology, connector standard.
 8. **Twin v1 from CAD:** ✅ arm collision hulls (loop 6). Still to do: shoulder/torso/base hulls once drawn, masses and inertias from the geometry; **dynamic** MuJoCo with actuator models (pick-and-place motion, base acceleration, carpet friction); re-verify the scorecard.
 9. **Industrial design pass:** shells, colour and material, light language, carry mode, exploded view; Blender hero renders.
+    - **Problems seen in the first whole-robot render (robot_v0.png):**
+      - the bare spine sticks up through and above the head
+      - the elbow housings are boxy and oversized
+      - the shoulders read as bolted-on brackets
+      - the base is a plain puck
+    - **Options:**
+      - head on the spine top with the torso sliding under it, or a telescoping mast
+      - wrap the elbow stage in a shaped shell
+      - integrate the shoulders into the torso shell
 10. **BOM, cost and assembly time;** carry split validated from CAD masses.
 11. **Milestone M1: Phase-1 desk-arm build package** (cartridges + one arm + desk mount + leader arm). Ask the owner: buy?
 12. **Research watch (recurring, every ~6 loops):** new or cheaper actuators, better precedents, price changes. Challenge the big decisions (two arms vs one, lift vs taller arms, omni vs other drive).
