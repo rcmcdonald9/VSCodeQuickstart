@@ -34,7 +34,8 @@ def branches(d=BASELINE):
     rows = [("Base: 4 wheel cartridges", base_cont, base_peak, 20), ("Left arm: 4 GIM + DM-J4310", arm_cont, arm_peak, 15),
             ("Right arm: 4 GIM + DM-J4310", arm_cont, arm_peak, 15), ("Lift cartridge + pawl solenoid", lift_cont, lift_peak, 10),
             ("12 V DC-DC → 6 × STS3215 (wrists, grippers, head)", servo12, 6 * 2.7 * 12 / V_MIN * 0.6, 7.5),
-            ("5 V DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters", logic, logic * 1.3, 5)]
+            ("5 V DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters", logic, logic * 1.3, 5),
+            ("Reserved: 24 → 19 V 3 A DC-DC → Jetson-class AI computer (D10, AI phase)", 15 / V_MIN, 25 / V_MIN, 3)]
     return rows
 
 

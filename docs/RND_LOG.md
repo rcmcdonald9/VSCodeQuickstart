@@ -654,3 +654,21 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - The **tactile pad** (MLX90393 behind a magnetic elastomer) sits in the fixed finger's face; the **palm ToF** sits beside the wrist camera.
 - CAD: `fin_ray()` generator (thin TPU walls + slanted ribs) in `rnd/parts/hand.py`. Interference clean (bonded joints only). Render: [img/gripper_v2.png](rnd/img/gripper_v2.png).
 - Hand mechanism 0.31 → 0.30 kg (TPU fingers are lighter than the rigid jaws). Twin and sim unchanged: the sim already models compliant, coupled fingers.
+
+## 2026-11-25: loop 17, compute and I/O budget (D10)
+
+`rnd/compute.py` → [rnd/compute.md](rnd/compute.md) (stream rates and CPU loads are ESTIMATEs):
+
+| Load | Value |
+|---|---|
+| Head RGB-D | 183 Mbit/s on USB3 #1 (4 %) |
+| Two global-shutter wrist cameras (MJPEG) | 160 Mbit/s on USB3 #2 (3 %) |
+| Lidar, CAN A, TTL, audio | ~3 Mbit/s on USB2 |
+| Arm CAN B/C | via the SPI HAT |
+| **Camera ingest + 500 Hz servo targets + 100 Hz IK + state estimation + ROS 2** | **≈ 73 % of the Pi 5's four cores**: workable but tight |
+
+**Learned policies on the Pi 5 CPU:**
+- an ACT-class policy runs at ~1–3 Hz (needs ≥ 30 Hz)
+- diffusion policies and VLAs don't fit
+
+**Decision D10:** the Pi 5 stays the real-time/I/O computer. The torso **reserves a bay** (105 × 95 × 40 mm, clash-checked against the pitch modules and carriage) plus a **19 V 3 A branch** and Ethernet for a Jetson-class AI computer (Orin Nano Super ≈ $249, 67 TOPS). It's bought in the AI phase, an owner decision, and isn't in the BOM.
