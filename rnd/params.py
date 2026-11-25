@@ -90,19 +90,20 @@ class Base:
 
 @dataclass
 class Upper:
+    mast_w: float = 0.060          # square mast tube width
     lift_min: float = 0.35         # shoulder height (z) at lowest (reach sweep)
     lift_max: float = 1.05         # reach sweep: 0.95 -> 1.05
     spine_len: float = 1.06        # extrusion length
-    spine_mass_per_m: float = 0.80 # 2040 aluminium extrusion (ESTIMATE ~0.8 kg/m)
-    lift_motor_mass: float = 0.55  # loop 8 (rnd/lift.py): GIM6010-8 cartridge + 20T hub + ratchet + solenoid pawl (was 0.9: NEMA23 + brake)
+    spine_mass_per_m: float = 1.25 # loop 10 (rnd/mast.py): 60×60×2 Al square tube, torso sway 1.4 mm (2040 swayed 5.5 mm)
+    lift_motor_mass: float = 0.81  # FROM CAD (build-out, rnd/parts/upper.py): GIM cartridge + 20T + mount + 2.4 m belt + idler + ratchet strip
     lift_motor: str = "GIM6010-8"
-    carriage_mass: float = 0.35
-    torso_struct_mass: float = 0.9 # torso structure + shells (ESTIMATE)
+    carriage_mass: float = 0.58    # FROM CAD: printed sleeve + 8×625 bearings + pawl + solenoid
+    torso_struct_mass: float = 0.53 # FROM CAD: two-piece shell + electronics tray (was 0.9 ESTIMATE)
     compute_mass: float = 0.45     # Pi 5 + Jetson option + CAN + DC-DC
-    head_mass: float = 0.60        # 2×STS3215 + Gemini 336 + display + mic + speaker + shell
+    head_mass: float = 0.88        # FROM CAD: bracket, handle, yoke, shell, visor + 2×STS3215 + RGB-D camera + eye LEDs (was 0.60)
     head_on_mast: bool = True      # owner suggestion (2026-11-25): head fixed on top of the spine; torso + arms ride the lift below it
     cable_mass: float = 0.25
-    handle_mass: float = 0.10
+    handle_mass: float = 0.0       # now part of the head bracket (FROM CAD)
     # Carry split: each arm detaches at its shoulder-pitch KX socket (one collar twist + a blind-mate plug).
     # The pitch cartridge, its stage and the spring stay on the torso; everything outboard is the "arm" piece.
     arms_detach: bool = True

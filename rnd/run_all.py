@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import arm_sizing, balancer, belts, bones, budget, drive, kx_check, lift, spring, twin
+from . import arm_sizing, balancer, belts, bones, budget, drive, kx_check, lift, mast, spring, twin
 from .params import BASELINE
 
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
@@ -75,6 +75,7 @@ def scorecard(d, res):
         ("R2 belt safety at actuator peak (HTD 5M 15 mm, min)", f"{belt_sf:.2f}×", "≥ 1.2×", belt_sf >= 1.2),
         ("R3 arm-detach clamp: lift-off moment / need (×1.5 dynamic)", f"{kx_check.detach_score(d):.1f}×", "≥ 1.5×", kx_check.detach_score(d) >= 1.5),
         ("R12 socket bearing static safety (min)", f"{kx_sock:.1f}", "≥ 2", kx_sock >= 2),
+        ("R2 torso sway from mast bending (worst static)", f"{mast.score(d)[0]:.1f} mm", "≤ 2 mm", mast.score(d)[0] <= 2.0),
         ("R5 lift: torque margin / full-travel time", f"{lift.score(d)[0]:.2f}× / {lift.score(d)[1]:.1f} s", "≥ 1.5× / ≤ 6 s", lift.score(d)[0] >= 1.5 and lift.score(d)[1] <= 6),
         ("R6 base speed at rated motor rpm", "0.96 m/s", "≥ 0.8 m/s", True),
         ("R4 15 mm threshold torque (45° heading)", f"{drive.threshold_torque_45(d):.1f} N·m / 5 rated", "< rated", drive.threshold_torque_45(d) < 5),
@@ -97,6 +98,7 @@ def main():
     (DOCS / "belts.md").write_text(belts.report() + "\n\n![elbow belt stage: cartridge M on its pulley hub, 20T→40T HTD 5M](img/elbow_belt_stage.png)\n")
     (DOCS / "spring.md").write_text(spring.report())
     (DOCS / "lift.md").write_text(lift.report())
+    (DOCS / "mast.md").write_text(mast.report())
     (DOCS / "bones.md").write_text(bones.report())
     (DOCS / "balancer.md").write_text(balancer.report() + "\n\n![shoulder pitch module](img/shoulder_pitch_v0.png)\n")
     (DOCS / "kx.md").write_text(kx_check.report() + "\n\n![cartridges M and S, exploded](img/cartridge_m_exploded.png)\n")

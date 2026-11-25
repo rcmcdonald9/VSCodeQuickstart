@@ -94,10 +94,10 @@ def build_xml(d: Design, geometry: str | None = None) -> str:
         </body>
       </body>"""
 
-    head_z = b.clearance + b.height + u.spine_len + 0.01      # head centre when it sits on the mast top
+    head_z = b.clearance + b.height + u.spine_len + 0.118     # head centre on the mast top (CAD: bracket + pan cartridge + yoke)
 
     def head_xml(z):
-        return (f'<geom type="box" size="0.08 0.12 0.065" pos="0.01 0 {z}" mass="{u.head_mass}" rgba=".95 .95 .95 1"/>'
+        return (f'<geom type="box" size="0.08 0.115 0.06" pos="0.01 0 {z}" mass="{u.head_mass}" rgba=".95 .95 .95 1"/>'
                 f'<geom type="box" size="0.01 0.1 0.04" pos="0.085 0 {z}" mass="0.001" rgba=".05 .05 .05 1"/>'
                 # head depth camera (Gemini 336 class, ~65° vertical FOV), tilted 60° down: the floor-work view
                 f'<camera name="head_down" pos="0.095 0 {z}" xyaxes="0 -1 0 0.866 0 0.5" fovy="65"/>'
@@ -119,7 +119,7 @@ def build_xml(d: Design, geometry: str | None = None) -> str:
     <body name="robot">
       <geom type="cylinder" size="{b.radius} {b.height/2}" pos="0 0 {b.clearance + b.height/2}" mass="{base_m}" rgba=".92 .92 .92 1"/>
       <geom type="box" size="0.07 0.05 0.03" pos="-0.03 0 {b.clearance+0.035}" mass="{b.battery_mass}" rgba=".2 .3 .7 1"/>
-      <geom type="box" size="0.045 0.05 {u.spine_len/2}" pos="-0.06 0 {b.clearance + b.height + u.spine_len/2}" mass="{spine_m}" rgba=".6 .62 .65 1"/>
+      <geom type="box" size="{u.mast_w/2} {u.mast_w/2} {u.spine_len/2}" pos="-0.06 0 {b.clearance + b.height + u.spine_len/2}" mass="{spine_m}" rgba=".6 .62 .65 1"/>
       <geom type="box" size="0.05 0.05 0.05" pos="-0.06 0 {b.clearance + b.height + 0.06}" mass="{u.lift_motor_mass}" rgba=".2 .2 .2 1"/>
       {head_xml(head_z) if u.head_on_mast else ""}
       <body name="torso" pos="0 0 0">

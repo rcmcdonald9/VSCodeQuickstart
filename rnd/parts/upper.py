@@ -1,0 +1,132 @@
+"""Mast, lift, torso and head v0 (robot frame: x forward, z up; mast axis at x = MAST_X).
+
+- Mast: 60×60×2 Al square tube from the base coupling to the head bracket (rnd/mast.py).
+- Lift: GIM cartridge at the mast foot drives a 20T HTD 5M pulley; the belt loops over an idler in the top bracket and
+  clamps to the carriage. Printed ratchet strip on the mast's back face; spring-applied pawl + 12 V solenoid on the
+  carriage (rnd/lift.py).
+- Carriage: printed sleeve with 8 × 625 bearings on the tube faces; the torso shell and both pitch modules bolt to it.
+- Torso: two-piece shell with a chest light; electronics tray (Pi 5, CAN, DC-DC, fuses) on the back; e-stop on top.
+- Head (fixed on the mast top, D8): top bracket (idler + carry handle) → pan cartridge S (vertical) → yoke →
+  tilt cartridge S → head shell with a dark visor, eye lights and the RGB-D camera.
+"""
+from __future__ import annotations
+
+from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
+
+from ..params import BASELINE
+from . import cartridge_m as cm, cartridge_s as cs
+from .belt_stage import pulley
+
+MIN = (Align.CENTER, Align.CENTER, Align.MIN)
+D = BASELINE
+MAST_X = -60.0
+W = D.upper.mast_w * 1000
+Z_BASE = (D.base.clearance + D.base.height) * 1000
+Z_TOP = Z_BASE + D.upper.spine_len * 1000
+HEAD_Z = Z_TOP + 10.0
+WALL = 2.0
+
+
+def _rbox(x, y, z, r):
+    r = min(r, x / 2 - 0.3, y / 2 - 0.3)
+    return fillet(Box(x, y, z).edges().filter_by(Axis.Z), r) if r > 0.5 else Box(x, y, z)
+
+
+def _shell(x, y, z, r, t=WALL):
+    return _rbox(x, y, z, r) - _rbox(x - 2 * t, y - 2 * t, z - 2 * t, max(r - t, 1))
+
+
+def mast() -> Part:
+    L = Z_TOP - Z_BASE
+    return Pos(MAST_X, 0, Z_BASE) * (Box(W, W, L, align=MIN) - Box(W - 4, W - 4, L, align=MIN))
+
+
+def ratchet_strip() -> Part:
+    L = Z_TOP - Z_BASE - 160
+    p = Pos(MAST_X - W / 2 - 3, 23, Z_BASE + 130) * Box(6, 14, L - 70, align=MIN)
+    for k in range(int((L - 80) // 20)):                      # visual teeth every 20 mm (real pitch 5 mm)
+        p -= Pos(MAST_X - W / 2 - 6, 23, Z_BASE + 140 + 20 * k) * Rot(0, 45, 0) * Box(4, 16, 4)
+    return p
+
+
+def lift_drive():
+    z = Z_BASE + 70
+    T = Pos(MAST_X - W / 2 - 50, -20, z) * Rot(90, 0, 0)          # cartridge axis along -Y, behind the mast
+    zc = cm.stack_height()
+    return [("lift_can", T * Pos(0, 0, 0) * Rot(180, 0, 0) * Pos(0, 0, -zc) * cm.can(), "white"),
+            ("lift_motor", T * Pos(0, 0, 0) * Rot(180, 0, 0) * Pos(0, 0, -zc) * cm.motor_dummy(), "dark"),
+            ("lift_pulley", Pos(MAST_X - W / 2 - 50, -10, z) * Rot(-90, 0, 0) * pulley(20, 16), "orange"),
+            ("lift_belt", Pos(MAST_X - W / 2 - 50 + 16, -2, z) * Box(3.6, 15, Z_TOP - z - 10, align=MIN), "dark"),
+            ("lift_mount", Pos(MAST_X - W / 2 - 30, -20, Z_BASE) * Box(60, 90, 120, align=MIN)
+             - Pos(MAST_X - W / 2 - 50, -20, z) * Rot(90, 0, 0) * Cylinder(45, 200), "white")]
+
+
+def carriage(lift_mm: float) -> Part:
+    h = 160.0
+    c = Pos(MAST_X, 0, lift_mm - h / 2) * (Box(W + 26, W + 26, h, align=MIN) - Box(W + 2, W + 2, h, align=MIN))
+    for z in (lift_mm - h / 2 + 18, lift_mm + h / 2 - 18):           # 625 bearing bosses, 2 per face
+        for dx, dy in ((W / 2 + 7, 0), (-W / 2 - 7, 0), (0, W / 2 + 7), (0, -W / 2 - 7)):
+            c += Pos(MAST_X + dx, dy, z) * Box(14 if dx else 30, 30 if dx else 14, 24)
+    c -= Pos(MAST_X - W / 2 - 6, 23, lift_mm) * Box(14, 18, 400)                 # slot over the ratchet strip
+    # pawl + solenoid on the back, beside the slot
+    c += Pos(MAST_X - W / 2 - 20, 23, lift_mm - 30) * Box(14, 22, 40)
+    return c
+
+
+def torso(lift_mm: float):
+    x0 = 15.0
+    shell = Pos(x0, 0, lift_mm) * _shell(190, 300, 175, 40)
+    shell -= Pos(MAST_X, 0, lift_mm) * Box(W + 30, W + 30, 400)                       # mast + carriage passage
+    shell -= Pos(D.arm.shoulder_x * 1000 - 40, 0, lift_mm + 10) * Box(200, 400, 150) - Pos(x0, 0, lift_mm) * Box(400, 230, 400)  # side windows for the pitch modules
+    tray = Pos(MAST_X + W / 2 + 55, 0, lift_mm - 40) * Box(70, 180, 6)
+    pi = Pos(MAST_X + W / 2 + 55, -40, lift_mm - 25.5) * Box(56, 85, 22)
+    dcdc = Pos(MAST_X + W / 2 + 55, 55, lift_mm - 23.5) * Box(50, 60, 26)
+    estop = Pos(-20, 70, lift_mm + 88) * Cylinder(15, 14, align=MIN)
+    light = Pos(x0 + 96, 0, lift_mm - 30) * Box(2, 200, 8)
+    return [("torso_shell", shell, "white"), ("e_tray", tray, "dark"), ("e_pi5", pi, "dark"), ("e_dcdc", dcdc, "dark"),
+            ("estop", estop, "orange"), ("chest_light", light, "orange")]
+
+
+def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
+    top = Pos(MAST_X, 0, Z_TOP) * Box(W + 16, W + 16, 24, align=MIN)                  # top bracket on the mast
+    top -= Pos(MAST_X, 0, Z_TOP) * Box(W + 0.4, W + 0.4, 10, align=MIN)
+    handle = Pos(MAST_X - 50, 0, Z_TOP + 24) * Rot(90, 0, 0) * (Cylinder(34, 24) - Cylinder(24, 25) - Pos(0, -40, 0) * Box(80, 80, 30))
+    idler = Pos(MAST_X - W / 2 - 34, 0, Z_TOP + 8) * Rot(90, 0, 0) * Cylinder(14, 18)
+    # pan cartridge S, shaft up, on the top bracket; yoke + head ride on it
+    pan = Pos(MAST_X, 0, Z_TOP + 24) * Rot(0, 0, 90) * cs.sleeve()
+    yz = Z_TOP + 24 + cs.stack_height()
+    P = Pos(MAST_X, 0, yz) * Rot(0, 0, pan_deg)
+    yoke = Box(60, 150, 8, align=MIN) + Pos(0, 71, 0) * Box(40, 8, 60, align=MIN) + Pos(0, -71, 0) * Box(40, 8, 60, align=MIN)
+    tilt = Pos(0, 75, 40) * Rot(-90, 0, 0) * cs.sleeve()
+    T = Pos(0, 0, 40) * Rot(0, tilt_deg, 0)
+    shell = Pos(70, 0, 5) * _shell(160, 244, 120, 40, 2.4)
+    shell -= Pos(150, 0, 8) * Box(20, 200, 70)                                       # visor opening
+    shell -= Pos(-20, 0, -20) * Box(110, 180, 90)                                    # neck opening at the back/bottom (yoke + pan servo)
+    visor = Pos(146, 0, 8) * _rbox(6, 196, 66, 3)
+    eyes = [Pos(150, s * 48, 12) * Rot(0, 90, 0) * Cylinder(12, 2) for s in (1, -1)]
+    cam = Pos(128, 0, -20) * Box(30, 90, 25)
+    out = [("head_bracket", top, "white"), ("handle", handle, "dark"), ("belt_idler", idler, "steel"),
+           ("pan_sleeve", pan, "white"), ("yoke", P * yoke, "dark"), ("tilt_sleeve", P * tilt, "white"),
+           ("head_shell", P * T * shell, "white"), ("visor", P * T * visor, "dark"),
+           ("eye_l", P * T * eyes[0], "orange"), ("eye_r", P * T * eyes[1], "orange"), ("head_cam", P * T * cam, "dark")]
+    return out
+
+
+def module(lift_m: float = 0.75):
+    L = lift_m * 1000
+    return [("mast", mast(), "steel"), ("ratchet", ratchet_strip(), "dark"), *lift_drive(),
+            ("carriage", carriage(L), "white"), *torso(L), *head()]
+
+
+def masses(density=1.27):
+    L = 750.0
+    tor = {n: p for n, p, c in torso(L)}
+    hd = {n: p for n, p, c in head()}
+    return {
+        "carriage (printed) + 8×625 bearings + pawl/solenoid": carriage(L).volume / 1e6 * density * 0.6 + 8 * 0.012 + 0.06,
+        "torso shell + tray (printed)": (tor["torso_shell"].volume + tor["e_tray"].volume) / 1e6 * density,
+        "ratchet strip (printed)": ratchet_strip().volume / 1e6 * density,
+        "lift mount (printed) + belt 2.4 m + idler": [p for n, p, c in lift_drive() if n == "lift_mount"][0].volume / 1e6 * density * 0.5 + 0.10,
+        "head: bracket, handle, yoke, shell, visor (printed)": sum(hd[k].volume for k in ("head_bracket", "handle", "yoke", "head_shell", "visor")) / 1e6 * density * 0.8,
+        "head: 2 × STS3215 + sleeves + RGB-D camera (99 g) + eye LEDs": 2 * 0.055 + 2 * 0.02 + 0.10 + 0.02,
+    }

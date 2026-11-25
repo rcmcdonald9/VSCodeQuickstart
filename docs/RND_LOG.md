@@ -369,3 +369,33 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
 | Each arm / assembled upper | 3.6 / 13.8 kg | **3.9 / 14.3 kg** |
 | Lift margin | 2.14× | 2.07× |
 | 15 mm threshold | 4.5 | **4.6 of 5 N·m** (watch) |
+
+## Build-out step 3: mast, lift, carriage, torso, head
+
+- **Mast sizing** (`rnd/mast.py`): worst static moment at the mast foot is 46 N·m (both arms straight out with 1 kg, torso at the top).
+
+| Mast | Torso sway | kg/m |
+|---|---|---|
+| 2040 extrusion (v0 placeholder) | 5.5 mm ❌ | 0.50 |
+| 50×50×2 Al square tube | 2.6 mm | 1.04 |
+| **60×60×2 Al square tube (chosen)** | **1.4 mm** ✅ | 1.25 |
+
+- **CAD** (`rnd/parts/upper.py`):
+  - **Lift:** GIM cartridge at the mast foot with a 20T pulley; HTD 5M belt to an idler in the head bracket; printed ratchet strip on the mast's back face.
+  - **Carriage:** printed sleeve with 8 × 625 bearings, a slot over the ratchet, and the pawl + solenoid.
+  - **Torso:** two-piece shell with side windows for the pitch modules; electronics tray (Pi 5, DC-DC), e-stop, chest light.
+  - **Head:** top bracket with idler and carry handle → pan cartridge S → yoke → tilt cartridge S → shell with a dark visor, eye lights and the RGB-D camera.
+  - Interference clean, apart from mounting interfaces (belt slot, servo horn).
+- **Masses from CAD:**
+
+| Item | Estimate | CAD |
+|---|---|---|
+| Carriage | 0.35 kg | 0.58 kg |
+| Torso | 0.90 kg | 0.53 kg |
+| Head | 0.60 kg | 0.88 kg |
+| Lift drive | 0.55 kg | 0.81 kg |
+| Mast | 0.85 kg | 1.33 kg |
+
+  Upper core 6.5 → **7.3 kg** ✅; assembled upper 15.1 kg.
+- **Head height** follows the CAD: the head centre sits 118 mm above the mast top, so the **overall height is 1.39 m** (was 1.29 m).
+- **Scorecard:** tip margin 61 → 65 mm; lift 2.09×; new row "torso sway 1.4 mm" ✅. **15 mm threshold 4.8 of 5 N·m** (tight; addressed in the base step).
