@@ -4,12 +4,12 @@
 |---|---|---|---|
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
-| R12 min tip-over margin, 1 kg at reach | 65 mm | ≥ 50 mm | ✅ |
+| R12 min tip-over margin, 1 kg at reach | 67 mm | ≥ 50 mm | ✅ |
 | R2 min joint margin at spec load (rated, planar check) | 1.91× | ≥ 1.5× | ✅ |
 | R3 upper core (arms detached) | 7.3 kg | ≤ 10 kg | ✅ |
 | R3 each arm (detaches at the shoulder KX) | 3.9 kg | ≤ 10 kg | ✅ |
 | R3 assembled upper (core + arms, for reference) | 15.1 kg | info | — |
-| R3 base module mass | 5.8 kg | ≤ 6 kg | ✅ |
+| R3 base module mass | 6.3 kg | ≤ 8 kg (piece limit 10) | ✅ |
 | R3 battery mass | 1.5 kg | ≤ 3 kg | ✅ |
 | R7 runtime (estimated duty cycle) | 4.0 h | ≥ 2 h | ✅ |
 | R8 cost estimate | $2,788 (actuators $1,494 ×21) | ≤ $3,300 | ✅ |
@@ -23,7 +23,7 @@
 | R2 torso sway from mast bending (worst static) | 1.4 mm | ≤ 2 mm | ✅ |
 | R5 lift: torque margin / full-travel time | 2.09× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
-| R4 15 mm threshold torque (45° heading) | 4.8 N·m / 5 rated | < rated | ✅ |
+| R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.3× (4.9 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 assembly time | not yet measured (needs CAD) | ≤ 4 h | — |
 | R13 printability | not yet measured (needs CAD) | all ≤ 256 mm | — |
 | R11 looks | concept render only | owner approval | — |

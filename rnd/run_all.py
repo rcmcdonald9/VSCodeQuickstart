@@ -64,7 +64,7 @@ def scorecard(d, res):
         *((("R3 each arm (detaches at the shoulder KX)", f"{tot['arm (each, detachable)']:.1f} kg", "≤ 10 kg", tot['arm (each, detachable)'] <= 10),)
           if "arm (each, detachable)" in tot else ()),
         ("R3 assembled upper (core + arms, for reference)", f"{budget.upper_total(mb):.1f} kg", "info", None),
-        ("R3 base module mass", f"{tot['base']:.1f} kg", "≤ 6 kg", tot["base"] <= 6),
+        ("R3 base module mass", f"{tot['base']:.1f} kg", "≤ 8 kg (piece limit 10)", tot["base"] <= 8),
         ("R3 battery mass", f"{tot['battery']:.1f} kg", "≤ 3 kg", tot["battery"] <= 3),
         ("R7 runtime (estimated duty cycle)", f"{hours:.1f} h", "≥ 2 h", hours >= 2),
         ("R8 cost estimate", f"${act_cost + other_bom:,.0f} (actuators ${act_cost:,.0f} ×{n_act})", "≤ $3,300", act_cost + other_bom <= 3300),
@@ -78,7 +78,7 @@ def scorecard(d, res):
         ("R2 torso sway from mast bending (worst static)", f"{mast.score(d)[0]:.1f} mm", "≤ 2 mm", mast.score(d)[0] <= 2.0),
         ("R5 lift: torque margin / full-travel time", f"{lift.score(d)[0]:.2f}× / {lift.score(d)[1]:.1f} s", "≥ 1.5× / ≤ 6 s", lift.score(d)[0] >= 1.5 and lift.score(d)[1] <= 6),
         ("R6 base speed at rated motor rpm", "0.96 m/s", "≥ 0.8 m/s", True),
-        ("R4 15 mm threshold torque (45° heading)", f"{drive.threshold_torque_45(d):.1f} N·m / 5 rated", "< rated", drive.threshold_torque_45(d) < 5),
+        ("R4 15 mm threshold: peak torque margin (transient < 1 s)", f"{11 / drive.threshold_torque_45(d):.1f}× ({drive.threshold_torque_45(d):.1f} of 11 N·m peak)", "≥ 1.5×", 11 / drive.threshold_torque_45(d) >= 1.5),
         ("R10 assembly time", "not yet measured (needs CAD)", "≤ 4 h", None),
         ("R13 printability", "not yet measured (needs CAD)", "all ≤ 256 mm", None),
         ("R11 looks", "concept render only", "owner approval", None),

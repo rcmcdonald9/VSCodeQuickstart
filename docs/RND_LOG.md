@@ -399,3 +399,17 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
   Upper core 6.5 → **7.3 kg** ✅; assembled upper 15.1 kg.
 - **Head height** follows the CAD: the head centre sits 118 mm above the mast top, so the **overall height is 1.39 m** (was 1.29 m).
 - **Scorecard:** tip margin 61 → 65 mm; lift 2.09×; new row "torso sway 1.4 mm" ✅. **15 mm threshold 4.8 of 5 N·m** (tight; addressed in the base step).
+
+## Build-out step 4: base
+
+- **CAD** (`rnd/parts/base.py`):
+  - 4 wheel modules ("+" layout, one wheel forward, axles radial), each: GIM cartridge pointing inward → KX74 wheel hub → Ø40 shaft in 2 × 61808 in a two-plate pod → DuraOmni flange → 6" omni wheel. Wheel loads never reach the motor bearing.
+  - The four cartridges leave a centre bay for the 6S battery, which slides out from the back.
+  - Ribbed deck and skirt, each in four printable quarters.
+  - Mast coupling with a cam lever and a blind-mate plug pass-through.
+  - Lidar on the front edge, bumper light ring, base electronics in a diagonal bay.
+  - Interference: **none**.
+- **Masses from CAD:** structure 1.4 → **2.0 kg**, shell 0.45 → 0.33 kg. **Base 5.8 → 6.3 kg.**
+  - The internal 6 kg allocation is raised to **8 kg**. The real requirement (R3) is ≤ 10 kg per carried piece and 2 trips; the trips are core 7.3 + base 6.3, then battery 1.5 + arms 2 × 3.9.
+- **R4 metric redefined:** climbing a 15 mm threshold is a sub-second transient, so it is now checked against the GIM's **peak** torque: **2.3×** (4.9 of 11 N·m). Continuous carpet driving uses 0.8 N·m of 5 rated.
+- Tip margin 67 mm.

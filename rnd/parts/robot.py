@@ -12,7 +12,7 @@ from pathlib import Path
 from build123d import Align, Axis, Box, Cylinder, Plane, Pos, Rot, export_stl, fillet, mirror
 
 from ..params import BASELINE
-from . import arm, roll, shoulder, upper
+from . import arm, base, roll, shoulder, upper
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 OUT = Path(__file__).resolve().parents[1] / "out"
@@ -36,15 +36,8 @@ def build(lift=None, poses=None):
     b, u, a = d.base, d.upper, d.arm
     lift_mm = (lift if lift is not None else 0.75) * 1000
     out = []
-    # ---- base (placeholder shell) + wheels at R 0.21, one pointing forward ----
-    z0, h = b.clearance * 1000, b.height * 1000
-    out += [("ph_base", Pos(0, 0, z0) * (Cylinder(b.radius * 1000, h, align=MIN) - Pos(0, 0, -1) * Cylinder(b.radius * 1000 - 3, h - 3, align=MIN)), "white"),
-            ("ph_bumper", Pos(0, 0, z0 + 18) * (Cylinder(b.radius * 1000 + 4, 10, align=MIN) - Cylinder(b.radius * 1000 - 1, 10, align=MIN)), "orange")]
-    for k in range(4):
-        ang = 90 * k
-        r = b.wheel_radius_pos * 1000
-        out.append((f"wheel{k}", Pos(r * math.cos(math.radians(ang)), r * math.sin(math.radians(ang)), b.wheel_d * 500)
-                    * Rot(0, 0, ang) * omni_wheel(), "dark"))
+    # ---- base (CAD: rnd/parts/base.py) ----
+    out += base.module()
     # ---- mast, lift, carriage, torso, head (CAD: rnd/parts/upper.py) ----
     out += upper.module(lift_mm / 1000)
     # ---- arms: shoulder pitch module (CAD) + roll stage (placeholder) + CAD arm ----

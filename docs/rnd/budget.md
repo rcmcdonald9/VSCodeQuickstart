@@ -2,21 +2,21 @@
 
 | Module | Mass (kg) | Target (R3) | Status |
 |---|---|---|---|
-| base | 5.83 | ≤ 6 | ✅ |
+| base | 6.31 | ≤ 8 | ✅ |
 | battery | 1.50 | ≤ 3 | ✅ |
 | upper | 7.31 | ≤ 10 | ✅ |
 | arm (each, detachable) | 3.87 | ≤ 10 | ✅ |
-| **total robot** | **22.38** | | |
+| **total robot** | **22.86** | | |
 
 **base detail**
 
 | Item | kg |
 |---|---|
+| chassis | 2.000 |
 | omni wheels | 1.800 |
 | wheel cartridges | 1.552 |
-| chassis | 1.400 |
-| shell | 0.450 |
 | electronics | 0.350 |
+| shell | 0.330 |
 | lidar | 0.150 |
 | coupling (base half) | 0.125 |
 

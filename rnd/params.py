@@ -79,8 +79,8 @@ class Base:
     wheel_motor: str = "GIM6010-8"
     clearance: float = 0.025
     height: float = 0.13
-    struct_mass: float = 1.4       # printed chassis + Al plate + fasteners (ESTIMATE)
-    shell_mass: float = 0.45
+    struct_mass: float = 2.0       # FROM CAD (build-out, rnd/parts/base.py): pods, wheel shafts, KX74 wheel hubs, ribbed deck, cans, 8×61808, screws (was 1.4)
+    shell_mass: float = 0.33       # FROM CAD: four skirt quarters
     electronics_mass: float = 0.35 # DC-DC, CAN, flow sensor, wiring, e-stop
     lidar_mass: float = 0.15
     coupling_mass: float = 0.25    # upper/base coupling + cam lever + connector
