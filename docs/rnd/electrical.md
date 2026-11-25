@@ -38,6 +38,7 @@ Typical draw is far lower: the duty-cycle power budget averages **47 W ≈ 2.1 A
 | CAN B (USB-CAN #2) | left arm: 4 GIM + DM-J4310 | 1 Mbps | ~65 % |
 | CAN C (USB-CAN #3) | right arm: 4 GIM + DM-J4310 | 1 Mbps | ~65 % |
 | TTL 1 / TTL 2 / TTL 3 | left wrist roll + gripper / right ditto / head pan + tilt | 1 Mbps half-duplex | light |
+| Sensor nodes (on CAN A/B/C) | per arm: 4 joint-side AS5048A encoders (SPI) + 2 fingertip magnetometers + palm ToF (I²C); base: lift encoder + 4 cliff ToF | 500 Hz | +~10 % per bus |
 | USB3 | head RGB-D (Gemini 336), 2 wrist cameras, lidar | – | Pi 5 has 2 × USB3; use a powered USB3 hub |
 
 ## Connectors

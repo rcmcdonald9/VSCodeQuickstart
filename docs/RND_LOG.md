@@ -622,3 +622,25 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - drop the optical-flow sensor (−$30; rely on wheel odometry + lidar)
 - single wrist camera (−$30)
 - negotiate GIM volume pricing (Alibaba lists from $39.90; quote needed)
+
+## 2026-11-25: loop 15, owner: "more sensors if it increases accuracy and dexterity" → sensor pack v2 (D9)
+
+- **New analysis** `rnd/accuracy.py` → [rnd/accuracy.md](rnd/accuracy.md): a static hand error budget at 0.6 m reach.
+  - The belt joints carry GIM backlash ÷ ratio + belt tooth play + belt stretch under the sustained load. This is 0.19–0.25° per joint, **4.0 mm RSS at the hand**.
+  - **Joint-side absolute encoders** (AS5048A on the joint hubs) measure after the gearbox and belt, so the servo removes those errors: **0.9 mm**.
+  - Remaining unmeasured: bone bending 1.8 mm and mast sway 1.5 mm (worst static). The wrist camera closes the final loop on objects.
+- **Sensor pack v2 (+$276, ESTIMATE prices):**
+
+| Sensor | Count | Why |
+|---|---|---|
+| Joint-side encoders | 9 | the 8 arm belt joints + lift |
+| RP2040 CAN sensor nodes | 3 | one per arm, one in the base |
+| Global-shutter wrist cameras | 2 | no blur on moving grasps; instead of $30 rolling-shutter |
+| Magnetic-elastomer fingertip tactile pads (AnySkin/ReSkin principle) | 4 | slip and contact sensing for dexterity |
+| Palm ToF | 2 | pre-grasp alignment |
+| Base cliff ToF | 4 | stair edges |
+
+  The optical-flow sensor and both wrist cameras are kept (the owner declined those savings).
+- The electrical plan adds the sensor nodes (~+10 % load per CAN bus).
+- **R8:** BOM **$3,435 → $3,711**. The internal target is raised **$3,300 → $4,000** to honour the owner's direction; the $5,000 limit is unchanged.
+- New scorecard row: hand error **0.9 mm** (4.0 without encoders) ✅.

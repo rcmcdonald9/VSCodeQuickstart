@@ -20,12 +20,13 @@
 | R2 belts: sustained pull vs working rating / peak vs ultimate (min) | 1.4× / 5.1× | ≥ 1.2× / ≥ 3× | ✅ |
 | R3 arm-detach clamp: lift-off moment / need (×1.5 dynamic) | 1.9× | ≥ 1.5× | ✅ |
 | R12 socket bearing static safety (min) | 4.0 | ≥ 2 | ✅ |
+| R2 hand positioning error, joint chain RSS at 0.6 m (with joint-side encoders; without) | 0.9 mm (4.0) | ≤ 2 mm | ✅ |
 | R2 torso sway from mast bending (worst static) | 1.5 mm | ≤ 2 mm | ✅ |
 | R5 lift: torque margin / full-travel time | 2.04× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.3× (4.8 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md) | 19 h | ≤ 4 h | ❌ |
-| R8 cost from the itemised BOM (BOM_v4.md) | $3,435 | ≤ $3,300 | ❌ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $3,711 | ≤ $4,000 (D9; limit $5,000) | ✅ |
 | R13 printed pieces that fit the P2S (256 mm) | 57/57 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |

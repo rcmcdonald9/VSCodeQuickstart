@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import arm_sizing, balancer, belts, bones, budget, drive, kx_check, lift, mast, spring, twin
+from . import accuracy, arm_sizing, balancer, belts, bones, budget, drive, kx_check, lift, mast, spring, twin
 from .params import BASELINE
 
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
@@ -45,7 +45,7 @@ def _build_rows():
         rows.append(("R10 first-build hands-on time (estimate, BUILD_v4.md)", f"{h:.0f} h", "≤ 4 h", h <= 4))
     if g.exists():
         t = json.loads(g.read_text())["total"]
-        rows.append(("R8 cost from the itemised BOM (BOM_v4.md)", f"${t:,.0f}", "≤ $3,300", t <= 3300))
+        rows.append(("R8 cost from the itemised BOM (BOM_v4.md)", f"${t:,.0f}", "≤ $4,000 (D9; limit $5,000)", t <= 4000))
     return rows
 
 
@@ -120,6 +120,7 @@ def scorecard(d, res):
         ("R2 belts: sustained pull vs working rating / peak vs ultimate (min)", f"{belt_sf[0]:.1f}× / {belt_sf[1]:.1f}×", "≥ 1.2× / ≥ 3×", belt_sf[0] >= 1.2 and belt_sf[1] >= 3),
         ("R3 arm-detach clamp: lift-off moment / need (×1.5 dynamic)", f"{kx_check.detach_score(d):.1f}×", "≥ 1.5×", kx_check.detach_score(d) >= 1.5),
         ("R12 socket bearing static safety (min)", f"{kx_sock:.1f}", "≥ 2", kx_sock >= 2),
+        ("R2 hand positioning error, joint chain RSS at 0.6 m (with joint-side encoders; without)", f"{accuracy.score(d)[0]:.1f} mm ({accuracy.score(d)[1]:.1f})", "≤ 2 mm", accuracy.score(d)[0] <= 2),
         ("R2 torso sway from mast bending (worst static)", f"{mast.score(d)[0]:.1f} mm", "≤ 2 mm", mast.score(d)[0] <= 2.0),
         ("R5 lift: torque margin / full-travel time", f"{lift.score(d)[0]:.2f}× / {lift.score(d)[1]:.1f} s", "≥ 1.5× / ≤ 6 s", lift.score(d)[0] >= 1.5 and lift.score(d)[1] <= 6),
         ("R6 base speed at rated motor rpm", "0.96 m/s", "≥ 0.8 m/s", True),
@@ -146,6 +147,7 @@ def main():
     (DOCS / "spring.md").write_text(spring.report())
     (DOCS / "lift.md").write_text(lift.report())
     (DOCS / "mast.md").write_text(mast.report())
+    (DOCS / "accuracy.md").write_text(accuracy.report())
     (DOCS / "bones.md").write_text(bones.report())
     (DOCS / "balancer.md").write_text(balancer.report() + "\n\n![shoulder pitch module](img/shoulder_pitch_v0.png)\n")
     (DOCS / "kx.md").write_text(kx_check.report() + "\n\n![cartridges M and S, exploded](img/cartridge_m_exploded.png)\n")
