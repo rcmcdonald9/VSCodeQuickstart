@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import arm_sizing, budget, drive, twin
+from . import arm_sizing, budget, drive, kx_check, twin
 from .params import BASELINE
 
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
@@ -48,7 +48,9 @@ def scorecard(d, res):
     chosen = next(iter(next(iter(res.values()))["margin"]))
     cov = np.mean([v["coverage"] for v in res.values() if not v.get("info")])
     tip = min(v["margin"][chosen] for v in res.values())
+    kx_slip, kx_sock = kx_check.score(d)
     other_bom = 1250   # ESTIMATE: wheels, battery, cameras, lidar, electronics, structure, teaching rig (see V4_CONCEPT §3, T01)
+    other_bom += 100   # KX v1 hardware (ESTIMATE): ~16 sockets × (2 thin bearings + 6 pins + 3 balls + spring + PTFE washer)
     rows = [
         ("R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°)", f"{cov:.0%}", "≥ 95 %", cov >= 0.95),
         ("R2 two-handed tasks feasible", f"{sum(bi.values())}/{len(bi)}", "all", all(bi.values())),
@@ -59,6 +61,8 @@ def scorecard(d, res):
         ("R3 battery mass", f"{tot['battery']:.1f} kg", "≤ 3 kg", tot["battery"] <= 3),
         ("R7 runtime (estimated duty cycle)", f"{hours:.1f} h", "≥ 2 h", hours >= 2),
         ("R8 cost estimate", f"${act_cost + other_bom:,.0f} (actuators ${act_cost:,.0f} ×{n_act})", "≤ $3,300", act_cost + other_bom <= 3300),
+        ("R9 KX interface slip torque / actuator peak (min)", f"{kx_slip:.2f}×", "≥ 1.1×", kx_slip >= 1.1),
+        ("R12 socket bearing static safety (min)", f"{kx_sock:.1f}", "≥ 2", kx_sock >= 2),
         ("R6 base speed at rated motor rpm", "0.96 m/s", "≥ 0.8 m/s", True),
         ("R4 15 mm threshold torque (45° heading)", "3.7 N·m / 5 rated", "< rated", True),
         ("R10 assembly time", "not yet measured (needs CAD)", "≤ 4 h", None),
@@ -77,6 +81,7 @@ def main():
     (DOCS / "budget.md").write_text(budget.report())
     (DOCS / "arm_sizing.md").write_text(arm_sizing.report())
     (DOCS / "drivetrain.md").write_text(drive.report())
+    (DOCS / "kx.md").write_text(kx_check.report() + "\n\n![cartridges M and S, exploded](img/cartridge_m_exploded.png)\n")
     tw, res = twin_report(quick=quick)
     (DOCS / "twin.md").write_text(tw)
     (DOCS / "SCORECARD.md").write_text(scorecard(BASELINE, res))

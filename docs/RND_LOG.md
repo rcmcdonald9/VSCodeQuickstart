@@ -78,3 +78,40 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
 - Extra travel = telescoping spine (~0.6 kg + cascade belts) or a 1.26 m spine (harder to carry). Not worth it now.
 - **Decision D4b:** counter grasps use top-down **or** 45°, whichever is collision-free (100 %). Top-down-only stays as an info row. Scorecard reach: **93 % → 98 %** (definition change logged here: counters scored on the approach the robot will actually use).
 - **Next:** cartridge CAD (queue #2): find the GIM6010-8 mounting drawing first.
+
+## 2026-11-25: loop 2, cartridge standard (KX v1)
+
+**Picked:** queue #2. Every later CAD item depends on how a motor attaches to a bone.
+
+- **GIM6010-8 drawing:** not obtainable here (the vendor CDN is blocked; the one direct download was refused). The design isolates it: only the motor adapter and the can's bolt circle depend on the motor. Those numbers are flagged ESTIMATE, and there's a **slotted bolt-circle coupon** to read the real pattern when a motor arrives.
+- **KX v0 → v1 (reversal inside the loop).** v0 used a printed V-groove kinematic face on both sides of every cartridge. The load check killed it:
+
+| Finding | v0 | v1 |
+|---|---|---|
+| Bending through the interface | Arm moment up to **11.7 N·m** at the shoulder-roll cartridge, plus belt pull (~730 N at GIM peak on a 15 mm pulley) | **0**: cartridges carry torque only. The hub turns in a 61808/61805 bearing pair (static safety ≥ 5.6), and the housing is held by a torque pin in a radial slot (shaft-mounted gearbox precedent) |
+| Ball contact stress | 6 mm ball in printed PETG groove: **~200 MPa** (4× yield → dents, loses zero) | Ball on two hardened dowel pins: **3,226–3,554 MPa** (under the 4,200 MPa static limit for bearing steel) |
+| Preload / twist effort | 250 N needed (β 30°) → **4.2–6.3 N·m** twist | β 20°, Ø10 balls: **160 N → 2.1–2.7 N·m**, set by a spring stack on a PTFE washer (±13 % for a ±0.2 mm print error) |
+| Slip torque | – | **12.7 N·m** (1.16× GIM peak): the seat is also an overload clutch |
+
+- **Geometry verified in CAD:**
+  - Zero interference in the mated state.
+  - The male face inserts freely with the collar unlocked.
+  - Teeth clear the lugs for the first ~20° of twist, then ramp the collar up 1.0 mm over the last 10–15° (the preload stroke).
+  - The locked collar retains the lugs.
+- **Parts (`rnd/parts/`, STLs in `rnd/out/`):**
+  - KX74 / KX44: male adapter, hub with pin bores, collar, retainer
+  - cartridge M can with torque pin
+  - cartridge S sleeve for the STS3215 (horn adapter 4×M3 / 9.9 mm square)
+  - GIM6010 bolt-circle coupon
+- **Print times** (PrusaSlicer generic profile, 0.2 mm, PETG; the P2S should be ~3× faster, ESTIMATE):
+  - KX74 interface set (hub + collar + adapter + retainer): **8.5 h**
+  - cartridge M can: 4.4 h
+  - KX44 set: 3.9 h
+  - cartridge S sleeve: 1.5 h
+- **Analysis:** `rnd/kx_check.py` → [rnd/kx.md](rnd/kx.md). New scorecard rows: KX slip/peak **1.16×** ✅, socket bearing safety **5.6** ✅. Cost **$2,800 → $2,900** (+$100 KX hardware: bearings, pins, balls, springs, ESTIMATE).
+- **Housekeeping:** `__pycache__` removed from git; `.gitignore` added.
+- **Open:**
+  - the shaft-mounted principle moves belt loads onto separately supported pulley hubs (arm CAD must do this)
+  - the spring-stack part needs a real supplier
+  - a clutch slip of more than 120° needs a re-home (magnet index)
+- **Next:** arm CAD v0 (queue #3) with KX sockets; 2b follow-ups as they become blocking.

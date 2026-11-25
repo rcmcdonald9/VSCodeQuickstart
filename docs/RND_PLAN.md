@@ -64,7 +64,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | D1 | **Carry split:** upper (spine, lift, torso, arms, head) / base / battery, with a no-tools coupling and handles | Holding: upper 9.5 kg, base 5.8 kg (tight), battery 1.5 kg | [budget](rnd/budget.md) |
 | D2 | **Base: 4 × 6" omni, one wheel pointing forward, wheels at R 0.21 m, Ø500 shell.** *Reversed from 3-wheel kiwi:* kiwi tip margin was ~35–46 mm vs 66–82 mm | Changed 2026-11-25 | [twin](rnd/twin.md) |
 | D2b | Cross thresholds at a 45° heading; cap base acceleration at 1.0 m/s² with arms parked and 0.5 m/s² while manipulating; position from optical flow + IMU + lidar | New | [drivetrain](rnd/drivetrain.md) |
-| D3 | Joint cartridges: kinematic coupling + bayonet + captive screw; M (GIM6010-8 / DM-J4310) and S (STS3215); 24 V CAN 1 Mbps / 12 V TTL | Holding | [T01](rnd/T01_specs.md) |
+| D3 | **Joint cartridges carry torque only (KX v1).** The cartridge output has a KX male face: 3 hardened balls on 3 pairs of steel dowel pins, locked by a spring-preloaded breech-lock collar (35° twist, thumb tabs, self-locking 6° ramp). It locks into a **hub that turns in the bone's own bearing pair**, and the housing is held by a **steel torque pin in a radial slot**. Sizes: KX74 (M: GIM6010-8 / DM-J4310) and KX44 (S: STS3215). The seat doubles as an overload clutch (slip ≥ 1.16× actuator peak). Buses: 24 V CAN 1 Mbps / 12 V TTL. *Changed* from the same printed male face on both sides of every cartridge: that put arm bending (up to 12 N·m) and belt pull through printed V-grooves at 3–4× PETG yield. | Changed 2026-11-25 (loop 2) | [kx](rnd/kx.md) |
 | D4 | **Arm: 0.30 + 0.28 + 0.13 m, wrist ±120°** (loop 1: ±140° folded the hand into the forearm; ±120° gives more collision-free reach). **CAD requirement:** forearm bone ends ≥ 60 mm before the wrist axis. Shoulder pitch GIM × 2.5 belt + 85 % spring, roll GIM × 3, upper-arm yaw DM-J4310, elbow GIM × 2, wrist pitch **DM-J4310**, wrist roll and gripper STS3215. *Changed* from 0.25 + 0.23, ±110°, wrist STS (reach coverage 31 % → 100 %; STS wrist was under-rated) | Changed 2026-11-25 | [arm sizing](rnd/arm_sizing.md), [twin](rnd/twin.md) |
 | D4b | **Counter grasps use top-down or 45° approach, whichever is collision-free** (top-down alone reaches 62 % of counter cells, combined 100 %). Telescoping spine deferred: it would cost ~0.6 kg on a tight carry budget. Revisit if real tests show the need. | New (loop 1b) | [twin](rnd/twin.md) |
 | D5 | **Lift: shoulder height 0.35–1.05 m** (0.70 m travel); belt + stepper, with a brake or counterbalance (study pending) | Range changed (was 0.40–0.95) | [twin](rnd/twin.md) |
@@ -77,8 +77,14 @@ Done so far: T01 specs ✅, toolchain v0 (`rnd/`) ✅, budgets v0 ✅, drivetrai
 
 1. ~~Twin: collisions~~ ✅ loop 1: collision-free IK, wrist ±120°, bimanual 4/4.
 1b. ~~Counter top-down reach~~ → D4b (loop 1b). Shifting the shoulder range trades floor for counter; a telescoping spine (FRC-style cascade) is parked as an option.
-2. **Cartridge standard v0 CAD** (build123d): M and S cartridges, kinematic coupling + bayonet + detent + connector + cable path; tolerance-coupon prints. First find the GIM6010-8 mounting drawing.
-3. **Arm CAD v0:** bones with printed belt reductions (2–3:1), shoulder spring-assist module, wrist, gripper with camera.
+2. ~~Cartridge standard CAD~~ ✅ loop 2: KX v1 (torque-only cartridges, pin-groove seat, sprung collar), cartridges M and S, bolt-circle coupon, analysis in [kx](rnd/kx.md).
+2b. **Cartridge follow-ups:**
+    - blind-mate connector + cable path through the torque-pin side
+    - hub magnet index (Hall re-home after a clutch slip)
+    - spring stack choice (wave spring vs 6 coil springs): find real parts
+    - DM-J4310 adapter
+    - tolerance coupon results (owner prints when the P2S arrives: optional)
+3. **Arm CAD v0:** bones built around KX sockets (hub + 2 thin bearings + torque slot), printed belt reductions (2–3:1, the small pulley on its own hub so belt pull never loads the cartridge), shoulder spring-assist module, wrist, gripper with camera. **Check belt tooth load:** a 15 mm pulley sees ~730 N at GIM peak.
 4. **Base CAD v0:** 4-wheel diamond chassis, wheel cartridges, slide-out battery, upper/base coupling + cam lever + blind-mate connector, handles, bumper light.
 5. **Lift and spine:** compare a constant-force-spring counterbalance (smaller motor, safe if power is lost) against a brake motor; CAD for the carriage, cable chain and top handle.
 6. **Torso + head CAD:** electronics bay (Pi 5, CAN, DC-DC), visor, eyes, depth camera, mic, speaker, pan/tilt.
