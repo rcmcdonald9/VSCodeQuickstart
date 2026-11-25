@@ -30,7 +30,7 @@ QTY = {
     "KX44 hub": (4, "wrist roll ×2, head pan + tilt"), "KX44 collar": (4, ""), 
     "cartridge S sleeve": (4, ""), "cartridge S horn adapter": (4, ""),
     "small-pulley hub": (9, "pitch, roll, yaw, elbow ×2 + lift (KX74 hub + 20T/18T pulley + journals)"),
-    "upper bone": (2, ""), "forearm (ends)": (2, "elbow end, wrist can, CF socket"), "elbow pulley hub": (2, ""),
+    "upper bone": (2, ""), "upper bone cap": (2, "screw-on bottom cap: the cassette goes in from below"), "elbow cassette plate": (4, "2 per arm (A + B)"), "elbow cassette spacer": (4, ""), "forearm (ends)": (2, "elbow end, wrist can, CF socket"), "elbow pulley hub": (2, ""),
     "palm": (2, ""), "gripper grip_base": (2, ""), "gripper grip_servo_sleeve": (2, ""), "gripper jaw_moving": (2, ""), "gripper jaw_fixed": (2, ""),
     "shoulder bracket": (2, "mirror for the right arm"), "pitch shaft": (2, "60T pulley + balancer lever + female ferrule"),
     "ferrule (arm side)": (2, ""), "roll link": (2, ""), "roll shaft": (2, "72T pulley"), "clevis + yaw block": (2, ""), "yaw shaft": (2, "40T pulley + flange"),

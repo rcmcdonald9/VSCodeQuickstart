@@ -16,8 +16,13 @@ MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 from ..params import BASELINE as _D
 ROLL_Y, YAW_DROP = _D.arm.roll_offset_y * 1000, _D.arm.yaw_drop * 1000   # loop 10: 50 → 75, 70 → 100 (the Ø114 roll pulley)
 ROLL_C, YAW_C = 90.0, 80.0             # belt centres (rnd/belts.py); yaw 70 → 80 so the yaw collar clears the clevis
-J1, J2 = (10.2, 18.2), (35.6, 43.6)    # small-hub journal spans below the KX face (stage frame)
-PUL_C = 26.8                           # small-pulley centre below the KX face
+# small-hub journal spans below the KX face (stage frame), derived from the hub geometry (confidence campaign: the old
+# constants 10.2/18.2, 35.6/43.6, 26.8 predate the taller print-in-place hub and cut 2–3 mm into the hub and pulley)
+from .kx import hub_pip as _hub_pip
+_HUB_H = -_hub_pip(KX74).bounding_box().min.Z          # 12.2
+J1 = (_HUB_H + 0.4, _HUB_H + 7.8)                      # top journal 8 mm, bearing in a 7 mm eccentric bushing
+J2 = (_HUB_H + 8 + 1.2 + 16 + 1.2 + 0.3, _HUB_H + 33.4 + 0.4)
+PUL_C = _HUB_H + 8 + 1.2 + 8                           # small-pulley belt centre below the KX face
 
 
 def _stage(T):
@@ -67,7 +72,7 @@ def roll_shaft() -> Part:
 
 
 # yaw stage: yaw axis Z at (0, ROLL_Y); belt plane horizontal; cartridge above its hub at x = -YAW_C
-ZF = -YAW_DROP + 50.5                  # KX face of the yaw cartridge: bottom plate 1.9 mm above the flange, top plate 2.3 mm below the roll pulley
+ZF = -YAW_DROP + 52.9                  # KX face of the yaw cartridge: bottom plate 1.9 mm above the flange, top plate 2.3 mm below the roll pulley (journals re-derived: +2.4)
 YAW_T = Pos(-YAW_C, ROLL_Y, ZF)
 P1 = (ZF - J1[1], ZF - J1[0])          # top plate z-span
 P2 = (ZF - J2[1], ZF - J2[0])          # bottom plate z-span
@@ -80,6 +85,10 @@ def clevis_and_yaw_block() -> Part:
         pl -= Pos(0, ROLL_Y, 0) * Cylinder(26, 400)                                # 61808 seat, yaw shaft
         pl -= Pos(-YAW_C, ROLL_Y, 0) * Cylinder(19.1, 400)                        # eccentric-bushing seat, small hub
         p = pl if p is None else p + pl
+    # confidence campaign (FEA): the bottom plate was a free solid. Four Ø14 posts outside the belt loop tie it to the top plate
+    # (M5 through-bolts; the belt and both pulleys go in before the bottom plate)
+    for xx, yy in ((-YAW_C / 2, ROLL_Y - 38), (-YAW_C / 2, ROLL_Y + 38), (-YAW_C - 24, ROLL_Y - 38), (-YAW_C - 24, ROLL_Y + 38)):
+        p += Pos(xx, yy, P2[1]) * (Cylinder(7, P1[0] - P2[1], align=MIN) - Cylinder(2.75, P1[0] - P2[1], align=MIN))
     for x0, x1 in ((W1[0] - 12, W1[0] - 2), (W2[1] + 2, W2[1] + 12)):            # clevis arms outside the walls
         arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 26, 10)           # arms end on the top plate (yaw pulley below is clear)
         arm -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(20.2, 100)           # clamps on the roll shaft ends
@@ -89,7 +98,7 @@ def clevis_and_yaw_block() -> Part:
 
 def yaw_shaft() -> Part:
     s = Pos(0, ROLL_Y, -YAW_DROP) * (Cylinder(20, P1[1] - (-YAW_DROP) + 4, align=MIN) - Cylinder(14, 200, align=MIN))
-    s += Pos(0, ROLL_Y, P2[1] + 0.6) * pulley(40, 16, flange=False, bore=28)
+    s += Pos(0, ROLL_Y, ZF - PUL_C - 8) * pulley(40, 16, flange=False, bore=28)          # on the small pulley's belt plane
     s += Pos(0, ROLL_Y, -YAW_DROP) * (Cylinder(45, 5, align=MIN) - Cylinder(14, 5, align=MIN))   # flange → upper bone
     return s
 

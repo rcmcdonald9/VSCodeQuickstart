@@ -28,7 +28,7 @@ def printed_parts():
               "cartridge S horn adapter": cs.horn_adapter(), "cartridge D can": hand.can_d(), "cartridge D adapter": hand.adapter_d(),
               "small-pulley hub": bs.small_hub(), "pulley 40T": bs.pulley(40), "pulley 60T": bs.pulley(60, flange=False),
               "pulley 72T": bs.pulley(72, flange=False),
-              "upper bone": arm.upper_bone(), "forearm (ends)": arm.forearm(), "elbow pulley hub": arm.elbow_pulley_hub(),
+              "upper bone": arm.upper_bone(), "upper bone cap": arm.bone_cap(), "elbow cassette plate": arm.cassette_plate("B"), "elbow cassette spacer": arm.cassette_spacer(), "forearm (ends)": arm.forearm(), "elbow pulley hub": arm.elbow_pulley_hub(),
               "palm": hand.palm(), "fin-ray finger": hand.fin_ray(-125, -162, 21.0, 18, 28, -1), **{f"gripper {n}": p for n, p, c in hand.gripper_parts() if n in ("grip_base", "grip_servo_sleeve", "jaw_moving", "jaw_fixed")},
               "shoulder bracket": shoulder.bracket(), "pitch shaft": shoulder.pitch_shaft(), "ferrule (arm side)": shoulder.ferrule(True),
               "roll link": roll.roll_link(), "roll shaft": roll.roll_shaft(), "clevis + yaw block": roll.clevis_and_yaw_block(), "yaw shaft": roll.yaw_shaft(),

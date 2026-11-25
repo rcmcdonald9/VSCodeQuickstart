@@ -84,16 +84,31 @@ Each scheduled run (and any interactive session) does one **loop**:
 - electrical plan, itemised BOM ($3,220), print plan (10.4 kg, ~255 h P2S) and build guide (~25 h hands-on)
 - see [BUILD_v4.md](BUILD_v4.md)
 
-Next (state after loop 17; the hourly loop continues from here):
-1. **R10 assembly time** (22 h vs 4 h, the one failing metric). Owner decision pending on splitting the target (one arm ≤ 4 h / robot ≤ 15 h). Levers: fewer distinct printed parts, snap-in cartridge cans, harness kits.
-2. **Coupon round C1: package READY** ([COUPONS.md](COUPONS.md), loop 18). It needs the owner's P2S and ~$25 of small parts:
+Next (state after the confidence campaign; the hourly loop continues from here). **Items 1–3 come first: they are real design gaps found by the new checks.**
+1. **Torque-reaction path for every cartridge** ([integration.md](rnd/integration.md): 18/19 pins land in air). Each can's Ø6 rear torque pin needs a radial slot in structure. Proposed standard part:
+    - an axial key rib along every can, engaging a radial notch in a printed **bay ring** on the nearest wall/plate
+    - or, where the can sits in free space, a **torque strap** from the nearest wall to the can rear
+    - stages: pitch ×2, roll ×2, yaw ×2, elbow ×2, wrist pitch ×2, wrist roll ×2, wheels ×4, lift, head pan
+    - FEA each slot at peak motor torque (GIM 11 N·m at r 30 → 367 N)
+    - make `rnd.integration` pass
+2. **Shoulder pitch stage: re-derive the walls from the hub geometry**, as done for roll/yaw.
+    - Measured: the KX74 hub flange cuts 2 mm into the inner wall (10.4 cm³), and the outer wall overlaps the pulley flange by ~2.5 mm.
+    - Hub face at y ≈ −58: journal 1 −45.8…−37.8, pulley flanges −37.8…−19.4, journal 2 −19.4…−12.0, belt centre −28.6.
+    - Check the 60T pulley plane on the pitch shaft, the balancer and Y_FER after moving W_IN/W_OUT.
+3. **Elbow: collar vs housing top/corners (1.8 cm³) and forearm hub disc vs the +Y elbow boss (2.7 cm³, rotating).**
+    - Collar Ø98 at the cartridge bay: housing too small. Raise HOUSING z1, or reduce the corner radius on the −Y side.
+    - Forearm: move FORE_Y out ~2 mm, or recess the boss.
+    - Then design the elbow bay ring for item 1.
+4. Remaining confidence-campaign sims: KX Monte Carlo (tolerance, μ, spring) + PETG creep under the KX preload and belt tension; threshold/carpet Monte Carlo.
+5. **R10 assembly time** (22 h vs 4 h, the one failing metric). Owner decision pending on splitting the target (one arm ≤ 4 h / robot ≤ 15 h). Levers: fewer distinct printed parts, snap-in cartridge cans, harness kits.
+6. **Coupon round C1: package READY** ([COUPONS.md](COUPONS.md), loop 18). It needs the owner's P2S and ~$25 of small parts:
     - print-in-place KX socket, eccentric bushing, GIM bolt-circle coupon
     - HTD pulley vs a real belt, ratchet + pawl
     - fin-ray finger (TPU)
     - measure, then replace the ESTIMATEs
-3. **Milestone M1 (buy decision for the owner):** priced at ≈ $1,100 ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)); everything except the bench PSU is reused in the full robot.
-4. **Twin v2:** belt/bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day simulation.
-5. **Looks:** wheel fender lips; head face/eye light language; colour options for owner approval.
-6. **Research watch (every ~6 loops):** GIM volume quote, DM-J4310 drawing, sensor prices (D9 lines are ESTIMATEs).
+7. **Milestone M1 (buy decision for the owner):** priced at ≈ $1,100 ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)); everything except the bench PSU is reused in the full robot.
+8. **Twin v2:** belt/bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day simulation.
+9. **Looks:** wheel fender lips; head face/eye light language; colour options for owner approval.
+10. **Research watch (every ~6 loops):** GIM volume quote, DM-J4310 drawing, sensor prices (D9 lines are ESTIMATEs).
 
 **Earlier queue history** is in [RND_LOG.md](RND_LOG.md).

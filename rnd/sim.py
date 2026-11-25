@@ -198,9 +198,38 @@ def _plan(d: Design = BASELINE):
 
 
 # ------------------------------------------------------------------ simulation
-def run(d: Design = BASELINE, video: bool = True, can_offset=(0.0, 0.0), can_mass=None, wrist_cam: bool = True, seed: int = 0):
+def apply_perturb(m, pt):
+    """Monte Carlo imperfections (rnd/mc.py): torque derating, heavier arms, joint friction (gears/belts), finger friction."""
+    names = lambda obj, i: mujoco.mj_id2name(m, obj, i) or ""
+    for i in range(m.nu):
+        n = names(mujoco.mjtObj.mjOBJ_ACTUATOR, i)
+        if n.startswith(("a_pitch", "a_roll", "a_yaw", "a_elbow", "a_wpitch", "a_wroll", "a_lift", "a_base")):
+            m.actuator_forcerange[i] *= pt.get("derate", 1.0)
+    for b in range(m.nbody):
+        n = names(mujoco.mjtObj.mjOBJ_BODY, b)
+        if n.startswith(("sh_", "roll_", "upper_", "fore_", "wrist_", "hand_")):
+            m.body_mass[b] *= pt.get("mass", 1.0)
+            m.body_inertia[b] *= pt.get("mass", 1.0)
+    for j in range(m.njnt):
+        n = names(mujoco.mjtObj.mjOBJ_JOINT, j)
+        if n.split("_")[0] in ("pitch", "roll", "yaw", "elbow", "wpitch"):
+            m.dof_frictionloss[m.jnt_dofadr[j]] = pt.get("joint_friction", 0.0)
+    for g in range(m.ngeom):
+        if names(mujoco.mjtObj.mjOBJ_BODY, m.geom_bodyid[g]).startswith("finger_"):
+            m.geom_friction[g][0] = pt.get("finger_mu", 1.0)
+    # body_subtreemass is cached at compile time and MuJoCo's subtree COM divides by it: refresh it after the mass change
+    m.body_subtreemass[:] = m.body_mass
+    for b in range(m.nbody - 1, 0, -1):
+        m.body_subtreemass[m.body_parentid[b]] += m.body_subtreemass[b]
+
+
+def run(d: Design = BASELINE, video: bool = True, can_offset=(0.0, 0.0), can_mass=None, wrist_cam: bool = True, seed: int = 0,
+        perturb: dict | None = None):
     """can_offset: where the can really is vs. where the robot believes it is (perception error)."""
     m = mujoco.MjModel.from_xml_string(build_xml(d, can_offset, can_mass))
+    if perturb:
+        apply_perturb(m, perturb)
+    calib = np.asarray((perturb or {}).get("calib", np.zeros(len(ARM))))      # joint zero errors (rad), unseen by the planner
     dat = mujoco.MjData(m)
     aid = {mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_ACTUATOR, i): i for i in range(m.nu)}
     jad = lambda n: m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, n)]
@@ -225,7 +254,7 @@ def run(d: Design = BASELINE, video: bool = True, can_offset=(0.0, 0.0), can_mas
     poly = twin.support_polygon("xdrive", d.base.wheel_radius_pos, 0)
     names = [f"a_{j}_r" for j in ARM] + ["a_lift", "a_base_x", "a_base_y", "a_fing_a_r"]
     force_log = {n: [] for n in names}
-    zmp_log, com_prev, vel_prev, t_log, seg_log = [], None, None, [], []
+    zmp_log, com_prev, vel_prev, t_log, seg_log, com_log = [], None, None, [], [], []
     renderer = mujoco.Renderer(m, 480, 640) if video else None
     cam = mujoco.MjvCamera(); cam.type = mujoco.mjtCamera.mjCAMERA_FREE
     cam.distance, cam.elevation, cam.azimuth = 2.6, -18, -60
@@ -289,8 +318,8 @@ def run(d: Design = BASELINE, video: bool = True, can_offset=(0.0, 0.0), can_mas
             qa = q_from if k == 0 else qs[k - 1]
             q_t = qa + min_jerk(seg_s) * (qs[k] - qa)
             dat.ctrl[aid["a_lift"]] = q_t[0]
-            for j, v in zip(ARM, q_t[1:]):
-                dat.ctrl[aid[f"a_{j}_r"]] = v
+            for j, v, c in zip(ARM, q_t[1:], calib):
+                dat.ctrl[aid[f"a_{j}_r"]] = v + c
             bx = bA[0] + min_jerk(s) * (bB[0] - bA[0]); by = bA[1] + min_jerk(s) * (bB[1] - bA[1])
             dat.ctrl[aid["a_base_x"]], dat.ctrl[aid["a_base_y"]] = bx, by
             # finger slide q: 0 = fully open (100 mm), 0.05 = closed; closing commands full travel so the
@@ -315,6 +344,7 @@ def run(d: Design = BASELINE, video: bool = True, can_offset=(0.0, 0.0), can_mas
                         zmp = com[:2] - com[2] / G * acc[:2]
                         base = np.array([dat.qpos[jad("base_x")], dat.qpos[jad("base_y")]])
                         zmp_log.append(twin.margin(poly, zmp - base))
+                        com_log.append(np.r_[com - np.r_[base, 0], acc])
                         t_log.append(t); seg_log.append(name)
                     vel_prev = vel
                 com_prev = com
@@ -330,8 +360,8 @@ def run(d: Design = BASELINE, video: bool = True, can_offset=(0.0, 0.0), can_mas
     tc, th = TABLE["center"], TABLE["half"]
     on_table = (abs(can_pos[0] - tc[0]) < th[0] and abs(can_pos[1] - tc[1]) < th[1] and abs(can_pos[2] - (TABLE["top"] + CAN["h"] / 2)) < 0.02)
     upright = abs(dat.xmat[can].reshape(3, 3)[2, 2]) > 0.95
-    return dict(force=force_log, zmp=np.array(zmp_log), t=np.array(t_log), seg=seg_log, can=can_pos, ok=bool(on_table and upright),
-                frames=frames, model=m, trace=trace, table_hits=table_hits)
+    return dict(force=force_log, zmp=np.array(zmp_log), com=np.array(com_log), t=np.array(t_log), seg=seg_log, can=can_pos, ok=bool(on_table and upright),
+                frames=frames, model=m, trace=trace, table_hits=table_hits, data=dat)
 
 
 def limits(d: Design = BASELINE):

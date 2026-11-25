@@ -706,3 +706,23 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - **`rnd/m1_kit.py` → [M1_BENCH_ARM.md](M1_BENCH_ARM.md):** the one-arm bench kit, **≈ $1,096**. This corrects the ~$750 quoted to the owner earlier, which was a guess before itemising.
   - Contents: 4 GIM + DM-J4310 + 2 STS, bearings, KX hardware, belts, CF tubes, V-band, balancer, the arm's sensor pack, wrist camera, adapters, bench PSU + e-stop, filament.
   - Everything except the PSU is reused in the full robot.
+
+## 2026-11-25: confidence campaign (owner: "I need the percentages of confidence higher, run some more simulations")
+
+- **Monte Carlo of the dynamic fetch task** (`rnd/mc.py`, 4 workers): 100 runs with derate, mass, friction, calibration, μ, can mass and position errors.
+  - Result: **100/100 (95 % LB 96 %)**, actuator use ≤ 47 %, tip margin ≥ 68 mm.
+  - A first pass showed −10 mm tip margins. Cause: `apply_perturb` scaled `body_mass` without refreshing MuJoCo's cached `body_subtreemass`, which skewed the subtree COM. Fixed.
+- **FEA** (`rnd/fea.py`, gmsh + scikit-fem) of 7 critical printed parts: KX74 collar, elbow housing, elbow cassette plate, wheel pod, shoulder bracket, roll link, clevis/yaw block.
+  - **It found the elbow small-pulley hub unsupported.** Its journals were 30 mm from the walls, and belt peak loaded the 1.2 mm shell (28 MPa, 14 mm).
+  - → **Elbow belt cassette:** 2 × 7 mm plates on their own 61808s, eccentric bushings, M5 posts, anti-rotation pin in a radial slot. It goes in through a new screw-on **bone cap**. +0.11 kg per arm (params).
+  - Also fixed: the 40T elbow pulley was 9.4 mm out of the belt plane (`BELT_Y`).
+  - The clevis bottom yaw plate was a free solid: 2 posts added.
+- **Roll/yaw stage journal constants re-derived from the hub geometry.** The old values predated the taller print-in-place hub: ~20 cm³ of hub/wall clashes, belts 2.6 mm out of plane. ZF +2.4 mm keeps both plate clearances.
+- **Thermal** (`rnd/thermal.py`): hottest motor 55 °C on a non-stop task day in the MC worst corner; worst-pose holds unlimited (ESTIMATE constants).
+- **New `rnd/integration.py`:**
+  - **18/19 cartridge torque pins land in air.** No stage models the slot. → queue item 1, a standard bay-ring/strap design.
+  - Clashes inside modules, which the whole-robot check skipped: shoulder stale-hub (queue item 2); elbow collar/forearm (queue item 3).
+- Confidence table: [rnd/confidence.md](rnd/confidence.md).
+  - Overall first build ≈ 55 % today, ≈ 65–70 % after queue items 1–3.
+  - Staged build ≈ 90 %.
+  - KX and creep stay capped until the C1 coupons.

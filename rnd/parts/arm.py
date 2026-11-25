@@ -25,6 +25,12 @@ BELT_C = 70.0               # elbow belt centre distance (rnd/belts.py)
 HOUSING = dict(x=98.0, y=108.0, z0=-ELBOW_Z - 42.0, z1=-ELBOW_Z + 70.0 + 48.0)
 J4310 = dict(od=57.0, h=46.0)   # DM-J4310 (actuators.yaml)
 FORE_Y = HOUSING["y"] / 2 + 12.0  # forearm link centre plane (+Y side link)
+# elbow belt cassette (housing frame, y spans of the two plates): set by the small-pulley hub's journals, whose position
+# is fixed by the cartridge stack (hub face at y = -20). Belt plane: small pulley y 1.4 … 17.4.
+BELT_Y = 9.4
+CAS_A, CAS_B = (-7.4, -0.4), (18.9, 25.9)      # 0.4 / 0.3 mm axial clearance to the hub back face and the pulley flanges
+CAS_POST_X, CAS_POST_Z = 32.0, -ELBOW_Z + BELT_C - 10.0
+CAP_Z = HOUSING["z0"] + 10.0          # housing / bottom-cap split
 WRIST_Y0, WRIST_Y1 = 43.0, 96.0   # wrist can span (holds the DM-J4310 cartridge; its KX56 face at y ≈ 33.6, hand centre at y = 0)
 
 
@@ -49,16 +55,63 @@ def upper_bone() -> Part:
         p += Pos(0, 0, z) * (Cylinder(23, 22, align=MIN) - Cylinder(20.1, 22, align=MIN))
     hz = h["z1"] - h["z0"]
     p += Pos(0, 0, (h["z0"] + h["z1"]) / 2) * soft_shell(h["x"], h["y"], hz, 34, 26, WALL)     # looks pass: soft on every edge
-    # bearing bosses through the ±Y walls: elbow axis (61808, OD 52) and the pulley-hub journals (61804, OD 32)
+    # bearing bosses through the ±Y walls: elbow axis (61808, OD 52). The small-pulley hub runs in the elbow belt
+    # cassette (confidence campaign: FEA showed the shell can't carry belt tension; the journals never reached the walls)
     for y in (-h["y"] / 2, h["y"] / 2):
-        for z, od in ((-ELBOW_Z, 52.0), (-ELBOW_Z + BELT_C, 38.2)):      # small hub sits in an eccentric bushing (loop 10)
-            p += Pos(0, y, z) * Rot(90, 0, 0) * _ring(od + 10, od, 8)
+        p += Pos(0, y, -ELBOW_Z) * Rot(90, 0, 0) * _ring(52.0 + 10, 52.0, 8)
+    # anti-rotation slot block for the cassette pin (slot radial to the elbow axis, so belt tension never reaches the shell)
+    p += Pos(0, (CAS_B[1] + 10 + h["y"] / 2 - WALL) / 2, -92) * (Box(16, h["y"] / 2 - WALL - CAS_B[1] - 10, 16)
+                                                                - Box(5.4, 40, 12))
     # openings: cartridge bay on -Y (the cartridge drops in from the side), elbow hub exit on +Y
     p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(cm.MOTOR["od"] / 2 + 4, 20)
     p -= Pos(0, h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20)
-    # torque-pin slot for the elbow cartridge (radial slot, 6.4 wide)
-    p -= Pos(0, -h["y"] / 2 + 1, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Pos(30 + 5, 0, 0) * Box(16, 6.4, 12)
+    # (the old torque-pin slot cut here sat inside the bay hole and removed nothing: the cartridge torque-reaction path is
+    #  open on every stage — see rnd/integration.py and the RND_PLAN queue)
+    # bottom cap is a separate print (bone_cap()): the cassette goes in from below
+    return p - Pos(0, 0, CAP_Z) * Box(200, 200, 100, align=(Align.CENTER, Align.CENTER, Align.MAX))
+
+
+def bone_cap() -> Part:
+    """Screw-on bottom cap of the elbow housing (4 × M3 into heat-set inserts in the corners, ESTIMATE) with a 5 mm
+    locating spigot. It closes the opening the elbow belt cassette is inserted through."""
+    h = HOUSING
+    hz = h["z1"] - h["z0"]
+    full = Pos(0, 0, (h["z0"] + h["z1"]) / 2) * soft_shell(h["x"], h["y"], hz, 34, 26, WALL)
+    cap = full & Pos(0, 0, CAP_Z) * Box(200, 200, 100, align=(Align.CENTER, Align.CENTER, Align.MAX))
+    lx, ly = h["x"] - 2 * WALL - 12.6, h["y"] - 2 * WALL - 12.6                           # clears the soft bottom edge (r 26)
+    lip = _rbox(lx, ly, 5, 26.5) - _rbox(lx - 3.2, ly - 3.2, 5, 24.9)                     # open 1.6 mm ring
+    return cap + Pos(0, 0, CAP_Z + 2.5) * lip
+
+
+def cassette_plate(side: str = "B") -> Part:
+    """Elbow belt cassette (confidence campaign): one of two 7 mm plates that carry the small-pulley hub (61804 in an
+    eccentric bushing, Ø38.2 seat) and ride on the elbow pulley hub on their own 61808 (Ø52 seat). The belt loop closes
+    inside the cassette. Plate B has the anti-rotation pin tab. Housing frame."""
+    from build123d import Sketch, Circle, Rectangle, make_hull, extrude, Plane, Locations
+    y0, y1 = CAS_A if side == "A" else CAS_B
+    zE, zS = -ELBOW_Z, -ELBOW_Z + BELT_C
+    t = y1 - y0
+    disc = lambda x, z, r: Pos(x, y0, z) * Rot(-90, 0, 0) * Cylinder(r, t, align=MIN)
+    p = disc(0, zE, 31) + disc(0, zS, 27)
+    # web between the seats (hull approximated by a tapered box)
+    p += Pos(0, y0 + t / 2, (zE + zS) / 2) * Box(54, t, BELT_C)
+    for x in (-CAS_POST_X, CAS_POST_X):
+        p += disc(x, CAS_POST_Z, 7.5) + Pos(x / 2, y0 + t / 2, CAS_POST_Z) * Box(abs(x), t, 14)
+        p -= disc(x, CAS_POST_Z, 2.75)                                    # M5 through-bolt
+    if side == "B":
+        p += Pos(0, y0 + t / 2, (zS + 27 - 12 + -92) / 2) * Box(16, t, (-92) - (zS + 27 - 12) + 6)
+    p -= disc(0, zE, 26) + disc(0, zS, 19.1)
     return p
+
+
+def cassette_spacer() -> Part:
+    """Spacer tube between the cassette plates (2 per cassette), Ø14 over an M5 bolt."""
+    return Pos(0, CAS_A[1], CAS_POST_Z) * Rot(-90, 0, 0) * (Cylinder(7, CAS_B[0] - CAS_A[1], align=MIN)
+                                                            - Cylinder(2.75, CAS_B[0] - CAS_A[1], align=MIN))
+
+
+def cassette() -> Part:
+    return cassette_plate("A") + cassette_plate("B") + sum((Pos(x, 0, 0) * cassette_spacer() for x in (-CAS_POST_X, CAS_POST_X)), Part())
 
 
 def forearm() -> Part:
@@ -96,7 +149,7 @@ def elbow_pulley_hub() -> Part:
     """40T elbow pulley + Ø40 shaft (runs in 2 × 61808) + bolt flange for the forearm."""
     from .belt_stage import pulley
     p = Pos(0, 0, 0) * Rot(90, 0, 0) * Cylinder(20, HOUSING["y"] + 12)
-    p += Rot(-90, 0, 0) * Pos(0, 0, -8) * pulley(40, 16)
+    p += Pos(0, BELT_Y, 0) * Rot(-90, 0, 0) * Pos(0, 0, -8) * pulley(40, 16)      # on the small pulley's belt plane
     return p - Rot(90, 0, 0) * Cylinder(15, 300)              # hollow shaft (cable pass-through to the forearm)
 
 
@@ -128,7 +181,7 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     from .belt_stage import small_hub, belt_loop, pulley
     from .cartridge_s import sleeve, servo_dummy
     from .kx import collar, balls_mated
-    out = [("upper_bone", upper_bone(), "white")]
+    out = [("upper_bone", upper_bone(), "white"), ("bone_cap", bone_cap(), "white"), ("e_cassette", cassette(), "dark")]
     # elbow stage, built in the stage frame (cartridge +Z, big pulley at +X), then mapped: +Z→-Y, +X→-Z
     st = Pos(0, -20, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Rot(0, 0, -90)
     zc = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]
