@@ -76,47 +76,38 @@ Each scheduled run (and any interactive session) does one **loop**:
 
 ## 4. Work queue (ordered; edit freely)
 
-Done so far: T01 specs ✅, toolchain v0 (`rnd/`) ✅, budgets v0 ✅, drivetrain v0 ✅, twin v0 reach and tip-over ✅, arm sizing v0 ✅.
+**Milestone M2 reached (2026-11-25 build-out session):**
+- every module in CAD; full assembly with 0 cross-module clashes; 59/59 printed pieces fit the P2S
+- dynamic twin v1 completes a drive + floor pick + table place within real actuator limits (8/8 robust)
+- electrical plan, itemised BOM ($3,220), print plan (10.4 kg, ~255 h P2S) and build guide (~25 h hands-on)
+- see [BUILD_v4.md](BUILD_v4.md)
 
-1. ~~Twin: collisions~~ ✅ loop 1: collision-free IK, wrist ±120°, bimanual 4/4.
-1b. ~~Counter top-down reach~~ → D4b (loop 1b). Shifting the shoulder range trades floor for counter; a telescoping spine (FRC-style cascade) is parked as an option.
-2. ~~Cartridge standard CAD~~ ✅ loop 2: KX v1 (torque-only cartridges, pin-groove seat, sprung collar), cartridges M and S, bolt-circle coupon, analysis in [kx](rnd/kx.md).
-2b. **Cartridge follow-ups:**
-    - blind-mate connector + cable path through the torque-pin side
-    - hub magnet index (Hall re-home after a clutch slip)
-    - spring stack choice (wave spring vs 6 coil springs): find real parts
-    - DM-J4310 adapter
-    - tolerance coupon results (owner prints when the P2S arrives: optional)
-3. **Arm CAD v0** (in progress):
-    - ✅ loop 3: belt stages, pulleys, small-pulley hub
-    - ✅ loop 4: upper bone + forearm (side link, wrist output facing the centre plane); masses from CAD (0.93 kg of structure per arm vs 0.45 estimated); arm detaches at the shoulder
-    - ✅ loop 5: balancer study + whole-workspace torque check → yaw GIM × 2, roll 3.5:1
-    - ✅ loop 7: shoulder pitch module CAD (0.81 kg) with the balancer and the KX-V detach flange; interference-checked
-    - ✅ loops 8–9: diet + stiffness. Bones are already thin (–70 g/arm with CF); arm mass is ~60 % actuators + belt stages, so the 2.5 kg/arm target is dropped (carry passes at 3.4 kg). CF tubes fixed the real problem: stiffness.
-    - roll stage CAD (arm side, replaces the 0.60 kg ESTIMATE)
-    - wrist + gripper with camera; DM-J4310 cartridge CAD (KX56)
-    - joint compliance (belt stretch, bearing play) → hand sag budget (twin v1)
-    - mass diet: ribbed 1.2 mm shells, a smaller elbow housing, a printed-pulley web. Target: arm ≤ 2.5 kg
-    - ✅ loop 6: real joint widths in the twin (CAD collision hulls); the idle arm re-parks when needed
-4. **Base CAD v0:** 4-wheel diamond chassis, wheel cartridges, slide-out battery, upper/base coupling + cam lever + blind-mate connector, handles, bumper light.
-5. **Lift and spine:** ✅ loop 8 study → D5. Next: CAD for the carriage, ratchet + pawl, cable chain and top handle.
-6. **Torso + head CAD:** electronics bay (Pi 5, CAN, DC-DC), visor, eyes, depth camera, mic, speaker, pan/tilt.
-6b. **Arm detach plug:** blind-mate 24 V + CAN connector beside the shoulder KX (pogo pins or an XT30 + JST-GH pair in a printed float mount).
-7. **Electrical architecture:** 24 V single-line diagram, e-stop chain, fusing, BMS, DC-DC sizing, CAN topology, connector standard.
-8. **Twin v1 from CAD:** ✅ arm collision hulls (loop 6). Still to do: shoulder/torso/base hulls once drawn, masses and inertias from the geometry; **dynamic** MuJoCo with actuator models (pick-and-place motion, base acceleration, carpet friction); re-verify the scorecard.
-9. **Industrial design pass:** shells, colour and material, light language, carry mode, exploded view; Blender hero renders.
-    - **Problems seen in the first whole-robot render (robot_v0.png):**
-      - the bare spine sticks up through and above the head
-      - the elbow housings are boxy and oversized
-      - the shoulders read as bolted-on brackets
-      - the base is a plain puck
-    - **Options:**
-      - ✅ head on the mast top (D8)
-      - the mast is now the visual spine: give it a cover with a light strip and a cable channel
-      - wrap the elbow stage in a shaped shell
-      - integrate the shoulders into the torso shell
-10. **BOM, cost and assembly time;** carry split validated from CAD masses.
-11. **Milestone M1: Phase-1 desk-arm build package** (cartridges + one arm + desk mount + leader arm). Ask the owner: buy?
-12. **Research watch (recurring, every ~6 loops):** new or cheaper actuators, better precedents, price changes. Challenge the big decisions (two arms vs one, lift vs taller arms, omni vs other drive).
+Next (the hourly loop resumes here):
+1. **R10 assembly time (25 h vs 4 h target, the one failing metric):**
+    - KX hubs with print-in pins / snap retainers and a press jig
+    - belt-tension cams
+    - pre-crimped harnesses
+    - fewer distinct parts
+2. **Industrial design pass (R11):**
+    - shaped shells over the elbow stages and shoulders
+    - mast cover with a light strip (the "long neck")
+    - head face/visor language
+    - base skirt detail
+    - hero renders for owner approval
+3. **Coupon round (needs the owner's P2S):**
+    - KX74 interface set
+    - GIM bolt-circle coupon
+    - HTD 5M pulley vs a real belt
+    - ratchet strip + pawl
+    - measure, then update the ESTIMATEs
+4. **Twin v2:**
+    - belt and bearing compliance in the hand-sag budget
+    - omni-roller contact model for carpet and thresholds
+    - second task: two-handed box lift
+    - battery-runtime simulation over a task day
+5. **Research watch:**
+    - verify the ESTIMATE prices and bearing/belt ratings against catalogues (Gates and SKF manuals are blocked here)
+    - look for a 6S pack with a ≥ 30 A BMS
+6. **Milestone M1 (desk-arm build package):** ask the owner whether to buy one arm's actuators for a bench test.
 
-**Milestones:** M1 desk-arm package → M2 full-robot CAD + twin v1 → M3 complete build package (STLs, BOM, assembly guide, wiring).
+**Earlier queue history** is in [RND_LOG.md](RND_LOG.md).

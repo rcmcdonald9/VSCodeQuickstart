@@ -469,3 +469,18 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
 - Min dynamic tip margin **78 mm**.
 - **Robustness:** ±15 mm perception error × 0.2–0.6 kg → **8/8 succeed** open-loop and **8/8** with the wrist-camera re-measure (σ 3 mm, ESTIMATE).
 - Scorecard rows added (cached from the last `python -m rnd.sim`).
+
+## Build-out step 7: electrical, BOM, print plan, build guide → milestone M2
+
+- **Electrical** (`rnd/electrical.py` → [rnd/electrical.md](rnd/electrical.md)):
+  - 40 A main fuse; e-stop contactor on the motor bus while logic stays up; branches 20/15/15/10 A plus 12 V and 5 V DC-DC.
+  - 3 CAN buses at ~65 % load (500 Hz) and 3 TTL buses.
+  - Detach and coupling plugs: XT30/XT60 + pogo blocks.
+  - Safe-stop-1 e-stop behaviour.
+  - **New finding:** the pack's BMS must handle **≥ 30 A continuous, ~68 A for 1 s**. Common 10–15 A 6S BMS boards would trip.
+- **Print plan** (`rnd/print_plan.py`, every part sliced with PrusaSlicer): **10.4 kg PETG** (~$210), 730 h generic ≈ **255 h on the P2S** (ESTIMATE factor 0.35).
+- **BOM** (`rnd/bom.py`, quantities from CAD): **$3,220** ✅ (target $3,300).
+  - Actuators $1,494; compute + sensors $694; wheels + power $412; printed parts $250; drive + structure $201; bearings $104; KX hardware $66.
+  - This replaces the parametric cost estimate ($2,788) as the scorecard's cost row.
+- **Build guide** ([BUILD_v4.md](BUILD_v4.md)): about **25 h hands-on** for the first build → **R10 (≤ 4 h) is not met**. It's the one failing metric and the top item in the next queue.
+- **Milestone M2 reached:** every module in CAD, assembly clean, fully printable, dynamic task working within actuator limits, build package written. The hourly loop resumes with the new queue (RND_PLAN §4).
