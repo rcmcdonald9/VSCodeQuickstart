@@ -49,13 +49,14 @@ def build_xml(d: Design) -> str:
             <body name="fore_{side}" pos="0 0 {-(a.l_upper-0.07)}">
               <joint name="elbow_{side}" axis="0 1 0" range="{JR['elbow'][0]} {JR['elbow'][1]}"/>
               <geom type="sphere" size="0.036" mass="{m['elbow']}" rgba=".1 .1 .1 1"/>
-              <geom type="capsule" fromto="0 0 0 0 0 {-a.l_fore}" size="0.026" mass="{a.bone_mass_fore}" rgba=".9 .9 .9 1"/>
+              <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_fore-0.06)}" size="0.026" mass="{a.bone_mass_fore}" rgba=".9 .9 .9 1"/>
+              <!-- forearm bone ends 60 mm before the wrist axis: CAD requirement so the hand clears ±140° wrist pitch -->
               <body name="wrist_{side}" pos="0 0 {-a.l_fore}">
                 <joint name="wpitch_{side}" axis="0 1 0" range="{-a.wrist_pitch_range_deg} {a.wrist_pitch_range_deg}"/>
                 <geom type="sphere" size="0.028" mass="{m['wrist_pitch']}" rgba=".1 .1 .1 1"/>
                 <body name="hand_{side}" pos="0 0 -0.04">
                   <joint name="wroll_{side}" axis="0 0 1" range="{JR['wroll'][0]} {JR['wroll'][1]}"/>
-                  <geom type="box" size="0.035 0.02 0.03" pos="0 0 -0.03" mass="{m['wrist_roll'] + m['gripper'] + a.gripper_mech_mass + a.wrist_cam_mass}" rgba=".15 .15 .15 1"/>
+                  <geom type="box" size="0.032 0.02 0.025" pos="0 0 -0.035" mass="{m['wrist_roll'] + m['gripper'] + a.gripper_mech_mass + a.wrist_cam_mass}" rgba=".15 .15 .15 1"/>
                   <geom type="box" size="0.006 0.012 0.03" pos="0.022 0 -0.07" mass="0.001" rgba=".9 .9 .9 1"/>
                   <geom type="box" size="0.006 0.012 0.03" pos="-0.022 0 -0.07" mass="0.001" rgba=".9 .9 .9 1"/>
                   <site name="grasp_{side}" pos="0 0 {-(a.l_hand-0.04)}"/>
@@ -80,7 +81,7 @@ def build_xml(d: Design) -> str:
     <material name="g" texture="g" texrepeat="12 12"/></asset>
   <worldbody>
     <light pos="1 -1 3" dir="-.3 .3 -1" diffuse=".8 .8 .8"/>
-    <geom type="plane" size="5 5 .1" material="g"/>
+    <geom type="plane" size="5 5 .1" material="g" contype="0" conaffinity="0"/>
     <geom name="table" type="box" pos="0.75 -0.15 0.37" size="0.15 0.3 0.375" rgba=".6 .45 .3 .35" contype="0" conaffinity="0"/>
     <body name="robot">
       <geom type="cylinder" size="{b.radius} {b.height/2}" pos="0 0 {b.clearance + b.height/2}" mass="{base_m}" rgba=".92 .92 .92 1"/>
@@ -96,6 +97,7 @@ def build_xml(d: Design) -> str:
       </body>
     </body>
   </worldbody>
+  <contact><exclude body1="robot" body2="torso"/></contact>
 </mujoco>"""
 
 
@@ -117,6 +119,7 @@ def margin(poly, p):
 
 
 TARGETS = {
+    "counter, angled 45° grasp (z 0.95)": dict(z=0.95, xs=np.arange(0.30, 0.66, 0.05), axis=(0.7071, 0, -0.7071)),
     "floor pickup (z 0.03, gripper down)": dict(z=0.03, xs=np.arange(0.30, 0.56, 0.05), down=True),
     "dishwasher low rack (z 0.20, down)": dict(z=0.20, xs=np.arange(0.35, 0.66, 0.05), down=True),
     "table top (z 0.78, down)": dict(z=0.78, xs=np.arange(0.30, 0.66, 0.05), down=True),
@@ -193,21 +196,37 @@ def render_pose(d: Design, S, target, path, down=True):
 from scipy.optimize import least_squares  # noqa: E402
 
 
-class Reacher:
-    """Damped least-squares IK (lift + 6 arm joints) with orientation goal."""
+TUCK = {"pitch": 0.0, "roll": math.radians(8), "yaw": 0.0, "elbow": math.radians(-140), "wpitch": math.radians(60), "wroll": 0.0}
 
-    def __init__(self, d: Design):
+
+def tuck(m, dat, side):
+    for j, v in TUCK.items():
+        dat.qpos[m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, f"{j}_{side}")]] = v
+
+
+def in_collision(m, dat, pen=0.002):
+    """True if any robot geoms interpenetrate by more than `pen` (adjacent bodies are filtered by MuJoCo)."""
+    mujoco.mj_collision(m, dat)
+    return any(dat.contact[i].dist < -pen for i in range(dat.ncon))
+
+
+class Reacher:
+    """Bounded least-squares IK (lift + 6 arm joints) with orientation goal and collision rejection."""
+
+    def __init__(self, d: Design, check_collision: bool = True):
         self.m = mujoco.MjModel.from_xml_string(build_xml(d))
         self.d = mujoco.MjData(self.m)
         m = self.m
+        self.check = check_collision
         self.jn = ["lift"] + [f"{j}_r" for j in ("pitch", "roll", "yaw", "elbow", "wpitch", "wroll")]
         ids = [mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, j) for j in self.jn]
         self.adr = [m.jnt_qposadr[i] for i in ids]
         self.lo = np.array([m.jnt_range[i][0] for i in ids]); self.hi = np.array([m.jnt_range[i][1] for i in ids])
-        self.d.qpos[m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, "elbow_l")]] = math.radians(-90)
+        tuck(m, self.d, "l")
         self.site = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_SITE, "grasp_r")
         self.hand = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "hand_r")
         self.robot = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "robot")
+        self.rejected = 0
 
     def fk(self, q):
         self.d.qpos[self.adr] = q
@@ -238,6 +257,9 @@ class Reacher:
             r = least_squares(res, q0, bounds=(self.lo, self.hi), xtol=1e-9, ftol=1e-10, max_nfev=1500)
             p, a = self.fk(r.x)
             if np.linalg.norm(p - target) < 0.01 and a @ axis > math.cos(math.radians(20)):
+                if self.check and in_collision(self.m, self.d):
+                    self.rejected += 1
+                    continue
                 sols.append(r.x)
         return sols
 
@@ -246,7 +268,7 @@ def ik_study(d: Design, layouts, ys=np.arange(-0.40, -0.04, 0.075), seeds=3):
     R = Reacher(d)
     out = {}
     for name, t in TARGETS.items():
-        axis = [0, 0, -1.0] if t["down"] else [1.0, 0, 0]
+        axis = list(t["axis"]) if "axis" in t else ([0, 0, -1.0] if t["down"] else [1.0, 0, 0])
         pts = [(x, y, t["z"]) for x in t["xs"] for y in ys]
         hit, best, hs = 0, {k: [] for k in layouts}, []
         for p in pts:
@@ -283,3 +305,46 @@ def render_ik(d: Design, targets, path, layout_r=0.21):
         imageio.imwrite(f, r.render())
         out.append(f)
     return out
+
+
+class BiReacher:
+    """Two-arm IK sharing the lift: both hands to targets with given approach axes, collision-free."""
+
+    def __init__(self, d: Design):
+        self.m = mujoco.MjModel.from_xml_string(build_xml(d)); self.d = mujoco.MjData(self.m); m = self.m
+        self.jn = ["lift"] + [f"{j}_{s}" for s in ("r", "l") for j in ("pitch", "roll", "yaw", "elbow", "wpitch", "wroll")]
+        ids = [mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, j) for j in self.jn]
+        self.adr = [m.jnt_qposadr[i] for i in ids]
+        self.lo = np.array([m.jnt_range[i][0] for i in ids]); self.hi = np.array([m.jnt_range[i][1] for i in ids])
+        self.site = {s: mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_SITE, f"grasp_{s}") for s in "rl"}
+        self.hand = {s: mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, f"hand_{s}") for s in "rl"}
+
+    def solve(self, tr, ar, tl, al, seeds=10, rng=np.random.default_rng(3)):
+        tr, ar, tl, al = map(np.asarray, (tr, ar, tl, al))
+
+        def res(q):
+            self.d.qpos[self.adr] = q; mujoco.mj_kinematics(self.m, self.d)
+            out = []
+            for s, t, a in (("r", tr, ar), ("l", tl, al)):
+                out += list(self.d.site_xpos[self.site[s]] - t) + list(0.12 * (-self.d.xmat[self.hand[s]].reshape(3, 3)[:, 2] - a))
+            return np.array(out)
+        for _ in range(seeds):
+            r = least_squares(res, rng.uniform(self.lo, self.hi), bounds=(self.lo, self.hi), max_nfev=3000)
+            e = res(r.x)
+            if np.linalg.norm(e[0:3]) < 0.01 and np.linalg.norm(e[6:9]) < 0.01 and \
+               np.linalg.norm(e[3:6]) < 0.12 * 0.35 and np.linalg.norm(e[9:12]) < 0.12 * 0.35 and not in_collision(self.m, self.d):
+                return r.x
+        return None
+
+
+BIMANUAL = {  # (right target, right approach axis, left target, left approach axis)
+    "hold a box at the table (hands 24 cm apart, z 0.85)": ((0.42, -0.12, 0.85), (0, 1, 0), (0.42, 0.12, 0.85), (0, -1, 0)),
+    "hand-to-hand at chest height (handover)": ((0.38, -0.02, 0.80), (0, 1, 0), (0.38, 0.06, 0.80), (0, -1, 0)),
+    "lift a box from the floor (hands 30 cm apart, z 0.10)": ((0.42, -0.15, 0.10), (0, 1, 0), (0.42, 0.15, 0.10), (0, -1, 0)),
+    "fold a towel on the table (hands 40 cm apart, down, z 0.80)": ((0.45, -0.20, 0.80), (0, 0, -1), (0.45, 0.20, 0.80), (0, 0, -1)),
+}
+
+
+def bimanual_study(d: Design):
+    B = BiReacher(d)
+    return {k: B.solve(*v) is not None for k, v in BIMANUAL.items()}

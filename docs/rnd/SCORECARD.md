@@ -2,8 +2,9 @@
 
 | Metric | Now | Target | |
 |---|---|---|---|
-| R1 reach coverage (mean of 6 target sets) | 97% | ≥ 95 % | ✅ |
-| R12 min tip-over margin, 1 kg at reach | 66 mm | ≥ 50 mm | ✅ |
+| R1 reach coverage, collision-free (mean of 7 target sets) | 93% | ≥ 95 % | ❌ |
+| R2 two-handed tasks feasible | 4/4 | all | ✅ |
+| R12 min tip-over margin, 1 kg at reach | 70 mm | ≥ 50 mm | ✅ |
 | R2 min joint margin at spec load (rated) | 1.70× | ≥ 1.5× | ✅ |
 | R3 upper module mass | 9.5 kg | ≤ 10 kg | ✅ |
 | R3 base module mass | 5.8 kg | ≤ 6 kg | ✅ |

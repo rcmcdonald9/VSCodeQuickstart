@@ -53,7 +53,7 @@ class Arm:
     gripper_mech_mass: float = 0.10
     wrist_cam_mass: float = 0.05
     payload: float = 1.0           # kg at the grasp point (R2)
-    wrist_pitch_range_deg: float = 140.0   # reach sweep: ±110 -> ±140 (free win)
+    wrist_pitch_range_deg: float = 120.0   # ±140 folded the hand into the forearm (collision study); ±120 is realistic and reaches more
 
 
 @dataclass

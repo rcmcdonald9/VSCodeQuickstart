@@ -50,3 +50,22 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
 **Open for future loops:** the reach study has no self/base collision checks yet (queue #1); omni-roller threshold behaviour needs a physical test; rolling resistance and traction on carpet are estimates.
 
 **Next:** queue #1, then cartridge CAD.
+
+## 2026-11-25: loop 1, collision-aware reach + bimanual
+
+**Picked:** queue #1. The 97 % reach figure ignored self-collision, which was the biggest unverified claim.
+
+- Added collision checking to the IK study:
+  - all arm geoms vs base, spine, torso, head and the other arm
+  - the idle arm in a realistic tuck pose
+  - explicit exclusion of the torso/spine slide pair (MuJoCo treats the fixed robot body as world, so its parent filter doesn't apply)
+- **Result with collisions on:** table 95 % → **32 %**, counter 95 % → **20 %**. The only cause: the hand folding into the forearm at > 90° wrist pitch.
+- **Fixes:**
+  - The model's forearm bone now ends 60 mm before the wrist axis (**this is a CAD requirement**).
+  - Wrist range ±140° → **±120°**. A sweep showed ±120° beats ±140° (table 50 % → 100 %) because it avoids folded solutions; ±140° was physically unrealistic anyway.
+- **Added:**
+  - an angled 45° counter grasp target (100 %)
+  - a **two-arm IK study** (shared lift, collision-free): hold a box at the table, handover, lift a box from the floor, fold a towel → **4/4 feasible**
+- **Scorecard:** reach coverage (now collision-free, 7 target sets) **93 %** vs 95 % target. It's below target only because of **top-down counter grasps at 62 %**. Tip margin min 70 mm, all other rows unchanged.
+- **Considered, not taken (yet):** lift max 1.25 m gives 100 % top-down counter reach, but the spine becomes 1.26 m long (harder to carry). New queue item 1b: a two-stage telescoping spine.
+- **Next:** 1b or cartridge CAD (queue #2). Cartridge CAD needs the GIM6010-8 mounting drawing first.

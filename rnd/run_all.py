@@ -28,6 +28,10 @@ def twin_report(d=BASELINE, quick=False):
         L.append(f"| {k} | {v['coverage']:.0%} | " + "; ".join(f"{n}: {mm*1000:.0f} / {9.81*mm/v['com_h']:.1f}" for n, mm in v["margin"].items()) + " |")
     imgs = twin.render_ik(d, [("floor", (0.40, -0.20, 0.03), True), ("counter", (0.50, -0.20, 0.95), True),
                               ("high_shelf", (0.40, -0.20, 1.40), False)], str(IMG / "twin"))
+    bi = twin.bimanual_study(d)
+    res["_bimanual"] = bi
+    L += ["", "## Two-handed tasks (shared lift, both arms, collision-free)", "", "| Task | Feasible |", "|---|---|"]
+    L += [f"| {k} | {'✅' if ok else '❌'} |" for k, ok in bi.items()]
     L += [""] + [f"![{Path(p).stem}](img/{Path(p).name})" for p in imgs]
     return "\n".join(L), res
 
@@ -40,12 +44,14 @@ def scorecard(d, res):
     _, _, avg_w, hours = budget.power_budget(d)
     loads = joint_loads(d, 0.45)
     jm = min(capacity(d, j)[2] / loads[j]["static"] for j in ("shoulder_pitch", "shoulder_roll", "elbow", "wrist_pitch"))
+    bi = res.pop("_bimanual", {})
     chosen = next(iter(next(iter(res.values()))["margin"]))
     cov = np.mean([v["coverage"] for v in res.values()])
     tip = min(v["margin"][chosen] for v in res.values())
     other_bom = 1250   # ESTIMATE: wheels, battery, cameras, lidar, electronics, structure, teaching rig (see V4_CONCEPT §3, T01)
     rows = [
-        ("R1 reach coverage (mean of 6 target sets)", f"{cov:.0%}", "≥ 95 %", cov >= 0.95),
+        ("R1 reach coverage, collision-free (mean of 7 target sets)", f"{cov:.0%}", "≥ 95 %", cov >= 0.95),
+        ("R2 two-handed tasks feasible", f"{sum(bi.values())}/{len(bi)}", "all", all(bi.values())),
         ("R12 min tip-over margin, 1 kg at reach", f"{tip*1000:.0f} mm", "≥ 50 mm", tip >= 0.05),
         ("R2 min joint margin at spec load (rated)", f"{jm:.2f}×", "≥ 1.5×", jm >= 1.5),
         ("R3 upper module mass", f"{tot['upper']:.1f} kg", "≤ 10 kg", tot["upper"] <= 10),
