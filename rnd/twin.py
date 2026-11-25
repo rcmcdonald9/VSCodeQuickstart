@@ -1,0 +1,285 @@
+"""Simulation twin v0 (T04): MuJoCo kinematic/mass model generated from params.
+
+Studies:
+  * reach coverage of household targets (floor, table, counter, shelves) with
+    gripper orientation constraints, sampling joint space + lift;
+  * static tip-over margin with payload, for several wheel layouts;
+  * renders of representative poses.
+"""
+from __future__ import annotations
+
+import math
+import os
+
+import numpy as np
+
+os.environ.setdefault("MUJOCO_GL", "egl")
+import mujoco  # noqa: E402
+from scipy.spatial import cKDTree  # noqa: E402
+
+from .budget import mass_budget  # noqa: E402
+from .params import BASELINE, Design, act  # noqa: E402
+
+JR = {  # joint ranges (deg). Conventions: arm hangs straight down at 0.
+    # pitch about +Y: NEGATIVE swings the arm forward/up.  roll: positive = abduct outward.
+    # elbow about +Y: NEGATIVE bends the forearm forward.
+    "pitch": (-200, 60), "roll": (-15, 100), "yaw": (-150, 150),
+    "elbow": (-150, 0), "wpitch": (-110, 110), "wroll": (-180, 180)}
+
+
+def build_xml(d: Design) -> str:
+    a, b, u = d.arm, d.base, d.upper
+    mb = mass_budget(d)
+    base_m = sum(m for _, m in mb["base"])
+    m = {j: act(n)["mass"] for j, (n, _) in a.joints.items()}
+
+    def arm(side):
+        s = -1 if side == "r" else 1
+        return f"""
+      <body name="sh_{side}" pos="{a.shoulder_x} {s*a.shoulder_y} 0">
+        <joint name="pitch_{side}" axis="0 1 0" range="{JR['pitch'][0]} {JR['pitch'][1]}"/>
+        <geom type="sphere" size="0.04" mass="{m['shoulder_pitch']*0.3}" rgba=".1 .1 .1 1"/>
+        <body name="roll_{side}" pos="0 {s*0.05} 0">
+          <joint name="roll_{side}" axis="{s} 0 0" range="{JR['roll'][0]} {JR['roll'][1]}"/>
+          <geom type="sphere" size="0.038" mass="{m['shoulder_roll']}" rgba=".1 .1 .1 1"/>
+          <body name="upper_{side}" pos="0 0 -0.07">
+            <joint name="yaw_{side}" axis="0 0 1" range="{JR['yaw'][0]} {JR['yaw'][1]}"/>
+            <geom type="sphere" size="0.03" pos="0 0 0" mass="{m['upper_yaw']}" rgba=".1 .1 .1 1"/>
+            <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_upper-0.07)}" size="0.032" mass="{a.bone_mass_upper}" rgba=".9 .9 .9 1"/>
+            <body name="fore_{side}" pos="0 0 {-(a.l_upper-0.07)}">
+              <joint name="elbow_{side}" axis="0 1 0" range="{JR['elbow'][0]} {JR['elbow'][1]}"/>
+              <geom type="sphere" size="0.036" mass="{m['elbow']}" rgba=".1 .1 .1 1"/>
+              <geom type="capsule" fromto="0 0 0 0 0 {-a.l_fore}" size="0.026" mass="{a.bone_mass_fore}" rgba=".9 .9 .9 1"/>
+              <body name="wrist_{side}" pos="0 0 {-a.l_fore}">
+                <joint name="wpitch_{side}" axis="0 1 0" range="{-a.wrist_pitch_range_deg} {a.wrist_pitch_range_deg}"/>
+                <geom type="sphere" size="0.028" mass="{m['wrist_pitch']}" rgba=".1 .1 .1 1"/>
+                <body name="hand_{side}" pos="0 0 -0.04">
+                  <joint name="wroll_{side}" axis="0 0 1" range="{JR['wroll'][0]} {JR['wroll'][1]}"/>
+                  <geom type="box" size="0.035 0.02 0.03" pos="0 0 -0.03" mass="{m['wrist_roll'] + m['gripper'] + a.gripper_mech_mass + a.wrist_cam_mass}" rgba=".15 .15 .15 1"/>
+                  <geom type="box" size="0.006 0.012 0.03" pos="0.022 0 -0.07" mass="0.001" rgba=".9 .9 .9 1"/>
+                  <geom type="box" size="0.006 0.012 0.03" pos="-0.022 0 -0.07" mass="0.001" rgba=".9 .9 .9 1"/>
+                  <site name="grasp_{side}" pos="0 0 {-(a.l_hand-0.04)}"/>
+                  <body name="payload_{side}" pos="0 0 {-(a.l_hand-0.04)}">
+                    <geom type="box" size="0.03 0.03 0.03" mass="{a.payload if side=='r' else 0.0001}" rgba=".85 .2 .1 {1 if side=='r' else 0}"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>"""
+
+    torso_m = u.carriage_mass + u.torso_struct_mass + u.compute_mass + u.cable_mass
+    spine_m = u.spine_len * u.spine_mass_per_m + u.handle_mass + b.coupling_mass / 2
+    return f"""<mujoco model="pip_v4_twin">
+  <compiler angle="degree"/>
+  <option gravity="0 0 -9.81"/>
+  <visual><global offwidth="1280" offheight="960"/><headlight ambient=".45 .45 .45" diffuse=".5 .5 .5"/></visual>
+  <asset><texture name="g" type="2d" builtin="checker" rgb1=".86 .88 .9" rgb2=".8 .82 .84" width="256" height="256"/>
+    <texture name="sky" type="skybox" builtin="gradient" rgb1=".95 .96 .98" rgb2=".75 .8 .86" width="128" height="128"/>
+    <material name="g" texture="g" texrepeat="12 12"/></asset>
+  <worldbody>
+    <light pos="1 -1 3" dir="-.3 .3 -1" diffuse=".8 .8 .8"/>
+    <geom type="plane" size="5 5 .1" material="g"/>
+    <geom name="table" type="box" pos="0.75 -0.15 0.37" size="0.15 0.3 0.375" rgba=".6 .45 .3 .35" contype="0" conaffinity="0"/>
+    <body name="robot">
+      <geom type="cylinder" size="{b.radius} {b.height/2}" pos="0 0 {b.clearance + b.height/2}" mass="{base_m}" rgba=".92 .92 .92 1"/>
+      <geom type="box" size="0.07 0.05 0.03" pos="-0.03 0 {b.clearance+0.035}" mass="{b.battery_mass}" rgba=".2 .3 .7 1"/>
+      <geom type="box" size="0.045 0.05 {u.spine_len/2}" pos="-0.06 0 {b.clearance + b.height + u.spine_len/2}" mass="{spine_m}" rgba=".6 .62 .65 1"/>
+      <geom type="box" size="0.05 0.05 0.05" pos="-0.06 0 {b.clearance + b.height + 0.06}" mass="{u.lift_motor_mass}" rgba=".2 .2 .2 1"/>
+      <body name="torso" pos="0 0 0">
+        <joint name="lift" type="slide" axis="0 0 1" range="{u.lift_min} {u.lift_max}"/>
+        <geom type="box" size="0.09 0.15 0.08" mass="{torso_m}" rgba=".95 .95 .95 1"/>
+        <geom type="box" size="0.08 0.12 0.065" pos="0.01 0 0.22" mass="{u.head_mass}" rgba=".95 .95 .95 1"/>
+        <geom type="box" size="0.01 0.1 0.04" pos="0.085 0 0.22" mass="0.001" rgba=".05 .05 .05 1"/>
+        {arm('r')}{arm('l')}
+      </body>
+    </body>
+  </worldbody>
+</mujoco>"""
+
+
+def support_polygon(layout: str, r: float, phase_deg: float = 0.0):
+    n = 3 if layout == "kiwi" else 4
+    return np.array([[r * math.cos(math.radians(phase_deg + i * 360 / n)),
+                      r * math.sin(math.radians(phase_deg + i * 360 / n))] for i in range(n)])
+
+
+def margin(poly, p):
+    """Signed distance from p to the edges of a convex CCW polygon (positive = inside)."""
+    ds = []
+    for i in range(len(poly)):
+        a, b = poly[i], poly[(i + 1) % len(poly)]
+        e = b - a
+        nrm = np.array([e[1], -e[0]]) / np.linalg.norm(e)   # outward normal for CCW
+        ds.append(-np.dot(p - a, nrm))
+    return min(ds)
+
+
+TARGETS = {
+    "floor pickup (z 0.03, gripper down)": dict(z=0.03, xs=np.arange(0.30, 0.56, 0.05), down=True),
+    "dishwasher low rack (z 0.20, down)": dict(z=0.20, xs=np.arange(0.35, 0.66, 0.05), down=True),
+    "table top (z 0.78, down)": dict(z=0.78, xs=np.arange(0.30, 0.66, 0.05), down=True),
+    "counter (z 0.95, down)": dict(z=0.95, xs=np.arange(0.30, 0.66, 0.05), down=True),
+    "shelf (z 1.20, horizontal)": dict(z=1.20, xs=np.arange(0.30, 0.56, 0.05), down=False),
+    "high shelf (z 1.40, horizontal)": dict(z=1.40, xs=np.arange(0.30, 0.46, 0.05), down=False),
+}
+YS = np.arange(-0.35, 0.11, 0.05)
+
+
+def sample(d: Design, n: int = 250_000, seed: int = 0):
+    m = mujoco.MjModel.from_xml_string(build_xml(d))
+    dat = mujoco.MjData(m)
+    rng = np.random.default_rng(seed)
+    jn = ["lift"] + [f"{j}_r" for j in ("pitch", "roll", "yaw", "elbow", "wpitch", "wroll")]
+    adr = [m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, j)] for j in jn]
+    lo = np.array([m.jnt_range[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, j)][0] for j in jn])
+    hi = np.array([m.jnt_range[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, j)][1] for j in jn])
+    # (MuJoCo stores compiled hinge ranges in radians already)
+    # tuck the left arm: hanging, elbow bent forward
+    dat.qpos[m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, "elbow_l")]] = math.radians(-90)
+    site = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_SITE, "grasp_r")
+    hand = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "hand_r")
+    robot = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "robot")
+    Q = rng.uniform(lo, hi, size=(n, len(jn)))
+    P = np.zeros((n, 3)); A = np.zeros((n, 3)); C = np.zeros((n, 3))
+    for i in range(n):
+        dat.qpos[adr] = Q[i]
+        mujoco.mj_kinematics(m, dat)
+        mujoco.mj_comPos(m, dat)
+        P[i] = dat.site_xpos[site]
+        A[i] = -dat.xmat[hand].reshape(3, 3)[:, 2]          # hand pointing direction
+        C[i] = dat.subtree_com[robot]
+    return dict(Q=Q, P=P, A=A, C=C, model=m, adr=adr)
+
+
+def reach_and_tip(S, layouts, tol=0.03, cos_lim=math.cos(math.radians(30))):
+    tree = cKDTree(S["P"])
+    res = {}
+    for name, t in TARGETS.items():
+        want = np.array([0, 0, -1.0]) if t["down"] else np.array([1.0, 0, 0])
+        ok_orient = S["A"] @ want >= cos_lim
+        pts = [(x, y, t["z"]) for x in t["xs"] for y in YS]
+        hit, best = 0, {k: [] for k in layouts}
+        for p in pts:
+            idx = [i for i in tree.query_ball_point(p, tol) if ok_orient[i]]
+            if not idx:
+                continue
+            hit += 1
+            for k, poly in layouts.items():
+                best[k].append(max(margin(poly, S["C"][i, :2]) for i in idx))
+        res[name] = dict(coverage=hit / len(pts), n=len(pts),
+                         margin={k: (min(v) if v else float("nan")) for k, v in best.items()})
+    return res
+
+
+def render_pose(d: Design, S, target, path, down=True):
+    """Render the sample closest to `target` with the right orientation."""
+    m = S["model"]; dat = mujoco.MjData(m)
+    want = np.array([0, 0, -1.0]) if down else np.array([1.0, 0, 0])
+    good = np.where(S["A"] @ want >= 0.87)[0]
+    i = good[np.argmin(np.linalg.norm(S["P"][good] - np.array(target), axis=1))]
+    dat.qpos[S["adr"]] = S["Q"][i]
+    dat.qpos[m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, "elbow_l")]] = math.radians(-90)
+    mujoco.mj_kinematics(m, dat)
+    r = mujoco.Renderer(m, 600, 800)
+    cam = mujoco.MjvCamera(); cam.lookat[:] = [0.25, -0.1, 0.65]; cam.distance = 2.3; cam.azimuth = -130; cam.elevation = -12
+    r.update_scene(dat, cam)
+    import imageio
+    imageio.imwrite(path, r.render())
+
+
+# ---------------------------------------------------------------- IK-based reach
+from scipy.optimize import least_squares  # noqa: E402
+
+
+class Reacher:
+    """Damped least-squares IK (lift + 6 arm joints) with orientation goal."""
+
+    def __init__(self, d: Design):
+        self.m = mujoco.MjModel.from_xml_string(build_xml(d))
+        self.d = mujoco.MjData(self.m)
+        m = self.m
+        self.jn = ["lift"] + [f"{j}_r" for j in ("pitch", "roll", "yaw", "elbow", "wpitch", "wroll")]
+        ids = [mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, j) for j in self.jn]
+        self.adr = [m.jnt_qposadr[i] for i in ids]
+        self.lo = np.array([m.jnt_range[i][0] for i in ids]); self.hi = np.array([m.jnt_range[i][1] for i in ids])
+        self.d.qpos[m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, "elbow_l")]] = math.radians(-90)
+        self.site = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_SITE, "grasp_r")
+        self.hand = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "hand_r")
+        self.robot = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "robot")
+
+    def fk(self, q):
+        self.d.qpos[self.adr] = q
+        mujoco.mj_kinematics(self.m, self.d)
+        return self.d.site_xpos[self.site].copy(), -self.d.xmat[self.hand].reshape(3, 3)[:, 2]
+
+    def com(self, q):
+        self.d.qpos[self.adr] = q
+        mujoco.mj_kinematics(self.m, self.d); mujoco.mj_comPos(self.m, self.d)
+        return self.d.subtree_com[self.robot].copy()
+
+    def solve(self, target, axis, seeds=8, rng=np.random.default_rng(1)):
+        target, axis = np.asarray(target), np.asarray(axis)
+
+        def res(q):
+            p, a = self.fk(q)
+            return np.concatenate([p - target, 0.12 * (a - axis)])
+        sols = []
+        r_ = math.radians
+        structured = [  # sensible starts: arm forward/down, elbow bent, wrist compensating
+            [0.7, r_(-90), r_(10), 0, r_(-10), r_(90 if axis[2] < 0 else 0), 0],
+            [0.5, r_(-45), r_(10), 0, r_(-60), r_(100 if axis[2] < 0 else 10), 0],
+            [0.9, r_(-120), r_(10), 0, r_(-30), r_(60 if axis[2] < 0 else -60), 0],
+            [0.45, r_(-20), r_(20), 0, r_(-20), r_(40 if axis[2] < 0 else 0), 0]]
+        starts = [np.clip(np.array(s_), self.lo, self.hi) for s_ in structured] + \
+                 [rng.uniform(self.lo, self.hi) for _ in range(seeds)]
+        for q0 in starts:
+            r = least_squares(res, q0, bounds=(self.lo, self.hi), xtol=1e-9, ftol=1e-10, max_nfev=1500)
+            p, a = self.fk(r.x)
+            if np.linalg.norm(p - target) < 0.01 and a @ axis > math.cos(math.radians(20)):
+                sols.append(r.x)
+        return sols
+
+
+def ik_study(d: Design, layouts, ys=np.arange(-0.40, -0.04, 0.075), seeds=3):
+    R = Reacher(d)
+    out = {}
+    for name, t in TARGETS.items():
+        axis = [0, 0, -1.0] if t["down"] else [1.0, 0, 0]
+        pts = [(x, y, t["z"]) for x in t["xs"] for y in ys]
+        hit, best, hs = 0, {k: [] for k in layouts}, []
+        for p in pts:
+            sols = R.solve(p, axis, seeds)
+            if not sols:
+                continue
+            hit += 1
+            coms = [R.com(q)[:2] for q in sols]
+            hs += [R.com(q)[2] for q in sols]
+            for k, poly in layouts.items():
+                best[k].append(max(margin(poly, c) for c in coms))
+        out[name] = dict(coverage=hit / len(pts), n=len(pts),
+                         margin={k: (min(v) if v else float("nan")) for k, v in best.items()},
+                         com_h=float(np.mean(hs)) if hs else float("nan"))
+    return out
+
+
+def render_ik(d: Design, targets, path, layout_r=0.21):
+    """Render one image per (label, point, down) target using an IK solution; returns the paths."""
+    import imageio
+    R = Reacher(d)
+    m, dat = R.m, R.d
+    out = []
+    for label, p, down in targets:
+        sols = R.solve(p, [0, 0, -1.0] if down else [1.0, 0, 0], seeds=6)
+        if not sols:
+            continue
+        q = max(sols, key=lambda q: margin(support_polygon("xdrive", layout_r, 0), R.com(q)[:2]))
+        R.fk(q)
+        r = mujoco.Renderer(m, 540, 720)
+        cam = mujoco.MjvCamera(); cam.lookat[:] = [0.2, -0.1, 0.6]; cam.distance = 2.4; cam.azimuth = -125; cam.elevation = -10
+        r.update_scene(dat, cam)
+        f = f"{path}_{label}.png"
+        imageio.imwrite(f, r.render())
+        out.append(f)
+    return out
