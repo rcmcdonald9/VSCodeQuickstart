@@ -35,7 +35,7 @@ def box(b, h, t):
 def segments(wall: float, d: Design = BASELINE, cf: bool = False):
     """(name, x0, x1 from the shoulder pitch axis in m, I mm⁴, c mm, E MPa). Arm straight and horizontal (worst case).
     cf=True: the neck and the forearm link become carbon tubes (Ø40×1 and Ø30×1) bonded into printed end fittings."""
-    yaw_at, lu = 0.07, d.arm.l_upper
+    yaw_at, lu = d.arm.yaw_drop, d.arm.l_upper
     neck = ("upper-arm neck CF Ø40×1", *tube(40, 1.0), E_CF) if cf else ("upper-arm neck Ø72 printed", *tube(72, wall), E_PRINTED)
     fore = ("forearm CF Ø30×1", *tube(30, 1.0), E_CF) if cf else ("forearm side link 22×56 printed", *box(22, 56, wall), E_PRINTED)
     return [("roll link (pitch → yaw)", 0.0, yaw_at, *box(90, 90, max(wall, 2.0)), E_PRINTED),

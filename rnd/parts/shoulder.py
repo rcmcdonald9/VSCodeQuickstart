@@ -24,7 +24,7 @@ Y_F = -58.0                # KX74 hub face of the pitch cartridge
 W_IN, W_OUT = -43.8, -17.9 # bracket wall centres (8 mm walls; each holds a 61804 for the small hub and a 61808 for the shaft)
 Y_BELT = -31.2             # belt plane
 Y_BAL = -6.0               # balancer plane (outboard of the outer wall)
-Y_FER = 2.0                # ferrule (detach plane) start
+Y_FER = 2.0                # ferrule spigot start; the detach plane (flat face) is at Y_FER + 18 = 20
 FERRULE = dict(od=91.0, t=8.0, taper_deg=20.0, dowel_r=30.0)
 
 
@@ -58,7 +58,7 @@ def pitch_shaft() -> Part:
     disc += Pos(0, -17, 0) * Box(14, 26, 5, align=MIN)                      # lever
     disc += Pos(0, -30, 0) * Cylinder(3, 9, align=MIN)                      # pin B, 30 mm from the axis (points down when the arm hangs)
     s += Pos(0, Y_BAL - 2.5, 0) * _rot_y(disc)
-    s += Pos(0, Y_FER, 0) * _rot_y(ferrule(male=False))
+    s += Pos(0, Y_FER + 18, 0) * Rot(90, 0, 0) * ferrule(male=False)       # flat face outboard at the detach plane
     return s
 
 

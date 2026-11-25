@@ -37,6 +37,8 @@ class Arm:
     l_hand: float = 0.15           # wrist pitch -> grasp point (loop 10 hand CAD: wrist roll + KX44 + gripper servo stack; was 0.13)
     shoulder_y: float = 0.20       # |y| of shoulder pitch axis from robot centre line
     shoulder_x: float = 0.06       # x of shoulder axis relative to spine
+    roll_offset_y: float = 0.075   # roll axis outboard of the pitch body / detach plane (loop 10 roll CAD: 0.05 → 0.075, the 72T pulley)
+    yaw_drop: float = 0.10         # roll axis → upper-arm yaw interface (loop 10 roll CAD: 0.07 → 0.10); the upper bone shortens to keep l_upper
     # actuator choice per joint and belt/linkage reduction in the bone
     joints: dict = field(default_factory=lambda: {
         "shoulder_pitch": ("GIM6010-8", 3.0),   # loop 10: 2.5 → 3 (20T:60T) after the hand CAD added 0.2 kg at the tip
@@ -62,8 +64,8 @@ class Arm:
     elbow_motor_at: float | None = None
     pitch_module_mass: float = 0.79    # FROM CAD (loop 7; loop 8 lightening 0.81 → 0.76; loop 10 60T pulley 0.79, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
                                        # KX-V ferrule, small hub + KX74 socket, bearings, spring/cable/pulley A, V-band clamp. Torso side.
-    roll_stage_mass: float = 0.60      # ESTIMATE scaled from the pitch-module CAD (no spring/clamp, 70T pulley, male ferrule). Arm side.
-    yaw_stage_mass: float = 0.20       # upper-arm yaw belt stage (2:1, pulley hubs + bearings + belt), ESTIMATE from elbow-stage CAD
+    roll_stage_mass: float = 0.58      # FROM CAD (loop 10, rnd/parts/roll.py): male ferrule, roll link, roll shaft + 72T, hub/socket, bearings
+    yaw_stage_mass: float = 0.47       # FROM CAD (loop 10): clevis + yaw block plates, yaw shaft + 40T + flange, hub/socket, bearings
     elbow_hub_mass: float = 0.12   # big pulley + hub + 2×61808 + tensioner when the motor is remote (ESTIMATE)
     wrist_pitch_range_deg: float = 120.0   # ±140 folded the hand into the forearm (collision study); ±120 is realistic and reaches more
 

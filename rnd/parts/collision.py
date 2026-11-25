@@ -10,10 +10,20 @@ from pathlib import Path
 
 from build123d import Box, Cylinder, Plane, Pos, Rot, export_stl, mirror
 
-from . import arm, cartridge_m as cm
+from . import arm, cartridge_m as cm, roll
 from .kx import KX74
 
 OUT = Path(__file__).resolve().parents[1] / "out" / "collision"
+
+
+def arm_sh_x():
+    from ..params import BASELINE
+    return BASELINE.arm.shoulder_x * 1000
+
+
+def arm_sh_y():
+    from ..params import BASELINE
+    return BASELINE.arm.shoulder_y * 1000
 
 
 def pieces():
@@ -36,6 +46,19 @@ def pieces():
         "wristb": {
             "palm": Pos(7, 0, -22) * Box(74, 40, 94),
             "wpcollar": Pos(0, 23, 0) * Rot(-90, 0, 0) * Cylinder(43, 19, align=arm.MIN),
+        },
+        # pitch body ("sh", frame = detach plane at y 0): roll link + roll cartridge
+        "sh": {
+            "rolllink": Pos(0, 61, 38) * Box(92, 106, 168),
+            "rollcart": Pos(-50, roll.ROLL_Y, roll.ROLL_C) * Box(66, 106, 102),
+        },
+        # roll body (origin on the roll axis): clevis + yaw block + yaw cartridge
+        "roll": {
+            "yawblock": Pos(-38, 0, (-roll.YAW_DROP + 26) / 2) * Box(172, 92, roll.YAW_DROP + 26),
+        },
+        # torso body: the torso-side pitch modules (module frame shifted so the detach plane is at the pitch body's y = 0)
+        "torso": {
+            "pitchmod": Pos(arm_sh_x() - 45, arm_sh_y() - 67.5, 10) * Box(190, 135, 150),
         },
         "hand": {
             "gripbase": Pos(5, 0, 40 - 98) * Box(104, 52, 30),

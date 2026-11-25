@@ -94,7 +94,7 @@ def socket_loads(d: Design = BASELINE):
     the full outboard gravity moment is treated as bending for every joint)."""
     pts, _ = point_masses(d)
     lu, lf = d.arm.l_upper, d.arm.l_fore
-    at = {"shoulder_roll": 0.05, "upper_yaw": 0.12, "elbow": lu, "wrist_pitch": lu + lf, "wrist_roll": lu + lf + 0.04}
+    at = {"shoulder_roll": d.arm.roll_offset_y * 0.5, "upper_yaw": d.arm.yaw_drop, "elbow": lu, "wrist_pitch": lu + lf, "wrist_roll": lu + lf + 0.04}
     out = []
     for j, x0 in at.items():
         ob = [(m, x - x0) for n, m, x in pts if x > x0 + 1e-9]

@@ -36,7 +36,7 @@ def stage(joint, ratio, z_small, centre_mm, width_mm, d: Design = BASELINE):
                 tim=tim, centre=centre_mm, length=length, teeth_belt=length / PITCH, outer_big=D + 2 * 3.6)
 
 
-STAGES = [("shoulder_pitch", 3.0, 20, 70, 15), ("shoulder_roll", 4.0, 18, 90, 15), ("upper_yaw", 2.0, 20, 70, 15), ("elbow", 2.0, 20, 70, 15)]
+STAGES = [("shoulder_pitch", 3.0, 20, 70, 15), ("shoulder_roll", 4.0, 18, 90, 15), ("upper_yaw", 2.0, 20, 80, 15), ("elbow", 2.0, 20, 70, 15)]
 
 
 def report(d: Design = BASELINE):

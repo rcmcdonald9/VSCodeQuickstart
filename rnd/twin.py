@@ -60,16 +60,16 @@ def build_xml(d: Design, geometry: str | None = None) -> str:
         return f"""
       <body name="sh_{side}" pos="{a.shoulder_x} {s*a.shoulder_y} 0">
         <joint name="pitch_{side}" axis="0 1 0" range="{JR['pitch'][0]} {JR['pitch'][1]}"/>
-        <geom type="sphere" size="0.04" mass="{m['shoulder_pitch']*0.3}" rgba=".1 .1 .1 1"/>
-        <body name="roll_{side}" pos="0 {s*0.05} 0">
+        <geom type="sphere" size="0.04" mass="{m['shoulder_pitch']*0.3}" rgba=".1 .1 .1 1"/>{hull("sh", side)}
+        <body name="roll_{side}" pos="0 {s*a.roll_offset_y} 0">
           <joint name="roll_{side}" axis="{s} 0 0" range="{JR['roll'][0]} {JR['roll'][1]}"/>
-          <geom type="sphere" size="0.038" mass="{m['shoulder_roll'] + a.roll_stage_mass}" rgba=".1 .1 .1 1"/>
-          <body name="upper_{side}" pos="0 0 -0.07">
+          <geom type="sphere" size="0.038" mass="{m['shoulder_roll'] + a.roll_stage_mass}" rgba=".1 .1 .1 1"/>{hull("roll", side)}
+          <body name="upper_{side}" pos="0 0 {-a.yaw_drop}">
             <joint name="yaw_{side}" axis="0 0 1" range="{JR['yaw'][0]} {JR['yaw'][1]}"/>
             <geom type="sphere" size="0.03" pos="0 0 0" mass="{m['upper_yaw'] + a.yaw_stage_mass}" rgba=".1 .1 .1 1"/>
-            <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_upper-0.07)}" size="0.032" mass="{a.bone_mass_upper}" rgba=".9 .9 .9 1"{cap}/>{hull("upper", side)}
-            {f'<geom type="cylinder" size="0.043 0.025" pos="0 0 {-(a.elbow_motor_at-0.07)}" euler="90 0 0" mass="{m["elbow"]}" rgba=".1 .1 .1 1"/>' if a.elbow_motor_at else ''}
-            <body name="fore_{side}" pos="0 0 {-(a.l_upper-0.07)}">
+            <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_upper-a.yaw_drop)}" size="0.032" mass="{a.bone_mass_upper}" rgba=".9 .9 .9 1"{cap}/>{hull("upper", side)}
+            {f'<geom type="cylinder" size="0.043 0.025" pos="0 0 {-(a.elbow_motor_at-a.yaw_drop)}" euler="90 0 0" mass="{m["elbow"]}" rgba=".1 .1 .1 1"/>' if a.elbow_motor_at else ''}
+            <body name="fore_{side}" pos="0 0 {-(a.l_upper-a.yaw_drop)}">
               <joint name="elbow_{side}" axis="0 1 0" range="{JR['elbow'][0]} {JR['elbow'][1]}"/>
               <geom type="sphere" size="0.036" mass="{m['elbow'] if a.elbow_motor_at is None else a.elbow_hub_mass}" rgba=".1 .1 .1 1"/>
               <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_fore-0.06)}" size="0.026" mass="{a.bone_mass_fore}" rgba=".9 .9 .9 1"{cap}/>{hull("fore", side)}
@@ -126,7 +126,8 @@ def build_xml(d: Design, geometry: str | None = None) -> str:
         <joint name="lift" type="slide" axis="0 0 1" range="{u.lift_min} {u.lift_max}"/>
         <geom type="box" size="0.09 0.15 0.08" mass="{torso_m}" rgba=".95 .95 .95 1"/>
         {"" if u.head_on_mast else head_xml(0.22)}
-        {arm('r')}{arm('l')}
+{hull("torso", "l")}{hull("torso", "r")}
+                {arm('r')}{arm('l')}
       </body>
     </body>
   </worldbody>

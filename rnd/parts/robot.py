@@ -12,7 +12,7 @@ from pathlib import Path
 from build123d import Align, Axis, Box, Cylinder, Plane, Pos, Rot, export_stl, fillet, mirror
 
 from ..params import BASELINE
-from . import arm, shoulder
+from . import arm, roll, shoulder
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 OUT = Path(__file__).resolve().parents[1] / "out"
@@ -69,15 +69,12 @@ def build(lift=None, poses=None):
         sh = Pos(a.shoulder_x * 1000, s * a.shoulder_y * 1000, lift_mm)
         mir = (lambda p: p) if s == 1 else (lambda p: mirror(p, Plane.XZ))
         for n, p, c in shoulder.module():
-            out.append((f"{side}_sh_{n}", sh * mir(Pos(0, -20, 0) * p), c))
+            out.append((f"{side}_sh_{n}", sh * mir(Pos(0, -(shoulder.Y_FER + 18), 0) * p), c))   # detach plane at the pitch body origin
         piv = sh * Rot(0, P["pitch"], 0)
-        roll = [("roll_cart", Pos(0, 50, 0) * Rot(90, 0, 0) * Cylinder(44, 60), "dark"),
-                ("roll_collar", Pos(0, 36, 0) * Rot(90, 0, 0) * (Cylinder(49, 12) - Cylinder(40, 12)), "orange"),
-                ("roll_link", Pos(0, 50, -40) * _rbox(90, 70, 60, 20), "white")]
-        for n, p, c in roll:
-            out.append((f"{side}_ph_{n}", piv * mir(p), c))
+        for n, p, c in roll.module():
+            out.append((f"{side}_roll_{n}", piv * mir(p), c))
         for n, p, c in arm.assembly(elbow_deg=P["elbow"], wrist_deg=P["wrist"]):
-            out.append((f"{side}_arm_{n}", piv * mir(Pos(0, 50, -70) * p), c))
+            out.append((f"{side}_arm_{n}", piv * mir(Pos(0, roll.ROLL_Y, -roll.YAW_DROP) * p), c))
     return out
 
 

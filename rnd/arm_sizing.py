@@ -23,8 +23,8 @@ def point_masses(d: Design, reach: float | None = None):
     L = a.l_upper + a.l_fore + a.l_hand
     s = 1.0 if reach is None else reach / L
     lu, lf = a.l_upper * s, a.l_fore * s
-    pts = [("roll stage", a.roll_stage_mass, 0.03 * s), ("shoulder_roll", m["shoulder_roll"], 0.05 * s),
-           ("yaw stage", a.yaw_stage_mass, 0.08 * s), ("upper_yaw", m["upper_yaw"], 0.12 * s),
+    pts = [("roll stage", a.roll_stage_mass, 0.03 * s), ("shoulder_roll", m["shoulder_roll"], a.roll_offset_y * 0.5 * s),
+           ("yaw stage", a.yaw_stage_mass, a.yaw_drop * 0.8 * s), ("upper_yaw", m["upper_yaw"], a.yaw_drop * 0.6 * s),
            ("upper bone", a.bone_mass_upper, 0.5 * lu),
            *((("elbow", m["elbow"], lu),) if a.elbow_motor_at is None else
              (("elbow motor (remote)", m["elbow"], a.elbow_motor_at * s), ("elbow hub", a.elbow_hub_mass, lu))),

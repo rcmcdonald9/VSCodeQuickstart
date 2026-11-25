@@ -6,7 +6,7 @@ HTD 5M, fiberglass cord, allowable 650 N per 10 mm width (vendor tables; ESTIMAT
 |---|---|---|---|---|---|---|---|---|
 | shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 7.0 ✅ | 70 / 354 (≈71 T) |
 | shoulder_roll | 18:72 (4.00:1) | 28.6 / 114.6 | 15 mm | 349 / 768 | 975 | 1.27 ✅ | 6.1 ✅ | 90 / 426 (≈85 T) |
-| upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 8.5 ✅ | 70 / 294 (≈59 T) |
+| upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 8.7 ✅ | 80 / 313 (≈63 T) |
 | elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 8.5 ✅ | 70 / 294 (≈59 T) |
 
 - **Pull at peak** assumes the full actuator peak torque reaches the small pulley; the KX seat slips at 12.7 N·m, which caps it.

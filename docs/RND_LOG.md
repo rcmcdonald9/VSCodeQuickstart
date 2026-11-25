@@ -341,3 +341,31 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
 | Tip margin | 70 mm | 67 mm |
 
 - Interference: shoulder module clean (60T pulley); arm assembly clean. The moving jaw brushes the gripper-servo sleeve by < 1 cm³ at 25° (v0, to refine).
+
+## Build-out step 2: arm-side shoulder (roll + yaw stages) and V-band orientation
+
+- **`rnd/parts/roll.py`:**
+  - male KX-V ferrule
+  - roll link (walls at the small-hub journals)
+  - roll shaft + 72T pulley on 2 × 61808
+  - roll cartridge behind
+  - clevis arms clamped to the shaft ends
+  - yaw block (two plates) with the yaw shaft + 40T pulley + upper-bone flange
+  - yaw cartridge (belt centre 80 mm)
+- Interference: clean apart from sub-cm³ touches at bearing seats.
+- **Kinematics changed by the CAD:** the Ø114 roll pulley doesn't fit the twin's offsets.
+  - Roll axis 50 → **75 mm** outboard of the detach plane; yaw interface 70 → **100 mm** below the roll axis.
+  - The upper bone shortens (ELBOW_Z 230 → 200 mm), so l_upper stays 0.30 m.
+  - Twin, sizing, bones and socket analyses all read the new `arm.roll_offset_y` / `arm.yaw_drop`.
+- **V-band flanges fixed:** flat faces meet at the detach plane (pitch-body y = 0), tapered backs face away from each other, spigots point into their own modules.
+- **Twin collision now includes the shoulders:** roll link + roll cartridge (pitch body), yaw block (roll body), torso-side pitch modules (torso body).
+- **Masses from CAD:** roll stage 0.58 kg, yaw stage 0.47 kg (estimates were 0.60 / 0.20).
+
+| Scorecard | Before | After |
+|---|---|---|
+| Reach | 98 % | **99 %** (wider shoulders) |
+| Tip margin | 67 mm | **61 mm** ✅ |
+| Workspace joint margin | 1.54× | **1.51×** ✅ |
+| Each arm / assembled upper | 3.6 / 13.8 kg | **3.9 / 14.3 kg** |
+| Lift margin | 2.14× | 2.07× |
+| 15 mm threshold | 4.5 | **4.6 of 5 N·m** (watch) |

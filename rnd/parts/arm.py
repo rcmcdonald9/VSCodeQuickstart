@@ -17,10 +17,11 @@ from .kx import KX56, KX74, hub as kx_hub, collar as kx_collar
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 WALL = 1.2                  # 3 perimeters at 0.4 mm. Loop 9 (rnd/bones.py): strength is never binding; stiffness comes from the CF tubes
-ELBOW_Z = 230.0             # yaw interface → elbow axis (params: l_upper 0.30 minus the 0.07 roll→yaw offset)
+from ..params import BASELINE as _D
+ELBOW_Z = (_D.arm.l_upper - _D.arm.yaw_drop) * 1000   # yaw interface → elbow axis (loop 10: 230 → 200 mm)
 FORE_L = 280.0              # elbow axis → wrist axis (params: l_fore)
 BELT_C = 70.0               # elbow belt centre distance (rnd/belts.py)
-HOUSING = dict(x=98.0, y=108.0, z0=-272.0, z1=-100.0)
+HOUSING = dict(x=98.0, y=108.0, z0=-ELBOW_Z - 42.0, z1=-ELBOW_Z + 70.0 + 48.0)
 J4310 = dict(od=57.0, h=46.0)   # DM-J4310 (actuators.yaml)
 FORE_Y = HOUSING["y"] / 2 + 12.0  # forearm link centre plane (+Y side link)
 WRIST_Y0, WRIST_Y1 = 43.0, 96.0   # wrist can span (holds the DM-J4310 cartridge; its KX56 face at y ≈ 33.6, hand centre at y = 0)
@@ -137,8 +138,7 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
             ("e_collar", st * collar(KX74), "orange"), ("e_hub", st * h, "dark"),
             ("e_belt", st * Pos(0, 0, zp + 0.5) * belt_loop(31.8, 63.7, BELT_C), "dark"),
             ("e_bigpulley", st * Pos(BELT_C, 0, zp - 1.2) * pulley(40, 16, bore=30), "orange")]
-    # yaw cartridge (DM-J4310 in a KX56 cartridge, placeholder) above the flange
-    out += [("yaw_cart", Pos(0, 0, 0) * Cylinder(32, 52, align=MIN), "dark"), ("yaw_collar", Pos(0, 0, 0) * Cylinder(39, 12, align=MIN) - Cylinder(30, 12, align=MIN), "orange")]
+    # (the yaw stage above the flange lives in rnd/parts/roll.py)
     fe = Pos(0, 0, -ELBOW_Z) * Rot(0, elbow_deg, 0)
     out += [("forearm", fe * forearm(), "white"), ("cf_fore", fe * cf_fore(), "dark"), ("cf_neck", cf_neck(), "dark")]
     # wrist cartridge (DM-J4310 + KX56) + hand (rnd/parts/hand.py), hand centre plane on the arm's centre plane (y = 0)
