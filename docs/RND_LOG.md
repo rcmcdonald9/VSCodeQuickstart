@@ -543,3 +543,27 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
   - the yaw-block bands
   - the exposed orange collars at the shoulder roll (they read as "expressed joints" and are kept on purpose)
   - the wheel windows in the skirt (add fender lips)
+
+## 2026-11-25: loop 12, omni base over thresholds and carpet (roller-level simulation)
+
+**Picked:** the oldest unretired physical risk. Omni-wheel threshold climbing and carpet driving had only hand calculations (R4, flagged since loop 0).
+
+- **New model** (`rnd/threshold.py` → [rnd/threshold.md](rnd/threshold.md)):
+  - the robot as one rigid body (25.6 kg incl. 2 kg payload, COM 0.40 m from the twin)
+  - four 6" omni wheels in the "+" layout, each with 2 × 10 free rollers
+  - wheel velocity servos torque-limited at the GIM peak
+  - hard floor vs carpet-like ground (soft contact + rolling friction, c_rr ≈ 0.05)
+  - sharp steps of 0–20 mm
+- **Two modelling bugs found and fixed:** wheel-direction sign; rollers colliding with each other.
+
+| Case (0.30 m/s) | Result | Peak wheel torque |
+|---|---|---|
+| 15 mm, 45°, hard / carpet | ✅ / ✅ | 9.9 / 10.3 N·m (of 11) |
+| 15 mm, **0° (straight at a wheel)** | **❌** | sideways rollers can't climb: confirms the 45° rule |
+| 20 mm, 45°, carpet | ✅ | 11.0 N·m (at the limit) |
+| **15 mm / 20 mm at 45° and 0.15 m/s** | ✅ | **5.6–7.1 N·m → 1.5–2.6× margin** |
+| Carpet cruise 0.3 m/s | ✅ | 2.2 N·m RMS per wheel (44 % of rated; hand estimate was 0.8) |
+
+- **Decision D2b updated:** cross thresholds at 45° **and ≤ 0.15 m/s**. The static check (4.9 N·m) under-predicted the impact peaks by 2×; the planner rule restores the margin.
+- **Scorecard rows added:** threshold sim **crossed, 1.7×** ✅; carpet cruise **2.2 / 5 N·m** ✅.
+- **Still to retire with hardware:** a real carpet and threshold bench test. Roller geometry and carpet model are ESTIMATEs.

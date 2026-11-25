@@ -32,4 +32,6 @@
 | Twin v1: robustness (±15 mm perception error, 0.2–0.6 kg) | 8/8 | all | ✅ |
 | Twin v1: worst actuator use, peak / continuous (RMS vs rated) | 33% / 61% | ≤ 80 % / ≤ 70 % | ✅ |
 | Twin v1: min dynamic tip margin (ZMP) | 78 mm | ≥ 30 mm | ✅ |
+| R4 sim: 15 mm threshold on hard floor + carpet (45°, ≤ 0.15 m/s), peak margin | crossed, 1.7× | cross, ≥ 1.5× | ✅ |
+| R4 sim: carpet cruise wheel torque (RMS / rated) | 2.2 / 5 N·m | ≤ 70 % | ✅ |
 | R11 looks | engineering render v0 (robot_v0.png); industrial-design pass pending | owner approval | — |
