@@ -6,14 +6,14 @@
 |---|---|---|---|
 | skirt quarter | 124 × 250 × 250 | 65 | ✅ |
 | deck quarter | 6 × 246 × 246 | 249 | ✅ |
-| head_shell | 120 × 160 × 244 | 296 | ✅ |
+| head_shell | 120 × 240 × 240 | 234 | ✅ |
 | ratchet strip [1] | 6 × 14 × 206 | 16 | ✅ |
 | ratchet strip [2] | 6 × 14 × 206 | 16 | ✅ |
 | ratchet strip [3] | 6 × 14 × 206 | 16 | ✅ |
 | ratchet strip [4] | 6 × 14 × 206 | 16 | ✅ |
-| torso_shell [1] | 150 × 175 × 190 | 172 | ✅ |
-| torso_shell [2] | 150 × 175 × 190 | 172 | ✅ |
-| upper bone [1] | 98 × 116 × 180 | 110 | ✅ |
+| torso_shell [1] | 185 × 194 × 204 | 259 | ✅ |
+| torso_shell [2] | 185 × 194 × 204 | 259 | ✅ |
+| upper bone [1] | 98 × 116 × 180 | 94 | ✅ |
 | clevis + yaw block [1] | 92 × 94 × 176 | 167 | ✅ |
 | clevis + yaw block [2] | 8 × 92 × 176 | 102 | ✅ |
 | shoulder bracket | 150 × 167 × 171 | 363 | ✅ |
@@ -64,16 +64,16 @@
 
 ## Cross-module interference (clashes > 1 cm³; render pose, or arms forward at the lowest lift)
 
-- lift 0.40 m: **none**
-- lift 0.75 m: **none**
-- lift 1.05 m: **none**
+- lift 0.40 m: torso_shell × estop (1.4 cm³); torso_shell × chest_light (2.5 cm³); torso_shell × l_sh_bracket (10.9 cm³); torso_shell × r_sh_bracket (10.9 cm³)
+- lift 0.75 m: torso_shell × estop (1.4 cm³); torso_shell × chest_light (2.5 cm³); torso_shell × l_sh_bracket (10.9 cm³); torso_shell × r_sh_bracket (10.9 cm³)
+- lift 1.05 m: torso_shell × estop (1.4 cm³); torso_shell × chest_light (2.5 cm³); torso_shell × l_sh_bracket (10.9 cm³); torso_shell × r_sh_bracket (10.9 cm³)
 
 ## Mass roll-up (params, now mostly from CAD)
 
 | Piece | kg |
 |---|---|
 | base | 6.31 |
-| upper core | 7.31 |
+| upper core | 7.45 |
 | arm (each) | 3.87 |
 | battery | 1.50 |
-| total robot | 22.86 |
+| total robot | 23.00 |

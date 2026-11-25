@@ -98,9 +98,9 @@ class Upper:
     lift_motor_mass: float = 0.81  # FROM CAD (build-out, rnd/parts/upper.py): GIM cartridge + 20T + mount + 2.4 m belt + idler + ratchet strip
     lift_motor: str = "GIM6010-8"
     carriage_mass: float = 0.58    # FROM CAD: printed sleeve + 8×625 bearings + pawl + solenoid
-    torso_struct_mass: float = 0.53 # FROM CAD: two-piece shell + electronics tray (was 0.9 ESTIMATE)
+    torso_struct_mass: float = 0.73 # FROM CAD: rounded two-piece body enclosing the pitch modules (looks pass) + electronics tray
     compute_mass: float = 0.45     # Pi 5 + Jetson option + CAN + DC-DC
-    head_mass: float = 0.88        # FROM CAD: bracket, handle, yoke, shell, visor + 2×STS3215 + RGB-D camera + eye LEDs (was 0.60)
+    head_mass: float = 0.82        # FROM CAD (looks pass): pill shell, bracket, handle, yoke, visor + 2×STS3215 + RGB-D camera + eye LEDs
     head_on_mast: bool = True      # owner suggestion (2026-11-25): head fixed on top of the spine; torso + arms ride the lift below it
     cable_mass: float = 0.25
     handle_mass: float = 0.0       # now part of the head bracket (FROM CAD)

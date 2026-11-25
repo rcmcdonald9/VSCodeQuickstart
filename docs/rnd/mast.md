@@ -6,7 +6,7 @@ Worst static moment at the mast foot: **46 N·m** (both arms straight forward wi
 |---|---|---|---|---|
 | 2040 extrusion (v0 placeholder) | 69,000 | 0.50 | 5.5 mm ⚠️ | 13 MPa |
 | 40×40×2 Al square tube | 73,365 | 0.82 | 5.1 mm ⚠️ | 13 MPa |
-| 50×50×2 Al square tube | 147,712 | 1.04 | 2.5 mm ⚠️ | 8 MPa |
+| 50×50×2 Al square tube | 147,712 | 1.04 | 2.6 mm ⚠️ | 8 MPa |
 | 60×60×2 Al square tube **← chosen** | 260,459 | 1.25 | 1.4 mm ✅ | 5 MPa |
 
 The carriage runs on 8 × 625 bearings (two per face, top and bottom) on the tube's flat faces; the square section also stops the torso from turning.

@@ -51,6 +51,7 @@ def pieces():
         "sh": {
             "rolllink": Pos(0, 61, 38) * Box(92, 106, 168),
             "rollcart": Pos(-50, roll.ROLL_Y, roll.ROLL_C) * Box(66, 106, 102),
+            "cap": Pos(-34, 75, 95) * Box(134, 130, 114),                       # looks-pass shoulder cap
         },
         # roll body (origin on the roll axis): clevis + yaw block + yaw cartridge
         "roll": {

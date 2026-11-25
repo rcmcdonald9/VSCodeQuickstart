@@ -4,9 +4,9 @@
 |---|---|---|---|
 | base | 6.31 | ≤ 8 | ✅ |
 | battery | 1.50 | ≤ 3 | ✅ |
-| upper | 7.31 | ≤ 10 | ✅ |
+| upper | 7.45 | ≤ 10 | ✅ |
 | arm (each, detachable) | 3.87 | ≤ 10 | ✅ |
-| **total robot** | **22.86** | | |
+| **total robot** | **23.00** | | |
 
 **base detail**
 
@@ -26,11 +26,11 @@
 |---|---|
 | 2× shoulder pitch module (CAD: stage, balancer, V-band) | 1.580 |
 | spine extrusion | 1.325 |
-| head | 0.880 |
+| head | 0.820 |
 | lift motor | 0.810 |
 | 2× arm shoulder_pitch | 0.776 |
+| torso | 0.730 |
 | carriage | 0.580 |
-| torso | 0.530 |
 | compute | 0.450 |
 | cables | 0.250 |
 | coupling (upper half) | 0.125 |

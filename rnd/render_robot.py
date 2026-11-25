@@ -19,7 +19,7 @@ def mat(n, c, r=0.4, metal=0.0, emit=0.0):
     return m
 
 
-M = {"white": mat("w", (0.78, 0.79, 0.81), 0.45), "dark": mat("d", (0.035, 0.037, 0.042), 0.38),
+M = {"white": mat("w", (0.80, 0.81, 0.83), 0.28), "dark": mat("d", (0.035, 0.037, 0.042), 0.38),
      "orange": mat("o", (1.0, 0.42, 0.06), 0.35, emit=0.6), "steel": mat("s", (0.55, 0.56, 0.58), 0.3, 0.8)}
 for line in (d / LIST).read_text().splitlines():
     n, c = line.split()
@@ -45,7 +45,8 @@ scn.world = bpy.data.worlds.new("w"); scn.world.use_nodes = True
 bg = scn.world.node_tree.nodes["Background"]; bg.inputs["Color"].default_value = (0.86, 0.88, 0.91, 1); bg.inputs["Strength"].default_value = 0.25
 cam = bpy.data.cameras.new("c"); cam.lens = 50; co = bpy.data.objects.new("c", cam); bpy.context.collection.objects.link(co)
 dist = 2.35
-co.location = tgt + Vector((dist * math.cos(AZ), dist * math.sin(AZ), 0.55))
+ELEV = float(argv[4]) if len(argv) > 4 else 0.55
+co.location = tgt + Vector((dist * math.cos(AZ), dist * math.sin(AZ), ELEV))
 co.rotation_euler = (tgt - co.location).to_track_quat("-Z", "Y").to_euler()
 scn.camera = co; scn.render.engine = "CYCLES"; scn.cycles.samples = SAMPLES; scn.cycles.use_denoising = False
 scn.render.resolution_x, scn.render.resolution_y = 1100, 1400

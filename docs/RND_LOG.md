@@ -506,3 +506,22 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
 
 - **Owner decision (non-blocking):** R10 "≤ 4 h" can't be met by a 21-actuator robot. A 6-servo LeRobot arm alone takes a few hours. Proposed split: one arm ≤ 4 h, whole robot ≤ 15 h, module swap ≤ 5 min.
 - **New coupon items:** the print-in-place socket (clearances, the bridge over the spring) and the eccentric bushing.
+
+## 2026-11-25: looks pass v1 (owner request: round parts, new render)
+
+- **New helper** `rnd/parts/soft.py`: boxes and shells with every edge rounded.
+- **Torso:** now a rounded body (204 × 370 × 194 mm, two printable halves) that **encloses both shoulder pitch modules**. The arms emerge through round ports.
+- **Head:** pill-shaped, with a rounded visor.
+- **Elbow housings:** soft on every edge.
+- **New covers:**
+  - a **shoulder cap** over the roll cartridge and link top (open underneath; it clears everything that rolls)
+  - a **rounded band** around the upper-arm twist (yaw) block
+- **Twin:** the torso collision box grows to match, and the cap is added to the shoulder hulls.
+  - Reach stays **99 %**, bimanual **4/4**, tip margin 66 mm, workspace joint margin 1.51×.
+  - Upper core 7.3 → 7.5 kg (bigger torso shell). Head 0.88 → 0.82 kg.
+- **Render:** [img/robot_rounded_v1.png](rnd/img/robot_rounded_v1.png).
+- **Still to do for looks:**
+  - the bare mast reads as a long neck (cover + light strip)
+  - the lift motor at the mast foot is exposed
+  - the wrist/hand block is still boxy
+  - the base deck needs a rim

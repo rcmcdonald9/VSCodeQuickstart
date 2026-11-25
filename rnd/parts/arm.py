@@ -13,6 +13,7 @@ from __future__ import annotations
 from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 
 from . import cartridge_m as cm
+from .soft import soft_shell
 from .kx import KX56, KX74, hub as kx_hub, collar as kx_collar
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
@@ -47,7 +48,7 @@ def upper_bone() -> Part:
     for z in (-6 - 20, h["z1"] - 2):
         p += Pos(0, 0, z) * (Cylinder(23, 22, align=MIN) - Cylinder(20.1, 22, align=MIN))
     hz = h["z1"] - h["z0"]
-    p += Pos(0, 0, (h["z0"] + h["z1"]) / 2) * _hollow_rbox(h["x"], h["y"], hz, 18)
+    p += Pos(0, 0, (h["z0"] + h["z1"]) / 2) * soft_shell(h["x"], h["y"], hz, 34, 26, WALL)     # looks pass: soft on every edge
     # bearing bosses through the ±Y walls: elbow axis (61808, OD 52) and the pulley-hub journals (61804, OD 32)
     for y in (-h["y"] / 2, h["y"] / 2):
         for z, od in ((-ELBOW_Z, 52.0), (-ELBOW_Z + BELT_C, 38.2)):      # small hub sits in an eccentric bushing (loop 10)

@@ -16,6 +16,7 @@ from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 from ..params import BASELINE
 from . import cartridge_m as cm, cartridge_s as cs
 from .belt_stage import pulley
+from .soft import soft_box, soft_shell
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 D = BASELINE
@@ -79,17 +80,20 @@ def carriage(lift_mm: float) -> Part:
 
 
 def torso(lift_mm: float):
+    # Looks pass (owner request): a rounded body that encloses both shoulder pitch modules; the arms emerge through
+    # round ports at the shoulders. Printed as left/right halves (each 185 mm wide).
     x0 = 15.0
-    shell = Pos(x0, 0, lift_mm) * _shell(190, 300, 175, 40)
-    shell -= Pos(x0, 0, lift_mm) * Box(400, 1.0, 400)                                 # printed as left/right halves
+    shell = Pos(x0, 0, lift_mm) * soft_shell(204, 370, 194, 70, 40, 2.0)
+    shell -= Pos(x0, 0, lift_mm) * Box(400, 1.0, 400)                                 # split line
     shell -= Pos(MAST_X, 0, lift_mm) * Box(W + 30, W + 30, 400)                       # mast + carriage passage
-    shell -= Pos(D.arm.shoulder_x * 1000 - 40, 0, lift_mm + 10) * Box(200, 400, 150) - Pos(x0, 0, lift_mm) * Box(400, 230, 400)  # side windows for the pitch modules
+    for s in (1, -1):                                                                  # shoulder ports (pitch shaft + V-band)
+        shell -= Pos(D.arm.shoulder_x * 1000, s * 185, lift_mm) * Rot(90, 0, 0) * Cylinder(50, 40)
     # electronics in front of the pitch cartridges (they reach into the torso at x −53 … 33)
     tray = Pos(75, 0, lift_mm - 40) * Box(60, 150, 6)
     pi = Pos(75, -20, lift_mm - 25.5) * Box(56, 85, 22)
     dcdc = Pos(75, 50, lift_mm - 23.5) * Box(50, 46, 26)
-    estop = Pos(-20, 70, lift_mm + 88) * Cylinder(15, 14, align=MIN)
-    light = Pos(x0 + 96, 0, lift_mm - 30) * Box(2, 200, 8)
+    estop = Pos(-30, 80, lift_mm + 95) * Cylinder(15, 14, align=MIN)
+    light = Pos(x0 + 101, 0, lift_mm - 30) * soft_box(3, 160, 8, 1.2, 0.6)
     return [("torso_shell", shell, "white"), ("e_tray", tray, "dark"), ("e_pi5", pi, "dark"), ("e_dcdc", dcdc, "dark"),
             ("estop", estop, "orange"), ("chest_light", light, "orange")]
 
@@ -106,10 +110,10 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     yoke = Box(60, 150, 8, align=MIN) + Pos(0, 71, 0) * Box(40, 8, 60, align=MIN) + Pos(0, -71, 0) * Box(40, 8, 60, align=MIN)
     tilt = Pos(0, 75, 40) * Rot(-90, 0, 0) * cs.sleeve()
     T = Pos(0, 0, 40) * Rot(0, tilt_deg, 0)
-    shell = Pos(70, 0, 5) * _shell(160, 244, 120, 40, 2.4)
+    shell = Pos(70, 0, 5) * soft_shell(160, 244, 120, 55, 38, 2.4)                  # pill-shaped head
     shell -= Pos(150, 0, 8) * Box(20, 200, 70)                                       # visor opening
     shell -= Pos(-20, 0, -20) * Box(110, 180, 90)                                    # neck opening at the back/bottom (yoke + pan servo)
-    visor = Pos(146, 0, 8) * _rbox(6, 196, 66, 3)
+    visor = Pos(146, 0, 8) * soft_box(6, 196, 66, 2.8, 1.5)
     eyes = [Pos(150, s * 48, 12) * Rot(0, 90, 0) * Cylinder(12, 2) for s in (1, -1)]
     cam = Pos(128, 0, -20) * Box(30, 90, 25)
     out = [("head_bracket", top, "white"), ("handle", handle, "dark"), ("belt_idler", idler, "steel"),

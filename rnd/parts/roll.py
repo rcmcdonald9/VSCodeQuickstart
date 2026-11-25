@@ -94,10 +94,31 @@ def yaw_shaft() -> Part:
     return s
 
 
+def shoulder_cap() -> Part:
+    """Looks pass: rounded cap over the roll cartridge and the top of the roll link (pitch body; open underneath).
+    It stays clear of everything that rolls: the clevis stays within 37 mm of the roll axis and the cap starts 62 mm above it."""
+    from .soft import soft_shell
+    c = Pos(-34, (10 + 140) / 2, (38 + 152) / 2) * soft_shell(134, 130, 114, 42, 30, 2.0)
+    c -= Pos(-34, 75, 38) * Box(140, 140, 4)                                  # open bottom (rear part)
+    c -= Pos(14, 75, 38 + 12) * Box(40, 140, 28)                              # front part opens higher (roll pulley sweep)
+    c -= Pos(-8, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(62, 30)               # clearance around the roll pulley
+    return c
+
+
+def yaw_band() -> Part:
+    """Rounded band around the yaw-block plates (roll body)."""
+    from .soft import soft_box
+    x0, x1 = -YAW_C - 50, 50
+    zc, hz = (P2[0] + P1[1]) / 2, P1[1] - P2[0] + 3
+    b = Pos((x0 + x1) / 2, ROLL_Y, zc) * (soft_box(x1 - x0, 100, hz, 30, 6) - soft_box(x1 - x0 - 4, 96, hz + 2, 28, 0.6))
+    return b
+
+
 def module():
     out = [("ferrule_m", Rot(-90, 0, 0) * ferrule(male=True), "orange"),
            ("roll_link", roll_link(), "white"), ("roll_shaft", roll_shaft(), "orange"),
            ("yaw_block", clevis_and_yaw_block(), "white"), ("yaw_shaft", yaw_shaft(), "orange")]
+    out += [("shoulder_cap", shoulder_cap(), "white"), ("yaw_band", yaw_band(), "white")]
     out += [(f"roll_{n}", p, c) for n, p, c in _stage(ROLL_T)]
     out += [(f"yaw_{n}", p, c) for n, p, c in _stage(YAW_T)]
     return out

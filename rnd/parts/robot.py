@@ -56,9 +56,9 @@ def build(lift=None, poses=None):
     return out
 
 
-def export(lift=None, name="robot"):
+def export(lift=None, name="robot", poses=None):
     OUT.mkdir(exist_ok=True)
-    parts = build(lift)
+    parts = build(lift, poses)
     for n, p, _ in parts:
         export_stl(p, str(OUT / f"asm_{name}_{n}.stl"))
     (OUT / f"asm_{name}.txt").write_text("\n".join(f"asm_{name}_{n} {c}" for n, _, c in parts))
