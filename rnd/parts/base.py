@@ -13,7 +13,7 @@ from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 
 from ..params import BASELINE
 from . import cartridge_m as cm
-from .kx import KX74, collar, hub
+from .kx import KX74, collar, hub_pip as hub
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 D = BASELINE

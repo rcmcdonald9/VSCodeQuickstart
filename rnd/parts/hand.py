@@ -14,7 +14,7 @@ import math
 from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 
 from . import cartridge_s as cs
-from .kx import KX44, KX56, collar, hub, male
+from .kx import KX44, KX56, collar, hub_pip as hub, male
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 J4310 = dict(od=57.0, h=46.0, out_holes=6, out_pcd=24.0, rear_holes=4, rear_pcd=46.0)   # PCDs ESTIMATE

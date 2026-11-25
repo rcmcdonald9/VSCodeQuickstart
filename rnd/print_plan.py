@@ -21,12 +21,13 @@ P2S_FACTOR = 0.35       # ESTIMATE: Bambu-class speed/accel vs the generic profi
 
 # (part key in assembly_check.printed_parts(), quantity, note)
 QTY = {
-    "KX74 hub": (4, "wheel hubs (the 9 joint hubs are integral to the small-pulley hubs)"),
-    "KX74 collar": (13, "9 joints + 4 wheels"), "KX74 retainer": (13, ""),
+    "KX74 hub": (4, "wheel hubs, print-in-place with the collar (the 9 joint hubs are integral to the small-pulley hubs)"),
+    "eccentric bushing": (18, "2 per small-pulley hub: belt tension"),
+    "KX74 collar": (13, "9 joints + 4 wheels"), 
     "cartridge M can": (13, "8 arm + 4 wheel + 1 lift"), "cartridge M adapter": (13, "carries the KX74 male face"),
-    "KX56 hub": (2, "wrist pitch"), "KX56 collar": (2, ""), "KX56 retainer": (2, ""),
+    "KX56 hub": (2, "wrist pitch"), "KX56 collar": (2, ""), 
     "cartridge D can": (2, ""), "cartridge D adapter": (2, ""),
-    "KX44 hub": (4, "wrist roll ×2, head pan + tilt"), "KX44 collar": (4, ""), "KX44 retainer": (4, ""),
+    "KX44 hub": (4, "wrist roll ×2, head pan + tilt"), "KX44 collar": (4, ""), 
     "cartridge S sleeve": (4, ""), "cartridge S horn adapter": (4, ""),
     "small-pulley hub": (9, "pitch, roll, yaw, elbow ×2 + lift (KX74 hub + 20T/18T pulley + journals)"),
     "upper bone": (2, ""), "forearm (ends)": (2, "elbow end, wrist can, CF socket"), "elbow pulley hub": (2, ""),

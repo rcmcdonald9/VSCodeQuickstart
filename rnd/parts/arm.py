@@ -50,7 +50,7 @@ def upper_bone() -> Part:
     p += Pos(0, 0, (h["z0"] + h["z1"]) / 2) * _hollow_rbox(h["x"], h["y"], hz, 18)
     # bearing bosses through the ±Y walls: elbow axis (61808, OD 52) and the pulley-hub journals (61804, OD 32)
     for y in (-h["y"] / 2, h["y"] / 2):
-        for z, od in ((-ELBOW_Z, 52.0), (-ELBOW_Z + BELT_C, 32.0)):
+        for z, od in ((-ELBOW_Z, 52.0), (-ELBOW_Z + BELT_C, 38.2)):      # small hub sits in an eccentric bushing (loop 10)
             p += Pos(0, y, z) * Rot(90, 0, 0) * _ring(od + 10, od, 8)
     # openings: cartridge bay on -Y (the cartridge drops in from the side), elbow hub exit on +Y
     p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(cm.MOTOR["od"] / 2 + 4, 20)

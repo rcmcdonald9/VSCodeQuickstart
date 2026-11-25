@@ -20,8 +20,10 @@ def printed_parts():
     from .parts import arm, base, belt_stage as bs, cartridge_m as cm, cartridge_s as cs, hand, roll, shoulder, upper
     from .parts.kx import KX44, KX56, KX74, collar, hub, male, retainer
     P = {}
+    from .parts.kx import hub_pip
     for k in (KX74, KX56, KX44):
-        P[f"{k.name} hub"], P[f"{k.name} collar"], P[f"{k.name} retainer"], P[f"{k.name} male"] = hub(k), collar(k), retainer(k), male(k)
+        P[f"{k.name} hub"], P[f"{k.name} collar"], P[f"{k.name} male"] = hub_pip(k), collar(k), male(k)
+    P["eccentric bushing"] = bs.eccentric_bushing()
     P.update({"cartridge M can": cm.can(), "cartridge M adapter": cm.motor_adapter(), "cartridge S sleeve": cs.sleeve(),
               "cartridge S horn adapter": cs.horn_adapter(), "cartridge D can": hand.can_d(), "cartridge D adapter": hand.adapter_d(),
               "small-pulley hub": bs.small_hub(), "pulley 40T": bs.pulley(40), "pulley 60T": bs.pulley(60, flange=False),

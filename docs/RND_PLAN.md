@@ -83,11 +83,10 @@ Each scheduled run (and any interactive session) does one **loop**:
 - see [BUILD_v4.md](BUILD_v4.md)
 
 Next (the hourly loop resumes here):
-1. **R10 assembly time (25 h vs 4 h target, the one failing metric):**
-    - KX hubs with print-in pins / snap retainers and a press jig
-    - belt-tension cams
-    - pre-crimped harnesses
-    - fewer distinct parts
+1. **R10 assembly time.**
+    - Loop 10: 25 → 19 h, one arm ≈ 5 h. Done: print-in-place KX sockets with pins and spring embedded at pauses, 7 screws per cartridge, eccentric belt tensioning, harness segments.
+    - Owner decision pending: split R10 into one arm ≤ 4 h / whole robot ≤ 15 h.
+    - Next levers: belt stages printed as one sub-assembly with print-in-place bearings? (precedent: printed slewing rings); snap-in cartridge cans; fewer distinct printed parts.
 2. **Industrial design pass (R11):**
     - shaped shells over the elbow stages and shoulders
     - mast cover with a light strip (the "long neck")
@@ -95,7 +94,8 @@ Next (the hourly loop resumes here):
     - base skirt detail
     - hero renders for owner approval
 3. **Coupon round (needs the owner's P2S):**
-    - KX74 interface set
+    - KX74 interface set, **including the print-in-place socket** (0.3 mm clearances, the bridge over the spring at pause 2)
+    - eccentric bushing
     - GIM bolt-circle coupon
     - HTD 5M pulley vs a real belt
     - ratchet strip + pawl

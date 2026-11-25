@@ -54,7 +54,7 @@ def roll_link() -> Part:
     for x0, x1 in (W1, W2):
         w = _plate_x(x0, x1, 8, ROLL_Y + 40, -22, ROLL_C + 32, 14)
         w -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(26, 40)                 # 61808 seat, roll shaft
-        w -= Pos(0, ROLL_Y, ROLL_C) * Rot(0, 90, 0) * Cylinder(16, 40)            # 61804 seat, small hub
+        w -= Pos(0, ROLL_Y, ROLL_C) * Rot(0, 90, 0) * Cylinder(19.1, 40)          # eccentric-bushing seat, small hub
         p += w
     p += _plate_x(W1[0], W2[1], 8, 12, 46, ROLL_C + 32, 4)                       # web joining the walls to the boss, above the roll pulley
     return p
@@ -78,7 +78,7 @@ def clevis_and_yaw_block() -> Part:
     for z0, z1 in (P1, P2):
         pl = _plate_z(-YAW_C - 48, 48, ROLL_Y - 46, ROLL_Y + 46, z0, z1, 16)
         pl -= Pos(0, ROLL_Y, 0) * Cylinder(26, 400)                                # 61808 seat, yaw shaft
-        pl -= Pos(-YAW_C, ROLL_Y, 0) * Cylinder(16, 400)                          # 61804 seat, small hub
+        pl -= Pos(-YAW_C, ROLL_Y, 0) * Cylinder(19.1, 400)                        # eccentric-bushing seat, small hub
         p = pl if p is None else p + pl
     for x0, x1 in ((W1[0] - 12, W1[0] - 2), (W2[1] + 2, W2[1] + 12)):            # clevis arms outside the walls
         arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 26, 10)           # arms end on the top plate (yaw pulley below is clear)

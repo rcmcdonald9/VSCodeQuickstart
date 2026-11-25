@@ -10,7 +10,7 @@ import math
 
 from build123d import Align, Box, Cylinder, Part, Pos, Rot
 
-from .kx import KX74, hub
+from .kx import KX74, hub_pip as hub
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 PITCH, PLD, DEPTH, GROOVE_R = 5.0, 0.5715, 2.06, 1.60
@@ -66,3 +66,15 @@ def belt_loop(pd_small: float, pd_big: float, centre: float, width: float = 15.0
         body += Pos(centre / 2, 0, 0) * Box(centre, 2 * mid * math.cos(a) * 0.999, width, align=MIN)
         return body
     return hull(pd_small / 2 + t / 2, pd_big / 2 + t / 2) - hull(pd_small / 2 - t / 2, pd_big / 2 - t / 2)
+
+
+ECC = dict(od=38.0, e=1.0, t=7.0)   # printed eccentric bushing around each 61804: rotate to tension the belt, 1 lock screw
+
+
+def eccentric_bushing() -> Part:
+    """Bearing seat Ø32 offset by e inside an Ø38 ring with a lock tab: ±1 mm centre-distance adjustment (≈ ±2 mm belt
+    length) without slots or a tensioning screw. ~5 min per stage instead of ~15 (ESTIMATE)."""
+    e = ECC
+    r = Cylinder(e["od"] / 2, e["t"], align=MIN) - Pos(e["e"], 0, 0) * Cylinder(BRG_6004["D"] / 2, e["t"], align=MIN)
+    r += Pos(e["od"] / 2 + 3, 0, 0) * (Box(10, 8, 2.5, align=MIN) - Pos(2, 0, 0) * Cylinder(1.7, 3, align=MIN))
+    return r

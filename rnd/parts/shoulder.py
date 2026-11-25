@@ -71,7 +71,7 @@ def bracket() -> Part:
     for y in (W_IN, W_OUT):
         w = Pos(x0, y, 10) * Rot(-90, 0, 0) * fillet(Box(xs, zs, wall_t).edges().filter_by(Axis.Z), 20)
         w -= Pos(0, y, 0) * Rot(-90, 0, 0) * Cylinder(26, wall_t + 1)                  # 61808 seat (OD 52)
-        w -= Pos(-BELT_C, y, 0) * Rot(-90, 0, 0) * Cylinder(16, wall_t + 1)            # 61804 seat (OD 32) for the small hub
+        w -= Pos(-BELT_C, y, 0) * Rot(-90, 0, 0) * Cylinder(19.1, wall_t + 1)          # eccentric-bushing seat (Ø38) around the small hub's 61804
         # lightening (loop 8 diet): keep ≥ 10 mm of material around both bearing seats and along the back web
         for cx, cz, lx, lz in ((-75, 62, 96, 22), (-62, -52, 110, 18), (-128, 0, 14, 60)):
             w -= Pos(cx, y, cz) * Rot(-90, 0, 0) * fillet(Box(lx, lz, wall_t + 1).edges().filter_by(Axis.Z), 5)

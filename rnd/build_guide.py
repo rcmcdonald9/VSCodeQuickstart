@@ -10,20 +10,26 @@ DOCS = Path(__file__).resolve().parent.parent / "docs"
 STEPS = [
     ("1 Print", "Print the parts in print_plan.md order: cartridges + KX parts first (they let you bench-test motors early)", 1, 0),
     ("2 Coupons", "Print + test the KX74 coupon set and the GIM bolt-circle coupon; adjust KX fit / bolt circles in rnd/parts before mass printing", 1, 45),
-    ("3 KX sockets", "Hub: press 6 dowel pins, fit spring stack + PTFE washer, slide on the collar, screw on the retainer", 19, 10),
-    ("4 Cartridges", "Motor into its can (rear screws), torque pin, adapter onto the output, press 3 balls; label + CAN ID", 21, 10),
-    ("5 Belt stages", "Bearings into the walls/plates, small-pulley hubs + joint shafts in, belt on, tension, lock", 13, 15),
+    ("3 KX sockets", "Print-in-place hub + collar: at pause 1 drop in 6 dowel pins, at pause 2 the wave spring + PTFE washer (loop 10)", 19, 4),
+    ("4 Cartridges", "Motor into its can (3 screws), torque pin, adapter (4 screws, balls embedded at a print pause); label + CAN ID", 21, 6),
+    ("5 Belt stages", "Bearings in eccentric bushings, small-pulley hubs + joint shafts in, belt on, rotate the bushings to tension, 1 lock screw each", 13, 9),
     ("6 Arms", "Bond the CF tubes into the sockets (epoxy, cure overnight); upper bone + elbow stage, forearm + wrist can, hand + gripper, roll/yaw module", 2, 90),
     ("7 Shoulders", "Pitch modules: bracket, shaft, balancer (spring cage, cord, pulley A at the 50 mm slot), V-band flange", 2, 45),
     ("8 Mast + torso + head", "Ratchet strip segments, lift drive + belt, carriage (8 × 625), torso halves around the carriage, head bracket + pan/tilt + shell", 1, 150),
     ("9 Base", "4 wheel modules (pods, shafts, hubs, wheels), deck quarters, skirt, coupling, battery bay, lidar, electronics", 1, 120),
-    ("10 Wiring", "Power distribution, contactor + e-stops, 3 CAN + 3 TTL buses, detach plugs, cameras/USB", 1, 180),
+    ("10 Wiring", "Pre-made daisy-chain harness segments (JST-GH CAN/TTL, VH power) per module; power distribution board; detach plugs", 1, 120),
     ("11 Bring-up", "Per-cartridge test on the bench, joint zeroing (magnet index), balancer K tune, lift pawl test, e-stop test", 1, 120),
 ]
 
 
 def hours():
     return sum(c * m for _, _, c, m in STEPS) / 60
+
+
+def arm_hours():
+    """One arm, parts printed: 7 cartridges + 7 sockets + 4 belt stages + arm + shoulder + its harness + bring-up (ESTIMATE)."""
+    m = dict((s.split()[0], mm) for s, _, _, mm in STEPS)
+    return (7 * m["4"] + 7 * m["3"] + 4 * m["5"] + m["6"] + m["7"] + 30 + 30) / 60
 
 
 def main():
@@ -36,20 +42,23 @@ def main():
          "| Step | What | Count | Min each | Hours |", "|---|---|---|---|---|"]
     L += [f"| {s} | {w} | {c} | {m} | {c * m / 60:.1f} |" for s, w, c, m in STEPS]
     L += [f"| | **Total hands-on** | | | **{h:.1f}** |", "",
-          "**Against R10** (first build ≤ 4 h): **not met.** Over half the time goes into 19 KX sockets, 21 cartridges and 13 belt stages: repetitive work that the R&D loop should attack next.",
-          "Options:",
-          "- KX hubs with printed-in pins (print-pause inserts)",
-          "- snap-fit retainers",
-          "- a pressing jig for balls and pins",
-          "- a belt-tension cam",
-          "- pre-crimped harnesses",
+          "**Against R10** (first build ≤ 4 h): **not met.**",
+          "- **Loop 10 cut the estimate from 25 h to ~19 h:**",
+          "    - print-in-place KX sockets with pins and spring embedded at print pauses (no retainer, no screws)",
+          "    - 7 instead of 14 screws per cartridge",
+          "    - eccentric-bushing belt tensioning",
+          "    - pre-made harness segments",
+          "- **A 21-actuator robot won't reach 4 h.** Precedent: a 6-servo LeRobot SO-101 arm takes a few hours.",
+          "- **Proposed target split (owner decision):** first build of one arm ≤ 4 h; whole robot ≤ 15 h; any module swap ≤ 5 min.",
           "",
           "## Safety notes",
           "- 24 V Li-ion: use the specified BMS (≥ 30 A), fuse every branch, and charge on a non-flammable surface.",
           "- The arms can pinch. Torque limits are set in firmware (rated × 1.8). The KX seats also slip at about 1.16× actuator peak as a mechanical backstop.",
           "- Test the lift pawl and the e-stop before any powered arm motion."]
     (DOCS / "BUILD_v4.md").write_text("\n".join(L))
-    (DOCS / "rnd" / "build.json").write_text(json.dumps({"hours": h}))
+    L.insert(3, f"**One arm** (the first milestone build): about **{arm_hours():.1f} h** hands-on.")
+    (DOCS / "BUILD_v4.md").write_text("\n".join(L))
+    (DOCS / "rnd" / "build.json").write_text(json.dumps({"hours": h, "arm_hours": arm_hours()}))
     print("\n".join(L[:4]))
 
 

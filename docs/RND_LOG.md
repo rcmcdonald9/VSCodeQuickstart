@@ -484,3 +484,25 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
   - This replaces the parametric cost estimate ($2,788) as the scorecard's cost row.
 - **Build guide** ([BUILD_v4.md](BUILD_v4.md)): about **25 h hands-on** for the first build → **R10 (≤ 4 h) is not met**. It's the one failing metric and the top item in the next queue.
 - **Milestone M2 reached:** every module in CAD, assembly clean, fully printable, dynamic task working within actuator limits, build package written. The hourly loop resumes with the new queue (RND_PLAN §4).
+
+## 2026-11-25: loop 10, assembly time (R10, the one failing metric)
+
+**Picked:** R10 (first build 25 h vs 4 h). Over half was repetitive: 19 KX sockets, 21 cartridges, 13 belt stages.
+
+| Change | Precedent | Effect (ESTIMATE) |
+|---|---|---|
+| **Print-in-place KX socket**: hub + retainer fused, collar printed around it (≥ 0.3 mm clearances). Pause 1 drops in the 6 dowel pins; pause 2 lays the wave spring + PTFE washer on the lip | embed-at-pause inserts; print-in-place bearings/hinges | 10 → 4 min per socket; 3 screws and one part fewer per socket |
+| Cartridges: 3 of 6 housing screws, 4 of 8 output screws | the torque pin carries the reaction; 11 N·m peak → 160 N shear per M3 | 10 → 6 min per cartridge |
+| **Eccentric bushings** around each small-hub bearing (±1 mm centre distance) instead of fixed centres or slots | bicycle eccentric bottom brackets; 3D-printer belt tensioners | 15 → 9 min per stage |
+| Pre-made harness segments per module | – | wiring 3 → 2 h |
+
+| Scorecard | Before | After |
+|---|---|---|
+| R10 first build | 25 h | **19 h** ❌ (one arm ≈ 5 h) |
+| Printed pieces | 59 | **57** (retainers gone, eccentric bushings added), all fit |
+| Clashes | 0 | 0 |
+| BOM | $3,220 | $3,221 |
+| Filament | 10.4 kg | 10.4 kg |
+
+- **Owner decision (non-blocking):** R10 "≤ 4 h" can't be met by a 21-actuator robot. A 6-servo LeRobot arm alone takes a few hours. Proposed split: one arm ≤ 4 h, whole robot ≤ 15 h, module swap ≤ 5 min.
+- **New coupon items:** the print-in-place socket (clearances, the bridge over the spring) and the eccentric bushing.

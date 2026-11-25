@@ -24,9 +24,9 @@
 | R5 lift: torque margin / full-travel time | 2.09× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.3× (4.9 of 11 N·m peak) | ≥ 1.5× | ✅ |
-| R10 first-build hands-on time (estimate, BUILD_v4.md) | 25 h | ≤ 4 h | ❌ |
-| R8 cost from the itemised BOM (BOM_v4.md) | $3,220 | ≤ $3,300 | ✅ |
-| R13 printed pieces that fit the P2S (256 mm) | 59/59 | all | ✅ |
+| R10 first-build hands-on time (estimate, BUILD_v4.md) | 19 h | ≤ 4 h | ❌ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $3,221 | ≤ $3,300 | ✅ |
+| R13 printed pieces that fit the P2S (256 mm) | 57/57 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
 | Twin v1: robustness (±15 mm perception error, 0.2–0.6 kg) | 8/8 | all | ✅ |

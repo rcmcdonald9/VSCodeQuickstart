@@ -29,7 +29,7 @@ def can() -> Part:
     body -= Pos(0, 0, FLOOR) * Cylinder(MOTOR["od"] / 2 + 0.3, h, align=MIN)
     body = fillet(body.edges().group_by(Axis.Z)[-1].sort_by(SortBy.RADIUS)[-1], 1.2)
     body = fillet(body.edges().group_by(Axis.Z)[0].sort_by(SortBy.RADIUS)[-1], 3.0)
-    for k in range(MOTOR["rear_holes"]):
+    for k in range(0, MOTOR["rear_holes"], 2):            # loop 10 (R10): 3 of the 6 housing holes are enough (torque pin carries the torque)
         a = 2 * math.pi * k / MOTOR["rear_holes"]
         body -= Pos(MOTOR["rear_pcd"] / 2 * math.cos(a), MOTOR["rear_pcd"] / 2 * math.sin(a), 0) * Cylinder(1.7, 20)
         body -= Pos(MOTOR["rear_pcd"] / 2 * math.cos(a), MOTOR["rear_pcd"] / 2 * math.sin(a), 0) * Cylinder(3.1, 3.0)
@@ -49,7 +49,7 @@ def torque_pin() -> Part:
 def motor_adapter() -> Part:
     """Bolts to the motor output (8×M3). Male face on top, mating face up (+Z) at z = NECK + face_t."""
     p = Cylinder(NECK_R, NECK, align=MIN) + Pos(0, 0, NECK + KX74.face_t) * Rot(180, 0, 0) * male(KX74, bore=8)
-    for k in range(MOTOR["out_holes"]):
+    for k in range(0, MOTOR["out_holes"], 2):             # loop 10 (R10): 4 of 8 output screws (11 N·m peak → 160 N shear per M3)
         a = 2 * math.pi * k / MOTOR["out_holes"] + math.pi / 8
         x, y = MOTOR["out_pcd"] / 2 * math.cos(a), MOTOR["out_pcd"] / 2 * math.sin(a)
         p -= Pos(x, y, 0) * Cylinder(1.7, 40)

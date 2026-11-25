@@ -148,7 +148,7 @@ def pins(kx: KX) -> Part:
     return out
 
 
-def hub(kx: KX, depth: float = None, bore: float = 0.0) -> Part:
+def hub(kx: KX, depth: float = None, bore: float = 0.0, screws: bool = True) -> Part:
     """Female hub (top of a bone's driven member). Face at z = 0, body down to -depth."""
     depth = depth or HUB_STEP + LIP_T + kx.spring_t + 1.0
     p = Pos(0, 0, -HUB_STEP) * Cylinder(kx.r_hub, HUB_STEP, align=MIN)
@@ -161,8 +161,8 @@ def hub(kx: KX, depth: float = None, bore: float = 0.0) -> Part:
         # relief channel: exposes the pin contact lines; deeper slot clears the ball's bottom
         p -= Rot(0, 0, a) * Pos(kx.r_ball, 0, 0) * Box(kx.pin_len + 1, kx.pin_sep, -kx.pin_z * 2)
         p -= Rot(0, 0, a) * Pos(kx.r_ball, 0, 0) * Box(kx.ball_d, kx.pin_sep - kx.pin_d, (kx.ball_d / 2 - kx.z_ball + 0.8) * 2)
-    # 3 × M3 holes for the retainer
-    for a in LUG_ANG:
+    # 3 × M3 holes for the retainer (screwed version only)
+    for a in LUG_ANG if screws else ():
         p -= _at(kx.r_hub - STEP_IN - 3.5, a) * Pos(0, 0, -depth) * Cylinder(1.25, 8, align=MIN)
     if bore:
         p -= Cylinder(bore / 2, 100)
@@ -175,6 +175,19 @@ def retainer(kx: KX, depth: float = None) -> Part:
     for a in LUG_ANG:
         r -= _at(kx.r_hub - STEP_IN - 3.5, a) * Pos(0, 0, -depth - 2) * Cylinder(1.7, 2, align=MIN)
     return r
+
+
+def hub_pip(kx: KX, depth: float = None, bore: float = 0.0) -> Part:
+    """Print-in-place socket (loop 10, R10): hub + retainer fused into ONE print, with the collar printed around it
+    (all clearances ≥ 0.3 mm). Two print pauses:
+      1. at the pin-centre layer: drop the 6 dowel pins into their half-channels, resume (printing closes over them);
+      2. at the collar-lip top layer: lay the wave spring + PTFE washer on the lip, resume (the hub step bridges over).
+    This saves the 3 retainer screws and the press work: ~10 → ~4 min per socket (ESTIMATE). Coupon test needed: the
+    bridge over the spring and the 0.3 mm clearances."""
+    depth = depth or HUB_STEP + LIP_T + kx.spring_t + 1.0
+    ring = Pos(0, 0, -depth - 2) * (Cylinder(kx.r_collar_in + 1.5, 2, align=MIN) - Cylinder(kx.r_hub - STEP_IN - 7, 2, align=MIN))
+    core = Pos(0, 0, -depth - 2) * Cylinder(kx.r_hub - STEP_IN, 2, align=MIN)
+    return hub(kx, depth, bore, screws=False) + ring + core - (Cylinder(bore / 2, 400) if bore else Pos(0, 0, 1000) * Cylinder(1, 1))
 
 
 def spring(kx: KX) -> Part:
