@@ -47,16 +47,21 @@ def build(lift=None, poses=None):
                     * Rot(0, 0, ang) * omni_wheel(), "dark"))
     # ---- spine + lift carriage (placeholders) ----
     top = z0 + h
-    out += [("ph_spine", Pos(-60, 0, top) * Box(90, 100, u.spine_len * 1000, align=MIN), "steel"),
-            ("ph_handle", Pos(-60, 0, top + u.spine_len * 1000) * (Rot(90, 0, 0) * (Cylinder(45, 30) - Cylinder(33, 31))), "dark")]
-    # ---- torso + head (placeholders) at the shoulder height ----
+    spine_top = top + u.spine_len * 1000
+    out += [("ph_spine", Pos(-60, 0, top) * Box(90, 100, u.spine_len * 1000, align=MIN), "steel")]
+    # ---- head: on the mast top (owner suggestion, D8) or riding the torso ----
+    hz = spine_top + 10 if u.head_on_mast else lift_mm + 220
+    head = [("ph_head", Pos(10, 0, hz) * _rbox(160, 240, 130, 40), "white"),
+            ("ph_visor", Pos(86, 0, hz + 5) * _rbox(10, 200, 70, 4), "dark"),
+            ("ph_eye_l", Pos(92, 45, hz + 8) * Rot(0, 90, 0) * Cylinder(11, 2), "orange"),
+            ("ph_eye_r", Pos(92, -45, hz + 8) * Rot(0, 90, 0) * Cylinder(11, 2), "orange"),
+            ("ph_handle", Pos(-20, 0, hz + 65) * (Rot(90, 0, 0) * (Cylinder(38, 26) - Cylinder(27, 27))), "dark")]
+    if not u.head_on_mast:
+        head.append(("ph_neck", Pos(0, 0, lift_mm + 80) * Cylinder(25, 80, align=MIN), "dark"))
+    out += head
+    # ---- torso (placeholder) at the shoulder height ----
     out += [("ph_torso", Pos(0, 0, lift_mm) * _rbox(180, 300, 160, 30), "white"),
-            ("ph_chest_light", Pos(91, 0, lift_mm - 20) * Box(2, 180, 8), "orange"),
-            ("ph_neck", Pos(0, 0, lift_mm + 80) * Cylinder(25, 80, align=MIN), "dark"),
-            ("ph_head", Pos(10, 0, lift_mm + 220) * _rbox(160, 240, 130, 40), "white"),
-            ("ph_visor", Pos(86, 0, lift_mm + 225) * _rbox(10, 200, 70, 4), "dark"),
-            ("ph_eye_l", Pos(92, 45, lift_mm + 228) * Rot(0, 90, 0) * Cylinder(11, 2), "orange"),
-            ("ph_eye_r", Pos(92, -45, lift_mm + 228) * Rot(0, 90, 0) * Cylinder(11, 2), "orange")]
+            ("ph_chest_light", Pos(91, 0, lift_mm - 20) * Box(2, 180, 8), "orange")]
     # ---- arms: shoulder pitch module (CAD) + roll stage (placeholder) + CAD arm ----
     poses = poses or {"l": dict(pitch=-15, elbow=-70, wrist=-20), "r": dict(pitch=-70, elbow=-45, wrist=-25)}
     for side, s in (("l", 1), ("r", -1)):

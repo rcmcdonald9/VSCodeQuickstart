@@ -18,7 +18,7 @@ PAYLOAD = 2.0   # kg, both hands
 
 def moving_mass(d: Design = BASELINE) -> float:
     mb = mass_budget(d)
-    fixed = {"spine extrusion", "lift motor", "handle", "coupling (upper half)"}
+    fixed = {"spine extrusion", "lift motor", "handle", "coupling (upper half)"} | ({"head"} if d.upper.head_on_mast else set())
     upper = sum(m for n, m in mb["upper"] if n not in fixed)
     arms = 2 * sum(m for _, m in mb.get("arm (each, detachable)", []))
     return upper + arms

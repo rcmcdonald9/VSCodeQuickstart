@@ -20,7 +20,7 @@
 | R2 belt safety at actuator peak (HTD 5M 15 mm, min) | 1.41× | ≥ 1.2× | ✅ |
 | R3 arm-detach clamp: lift-off moment / need (×1.5 dynamic) | 2.1× | ≥ 1.5× | ✅ |
 | R12 socket bearing static safety (min) | 5.2 | ≥ 2 | ✅ |
-| R5 lift: torque margin / full-travel time | 2.13× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
+| R5 lift: torque margin / full-travel time | 2.22× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold torque (45° heading) | 4.4 N·m / 5 rated | < rated | ✅ |
 | R10 assembly time | not yet measured (needs CAD) | ≤ 4 h | — |

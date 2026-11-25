@@ -98,6 +98,7 @@ class Upper:
     torso_struct_mass: float = 0.9 # torso structure + shells (ESTIMATE)
     compute_mass: float = 0.45     # Pi 5 + Jetson option + CAN + DC-DC
     head_mass: float = 0.60        # 2×STS3215 + Gemini 336 + display + mic + speaker + shell
+    head_on_mast: bool = True      # owner suggestion (2026-11-25): head fixed on top of the spine; torso + arms ride the lift below it
     cable_mass: float = 0.25
     handle_mass: float = 0.10
     # Carry split: each arm detaches at its shoulder-pitch KX socket (one collar twist + a blind-mate plug).

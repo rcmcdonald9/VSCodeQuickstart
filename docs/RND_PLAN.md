@@ -69,6 +69,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | D4b | **Counter grasps use top-down or 45° approach, whichever is collision-free** (top-down alone reaches 62 % of counter cells, combined 100 %). Telescoping spine deferred: it would cost ~0.6 kg on a tight carry budget. Revisit if real tests show the need. | New (loop 1b) | [twin](rnd/twin.md) |
 | D4d | **Bones: 1.2 mm printed shells + carbon tubes** for the upper-arm neck (Ø40×1) and the forearm link (Ø30×1), bonded into printed sockets. Stiffness, not strength, limits printed bones: the hand sagged 4.1 mm (printed only) → **1.6 mm** with CF. Precedent: Hello Robot Stretch, Kinova carbon links | New (loop 9) | [bones](rnd/bones.md) |
 | D5 | **Lift: shoulder height 0.35–1.05 m. Standard GIM6010-8 cartridge on a 20T HTD 5M belt along the spine, with a spring-applied, solenoid-released ratchet pawl** (fail-safe, 0 W holding, safe carry mode). 2.1× torque margin, 3.5 s full travel, 0.55 kg. *Changed* from a NEMA23 + brake (1.25 kg, another motor type); constant-force springs rejected (they shoot up when the arms are removed; fatigue) | Changed 2026-11-25 (loop 8) | [lift](rnd/lift.md) |
+| D8 | **Head fixed on top of the mast** (owner's suggestion). The torso and arms ride the lift below it. Overall height is a constant **1.29 m**. The head camera always has the high vantage (tilts 60° down for floor work, level/up for shelves; precedent: Hello Robot Stretch). The bare mast no longer pokes through the head, and 0.6 kg leaves the lift's moving mass. Reach 98 %, bimanual 4/4 and tip margin unchanged | New 2026-11-25 | [head views](rnd/img/head_camera_views.png), [render](rnd/img/robot_head_on_mast.png) |
 | D6 | Toolchain: build123d CAD, MuJoCo twin generated from `rnd/params.py`, **arm collision geometry from CAD hulls** (`rnd/parts/collision.py`, loop 6), Blender renders | Holding | `rnd/` |
 | D4c | **Belt stages: HTD 5M, 15 mm, 20T small pulley** (pitch 20:50, roll 20:60, elbow 20:40), printed pulleys, the small pulley on its own bearing hub. **Elbow motor stays at the elbow:** a remote motor on a long belt (Blue-style) was evaluated and rejected (–0.5 N·m at the shoulder, +0.24 kg) | New (loop 3) | [belts](rnd/belts.md) |
 | D7 | **Power bus 24 V (6S Li-ion)**, replacing 48 V | Holding | [T01](rnd/T01_specs.md) |
@@ -110,7 +111,8 @@ Done so far: T01 specs ✅, toolchain v0 (`rnd/`) ✅, budgets v0 ✅, drivetrai
       - the shoulders read as bolted-on brackets
       - the base is a plain puck
     - **Options:**
-      - head on the spine top with the torso sliding under it, or a telescoping mast
+      - ✅ head on the mast top (D8)
+      - the mast is now the visual spine: give it a cover with a light strip and a cable channel
       - wrap the elbow stage in a shaped shell
       - integrate the shoulders into the torso shell
 10. **BOM, cost and assembly time;** carry split validated from CAD masses.

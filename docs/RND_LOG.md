@@ -298,3 +298,18 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
 - **Honest conclusion on the diet:** the bones were already thin. Each arm piece (3.4 kg) is ~60 % actuators + belt stages, so the 2.5 kg/arm target is dropped. Carry passes anyway (core 6.5 kg, arm 3.4 kg).
 - **Scorecard:** new row "hand sag" **1.6 mm** ✅. Cost $2,764 → $2,788. Tip margin 70 mm; all other rows unchanged.
 - **Next:** base CAD (the chassis 1.4 kg and base layout are still ESTIMATEs; the base is the last major untouched module).
+
+## 2026-11-25: owner input, head fixed on the mast top (D8)
+
+The owner asked why the head doesn't stay at the top. Evaluated and adopted:
+
+- **Twin:** the head is now a fixed body at the mast top (centre 1.225 m; its underside clears the torso at full lift by 30 mm).
+  - Reach still **98 %**, bimanual 4/4, tip margin min **70 mm** (unchanged).
+  - Arms vs head collisions are checked.
+- **Lift:** the 0.6 kg head leaves the moving mass → torque margin **2.13 → 2.22×**.
+- **Head camera check:** new head cameras in the twin; views in [img/head_camera_views.png](rnd/img/head_camera_views.png).
+  - Tilted 60° down, the head sees the hand at the floor and on the table.
+  - Level/up, it sees the shelf hand.
+  - The torso blocks the lower part of the frame during floor work; the wrist cameras cover close-up work (Stretch precedent).
+- **Looks:** the overall height is a constant 1.29 m, and the mast no longer pokes through the head. The new problem is that the mast now reads as a long neck when the torso is low: give it a shaped cover with a light strip.
+- Renders at low and high torso: [img/robot_head_on_mast.png](rnd/img/robot_head_on_mast.png).
