@@ -86,12 +86,12 @@ Each scheduled run (and any interactive session) does one **loop**:
 
 Next (state after loop 17; the hourly loop continues from here):
 1. **R10 assembly time** (22 h vs 4 h, the one failing metric). Owner decision pending on splitting the target (one arm ≤ 4 h / robot ≤ 15 h). Levers: fewer distinct printed parts, snap-in cartridge cans, harness kits.
-2. **Coupon round (needs the owner's P2S):**
+2. **Coupon round C1: package READY** ([COUPONS.md](COUPONS.md), loop 18). It needs the owner's P2S and ~$25 of small parts:
     - print-in-place KX socket, eccentric bushing, GIM bolt-circle coupon
     - HTD pulley vs a real belt, ratchet + pawl
     - fin-ray finger (TPU)
     - measure, then replace the ESTIMATEs
-3. **Milestone M1 (buy decision for the owner):** one arm's actuators + sensors for a bench arm.
+3. **Milestone M1 (buy decision for the owner):** priced at ≈ $1,100 ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)); everything except the bench PSU is reused in the full robot.
 4. **Twin v2:** belt/bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day simulation.
 5. **Looks:** wheel fender lips; head face/eye light language; colour options for owner approval.
 6. **Research watch (every ~6 loops):** GIM volume quote, DM-J4310 drawing, sensor prices (D9 lines are ESTIMATEs).

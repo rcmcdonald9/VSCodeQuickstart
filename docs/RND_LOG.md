@@ -683,3 +683,26 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - **twin v1 re-run on the current design:** fetch task ✅, 8/8 robust, peak actuator use 33 %, tip margin 75 mm
   - reach 99 %, workspace margin 1.52×, hand error 0.9 mm
 - **Render:** [img/robot_v3.png](rnd/img/robot_v3.png).
+
+## 2026-11-25: loop 18, coupon round C1 package + M1 bench-arm kit
+
+**Picked:** the build-enabling, risk-retiring step from the confidence assessment: test the riskiest new mechanisms for filament only.
+
+- **`rnd/coupons.py` → [COUPONS.md](COUPONS.md), STLs in `rnd/out/coupons/`. Nine coupons, sliced: 267 g, ≈ 7.5 h on the P2S (ESTIMATE):**
+
+| # | Coupon |
+|---|---|
+| C1 | Print-in-place KX74 socket + collar (pins and spring dropped in at pauses) |
+| C2 | KX male face (balls embedded at a pause) |
+| C3 | Print-in-place clearance ladder (0.20–0.40 mm) |
+| C4 | Press-fit ladder for the dowel pins and balls |
+| C5 | Eccentric bushing |
+| C6 | HTD 5M 20T/40T pulleys |
+| C7 | TPU fin-ray finger |
+| C8 | Ratchet segment under 15 kg |
+| C9 | GIM bolt-circle coupon (needs a motor) |
+
+  Each coupon comes with a measurement, a pass criterion and the parameter it updates.
+- **`rnd/m1_kit.py` → [M1_BENCH_ARM.md](M1_BENCH_ARM.md):** the one-arm bench kit, **≈ $1,096**. This corrects the ~$750 quoted to the owner earlier, which was a guess before itemising.
+  - Contents: 4 GIM + DM-J4310 + 2 STS, bearings, KX hardware, belts, CF tubes, V-band, balancer, the arm's sensor pack, wrist camera, adapters, bench PSU + e-stop, filament.
+  - Everything except the PSU is reused in the full robot.
