@@ -24,6 +24,7 @@
 | R5 lift: torque margin / full-travel time | 2.09× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.3× (4.9 of 11 N·m peak) | ≥ 1.5× | ✅ |
-| R10 assembly time | not yet measured (needs CAD) | ≤ 4 h | — |
-| R13 printability | not yet measured (needs CAD) | all ≤ 256 mm | — |
+| R10 assembly time | see the build package (estimate) | ≤ 4 h | — |
+| R13 printed pieces that fit the P2S (256 mm) | 59/59 | all | ✅ |
+| R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | R11 looks | concept render only | owner approval | — |

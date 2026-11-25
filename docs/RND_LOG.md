@@ -413,3 +413,27 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
   - The internal 6 kg allocation is raised to **8 kg**. The real requirement (R3) is ≤ 10 kg per carried piece and 2 trips; the trips are core 7.3 + base 6.3, then battery 1.5 + arms 2 × 3.9.
 - **R4 metric redefined:** climbing a 15 mm threshold is a sub-second transient, so it is now checked against the GIM's **peak** torque: **2.3×** (4.9 of 11 N·m). Continuous carpet driving uses 0.8 N·m of 5 rated.
 - Tip margin 67 mm.
+
+## Build-out step 5: whole-robot assembly check
+
+`rnd/assembly_check.py` → [rnd/assembly.md](rnd/assembly.md):
+
+- **Printability:** every printed piece tested in its best orientation on the P2S bed (256 mm cube).
+  - First pass: 53/55. The **ratchet strip** (830 mm) is now 4 bonded segments, and the **torso shell** (300 mm) is left/right halves.
+  - Now **59/59 fit** ✅.
+- **Interference between modules** at lift 0.40 / 0.75 / 1.05 m (arms reaching forward at the bottom, render pose otherwise). First pass found three real clashes:
+  - the lift-motor mount and the base mast coupling occupied the same space → the mount now sits on top of the coupling
+  - the torso electronics tray hit the pitch cartridges that reach into the torso → the electronics moved forward
+  - the elbow hit the base at 0.40 m lift in the render pose (not a real working pose; the twin already guarantees collision-free reach poses)
+  - Now **0 clashes** ✅.
+- **Mass roll-up:**
+
+| Piece | kg |
+|---|---|
+| Base | 6.31 |
+| Upper core | 7.31 |
+| Each arm | 3.87 |
+| Battery | 1.50 |
+| **Total robot** | **22.9** |
+
+- New scorecard rows (cached from the last `python -m rnd.assembly_check`): R13 printability 59/59 ✅, clashes 0 ✅.

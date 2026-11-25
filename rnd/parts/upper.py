@@ -42,22 +42,27 @@ def mast() -> Part:
 
 
 def ratchet_strip() -> Part:
-    L = Z_TOP - Z_BASE - 160
-    p = Pos(MAST_X - W / 2 - 3, 23, Z_BASE + 130) * Box(6, 14, L - 70, align=MIN)
-    for k in range(int((L - 80) // 20)):                      # visual teeth every 20 mm (real pitch 5 mm)
-        p -= Pos(MAST_X - W / 2 - 6, 23, Z_BASE + 140 + 20 * k) * Rot(0, 45, 0) * Box(4, 16, 4)
+    """Printed in 4 segments (each ≤ 256 mm) bonded to the mast's back face."""
+    z0, z1 = Z_BASE + 170, Z_TOP - 60
+    seg = (z1 - z0) / 4
+    p = None
+    for i in range(4):
+        s = Pos(MAST_X - W / 2 - 3, 23, z0 + i * seg) * Box(6, 14, seg - 1, align=MIN)
+        for k in range(int(seg // 20)):                                  # visual teeth every 20 mm (real pitch 5 mm)
+            s -= Pos(MAST_X - W / 2 - 6, 23, z0 + i * seg + 10 + 20 * k) * Rot(0, 45, 0) * Box(4, 16, 4)
+        p = s if p is None else p + s
     return p
 
 
 def lift_drive():
-    z = Z_BASE + 70
+    z = Z_BASE + 40 + 70                                              # mount sits on top of the base coupling block
     T = Pos(MAST_X - W / 2 - 50, -20, z) * Rot(90, 0, 0)          # cartridge axis along -Y, behind the mast
     zc = cm.stack_height()
     return [("lift_can", T * Pos(0, 0, 0) * Rot(180, 0, 0) * Pos(0, 0, -zc) * cm.can(), "white"),
             ("lift_motor", T * Pos(0, 0, 0) * Rot(180, 0, 0) * Pos(0, 0, -zc) * cm.motor_dummy(), "dark"),
             ("lift_pulley", Pos(MAST_X - W / 2 - 50, -10, z) * Rot(-90, 0, 0) * pulley(20, 16), "orange"),
             ("lift_belt", Pos(MAST_X - W / 2 - 50 + 16, -2, z) * Box(3.6, 15, Z_TOP - z - 10, align=MIN), "dark"),
-            ("lift_mount", Pos(MAST_X - W / 2 - 30, -20, Z_BASE) * Box(60, 90, 120, align=MIN)
+            ("lift_mount", Pos(MAST_X - W / 2 - 30, -20, Z_BASE + 40) * Box(60, 90, 120, align=MIN)
              - Pos(MAST_X - W / 2 - 50, -20, z) * Rot(90, 0, 0) * Cylinder(45, 200), "white")]
 
 
@@ -76,11 +81,13 @@ def carriage(lift_mm: float) -> Part:
 def torso(lift_mm: float):
     x0 = 15.0
     shell = Pos(x0, 0, lift_mm) * _shell(190, 300, 175, 40)
+    shell -= Pos(x0, 0, lift_mm) * Box(400, 1.0, 400)                                 # printed as left/right halves
     shell -= Pos(MAST_X, 0, lift_mm) * Box(W + 30, W + 30, 400)                       # mast + carriage passage
     shell -= Pos(D.arm.shoulder_x * 1000 - 40, 0, lift_mm + 10) * Box(200, 400, 150) - Pos(x0, 0, lift_mm) * Box(400, 230, 400)  # side windows for the pitch modules
-    tray = Pos(MAST_X + W / 2 + 55, 0, lift_mm - 40) * Box(70, 180, 6)
-    pi = Pos(MAST_X + W / 2 + 55, -40, lift_mm - 25.5) * Box(56, 85, 22)
-    dcdc = Pos(MAST_X + W / 2 + 55, 55, lift_mm - 23.5) * Box(50, 60, 26)
+    # electronics in front of the pitch cartridges (they reach into the torso at x −53 … 33)
+    tray = Pos(75, 0, lift_mm - 40) * Box(60, 150, 6)
+    pi = Pos(75, -20, lift_mm - 25.5) * Box(56, 85, 22)
+    dcdc = Pos(75, 50, lift_mm - 23.5) * Box(50, 46, 26)
     estop = Pos(-20, 70, lift_mm + 88) * Cylinder(15, 14, align=MIN)
     light = Pos(x0 + 96, 0, lift_mm - 30) * Box(2, 200, 8)
     return [("torso_shell", shell, "white"), ("e_tray", tray, "dark"), ("e_pi5", pi, "dark"), ("e_dcdc", dcdc, "dark"),
