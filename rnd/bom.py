@@ -49,7 +49,7 @@ def items(d=BASELINE):
     A("KX interfaces (19 sockets)", "Hardened dowel pins: 2 × 50 Ø5×14, 100 Ø4×12, 100 Ø3×8 (packs)", 1, 50.7, "Zoro listings")
     A("KX interfaces (19 sockets)", "Preload: 6 small coil springs + PTFE washer per socket (80–86 mm wave springs are $17 each)", 19, 1.0, "wave-spring price: 123bearing")
     A("KX interfaces (19 sockets)", "Torque pins Ø6/Ø5/Ø4 + magnet index", 19, 0.4)
-    A("Drive & structure", "HTD 5M 15 mm closed belts (" + ", ".join(f"{j} {l} mm" for j, l in belts) + ") × 2 arms", 8, 15.0, "MROSupply / Zoro ($7.67–27.55)")
+    A("Drive & structure", "HTD 5M 15 mm closed belts (" + ", ".join(f"{j} {l} mm" for j, l in belts) + ") × 2 arms", 8, 9.0, "Bestorq 400-5M-15 $7.67 at MROSupply (loop 14); Gates ≈ $20–28")
     A("Drive & structure", "HTD 5M 15 mm open belt for the lift (2.4 m at $8.32/m) + 2 clamps", 1, 25.0, "Acorn listing")
     A("Drive & structure", "Al square tube 60×60×2, 1.1 m (mast), black anodised", 1, 45.0, "no US listing found: ESTIMATE")
     A("Drive & structure", "Carbon tubes Ø40×38 (0.5 m) + Ø30×28 (1 m), roll-wrapped", 1, 70.0, "eBay / Carbonwebshop listings")
