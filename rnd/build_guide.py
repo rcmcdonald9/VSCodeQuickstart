@@ -18,6 +18,7 @@ STEPS = [
     ("8 Mast + torso + head", "Ratchet strip segments, lift drive + belt, carriage (8 × 625), torso halves around the carriage, head bracket + pan/tilt + shell", 1, 150),
     ("9 Base", "4 wheel modules (pods, shafts, hubs, wheels), deck quarters, skirt, coupling, battery bay, lidar, electronics", 1, 120),
     ("10 Wiring", "Pre-made daisy-chain harness segments (JST-GH CAN/TTL, VH power) per module; power distribution board; detach plugs", 1, 120),
+    ("10b Sensors (D9)", "Joint-side encoder magnets + boards (9), fingertip tactile pads (4), palm ToF (2), cliff ToF (4), 3 RP2040 CAN sensor nodes", 1, 160),
     ("11 Bring-up", "Per-cartridge test on the bench, joint zeroing (magnet index), balancer K tune, lift pawl test, e-stop test", 1, 120),
 ]
 

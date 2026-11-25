@@ -36,6 +36,7 @@ QTY = {
     "ferrule (arm side)": (2, ""), "roll link": (2, ""), "roll shaft": (2, "72T pulley"), "clevis + yaw block": (2, ""), "yaw shaft": (2, "40T pulley + flange"),
     "carriage": (1, ""), "ratchet strip": (1, "4 segments"), "torso_shell": (1, "2 halves"), "e_tray": (1, ""),
     "head_bracket": (1, ""), "handle": (1, ""), "yoke": (1, ""), "head_shell": (1, ""), "visor": (1, "dark PETG"),
+    "fin-ray finger": (4, "TPU 95A, 2 per gripper"),
     "deck quarter": (4, ""), "skirt quarter": (4, ""), "wheel pod": (4, ""), "wheel shaft": (4, ""), "mast coupling": (1, ""),
 }
 

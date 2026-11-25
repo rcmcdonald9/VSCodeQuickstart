@@ -84,36 +84,16 @@ Each scheduled run (and any interactive session) does one **loop**:
 - electrical plan, itemised BOM ($3,220), print plan (10.4 kg, ~255 h P2S) and build guide (~25 h hands-on)
 - see [BUILD_v4.md](BUILD_v4.md)
 
-Next (the hourly loop resumes here):
-1. **R10 assembly time.**
-    - Loop 10: 25 → 19 h, one arm ≈ 5 h. Done: print-in-place KX sockets with pins and spring embedded at pauses, 7 screws per cartridge, eccentric belt tensioning, harness segments.
-    - Owner decision pending: split R10 into one arm ≤ 4 h / whole robot ≤ 15 h.
-    - Next levers: belt stages printed as one sub-assembly with print-in-place bearings? (precedent: printed slewing rings); snap-in cartridge cans; fewer distinct printed parts.
-2. **Industrial design pass (R11):**
-    - shaped shells over the elbow stages and shoulders
-    - mast cover with a light strip (the "long neck")
-    - head face/visor language
-    - base skirt detail
-    - hero renders for owner approval
-3. **Coupon round (needs the owner's P2S):**
-    - KX74 interface set, **including the print-in-place socket** (0.3 mm clearances, the bridge over the spring at pause 2)
-    - eccentric bushing
-    - GIM bolt-circle coupon
-    - HTD 5M pulley vs a real belt
-    - ratchet strip + pawl
-    - measure, then update the ESTIMATEs
-4. **Twin v2:**
-    - belt and bearing compliance in the hand-sag budget
-    - omni-roller contact model for carpet and thresholds
-    - second task: two-handed box lift
-    - battery-runtime simulation over a task day
-5. ✅ Research watch (loop 13): prices, belt and bearing ratings, battery (see the log).
-5b. **Cost (R8):** the owner prefers sensors to savings (D9), so the target is to be re-set by the owner; keep trimming non-sensor cost:
-    - bearings from AliExpress (~$1–2 vs $4.7–5.7 → −$150, unverified)
-    - cheaper closed belts (Bestorq $7.67)
-    - wrist cameras vs the head camera budget
-    - the 2nd wrist DM-J4310 vs a GIM
-    - a 2-belt lift alternative?
-6. **Milestone M1 (desk-arm build package):** ask the owner whether to buy one arm's actuators for a bench test.
+Next (state after loop 17; the hourly loop continues from here):
+1. **R10 assembly time** (22 h vs 4 h, the one failing metric). Owner decision pending on splitting the target (one arm ≤ 4 h / robot ≤ 15 h). Levers: fewer distinct printed parts, snap-in cartridge cans, harness kits.
+2. **Coupon round (needs the owner's P2S):**
+    - print-in-place KX socket, eccentric bushing, GIM bolt-circle coupon
+    - HTD pulley vs a real belt, ratchet + pawl
+    - fin-ray finger (TPU)
+    - measure, then replace the ESTIMATEs
+3. **Milestone M1 (buy decision for the owner):** one arm's actuators + sensors for a bench arm.
+4. **Twin v2:** belt/bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day simulation.
+5. **Looks:** wheel fender lips; head face/eye light language; colour options for owner approval.
+6. **Research watch (every ~6 loops):** GIM volume quote, DM-J4310 drawing, sensor prices (D9 lines are ESTIMATEs).
 
 **Earlier queue history** is in [RND_LOG.md](RND_LOG.md).

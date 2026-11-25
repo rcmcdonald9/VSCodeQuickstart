@@ -672,3 +672,14 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - diffusion policies and VLAs don't fit
 
 **Decision D10:** the Pi 5 stays the real-time/I/O computer. The torso **reserves a bay** (105 × 95 × 40 mm, clash-checked against the pitch modules and carriage) plus a **19 V 3 A branch** and Ethernet for a Jetson-class AI computer (Orin Nano Super ≈ $249, 67 TOPS). It's bought in the AI phase, an owner decision, and isn't in the BOM.
+
+## 2026-11-25: end of the owner-requested run ("keep going until you are done"): build package refreshed
+
+- **Build guide:** sensor installation step added (≈ 2.7 h) → first build **22 h** (one arm ≈ 5 h).
+- **Print plan:** 58 pieces including the TPU fin-ray fingers → **12.1 kg PETG/TPU, ≈ 281 h on the P2S** (bigger rounded torso and covers since the looks pass).
+- **BOM:** **$3,750** (target $4,000 since D9, limit $5,000).
+- **Checks:**
+  - 58/58 printable, 0 clashes
+  - **twin v1 re-run on the current design:** fetch task ✅, 8/8 robust, peak actuator use 33 %, tip margin 75 mm
+  - reach 99 %, workspace margin 1.52×, hand error 0.9 mm
+- **Render:** [img/robot_v3.png](rnd/img/robot_v3.png).

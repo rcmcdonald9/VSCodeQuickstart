@@ -25,14 +25,14 @@
 | R5 lift: torque margin / full-travel time | 2.04× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.3× (4.8 of 11 N·m peak) | ≥ 1.5× | ✅ |
-| R10 first-build hands-on time (estimate, BUILD_v4.md) | 19 h | ≤ 4 h | ❌ |
-| R8 cost from the itemised BOM (BOM_v4.md) | $3,711 | ≤ $4,000 (D9; limit $5,000) | ✅ |
-| R13 printed pieces that fit the P2S (256 mm) | 57/57 | all | ✅ |
+| R10 first-build hands-on time (estimate, BUILD_v4.md) | 22 h | ≤ 4 h | ❌ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $3,750 | ≤ $4,000 (D9; limit $5,000) | ✅ |
+| R13 printed pieces that fit the P2S (256 mm) | 58/58 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
 | Twin v1: robustness (±15 mm perception error, 0.2–0.6 kg) | 8/8 | all | ✅ |
 | Twin v1: worst actuator use, peak / continuous (RMS vs rated) | 33% / 61% | ≤ 80 % / ≤ 70 % | ✅ |
-| Twin v1: min dynamic tip margin (ZMP) | 78 mm | ≥ 30 mm | ✅ |
+| Twin v1: min dynamic tip margin (ZMP) | 75 mm | ≥ 30 mm | ✅ |
 | R4 sim: 15 mm threshold on hard floor + carpet (45°, ≤ 0.15 m/s), peak margin | crossed, 1.7× | cross, ≥ 1.5× | ✅ |
 | R4 sim: carpet cruise wheel torque (RMS / rated) | 2.2 / 5 N·m | ≤ 70 % | ✅ |
 | R11 looks | engineering render v0 (robot_v0.png); industrial-design pass pending | owner approval | — |

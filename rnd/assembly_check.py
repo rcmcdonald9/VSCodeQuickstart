@@ -29,7 +29,7 @@ def printed_parts():
               "small-pulley hub": bs.small_hub(), "pulley 40T": bs.pulley(40), "pulley 60T": bs.pulley(60, flange=False),
               "pulley 72T": bs.pulley(72, flange=False),
               "upper bone": arm.upper_bone(), "forearm (ends)": arm.forearm(), "elbow pulley hub": arm.elbow_pulley_hub(),
-              "palm": hand.palm(), **{f"gripper {n}": p for n, p, c in hand.gripper_parts() if n in ("grip_base", "grip_servo_sleeve", "jaw_moving", "jaw_fixed")},
+              "palm": hand.palm(), "fin-ray finger": hand.fin_ray(-125, -162, 21.0, 18, 28, -1), **{f"gripper {n}": p for n, p, c in hand.gripper_parts() if n in ("grip_base", "grip_servo_sleeve", "jaw_moving", "jaw_fixed")},
               "shoulder bracket": shoulder.bracket(), "pitch shaft": shoulder.pitch_shaft(), "ferrule (arm side)": shoulder.ferrule(True),
               "roll link": roll.roll_link(), "roll shaft": roll.roll_shaft(), "clevis + yaw block": roll.clevis_and_yaw_block(), "yaw shaft": roll.yaw_shaft(),
               "carriage": upper.carriage(750), "ratchet strip": upper.ratchet_strip(),

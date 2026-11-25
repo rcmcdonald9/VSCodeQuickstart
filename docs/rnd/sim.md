@@ -6,18 +6,18 @@ Drive to a can on the floor → pick it top-down → drive to a table → place 
 
 | Actuator | Peak use / peak | RMS use / rated (continuous) |
 |---|---|---|
-| pitch_r | 9.1 / 31.3 (29%) | 5.3 / 14.2 (37%) |
+| pitch_r | 9.0 / 31.3 (29%) | 5.3 / 14.2 (37%) |
 | roll_r | 1.5 / 41.8 (4%) | 0.9 / 19.0 (5%) |
-| yaw_r | 0.3 / 20.9 (2%) | 0.1 / 9.5 (2%) |
+| yaw_r | 0.3 / 20.9 (1%) | 0.1 / 9.5 (2%) |
 | elbow_r | 5.9 / 20.9 (28%) | 2.6 / 9.5 (27%) |
-| wpitch_r | 1.0 / 7.0 (14%) | 0.3 / 3.0 (9%) |
+| wpitch_r | 1.0 / 7.0 (15%) | 0.3 / 3.0 (9%) |
 | wroll_r | 0.0 / 2.9 (1%) | 0.0 / 1.0 (0%) |
-| lift | 160.4 / 691.8 (23%) | 113.7 / 314.5 (36%) |
-| base_x | 28.1 / 288.7 (10%) | 6.5 / 131.2 (5%) |
-| base_y | 1.0 / 288.7 (0%) | 0.1 / 131.2 (0%) |
+| lift | 164.3 / 691.8 (24%) | 116.8 / 314.5 (37%) |
+| base_x | 28.0 / 288.7 (10%) | 6.5 / 131.2 (5%) |
+| base_y | 0.9 / 288.7 (0%) | 0.1 / 131.2 (0%) |
 | fing_a_r | 50.0 / 150.0 (33%) | 30.5 / 50.0 (61%) |
 
-**Dynamic tip margin (cart-table ZMP to the wheel polygon edge): min 78 mm** during "back away" at t = 19.5 s.
+**Dynamic tip margin (cart-table ZMP to the wheel polygon edge): min 75 mm** during "back away" at t = 19.5 s.
 
 ![frames](img/sim_fetch_frames.png)
 
