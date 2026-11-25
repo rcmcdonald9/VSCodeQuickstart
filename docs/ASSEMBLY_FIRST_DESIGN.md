@@ -1,5 +1,13 @@
 # Pip v2: designed to be assembled by cheap machines
 
+> **Status: implemented** in `cad/` (v2) and verified in simulation ([SIMULATION.md](SIMULATION.md)). Where the build differs from this plan:
+> - **The legs are held in by the deck, not a latch.** The deck screws down over the four hip blocks (rule 3, "held by the next part"), so swapping a leg means removing the deck's 4 screws.
+> - **Fasteners: M3 × 8 only, self-tapping into printed holes.** No nut traps were needed.
+> - **Head:** a pan/tilt neck (2 more STS3215s). The tilt servo slides down a sleeve, and the head drops onto a keyed hub plus an idler pin. Every step is still straight down.
+> - **Grip lugs** (flats 20 mm apart, 3 mm datum notch) are on the tray, deck, hip blocks, links, pan bracket and head. The caps and deck are suction-friendly. The feet and the tilt hub are exceptions.
+> - **Cost** ended up at about $410–480: the 12 bus servos (2 spares) cost more than the estimate in §6.
+> - **Simulation findings:** the turning and drift settings added to the gait are explained in [SIMULATION.md](SIMULATION.md).
+
 **Goal:** Make easy, low-precision assembly the core design constraint, so a person with jigs, a converted old 3D printer, or a ~$150 hobby arm can build most of the robot. Pip v1 (the current CAD) was designed for a human with a screwdriver. v2 starts over from how the robot gets assembled.
 
 ## 1. Precedent: what has already worked

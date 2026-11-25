@@ -1,79 +1,80 @@
-# Pip robot dog — runtime configuration.
-# Geometry here MUST match cad/params.scad (all lengths in mm).
+# Pip v2 runtime configuration. Geometry MUST match cad/params.scad
+# (tests/test_cad_sync.py checks it). Lengths in mm, angles in degrees.
 
 robot:
   name: Pip
   wake_words: ["hey pip", "pip", "hey dog"]
 
 geometry:
-  hip_x: 95          # bx  — hip X offset from body centre
-  hip_y: 39          # by  — roll axis Y offset
-  l1: 49.5           # abduction offset (roll axis -> foot plane)
-  l2: 100            # upper leg (hip pitch axis -> knee)
-  l3: 100            # lower leg (knee -> foot ball centre)
+  hip_x: 95          # bx: hip axis X offset from body centre
+  foot_y: 57.8       # leg plane Y offset (each leg is planar: no hip roll)
+  l2: 100            # upper link: hip axis -> knee axis
+  l3: 100            # lower link: knee axis -> foot ball centre
   foot_radius: 11
 
-# PCA9685 channel + direction (+1/-1) + "center" joint angle (deg) for every
-# joint. "center" is the joint angle the leg is in when the servo is at its
-# mid-point (1500 us). Assemble the legs in the stand pose with all servos
-# centred (`python -m robodog.calibrate --center`), then fine-tune `trim`.
+# Feetech STS3215 bus servos. sign: +1 right side, -1 left side (left modules
+# are the same part rotated 180°). zero: raw count at joint angle 0 — written by
+# `python -m robodog.calibrate --jig <LEG>` into calibration.yaml.
 servos:
-  driver: pca9685          # pca9685 | mock
-  i2c_address: 0x40
-  min_pulse_us: 500
-  max_pulse_us: 2500
-  actuation_range: 180     # use 270 if you bought 270° servos
-  legs:
-    FR:
-      roll:  {channel: 0,  dir: 1,  center: 0,   trim: 0, min: -35, max: 35}
-      pitch: {channel: 1,  dir: 1,  center: 30,  trim: 0, min: -50, max: 110}
-      knee:  {channel: 2,  dir: 1,  center: -60, trim: 0, min: -145, max: -15}
-    FL:
-      roll:  {channel: 4,  dir: -1, center: 0,   trim: 0, min: -35, max: 35}
-      pitch: {channel: 5,  dir: -1, center: 30,  trim: 0, min: -50, max: 110}
-      knee:  {channel: 6,  dir: -1, center: -60, trim: 0, min: -145, max: -15}
-    RR:
-      roll:  {channel: 8,  dir: -1, center: 0,   trim: 0, min: -35, max: 35}
-      pitch: {channel: 9,  dir: 1,  center: 30,  trim: 0, min: -50, max: 110}
-      knee:  {channel: 10, dir: 1,  center: -60, trim: 0, min: -145, max: -15}
-    RL:
-      roll:  {channel: 12, dir: 1,  center: 0,   trim: 0, min: -35, max: 35}
-      pitch: {channel: 13, dir: -1, center: 30,  trim: 0, min: -50, max: 110}
-      knee:  {channel: 14, dir: -1, center: -60, trim: 0, min: -145, max: -15}
+  driver: sts                  # sts | mock
+  port: /dev/ttyACM0           # USB bus-servo adapter
+  baud: 1000000
+  positive_dir: 1              # flip to -1 if `calibrate --test` moves joints backwards
+  acceleration: 0              # 0 = servo default
+  joints:
+    FR.pitch:  {id: 1,  sign: 1,  min: -55, max: 50}
+    FR.knee:   {id: 2,  sign: 1,  min: -150, max: -10}
+    FL.pitch:  {id: 3,  sign: -1, min: -55, max: 50}
+    FL.knee:   {id: 4,  sign: -1, min: -150, max: -10}
+    RR.pitch:  {id: 5,  sign: 1,  min: -55, max: 50}
+    RR.knee:   {id: 6,  sign: 1,  min: -150, max: -10}
+    RL.pitch:  {id: 7,  sign: -1, min: -55, max: 50}
+    RL.knee:   {id: 8,  sign: -1, min: -150, max: -10}
+    head.pan:  {id: 9,  sign: 1,  min: -60, max: 60}
+    head.tilt: {id: 10, sign: 1,  min: -25, max: 25}
 
 motion:
   control_hz: 50
-  stand_height: 170        # hip axis -> foot ball centre, mm
+  stand_height: 170        # hip axis -> foot ball centre
   step_height: 30
-  gait_period_s: 0.45      # one full trot cycle
-  max_step_mm: 55
-  max_speed_mm_s: 180
-  max_yaw_deg_s: 50
-  accel_mm_s2: 400         # velocity ramp, keeps the gait smooth
+  gait_period_s: 0.30      # one full trot cycle. Tuned in sim/: 0.40 wobbled (12° roll), 0.30 ~1°
+  max_step_mm: 60
+  max_speed_mm_s: 200
+  max_yaw_deg_s: 60
+  accel_mm_s2: 400
+  head_speed_deg_s: 120
+  # 2-DOF legs can only turn by skidding their feet, so turning strides are
+  # exaggerated. Sim: gain 1 -> 3°/s actual for 45°/s asked; gain 6 -> 45°/s.
+  yaw_stride_gain: 6
+  # The trot creeps forward by itself; this cancels it. Sim value: 81 mm/s.
+  # On the real robot: command 0 forward + small turn, measure the creep, set it here.
+  gait_drift_comp_mm_s: 81
+  balance_kp: 0.0          # IMU leveling (needs sensors.imu). Sim: didn't help the trot, so off.
+  balance_kd: 0.0
 
 sensors:
   tof: vl53l1x             # vl53l1x | none
   imu: none                # mpu6050 | none
-  stop_distance_mm: 250    # forward motion is blocked closer than this
+  stop_distance_mm: 250
 
 vision:
   camera: picamera2        # picamera2 | opencv | mock
   resolution: [640, 480]
   detector: yolo           # yolo | none
-  yolo_model: yolo11n_ncnn_model   # run scripts/export_yolo.sh once on the Pi
+  yolo_model: yolo11n_ncnn_model
   confidence: 0.45
   fps: 8
 
 speech:
-  stt: vosk                # vosk | text (type commands in the terminal)
+  stt: vosk                # vosk | text
   vosk_model: ~/models/vosk-model-small-en-us-0.15
-  mic_device: null         # null = default ALSA input
+  mic_device: null
   tts: piper               # piper | espeak | print
   piper_voice: ~/models/piper/en_US-lessac-medium.onnx
 
 brain:
-  provider: claude         # claude | local  (local = offline keyword commands only)
+  provider: claude         # claude | local
   model: claude-opus-5-5
-  effort: low              # low keeps voice replies snappy; raise for harder tasks
+  effort: low
   max_tool_rounds: 12
   conversation_idle_reset_s: 300

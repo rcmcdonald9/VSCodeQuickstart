@@ -1,51 +1,41 @@
-# Parts list (BOM)
+# Parts list (v2)
 
-Prices are rough USD estimates. Check current prices before you buy. You already have the **Raspberry Pi 5 (8 GB)** and the **Bambu Lab P2S**.
+Prices are rough USD estimates. You already have the **Raspberry Pi 5 (8 GB)** and the **Bambu Lab P2S**.
+
+> **Changes from v1:** smart bus servos instead of PWM servos, so the PCA9685 board, the 20 A buck converter, the Wago nuts and all 56 heat-set inserts are gone. There's one screw size for everything. The servo count is 10 (8 for the legs, 2 for the head).
 
 ## Must-have
 
 | # | Part | Qty | ~Price | Notes |
 |---|------|-----|--------|-------|
-| 1 | **25 kg·cm digital servo, standard size, 180°** (e.g. DS3225MG; DS3218 also fits) | 12 | $130–170 | 40 × 20 × 40.5 mm case. Get the **180°** version (or set `actuation_range: 270` in config if you buy 270°). Most come with a 25T aluminium disc horn. Check that yours did. |
-| 2 | PCA9685 16-channel PWM/servo driver board (I²C) | 1 | $6 | Adafruit or clone |
-| 3 | 3S LiPo 11.1 V, 2200 mAh, XT60 | 1 | $25 | About 105 × 34 × 25 mm. It hangs under the chassis on a strap. |
-| 4 | LiPo balance charger | 1 | $30 | Skip if you already have one |
-| 5 | LiPo low-voltage alarm (beeper) | 1 | $3 | Plugs into the balance lead. **Don't run a LiPo flat.** |
-| 6 | DC-DC buck converter **20 A** adjustable (e.g. "300 W 20 A CC/CV") | 1 | $12 | Servo rail, set to **6.8 V** |
-| 7 | DC-DC buck converter **5 V 5 A** with USB-C out (or Pololu D36V50F5) | 1 | $12–20 | Powers the Pi 5 |
-| 8 | Raspberry Pi **Camera Module 3** (Wide recommended) | 1 | $35 | |
-| 9 | **Pi 5 camera cable** (22-pin to 15-pin, 200 mm) | 1 | $3 | The Pi 5 uses the smaller connector. The cable that comes with the camera will not fit. |
-| 10 | VL53L1X time-of-flight distance sensor breakout | 1 | $10–15 | Obstacle stop. Any I²C VL53L1X board. |
-| 11 | MAX98357A I²S amplifier board | 1 | $6 | |
-| 12 | 40 mm 4 Ω 3 W speaker | 1 | $3 | |
-| 13 | USB mini microphone (plug-style) | 1 | $8 | |
-| 14 | Raspberry Pi 5 **Active Cooler** | 1 | $5 | Vision and voice keep the CPU busy |
-| 15 | XT60 pigtails, 16 AWG + 22 AWG silicone wire, 20 A blade fuse + holder, 20 A switch (or XT60 loop key) | – | $15 | |
-| 16 | Wago 221 lever nuts (5-way) | 4 | $6 | Servo power distribution |
-| 17 | Velcro battery strap, 20 mm | 1 | $3 | |
-| 18 | microSD 32 GB+ (if you don't have one) | 1 | $8 | Raspberry Pi OS 64-bit |
-
-## Fasteners
-
-| Part | Qty | Used for |
-|------|-----|----------|
-| M3 brass heat-set inserts (M3 × 5.7, OD ≈ 4.6 mm) | 100-pack | Servo ears (48), lid posts (4), head (4) |
-| M3 × 10 socket head | 60 | Servo ears into inserts, horn screws on the 6 mm leg plates, lid |
-| M3 × 8 socket head | 30 | Horn screws on the hip housing (5 mm plate), head |
-| M3 × 25 + M3 nyloc nuts | 4 | Foot cross-bolts |
-| M2.5 × 10 brass standoffs + M2.5 screws/nuts | 4 sets | Pi 5 on the lid |
+| 1 | **Feetech STS3215 serial-bus servo, 12 V / 30 kg·cm version** (Waveshare sells it as "ST3215") | **10 + 2 spares** | $200–265 | ⚠️ It's also sold as a 7.4 V / 19 kg version under the same name. **Buy the 12 V one.** Buy all from one seller. Same servo as the SO-101 arm. |
+| 2 | USB bus-servo adapter for Feetech STS/SCS servos (e.g. Waveshare Bus Servo Adapter (A)) | 1 | $10–15 | Pi USB to servo bus. Also distributes servo power. |
+| 3 | 3S Li-ion pack, 18650 cells, **3S2P with BMS** (11.1 V nominal, 12.6 V full), XT60 | 1 | $30–40 | About 75 × 56 × 40 mm, sits inside the tray. Its 12.6 V maximum is inside the servo's rated range (up to 14 V). The built-in BMS makes it safer than a bare LiPo. |
+| 4 | 3S Li-ion charger, 12.6 V 2 A | 1 | $15 | |
+| 5 | DC-DC buck converter, **5 V 5 A**, USB-C output | 1 | $12–20 | Powers the Pi 5 |
+| 6 | 15 A blade fuse + holder, switch, XT60 pigtail, 18 AWG and 22 AWG silicone wire | – | $15 | |
+| 7 | Raspberry Pi **Camera Module 3** (Wide recommended) | 1 | $35 | Goes in the head |
+| 8 | **Pi 5 camera cable, 22-pin to 15-pin, 300 mm** | 1 | $4 | Longer than v1's, to leave slack for the moving neck |
+| 9 | VL53L1X time-of-flight sensor breakout | 1 | $10–15 | Head, under the camera |
+| 10 | MAX98357A I²S amplifier + 28–40 mm 4 Ω speaker | 1 | $9 | Speaker under the head's top grille |
+| 11 | USB mini microphone | 1 | $8 | |
+| 12 | Raspberry Pi 5 Active Cooler | 1 | $5 | |
+| 13 | 3-pin servo-bus extension cables (assorted lengths) | 1 pack | $10 | Daisy chain: body → each leg dock → pitch → knee |
+| 14 | Magnetic pogo-pin connector pairs, 4-pin | 4 | $12 | Blind-mate leg docks (optional in a first build: plug the leg cable in by hand instead) |
+| 15 | **M3 × 8 socket-head screws: the only fastener** | 100 | $8 | 88 are used: 17 per leg module, 16 for the neck, 4 for the deck |
+| 16 | microSD 32 GB+ (if needed) | 1 | $8 | |
 
 ## Filament
 
-| Material | Amount | Parts |
-|----------|--------|-------|
-| **PETG** (or PLA for a quick first build) | ~400 g | Everything structural |
-| **TPU 95A** | ~20 g | 4 feet |
+| Material | Amount | For |
+|---|---|---|
+| **PETG** | ~930 g (**get two 1 kg spools**) | Robot ~863 g + leg jig ~67 g |
+| **TPU 95A** | ~15 g | 4 feet |
 
-## Optional upgrades
+## Optional
 
-- **Raspberry Pi AI HAT+ (13 or 26 TOPS)** (~$70–110): runs the detector on a Hailo chip, which is much faster than the Pi CPU. The software runs YOLO on the CPU by default. The HAT is a later upgrade.
-- **MPU-6050 or BNO085 IMU** (~$3–20): tilt sensing / fall detection (`sensors.imu`).
-- 5 mm LEDs for the "eyes" (holes are in the head).
+- **Raspberry Pi AI HAT+** (~$70–110): faster object detection (not supported in the software yet).
+- **MPU-6050 IMU** (~$3): the balance code exists, but in the simulation leveling didn't help the trot, so it's off by default.
+- **5 mm LEDs** for the eyes.
 
-**Rough total without the Pi: $330–420.** The 12 servos are most of it.
+**Rough total without the Pi: $410–480.** The servos are about half of it. That's more than v1, because each smart servo costs more than a PWM servo. In return there's no driver board, no big power converter, no inserts and no manual calibration.

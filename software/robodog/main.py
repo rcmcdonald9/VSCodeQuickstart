@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import math
 import signal
 import sys
 import time
@@ -36,9 +37,14 @@ def main(argv=None):
     if args.local:
         cfg["brain"]["provider"] = "local"
 
-    tof, _imu = make_sensors(cfg)
+    tof, imu = make_sensors(cfg)
     servos = make_servo_driver(cfg["servos"])
-    motion = MotionController(cfg, servos, obstacle_distance=tof.distance_mm)
+
+    def imu_rad():
+        o = imu.orientation()
+        return (math.radians(o[0]), math.radians(o[1])) if o else None
+
+    motion = MotionController(cfg, servos, obstacle_distance=tof.distance_mm, imu=imu_rad)
     vision = Vision(cfg)
     speaker = Speaker(cfg)
     nav = Navigator(motion, vision, tof)

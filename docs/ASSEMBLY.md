@@ -1,72 +1,84 @@
-# Assembly
+# Assembly (v2): every step is a straight-down move
 
-![assembly](img/assembly.png)
+![exploded](img/exploded.png)
 
-Open [`cad/assembly.scad`](../cad/assembly.scad) in OpenSCAD to spin the model around. Change `pitch`/`knee`/`roll` at the top to see the joints move.
+The design follows [ASSEMBLY_FIRST_DESIGN.md](ASSEMBLY_FIRST_DESIGN.md):
 
-**Naming:** **roll** servos sit in the chassis and swing a leg sideways. **Pitch** servos sit in the hip housings and swing the leg forward and back. **Knee** servos sit in the upper legs. Leg codes: FR, FL, RR, RL (front/rear, right/left).
+- Every part goes on **from above**, guided into place by chamfers and keys.
+- It's held by the part that goes on next.
+- There is **one screw: M3 × 8**.
+- Each servo's zero is **read from its encoder**, so a horn can go on at any spline tooth.
 
-## 0. Software and electronics first (on the bench)
+Order these steps so a future gantry or arm could do them. For now, you plus an electric screwdriver.
 
-1. Flash **Raspberry Pi OS (64-bit)** with Raspberry Pi Imager. In the Imager settings, turn on SSH and Wi-Fi.
-2. Clone this repo on the Pi and run `bash software/scripts/setup_pi.sh`, then reboot.
-3. Wire the electronics on the table ([WIRING.md](WIRING.md)), with all 12 servos plugged in and **no horns on yet**.
-4. Run:
+Tools: a 2.5 mm hex bit on an electric screwdriver, the printed **leg jig**, and a laptop or the Pi with the bus adapter.
+
+## 0. Servo prep (all 10 servos)
+
+1. Connect **one** servo at a time to the bus adapter and run `python -m robodog.calibrate --set-id N`, with N from [WIRING.md](WIRING.md). Label the servo.
+2. Fit each disc horn and its center screw (supplied). **Any tooth is fine.**
+3. Tilt servo (ID 10) only: screw the **tilt hub** onto its horn (4 × M3 × 8). When the head goes on later, the key has to point straight up: use `--jog 10` to set that.
+
+## 1. Leg module (× 4, identical), built in the leg jig, outboard side up
+
+![leg jig](img/leg_jig.png)
+
+1. **Hip block** into the jig's top pocket, cup open upward.
+2. **Pitch servo** (shaft up) drops into the cup. Its connector side goes in first.
+3. **Servo cap** over it: 4 screws.
+4. **Upper link** onto the pitch horn, cup end toward the knee end of the jig. The geared servo is too stiff to turn by hand, so let it turn itself: `python -m robodog.calibrate --jog 1` (keys a/d nudge ±2°, q quits) until the horn's 4 holes line up with the link. Then 4 screws.
+5. **Knee servo** (shaft up) drops into the upper link's cup, then a **cap** (4 screws).
+6. **Lower link** onto the knee horn, tip into the jig's fence: 4 screws.
+7. **Foot** (TPU) pushes down onto the tip: 1 screw.
+8. Plug the chain cable (pitch → knee) and the dock pigtail.
+9. **Calibrate while it's in the jig.** The jig holds the leg exactly straight (pitch 0°, knee 0°). Connect the module to the bus and run:
    ```bash
-   cd software && .venv/bin/python -m robodog.calibrate --center
+   python -m robodog.calibrate --jig FR      # then FL, RR, RL for the other modules
    ```
-   Every servo moves to its mid-point. **Leave the power on** while you fit the horns, so the servos stay centred.
+   This records each joint's encoder zero into `software/calibration.yaml`. That's the whole calibration.
 
-## 1. Chassis and roll servos
+## 2. Body
 
-1. Drop each roll servo into the chassis tub, shaft end toward the nearest front or rear wall, and slide it forward through the wall window until the ears sit flat on the wall's inside face.
-2. Screw the ears in with M3 × 10 into the inserts (4 per servo).
+1. **Pan servo** (ID 9, shaft up) drops into the cup built into the tray, then a **cap** (4 screws).
+2. Battery into the tray's rear bay, strapped through the floor slots. Bus adapter, 5 V buck, fuse and harness go on top of it.
+3. Pogo connector blocks into the four socket pockets (optional, see [WIRING.md](WIRING.md)).
 
-## 2. Hip housings
+## 3. Legs into the body
 
-1. Press a disc horn onto each roll servo spline and tighten the centre screw.
-2. Bolt the hip housing to the horn (M3 × 8). The **pitch servo window should sit vertically, beside the body**, as in the render. Use `hip_housing` on FR and RL and `hip_housing_mirrored` on FL and RR.
-3. Slide the pitch servo in from the inboard side, shaft pointing **outward**, and screw its ears down.
+Drop each leg module **straight down** into its corner socket. Tongues and grooves plus the chamfered socket mouth guide it in.
 
-## 3. Upper legs (pose: knee 30° back)
+- **Right-side sockets:** the module as built in the jig.
+- **Left-side sockets:** the same module turned 180°.
 
-1. Fit a disc horn on each pitch servo.
-2. Bolt the upper leg on (M3 × 10) so it tilts about **30° from vertical with the knee end pointing backward** on all four legs. The spline only goes in 14.4° steps, so pick the closest tooth. Calibration trims the rest.
-3. Push the knee servo through the window at the bottom of the upper leg, from the flat (inboard) side, shaft pointing outward, and screw it down.
+## 4. Deck
 
-## 4. Lower legs and feet (pose: foot under the hip)
+Lower the deck: the grip lugs on the hip blocks poke through its slots and locate it. Drive 4 screws into the tray bosses. **The deck is what traps the legs**, so to swap a leg you remove the deck. Drop the Pi 5 (with cooler) onto the four pins.
 
-1. Fit a horn on each knee servo and bolt the lower leg on so the **foot sits roughly straight under the hip**. That is about 60° between the upper and lower leg.
-2. Slide a TPU foot onto each leg tip and cross-bolt it (M3 × 25 + nyloc).
+## 5. Neck and head
 
-## 5. Electronics into the body
+1. **Pan bracket** onto the pan horn: 4 screws.
+2. **Tilt servo with its hub** slides **down** into the bracket's sleeve. The horn and hub ride down the U-slot.
+3. **Sleeve cap**: 4 screws.
+4. Put the camera, ToF sensor, speaker and mic into the **head** first, then drop the head **straight down**: the key goes into the right-hand slot and the pin into the left-hand slot. It clicks over the key.
+5. With the head looking straight ahead, run `python -m robodog.calibrate --head`.
 
-1. Put the PCA9685, buck converters, Wago nuts and fuse in the centre bay. Double-sided foam tape is fine.
-2. Run the leg cables in through the side holes with slack loops at every joint.
-3. Strap the battery under the chassis.
-4. Mount the Pi on the lid with standoffs, screw the head on, and connect the camera ribbon.
-5. Screw the lid down (4 × M3 × 10).
-
-## 6. Calibrate
-
-Lift the dog so its feet are in the air: rest the body on a mug or box.
+## 6. Check and go
 
 ```bash
-cd software && .venv/bin/python -m robodog.calibrate
+python -m robodog.calibrate --scan            # expect IDs 1-10
+python -m robodog.calibrate --test FR.pitch   # the knee should move BACKWARD; if not, set servos.positive_dir: -1
+python -m robodog --text --local              # "stand up", "walk forward 30 cm", "turn left", "look left"
 ```
 
-For each of the 12 joints:
+Before you rely on the walk speed, calibrate `gait_drift_comp_mm_s` and `yaw_stride_gain` on your floor ([SIMULATION.md](SIMULATION.md#calibrating-the-sim-numbers-on-the-real-robot)).
 
-- Press **t** to wiggle the joint +20°. It should move the foot **outward** (roll), the knee **backward** (pitch), or **straighten** the leg (knee). If it moves the wrong way, press **f** to flip the direction.
-- Use **a / d** (±1°) and **A / D** (±5°) to trim it into the exact stand pose. The hip housing should be level, the upper leg 30° back, and the foot under the hip.
-- Press **n** for the next joint, **s** to save (writes `software/calibration.yaml`), and **q** to quit.
+## Hand-only steps (for now)
 
-## 7. First steps
+These are what a cheap gantry or arm can't do (see the design doc):
 
-```bash
-cd software && .venv/bin/python -m robodog --text --local
-```
+- plugging the 8 chain/dock cables
+- fitting the horn center screws
+- routing the head cables
+- the battery
 
-Type `stand up`, then `walk forward 20 cm`, `turn left`, `sit`. Keep a hand near it the first time.
-
-If it stumbles, lower `motion.max_speed_mm_s`, raise `motion.step_height` a little, or raise `gait_period_s` in `config.yaml`.
+Everything else is a straight-down place, press or screw.

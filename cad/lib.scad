@@ -1,268 +1,353 @@
 // =====================================================================
-//  Pip robot dog — part library.
-//  All parts are modelled in the BODY frame for the RIGHT-FRONT leg
-//  (X forward, Y left, Z up, origin = body centre at roll-axis height).
-//  Other corners are mirror images. parts/*.scad re-orient for printing.
+//  Pip v2 — part library. Parts are modelled in the BODY frame
+//  (X forward, Y left, Z up, origin = between the hip axes) at the
+//  neutral pose: legs straight down, head level and facing forward.
+//  Leg parts are drawn for the front-right corner. All four leg modules
+//  are IDENTICAL: right side as drawn, left side rotated 180° about Z.
 // =====================================================================
 include <params.scad>
 
-// ---------------------------------------------------------------------
-// Servo frame: origin = shaft centre on the case top face, shaft = +Z,
-// long axis = +X (from the shaft towards the far end of the case).
-// ---------------------------------------------------------------------
-servo_cx = servo_len / 2 - servo_shaft_off;   // case centre along X
-
-module servo_dummy() {      // for the assembly preview only
-    color("#222") translate([-servo_shaft_off, -servo_wid/2, -servo_hgt])
-        cube([servo_len, servo_wid, servo_hgt]);
-    color("#333") translate([servo_cx - servo_flange_len/2, -servo_wid/2,
-                             -servo_flange_top - servo_flange_t])
-        cube([servo_flange_len, servo_wid, servo_flange_t]);
-    color("silver") cylinder(d = 6, h = horn_stack - 3);
-    color("silver") translate([0, 0, horn_stack - 3]) cylinder(d = horn_disc_d, h = 3);
+// ---------------------------------------------------------------- frames
+module frame(o, xs, ys, zs) {
+    multmatrix([[xs[0], ys[0], zs[0], o[0]],
+                [xs[1], ys[1], zs[1], o[1]],
+                [xs[2], ys[2], zs[2], o[2]],
+                [0, 0, 0, 1]]) children();
 }
+// pitch servo (FR): shaft -> -Y (outboard), case extends up (+Z)
+module pitch_frame() frame([bx, -rim_y, 0], [0,0,1], [-1,0,0], [0,-1,0]) children();
+// knee servo (FR, leg straight): shaft -> -Y, case extends up the upper link
+module knee_frame()  frame([bx, -upper_out, -L2], [0,0,1], [-1,0,0], [0,-1,0]) children();
+// pan servo: shaft up, case extends backward
+module pan_frame()   frame([pan_x, 0, pan_rim_z], [-1,0,0], [0,-1,0], [0,0,1]) children();
+// tilt servo: shaft -> -Y, case extends down (stands upright in the sleeve)
+module tilt_frame()  frame([pan_x, tilt_top_y, tilt_z], [0,0,-1], [1,0,0], [0,-1,0]) children();
 
-// Plate that clamps the servo ears. Occupies z in [-flange_top, -flange_top+plate_t].
-module servo_clamp_plate(margin = 6) {
-    translate([servo_cx - servo_flange_len/2 - 3, -servo_wid/2 - margin, -servo_flange_top])
-        cube([servo_flange_len + 6, servo_wid + 2*margin, plate_t]);
-}
-
-// Negative volume: case window + insert holes for the ear screws.
-module servo_clamp_cut() {
-    translate([-servo_shaft_off - fit/2, -servo_wid/2 - fit/2, -60])
-        cube([servo_len + fit, servo_wid + fit, 120]);
-    for (dx = [-1, 1], dy = [-1, 1])
-        translate([servo_cx + dx*servo_hole_pitch/2, dy*servo_hole_span/2, -servo_flange_top - 0.01])
-            cylinder(d = m3_insert, h = plate_t + 0.02);
+// ------------------------------------------------- servo-frame helpers
+module servo_dummy() {
+    color("#1d1d1d") translate([-servo_shaft_off, -servo_wid/2, -servo_case_h])
+        cube([servo_len, servo_wid, servo_case_h]);
+    color("#2a2a2a") translate([0, 0, -servo_case_h - 2.4]) cylinder(d = horn_d, h = 2.4);
+    color("#3a3a3a") translate([12, -9, -servo_case_h - servo_bottom]) cube([4, 18, servo_bottom]);
+    color("silver") cylinder(d = horn_d, h = horn_t);
+    color("silver") translate([0, 0, horn_t]) cylinder(d = 5.4, h = 1.9);
 }
 
-// Horn bolt pattern, axis along +Z, centred on origin, through everything.
-module horn_cut(h = 400) {
-    translate([0, 0, -h/2]) cylinder(d = horn_hub_clear_d, h = h);
-    for (a = [45:90:315]) rotate([0, 0, a])
-        translate([horn_bolt_r, 0, -h/2]) cylinder(d = horn_bolt_d, h = h);
+module cup_solid() {
+    translate([cup_x0, -cup_hw, -cup_depth]) cube([cup_x1 - cup_x0, 2 * cup_hw, cup_depth]);
 }
 
-// ---------------------------------------------------------------------
-// Frame transforms (right-front corner)
-// ---------------------------------------------------------------------
-// roll servo: shaft -> +X, long axis -> +Y (inboard), servo Y -> +Z
-module roll_servo_frame() {
-    multmatrix([[0,0,1, roll_case_top_x],
-                [1,0,0, -by],
-                [0,1,0, 0],
-                [0,0,0, 1]]) children();
+// case pocket + rim lead-in + connector window in the floor + cap pilots
+module cup_cut() {
+    ix0 = -servo_shaft_off - fit; ix1 = servo_len - servo_shaft_off + fit; iw = servo_wid/2 + fit;
+    translate([ix0, -iw, -(servo_case_h + servo_bottom)]) cube([ix1 - ix0, 2*iw, servo_case_h + servo_bottom + 1]);
+    hull() {                                    // lead-in chamfer at the rim
+        translate([ix0, -iw, -lead_in]) cube([ix1 - ix0, 2*iw, 0.01]);
+        translate([ix0 - lead_in, -iw - lead_in, 0]) cube([ix1 - ix0 + 2*lead_in, 2*iw + 2*lead_in, 0.02]);
+    }
+    translate([7, -11, -cup_depth - 1]) cube([15, 22, cup_floor + 2]);   // connectors + cables
+    for (x = cap_screw_x, y = [-cap_screw_y, cap_screw_y])
+        translate([x, y, -12]) cylinder(d = m3_pilot, h = 13);
 }
-// pitch servo: shaft -> -Y (outboard), long axis -> -Z, servo Y -> +X
-module pitch_servo_frame() {
-    multmatrix([[0,1,0, bx],
-                [0,0,-1, -by - pitch_case_top],
-                [-1,0,0, 0],
-                [0,0,0, 1]]) children();
+
+// The ONE servo cap: clamps any servo into any cup (10 identical caps).
+module servo_cap() {
+    difference() {
+        translate([cup_x0, -cup_hw, 0]) cube([cup_x1 - cup_x0, 2 * cup_hw, cap_t]);
+        translate([0, 0, -1]) cylinder(d = horn_d + 2, h = cap_t + 2);
+        for (x = cap_screw_x, y = [-cap_screw_y, cap_screw_y])
+            translate([x, y, -1]) cylinder(d = m3_clear, h = cap_t + 2);
+    }
 }
-// knee servo (leg straight down): shaft -> -Y, long axis -> +Z, servo Y -> -X
-module knee_servo_frame() {
-    multmatrix([[0,-1,0, bx],
-                [0,0,-1, -by - knee_case_top],
-                [1,0,0, -upper_len],
-                [0,0,0, 1]]) children();
+
+// horn bolt pattern + centre-screw clearance, axis = local Z, through everything
+module horn_cut() {
+    cylinder(d = horn_screw_clear_d, h = 400, center = true);
+    for (sx = [-1, 1], sy = [-1, 1])
+        translate([sx * horn_hole_sq/2, sy * horn_hole_sq/2, 0]) cylinder(d = m3_clear, h = 400, center = true);
 }
-// Places children on a Y-axis through (x, z) - used for horn patterns.
 module on_y_axis(x, z) { translate([x, 0, z]) rotate([90, 0, 0]) children(); }
 
-// ---------------------------------------------------------------------
-// CHASSIS (open-top tub that holds the 4 roll servos + electronics)
-// ---------------------------------------------------------------------
-lid_post_xy = [for (sx = [-1, 1], sy = [-1, 1]) [sx * 12, sy * (chassis_half_wid - wall - 4)]];
+// Grip lug (rule 7): two flats lug_w apart along local X, datum V-notch on top.
+module grip_lug(depth = 8, h = lug_h) {
+    difference() {
+        translate([-lug_w/2, -depth/2, 0]) cube([lug_w, depth, h]);
+        translate([0, 0, h]) rotate([90, 0, 0]) rotate([0, 0, 45])
+            cube([datum, datum, depth + 2], center = true);
+    }
+}
 
-module chassis() {
-    L = chassis_half_len; W = chassis_half_wid;
+// ------------------------------------------------------------ HIP BLOCK
+// Leg-module base. Holds the pitch servo, drops straight down into a
+// tray socket (tongues + lead-ins), and is trapped there by the deck.
+module hip_block() {
+    in_y = -(rim_y - cup_depth);                     // inboard face (-6.5)
+    difference() {
+        union() {
+            pitch_frame() cup_solid();
+            for (s = [-1, 1]) hull() {               // locating tongues, chamfered bottom
+                translate([bx + s * (cup_hw + tongue_d/2) - tongue_d/2, tongue_y - tongue_w/2, cup_x0 + lead_in])
+                    cube([tongue_d, tongue_w, cup_x1 - cup_x0 - lead_in]);
+                translate([bx + s * cup_hw - (s < 0 ? 0.01 : 0), tongue_y - tongue_w/2, cup_x0])
+                    cube([0.01, tongue_w, 1]);
+            }
+            translate([bx, tongue_y, tray_z1]) grip_lug();
+        }
+        pitch_frame() cup_cut();
+        // dock contact pocket on the inboard face (pads for the tray's pogo pins)
+        translate([bx - 8, in_y - 3, -8]) cube([16, 3.01, 6]);
+        // bottom lead-in chamfers along X faces
+        for (s = [-1, 1]) translate([bx + s * cup_hw, 0, cup_x0]) rotate([0, 45, 0])
+            cube([lead_in * 1.42, 200, lead_in * 1.42], center = true);
+    }
+}
+
+// ----------------------------------------------------------- UPPER LINK
+module upper_link() {
+    y0 = -upper_out;
+    difference() {
+        union() {
+            translate([0, y0, 0]) rotate([-90, 0, 0]) linear_extrude(link_t) hull() {
+                translate([bx, 0]) circle(r = cup_hw);
+                translate([bx - cup_hw, L2 - cup_x0 - 1]) square([2 * cup_hw, 1]);
+            }
+            knee_frame() cup_solid();
+            translate([bx, y0 + link_t/2, cup_hw - 4]) grip_lug(depth = link_t);
+        }
+        knee_frame() cup_cut();
+        on_y_axis(bx, 0) horn_cut();
+        translate([bx - 6, y0 - 1, -L2 + cup_x1 + 8]) cube([12, link_t + 2, L2 - cup_x1 - 8 - 22]);
+    }
+}
+
+// ----------------------------------------------------------- LOWER LINK
+module lower_link() {
+    y0 = -lower_out; zk = -L2;
+    difference() {
+        union() {
+            translate([0, y0, 0]) rotate([-90, 0, 0]) linear_extrude(link_t) hull() {
+                translate([bx, -zk]) circle(r = cup_hw - 2);
+                translate([bx, -zk + L3 - 2]) circle(r = 6);
+            }
+            translate([bx, y0 + link_t/2, zk + 10]) grip_lug(depth = link_t);
+        }
+        on_y_axis(bx, zk) horn_cut();
+        on_y_axis(bx, zk - L3) cylinder(d = m3_pilot, h = 400, center = true);  // foot screw
+        translate([bx - 4, y0 - 1, zk - L3 + 22]) cube([8, link_t + 2, L3 - 44]);
+    }
+}
+
+// TPU foot: slides onto the link tip from outboard, one M3x8 from outboard.
+module foot() {
+    translate([bx, -foot_y, -L2 - L3]) difference() {
+        intersection() {
+            sphere(d = foot_d);
+            translate([-foot_d, -foot_d/2 + 2, -foot_d]) cube(2 * foot_d);    // flat print face (outboard)
+        }
+        translate([-6 - fit, -link_t/2 - fit, -4]) cube([12 + 2*fit, foot_d, foot_d]);   // tip slot, open inboard + up
+        rotate([90, 0, 0]) cylinder(d = m3_clear, h = foot_d);                          // screw
+        translate([0, -link_t/2 - 2, 0]) rotate([90, 0, 0]) cylinder(d = 6, h = foot_d);   // head counterbore
+    }
+}
+
+// ------------------------------------------------------------------ TRAY
+sock_x_hw = sock_hw + tongue_d + sock_wall + 0.5;   // socket block half-width
+deck_boss = [for (sx = [-1, 1], sy = [-1, 1]) [sx * 40, sy * (rim_y - tray_wall - 3.5)]];  // bosses overlap the wall
+module socket_block() translate([bx - sock_x_hw, -rim_y, tray_z0])
+    cube([2 * sock_x_hw, rim_y + sock_in_y + sock_wall, tray_z1 - tray_z0]);
+module socket_cut() {
+    translate([bx - sock_hw, -rim_y - 1, tray_z0 + tray_floor]) cube([2 * sock_hw, rim_y + 1 + sock_in_y, 200]);
+    for (s = [-1, 1]) {                           // tongue grooves + top funnel
+        translate([bx + s * sock_hw - (s < 0 ? tongue_d + fit : 0), tongue_y - tongue_w/2 - fit, tray_z0 + tray_floor])
+            cube([tongue_d + fit, tongue_w + 2*fit, 200]);
+    }
+    hull() {                                      // funnel lead-in at the socket mouth
+        translate([bx - sock_hw, -rim_y - 1, tray_z1 - lead_in]) cube([2*sock_hw, rim_y + 1 + sock_in_y, 0.01]);
+        translate([bx - sock_hw - lead_in, -rim_y - 1, tray_z1]) cube([2*sock_hw + 2*lead_in, rim_y + 1 + sock_in_y + lead_in, 0.02]);
+    }
+    // pogo-pin block pocket in the inboard wall + wire tunnel into the centre channel
+    translate([bx - 8, sock_in_y - 0.01, -8]) cube([16, sock_wall + 0.02, 6]);
+}
+
+module tray() {
     difference() {
         union() {
             difference() {
-                translate([-L, -W, chassis_z_bot]) cube([2*L, 2*W, chassis_z_top - chassis_z_bot]);
-                // cavity: front/rear walls are plate_t thick, sides/floor are wall thick
-                translate([-L + plate_t, -W + wall, chassis_z_bot + wall])
-                    cube([2*(L - plate_t), 2*(W - wall), 100]);
+                translate([-tray_hx, -rim_y, tray_z0]) cube([2*tray_hx, 2*rim_y, tray_z1 - tray_z0]);
+                translate([-tray_hx + tray_wall, -rim_y + tray_wall, tray_z0 + tray_floor]) cube([2*(tray_hx - tray_wall), 2*(rim_y - tray_wall), 200]);
             }
-            // lid posts
-            for (p = lid_post_xy) translate([p[0], p[1], chassis_z_bot])
-                cylinder(d = 9, h = chassis_z_top - chassis_z_bot);
+            for (mx = [0, 1], my = [0, 1]) mirror([mx, 0, 0]) mirror([0, my, 0]) socket_block();
+            pan_frame() cup_solid();
+            difference() {                         // hollow pedestal under the pan cup
+                translate([pan_x - cup_x1, -cup_hw, tray_z0]) cube([cup_x1 - cup_x0, 2*cup_hw, pan_rim_z - cup_depth - tray_z0]);
+                translate([pan_x - cup_x1 + 3, -cup_hw + 3, tray_z0 + tray_floor]) cube([cup_x1 - cup_x0 - 6, 2*cup_hw - 6, 200]);
+            }
+            for (p = deck_boss) translate([p[0], p[1], tray_z0]) cylinder(d = 8, h = tray_z1 - tray_z0);
+            for (s = [-1, 1]) translate([s * tray_hx, 0, 0]) rotate([0, s * 90, 0]) rotate([0, 0, 90])
+                grip_lug(depth = 10);
         }
-        // roll servo windows + ear inserts, all four corners
+        for (mx = [0, 1], my = [0, 1]) mirror([mx, 0, 0]) mirror([0, my, 0]) socket_cut();
+        pan_frame() cup_cut();
+        translate([pan_x - cup_x1 - 1, -8, tray_z0 + tray_floor]) cube([6, 16, 20]);   // pedestal cable door
+        for (p = deck_boss) translate([p[0], p[1], tray_z1 - 10]) cylinder(d = m3_pilot, h = 11);
+        for (x = [-55, -20], s = [-1, 1]) translate([x - 11, s * 30 - 1.5, tray_z0 - 1]) cube([22, 3, tray_floor + 2]); // battery strap
+    }
+}
+
+// ------------------------------------------------------------------ DECK
+pi_holes = [for (x = [-108.5, -50.5], y = [-24.5, 24.5]) [x, y]];
+module deck() {
+    z0 = tray_z1;
+    difference() {
+        union() {
+            translate([-tray_hx, -rim_y, z0]) cube([2*tray_hx, 2*rim_y, deck_t]);
+            for (h = pi_holes) translate([h[0], h[1], z0 + deck_t]) {   // Pi 5 drops onto pins
+                cylinder(d = 6, h = 5);
+                cylinder(d1 = 2.5, d2 = 2.0, h = 5 + 3.5);
+            }
+            translate([105, 0, z0 + deck_t]) rotate([0, 0, 90]) grip_lug(depth = 8);
+        }
         for (mx = [0, 1], my = [0, 1]) mirror([mx, 0, 0]) mirror([0, my, 0])
-            roll_servo_frame() servo_clamp_cut();
-        // lid post insert holes
-        for (p = lid_post_xy) translate([p[0], p[1], chassis_z_top - m3_insert_depth])
-            cylinder(d = m3_insert, h = 10);
-        // battery strap slots (battery hangs under the floor)
-        for (sx = [-1, 1], sy = [-1, 1]) translate([sx * 25 - 11, sy * 22 - 1.5, chassis_z_bot - 1])
-            cube([22, 3, wall + 2]);
-        // battery lead / XT60 pass-through
-        translate([0, 0, chassis_z_bot - 1]) cylinder(d = 14, h = wall + 2);
-        // servo cable exits in the side walls (pitch + knee cables from each leg)
-        for (sx = [-1, 1], sy = [-1, 1]) translate([sx * 42, sy * W, 4]) rotate([90, 0, 0])
-            cylinder(d = 11, h = 3 * wall, center = true);
-        // weight-saving / airflow slots in the floor
-        for (i = [-1, 0, 1]) translate([i * 14 - 4, -8, chassis_z_bot - 1]) cube([8, 16, wall + 2]);
+            translate([bx - lug_w/2 - fit, tongue_y - 4 - fit, z0 - 1]) cube([lug_w + 2*fit, 8 + 2*fit, deck_t + 2]);
+        translate([pan_x - cup_x1 - fit, -cup_hw - fit, z0 - 1]) cube([cup_x1 - cup_x0 + 2*fit, 2*cup_hw + 2*fit, deck_t + 2]);
+        for (p = deck_boss) translate([p[0], p[1], z0 - 1]) cylinder(d = m3_clear, h = deck_t + 2);
+        translate([-70, -14, z0 - 1]) cube([30, 28, deck_t + 2]);      // wires up to the Pi
+        translate([pan_x - cup_x1 - 14, -10, z0 - 1]) cube([10, 20, deck_t + 2]);  // head cables
+        for (i = [0:4]) translate([-20 + i * 7, -32, z0 - 1]) cube([3, 64, deck_t + 2]);   // vents
     }
 }
 
-// ---------------------------------------------------------------------
-// LID / ELECTRONICS DECK (Pi 5 on top, head at the front)
-// ---------------------------------------------------------------------
-lid_t = 3;
-pi_holes = [for (dx = [0, 58], dy = [0, 49]) [dx, dy]];
-pi_origin = [-50, -24.5];        // Pi 5 mounted near the rear, USB facing back
-head_base = [[38, -20], [38, 20], [60, -20], [60, 20]];
-
-module lid() {
-    L = chassis_half_len; W = chassis_half_wid;
+// ----------------------------------------------------------- PAN BRACKET
+sl_hw   = servo_wid/2 + fit + sleeve_wall;               // 18.7
+sl_y0   = tilt_top_y - cap_t;                            // thin front wall (shaft side)
+sl_y1   = tilt_top_y + servo_case_h + servo_bottom + fit;// floor wall inner face
+sl_top  = tilt_z + servo_shaft_off + fit;                // sleeve top
+sleeve_screws = [for (sx = [-1, 1], y = [tilt_top_y + 6, sl_y1 - 6]) [pan_x + sx * (sl_hw - sleeve_wall/2), y]];
+module pan_bracket() {
+    iw = servo_wid/2 + fit;
     difference() {
         union() {
-            translate([-L, -W, chassis_z_top]) cube([2*L, 2*W, lid_t]);
-            // locating lip that drops into the tub
-            translate([-L + plate_t + 0.4, -W + wall + 0.4, chassis_z_top - 3])
-                difference() {
-                    cube([2*(L - plate_t - 0.4), 2*(W - wall - 0.4), 3]);
-                    translate([2, 2, -1]) cube([2*(L - plate_t - 0.4) - 4, 2*(W - wall - 0.4) - 4, 5]);
+            translate([pan_x - sl_hw, sl_y0, bracket_z0]) cube([2*sl_hw, sl_y1 + cup_floor - sl_y0, link_t]);
+            for (s = [-1, 1]) translate([pan_x + s * (iw + sleeve_wall/2) - sleeve_wall/2, sl_y0, bracket_z1])
+                cube([sleeve_wall, sl_y1 + cup_floor - sl_y0, sl_top - bracket_z1]);
+            difference() {                                   // thin shaft-side wall with U-slot
+                translate([pan_x - sl_hw, sl_y0, bracket_z1]) cube([2*sl_hw, cap_t, sl_top - bracket_z1]);
+                hull() {
+                    translate([pan_x, sl_y0 - 1, tilt_z]) rotate([-90, 0, 0]) cylinder(d = horn_d + 2, h = cap_t + 2);
+                    translate([pan_x - (horn_d + 2)/2, sl_y0 - 1, sl_top]) cube([horn_d + 2, cap_t + 2, 1]);
                 }
+            }
+            translate([pan_x - sl_hw, sl_y1, bracket_z1]) cube([2*sl_hw, cup_floor, sl_top - bracket_z1]);  // floor wall
+            translate([pan_x, sl_y1 + cup_floor, tilt_z]) rotate([-90, 0, 0]) cylinder(d = 8, h = 6.2);     // idler pin
+            translate([pan_x - sl_hw, (sl_y0 + sl_y1)/2, bracket_z0 + link_t/2]) rotate([0, -90, 0]) rotate([0, 0, 90])
+                grip_lug(depth = link_t, h = 6);
+            for (s = [-1, 1]) translate([pan_x + s * (iw - 1.85) - 1.85, sl_y0, bracket_z1])   // rest ribs
+                cube([3.7, sl_y1 - sl_y0, tilt_rest]);
         }
-        for (p = lid_post_xy) translate([p[0], p[1], chassis_z_top - 5]) cylinder(d = m3_clear, h = 20);
-        for (p = lid_post_xy) translate([p[0], p[1], chassis_z_top + lid_t - 2]) cylinder(d = 6.5, h = 5);
-        // post clearance in the locating lip
-        for (p = lid_post_xy) translate([p[0], p[1], chassis_z_top - 4]) cylinder(d = 11, h = 4);
-        // Pi 5 mounting holes: use M2.5 x 10 mm brass standoffs + nuts underneath
-        for (h = pi_holes) translate([pi_origin[0] + h[0], pi_origin[1] + h[1], chassis_z_top - 5])
-            cylinder(d = 2.8, h = 20);
-        // wiring slots: under the Pi (power + I2C/I2S to the bay), camera ribbon under the head
-        translate([-38, -14, chassis_z_top - 5]) cube([30, 28, 20]);
-        translate([38, -12, chassis_z_top - 5]) cube([8, 24, 20]);
-        // head screws (from below, into inserts in the head base)
-        for (p = head_base) translate([p[0], p[1], chassis_z_top - 5]) cylinder(d = m3_clear, h = 20);
-        // vent grid
-        for (i = [0:3]) translate([4 + i * 6, -30, chassis_z_top - 1]) cube([3, 60, 10]);
+        translate([pan_x, 0, 0]) horn_cut();
+        // connector window in the floor wall
+        translate([pan_x - 11, sl_y1 - 1, tilt_z - 22]) cube([22, cup_floor + 2, 15]);
+        for (p = sleeve_screws) translate([p[0], p[1], sl_top - 10]) cylinder(d = m3_pilot, h = 11);
+        // lead-in at the sleeve mouth
+        hull() {
+            translate([pan_x - iw, tilt_top_y, sl_top - lead_in]) cube([2*iw, sl_y1 - tilt_top_y, 0.01]);
+            translate([pan_x - iw - lead_in, tilt_top_y, sl_top]) cube([2*iw + 2*lead_in, sl_y1 - tilt_top_y + lead_in, 0.02]);
+        }
+    }
+}
+module sleeve_cap() {
+    difference() {
+        translate([pan_x - sl_hw, sl_y0, sl_top]) cube([2*sl_hw, sl_y1 + cup_floor - sl_y0, 3]);
+        for (p = sleeve_screws) translate([p[0], p[1], sl_top - 1]) cylinder(d = m3_clear, h = 5);
     }
 }
 
-// ---------------------------------------------------------------------
-// HEAD (Camera Module 3, VL53L1X ToF, speaker, mic)
-// ---------------------------------------------------------------------
-head_size = [34, 52, 44];
-head_x0 = 32;           // rear face of head
+// -------------------------------------------------------------- TILT HUB
+// Pre-fitted to the tilt horn (shaft-up, in its jig). Its key drives the head.
+key_z0 = 8.5; key_z1 = 18; key_hw = 5;
+hub_y0 = tilt_top_y - horn_t; hub_y1 = hub_y0 - link_t; key_y1 = hub_y1 - 4;
+module tilt_hub() {
+    difference() {
+        union() {
+            translate([pan_x, hub_y0, tilt_z]) rotate([90, 0, 0]) cylinder(d = horn_d + 1.6, h = link_t);
+            hull() {
+                translate([pan_x - key_hw, key_y1, tilt_z + key_z0]) cube([2*key_hw, hub_y0 - key_y1, 1]);
+                translate([pan_x - key_hw, key_y1, tilt_z + key_z1 - 1]) cube([2*key_hw, hub_y0 - key_y1, 1]);
+            }
+        }
+        translate([pan_x, 0, tilt_z]) rotate([90, 0, 0]) horn_cut();
+    }
+}
+
+// ------------------------------------------------------------------ HEAD
+// Drops straight down: key into the right slot, idler pin into the left.
+hd_x0 = -14; hd_x1 = 50; hd_z0 = -16; hd_z1 = 26; box_x0 = 30;
+hd_yr = hub_y1 - 0.2;            // right plate inner face (key sits inside the plate)
+hd_yl = sl_y1 + cup_floor + 0.4; // left plate inner face
+hp_t = 4;
 module head() {
-    hx = head_size[0]; hy = head_size[1]; hz = head_size[2];
-    z0 = chassis_z_top + lid_t;
-    t = 2.4;
+    X = pan_x; Z = tilt_z;
+    yr0 = hd_yr - hp_t; yl1 = hd_yl + hp_t;
     difference() {
         union() {
-            translate([head_x0, -hy/2, z0]) cube([hx, hy, hz]);
-            // insert bosses for the base screws
-            for (p = head_base) translate([p[0], p[1], z0]) cylinder(d = 8, h = 7);
+            translate([X + hd_x0, yr0, Z + hd_z0]) cube([box_x0 + 4 - hd_x0, hp_t, hd_z1 - hd_z0]);          // right plate
+            translate([X + hd_x0, hd_yl, Z + hd_z0]) cube([box_x0 + 4 - hd_x0, hp_t, hd_z1 - hd_z0]);          // left plate
+            translate([X + hd_x0, yr0, Z + hd_z1]) cube([hd_x1 - hd_x0, yl1 - yr0, 3]);                        // top bridge
+            translate([X + box_x0, yr0, Z - 14]) cube([hd_x1 - box_x0, yl1 - yr0, hd_z1 + 14]);               // face box
+            for (y = [yr0 + 8, yl1 - 11]) translate([X + 2, y, Z + hd_z1 + 3]) rotate([90, 0, 0])            // ears
+                linear_extrude(3, center = true) polygon([[0, 0], [18, 0], [4, 17]]);
+            translate([X + hd_x0, (yr0 + yl1)/2, Z + hd_z1 + 1.5]) rotate([0, -90, 0]) rotate([0, 0, 90])
+                grip_lug(depth = 3, h = 6);
         }
-        // hollow, open at the back
-        translate([head_x0 - 1, -hy/2 + t, z0 + t]) cube([hx - t + 1, hy - 2*t, hz - 2*t]);
-        // ribbon cable hole in the floor
-        translate([head_x0 + 6, -10, z0 - 1]) cube([6, 20, t + 2]);
-        // base inserts
-        for (p = head_base) translate([p[0], p[1], z0 - 0.01]) cylinder(d = m3_insert, h = m3_insert_depth);
-        fx = head_x0 + hx;
-        // camera: lens window + 4 x M2 holes (Camera Module 3: 21 x 12.5 mm pattern)
-        cam_z = z0 + 28;
-        translate([fx - t - 1, -7, cam_z - 7]) cube([t + 2, 14, 14]);
-        for (dy = [-10.5, 10.5], dz = [-4, 8.5]) translate([fx - t - 1, dy, cam_z + dz])
-            rotate([0, 90, 0]) cylinder(d = 2.2, h = t + 2);
-        // ToF window under the camera
-        translate([fx - t - 1, -6, z0 + 9]) cube([t + 2, 12, 7]);
-        // "eyes" (5 mm LEDs) — optional, purely cosmetic
-        for (dy = [-17, 17]) translate([fx - t - 1, dy, z0 + 33]) rotate([0, 90, 0]) cylinder(d = 5.2, h = t + 2);
-        // speaker grille on the left cheek (40 mm speaker), mic hole on top
-        for (r = [0, 5, 10], a = [0:60:359]) translate([head_x0 + hx/2 + (r == 0 ? 0 : r*cos(a + r*6)),
-                                                    hy/2 - t - 1,
-                                                    z0 + hz/2 + (r == 0 ? 0 : r*sin(a + r*6))])
-            rotate([-90, 0, 0]) cylinder(d = 3, h = t + 2);
-        translate([head_x0 + hx/2, 0, z0 + hz - t - 1]) cylinder(d = 2.5, h = t + 2);
+        // hollow face box, open at the back
+        translate([X + box_x0 - 1, yr0 + 2.4, Z - 14 + 2.4]) cube([hd_x1 - box_x0 - 1.4, yl1 - yr0 - 4.8, hd_z1 + 14 - 2.4]);
+        // right plate: key slot (open at top) + hub/screw-head clearance
+        translate([X - key_hw - fit, yr0 - 1, Z + key_z0 - fit]) cube([2*(key_hw + fit), hp_t + 2, 100]);
+        translate([X, yr0 - 1, Z]) rotate([-90, 0, 0]) cylinder(d = horn_d + 4, h = hp_t + 2);
+        // left plate: idler-pin slot (open at top)
+        hull() {
+            translate([X, hd_yl - 1, Z]) rotate([-90, 0, 0]) cylinder(d = 8 + 2*fit, h = hp_t + 2);
+            translate([X - 4 - fit, hd_yl - 1, Z + 100]) cube([8 + 2*fit, hp_t + 2, 1]);
+        }
+        // bridge relief over the slots so key/pin can enter from above
+        translate([X - key_hw - fit, yr0 - 1, Z + hd_z1 - 1]) cube([2*(key_hw + fit), hp_t + 1.01, 10]);
+        translate([X - 4 - fit, hd_yl - 0.01, Z + hd_z1 - 1]) cube([8 + 2*fit, hp_t + 1.01, 10]);
+        // Camera Module 3: 14 mm lens window + 4 x M2 (21 x 12.5 mm)
+        cy = (yr0 + yl1) / 2;
+        fx = X + hd_x1;
+        translate([fx - 4, cy - 7, Z + 1]) cube([6, 14, 14]);
+        for (dy = [-10.5, 10.5], dz = [2, 14.5]) translate([fx - 4, cy + dy, Z + dz]) rotate([0, 90, 0]) cylinder(d = 2.2, h = 6);
+        translate([fx - 4, cy - 6, Z - 10]) cube([6, 12, 7]);                 // VL53L1X window
+        for (dy = [-18, 18]) translate([fx - 4, cy + dy, Z + 12]) rotate([0, 90, 0]) cylinder(d = 5.2, h = 6);  // LED eyes
+        for (i = [0:5], j = [0:3]) translate([X + 18 + i * 5, cy - 7.5 + j * 5, Z + hd_z1 - 1]) cylinder(d = 2.6, h = 5); // speaker grille
+        translate([X + 46, cy, Z + hd_z1 - 1]) cylinder(d = 2.5, h = 5);    // mic
     }
 }
 
-// ---------------------------------------------------------------------
-// HIP HOUSING (bolts to the roll horn, holds the pitch servo)
-// ---------------------------------------------------------------------
-module hip_housing() {
-    y_out = -by - (pitch_case_top - servo_flange_top) - plate_t;  // outboard face of pitch plate
-    y_in  = -by + 16;
-    cap_z0 = 17.6; cap_t = 4;
+// -------------------------------------------------------------- LEG JIG
+// Assembly + calibration fixture. The leg module is built in it straight down
+// (outboard side up), and while it sits here the leg is exactly straight:
+// pitch = 0, knee = 0 -> `python -m robodog.calibrate --jig FR` reads the zeros.
+// Modelled in the body frame around the FR module; printed flat (see parts/).
+module leg_jig() {
+    in_y = -(rim_y - cup_depth);               // hip block inboard face
+    base_t = 5; wall = 3; h = 10;
+    zt = cup_x1 + 4.5; zb = -L2 - L3 - 8;
+    hx = cup_hw + tongue_d + fit;              // pocket half width incl. tongues
     difference() {
         union() {
-            pitch_servo_frame() servo_clamp_plate(margin = 6);               // pitch plate
-            translate([hip_plate_x0, y_out, -20]) cube([hip_plate_t, y_in - y_out, cap_z0 + cap_t + 20]); // horn plate
-            translate([hip_plate_x0, y_out, cap_z0])                       // top cap
-                cube([bx + servo_wid/2 + 6 - hip_plate_x0, y_in - y_out, cap_t]);
-            // gusset between horn plate and pitch plate (bottom)
-            translate([hip_plate_x0, y_out, -40]) cube([hip_plate_t, plate_t, 20]);
+            translate([bx - 30, in_y, zb]) cube([60, base_t, zt - zb]);                       // base
+            translate([bx - hx - wall, in_y - h, cup_x0 - fit - wall])                        // hip pocket
+                cube([2*(hx + wall), h + 1, cup_x1 - cup_x0 + 2*(fit + wall)]);
+            translate([bx - cup_hw - fit - wall, -(upper_out - cup_depth) - 10, -L2 + cup_x0 - fit - wall]) // knee pad + pocket
+                cube([2*(cup_hw + fit + wall), (upper_out - cup_depth) + 10 + in_y + 1, cup_x1 - cup_x0 + 2*(fit + wall)]);
+            fz = 40; fw = 6 + (cup_hw - 2 - 6) * (fz + 7 - 2) / (L3 - 2) + 1;   // link half-width at post top + clearance
+            for (s = [-1, 1]) translate([bx + s * (fw + 2) - 2, -lower_out - 1, -L2 - L3 + fz - 7])  // lower-link fence
+                cube([4, lower_out + 2 + in_y, 14]);
         }
-        pitch_servo_frame() servo_clamp_cut();
-        // roll horn pattern on the horn plate (axis +X through (y=-by, z=0))
-        translate([hip_plate_x0, -by, 0]) rotate([0, 90, 0]) horn_cut();
-        // cable relief in the top cap
-        translate([bx - 6, -by - 2, cap_z0 - 1]) cube([12, 12, cap_t + 2]);
-    }
-}
-
-// ---------------------------------------------------------------------
-// UPPER LEG (bolts to the pitch horn, holds the knee servo)
-// ---------------------------------------------------------------------
-module upper_leg() {
-    y0 = -by - upper_out;
-    z_bot = -upper_len - (servo_len - servo_shaft_off) + servo_cx - servo_flange_len/2 - 3; // bottom of ear plate
-    difference() {
-        union() {
-            translate([0, y0, 0]) rotate([-90, 0, 0]) linear_extrude(leg_t) hull() {
-                translate([bx, 0]) circle(r = leg_w/2);
-                translate([bx - leg_w/2, upper_len + 22]) square([leg_w, 1]);
-            }
-            // outboard edge ribs (stiffness) along the upper part
-            for (sx = [-1, 1]) translate([bx + sx * (leg_w/2 - 1.5) - 1.5, y0 - 4, -upper_len + 42])
-                cube([3, 4, upper_len - 52]);
-        }
-        knee_servo_frame() servo_clamp_cut();
-        on_y_axis(bx, 0) horn_cut();
-        // lightening slot
-        translate([bx - 6, y0 - 5, -upper_len + 46]) cube([12, leg_t + 10, upper_len - 66]);
-    }
-}
-
-// ---------------------------------------------------------------------
-// LOWER LEG (bolts to the knee horn; the TPU foot slips over the tip)
-// ---------------------------------------------------------------------
-module lower_leg() {
-    y0 = -by - lower_out;
-    zk = -upper_len;
-    difference() {
-        union() {
-            translate([0, y0, 0]) rotate([-90, 0, 0]) linear_extrude(leg_t) hull() {
-                translate([bx, -zk]) circle(r = 15);
-                translate([bx, -zk + lower_len - 2]) circle(r = 5);
-            }
-            // centre rib on the outboard face
-            translate([bx - 2, y0 - 4, zk - lower_len + 18]) cube([4, 4, lower_len - 34]);
-        }
-        on_y_axis(bx, zk) horn_cut();
-        // foot cross-bolt hole
-        on_y_axis(bx, zk - lower_len + 4) cylinder(d = m3_clear, h = 200, center = true);
-    }
-}
-
-// TPU foot: a ball with a slot for the leg tip, cross-bolted with M3.
-module foot() {
-    difference() {
-        intersection() {          // flat 2 mm patch on the bottom: prints without supports
-            sphere(d = foot_d);
-            translate([-foot_d, -foot_d, -foot_d/2 + 2]) cube(2 * foot_d);
-        }
-        translate([-leg_t/2 - 0.3, -15, -4]) cube([leg_t + 0.6, 30, 20]);  // slot from the top
-        translate([-20, 0, 4]) rotate([0, 90, 0]) cylinder(d = m3_clear, h = 40); // cross bolt
-        translate([-20, 0, 4]) rotate([0, 90, 0]) cylinder(d = 6.5, h = 10); // head recess
+        translate([bx - hx, in_y - h - 1, cup_x0 - fit]) cube([2*hx, h + 1.01, cup_x1 - cup_x0 + 2*fit]);
+        translate([bx - cup_hw - fit, -(upper_out - cup_depth) - 11, -L2 + cup_x0 - fit])
+            cube([2*(cup_hw + fit), 11.01, cup_x1 - cup_x0 + 2*fit]);
+        for (z = [-60, -150]) translate([bx - 12, in_y - 1, z]) cube([24, base_t + 2, 40]);   // save plastic
     }
 }

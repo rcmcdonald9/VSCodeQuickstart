@@ -12,7 +12,7 @@ DEFAULT_PATH = Path(__file__).resolve().parent.parent / "config.yaml"
 # Written by `python -m robodog.calibrate`; overrides servo dir/trim from config.yaml.
 CALIBRATION_PATH = DEFAULT_PATH.with_name("calibration.yaml")
 LEG_NAMES = ("FR", "FL", "RR", "RL")
-JOINTS = ("roll", "pitch", "knee")
+JOINTS = ("pitch", "knee")
 
 
 def load_config(path: str | os.PathLike | None = None) -> dict[str, Any]:

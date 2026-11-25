@@ -17,7 +17,7 @@ dependencies = [
 [project.optional-dependencies]
 # Everything that only makes sense on the robot itself.
 pi = [
-  "adafruit-circuitpython-servokit",
+  "feetech-servo-sdk",
   "adafruit-circuitpython-vl53l1x",
   "adafruit-circuitpython-mpu6050",
   "ultralytics",
@@ -27,6 +27,7 @@ pi = [
   "piper-tts",
 ]
 dev = ["pytest"]
+sim = ["mujoco>=3.2", "trimesh", "imageio", "imageio-ffmpeg"]
 
 [tool.setuptools]
 packages = ["robodog"]

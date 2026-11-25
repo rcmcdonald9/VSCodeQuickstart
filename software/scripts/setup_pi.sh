@@ -10,8 +10,9 @@ sudo apt-get update
 sudo apt-get install -y python3-venv python3-picamera2 python3-libcamera rpicam-apps \
   i2c-tools espeak-ng alsa-utils portaudio19-dev libportaudio2 wget unzip
 
-echo "== enable I2C"
+echo "== enable I2C (ToF sensor) + serial access for the servo bus adapter"
 sudo raspi-config nonint do_i2c 0
+sudo usermod -aG dialout "$USER"
 
 echo "== I2S speaker amp (MAX98357A) + full USB current"
 add_line() { grep -qxF "$1" "$CONFIG_TXT" || echo "$1" | sudo tee -a "$CONFIG_TXT" >/dev/null; }
@@ -44,7 +45,8 @@ mkdir -p ~/.config
 
 echo
 echo "Done. Reboot once (I2C/I2S changes), then check:"
-echo "  i2cdetect -y 1        # expect 0x40 (PCA9685), 0x29 (VL53L1X), 0x68 (MPU6050, optional)"
+echo "  i2cdetect -y 1        # expect 0x29 (VL53L1X)"
+echo "  $HERE/.venv/bin/python -m robodog.calibrate --scan   # expect servo IDs 1-10"
 echo "  rpicam-hello -t 3000  # camera"
 echo "  speaker-test -t wav -c 1 -l 1"
 echo "Then put your key in ~/.config/robodog.env and run:  $HERE/.venv/bin/python -m robodog --text"

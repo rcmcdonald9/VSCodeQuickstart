@@ -79,8 +79,12 @@ class Navigator:
     def walk(self, distance_cm: float, direction: str = "forward") -> str:
         speed = 120.0
         dist = abs(distance_cm) * 10
-        vx, vy = {"forward": (speed, 0), "backward": (-speed, 0),
-                  "left": (0, speed * 0.6), "right": (0, -speed * 0.6)}[direction]
+        if direction in ("left", "right"):      # no sideways stepping on v2: turn, walk, turn back
+            self.turn(90 if direction == "left" else -90)
+            r = self.walk(distance_cm, "forward")
+            self.turn(-90 if direction == "left" else 90)
+            return r + f" (went {direction} by turning)"
+        vx, vy = {"forward": (speed, 0), "backward": (-speed, 0)}[direction]
         start = list(self.motion.odometry)
         self.motion.set_velocity(vx, vy, 0)
         t_end = time.monotonic() + dist / max(1, math.hypot(vx, vy)) * 1.6 + 2
@@ -125,8 +129,22 @@ class Navigator:
         things = ", ".join(sorted(seen, key=seen.get, reverse=True)[:8]) or "nothing I recognised"
         return f"explored for {duration_s:.0f}s; saw: {things}"
 
+    def scan_with_head(self, label: str) -> float | None:
+        """Sweep the head left-right; returns the pan angle where `label` was seen."""
+        for pan in (0, 35, 60, -35, -60):
+            self.motion.set_head(pan, 0)
+            self._sleep(0.7)
+            if self.vision.find(label):
+                return float(pan)
+        self.motion.set_head(0, 0)
+        return None
+
     def find(self, label: str, timeout_s: float = 25.0) -> str:
-        """Spin in place until `label` is in view, then face it."""
+        """Look around with the head, then turn the body until `label` is centred."""
+        pan = self.scan_with_head(label)
+        self.motion.set_head(0, 0)
+        if pan:
+            self.turn(pan)
         t_end = time.monotonic() + timeout_s
         while time.monotonic() < t_end:
             d = self.vision.find(label)

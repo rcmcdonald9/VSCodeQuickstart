@@ -1,3 +1,3 @@
-// Print 1x standing on its base. The roof is a short bridge; no supports needed on a P2S.
+// Print 1x, face down (camera face on the plate). PETG. No supports.
 include <../lib.scad>
-translate([-head_x0 - head_size[0]/2, 0, -chassis_z_top - lid_t]) head();
+translate([0, 0, pan_x + hd_x1]) rotate([0, 90, 0]) translate([0, 0, -tilt_z]) head();

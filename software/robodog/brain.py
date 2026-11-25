@@ -38,14 +38,18 @@ TOOLS = [
     _tool("stop", "Immediately stop moving and cancel the current behaviour."),
     _tool("set_pose", "Change body pose. Use 'stand' before walking.",
           {"pose": {"type": "string", "enum": list(POSE_NAMES)}}, ["pose"]),
-    _tool("walk", "Walk a distance (dead-reckoned, roughly accurate). Stops early for obstacles.",
+    _tool("walk", "Walk a distance (dead-reckoned, roughly accurate). Stops early for obstacles. "
+                  "To go left or right, turn first.",
           {"distance_cm": {"type": "number", "description": "1-300"},
-           "direction": {"type": "string", "enum": ["forward", "backward", "left", "right"]}},
+           "direction": {"type": "string", "enum": ["forward", "backward"]}},
           ["distance_cm", "direction"]),
     _tool("turn", "Turn in place. Positive degrees = left, negative = right.",
           {"degrees": {"type": "number", "description": "-360 to 360"}}, ["degrees"]),
     _tool("look", "Take a photo with the head camera. Returns the image plus the object-detector's "
                   "labels. Use this to answer questions about the surroundings."),
+    _tool("move_head", "Point the head (and camera). pan: + = left, - = right (-60..60). "
+                       "tilt: + = down, - = up (-25..25). Use it to look around without walking.",
+          {"pan_deg": {"type": "number"}, "tilt_deg": {"type": "number"}}, ["pan_deg", "tilt_deg"]),
     _tool("find_object", "Turn around until an object is in view, then face it. Labels are COCO "
                          "classes (person, dog, cat, chair, couch, bottle, cup, sports ball, ...).",
           {"label": {"type": "string"}}, ["label"]),
@@ -62,14 +66,15 @@ TOOLS = [
 ]
 
 SYSTEM_PROMPT = """You are {name}, a small four-legged robot dog built from 3D-printed parts, \
-a Raspberry Pi 5 and 12 servos. You hear your owner through a microphone (speech-to-text, so \
+a Raspberry Pi 5 and 10 smart servos (8 in the legs, 2 in a neck that pans and tilts your head). You hear your owner through a microphone (speech-to-text, so \
 expect small transcription mistakes) and you speak through a small speaker.
 
 How to behave:
 - Act through the tools. Chain them when a request needs several steps (for example: \
 find_object, then go_to_object). Use `look` when you need to see.
-- You are about 20 cm long and walk slowly (about 15 cm per second). You have a forward \
-distance sensor and a camera; you have no arms and cannot climb stairs or pick things up.
+- You are about 25 cm long and walk slowly (about 15 cm per second); you cannot step sideways, \
+only forward, backward and turning. Your camera and distance sensor are in your head, which you can \
+point with move_head. You have no arms and cannot climb stairs or pick things up.
 - Safety first: if asked to do something unsafe for you or others (walking off a table, \
 going near stairs), decline briefly.
 - Your final reply is spoken aloud: keep it to one or two short, friendly sentences, plain \
@@ -102,11 +107,16 @@ class RobotTools:
                 m.set_pose("stand"); time.sleep(1.0)
             deg = max(-360.0, min(360.0, float(args["degrees"])))
             return nav.run("turn", nav.turn, deg, timeout=30), None
+        if name == "move_head":
+            m.set_head(float(args["pan_deg"]), float(args["tilt_deg"]))
+            time.sleep(0.6)
+            return f"head at pan {m.head[0]:.0f}°, tilt {m.head[1]:.0f}°", None
         if name == "look":
             dets = self.vision.detections()
             labels = ", ".join(d.describe() for d in dets) or "no known objects detected"
             dist = self.tof.distance_mm()
-            text = f"detector: {labels}. distance ahead: {f'{dist:.0f} mm' if dist else 'unknown'}"
+            text = (f"detector: {labels}. distance ahead: {f'{dist:.0f} mm' if dist else 'unknown'}. "
+                    f"head pan {m.head[0]:.0f}°, tilt {m.head[1]:.0f}°")
             return text, self.vision.jpeg()
         if name == "find_object":
             return nav.run("find", nav.find, args["label"], timeout=40), None
@@ -121,7 +131,7 @@ class RobotTools:
         if name == "status":
             d = self.tof.distance_mm()
             x, y, h = m.odometry
-            return json.dumps({"pose": m.pose_name, "behaviour": nav.current,
+            return json.dumps({"pose": m.pose_name, "behaviour": nav.current, "head_pan_tilt": m.head,
                                "distance_ahead_mm": round(d) if d else None,
                                "odometry_cm": [round(x / 10), round(y / 10)],
                                "heading_deg": round(h * 57.3)}), None

@@ -1,52 +1,73 @@
-# Pip: a 3D-printed AI robot dog
+# Pip: a 3D-printed AI robot dog, designed to be easy to assemble
 
-A small (about 21 cm hip-to-hip, ~1.5 kg) four-legged robot dog that you print on a **Bambu Lab P2S** and run on a **Raspberry Pi 5**. It walks with a trot gait and sees with a Pi camera plus an on-board object detector. It listens for voice commands offline, talks back, and can hand harder requests to **Claude**, which plans multi-step tasks using the dog's tools and camera.
+A small four-legged robot dog (about 25 cm long, ~1.9 kg) that you print on a **Bambu Lab P2S** and run on a **Raspberry Pi 5**.
 
-![Pip assembly render](docs/img/assembly.png)
+- **Moving head:** pans and tilts, with a camera, distance sensor, speaker and mic.
+- **Voice:** listens for commands offline and talks back.
+- **AI:** hands harder requests to **Claude**, which plans multi-step tasks with the dog's tools and camera.
 
-> "Hey Pip, go find the ball." → turns until it sees the ball → walks over → *"Found it! It's right here by the couch."*
+**v2 is designed so that every step is a straight-down move**, with one screw type and automatic calibration. A person with a screwdriver assembles it quickly, and a cheap machine could do it later. Every change is checked in a **physics simulation** before printing.
 
-## What's in this repo
+![Pip v2](docs/img/assembly.png)
+
+## What's here
 
 | Path | What |
-|------|------|
-| [`cad/`](cad) | Parametric OpenSCAD design. [`cad/stl/`](cad/stl) has ready-to-print STLs in print orientation, no supports needed. |
-| [`software/`](software) | Python control stack: kinematics, gait, vision, navigation, voice, AI brain, calibration tool. 57 tests, and it runs in simulation on any computer. |
-| [`docs/BOM.md`](docs/BOM.md) | Shopping list (about $330–420 on top of the Pi) |
-| [`docs/PRINTING.md`](docs/PRINTING.md) | P2S slicer settings, plates, test-fit procedure |
-| [`docs/WIRING.md`](docs/WIRING.md) | Power and GPIO wiring, servo channel map |
-| [`docs/ASSEMBLY.md`](docs/ASSEMBLY.md) | Step-by-step build and calibration |
-| [`docs/SOFTWARE.md`](docs/SOFTWARE.md) | Architecture, running it, setting up Claude, tuning |
-| [`docs/ASSEMBLY_FIRST_DESIGN.md`](docs/ASSEMBLY_FIRST_DESIGN.md) | **v2 direction:** the robot redesigned around cheap automated assembly |
+|---|---|
+| [`cad/`](cad) | Parametric OpenSCAD design: `params.scad`, `lib.scad`, `assembly.scad`. [`cad/stl/`](cad/stl) has print-ready STLs (no supports, no inserts) plus the leg jig. |
+| [`software/`](software) | Python stack: kinematics, trot gait, bus-servo driver, head, vision, navigation, voice, Claude brain, calibration. 57 tests. |
+| [`sim/`](sim) | MuJoCo simulation built from the CAD and driven by the real controller. Results and video in [`sim/results/`](sim/results). |
+| [`docs/ASSEMBLY_FIRST_DESIGN.md`](docs/ASSEMBLY_FIRST_DESIGN.md) | Why it's built this way: precedent, design rules, the cheap assembly-tool ladder |
+| [`docs/SIMULATION.md`](docs/SIMULATION.md) | What the sim found and what changed because of it |
+| [`docs/BOM.md`](docs/BOM.md) · [`PRINTING.md`](docs/PRINTING.md) · [`WIRING.md`](docs/WIRING.md) · [`ASSEMBLY.md`](docs/ASSEMBLY.md) · [`SOFTWARE.md`](docs/SOFTWARE.md) | Build guides |
 
-## The plan, end to end
+## How the design makes assembly easy
 
-1. **Order parts** from [BOM.md](docs/BOM.md). The 12 servos and the LiPo setup are the big items.
-2. **While you wait:** run the software in simulation (`cd software && pip install -e .[dev] && python -m robodog --sim --local`), and get an Anthropic API key if you want the AI brain.
-3. **When the P2S arrives:** print the **test-fit pair** first ([PRINTING.md §1](docs/PRINTING.md)). Check it against a real servo, then print the rest (about 12–16 h, ~400 g PETG + a little TPU).
-4. **Bench-wire the electronics** and run `setup_pi.sh` ([WIRING.md](docs/WIRING.md), [ASSEMBLY.md §0](docs/ASSEMBLY.md)).
-5. **Assemble** with the servos centred, then **calibrate** ([ASSEMBLY.md](docs/ASSEMBLY.md)).
-6. **First walk** with typed commands, then switch on voice and Claude.
+- **4 identical leg modules.** The left side uses the same module turned 180°. Each is built straight down in a printed jig, then drops into a tray socket.
+- **Smart bus servos (Feetech STS3215).** They're daisy-chained, and their encoders give **automatic calibration**: the jig holds the leg straight, and one command records the zeros.
+- **One standard servo cup and one cap** hold all 10 servos.
+- **One fastener: M3 × 8.** No heat-set inserts.
+- **Each part is held by the next one.** The deck traps the legs. The head drops onto a keyed hub.
+- **Chamfered lead-ins** on every mating edge, and **grip lugs** with a datum notch on the main parts.
+
+![exploded](docs/img/exploded.png)
+
+## Simulation highlights ([details](docs/SIMULATION.md))
+
+Using the real control code against a model built from the CAD:
+
+- Walks at **100–200 mm/s within 2 %** of the commanded speed, with **≤ 2° roll**.
+- Turns in place at **45°/s**, backs up, holds every pose, and moves the head while walking. **No falls** in the 53 s test.
+- Things the sim caught and fixed before any printing:
+  - a wobbly gait
+  - a robot that couldn't turn
+  - a fall on a walking turn
+  - a forward creep
+  - a stop bug
+  - a knee/tray collision limit
+- **Warning:** the knee servos run close to their continuous torque rating while walking. Expect warm servos on long walks.
+
+## The plan
+
+1. **Order parts** ([BOM.md](docs/BOM.md)). The servos are half the cost. Buy the **12 V** STS3215.
+2. **While you wait:** run the sim (`pip install -e "software[sim]" && python sim/run_sim.py --quick`) and the software (`python -m robodog --sim --local`).
+3. **Print the test-fit pair** ([PRINTING.md §1](docs/PRINTING.md)), then the rest: about 27 h, two 1 kg spools of PETG.
+4. **Set servo IDs, build the legs in the jig, calibrate, stack the body** ([ASSEMBLY.md](docs/ASSEMBLY.md)).
+5. **First walk** with typed commands, then calibrate drift and turning on your floor, then turn on voice and Claude.
 
 ## Specs
 
 | | |
 |---|---|
-| Degrees of freedom | 12 (3 per leg: roll, pitch, knee) |
-| Actuators | 12 × 25 kg·cm standard servos via PCA9685 |
-| Leg segments | 100 mm + 100 mm, ~170 mm standing hip height |
-| Compute | Raspberry Pi 5 (8 GB), optional AI HAT+ |
-| Sensors | Camera Module 3, VL53L1X time-of-flight, optional IMU |
-| Voice | Vosk (offline STT) + Piper (offline TTS), wake word "Hey Pip" |
-| AI | Claude via the Anthropic API (tool use + vision). Offline keyword fallback. |
-| Power | 3S 2200 mAh LiPo → 6.8 V servo rail + 5 V Pi rail |
+| Degrees of freedom | 8 legs (hip pitch + knee) + 2 head (pan, tilt) |
+| Actuators | 10 × Feetech STS3215 12 V bus servos (30 kg·cm stall) |
+| Legs | 100 mm + 100 mm, 170 mm standing hip height |
+| Compute | Raspberry Pi 5 (8 GB) |
+| Sensors | Camera Module 3, VL53L1X time-of-flight (both in the head) |
+| Voice | Vosk (offline speech-to-text) + Piper (offline text-to-speech), wake word "Hey Pip" |
+| AI | Claude via the Anthropic API (tool use + vision), with an offline keyword fallback |
+| Power | 3S2P Li-ion pack with BMS → servos directly, 5 V buck → Pi. Sim estimate: about 1–2 h. |
 
-## Roadmap ideas
+v1 (12 PWM servos with hip roll) is in the git history at commit `9178ef9`.
 
-- [ ] Hailo AI HAT+ detector backend (much faster vision)
-- [ ] IMU-based balance correction while walking
-- [ ] Battery voltage monitoring (ADS1115) so Pip can say when it's hungry
-- [ ] Tail servo on a spare PCA9685 channel
-- [ ] Bearing-supported idle side on the knee joints (v2 legs)
-
-Licensed MIT. Have fun, and keep a hand near it for the first walk.
+MIT licensed.

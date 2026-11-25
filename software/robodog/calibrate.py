@@ -1,90 +1,132 @@
-"""Servo setup & calibration helper.
+"""Bus-servo setup & calibration for Pip v2. No spline-tooth fiddling: the
+encoders tell us where each joint is.
 
-  python -m robodog.calibrate --center      # every servo to its mid-point (do this BEFORE fitting horns)
-  python -m robodog.calibrate               # interactive: nudge each joint, find dir/trim, save to config.yaml
+  python -m robodog.calibrate --scan            # list servo IDs on the bus
+  python -m robodog.calibrate --set-id 3        # ONE new servo connected: give it ID 3
+  python -m robodog.calibrate --jig FR          # FR leg sitting straight in the leg jig -> save zeros
+  python -m robodog.calibrate --head            # head looking straight ahead -> save zeros
+  python -m robodog.calibrate --test FR.pitch   # +15° wiggle to check direction
+  python -m robodog.calibrate --jog 1           # nudge servo ID 1 with a/d (line up horn holes)
 
-Lift the robot off the table (or hold it) while calibrating.
+Zeros are saved to software/calibration.yaml (merged over config.yaml).
 """
 from __future__ import annotations
 
 import argparse
+import time
 from pathlib import Path
 
 import yaml
 
-from .config import DEFAULT_PATH, JOINTS, LEG_NAMES, load_config
-from .servos import make_servo_driver
+from .config import DEFAULT_PATH, load_config
+from .servos import ADDR_ID, ADDR_LOCK, ADDR_TORQUE_ENABLE, StsBusDriver, make_servo_driver
 
-HELP = """Keys:  a/d = trim -/+1°   A/D = trim -/+5°   f = flip direction   t = test (+20° wiggle)
-       n = next joint   p = previous joint   s = save (calibration.yaml)   q = quit"""
+EXPECT = {"pitch": "the knee moves BACKWARD", "knee": "the leg STRAIGHTENS",
+          "pan": "the head turns LEFT", "tilt": "the head nods DOWN"}
 
 
-def center_all(cfg):
+def _save_zeros(cal_path: Path, zeros: dict[str, int]):
+    data = yaml.safe_load(cal_path.read_text()) if cal_path.exists() else {}
+    data = data or {}
+    joints = data.setdefault("servos", {}).setdefault("joints", {})
+    for name, z in zeros.items():
+        joints.setdefault(name, {})["zero"] = int(z)
+    cal_path.write_text(yaml.safe_dump(data, sort_keys=True))
+    print(f"saved {', '.join(f'{k}={v}' for k, v in zeros.items())} -> {cal_path}")
+
+
+def _raw_bus(cfg):
+    import scservo_sdk as scs
+
+    port = scs.PortHandler(cfg["servos"].get("port", "/dev/ttyACM0"))
+    ph = scs.PacketHandler(0)
+    if not port.openPort() or not port.setBaudRate(int(cfg["servos"].get("baud", 1_000_000))):
+        raise SystemExit("cannot open the servo bus")
+    return scs, port, ph
+
+
+def scan(cfg):
+    scs, port, ph = _raw_bus(cfg)
+    found = [i for i in range(0, 21) if ph.ping(port, i)[1] == scs.COMM_SUCCESS]
+    print("servo IDs on the bus:", found or "none")
+
+
+def set_id(cfg, new_id: int):
+    scs, port, ph = _raw_bus(cfg)
+    ids = [i for i in range(0, 254) if ph.ping(port, i)[1] == scs.COMM_SUCCESS]
+    if len(ids) != 1:
+        raise SystemExit(f"connect exactly ONE servo (found {ids})")
+    old = ids[0]
+    ph.write1ByteTxRx(port, old, ADDR_TORQUE_ENABLE, 0)
+    ph.write1ByteTxRx(port, old, ADDR_LOCK, 0)          # unlock EEPROM
+    ph.write1ByteTxRx(port, old, ADDR_ID, new_id)
+    ph.write1ByteTxRx(port, new_id, ADDR_LOCK, 1)
+    print(f"servo {old} -> ID {new_id}. Label it!")
+
+
+def capture(cfg, names: list[str], cal_path: Path):
     drv = make_servo_driver(cfg["servos"])
-    mid = drv.map.range / 2
-    for leg in LEG_NAMES:
-        for j in JOINTS:
-            drv.set_servo(drv.map.channel(leg, j), mid)
-    print(f"All 12 servos at {mid:.0f}° (1500 µs). Now fit the horns/legs in the STAND pose:")
-    print("  roll : hip housing level (pitch servo vertical)")
-    print("  pitch: upper leg tilted ~30° with the knee pointing BACKWARD")
-    print("  knee : lower leg bent ~60° relative to the upper leg so the foot is under the hip")
-    print("The 25-tooth spline moves in 14.4° steps — pick the closest tooth; trim fixes the rest.")
+    if isinstance(drv, StsBusDriver):
+        drv.relax()                                       # limp, so the jig sets the pose
+    counts = drv.read_counts(names)
+    missing = [n for n in names if n not in counts]
+    if missing:
+        raise SystemExit(f"no reply from {missing}")
+    _save_zeros(cal_path, counts)
 
 
-def interactive(cfg, path):
-    import time
-
+def test(cfg, name: str):
     drv = make_servo_driver(cfg["servos"])
-    order = [(leg, j) for leg in LEG_NAMES for j in JOINTS]
-    i = 0
-    print(HELP)
+    joint = name.split(".")[1]
+    print(f"+15° on {name}: correct if {EXPECT[joint]}. If not, set servos.positive_dir: -1")
+    drv.write({name: 0.0}); time.sleep(0.8)
+    drv.write({name: 15.0}); time.sleep(0.8)
+    drv.write({name: 0.0}); time.sleep(0.5)
+    drv.relax()
 
-    def apply(angle_offset=0.0):
-        leg, j = order[i]
-        jc = cfg["servos"]["legs"][leg][j]
-        drv.set_servo(jc["channel"], drv.map.to_servo(leg, j, jc["center"] + angle_offset))
 
+def jog(cfg, sid: int):
+    from .servos import ADDR_GOAL_POSITION, ADDR_PRESENT_POSITION
+
+    scs, port, ph = _raw_bus(cfg)
+    pos, res, _ = ph.read2ByteTxRx(port, sid, ADDR_PRESENT_POSITION)
+    if res != scs.COMM_SUCCESS:
+        raise SystemExit(f"no servo with ID {sid}")
+    ph.write1ByteTxRx(port, sid, ADDR_TORQUE_ENABLE, 1)
+    step = round(2 * 4096 / 360)
     while True:
-        leg, j = order[i]
-        jc = cfg["servos"]["legs"][leg][j]
-        apply()
-        cmd = input(f"[{leg} {j:5s}] ch={jc['channel']:2d} dir={jc['dir']:+d} trim={jc['trim']:+.0f} > ").strip()
-        if cmd in ("a", "d", "A", "D"):
-            jc["trim"] += {"a": -1, "d": 1, "A": -5, "D": 5}[cmd]
-        elif cmd == "f":
-            jc["dir"] *= -1
-        elif cmd == "t":
-            print("  a correct +20° wiggle moves: roll=foot OUTWARD, pitch=knee BACKWARD, knee=leg STRAIGHTER")
-            apply(20); time.sleep(0.6); apply(); time.sleep(0.3)
-        elif cmd == "n":
-            i = (i + 1) % len(order)
-        elif cmd == "p":
-            i = (i - 1) % len(order)
-        elif cmd == "s":
-            legs = {leg: {jn: {"dir": cfg["servos"]["legs"][leg][jn]["dir"],
-                               "trim": cfg["servos"]["legs"][leg][jn]["trim"]} for jn in JOINTS}
-                    for leg in LEG_NAMES}
-            with open(path, "w") as f:
-                yaml.safe_dump({"servos": {"legs": legs}}, f, sort_keys=False)
-            print(f"saved dir/trim to {path}")
-        elif cmd == "q":
-            drv.relax()
-            return
-        else:
-            print(HELP)
+        k = input(f"[ID {sid}] pos={pos} a/d = -/+2°, A/D = -/+10°, q = done > ").strip()
+        if k == "q":
+            break
+        pos = (pos + {"a": -step, "d": step, "A": -5 * step, "D": 5 * step}.get(k, 0)) % 4096
+        ph.write2ByteTxRx(port, sid, ADDR_GOAL_POSITION, pos)
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=str(DEFAULT_PATH))
-    ap.add_argument("--center", action="store_true")
+    g = ap.add_mutually_exclusive_group(required=True)
+    g.add_argument("--scan", action="store_true")
+    g.add_argument("--set-id", type=int)
+    g.add_argument("--jig", choices=["FR", "FL", "RR", "RL"])
+    g.add_argument("--head", action="store_true")
+    g.add_argument("--test")
+    g.add_argument("--jog", type=int)
     a = ap.parse_args()
     cfg = load_config(a.config)
-    if a.center:
-        center_all(cfg)
+    cal = Path(a.config).with_name("calibration.yaml")
+    if a.scan:
+        scan(cfg)
+    elif a.set_id is not None:
+        set_id(cfg, a.set_id)
+    elif a.jig:
+        capture(cfg, [f"{a.jig}.pitch", f"{a.jig}.knee"], cal)   # jig pose = pitch 0, knee 0
+    elif a.head:
+        capture(cfg, ["head.pan", "head.tilt"], cal)
+    elif a.jog is not None:
+        jog(cfg, a.jog)
     else:
-        interactive(cfg, Path(a.config).with_name("calibration.yaml"))
+        test(cfg, a.test)
 
 
 if __name__ == "__main__":

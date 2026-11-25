@@ -1,0 +1,37 @@
+# Component masses in grams. Printed parts: sliced weights (PrusaSlicer with
+# P2S-like settings from docs/PRINTING.md). Bought parts: ASSUMED typical
+# values — weigh yours and update, then re-run the sim.
+printed:
+  tray: 302.7
+  deck: 46.5
+  hip_block: 40.3
+  upper_link: 49.0
+  lower_link: 12.3
+  foot: 3.0          # TPU
+  pan_bracket: 38.1
+  sleeve_cap: 4.0
+  servo_cap: 2.5
+  head: 37.4
+  tilt_hub: 3.0
+bought:
+  servo_sts3215: 55      # each, with horn (assumed)
+  battery_3s2p_18650: 300
+  pi5_with_cooler: 70
+  bus_adapter_buck_wiring: 60
+  head_electronics: 35   # camera, ToF, speaker, mic, LEDs, cables
+  screws_per_leg: 8      # 9 x M3x8 per leg module
+  screws_body: 20
+
+# Feetech STS3215 (12 V / 30 kg·cm) motor model. Stall torque and rated torque
+# are from product listings; speed, stiffness and rotor inertia are ESTIMATES.
+servo:
+  stall_torque_nm_12v: 2.94     # 30 kg·cm
+  rated_torque_nm: 0.98         # 10 kg·cm continuous
+  no_load_speed_rad_s_12v: 4.7  # ~45 rpm (estimate)
+  stall_current_a: 2.7          # estimate, used only for the battery-life estimate
+  battery_v: 11.1               # 3S nominal
+  kp_nm_per_rad: 25             # servo position loop stiffness (estimate)
+  kd_nm_s_per_rad: 0.5
+  armature_kg_m2: 0.004         # reflected rotor inertia through 1:345 gearing (estimate)
+  frictionloss_nm: 0.03
+battery_capacity_wh: 66         # 3S2P 3000 mAh 18650 cells, ~6 Ah x 11.1 V

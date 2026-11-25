@@ -1,59 +1,55 @@
-# Wiring
+# Wiring (v2)
 
-> ⚠️ **LiPo safety:** Charge in a LiPo bag, never unattended. Unplug the battery when you're not using the robot. Keep the low-voltage alarm plugged in. Put the fuse as close to the battery as you can.
+> ⚠️ **Battery safety:** Use a 3S Li-ion pack **with a BMS** and a proper 12.6 V charger. Keep the fuse close to the battery. Unplug the battery when the dog isn't in use.
 
 ## Power
 
 ```
- 3S LiPo ──XT60──► [20 A fuse] ──► [switch] ──┬──► Buck A (20 A, set 6.8 V) ──► Wago V+ / Wago GND ──► 12 servo red/black
- (11.1 V)                                      │                                       │
-                                               │                                       └──► PCA9685 V+ terminal (servo rail only)
-                                               │
-                                               └──► Buck B (5 V 5 A, USB-C) ──► Raspberry Pi 5 USB-C power port
+ 3S2P Li-ion (11.1 V nom / 12.6 V full, with BMS)
+   └─XT60─► [15 A fuse] ─► [switch] ─┬─► bus-servo adapter POWER IN ─► servo bus (12 V to all 10 servos)
+                                      └─► 5 V 5 A buck (USB-C) ─► Raspberry Pi 5
 ```
 
-- **Set both buck converters with a multimeter before you connect anything.** Buck A goes to 6.8 V. Check your servo's maximum; most 25 kg servos are rated 4.8–6.8 V. Buck B goes to 5.1 V.
-- **Servo current doesn't go through the Pi.** A trotting dog pulls 5–10 A in peaks. Run 16 AWG from buck A to two Wago lever nuts (V+ and GND). Cut the red/black wires of each servo extension, or use servo power splitter leads, so each servo gets power straight from the Wagos. The orange signal wires go to the PCA9685. If you'd rather plug all 3 pins into the PCA9685 for simplicity, also solder a 16 AWG pair to the V+/GND rails at the far end of the PCA9685's header rows, so you're not relying on the small screw terminal alone.
-- **Common ground:** The battery negative, both buck converter outputs, the PCA9685 GND and the Pi GND must all connect. Over the I²C cable this happens automatically.
+- **The servos run straight from the battery.** The STS3215 12 V version is rated up to 14 V, and a 3S pack peaks at 12.6 V, so no big converter is needed.
+- **Check the buck output with a multimeter before connecting the Pi:** 5.1 V.
+- Wire sizes: 18 AWG from the battery to the adapter and the buck, 22 AWG for the rest.
+- **Current, from the simulation:** about 2.5 A standing and 5–7 A walking or turning, so a 15 A fuse leaves headroom.
 
-## Signals: Raspberry Pi 5 GPIO header
+## Servo bus: one daisy chain, IDs instead of channels
 
-| Device | Device pin | Pi 5 pin (physical) |
-|--------|-----------|---------------------|
-| **PCA9685** | VCC (logic) | 3.3 V (pin 1) |
-| | GND | GND (pin 6) |
-| | SDA | GPIO2 / SDA (pin 3) |
-| | SCL | GPIO3 / SCL (pin 5) |
-| **VL53L1X** (head) | VIN | 3.3 V (pin 17) |
-| | GND | GND (pin 9) |
-| | SDA / SCL | Same bus as the PCA9685 (daisy-chain or pin 3/5) |
-| **MAX98357A** amp | VIN | 5 V (pin 2) |
-| | GND | GND (pin 14) |
-| | BCLK | GPIO18 (pin 12) |
-| | LRC | GPIO19 (pin 35) |
-| | DIN | GPIO21 (pin 40) |
-| | Speaker +/− | 40 mm speaker (in the head's left cheek) |
-| **Camera Module 3** | CSI | CAM/DISP 0 connector (Pi 5 22-pin cable) |
-| **USB mic** | USB | Any USB port |
-| MPU-6050 (optional) | VCC/GND/SDA/SCL | 3.3 V / GND / I²C bus |
+Every servo sits on the same 3-wire bus (power, ground, data). Each has two identical ports, so you just chain them:
 
-I²C addresses: PCA9685 `0x40`, VL53L1X `0x29`, MPU-6050 `0x68`. After setup, check them with `i2cdetect -y 1`.
+```
+adapter ─► body harness ─┬─► FR dock ─► FR.pitch (1) ─► FR.knee (2)
+                         ├─► FL dock ─► FL.pitch (3) ─► FL.knee (4)
+                         ├─► RR dock ─► RR.pitch (5) ─► RR.knee (6)
+                         ├─► RL dock ─► RL.pitch (7) ─► RL.knee (8)
+                         └─► head.pan (9) ─► head.tilt (10)
+adapter USB ─► Pi 5 USB port (/dev/ttyACM0 or /dev/ttyUSB0; set servos.port in config.yaml)
+```
 
-## Servo channels (PCA9685)
+| Joint | Servo ID |
+|---|---|
+| FR pitch / knee | 1 / 2 |
+| FL pitch / knee | 3 / 4 |
+| RR pitch / knee | 5 / 6 |
+| RL pitch / knee | 7 / 8 |
+| Head pan / tilt | 9 / 10 |
 
-| Leg | roll (hip sideways) | pitch (hip fore/aft) | knee |
-|-----|------|-------|------|
-| Front-right **FR** | 0 | 1 | 2 |
-| Front-left **FL** | 4 | 5 | 6 |
-| Rear-right **RR** | 8 | 9 | 10 |
-| Rear-left **RL** | 12 | 13 | 14 |
+Servos ship with ID 1. **Before assembly**, give each its ID with only that one servo connected (`python -m robodog.calibrate --set-id N`) and label it.
 
-Channels 3, 7, 11 and 15 are spare (a tail, maybe?). You can remap any channel in `software/config.yaml`.
+**Leg docks:** a 4-pin magnetic pogo connector sits in each tray socket's inboard wall, with matching pads on the hip block. When the leg drops in, the connection is made. For a first build you can skip the pogo pins and plug one cable per leg by hand. The pockets are there either way.
 
-## Where things go
+**Cables inside each leg:** the dock goes to the pitch servo's port A, and port B goes to the knee servo. The knee cable crosses the hip joint, so leave a loop close to the hip axis.
 
-- **Inside the chassis bay** (between the four roll servos): the PCA9685, both buck converters, the Wago nuts and the fuse.
-- **Under the chassis:** the LiPo, held by the velcro strap through the four floor slots. The XT60 lead comes up through the centre hole.
-- **On the lid:** the Pi 5 with Active Cooler on M2.5 × 10 standoffs, USB ports facing the rear. The big slot under the Pi carries the I²C and power leads down into the bay.
-- **Head:** Camera Module 3 (4 × M2 screws), VL53L1X behind the lower window, speaker in the left cheek, mic hole on top. The camera ribbon runs through the slot under the head.
-- **Leg cables:** The pitch and knee servo leads run along the upper leg and enter the chassis through the side-wall holes. Leave a loop at each joint so the leg can move through its full range without pulling on the cable.
+## Sensors and audio (Pi 5 GPIO)
+
+| Device | Pin | Pi 5 pin (physical) |
+|---|---|---|
+| VL53L1X (head) | VIN / GND / SDA / SCL | 3.3 V (1) / GND (6) / GPIO2 (3) / GPIO3 (5) |
+| MAX98357A (head) | VIN / GND | 5 V (2) / GND (14) |
+| | BCLK / LRC / DIN | GPIO18 (12) / GPIO19 (35) / GPIO21 (40) |
+| Camera Module 3 (head) | CSI | CAM/DISP 0, **300 mm** cable |
+| USB mic | USB | any USB port |
+
+The head turns ±60° and nods ±25°. Route its four cables (camera ribbon, ToF, speaker, mic) through the deck's head-cable slot and leave a slack loop around the neck. Turn the head through its full range by hand once to check nothing pulls.

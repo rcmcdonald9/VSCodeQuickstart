@@ -35,11 +35,13 @@ def named_pose(name: str, stand_height: float) -> Pose:
     h = stand_height
     poses = {
         "stand": Pose(height=h),
-        "sit": Pose(height=h, rear_drop=70, dx=-15),
-        "lie": Pose(height=h, rear_drop=75, front_drop=75),
-        "bow": Pose(height=h, front_drop=60, dx=10),
+        # v2 knees can swing back only ~50° (the knee servo would hit the tray),
+        # so low poses shift the body back to keep the feet ahead of the hips.
+        "sit": Pose(height=h, rear_drop=60, dx=-20),
+        "lie": Pose(height=h, rear_drop=75, front_drop=75, dx=-30),
+        "bow": Pose(height=h, front_drop=60, dx=-20),
         "tall": Pose(height=h + 15),
-        "crouch": Pose(height=h - 40),
+        "crouch": Pose(height=h - 35),
     }
     if name not in poses:
         raise ValueError(f"unknown pose {name!r}; choose from {sorted(poses)}")
@@ -57,6 +59,7 @@ class TrotGait:
     step_height: float = 30.0
     max_step: float = 55.0
     duty: float = 0.5                # fraction of the cycle a foot is on the ground
+    yaw_gain: float = 1.0            # >1 exaggerates turning strides (2-DOF legs must skid to turn)
     phase: float = 0.0
     _active: bool = field(default=False, init=False)
 
@@ -64,7 +67,7 @@ class TrotGait:
         """Total foot travel (mm) during one stance phase for this leg."""
         hx, hy = self.hips[leg]
         # linear velocity + yaw contribution (omega x r)
-        vx = v.vx - v.yaw * hy
+        vx = v.vx - v.yaw * hy * self.yaw_gain
         vy = v.vy + v.yaw * hx
         t_stance = self.period * self.duty
         sx, sy = vx * t_stance, vy * t_stance
