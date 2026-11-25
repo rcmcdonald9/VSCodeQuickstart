@@ -4,9 +4,9 @@
 |---|---|---|---|
 | base | 5.83 | ≤ 6 | ✅ |
 | battery | 1.50 | ≤ 3 | ✅ |
-| upper | 6.47 | ≤ 10 | ✅ |
-| arm (each, detachable) | 3.41 | ≤ 10 | ✅ |
-| **total robot** | **20.62** | | |
+| upper | 6.53 | ≤ 10 | ✅ |
+| arm (each, detachable) | 3.62 | ≤ 10 | ✅ |
+| **total robot** | **21.10** | | |
 
 **base detail**
 
@@ -24,7 +24,7 @@
 
 | Item | kg |
 |---|---|
-| 2× shoulder pitch module (CAD: stage, balancer, V-band) | 1.520 |
+| 2× shoulder pitch module (CAD: stage, balancer, V-band) | 1.580 |
 | torso | 0.900 |
 | spine extrusion | 0.848 |
 | 2× arm shoulder_pitch | 0.776 |
@@ -45,9 +45,9 @@
 | arm shoulder_roll | 0.388 |
 | arm upper_yaw | 0.388 |
 | arm elbow | 0.388 |
+| gripper mechanism | 0.310 |
 | arm wrist_pitch | 0.300 |
 | upper-arm yaw belt stage | 0.200 |
-| gripper mechanism | 0.100 |
 | arm wrist_roll | 0.055 |
 | arm gripper | 0.055 |
 | wrist camera | 0.050 |

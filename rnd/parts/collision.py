@@ -30,7 +30,16 @@ def pieces():
         },
         "fore": {
             "link": Pos(0, fy, -arm.FORE_L / 2 + 10) * Box(56, link_t, arm.FORE_L - 2 * 38),
-            "wrist": Pos(0, fy + link_t / 2 - (wy + 12) / 2, -arm.FORE_L) * Rot(90, 0, 0) * Cylinder(39, wy + 12),
+            "wrist": Pos(0, arm.WRIST_Y0 - 3, -arm.FORE_L) * Rot(-90, 0, 0) * Cylinder(35, arm.WRIST_Y1 - arm.WRIST_Y0 + 3, align=arm.MIN),
+        },
+        # wrist-pitch body (hand frame = CAD hand frame): palm + KX56 collar; hand (roll) body: gripper, offset +40 mm
+        "wristb": {
+            "palm": Pos(7, 0, -22) * Box(74, 40, 94),
+            "wpcollar": Pos(0, 23, 0) * Rot(-90, 0, 0) * Cylinder(43, 19, align=arm.MIN),
+        },
+        "hand": {
+            "gripbase": Pos(5, 0, 40 - 98) * Box(104, 52, 30),
+            "jaws": Pos(-2, 3, 40 - 128) * Box(74, 46, 48),
         },
     }
 

@@ -313,3 +313,31 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
   - The torso blocks the lower part of the frame during floor work; the wrist cameras cover close-up work (Stretch precedent).
 - **Looks:** the overall height is a constant 1.29 m, and the mast no longer pokes through the head. The new problem is that the mast now reads as a long neck when the torso is low: give it a shaped cover with a light strip.
 - Renders at low and high torso: [img/robot_head_on_mast.png](rnd/img/robot_head_on_mast.png).
+
+## 2026-11-25: build-out session (owner: finish the full design + simulation, then resume the loop). Step 1: wrist, hand, gripper
+
+**Owner direction:** pause the hourly loop until the whole robot is designed, simulated and working. Trigger disabled. Milestone criteria:
+- every module in CAD
+- a full interference- and print-checked assembly with CAD masses
+- a dynamic simulation of driving + pick-and-place within actuator limits
+- the electrical plan
+- BOM, print plan and assembly guide
+
+**Hand CAD** (`rnd/parts/hand.py`):
+- DM-J4310 cartridge D (KX56; bolt circles ESTIMATE)
+- palm holding the wrist-roll cartridge S
+- **SO-100-style gripper**: a fixed jaw + a jaw on the horn of the gripper servo, which lies on its side under the base plate (fewest parts; LeRobot precedent)
+- wrist camera
+- the forearm wrist can re-sized around the real cartridge; the hand centre plane sits on the arm's centre plane
+
+| Finding | Before | After |
+|---|---|---|
+| Wrist-pitch axis → grasp point (`l_hand`) | 0.13 m (assumed) | **0.15 m** (real stack: wrist roll + KX44 + gripper servo) |
+| Hand mass (`gripper_mech_mass`) | 0.10 kg ESTIMATE | **0.31 kg** from CAD |
+| Workspace joint margin | 1.51× | 1.38× ❌ (roll), pitch 1.42× → fixed: **pitch 2.5 → 3:1 (20T:60T), roll 3.5 → 4:1 (18T:72T), K 4.0 → 4.5 N·m → 1.54×** ✅ |
+| Belt safety (18T roll pulley) | 1.41× | **1.27×** ✅ |
+| Reach (with CAD hand hulls in the twin) | 98 % | **98 %**; bimanual 4/4 |
+| Arm piece / assembled upper | 3.4 / 13.3 kg | 3.6 / 13.7 kg |
+| Tip margin | 70 mm | 67 mm |
+
+- Interference: shoulder module clean (60T pulley); arm assembly clean. The moving jaw brushes the gripper-servo sleeve by < 1 cm³ at 25° (v0, to refine).

@@ -4,8 +4,8 @@ HTD 5M, fiberglass cord, allowable 650 N per 10 mm width (vendor tables; ESTIMAT
 
 | Joint | Teeth | Pitch Ø small / big (mm) | Belt | Pull rated / peak (N) | Allowable (N) | Safety at peak | Teeth in mesh | Centre / belt length (mm) |
 |---|---|---|---|---|---|---|---|---|
-| shoulder_pitch | 20:50 (2.50:1) | 31.8 / 79.6 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 7.8 ✅ | 70 / 323 (≈65 T) |
-| shoulder_roll | 20:70 (3.50:1) | 31.8 / 111.4 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 6.9 ✅ | 85 / 414 (≈83 T) |
+| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 7.0 ✅ | 70 / 354 (≈71 T) |
+| shoulder_roll | 18:72 (4.00:1) | 28.6 / 114.6 | 15 mm | 349 / 768 | 975 | 1.27 ✅ | 6.1 ✅ | 90 / 426 (≈85 T) |
 | upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 8.5 ✅ | 70 / 294 (≈59 T) |
 | elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 8.5 ✅ | 70 / 294 (≈59 T) |
 

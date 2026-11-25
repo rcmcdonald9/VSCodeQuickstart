@@ -76,12 +76,13 @@ def build_xml(d: Design, geometry: str | None = None) -> str:
               <!-- forearm bone ends 60 mm before the wrist axis: CAD requirement so the hand clears ±140° wrist pitch -->
               <body name="wrist_{side}" pos="0 0 {-a.l_fore}">
                 <joint name="wpitch_{side}" axis="0 1 0" range="{-a.wrist_pitch_range_deg} {a.wrist_pitch_range_deg}"/>
-                <geom type="sphere" size="0.028" mass="{m['wrist_pitch']}" rgba=".1 .1 .1 1"/>
+                <geom type="sphere" size="0.028" mass="{m['wrist_pitch']}" rgba=".1 .1 .1 1"/>{hull("wristb", side)}
                 <body name="hand_{side}" pos="0 0 -0.04">
                   <joint name="wroll_{side}" axis="0 0 1" range="{JR['wroll'][0]} {JR['wroll'][1]}"/>
-                  <geom type="box" size="0.032 0.02 0.025" pos="0 0 -0.035" mass="{m['wrist_roll'] + m['gripper'] + a.gripper_mech_mass + a.wrist_cam_mass}" rgba=".15 .15 .15 1"/>
-                  <geom type="box" size="0.006 0.012 0.03" pos="0.022 0 -0.07" mass="0.001" rgba=".9 .9 .9 1"/>
-                  <geom type="box" size="0.006 0.012 0.03" pos="-0.022 0 -0.07" mass="0.001" rgba=".9 .9 .9 1"/>
+                  <geom type="box" size="0.032 0.02 0.025" pos="0 0 -0.035" mass="{m['wrist_roll'] + m['gripper'] + a.gripper_mech_mass + a.wrist_cam_mass}" rgba=".15 .15 .15 1"{cap}/>
+                  <geom type="box" size="0.006 0.012 0.03" pos="0.022 0 -0.07" mass="0.001" rgba=".9 .9 .9 1"{cap}/>
+                  <geom type="box" size="0.006 0.012 0.03" pos="-0.022 0 -0.07" mass="0.001" rgba=".9 .9 .9 1"{cap}/>
+                  {hull("hand", side)}
                   <site name="grasp_{side}" pos="0 0 {-(a.l_hand-0.04)}"/>
                   <body name="payload_{side}" pos="0 0 {-(a.l_hand-0.04)}">
                     <geom type="box" size="0.03 0.03 0.03" mass="{a.payload if side=='r' else 0.0001}" rgba=".85 .2 .1 {1 if side=='r' else 0}"/>

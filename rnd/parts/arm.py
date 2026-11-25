@@ -23,6 +23,7 @@ BELT_C = 70.0               # elbow belt centre distance (rnd/belts.py)
 HOUSING = dict(x=98.0, y=108.0, z0=-272.0, z1=-100.0)
 J4310 = dict(od=57.0, h=46.0)   # DM-J4310 (actuators.yaml)
 FORE_Y = HOUSING["y"] / 2 + 12.0  # forearm link centre plane (+Y side link)
+WRIST_Y0, WRIST_Y1 = 43.0, 96.0   # wrist can span (holds the DM-J4310 cartridge; its KX56 face at y ≈ 33.6, hand centre at y = 0)
 
 
 def _rbox(x, y, z, r, align=(Align.CENTER, Align.CENTER, Align.CENTER)):
@@ -69,9 +70,10 @@ def forearm() -> Part:
     for z0 in (-40 - 24, -FORE_L + 38):
         p += Pos(0, y, z0) * (Cylinder(18, 24, align=MIN) - Cylinder(15.1, 24, align=MIN))
     # wrist housing: holds the wrist cartridge (axis Y, output toward -Y)
-    can_d = J4310["od"] + 2 * 3.0 + 0.6
-    wy = J4310["h"] + 4 + 6
-    p += Pos(0, y + link_t / 2 - wy / 2, -FORE_L) * Rot(90, 0, 0) * (Cylinder(can_d / 2 + WALL, wy) - Cylinder(can_d / 2, wy - WALL))
+    # (loop 10) sized to the real DM-J4310 cartridge (rnd/parts/hand.py): KX56 face at y = WRIST_Y0, open toward -Y
+    can_d = J4310["od"] + 2 * 2.4 + 0.6 + 0.6
+    wy = WRIST_Y1 - WRIST_Y0
+    p += Pos(0, WRIST_Y0, -FORE_L) * Rot(-90, 0, 0) * (Cylinder(can_d / 2 + WALL, wy, align=MIN) - Cylinder(can_d / 2, wy - WALL, align=MIN))
     p += Pos(0, y, -FORE_L + 38) * Box(56, link_t, 12)                                  # web joining link and wrist can
     return p
 
@@ -139,15 +141,16 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     out += [("yaw_cart", Pos(0, 0, 0) * Cylinder(32, 52, align=MIN), "dark"), ("yaw_collar", Pos(0, 0, 0) * Cylinder(39, 12, align=MIN) - Cylinder(30, 12, align=MIN), "orange")]
     fe = Pos(0, 0, -ELBOW_Z) * Rot(0, elbow_deg, 0)
     out += [("forearm", fe * forearm(), "white"), ("cf_fore", fe * cf_fore(), "dark"), ("cf_neck", cf_neck(), "dark")]
-    # wrist cartridge + hand (hand plane near y = 10, beside the forearm link)
+    # wrist cartridge (DM-J4310 + KX56) + hand (rnd/parts/hand.py), hand centre plane on the arm's centre plane (y = 0)
+    from . import hand as hd
+    from .kx import KX56
     wr = fe * Pos(0, 0, -FORE_L)
-    out += [("wrist_cart", wr * Pos(0, FORE_Y, 0) * Rot(90, 0, 0) * Cylinder(J4310["od"] / 2, J4310["h"]), "dark"),
-            ("wrist_collar", wr * Pos(0, FORE_Y - 34, 0) * Rot(90, 0, 0) * (Cylinder(39, 12) - Cylinder(28, 12)), "orange")]
-    hand = wr * Pos(0, 12, 0) * Rot(0, wrist_deg, 0)
-    out += [("palm", hand * Pos(0, 0, -20) * _rbox(56, 34, 40, 8), "white"),
-            ("wroll", hand * Pos(-cs_shift(), 0, -40) * Rot(180, 0, 0) * Pos(0, 0, 0) * sleeve(), "white"),
-            ("finger_a", hand * Pos(0, 13, -112) * _rbox(14, 8, 56, 3), "dark"),
-            ("finger_b", hand * Pos(0, -13, -112) * _rbox(14, 8, 56, 3), "dark")]
+    cart = wr * Pos(0, hd.WRIST_HUB_Y + KX56.gap + hd.cartridge_d_stack(), 0) * Rot(90, 0, 0)
+    out += [("wrist_can", cart * hd.can_d(), "white"),
+            ("wrist_motor", cart * Pos(0, 0, hd.FLOOR) * Cylinder(J4310["od"] / 2, J4310["h"], align=MIN), "dark"),
+            ("wrist_adapter", cart * Pos(0, 0, hd.FLOOR + J4310["h"]) * hd.adapter_d(), "dark")]
+    hand = wr * Rot(0, wrist_deg, 0)
+    out += [(f"hand_{n}", hand * p, c) for n, p, c in hd.assembly()]
     return out
 
 

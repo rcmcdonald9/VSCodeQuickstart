@@ -34,33 +34,33 @@ def act(name: str) -> dict:
 class Arm:
     l_upper: float = 0.30          # shoulder pitch axis -> elbow axis (reach sweep: 0.25 -> 0.30)
     l_fore: float = 0.28           # elbow -> wrist pitch axis (reach sweep: 0.23 -> 0.28)
-    l_hand: float = 0.13           # wrist pitch -> grasp point
+    l_hand: float = 0.15           # wrist pitch -> grasp point (loop 10 hand CAD: wrist roll + KX44 + gripper servo stack; was 0.13)
     shoulder_y: float = 0.20       # |y| of shoulder pitch axis from robot centre line
     shoulder_x: float = 0.06       # x of shoulder axis relative to spine
     # actuator choice per joint and belt/linkage reduction in the bone
     joints: dict = field(default_factory=lambda: {
-        "shoulder_pitch": ("GIM6010-8", 2.5),   # 2.5:1 printed belt + spring assist (sized in arm_sizing)
-        "shoulder_roll":  ("GIM6010-8", 3.5),   # loop 5: 3 → 3.5 (whole-workspace check: 1.29× → 1.5×); 20T:70T
+        "shoulder_pitch": ("GIM6010-8", 3.0),   # loop 10: 2.5 → 3 (20T:60T) after the hand CAD added 0.2 kg at the tip
+        "shoulder_roll":  ("GIM6010-8", 4.0),   # loop 10: 3.5 → 4 (18T:72T); loop 5: 3 → 3.5
         "upper_yaw":      ("GIM6010-8", 2.0),   # loop 5: DM-J4310 direct was under-rated over the workspace (p95 4.6 N·m vs 3 rated)
         "elbow":          ("GIM6010-8", 2.0),
         "wrist_pitch":    ("DM-J4310-2EC_V1.1", 1.0),
         "wrist_roll":     ("STS3215-C018", 1.0),
         "gripper":        ("STS3215-C018", 1.0),
     })
-    spring_k_nm: float = 4.0       # shoulder balancer torque at the horizontal arm, τ = K·sin(pitch). Loop 5 (rnd/spring.py):
+    spring_k_nm: float = 4.5       # shoulder balancer torque at the horizontal arm, τ = K·sin(pitch). Loop 5 (rnd/spring.py):
                                    # replaces the "85 % everywhere" assumption; K tuned for a 0.5 kg typical payload
     bone_mass_upper: float = 0.58  # FROM CAD (loop 9): 1.2 mm shell + CF Ø40 neck + yaw & elbow KX74 sockets + pulley hubs + bearings
     bone_mass_fore: float = 0.31   # FROM CAD (loop 9): side link with CF Ø30 tube + wrist KX56 socket + bearings + fasteners
     bone_wall_mm: float = 1.2      # printed shell wall (rnd/bones.py: strength is never binding)
     cf_tubes: bool = True          # carbon-tube neck + forearm (loop 9: bone-bending sag at the hand 4.1 → 1.5 mm)
-    gripper_mech_mass: float = 0.10
+    gripper_mech_mass: float = 0.31  # FROM CAD (loop 10, rnd/parts/hand.py): palm, KX56/KX44 hubs + collars, gripper body, jaws (was 0.10 ESTIMATE)
     wrist_cam_mass: float = 0.05
     payload: float = 1.0           # kg at the grasp point (R2)
     # Elbow motor placement: None = at the elbow; a distance (m from the shoulder pitch axis) = motor sits up the
     # upper arm, just past the yaw joint, and drives the elbow through a long belt (precedent: Berkeley Blue moves
     # motors back along belts). The elbow then carries only a pulley hub + bearings.
     elbow_motor_at: float | None = None
-    pitch_module_mass: float = 0.76    # FROM CAD (loop 7; loop 8 lightening 0.81 → 0.76, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
+    pitch_module_mass: float = 0.79    # FROM CAD (loop 7; loop 8 lightening 0.81 → 0.76; loop 10 60T pulley 0.79, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
                                        # KX-V ferrule, small hub + KX74 socket, bearings, spring/cable/pulley A, V-band clamp. Torso side.
     roll_stage_mass: float = 0.60      # ESTIMATE scaled from the pitch-module CAD (no spring/clamp, 70T pulley, male ferrule). Arm side.
     yaw_stage_mass: float = 0.20       # upper-arm yaw belt stage (2:1, pulley hubs + bearings + belt), ESTIMATE from elbow-stage CAD

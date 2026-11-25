@@ -4,13 +4,13 @@ Zero-free-length cable-spring balancer. Pulley A sits 45–65 mm above the pitch
 
 | Quantity | Value |
 |---|---|
-| Design K (params) | 4.0 N·m |
-| Spring rate k = K/(a·b) | **2.67 N/mm** |
-| Max spring force (arm hanging) | 213 N |
+| Design K (params) | 4.5 N·m |
+| Spring rate k = K/(a·b) | **3.00 N/mm** |
+| Max spring force (arm hanging) | 239 N |
 | Spring stroke over the pitch range | 61 mm (cage allows 105) ✅ |
-| Law error from the Ø12 mm pulley (max over −200…60°) | 0.48 N·m (12% of K) |
-| K adjustment by sliding A (45–65 mm) | 3.6–5.2 N·m |
-| Cable safety (2 mm UHMWPE, ESTIMATE 2000 N) | 9× |
+| Law error from the Ø12 mm pulley (max over −200…60°) | 0.54 N·m (12% of K) |
+| K adjustment by sliding A (45–65 mm) | 4.0–5.8 N·m |
+| Cable safety (2 mm UHMWPE, ESTIMATE 2000 N) | 8× |
 
 **Spring:** a stock compression spring (≈2 N/mm, ≥ 100 mm working travel, ~25 mm OD) in a printed pull-cage. A compression spring has no initial tension, so it stays zero-free-length, and if it breaks the cage still holds the cable. ESTIMATE until a catalogue part is chosen.
 **Failure mode:** with the cable cut, the arm is simply unbalanced; the pitch motor still holds it (no-spring need 10.3 N·m p95 vs 11.9 rated).

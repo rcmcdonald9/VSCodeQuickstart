@@ -26,11 +26,11 @@
 
 | Socket | Interface | Bending moment (N·m) | Bearing pair | Max radial load per bearing | Static safety C0/P0 |
 |---|---|---|---|---|---|
-| shoulder_roll | KX74 | 12.6 | 2 × 61808 | 804 N | 5.2 ✅ |
-| upper_yaw | KX74 | 10.3 | 2 × 61808 | 659 N | 6.3 ✅ |
-| elbow | KX74 | 6.2 | 2 × 61808 | 395 N | 10.5 ✅ |
-| wrist_pitch | KX56 | 1.5 | 2 × 61805 | 110 N | 23.6 ✅ |
-| wrist_roll | KX44 | 1.0 | 2 × 61805 | 86 N | 30.2 ✅ |
+| shoulder_roll | KX74 | 14.1 | 2 × 61808 | 896 N | 4.6 ✅ |
+| upper_yaw | KX74 | 11.6 | 2 × 61808 | 742 N | 5.6 ✅ |
+| elbow | KX74 | 7.1 | 2 × 61808 | 454 N | 9.1 ✅ |
+| wrist_pitch | KX56 | 1.8 | 2 × 61805 | 137 N | 19.0 ✅ |
+| wrist_roll | KX44 | 1.2 | 2 × 61805 | 110 N | 23.5 ✅ |
 | drive wheel | KX74 | 3.3 | 2 × 61808 | 261 N | 15.9 ✅ |
 
 ## Arm-detach coupling KX-V (loop 7)
@@ -39,8 +39,8 @@ The arm comes off at the shoulder-pitch output for carrying (D1). Unlike a joint
 
 | Check | Need (static × 1.5) | Capacity | |
 |---|---|---|---|
-| Bending (lift-off of the face ring) | 18.9 N·m | 40.0 N·m at 1000 N preload | 2.1× ✅ |
-| Torque by face friction alone | 15.2 N·m | 10.0 N·m | 0.7× (dowels carry the rest: 6 MPa shear in Ø6 steel) |
+| Bending (lift-off of the face ring) | 21.1 N·m | 40.0 N·m at 1000 N preload | 1.9× ✅ |
+| Torque by face friction alone | 17.4 N·m | 10.0 N·m | 0.6× (dowels carry the rest: 7 MPa shear in Ø6 steel) |
 | Flange bearing pressure | – | 0.9 MPa on printed PETG | ✅ |
 
 The face is kinematically over-constrained (not a ball seat), so re-attachment repeats to ~0.05–0.1 mm (dowel fit), not microns. That's fine for an arm that re-homes from its absolute joint encoders; a camera check corrects any residual offset.

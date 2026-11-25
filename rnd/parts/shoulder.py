@@ -1,7 +1,7 @@
 """Shoulder-pitch module v0 (torso side of the arm-detach plane). Left arm; outboard = +Y. Pitch axis = Y at the origin.
 
 - Pitch cartridge M (GIM6010-8) behind the axis (x = -BELT_C), its output facing outboard, on a small-pulley hub.
-- HTD 5M 20T → 50T belt (2.5:1) in the belt plane; the 50T pulley sits on the pitch shaft (Ø40, 2 × 61808 in the bracket walls).
+- HTD 5M 20T → 60T belt (3:1, loop 10) in the belt plane; the 50T pulley sits on the pitch shaft (Ø40, 2 × 61808 in the bracket walls).
 - Balancer plane, outboard of the bracket: a lever on the pitch shaft carries anchor pin B (30 mm); pulley A rides in a vertical slot
   45–65 mm above the axis; the cable runs back over A into a horizontal cage with a 2.7 N/mm compression spring (rnd/balancer.py).
 - Outboard end of the shaft: the **KX-V ferrule** (3" sanitary profile, 3 dowels): the arm clamps on here with a V-band.
@@ -53,7 +53,7 @@ def pitch_shaft() -> Part:
     """Ø40 hollow shaft: 50T pulley in the belt plane, balancer disc with pin B, ferrule on the outboard end."""
     L = Y_FER - (W_IN - 4)
     s = Pos(0, W_IN - 4, 0) * _rot_y(Cylinder(20, L, align=MIN) - Cylinder(15, L, align=MIN))
-    s += Pos(0, Y_BELT - 8, 0) * _rot_y(pulley(50, 16, flange=False, bore=30))   # flanges on the small pulley only
+    s += Pos(0, Y_BELT - 8, 0) * _rot_y(pulley(60, 16, flange=False, bore=30))   # flanges on the small pulley only
     disc = Cylinder(25, 5, align=MIN) - Cylinder(15, 5, align=MIN)
     disc += Pos(0, -17, 0) * Box(14, 26, 5, align=MIN)                      # lever
     disc += Pos(0, -30, 0) * Cylinder(3, 9, align=MIN)                      # pin B, 30 mm from the axis (points down when the arm hangs)
