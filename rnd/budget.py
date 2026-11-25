@@ -11,6 +11,7 @@ def arm_items(d: Design):
         items.append((f"arm {j}", act(name)["mass"]))
     items += [("arm bones+shells", a.bone_mass_upper + a.bone_mass_fore),
               ("gripper mechanism", a.gripper_mech_mass), ("wrist camera", a.wrist_cam_mass)]
+    items.append(("upper-arm yaw belt stage", a.yaw_stage_mass))
     if a.elbow_motor_at is not None:
         items.append(("elbow pulley hub (remote motor)", a.elbow_hub_mass))
     return items

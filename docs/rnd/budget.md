@@ -5,8 +5,8 @@
 | base | 5.83 | ≤ 6 | ✅ |
 | battery | 1.50 | ≤ 3 | ✅ |
 | upper | 6.20 | ≤ 10 | ✅ |
-| arm (each, detachable) | 2.85 | ≤ 10 | ✅ |
-| **total robot** | **19.22** | | |
+| arm (each, detachable) | 3.13 | ≤ 10 | ✅ |
+| **total robot** | **19.79** | | |
 
 **base detail**
 
@@ -42,16 +42,17 @@
 |---|---|
 | arm bones+shells | 0.910 |
 | arm shoulder_roll | 0.388 |
+| arm upper_yaw | 0.388 |
 | arm elbow | 0.388 |
-| arm upper_yaw | 0.300 |
 | arm wrist_pitch | 0.300 |
 | roll stage | 0.300 |
+| upper-arm yaw belt stage | 0.200 |
 | gripper mechanism | 0.100 |
 | arm wrist_roll | 0.055 |
 | arm gripper | 0.055 |
 | wrist camera | 0.050 |
 
-**Actuators:** 20 joints, ≈ **$1,550** at mid list price.
+**Actuators:** 20 joints, ≈ **$1,411** at mid list price.
 
 ## Power (ESTIMATES until Phase-1 measurement)
 

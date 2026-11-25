@@ -173,3 +173,32 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
 - **Decision D1 changed:** arms detach at the shoulder-pitch KX. It's the same twist-collar as every joint, plus a blind-mate plug (new queue 6b). That also serves the owner's "swap arms and hands over time" goal.
 - **Thin margins to watch:** base 5.8/6 kg; threshold torque 4.2/5 N·m (heavier robot); joint margin 1.57/1.5×.
 - **Next:** shoulder module CAD (it replaces the last big mass ESTIMATE); arm mass diet.
+
+## 2026-11-25: loop 5, the "85 % spring" assumption tested; workspace torque check finds an under-rated joint
+
+**Picked:** the shoulder margin rested on an unverified claim: a spring cancelling 85 % of the arm's self-weight in every pose. A pitch-only spring can't do that once the elbow bends, so I tested it before drawing the shoulder.
+
+- **Balancer study** (`rnd/spring.py` → [rnd/spring.md](rnd/spring.md)):
+  - 6,000 random poses in the MuJoCo twin, static torques.
+  - A zero-free-length cable-spring balancer (Anglepoise / Herder principle) gives τ = K·sin(pitch).
+  - The real cancellation is **~36 %** at the 95th percentile, not 85 %.
+  - A K sweep picked **K = 4 N·m** (best for a 0.5 kg typical payload). The spring has a preload screw so it can be re-tuned.
+  - Shoulder pitch still holds: **1.61×** rated vs 95th-pct need, **2.57×** peak vs worst pose.
+- **New whole-workspace check for every joint.** The old check only looked at a straight horizontal arm, which never loads the upper-arm yaw. Result:
+
+| Joint | Before | After |
+|---|---|---|
+| Upper-arm yaw | DM-J4310 direct: need 4.6 N·m (p95) vs 3 rated → **0.65× ❌** | **GIM6010-8 × 2 belt → 2.06×** ✅ |
+| Shoulder roll | GIM × 3: **1.29× ⚠️** | **GIM × 3.5 (20T:70T) → 1.51×** ✅ |
+| Shoulder pitch / elbow / wrist pitch | – | 1.61× / 1.77× / 2.15× ✅ |
+
+- **Why GIM × 2 for the yaw** (over a DM-J4340P direct, 1.96×): it's ~$70 cheaper per arm, backdrivable (40:1 gearing isn't), and the same part as the other big joints. The cost is +0.29 kg per arm.
+- **Scorecard, before → after:**
+  - new rows: workspace margin **1.51×** rated / **2.57×** peak ✅
+  - cost **$2,900 → $2,761** (actuators $1,550 → $1,411)
+  - arm piece 2.8 → **3.1 kg**; assembled upper 11.9 → 12.5 kg (info)
+  - socket bearing safety 3.4 → 5.1
+  - threshold torque 4.2 → **4.3** of 5 N·m (watch)
+  - reach / tip unchanged
+- **Lesson recorded:** size joints on the workspace, not on a single "worst" pose that someone picked.
+- **Next:** shoulder module CAD with the cable-spring balancer; arm mass diet (the arm piece is now 3.1 kg).

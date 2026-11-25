@@ -5,7 +5,8 @@ HTD 5M, fiberglass cord, allowable 650 N per 10 mm width (vendor tables; ESTIMAT
 | Joint | Teeth | Pitch Ø small / big (mm) | Belt | Pull rated / peak (N) | Allowable (N) | Safety at peak | Teeth in mesh | Centre / belt length (mm) |
 |---|---|---|---|---|---|---|---|---|
 | shoulder_pitch | 20:50 (2.50:1) | 31.8 / 79.6 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 7.8 ✅ | 70 / 323 (≈65 T) |
-| shoulder_roll | 20:60 (3.00:1) | 31.8 / 95.5 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 7.2 ✅ | 75 / 364 (≈73 T) |
+| shoulder_roll | 20:70 (3.50:1) | 31.8 / 111.4 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 6.9 ✅ | 85 / 414 (≈83 T) |
+| upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 8.5 ✅ | 70 / 294 (≈59 T) |
 | elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 15 mm | 314 / 691 | 975 | 1.41 ✅ | 8.5 ✅ | 70 / 294 (≈59 T) |
 
 - **Pull at peak** assumes the full actuator peak torque reaches the small pulley; the KX seat slips at 12.7 N·m, which caps it.

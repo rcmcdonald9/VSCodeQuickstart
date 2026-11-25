@@ -44,7 +44,7 @@ def build_xml(d: Design) -> str:
           <geom type="sphere" size="0.038" mass="{m['shoulder_roll'] + a.shoulder_stage_mass}" rgba=".1 .1 .1 1"/>
           <body name="upper_{side}" pos="0 0 -0.07">
             <joint name="yaw_{side}" axis="0 0 1" range="{JR['yaw'][0]} {JR['yaw'][1]}"/>
-            <geom type="sphere" size="0.03" pos="0 0 0" mass="{m['upper_yaw']}" rgba=".1 .1 .1 1"/>
+            <geom type="sphere" size="0.03" pos="0 0 0" mass="{m['upper_yaw'] + a.yaw_stage_mass}" rgba=".1 .1 .1 1"/>
             <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_upper-0.07)}" size="0.032" mass="{a.bone_mass_upper}" rgba=".9 .9 .9 1"/>
             {f'<geom type="cylinder" size="0.043 0.025" pos="0 0 {-(a.elbow_motor_at-0.07)}" euler="90 0 0" mass="{m["elbow"]}" rgba=".1 .1 .1 1"/>' if a.elbow_motor_at else ''}
             <body name="fore_{side}" pos="0 0 {-(a.l_upper-0.07)}">

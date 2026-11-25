@@ -40,14 +40,15 @@ class Arm:
     # actuator choice per joint and belt/linkage reduction in the bone
     joints: dict = field(default_factory=lambda: {
         "shoulder_pitch": ("GIM6010-8", 2.5),   # 2.5:1 printed belt + spring assist (sized in arm_sizing)
-        "shoulder_roll":  ("GIM6010-8", 3.0),   # 3:1: weakest joint in v0 sizing (no spring help sideways)
-        "upper_yaw":      ("DM-J4310-2EC_V1.1", 1.0),
+        "shoulder_roll":  ("GIM6010-8", 3.5),   # loop 5: 3 → 3.5 (whole-workspace check: 1.29× → 1.5×); 20T:70T
+        "upper_yaw":      ("GIM6010-8", 2.0),   # loop 5: DM-J4310 direct was under-rated over the workspace (p95 4.6 N·m vs 3 rated)
         "elbow":          ("GIM6010-8", 2.0),
         "wrist_pitch":    ("DM-J4310-2EC_V1.1", 1.0),
         "wrist_roll":     ("STS3215-C018", 1.0),
         "gripper":        ("STS3215-C018", 1.0),
     })
-    spring_assist: float = 0.85    # fraction of the arm's own gravity moment the shoulder spring cancels
+    spring_k_nm: float = 4.0       # shoulder balancer torque at the horizontal arm, τ = K·sin(pitch). Loop 5 (rnd/spring.py):
+                                   # replaces the "85 % everywhere" assumption; K tuned for a 0.5 kg typical payload
     bone_mass_upper: float = 0.59  # FROM CAD (loop 4, rnd/parts/arm.py): shell 0.26 + yaw KX56 socket + elbow KX74 socket + pulley hubs + bearings (was 0.26 ESTIMATE)
     bone_mass_fore: float = 0.32   # FROM CAD (loop 4): side-link shell 0.21 + wrist KX56 socket + bearings + fasteners (was 0.19 ESTIMATE)
     gripper_mech_mass: float = 0.10
@@ -59,6 +60,7 @@ class Arm:
     elbow_motor_at: float | None = None
     shoulder_stage_mass: float = 0.30  # per shoulder belt stage (pitch, roll): KX74 socket + pulley hubs + bearings + housing
                                        # share. ESTIMATE scaled from the elbow-stage CAD (loop 4)
+    yaw_stage_mass: float = 0.20       # upper-arm yaw belt stage (2:1, pulley hubs + bearings + belt), ESTIMATE from elbow-stage CAD
     spring_module_mass: float = 0.15   # shoulder gravity-assist spring + cam (ESTIMATE, stays on the torso)
     elbow_hub_mass: float = 0.12   # big pulley + hub + 2×61808 + tensioner when the motor is remote (ESTIMATE)
     wrist_pitch_range_deg: float = 120.0   # ±140 folded the hand into the forearm (collision study); ±120 is realistic and reaches more

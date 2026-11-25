@@ -26,8 +26,8 @@
 
 | Socket | Interface | Bending moment (N·m) | Bearing pair | Max radial load per bearing | Static safety C0/P0 |
 |---|---|---|---|---|---|
-| shoulder_roll | KX74 | 12.5 | 2 × 61808 | 799 N | 5.2 ✅ |
-| upper_yaw | KX56 | 10.4 | 2 × 61805 | 754 N | 3.4 ✅ |
+| shoulder_roll | KX74 | 12.6 | 2 × 61808 | 807 N | 5.1 ✅ |
+| upper_yaw | KX74 | 10.4 | 2 × 61808 | 662 N | 6.3 ✅ |
 | elbow | KX74 | 6.2 | 2 × 61808 | 396 N | 10.5 ✅ |
 | wrist_pitch | KX56 | 1.5 | 2 × 61805 | 110 N | 23.6 ✅ |
 | wrist_roll | KX44 | 1.0 | 2 × 61805 | 86 N | 30.2 ✅ |

@@ -5,19 +5,21 @@
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 98% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 72 mm | ≥ 50 mm | ✅ |
-| R2 min joint margin at spec load (rated) | 1.57× | ≥ 1.5× | ✅ |
+| R2 min joint margin at spec load (rated, planar check) | 1.79× | ≥ 1.5× | ✅ |
 | R3 upper core (arms detached) | 6.2 kg | ≤ 10 kg | ✅ |
-| R3 each arm (detaches at the shoulder KX) | 2.8 kg | ≤ 10 kg | ✅ |
-| R3 assembled upper (core + arms, for reference) | 11.9 kg | info | — |
+| R3 each arm (detaches at the shoulder KX) | 3.1 kg | ≤ 10 kg | ✅ |
+| R3 assembled upper (core + arms, for reference) | 12.5 kg | info | — |
 | R3 base module mass | 5.8 kg | ≤ 6 kg | ✅ |
 | R3 battery mass | 1.5 kg | ≤ 3 kg | ✅ |
 | R7 runtime (estimated duty cycle) | 4.0 h | ≥ 2 h | ✅ |
-| R8 cost estimate | $2,900 (actuators $1,550 ×20) | ≤ $3,300 | ✅ |
+| R8 cost estimate | $2,761 (actuators $1,411 ×20) | ≤ $3,300 | ✅ |
 | R9 KX interface slip torque / actuator peak (min) | 1.16× | ≥ 1.1× | ✅ |
+| R2 min joint margin, whole workspace (rated / 95th pct, 1 kg) | 1.51× | ≥ 1.5× | ✅ |
+| R2 min joint margin, whole workspace (peak / worst pose) | 2.57× | ≥ 1.5× | ✅ |
 | R2 belt safety at actuator peak (HTD 5M 15 mm, min) | 1.41× | ≥ 1.2× | ✅ |
-| R12 socket bearing static safety (min) | 3.4 | ≥ 2 | ✅ |
+| R12 socket bearing static safety (min) | 5.1 | ≥ 2 | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
-| R4 15 mm threshold torque (45° heading) | 4.2 N·m / 5 rated | < rated | ✅ |
+| R4 15 mm threshold torque (45° heading) | 4.3 N·m / 5 rated | < rated | ✅ |
 | R10 assembly time | not yet measured (needs CAD) | ≤ 4 h | — |
 | R13 printability | not yet measured (needs CAD) | all ≤ 256 mm | — |
 | R11 looks | concept render only | owner approval | — |
