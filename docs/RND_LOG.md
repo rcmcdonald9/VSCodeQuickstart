@@ -596,3 +596,29 @@ The blocked hosts (vendor CDNs, Gates, SKF) limited the agents to search snippet
 | Tip margin | 66 mm | 64 mm |
 
 - The cost increase is real (verified prices replacing guesses), so it's kept, not reverted. **New queue item 5b: cost-down.**
+
+## 2026-11-25: loop 14, cost-down (R8)
+
+Research agent + verified listings (AliExpress prices are search snapshots, so check the live listing before buying):
+
+| Change | Δ cost |
+|---|---|
+| Bearings from AliExpress 10-packs (6808 $2.02, 6804 $0.92, 6805 $1.15; no-name, inspect on arrival) | −$187 |
+| Head camera Orbbec **Gemini 2** ($234; 0.15–10 m, global-shutter IR, 98 g) instead of Gemini 336 ($310) | −$76 |
+| Waveshare 2-CH CAN FD HAT ($47) for the arm buses + 1 USB-CAN for base/lift (also the fallback if the HAT's 2nd channel misbehaves on the Pi 5) | −$23 |
+| Bestorq HTD belts ($7.67 listing) | −$48 |
+| **GIM6010-8 verified price with driver $90–94** (was $82.50 mid-range) | **+$105** |
+
+**Net: BOM $3,645 → $3,435** (target $3,300 ❌ by $135; limit $5,000 ✅).
+
+**Evaluated and rejected:** GIM6010-8 instead of DM-J4310 at the wrist (−$124). The extra 90 g at the arm tip drops the workspace margins of shoulder roll (1.51 → 1.47×) and elbow (1.54 → 1.48×) below 1.5×, and the wrist gets bulkier.
+
+**Notes:**
+- The OAK-D Lite rose to $269 (Jul 2026). The RealSense D435i is uncertain supply.
+- SteadyWin is phasing the GDS driver out for GDK (pre-order). Check the variant at purchase.
+
+**Remaining gap options (owner choice, non-blocking):**
+- accept ~$3.4k
+- drop the optical-flow sensor (−$30; rely on wheel odometry + lidar)
+- single wrist camera (−$30)
+- negotiate GIM volume pricing (Alibaba lists from $39.90; quote needed)

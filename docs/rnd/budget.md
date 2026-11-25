@@ -52,7 +52,7 @@
 | arm gripper | 0.055 |
 | wrist camera | 0.050 |
 
-**Actuators:** 21 joints, ≈ **$1,494** at mid list price.
+**Actuators:** 21 joints, ≈ **$1,617** at mid list price.
 
 ## Power (ESTIMATES until Phase-1 measurement)
 

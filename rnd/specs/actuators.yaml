@@ -14,7 +14,7 @@ GIM6010-8:
   outer_diameter_mm: 80    # retailer description; confirm with installation drawing (ESTIMATE until drawing checked)
   interface: "CAN + USB-C (SDC104 driver), integrated driver + encoder"
   continuous_current_a: 10.5
-  price_usd: [70, 95]
+  price_usd: [90, 94]      # loop 14 verified with driver: aifitlab $90 (GDS68), SteadyWin store $93.88; bare motor $70.35
   notes: >
     Some Amazon variants differ (48 V/4.6 N·m/17.9 N·m locking). Buy the 24 V SDC104 version and verify on arrival.
   sources:
