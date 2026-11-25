@@ -4,9 +4,9 @@
 |---|---|---|---|
 | base | 5.83 | ≤ 6 | ✅ |
 | battery | 1.50 | ≤ 3 | ✅ |
-| upper | 6.92 | ≤ 10 | ✅ |
+| upper | 6.47 | ≤ 10 | ✅ |
 | arm (each, detachable) | 3.43 | ≤ 10 | ✅ |
-| **total robot** | **21.11** | | |
+| **total robot** | **20.66** | | |
 
 **base detail**
 
@@ -24,12 +24,12 @@
 
 | Item | kg |
 |---|---|
-| 2× shoulder pitch module (CAD: stage, balancer, V-band) | 1.620 |
-| lift motor | 0.900 |
+| 2× shoulder pitch module (CAD: stage, balancer, V-band) | 1.520 |
 | torso | 0.900 |
 | spine extrusion | 0.848 |
 | 2× arm shoulder_pitch | 0.776 |
 | head | 0.600 |
+| lift motor | 0.550 |
 | compute | 0.450 |
 | carriage | 0.350 |
 | cables | 0.250 |
@@ -52,7 +52,7 @@
 | arm gripper | 0.055 |
 | wrist camera | 0.050 |
 
-**Actuators:** 20 joints, ≈ **$1,411** at mid list price.
+**Actuators:** 21 joints, ≈ **$1,494** at mid list price.
 
 ## Power (ESTIMATES until Phase-1 measurement)
 

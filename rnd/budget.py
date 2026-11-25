@@ -50,6 +50,7 @@ def actuator_cost(d: Design = BASELINE):
     names = [n for n, _ in d.arm.joints.values()] * 2
     names += [d.base.wheel_motor] * (3 if d.base.layout == "kiwi" else 4)
     names += ["STS3215-C018"] * 2   # head pan/tilt
+    names += [d.upper.lift_motor]   # lift (loop 8: a standard GIM cartridge instead of a NEMA23 + brake)
     return sum(act(n)["price"] for n in names), len(names)
 
 

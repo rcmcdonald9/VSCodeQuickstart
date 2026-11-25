@@ -58,7 +58,7 @@ class Arm:
     # upper arm, just past the yaw joint, and drives the elbow through a long belt (precedent: Berkeley Blue moves
     # motors back along belts). The elbow then carries only a pulley hub + bearings.
     elbow_motor_at: float | None = None
-    pitch_module_mass: float = 0.81    # FROM CAD (loop 7, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
+    pitch_module_mass: float = 0.76    # FROM CAD (loop 7; loop 8 lightening 0.81 → 0.76, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
                                        # KX-V ferrule, small hub + KX74 socket, bearings, spring/cable/pulley A, V-band clamp. Torso side.
     roll_stage_mass: float = 0.60      # ESTIMATE scaled from the pitch-module CAD (no spring/clamp, 70T pulley, male ferrule). Arm side.
     yaw_stage_mass: float = 0.20       # upper-arm yaw belt stage (2:1, pulley hubs + bearings + belt), ESTIMATE from elbow-stage CAD
@@ -90,7 +90,8 @@ class Upper:
     lift_max: float = 1.05         # reach sweep: 0.95 -> 1.05
     spine_len: float = 1.06        # extrusion length
     spine_mass_per_m: float = 0.80 # 2040 aluminium extrusion (ESTIMATE ~0.8 kg/m)
-    lift_motor_mass: float = 0.9   # NEMA23 + brake (ESTIMATE), or NEMA17 + constant-force spring
+    lift_motor_mass: float = 0.55  # loop 8 (rnd/lift.py): GIM6010-8 cartridge + 20T hub + ratchet + solenoid pawl (was 0.9: NEMA23 + brake)
+    lift_motor: str = "GIM6010-8"
     carriage_mass: float = 0.35
     torso_struct_mass: float = 0.9 # torso structure + shells (ESTIMATE)
     compute_mass: float = 0.45     # Pi 5 + Jetson option + CAN + DC-DC

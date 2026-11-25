@@ -256,3 +256,30 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
 | Arm-detach lift-off | – | **2.1×** ✅ |
 
 - **Critique:** every CAD pass has roughly doubled an estimate. The assembled upper went 9.5 → 13.8 kg across loops 4–7. Carry pieces still pass, but base threshold torque is now the margin to watch. **Next loop: a mass diet**, with base-drive fallbacks ready (8" wheels or a belt gear-down).
+
+## 2026-11-25: loop 8, lift decided (GIM + ratchet pawl), first mass-diet pass
+
+**Picked:** the lift. A mass ranking showed the lift motor was still an un-designed 0.9 kg placeholder (NEMA23 + brake), and the power-off torso drop was an unretired safety risk. That beat shaving plastic.
+
+- **Lift study** (`rnd/lift.py` → [rnd/lift.md](rnd/lift.md)): moving mass 12.2 kg + 2 kg payload. Four options compared:
+
+| Option | Mass | Power-off | Verdict |
+|---|---|---|---|
+| A: NEMA23 + brake | 1.25 kg | brake | heaviest; another motor type |
+| B: constant-force springs + NEMA17 | 0.60 kg | drifts, needs a brake | **rejected:** shoots up when the arms are removed for carrying; spring fatigue |
+| **C: GIM6010-8 + HTD 5M + spring-applied ratchet pawl** | **0.55 kg** | **pawl drops in (fail-safe), 0 W holding** | **chosen**: the standard reusable cartridge |
+| D: self-locking lead screw | 0.70 kg | locks | 23 s full travel, too slow |
+
+  Option C numbers: torque margin **2.10×**, full travel **3.5 s**, belt 6.5×, pawl tooth shear 9 MPa at ×3 catch shock.
+- **Shoulder bracket lightening:** pockets keep ≥ 10 mm of material around the bearing seats. Pitch module 0.81 → **0.76 kg**; interference re-checked.
+- **Diet lever ruled out:** the 6" DuraOmni (0.45 kg) is already among the lightest 6" omni wheels (alternatives 0.6–1.3 kg).
+
+| Scorecard | Before | After |
+|---|---|---|
+| Upper core | 6.9 kg | **6.5 kg** |
+| Assembled upper (info) | 13.8 kg | **13.3 kg** |
+| Cost | $2,761 | $2,764 (+1 GIM, −NEMA kit) |
+| Lift (new row) | – | 2.10× / 3.5 s ✅ |
+| Tip margin | 72 mm | 70 mm |
+
+- **Next:** arm-bone diet (1.8 kg for both arms: ribbed 1.2 mm shells, or aluminium tube bones as in Blue), then base CAD (the chassis 1.4 kg is still an ESTIMATE).
