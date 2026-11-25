@@ -55,7 +55,7 @@ class Arm:
     bone_mass_fore: float = 0.31   # FROM CAD (loop 9): side link with CF Ø30 tube + wrist KX56 socket + bearings + fasteners
     bone_wall_mm: float = 1.2      # printed shell wall (rnd/bones.py: strength is never binding)
     cf_tubes: bool = True          # carbon-tube neck + forearm (loop 9: bone-bending sag at the hand 4.1 → 1.5 mm)
-    gripper_mech_mass: float = 0.31  # FROM CAD (loop 10, rnd/parts/hand.py): palm, KX56/KX44 hubs + collars, gripper body, jaws (was 0.10 ESTIMATE)
+    gripper_mech_mass: float = 0.30  # FROM CAD (loop 16 gripper v2: fin-ray TPU fingers, tactile pads, palm ToF; rnd/parts/hand.py)
     wrist_cam_mass: float = 0.05
     payload: float = 1.0           # kg at the grasp point (R2)
     # Elbow motor placement: None = at the elbow; a distance (m from the shoulder pitch axis) = motor sits up the

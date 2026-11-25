@@ -78,6 +78,27 @@ def wrist_roll_face_z() -> float:
     return SLEEVE_TOP - cs.stack_height()
 
 
+# ---------------- fin-ray finger (TPU) ----------------
+def fin_ray(top_z: float, tip_z: float, face_x: float, depth: float, thick: float = 26.0, facing: int = +1, ribs: int = 5) -> Part:
+    """Fin-ray finger: triangle in the x-z plane. Vertical contact face at x = face_x (facing ±x toward the object); the back
+    face slopes from depth at the top to the tip. Thin TPU walls + cross ribs make the contact face wrap around the
+    object (Festo FinRay; UMI gripper). Printed in TPU 95A. thickness along y."""
+    from build123d import Polygon, extrude
+    s = -facing                                                    # back side direction
+    pts = [(face_x, top_z), (face_x + s * depth, top_z), (face_x, tip_z)]
+    outer = extrude(Polygon(*pts, align=None), thick)
+    w = 1.6
+    inner_pts = [(face_x + s * w, top_z - w), (face_x + s * (depth - w * 2.2), top_z - w), (face_x + s * w, tip_z + w * 3.2)]
+    inner = extrude(Polygon(*inner_pts, align=None), thick)
+    shell = outer - inner
+    for k in range(1, ribs + 1):
+        z = top_z + (tip_z - top_z) * k / (ribs + 1)
+        shell += (Pos((face_x + face_x + s * depth) / 2, z, thick / 2) * Rot(0, 0, s * 12) * Box(depth * 1.2, 1.2, thick)) & inner
+    res = Rot(90, 0, 0) * shell                     # extrusion direction depends on the polygon winding: re-centre on y = 0
+    bb = res.bounding_box()
+    return Pos(0, -(bb.min.Y + bb.max.Y) / 2, 0) * res
+
+
 # ---------------- gripper ----------------
 # Precedent: the SO-100 / LeRobot gripper: one fixed jaw + one jaw driven straight off the servo horn (fewest parts).
 # The gripper servo lies on its side under the base plate (shaft along Y, its 24.8 mm width along Z) so the hand stays short.
@@ -95,13 +116,18 @@ def gripper_parts(jaw_deg: float = 25.0):
     # moving jaw: lever on the horn (+Y side) → finger under the servo, rotated by jaw_deg about the shaft
     tip = -L_HAND - zs                                           # jaw tip height relative to the shaft
     jaw = Pos(0, 23, (tip + 12) / 2 + 6) * Box(12, 6, -tip + 12)  # lever on the horn, outside the servo
-    jaw += Pos(-2, 8, tip + 11) * Box(12, 36, 22)                # finger under the servo
-    jaw += Pos(4, 8, tip + 11) * Box(3, 30, 20)                  # TPU pad
+    jaw += Pos(-6, 8, -16) * Box(12, 36, 7)                      # finger mount plate just under the servo body
+    # gripper v2 (loop 16): fin-ray TPU finger (contact face +x) with a tactile pad window
+    jaw += Pos(0, 8, 0) * fin_ray(-19.5, tip - 12, 4.5, 18, 28, +1)
     parts.append(("jaw_moving", Pos(sx, 0, zs) * Rot(0, -jaw_deg, 0) * jaw, "dark"))
-    fixed = Pos(28, 0, zb - 10) * Box(12, 26, (zb - 10) + L_HAND + 6, align=(Align.CENTER, Align.CENTER, Align.MAX))
-    pad = Pos(21.5, 0, -L_HAND + 2) * Box(3, 26, 20)
-    parts += [("jaw_fixed", fixed, "white"), ("pad_fixed", pad, "orange")]
-    cam = Pos(46, 0, zb - 21) * Box(24, 30, 22)
+    # fixed jaw: printed stem + fin-ray TPU finger (contact face −x) with the fingertip tactile pad behind its face
+    stem = Pos(31, 0, zb - 10) * Box(10, 26, (zb - 10) + L_HAND - 25, align=(Align.CENTER, Align.CENTER, Align.MAX))
+    fr = fin_ray(-L_HAND + 25, -L_HAND - 12, 21.0, 18, 28, -1)
+    pad = Pos(24.5, 0, -L_HAND + 2) * Box(3, 20, 14)                     # MLX90393 + magnetic elastomer (tactile)
+    parts += [("jaw_fixed", stem, "white"), ("finray_fixed", fr, "orange"), ("pad_fixed", pad, "dark")]
+    tof = Pos(48, 21, zb - 19) * Box(10, 8, 4)                                  # palm ToF (VL53L4CD) beside the wrist camera, looking down
+    parts.append(("palm_tof", tof, "dark"))
+    cam = Pos(49, 0, zb - 21) * Box(24, 30, 22)
     parts.append(("wrist_cam", cam, "dark"))
     return parts
 

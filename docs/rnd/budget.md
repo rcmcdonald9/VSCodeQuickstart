@@ -5,8 +5,8 @@
 | base | 6.31 | ≤ 8 | ✅ |
 | battery | 1.10 | ≤ 3 | ✅ |
 | upper | 7.58 | ≤ 10 | ✅ |
-| arm (each, detachable) | 3.87 | ≤ 10 | ✅ |
-| **total robot** | **22.74** | | |
+| arm (each, detachable) | 3.86 | ≤ 10 | ✅ |
+| **total robot** | **22.72** | | |
 
 **base detail**
 
@@ -46,8 +46,8 @@
 | arm shoulder_roll | 0.388 |
 | arm upper_yaw | 0.388 |
 | arm elbow | 0.388 |
-| gripper mechanism | 0.310 |
 | arm wrist_pitch | 0.300 |
+| gripper mechanism | 0.300 |
 | arm wrist_roll | 0.055 |
 | arm gripper | 0.055 |
 | wrist camera | 0.050 |

@@ -4,10 +4,10 @@ HTD 5M, 15 mm, printed pulleys, small pulley on its own bearing hub. **Loop 13 r
 
 | Joint | Teeth | Pitch Ø small / big | Sustained pull vs working | Peak pull vs ultimate/3 | Teeth in mesh | Centre / belt length |
 |---|---|---|---|---|---|---|
-| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 186 / 312 N → 1.7× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 354 mm |
-| shoulder_roll | 18:72 (4.00:1) | 28.6 / 114.6 | 231 / 312 N → 1.4× ✅ | 768 N → 5.1× ultimate ✅ | 6.1 ✅ | 90 / 426 mm |
-| upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 175 / 312 N → 1.8× ✅ | 691 N → 5.6× ultimate ✅ | 8.7 ✅ | 80 / 313 mm |
-| elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 205 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.5 ✅ | 70 / 294 mm |
+| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 185 / 312 N → 1.7× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 354 mm |
+| shoulder_roll | 18:72 (4.00:1) | 28.6 / 114.6 | 230 / 312 N → 1.4× ✅ | 768 N → 5.1× ultimate ✅ | 6.1 ✅ | 90 / 426 mm |
+| upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 174 / 312 N → 1.8× ✅ | 691 N → 5.6× ultimate ✅ | 8.7 ✅ | 80 / 313 mm |
+| elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 204 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.5 ✅ | 70 / 294 mm |
 
 - Belt lengths round to stock sizes; eccentric bushings set the tension (loop 10).
 - If coupon tests show tooth jump or creep: switch to PU steel-cord HTD 5M (1268 N working, Mädler) at the same geometry, or to 25 mm belts.

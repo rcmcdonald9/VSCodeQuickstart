@@ -7,16 +7,16 @@ Robot + 2 kg payload = **24.7 kg**; 4 × 6" omni wheels (r = 76 mm) direct-drive
 | Carpet | Crr (ESTIMATE) | Total force | Torque per driven wheel | Power at 0.8 m/s |
 |---|---|---|---|---|
 | low pile | 0.05 | 12.1 N | 0.46 N·m (2 wheels driving forward) | 10 W |
-| medium pile | 0.1 | 24.3 N | 0.92 N·m (2 wheels driving forward) | 19 W |
+| medium pile | 0.1 | 24.2 N | 0.92 N·m (2 wheels driving forward) | 19 W |
 
 ## Thresholds (wheel load ≈ 61 N)
 
 | Step | Push needed per wheel | Torque if the wheel climbs head-on | Torque at 45° heading | vs 5 N·m rated |
 |---|---|---|---|---|
 | 5 mm | 23 N | 1.76 N·m | 2.49 N·m | ✅ |
-| 10 mm | 35 N | 2.64 N·m | 3.73 N·m | ✅ |
+| 10 mm | 35 N | 2.63 N·m | 3.72 N·m | ✅ |
 | 15 mm | 45 N | 3.43 N·m | 4.85 N·m | ✅ |
-| 20 mm | 56 N | 4.23 N·m | 5.99 N·m | ⚠️ peak |
+| 20 mm | 56 N | 4.23 N·m | 5.98 N·m | ⚠️ peak |
 
 **Catch:** a wheel rolling *sideways* meets the step with its small rollers (~25 mm, ESTIMATE). It can't climb more than a few mm on its own; the other wheels have to drag it over.
 **Rule for the planner:** cross thresholds at a **45° heading**, so every wheel uses its full diameter. That needs ≤ 4.8 N·m per wheel for 15 mm, within rating. **Must be bench-tested** (Phase-1 base test); fallback is 8" dual-row omni wheels (bigger rollers).

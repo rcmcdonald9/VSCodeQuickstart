@@ -5,7 +5,7 @@
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 64 mm | ≥ 50 mm | ✅ |
-| R2 min joint margin at spec load (rated, planar check) | 1.91× | ≥ 1.5× | ✅ |
+| R2 min joint margin at spec load (rated, planar check) | 1.92× | ≥ 1.5× | ✅ |
 | R3 upper core (arms detached) | 7.6 kg | ≤ 10 kg | ✅ |
 | R3 each arm (detaches at the shoulder KX) | 3.9 kg | ≤ 10 kg | ✅ |
 | R3 assembled upper (core + arms, for reference) | 15.3 kg | info | — |
@@ -14,14 +14,14 @@
 | R7 runtime (estimated duty cycle) | 4.0 h | ≥ 2 h | ✅ |
 | R8 cost, parametric estimate (superseded by the BOM row) | $2,912 (actuators $1,617 ×21) | info | — |
 | R9 KX interface slip torque / actuator peak (min) | 1.16× | ≥ 1.1× | ✅ |
-| R2 min joint margin, whole workspace (rated / 95th pct, 1 kg) | 1.51× | ≥ 1.5× | ✅ |
-| R2 min joint margin, whole workspace (peak / worst pose) | 2.57× | ≥ 1.5× | ✅ |
+| R2 min joint margin, whole workspace (rated / 95th pct, 1 kg) | 1.52× | ≥ 1.5× | ✅ |
+| R2 min joint margin, whole workspace (peak / worst pose) | 2.58× | ≥ 1.5× | ✅ |
 | R2 hand sag from bone bending, 1 kg straight out (static) | 1.8 mm | ≤ 2 mm | ✅ |
 | R2 belts: sustained pull vs working rating / peak vs ultimate (min) | 1.4× / 5.1× | ≥ 1.2× / ≥ 3× | ✅ |
 | R3 arm-detach clamp: lift-off moment / need (×1.5 dynamic) | 1.9× | ≥ 1.5× | ✅ |
 | R12 socket bearing static safety (min) | 4.0 | ≥ 2 | ✅ |
 | R2 hand positioning error, joint chain RSS at 0.6 m (with joint-side encoders; without) | 0.9 mm (4.0) | ≤ 2 mm | ✅ |
-| R2 torso sway from mast bending (worst static) | 1.5 mm | ≤ 2 mm | ✅ |
+| R2 torso sway from mast bending (worst static) | 1.4 mm | ≤ 2 mm | ✅ |
 | R5 lift: torque margin / full-travel time | 2.04× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.3× (4.8 of 11 N·m peak) | ≥ 1.5× | ✅ |

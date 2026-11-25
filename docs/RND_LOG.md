@@ -644,3 +644,13 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - The electrical plan adds the sensor nodes (~+10 % load per CAN bus).
 - **R8:** BOM **$3,435 → $3,711**. The internal target is raised **$3,300 → $4,000** to honour the owner's direction; the $5,000 limit is unchanged.
 - New scorecard row: hand error **0.9 mm** (4.0 without encoders) ✅.
+
+## 2026-11-25: loop 16, gripper v2 (dexterity, following the owner's sensor decision)
+
+- **Evaluated:** a parallel rack-and-pinion gripper (UMI-style). Its servo and racks must sit below the base plate, which adds ~40 mm to the hand (l_hand 0.15 → ~0.19 m) and costs wrist torque and reach. **Rejected.**
+- **Chosen:** keep the SO-101 jaw kinematics (fixed jaw + servo-driven jaw, 0.15 m) and fit **fin-ray TPU fingers** on both jaws.
+  - The compliant contact face wraps around objects and self-centres them, cancelling the non-parallel jaw motion.
+  - Precedent: Festo FinRay, the Stanford UMI gripper.
+  - The **tactile pad** (MLX90393 behind a magnetic elastomer) sits in the fixed finger's face; the **palm ToF** sits beside the wrist camera.
+- CAD: `fin_ray()` generator (thin TPU walls + slanted ribs) in `rnd/parts/hand.py`. Interference clean (bonded joints only). Render: [img/gripper_v2.png](rnd/img/gripper_v2.png).
+- Hand mechanism 0.31 → 0.30 kg (TPU fingers are lighter than the rigid jaws). Twin and sim unchanged: the sim already models compliant, coupled fingers.
