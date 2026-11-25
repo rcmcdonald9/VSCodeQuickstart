@@ -283,3 +283,18 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
 | Tip margin | 72 mm | 70 mm |
 
 - **Next:** arm-bone diet (1.8 kg for both arms: ribbed 1.2 mm shells, or aluminium tube bones as in Blue), then base CAD (the chassis 1.4 kg is still an ESTIMATE).
+
+## 2026-11-25: loop 9, bone strength and stiffness; carbon tubes (owner moved the loop to hourly)
+
+**Owner:** shortened the loop interval (now hourly at :10) and asked for this run immediately.
+
+**Picked:** the arm diet. Before thinning walls, I checked what limits the bones. Nothing had checked their strength or stiffness yet.
+
+- **New analysis** `rnd/bones.py` → [rnd/bones.md](rnd/bones.md): arm straight out with 1 kg, ×1.5 dynamic; printed PETG E 1.8 GPa, 12 MPa allowable (layer adhesion, SF 2).
+  - **Strength is never binding:** ≤ 4 MPa even at 1.2 mm walls.
+  - **Stiffness is.** Hand sag from bone bending alone: 2.9 mm (2.4 mm walls), **4.1 mm (1.6 mm, the current design)**, 5.2 mm (1.2 mm).
+- **Decision D4d:** carbon tubes for the two slender sections (neck Ø40×1, forearm Ø30×1) in printed sockets, with 1.2 mm shells elsewhere → **sag 1.6 mm** ✅ (target ≤ 2). Precedent: Hello Robot Stretch's carbon arm, Kinova carbon links. Cost +$25 (ESTIMATE).
+- **CAD updated** (`rnd/parts/arm.py`): tube sockets, `cf_neck()`, `cf_fore()`. Arm structure **0.93 → 0.89 kg** per arm. This includes correcting the yaw socket to KX74, which was missed when the yaw became a GIM in loop 5 (+0.03 kg).
+- **Honest conclusion on the diet:** the bones were already thin. Each arm piece (3.4 kg) is ~60 % actuators + belt stages, so the 2.5 kg/arm target is dropped. Carry passes anyway (core 6.5 kg, arm 3.4 kg).
+- **Scorecard:** new row "hand sag" **1.6 mm** ✅. Cost $2,764 → $2,788. Tip margin 70 mm; all other rows unchanged.
+- **Next:** base CAD (the chassis 1.4 kg and base layout are still ESTIMATEs; the base is the last major untouched module).

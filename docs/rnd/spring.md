@@ -2,13 +2,13 @@
 
 6000 random right-arm poses across the full joint ranges (MuJoCo twin, static). A pitch-only balancer τ = K·sin(pitch) (zero-free-length spring + cable: Anglepoise / Herder gravity balancing) is fitted to the arm's own weight.
 
-**Design K = 4.00 N·m** (spring torque at the horizontal arm; `params.arm.spring_k_nm`). A least-squares fit to the bare arm gives 3.45 N·m; a K sweep showed 4.0 minimises the 95th-percentile motor torque for a 0.5 kg typical payload (0.5 kg: 5.2 N·m; 1 kg: 7.3 N·m). The spring preload is screw-adjustable (Anglepoise precedent), so K can be re-tuned per task.
+**Design K = 4.00 N·m** (spring torque at the horizontal arm; `params.arm.spring_k_nm`). A least-squares fit to the bare arm gives 3.42 N·m; a K sweep showed 4.0 minimises the 95th-percentile motor torque for a 0.5 kg typical payload (0.5 kg: 5.2 N·m; 1 kg: 7.3 N·m). The spring preload is screw-adjustable (Anglepoise precedent), so K can be re-tuned per task.
 
 | Motor torque needed at the pitch joint | 95th percentile | Worst pose |
 |---|---|---|
-| No spring, 1 kg payload | 10.5 N·m | 14.1 N·m |
-| Spring, arm only | 3.5 N·m | 6.7 N·m |
-| **Spring, 1 kg payload** | **7.5 N·m** | **10.3 N·m** |
+| No spring, 1 kg payload | 10.4 N·m | 14.1 N·m |
+| Spring, arm only | 3.5 N·m | 6.6 N·m |
+| **Spring, 1 kg payload** | **7.4 N·m** | **10.3 N·m** |
 | Joint capacity (GIM6010-8 × 2.5 belt), rated / peak | 11.9 | 26.1 |
 
 The spring cancels **38%** of the arm's self-weight torque at the 95th percentile (arm_sizing assumed 85 % everywhere).
@@ -20,8 +20,8 @@ The planar check in [arm sizing](arm_sizing.md) only looks at a straight horizon
 
 | Joint | Actuator × ratio | Need: 95th pct / worst (N·m) | Rated / peak | Margin rated/p95 | Margin peak/worst |
 |---|---|---|---|---|---|
-| shoulder_pitch | GIM6010-8 × 2.5 | 7.4 / 10.2 | 11.9 / 26.1 | 1.61 | 2.57 ✅ |
-| shoulder_roll | GIM6010-8 × 3.5 | 11.0 / 14.2 | 16.6 / 36.6 | 1.51 | 2.57 ✅ |
+| shoulder_pitch | GIM6010-8 × 2.5 | 7.3 / 10.1 | 11.9 / 26.1 | 1.62 | 2.57 ✅ |
+| shoulder_roll | GIM6010-8 × 3.5 | 11.0 / 14.2 | 16.6 / 36.6 | 1.51 | 2.58 ✅ |
 | upper_yaw | GIM6010-8 × 2 | 4.6 / 6.1 | 9.5 / 20.9 | 2.06 | 3.43 ✅ |
 | elbow | GIM6010-8 × 2 | 5.4 / 6.1 | 9.5 / 20.9 | 1.77 | 3.43 ✅ |
 | wrist_pitch | DM-J4310-2EC_V1.1 × 1 | 1.4 / 1.5 | 3.0 / 7.0 | 2.15 | 4.77 ✅ |

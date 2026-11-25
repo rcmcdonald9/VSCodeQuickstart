@@ -26,9 +26,9 @@
 
 | Socket | Interface | Bending moment (N·m) | Bearing pair | Max radial load per bearing | Static safety C0/P0 |
 |---|---|---|---|---|---|
-| shoulder_roll | KX74 | 12.6 | 2 × 61808 | 807 N | 5.1 ✅ |
-| upper_yaw | KX74 | 10.4 | 2 × 61808 | 662 N | 6.3 ✅ |
-| elbow | KX74 | 6.2 | 2 × 61808 | 396 N | 10.5 ✅ |
+| shoulder_roll | KX74 | 12.6 | 2 × 61808 | 804 N | 5.2 ✅ |
+| upper_yaw | KX74 | 10.3 | 2 × 61808 | 659 N | 6.3 ✅ |
+| elbow | KX74 | 6.2 | 2 × 61808 | 395 N | 10.5 ✅ |
 | wrist_pitch | KX56 | 1.5 | 2 × 61805 | 110 N | 23.6 ✅ |
 | wrist_roll | KX44 | 1.0 | 2 × 61805 | 86 N | 30.2 ✅ |
 | drive wheel | KX74 | 3.3 | 2 × 61808 | 261 N | 15.9 ✅ |
@@ -39,7 +39,7 @@ The arm comes off at the shoulder-pitch output for carrying (D1). Unlike a joint
 
 | Check | Need (static × 1.5) | Capacity | |
 |---|---|---|---|
-| Bending (lift-off of the face ring) | 19.0 N·m | 40.0 N·m at 1000 N preload | 2.1× ✅ |
+| Bending (lift-off of the face ring) | 18.9 N·m | 40.0 N·m at 1000 N preload | 2.1× ✅ |
 | Torque by face friction alone | 15.2 N·m | 10.0 N·m | 0.7× (dowels carry the rest: 6 MPa shear in Ø6 steel) |
 | Flange bearing pressure | – | 0.9 MPa on printed PETG | ✅ |
 

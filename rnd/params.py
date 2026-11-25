@@ -49,8 +49,10 @@ class Arm:
     })
     spring_k_nm: float = 4.0       # shoulder balancer torque at the horizontal arm, τ = K·sin(pitch). Loop 5 (rnd/spring.py):
                                    # replaces the "85 % everywhere" assumption; K tuned for a 0.5 kg typical payload
-    bone_mass_upper: float = 0.59  # FROM CAD (loop 4, rnd/parts/arm.py): shell 0.26 + yaw KX56 socket + elbow KX74 socket + pulley hubs + bearings (was 0.26 ESTIMATE)
-    bone_mass_fore: float = 0.32   # FROM CAD (loop 4): side-link shell 0.21 + wrist KX56 socket + bearings + fasteners (was 0.19 ESTIMATE)
+    bone_mass_upper: float = 0.58  # FROM CAD (loop 9): 1.2 mm shell + CF Ø40 neck + yaw & elbow KX74 sockets + pulley hubs + bearings
+    bone_mass_fore: float = 0.31   # FROM CAD (loop 9): side link with CF Ø30 tube + wrist KX56 socket + bearings + fasteners
+    bone_wall_mm: float = 1.2      # printed shell wall (rnd/bones.py: strength is never binding)
+    cf_tubes: bool = True          # carbon-tube neck + forearm (loop 9: bone-bending sag at the hand 4.1 → 1.5 mm)
     gripper_mech_mass: float = 0.10
     wrist_cam_mass: float = 0.05
     payload: float = 1.0           # kg at the grasp point (R2)

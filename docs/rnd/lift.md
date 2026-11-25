@@ -14,10 +14,10 @@ Moving mass 11.7 kg + 2 kg payload; travel 0.35–1.05 m; accel 1.0 m/s².
 | Check | Value |
 |---|---|
 | Force (moving + payload, with accel) | 148 N |
-| Motor torque on a 20T HTD 5M pulley | 2.36 N·m → **2.12×** rated margin |
+| Motor torque on a 20T HTD 5M pulley | 2.35 N·m → **2.13×** rated margin |
 | Speed at rated rpm / full travel | 0.20 m/s / 3.5 s (faster when lightly loaded, up to ~420 rpm) |
 | Belt (15 mm HTD 5M, open-ended along the spine) | safety 6.6× |
-| Pawl catch after a power loss mid-move (×3 shock) | ratchet tooth shear 9.0 MPa in PETG (limit ~30) |
+| Pawl catch after a power loss mid-move (×3 shock) | ratchet tooth shear 8.9 MPa in PETG (limit ~30) |
 
 **Why C:** it's the lightest and uses the standard GIM cartridge (motors are reusable across builds). It holds with **zero power** at rest, and it's fail-safe: the pawl is spring-applied and solenoid-released, so losing power drops it into the ratchet. Precedent: spring-applied / power-released safety brakes and ratchet fall arrest (stair lifts, hoists, FRC climbers).
 **Carry mode:** park at the lowest stop with the pawl engaged; nothing is spring-loaded, so removing the arms is safe (unlike B).

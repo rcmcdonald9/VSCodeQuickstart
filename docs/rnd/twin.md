@@ -6,10 +6,10 @@ Model generated from `rnd/params.py`: arm 0.3+0.28+0.13 m, wrist ±120°, should
 |---|---|---|
 | counter, angled 45° grasp (z 0.95) | 100% | X wheel-fwd R.21 (chosen): 74 / 1.4; X edge-fwd R.21: 67 / 1.2; kiwi R.21 (rejected): 44 / 0.8 |
 | floor pickup (z 0.03, gripper down) | 100% | X wheel-fwd R.21 (chosen): 74 / 2.2; X edge-fwd R.21: 67 / 2.0; kiwi R.21 (rejected): 44 / 1.3 |
-| dishwasher low rack (z 0.20, down) | 94% | X wheel-fwd R.21 (chosen): 69 / 1.8; X edge-fwd R.21: 56 / 1.5; kiwi R.21 (rejected): 40 / 1.1 |
+| dishwasher low rack (z 0.20, down) | 94% | X wheel-fwd R.21 (chosen): 70 / 1.8; X edge-fwd R.21: 56 / 1.5; kiwi R.21 (rejected): 40 / 1.1 |
 | table top (z 0.78, down) | 95% | X wheel-fwd R.21 (chosen): 74 / 1.3; X edge-fwd R.21: 63 / 1.1; kiwi R.21 (rejected): 43 / 0.7 |
-| counter top-down only (z 0.95) [info: counters use top-down OR 45°, see D4b] | 62% | X wheel-fwd R.21 (chosen): 73 / 1.2; X edge-fwd R.21: 63 / 1.1; kiwi R.21 (rejected): 43 / 0.7 |
-| shelf (z 1.20, horizontal) | 100% | X wheel-fwd R.21 (chosen): 82 / 1.4; X edge-fwd R.21: 74 / 1.2; kiwi R.21 (rejected): 51 / 0.8 |
+| counter top-down only (z 0.95) [info: counters use top-down OR 45°, see D4b] | 62% | X wheel-fwd R.21 (chosen): 74 / 1.2; X edge-fwd R.21: 63 / 1.1; kiwi R.21 (rejected): 43 / 0.7 |
+| shelf (z 1.20, horizontal) | 100% | X wheel-fwd R.21 (chosen): 82 / 1.4; X edge-fwd R.21: 75 / 1.2; kiwi R.21 (rejected): 51 / 0.8 |
 | high shelf (z 1.40, horizontal) | 100% | X wheel-fwd R.21 (chosen): 90 / 1.4; X edge-fwd R.21: 86 / 1.3; kiwi R.21 (rejected): 54 / 0.8 |
 
 ## Two-handed tasks (shared lift, both arms, collision-free)

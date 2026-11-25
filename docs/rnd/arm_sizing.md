@@ -6,18 +6,18 @@ Arm 0.30 + 0.28 + 0.13 m, payload 1.0 kg, shoulder balancer K = 4.0 N·m (τ = K
 
 | Joint | Cartridge × ratio | Need static / dynamic (N·m) | Rated / peak available | Margin rated (static) | Margin peak (dynamic) | Joint speed (rad/s) |
 |---|---|---|---|---|---|---|
-| shoulder_pitch | GIM6010-8 × 2.5 | 10.71 / 15.71 | 11.9 / 26.1 | 1.11 | 1.66 ⚠️ | 5.0 |
-| shoulder_roll | GIM6010-8 × 3.5 | 14.71 / 19.71 | 16.6 / 36.6 | 1.13 | 1.86 ⚠️ | 3.6 |
-| elbow | GIM6010-8 × 2 | 6.18 / 7.56 | 9.5 / 20.9 | 1.54 | 2.76 ✅ | 6.3 |
+| shoulder_pitch | GIM6010-8 × 2.5 | 10.65 / 15.64 | 11.9 / 26.1 | 1.12 | 1.67 ⚠️ | 5.0 |
+| shoulder_roll | GIM6010-8 × 3.5 | 14.65 / 19.64 | 16.6 / 36.6 | 1.13 | 1.86 ⚠️ | 3.6 |
+| elbow | GIM6010-8 × 2 | 6.17 / 7.55 | 9.5 / 20.9 | 1.54 | 2.77 ✅ | 6.3 |
 | wrist_pitch | DM-J4310-2EC_V1.1 × 1 | 1.46 / 1.57 | 3.0 / 7.0 | 2.06 | 4.47 ✅ | 12.6 |
 
 ## Spec case R2: payload at 0.45 m horizontal reach
 
 | Joint | Cartridge × ratio | Need static / dynamic (N·m) | Rated / peak available | Margin rated (static) | Margin peak (dynamic) | Joint speed (rad/s) |
 |---|---|---|---|---|---|---|
-| shoulder_pitch | GIM6010-8 × 2.5 | 5.32 / 7.33 | 11.9 / 26.1 | 2.23 | 3.56 ✅ | 5.0 |
-| shoulder_roll | GIM6010-8 × 3.5 | 9.32 / 11.33 | 16.6 / 36.6 | 1.78 | 3.23 ✅ | 3.6 |
-| elbow | GIM6010-8 × 2 | 3.92 / 4.47 | 9.5 / 20.9 | 2.42 | 4.67 ✅ | 6.3 |
+| shoulder_pitch | GIM6010-8 × 2.5 | 5.28 / 7.29 | 11.9 / 26.1 | 2.25 | 3.58 ✅ | 5.0 |
+| shoulder_roll | GIM6010-8 × 3.5 | 9.28 / 11.29 | 16.6 / 36.6 | 1.79 | 3.24 ✅ | 3.6 |
+| elbow | GIM6010-8 × 2 | 3.91 / 4.46 | 9.5 / 20.9 | 2.43 | 4.68 ✅ | 6.3 |
 | wrist_pitch | DM-J4310-2EC_V1.1 × 1 | 0.92 / 0.97 | 3.0 / 7.0 | 3.25 | 7.23 ✅ | 12.6 |
 
 ## Gripper

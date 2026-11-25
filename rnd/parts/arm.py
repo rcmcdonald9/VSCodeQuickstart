@@ -16,7 +16,7 @@ from . import cartridge_m as cm
 from .kx import KX56, KX74, hub as kx_hub, collar as kx_collar
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
-WALL = 1.6                  # 4 perimeters at 0.4 mm; bending stress in the shells stays < 3 MPa (loop 4: 2.4 → 1.6 to save mass)
+WALL = 1.2                  # 3 perimeters at 0.4 mm. Loop 9 (rnd/bones.py): strength is never binding; stiffness comes from the CF tubes
 ELBOW_Z = 230.0             # yaw interface → elbow axis (params: l_upper 0.30 minus the 0.07 roll→yaw offset)
 FORE_L = 280.0              # elbow axis → wrist axis (params: l_fore)
 BELT_C = 70.0               # elbow belt centre distance (rnd/belts.py)
@@ -41,7 +41,9 @@ def _ring(od, idd, t):
 def upper_bone() -> Part:
     h = HOUSING
     p = Pos(0, 0, -6) * Cylinder(45, 6, align=MIN)                                    # yaw-hub flange
-    p += Pos(0, 0, h["z1"] - 2) * (Cylinder(36, 96, align=MIN) - Cylinder(36 - WALL, 96, align=MIN))  # neck tube
+    # neck (loop 9): carbon tube Ø40×1 (see cf_neck()) bonded into two printed sockets, one on the flange and one on the housing
+    for z in (-6 - 20, h["z1"] - 2):
+        p += Pos(0, 0, z) * (Cylinder(23, 22, align=MIN) - Cylinder(20.1, 22, align=MIN))
     hz = h["z1"] - h["z0"]
     p += Pos(0, 0, (h["z0"] + h["z1"]) / 2) * _hollow_rbox(h["x"], h["y"], hz, 18)
     # bearing bosses through the ±Y walls: elbow axis (61808, OD 52) and the pulley-hub journals (61804, OD 32)
@@ -63,13 +65,27 @@ def forearm() -> Part:
     p = Pos(0, y, 0) * Rot(90, 0, 0) * Cylinder(40, link_t)                            # hub disc on the elbow pulley hub
     p -= Pos(0, y, 0) * Rot(90, 0, 0) * Cylinder(21, link_t)
     body_len = FORE_L - 40 - 38
-    p += Pos(0, y, -40 - body_len / 2) * Rot(90, 0, 0) * _hollow_rbox(56, body_len, link_t, 10)
+    # link (loop 9): carbon tube Ø30×1 (see cf_fore()) bonded into a socket on the hub disc and one on the wrist can
+    for z0 in (-40 - 24, -FORE_L + 38):
+        p += Pos(0, y, z0) * (Cylinder(18, 24, align=MIN) - Cylinder(15.1, 24, align=MIN))
     # wrist housing: holds the wrist cartridge (axis Y, output toward -Y)
     can_d = J4310["od"] + 2 * 3.0 + 0.6
     wy = J4310["h"] + 4 + 6
     p += Pos(0, y + link_t / 2 - wy / 2, -FORE_L) * Rot(90, 0, 0) * (Cylinder(can_d / 2 + WALL, wy) - Cylinder(can_d / 2, wy - WALL))
     p += Pos(0, y, -FORE_L + 38) * Box(56, link_t, 12)                                  # web joining link and wrist can
     return p
+
+
+def cf_neck() -> Part:
+    """Carbon tube Ø40×1, flange socket → housing socket."""
+    z_top, z_bot = -6.0, HOUSING["z1"] + 20
+    return Pos(0, 0, z_bot) * (Cylinder(20, z_top - z_bot, align=MIN) - Cylinder(19, z_top - z_bot, align=MIN))
+
+
+def cf_fore() -> Part:
+    """Carbon tube Ø30×1 along the forearm side link."""
+    z_top, z_bot = -40.0, -FORE_L + 38 + 24
+    return Pos(0, FORE_Y, z_bot) * (Cylinder(15, z_top - z_bot, align=MIN) - Cylinder(14, z_top - z_bot, align=MIN))
 
 
 def elbow_pulley_hub() -> Part:
@@ -91,11 +107,13 @@ def masses(density=1.27):
     from .belt_stage import small_hub
     from .kx import retainer
     shells = {"upper bone shell": upper_bone().volume, "forearm shell": forearm().volume}
+    cf = {"CF tubes (neck Ø40 + forearm Ø30)": (cf_neck().volume + cf_fore().volume) / 1e6 * 1.55}
     kxv = lambda k: kx_hub(k).volume + kx_collar(k).volume + retainer(k).volume
-    sockets = {"KX74 socket (elbow)": kxv(KX74), "KX56 sockets ×2 (yaw, wrist)": 2 * kxv(KX56),
+    sockets = {"KX74 sockets ×2 (elbow, yaw: GIM since loop 5)": 2 * kxv(KX74), "KX56 socket (wrist)": kxv(KX56),
                "elbow pulley hub (40T)": elbow_pulley_hub().volume, "elbow small-pulley hub": small_hub().volume - kx_hub(KX74).volume}
     out = {k: v / 1e6 * density for k, v in shells.items()}
     out.update({k: v / 1e6 * density * 0.7 for k, v in sockets.items()})
+    out.update(cf)
     out["bearings: 2×61808 + 2×61804 + 4×61805 (ESTIMATE)"] = 0.020 * 2 + 0.008 * 2 + 0.012 * 4
     out["belt, pins, balls, screws (ESTIMATE)"] = 0.06
     return out
@@ -120,7 +138,7 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     # yaw cartridge (DM-J4310 in a KX56 cartridge, placeholder) above the flange
     out += [("yaw_cart", Pos(0, 0, 0) * Cylinder(32, 52, align=MIN), "dark"), ("yaw_collar", Pos(0, 0, 0) * Cylinder(39, 12, align=MIN) - Cylinder(30, 12, align=MIN), "orange")]
     fe = Pos(0, 0, -ELBOW_Z) * Rot(0, elbow_deg, 0)
-    out += [("forearm", fe * forearm(), "white")]
+    out += [("forearm", fe * forearm(), "white"), ("cf_fore", fe * cf_fore(), "dark"), ("cf_neck", cf_neck(), "dark")]
     # wrist cartridge + hand (hand plane near y = 10, beside the forearm link)
     wr = fe * Pos(0, 0, -FORE_L)
     out += [("wrist_cart", wr * Pos(0, FORE_Y, 0) * Rot(90, 0, 0) * Cylinder(J4310["od"] / 2, J4310["h"]), "dark"),
