@@ -14,6 +14,7 @@ import math
 from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 
 from . import cartridge_s as cs
+from .soft import soft_box
 from .kx import KX44, KX56, collar, hub_pip as hub, male
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
@@ -62,7 +63,7 @@ def cartridge_d_stack() -> float:
 def palm() -> Part:
     p = Pos(0, 0, -6) * Rot(90, 0, 0) * Cylinder(30, 40)               # boss around the wrist axis (KX56 hub bolts on +Y)
     zb = SLEEVE_TOP - cs.SERVO["case_h"] - cs.SERVO["bottom"] - cs.FLOOR + 2      # palm bottom ≈ servo top face
-    p += Pos(cs.SERVO["l"] / 2 - cs.SERVO["shaft_off"], 0, zb) * _rbox(64, 40, -6 - zb, 10, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    p += Pos(cs.SERVO["l"] / 2 - cs.SERVO["shaft_off"], 0, zb + (-6 - zb) / 2) * soft_box(64, 40, -6 - zb, 16, 10)   # looks pass v2
     # pocket for the flipped wrist-roll sleeve (slides in from the bottom, 2 screws)
     p -= Pos(cs.SERVO["l"] / 2 - cs.SERVO["shaft_off"], 0, zb - 1) * Box(cs.SERVO["l"] + 2 * (cs.FIT + cs.WALL) + 0.6,
                                                                        cs.SERVO["w"] + 2 * (cs.FIT + cs.WALL) + 0.6, SLEEVE_TOP - zb + 1.5, align=MIN)
@@ -84,7 +85,7 @@ def gripper_parts(jaw_deg: float = 25.0):
     z0 = wrist_roll_face_z() - KX44.gap          # KX44 hub face (gripper side)
     zb = z0 - 12.6                               # base plate top = bottom of the hub + retainer
     parts = []
-    base = Pos(5, 0, zb - 10) * _rbox(104, 46, 10, 6, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    base = Pos(5, 0, zb - 5) * soft_box(104, 46, 10, 18, 3.5)
     parts.append(("grip_base", base, "white"))
     zs = zb - 10 - 13.0                          # servo shaft height (servo hangs under the base)
     sx = -24.0                                   # shaft x

@@ -81,6 +81,19 @@ def deck_quarter(q) -> Part:
     return p
 
 
+def rim() -> Part:
+    """Looks pass v2: rounded rim ring on the deck edge (printed in 4 arcs with the skirt quarters)."""
+    from build123d import fillet as _f
+    r = Pos(0, 0, Z1) * (Cylinder(R_SHELL + 2, 8, align=MIN) - Cylinder(R_SHELL - 14, 8, align=MIN))
+    try:
+        r = _f(r.edges().group_by(Axis.Z)[-1], 3.8)
+    except ValueError:
+        pass
+    for k in range(4):
+        r -= Rot(0, 0, 90 * k) * Pos(R_W, 0, Z1 - 5) * Box(130, 60, 20, align=MIN)     # wheel cut-outs
+    return r
+
+
 def skirt_quarter(q) -> Part:
     s = Pos(0, 0, Z0) * (Cylinder(R_SHELL, Z1 - Z0 - DECK_T, align=MIN) - Cylinder(R_SHELL - 2, Z1 - Z0 - DECK_T, align=MIN))
     s &= Rot(0, 0, 90 * q + 45) * Pos(R_SHELL / 2 + 1, R_SHELL / 2 + 1, Z0) * Box(R_SHELL + 2, R_SHELL + 2, 200, align=MIN)
@@ -108,7 +121,7 @@ def module():
     for q in range(4):
         out += [(f"deck{q}", deck_quarter(q), "white"), (f"skirt{q}", skirt_quarter(q), "white")]
     c, lever, plug = coupling()
-    out += [("battery", battery(), "dark"), ("coupling", c, "white"), ("cam_lever", lever, "orange"), ("plug", plug, "dark"),
+    out += [("rim", rim(), "white"), ("battery", battery(), "dark"), ("coupling", c, "white"), ("cam_lever", lever, "orange"), ("plug", plug, "dark"),
             ("lidar", Pos(R_SHELL - 70, 0, Z1) * Cylinder(28, 41, align=MIN), "dark"),
             ("bumper_light", Pos(0, 0, Z0 + 18) * (Cylinder(R_SHELL + 4, 10, align=MIN) - Cylinder(R_SHELL, 10, align=MIN)), "orange"),
             ("base_electronics", Rot(0, 0, 45) * Pos(135, 0, Z0 + 10) * Box(50, 70, 30, align=MIN), "dark")]

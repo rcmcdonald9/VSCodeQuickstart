@@ -19,7 +19,7 @@ def mat(n, c, r=0.4, metal=0.0, emit=0.0):
     return m
 
 
-M = {"white": mat("w", (0.80, 0.81, 0.83), 0.28), "dark": mat("d", (0.035, 0.037, 0.042), 0.38),
+M = {"black": mat("k", (0.02, 0.021, 0.024), 0.32, 0.6), "white": mat("w", (0.80, 0.81, 0.83), 0.28), "dark": mat("d", (0.035, 0.037, 0.042), 0.38),
      "orange": mat("o", (1.0, 0.42, 0.06), 0.35, emit=0.6), "steel": mat("s", (0.55, 0.56, 0.58), 0.3, 0.8)}
 for line in (d / LIST).read_text().splitlines():
     n, c = line.split()

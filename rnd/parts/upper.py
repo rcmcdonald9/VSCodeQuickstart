@@ -67,6 +67,16 @@ def lift_drive():
              - Pos(MAST_X - W / 2 - 50, -20, z) * Rot(90, 0, 0) * Cylinder(45, 200), "white")]
 
 
+def lift_cover() -> Part:
+    """Looks pass v2: rounded cover over the lift cartridge, pulley and mount at the mast foot (slot for the belt)."""
+    x0, x1, y0, y1, z0, z1 = -194.0, -91.0, -88.0, 36.0, Z_BASE + 41, Z_BASE + 172
+    c = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 30, 22, 2.0)
+    c -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 + 2, y1 - y0 + 2, 6)      # open bottom
+    c -= Pos(MAST_X - W / 2 - 34, -2, z1) * Box(26, 22, 10)                           # belt slot
+    c -= Pos(x1, (y0 + y1) / 2, (z0 + z1) / 2) * Box(36, y1 - y0 + 4, z1 - z0 + 4)       # open against the mast / mount face
+    return c
+
+
 def carriage(lift_mm: float) -> Part:
     h = 160.0
     c = Pos(MAST_X, 0, lift_mm - h / 2) * (Box(W + 26, W + 26, h, align=MIN) - Box(W + 2, W + 2, h, align=MIN))
@@ -125,7 +135,7 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
 
 def module(lift_m: float = 0.75):
     L = lift_m * 1000
-    return [("mast", mast(), "steel"), ("ratchet", ratchet_strip(), "dark"), *lift_drive(),
+    return [("mast", mast(), "black"), ("ratchet", ratchet_strip(), "dark"), *lift_drive(), ("lift_cover", lift_cover(), "white"),
             ("carriage", carriage(L), "white"), *torso(L), *head()]
 
 

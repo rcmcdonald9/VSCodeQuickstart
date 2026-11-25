@@ -27,12 +27,12 @@
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
 | elbow pulley hub | 67 × 113 × 113 | 97 | ✅ |
 | KX74 collar | 19 × 98 × 103 | 35 | ✅ |
-| gripper grip_base | 10 × 101 × 101 | 48 | ✅ |
 | mast coupling | 40 × 100 × 100 | 253 | ✅ |
 | forearm (ends) [1] | 53 × 65 × 95 | 38 | ✅ |
 | pitch shaft | 68 × 94 × 94 | 186 | ✅ |
 | pulley 60T | 16 × 94 × 94 | 107 | ✅ |
-| palm | 40 × 75 × 93 | 160 | ✅ |
+| palm | 40 × 75 × 92 | 150 | ✅ |
+| gripper grip_base | 10 × 91 × 91 | 44 | ✅ |
 | ferrule (arm side) | 18 × 91 × 91 | 67 | ✅ |
 | KX74 hub | 12 × 90 × 90 | 68 | ✅ |
 | small-pulley hub | 46 × 90 × 90 | 82 | ✅ |

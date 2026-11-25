@@ -527,3 +527,19 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
   - the lift motor at the mast foot is exposed
   - the wrist/hand block is still boxy
   - the base deck needs a rim
+
+## 2026-11-25: loop 11, looks pass v2
+
+- **Mast:** black anodised. A cover isn't possible because the carriage's 625 bearings run on all four faces. Dark recedes visually, so the "long neck" reads as a spine and the white body and head carry the form (render check).
+- **Lift drive:** rounded cover at the mast foot, open toward the mast, with a belt slot.
+- **Hand:** palm and gripper base are soft on every edge.
+- **Base:** rounded rim on the deck edge (printed in arcs).
+- **Checks:**
+  - local interference clean (sub-cm³ mounting touches)
+  - whole-robot check: 0 clashes, all pieces printable
+  - twin unchanged: reach 99 %, tip margin ≥ 50 mm
+- **Render:** [img/robot_rounded_v2.png](rnd/img/robot_rounded_v2.png).
+- **Still boxy / next looks items:**
+  - the yaw-block bands
+  - the exposed orange collars at the shoulder roll (they read as "expressed joints" and are kept on purpose)
+  - the wheel windows in the skirt (add fender lips)
