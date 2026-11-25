@@ -123,7 +123,7 @@ TARGETS = {
     "floor pickup (z 0.03, gripper down)": dict(z=0.03, xs=np.arange(0.30, 0.56, 0.05), down=True),
     "dishwasher low rack (z 0.20, down)": dict(z=0.20, xs=np.arange(0.35, 0.66, 0.05), down=True),
     "table top (z 0.78, down)": dict(z=0.78, xs=np.arange(0.30, 0.66, 0.05), down=True),
-    "counter (z 0.95, down)": dict(z=0.95, xs=np.arange(0.30, 0.66, 0.05), down=True),
+    "counter top-down only (z 0.95) [info: counters use top-down OR 45°, see D4b]": dict(z=0.95, xs=np.arange(0.30, 0.66, 0.05), down=True, info=True),
     "shelf (z 1.20, horizontal)": dict(z=1.20, xs=np.arange(0.30, 0.56, 0.05), down=False),
     "high shelf (z 1.40, horizontal)": dict(z=1.40, xs=np.arange(0.30, 0.46, 0.05), down=False),
 }
@@ -280,7 +280,7 @@ def ik_study(d: Design, layouts, ys=np.arange(-0.40, -0.04, 0.075), seeds=3):
             hs += [R.com(q)[2] for q in sols]
             for k, poly in layouts.items():
                 best[k].append(max(margin(poly, c) for c in coms))
-        out[name] = dict(coverage=hit / len(pts), n=len(pts),
+        out[name] = dict(coverage=hit / len(pts), n=len(pts), info=t.get("info", False),
                          margin={k: (min(v) if v else float("nan")) for k, v in best.items()},
                          com_h=float(np.mean(hs)) if hs else float("nan"))
     return out

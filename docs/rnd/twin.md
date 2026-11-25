@@ -8,7 +8,7 @@ Model generated from `rnd/params.py`: arm 0.3+0.28+0.13 m, wrist ±120°, should
 | floor pickup (z 0.03, gripper down) | 100% | X wheel-fwd R.21 (chosen): 76 / 2.7; X edge-fwd R.21: 75 / 2.7; kiwi R.21 (rejected): 43 / 1.5 |
 | dishwasher low rack (z 0.20, down) | 94% | X wheel-fwd R.21 (chosen): 71 / 2.2; X edge-fwd R.21: 63 / 1.9; kiwi R.21 (rejected): 39 / 1.2 |
 | table top (z 0.78, down) | 95% | X wheel-fwd R.21 (chosen): 71 / 1.4; X edge-fwd R.21: 63 / 1.3; kiwi R.21 (rejected): 39 / 0.8 |
-| counter (z 0.95, down) | 62% | X wheel-fwd R.21 (chosen): 70 / 1.4; X edge-fwd R.21: 63 / 1.2; kiwi R.21 (rejected): 39 / 0.8 |
+| counter top-down only (z 0.95) [info: counters use top-down OR 45°, see D4b] | 62% | X wheel-fwd R.21 (chosen): 70 / 1.4; X edge-fwd R.21: 63 / 1.2; kiwi R.21 (rejected): 39 / 0.8 |
 | shelf (z 1.20, horizontal) | 100% | X wheel-fwd R.21 (chosen): 80 / 1.5; X edge-fwd R.21: 76 / 1.4; kiwi R.21 (rejected): 47 / 0.9 |
 | high shelf (z 1.40, horizontal) | 100% | X wheel-fwd R.21 (chosen): 87 / 1.5; X edge-fwd R.21: 88 / 1.5; kiwi R.21 (rejected): 51 / 0.9 |
 

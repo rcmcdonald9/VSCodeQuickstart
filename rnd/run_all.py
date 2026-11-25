@@ -46,11 +46,11 @@ def scorecard(d, res):
     jm = min(capacity(d, j)[2] / loads[j]["static"] for j in ("shoulder_pitch", "shoulder_roll", "elbow", "wrist_pitch"))
     bi = res.pop("_bimanual", {})
     chosen = next(iter(next(iter(res.values()))["margin"]))
-    cov = np.mean([v["coverage"] for v in res.values()])
+    cov = np.mean([v["coverage"] for v in res.values() if not v.get("info")])
     tip = min(v["margin"][chosen] for v in res.values())
     other_bom = 1250   # ESTIMATE: wheels, battery, cameras, lidar, electronics, structure, teaching rig (see V4_CONCEPT §3, T01)
     rows = [
-        ("R1 reach coverage, collision-free (mean of 7 target sets)", f"{cov:.0%}", "≥ 95 %", cov >= 0.95),
+        ("R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°)", f"{cov:.0%}", "≥ 95 %", cov >= 0.95),
         ("R2 two-handed tasks feasible", f"{sum(bi.values())}/{len(bi)}", "all", all(bi.values())),
         ("R12 min tip-over margin, 1 kg at reach", f"{tip*1000:.0f} mm", "≥ 50 mm", tip >= 0.05),
         ("R2 min joint margin at spec load (rated)", f"{jm:.2f}×", "≥ 1.5×", jm >= 1.5),

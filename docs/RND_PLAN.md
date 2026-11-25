@@ -66,6 +66,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | D2b | Cross thresholds at a 45° heading; cap base acceleration at 1.0 m/s² with arms parked and 0.5 m/s² while manipulating; position from optical flow + IMU + lidar | New | [drivetrain](rnd/drivetrain.md) |
 | D3 | Joint cartridges: kinematic coupling + bayonet + captive screw; M (GIM6010-8 / DM-J4310) and S (STS3215); 24 V CAN 1 Mbps / 12 V TTL | Holding | [T01](rnd/T01_specs.md) |
 | D4 | **Arm: 0.30 + 0.28 + 0.13 m, wrist ±120°** (loop 1: ±140° folded the hand into the forearm; ±120° gives more collision-free reach). **CAD requirement:** forearm bone ends ≥ 60 mm before the wrist axis. Shoulder pitch GIM × 2.5 belt + 85 % spring, roll GIM × 3, upper-arm yaw DM-J4310, elbow GIM × 2, wrist pitch **DM-J4310**, wrist roll and gripper STS3215. *Changed* from 0.25 + 0.23, ±110°, wrist STS (reach coverage 31 % → 100 %; STS wrist was under-rated) | Changed 2026-11-25 | [arm sizing](rnd/arm_sizing.md), [twin](rnd/twin.md) |
+| D4b | **Counter grasps use top-down or 45° approach, whichever is collision-free** (top-down alone reaches 62 % of counter cells, combined 100 %). Telescoping spine deferred: it would cost ~0.6 kg on a tight carry budget. Revisit if real tests show the need. | New (loop 1b) | [twin](rnd/twin.md) |
 | D5 | **Lift: shoulder height 0.35–1.05 m** (0.70 m travel); belt + stepper, with a brake or counterbalance (study pending) | Range changed (was 0.40–0.95) | [twin](rnd/twin.md) |
 | D6 | Toolchain: build123d CAD, MuJoCo twin generated from `rnd/params.py`, Blender renders | Holding | `rnd/` |
 | D7 | **Power bus 24 V (6S Li-ion)**, replacing 48 V | Holding | [T01](rnd/T01_specs.md) |
@@ -75,7 +76,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 Done so far: T01 specs ✅, toolchain v0 (`rnd/`) ✅, budgets v0 ✅, drivetrain v0 ✅, twin v0 reach and tip-over ✅, arm sizing v0 ✅.
 
 1. ~~Twin: collisions~~ ✅ loop 1: collision-free IK, wrist ±120°, bimanual 4/4.
-1b. **Counter top-down reach (62 %)**: evaluate a **two-stage telescoping spine** (forklift-mast style) that reaches shoulder 1.25 m while staying ≤ 1.1 m long for carrying; compare with a taller single spine and a higher shoulder mount. Pick by reach, carry and mass.
+1b. ~~Counter top-down reach~~ → D4b (loop 1b). Shifting the shoulder range trades floor for counter; a telescoping spine (FRC-style cascade) is parked as an option.
 2. **Cartridge standard v0 CAD** (build123d): M and S cartridges, kinematic coupling + bayonet + detent + connector + cable path; tolerance-coupon prints. First find the GIM6010-8 mounting drawing.
 3. **Arm CAD v0:** bones with printed belt reductions (2–3:1), shoulder spring-assist module, wrist, gripper with camera.
 4. **Base CAD v0:** 4-wheel diamond chassis, wheel cartridges, slide-out battery, upper/base coupling + cam lever + blind-mate connector, handles, bumper light.

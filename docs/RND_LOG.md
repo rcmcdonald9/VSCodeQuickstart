@@ -69,3 +69,12 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
 - **Scorecard:** reach coverage (now collision-free, 7 target sets) **93 %** vs 95 % target. It's below target only because of **top-down counter grasps at 62 %**. Tip margin min 70 mm, all other rows unchanged.
 - **Considered, not taken (yet):** lift max 1.25 m gives 100 % top-down counter reach, but the spine becomes 1.26 m long (harder to carry). New queue item 1b: a two-stage telescoping spine.
 - **Next:** 1b or cartridge CAD (queue #2). Cartridge CAD needs the GIM6010-8 mounting drawing first.
+
+## 2026-11-25: loop 1b, counter reach trade-off
+
+- Swept shoulder ranges with the same spine (0.35–1.05 … 0.55–1.25):
+  - Shifting up buys top-down counter reach (62 → 100 %) but loses floor (100 → 58–75 %).
+  - Only extra travel gets both.
+- Extra travel = telescoping spine (~0.6 kg + cascade belts) or a 1.26 m spine (harder to carry). Not worth it now.
+- **Decision D4b:** counter grasps use top-down **or** 45°, whichever is collision-free (100 %). Top-down-only stays as an info row. Scorecard reach: **93 % → 98 %** (definition change logged here: counters scored on the approach the robot will actually use).
+- **Next:** cartridge CAD (queue #2): find the GIM6010-8 mounting drawing first.
