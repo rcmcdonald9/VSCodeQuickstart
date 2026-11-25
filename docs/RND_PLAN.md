@@ -68,7 +68,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | D4 | **Arm: 0.30 + 0.28 + 0.13 m, wrist ±120°** (loop 1: ±140° folded the hand into the forearm; ±120° gives more collision-free reach). **CAD requirement:** forearm bone ends ≥ 60 mm before the wrist axis. Shoulder pitch GIM × 2.5 belt + **adjustable balancer K = 4 N·m** (τ = K·sin pitch), roll GIM × **3.5**, upper-arm yaw **GIM × 2 belt** (loop 5: DM-J4310 direct was under-rated over the workspace), elbow GIM × 2, wrist pitch **DM-J4310**, wrist roll and gripper STS3215. Joints are sized on a **whole-workspace check** ([spring](rnd/spring.md)), not only the straight-arm case. *Changed* from 0.25 + 0.23, ±110°, wrist STS (reach coverage 31 % → 100 %; STS wrist was under-rated) | Changed 2026-11-25 | [arm sizing](rnd/arm_sizing.md), [twin](rnd/twin.md) |
 | D4b | **Counter grasps use top-down or 45° approach, whichever is collision-free** (top-down alone reaches 62 % of counter cells, combined 100 %). Telescoping spine deferred: it would cost ~0.6 kg on a tight carry budget. Revisit if real tests show the need. | New (loop 1b) | [twin](rnd/twin.md) |
 | D5 | **Lift: shoulder height 0.35–1.05 m** (0.70 m travel); belt + stepper, with a brake or counterbalance (study pending) | Range changed (was 0.40–0.95) | [twin](rnd/twin.md) |
-| D6 | Toolchain: build123d CAD, MuJoCo twin generated from `rnd/params.py`, Blender renders | Holding | `rnd/` |
+| D6 | Toolchain: build123d CAD, MuJoCo twin generated from `rnd/params.py`, **arm collision geometry from CAD hulls** (`rnd/parts/collision.py`, loop 6), Blender renders | Holding | `rnd/` |
 | D4c | **Belt stages: HTD 5M, 15 mm, 20T small pulley** (pitch 20:50, roll 20:60, elbow 20:40), printed pulleys, the small pulley on its own bearing hub. **Elbow motor stays at the elbow:** a remote motor on a long belt (Blue-style) was evaluated and rejected (–0.5 N·m at the shoulder, +0.24 kg) | New (loop 3) | [belts](rnd/belts.md) |
 | D7 | **Power bus 24 V (6S Li-ion)**, replacing 48 V | Holding | [T01](rnd/T01_specs.md) |
 
@@ -92,13 +92,13 @@ Done so far: T01 specs ✅, toolchain v0 (`rnd/`) ✅, budgets v0 ✅, drivetrai
     - **next:** shoulder module CAD (pitch + roll stages, cable-spring balancer with a preload screw, detach plug); this replaces the 0.30 kg/stage ESTIMATE
     - wrist + gripper with camera; DM-J4310 cartridge CAD (KX56)
     - mass diet: ribbed 1.2 mm shells, a smaller elbow housing, a printed-pulley web. Target: arm ≤ 2.5 kg
-    - feed real joint widths (elbow ~110 mm, forearm side-link offset) into the twin collision model
+    - ✅ loop 6: real joint widths in the twin (CAD collision hulls); the idle arm re-parks when needed
 4. **Base CAD v0:** 4-wheel diamond chassis, wheel cartridges, slide-out battery, upper/base coupling + cam lever + blind-mate connector, handles, bumper light.
 5. **Lift and spine:** compare a constant-force-spring counterbalance (smaller motor, safe if power is lost) against a brake motor; CAD for the carriage, cable chain and top handle.
 6. **Torso + head CAD:** electronics bay (Pi 5, CAN, DC-DC), visor, eyes, depth camera, mic, speaker, pan/tilt.
 6b. **Arm detach plug:** blind-mate 24 V + CAN connector beside the shoulder KX (pogo pins or an XT30 + JST-GH pair in a printed float mount).
 7. **Electrical architecture:** 24 V single-line diagram, e-stop chain, fusing, BMS, DC-DC sizing, CAN topology, connector standard.
-8. **Twin v1 from CAD:** masses and inertias from the geometry; **dynamic** MuJoCo with actuator models (pick-and-place motion, base acceleration, carpet friction); re-verify the scorecard.
+8. **Twin v1 from CAD:** ✅ arm collision hulls (loop 6). Still to do: shoulder/torso/base hulls once drawn, masses and inertias from the geometry; **dynamic** MuJoCo with actuator models (pick-and-place motion, base acceleration, carpet friction); re-verify the scorecard.
 9. **Industrial design pass:** shells, colour and material, light language, carry mode, exploded view; Blender hero renders.
 10. **BOM, cost and assembly time;** carry split validated from CAD masses.
 11. **Milestone M1: Phase-1 desk-arm build package** (cartridges + one arm + desk mount + leader arm). Ask the owner: buy?

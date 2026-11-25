@@ -202,3 +202,27 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
   - reach / tip unchanged
 - **Lesson recorded:** size joints on the workspace, not on a single "worst" pose that someone picked.
 - **Next:** shoulder module CAD with the cable-spring balancer; arm mass diet (the arm piece is now 3.1 kg).
+
+## 2026-11-25: loop 6, the reach claim re-checked against real CAD geometry
+
+**Picked:** the headline reach number (98 %) came from thin capsules. The CAD arm is much bulkier (~110 mm elbow, side-link forearm, protruding elbow cartridge), so this was the biggest unverified claim.
+
+- **Twin collision geometry from CAD** (`rnd/parts/collision.py`):
+  - five convex hulls per arm (neck, elbow housing, protruding elbow cartridge, forearm link, wrist cartridge + collar), mirrored for the right arm
+  - loaded as MuJoCo mesh geoms; masses unchanged
+  - `twin.GEOMETRY = "cad"` is now the default (capsules remain as an option)
+
+| Reach (collision-free) | Capsules | CAD hulls | CAD hulls + idle-arm re-park |
+|---|---|---|---|
+| Mean (scored sets) | 98.2 % | **92.5 % ❌** | **98.2 % ✅** |
+| Floor pickup | 100 % | 80 % | 100 % |
+| Dishwasher rack | 94 % | 80 % | 94 % |
+| Counter top-down (info) | 62 % | 60 % | 60 % |
+
+- **Cause of the drop:** not the working arm. The *idle* arm, parked hanging down, put its bulky elbow housing into the base when the torso was lowered for floor work. **Fix:** the idle arm may re-park in one of 4 poses (hanging, folded forward 35° or 70°, pitched back 40°), whichever is collision-free. This is a planner rule, now in the twin.
+- **Tip margin** now uses the park pose actually chosen: **72 → 68 mm** (≥ 50 ✅).
+- **Bimanual 4/4** still feasible with CAD geometry.
+- **Open:**
+  - The shoulder, torso and base are still primitives. Their CAD will need the same check.
+  - Twin renders still show the default park pose.
+- **Next:** shoulder module CAD (pitch + roll stages, cable-spring balancer, detach plug).

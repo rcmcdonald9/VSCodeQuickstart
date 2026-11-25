@@ -4,7 +4,7 @@
 |---|---|---|---|
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 98% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
-| R12 min tip-over margin, 1 kg at reach | 72 mm | ≥ 50 mm | ✅ |
+| R12 min tip-over margin, 1 kg at reach | 68 mm | ≥ 50 mm | ✅ |
 | R2 min joint margin at spec load (rated, planar check) | 1.79× | ≥ 1.5× | ✅ |
 | R3 upper core (arms detached) | 6.2 kg | ≤ 10 kg | ✅ |
 | R3 each arm (detaches at the shoulder KX) | 3.1 kg | ≤ 10 kg | ✅ |

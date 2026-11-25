@@ -9,6 +9,7 @@ Studies:
 from __future__ import annotations
 
 import math
+from pathlib import Path
 import os
 
 import numpy as np
@@ -27,8 +28,29 @@ JR = {  # joint ranges (deg). Conventions: arm hangs straight down at 0.
     "elbow": (-150, 0), "wpitch": (-110, 110), "wroll": (-180, 180)}
 
 
-def build_xml(d: Design) -> str:
+COLL = Path(__file__).resolve().parent / "out" / "collision"
+GEOMETRY = "cad"     # "cad": arm collision from the CAD hulls (rnd/parts/collision.py); "capsule": twin v0 primitives
+
+
+def _cad_meshes():
+    if not (COLL / "upper_housing_r.stl").exists():
+        from .parts.collision import export
+        export()
+    return sorted(COLL.glob("*.stl"))
+
+
+def build_xml(d: Design, geometry: str | None = None) -> str:
     a, b, u = d.arm, d.base, d.upper
+    cad = (geometry or GEOMETRY) == "cad"
+    meshes = _cad_meshes() if cad else []
+    mesh_assets = "".join(f'<mesh name="{f.stem}" file="{f}" scale="0.001 0.001 0.001"/>' for f in meshes)
+    cap = ' contype="0" conaffinity="0" group="3"' if cad else ""
+
+    def hull(body, side):
+        if not cad:
+            return ""
+        return "".join(f'<geom type="mesh" mesh="{f.stem}" mass="0.001" rgba=".9 .9 .92 1"/>' for f in meshes
+                       if f.stem.startswith(body + "_") and f.stem.endswith("_" + side))
     mb = mass_budget(d)
     base_m = sum(m for _, m in mb["base"])
     m = {j: act(n)["mass"] for j, (n, _) in a.joints.items()}
@@ -45,12 +67,12 @@ def build_xml(d: Design) -> str:
           <body name="upper_{side}" pos="0 0 -0.07">
             <joint name="yaw_{side}" axis="0 0 1" range="{JR['yaw'][0]} {JR['yaw'][1]}"/>
             <geom type="sphere" size="0.03" pos="0 0 0" mass="{m['upper_yaw'] + a.yaw_stage_mass}" rgba=".1 .1 .1 1"/>
-            <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_upper-0.07)}" size="0.032" mass="{a.bone_mass_upper}" rgba=".9 .9 .9 1"/>
+            <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_upper-0.07)}" size="0.032" mass="{a.bone_mass_upper}" rgba=".9 .9 .9 1"{cap}/>{hull("upper", side)}
             {f'<geom type="cylinder" size="0.043 0.025" pos="0 0 {-(a.elbow_motor_at-0.07)}" euler="90 0 0" mass="{m["elbow"]}" rgba=".1 .1 .1 1"/>' if a.elbow_motor_at else ''}
             <body name="fore_{side}" pos="0 0 {-(a.l_upper-0.07)}">
               <joint name="elbow_{side}" axis="0 1 0" range="{JR['elbow'][0]} {JR['elbow'][1]}"/>
               <geom type="sphere" size="0.036" mass="{m['elbow'] if a.elbow_motor_at is None else a.elbow_hub_mass}" rgba=".1 .1 .1 1"/>
-              <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_fore-0.06)}" size="0.026" mass="{a.bone_mass_fore}" rgba=".9 .9 .9 1"/>
+              <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_fore-0.06)}" size="0.026" mass="{a.bone_mass_fore}" rgba=".9 .9 .9 1"{cap}/>{hull("fore", side)}
               <!-- forearm bone ends 60 mm before the wrist axis: CAD requirement so the hand clears ±140° wrist pitch -->
               <body name="wrist_{side}" pos="0 0 {-a.l_fore}">
                 <joint name="wpitch_{side}" axis="0 1 0" range="{-a.wrist_pitch_range_deg} {a.wrist_pitch_range_deg}"/>
@@ -77,7 +99,7 @@ def build_xml(d: Design) -> str:
   <compiler angle="degree"/>
   <option gravity="0 0 -9.81"/>
   <visual><global offwidth="1280" offheight="960"/><headlight ambient=".45 .45 .45" diffuse=".5 .5 .5"/></visual>
-  <asset><texture name="g" type="2d" builtin="checker" rgb1=".86 .88 .9" rgb2=".8 .82 .84" width="256" height="256"/>
+  <asset>{mesh_assets}<texture name="g" type="2d" builtin="checker" rgb1=".86 .88 .9" rgb2=".8 .82 .84" width="256" height="256"/>
     <texture name="sky" type="skybox" builtin="gradient" rgb1=".95 .96 .98" rgb2=".75 .8 .86" width="128" height="128"/>
     <material name="g" texture="g" texrepeat="12 12"/></asset>
   <worldbody>
@@ -200,8 +222,15 @@ from scipy.optimize import least_squares  # noqa: E402
 TUCK = {"pitch": 0.0, "roll": math.radians(8), "yaw": 0.0, "elbow": math.radians(-140), "wpitch": math.radians(60), "wroll": 0.0}
 
 
-def tuck(m, dat, side):
-    for j, v in TUCK.items():
+# Alternative park poses for the idle arm (used when the default one collides, e.g. the torso is low for floor work)
+TUCKS = [TUCK,
+         {"pitch": math.radians(-35), "roll": math.radians(12), "yaw": 0.0, "elbow": math.radians(-150), "wpitch": math.radians(70), "wroll": 0.0},
+         {"pitch": math.radians(-70), "roll": math.radians(10), "yaw": 0.0, "elbow": math.radians(-150), "wpitch": math.radians(90), "wroll": 0.0},
+         {"pitch": math.radians(40), "roll": math.radians(10), "yaw": 0.0, "elbow": math.radians(-120), "wpitch": math.radians(30), "wroll": 0.0}]
+
+
+def tuck(m, dat, side, pose=None):
+    for j, v in (pose or TUCK).items():
         dat.qpos[m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, f"{j}_{side}")]] = v
 
 
@@ -228,6 +257,7 @@ class Reacher:
         self.hand = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "hand_r")
         self.robot = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "robot")
         self.rejected = 0
+        self.park = {}          # solution -> idle-arm park pose, when it wasn't the default
 
     def fk(self, q):
         self.d.qpos[self.adr] = q
@@ -235,9 +265,12 @@ class Reacher:
         return self.d.site_xpos[self.site].copy(), -self.d.xmat[self.hand].reshape(3, 3)[:, 2]
 
     def com(self, q):
+        tuck(self.m, self.d, "l", self.park.get(tuple(q)))     # COM with the park pose this solution actually uses
         self.d.qpos[self.adr] = q
         mujoco.mj_kinematics(self.m, self.d); mujoco.mj_comPos(self.m, self.d)
-        return self.d.subtree_com[self.robot].copy()
+        c = self.d.subtree_com[self.robot].copy()
+        tuck(self.m, self.d, "l")
+        return c
 
     def solve(self, target, axis, seeds=8, rng=np.random.default_rng(1)):
         target, axis = np.asarray(target), np.asarray(axis)
@@ -259,8 +292,18 @@ class Reacher:
             p, a = self.fk(r.x)
             if np.linalg.norm(p - target) < 0.01 and a @ axis > math.cos(math.radians(20)):
                 if self.check and in_collision(self.m, self.d):
-                    self.rejected += 1
-                    continue
+                    # the idle arm may re-park; keep the first park pose that clears
+                    for pose in TUCKS[1:]:
+                        tuck(self.m, self.d, "l", pose)
+                        self.fk(r.x)
+                        if not in_collision(self.m, self.d):
+                            break
+                    else:
+                        tuck(self.m, self.d, "l")
+                        self.rejected += 1
+                        continue
+                    self.park[tuple(r.x)] = pose
+                    tuck(self.m, self.d, "l")
                 sols.append(r.x)
         return sols
 

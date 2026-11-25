@@ -2,7 +2,7 @@
 
 6000 random right-arm poses across the full joint ranges (MuJoCo twin, static). A pitch-only balancer τ = K·sin(pitch) (zero-free-length spring + cable: Anglepoise / Herder gravity balancing) is fitted to the arm's own weight.
 
-**Design K = 4.00 N·m** (spring torque at the horizontal arm; `params.arm.spring_k_nm`). A least-squares fit to the bare arm gives 3.44 N·m; a K sweep showed 4.0 minimises the 95th-percentile motor torque for a 0.5 kg typical payload (0.5 kg: 5.2 N·m; 1 kg: 7.3 N·m). The spring preload is screw-adjustable (Anglepoise precedent), so K can be re-tuned per task.
+**Design K = 4.00 N·m** (spring torque at the horizontal arm; `params.arm.spring_k_nm`). A least-squares fit to the bare arm gives 3.45 N·m; a K sweep showed 4.0 minimises the 95th-percentile motor torque for a 0.5 kg typical payload (0.5 kg: 5.2 N·m; 1 kg: 7.3 N·m). The spring preload is screw-adjustable (Anglepoise precedent), so K can be re-tuned per task.
 
 | Motor torque needed at the pitch joint | 95th percentile | Worst pose |
 |---|---|---|
