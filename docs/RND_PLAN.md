@@ -69,6 +69,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | D4b | **Counter grasps use top-down or 45° approach, whichever is collision-free** (top-down alone reaches 62 % of counter cells, combined 100 %). Telescoping spine deferred: it would cost ~0.6 kg on a tight carry budget. Revisit if real tests show the need. | New (loop 1b) | [twin](rnd/twin.md) |
 | D5 | **Lift: shoulder height 0.35–1.05 m** (0.70 m travel); belt + stepper, with a brake or counterbalance (study pending) | Range changed (was 0.40–0.95) | [twin](rnd/twin.md) |
 | D6 | Toolchain: build123d CAD, MuJoCo twin generated from `rnd/params.py`, Blender renders | Holding | `rnd/` |
+| D4c | **Belt stages: HTD 5M, 15 mm, 20T small pulley** (pitch 20:50, roll 20:60, elbow 20:40), printed pulleys, the small pulley on its own bearing hub. **Elbow motor stays at the elbow:** a remote motor on a long belt (Blue-style) was evaluated and rejected (–0.5 N·m at the shoulder, +0.24 kg) | New (loop 3) | [belts](rnd/belts.md) |
 | D7 | **Power bus 24 V (6S Li-ion)**, replacing 48 V | Holding | [T01](rnd/T01_specs.md) |
 
 ## 4. Work queue (ordered; edit freely)
@@ -84,7 +85,12 @@ Done so far: T01 specs ✅, toolchain v0 (`rnd/`) ✅, budgets v0 ✅, drivetrai
     - spring stack choice (wave spring vs 6 coil springs): find real parts
     - DM-J4310 adapter
     - tolerance coupon results (owner prints when the P2S arrives: optional)
-3. **Arm CAD v0:** bones built around KX sockets (hub + 2 thin bearings + torque slot), printed belt reductions (2–3:1, the small pulley on its own hub so belt pull never loads the cartridge), shoulder spring-assist module, wrist, gripper with camera. **Check belt tooth load:** a 15 mm pulley sees ~730 N at GIM peak.
+3. **Arm CAD v0** (in progress):
+    - ✅ loop 3: belt stages sized ([belts](rnd/belts.md)); printed HTD 5M pulleys; small-pulley hub (KX74 face, straddled by two 61804 bearings); elbow stage layout render
+    - **next:** bones (upper arm, forearm) around the sockets, with masses from CAD replacing the 0.26 / 0.19 kg estimates
+    - shoulder module: pitch + roll stages and the spring-assist (constant-torque spring or gas strut?)
+    - wrist + gripper with camera
+    - joint width along the axis is ~100 mm with a GIM cartridge (56 mm stack + 44 mm hub): feed the real widths into the twin's collision model
 4. **Base CAD v0:** 4-wheel diamond chassis, wheel cartridges, slide-out battery, upper/base coupling + cam lever + blind-mate connector, handles, bumper light.
 5. **Lift and spine:** compare a constant-force-spring counterbalance (smaller motor, safe if power is lost) against a brake motor; CAD for the carriage, cable chain and top handle.
 6. **Torso + head CAD:** electronics bay (Pi 5, CAN, DC-DC), visor, eyes, depth camera, mic, speaker, pan/tilt.

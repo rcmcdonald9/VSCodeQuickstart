@@ -24,7 +24,9 @@ def point_masses(d: Design, reach: float | None = None):
     s = 1.0 if reach is None else reach / L
     lu, lf = a.l_upper * s, a.l_fore * s
     pts = [("shoulder_roll", m["shoulder_roll"], 0.05 * s), ("upper_yaw", m["upper_yaw"], 0.12 * s),
-           ("upper bone", a.bone_mass_upper, 0.5 * lu), ("elbow", m["elbow"], lu),
+           ("upper bone", a.bone_mass_upper, 0.5 * lu),
+           *((("elbow", m["elbow"], lu),) if a.elbow_motor_at is None else
+             (("elbow motor (remote)", m["elbow"], a.elbow_motor_at * s), ("elbow hub", a.elbow_hub_mass, lu))),
            ("fore bone", a.bone_mass_fore, lu + 0.5 * lf), ("wrist_pitch", m["wrist_pitch"], lu + lf),
            ("wrist_roll", m["wrist_roll"], lu + lf + 0.04 * s),
            ("gripper", m["gripper"] + a.gripper_mech_mass + a.wrist_cam_mass, lu + lf + 0.08 * s),

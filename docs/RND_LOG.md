@@ -115,3 +115,30 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
   - the spring-stack part needs a real supplier
   - a clutch slip of more than 120° needs a re-home (magnet index)
 - **Next:** arm CAD v0 (queue #3) with KX sockets; 2b follow-ups as they become blocking.
+
+## 2026-11-25: loop 3, belt reductions + elbow stage (arm CAD begins)
+
+**Picked:** queue #3, arm CAD. It's the next build-enabling step, and the biggest new risk from loop 2 was belt pull: ~690 N on a small pulley at GIM peak.
+
+- **Belt sizing** (`rnd/belts.py` → [rnd/belts.md](rnd/belts.md)):
+  - HTD 5M, 15 mm, 20T small pulleys.
+  - Pull at actuator peak is 691 N against 975 N allowable → **1.41×**.
+  - 7.2–8.5 teeth in mesh (≥ 6 ✅).
+  - Pulley pitch diameters: 31.8 / 63.7–95.5 mm.
+  - Belt ratings: Gates manuals are unreachable from this environment, so I used secondary vendor tables (650 N per 10 mm allowable). Flagged ESTIMATE in `components.yaml`.
+  - Precedent: Berkeley Blue (single-stage belt reductions, >95 % efficiency).
+- **Idea tested and rejected: remote elbow motor.** Moving the elbow motor 0.14 m up the upper arm on a long belt (Blue-style):
+
+| | At the elbow (kept) | Remote at 0.16 m |
+|---|---|---|
+| Shoulder roll margin, spec / worst | 1.70× / 1.08× | 1.72× / 1.09× |
+| Upper module mass | 9.47 kg | 9.71 kg |
+
+  The 85 % shoulder spring already removes most self-weight torque, so the gain is tiny, and the extra pulley hubs cost carry mass. The option stays as a parameter (`arm.elbow_motor_at`) for future studies.
+- **CAD (`rnd/parts/belt_stage.py`):**
+  - printed HTD 5M pulley generator (20/40/50/60T STLs)
+  - small-pulley hub: KX74 face + Ø20 journals, the pulley straddled by two **61804** bearings (changed from 6004 to save 10 mm)
+  - elbow stage layout render: [img/elbow_belt_stage.png](rnd/img/elbow_belt_stage.png)
+- **New finding:** a GIM-driven joint is **~100 mm wide** along its axis (cartridge 56 mm + pulley hub 44 mm). The twin's capsule arm is thinner, so collision-free reach may be slightly optimistic. The twin v1 must use the real widths.
+- **Scorecard:** new row "belt safety at peak" **1.41×** ✅. All other rows unchanged (reach 98 %, upper 9.5 kg, cost $2,900).
+- **Next:** bones around the sockets, with CAD masses replacing estimates; then the shoulder module + spring.

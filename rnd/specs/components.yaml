@@ -66,3 +66,17 @@ can_fd_adapter:
   canable_2_clones: {price_usd: [35, 81], caveat: "candlelight firmware on CANable 2.0 may not support FD frames", source: https://canable.io/index.html}
   waveshare_usb_can_fd: {price_usd: 127, source: https://waveshare.com/usb-can-fd.htm}
   note: "GIM6010-8 and DM-J4310 use classic CAN 1 Mbps — CAN-FD not required. A classic-CAN adapter (~$35) works; keep FD-capable for the future."
+
+timing_belt_htd5m:
+  profile: HTD 5M (5 mm pitch, curvilinear tooth), fiberglass cord, neoprene
+  allowable_tension_n_per_10mm: 650       # "maximum allowable tensile strength" (vendor tables; confirm with Gates/Optibelt manual)
+  ultimate_tension_n_per_10mm: 2600
+  min_pulley_d_mm: 25                     # vendor minimum; 16T PD = 25.5 mm
+  standard_widths_mm: [9, 15, 25]
+  thickness_mm: 3.6
+  note: "Gates manuals (gates.com) are unreachable from this environment: values from secondary vendor tables, treat as ESTIMATE until checked"
+  sources:
+    - https://www.zzr-parts.com/timing-belt/htd/5m-neoprene/
+    - https://www.htnxt.com/supplier/Dongguan-Zhende-Machinery-Equipment-Co.,-LTD/page/Timing-Belt-Technical-Guide-Pitch-Profile-Tolerances-and-Tensile-Strength.html
+    - https://www.protorque.net/en/products/belts/htd-timing-belts/
+  precedent: "Berkeley Blue arm: single-stage timing-belt reductions on quasi-direct-drive motors, >95 % efficiency (arXiv 1904.03815)"

@@ -53,6 +53,11 @@ class Arm:
     gripper_mech_mass: float = 0.10
     wrist_cam_mass: float = 0.05
     payload: float = 1.0           # kg at the grasp point (R2)
+    # Elbow motor placement: None = at the elbow; a distance (m from the shoulder pitch axis) = motor sits up the
+    # upper arm, just past the yaw joint, and drives the elbow through a long belt (precedent: Berkeley Blue moves
+    # motors back along belts). The elbow then carries only a pulley hub + bearings.
+    elbow_motor_at: float | None = None
+    elbow_hub_mass: float = 0.12   # big pulley + hub + 2×61808 + tensioner when the motor is remote (ESTIMATE)
     wrist_pitch_range_deg: float = 120.0   # ±140 folded the hand into the forearm (collision study); ±120 is realistic and reaches more
 
 

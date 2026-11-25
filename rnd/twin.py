@@ -46,9 +46,10 @@ def build_xml(d: Design) -> str:
             <joint name="yaw_{side}" axis="0 0 1" range="{JR['yaw'][0]} {JR['yaw'][1]}"/>
             <geom type="sphere" size="0.03" pos="0 0 0" mass="{m['upper_yaw']}" rgba=".1 .1 .1 1"/>
             <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_upper-0.07)}" size="0.032" mass="{a.bone_mass_upper}" rgba=".9 .9 .9 1"/>
+            {f'<geom type="cylinder" size="0.043 0.025" pos="0 0 {-(a.elbow_motor_at-0.07)}" euler="90 0 0" mass="{m["elbow"]}" rgba=".1 .1 .1 1"/>' if a.elbow_motor_at else ''}
             <body name="fore_{side}" pos="0 0 {-(a.l_upper-0.07)}">
               <joint name="elbow_{side}" axis="0 1 0" range="{JR['elbow'][0]} {JR['elbow'][1]}"/>
-              <geom type="sphere" size="0.036" mass="{m['elbow']}" rgba=".1 .1 .1 1"/>
+              <geom type="sphere" size="0.036" mass="{m['elbow'] if a.elbow_motor_at is None else a.elbow_hub_mass}" rgba=".1 .1 .1 1"/>
               <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_fore-0.06)}" size="0.026" mass="{a.bone_mass_fore}" rgba=".9 .9 .9 1"/>
               <!-- forearm bone ends 60 mm before the wrist axis: CAD requirement so the hand clears ±140° wrist pitch -->
               <body name="wrist_{side}" pos="0 0 {-a.l_fore}">

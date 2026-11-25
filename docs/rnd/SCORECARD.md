@@ -12,6 +12,7 @@
 | R7 runtime (estimated duty cycle) | 4.0 h | ≥ 2 h | ✅ |
 | R8 cost estimate | $2,900 (actuators $1,550 ×20) | ≤ $3,300 | ✅ |
 | R9 KX interface slip torque / actuator peak (min) | 1.16× | ≥ 1.1× | ✅ |
+| R2 belt safety at actuator peak (HTD 5M 15 mm, min) | 1.41× | ≥ 1.2× | ✅ |
 | R12 socket bearing static safety (min) | 5.6 | ≥ 2 | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold torque (45° heading) | 3.7 N·m / 5 rated | < rated | ✅ |

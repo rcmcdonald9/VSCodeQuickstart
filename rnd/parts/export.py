@@ -5,7 +5,7 @@ from pathlib import Path
 
 from build123d import Pos, Rot, export_stl
 
-from . import cartridge_m as cm, cartridge_s as cs
+from . import belt_stage as bs, cartridge_m as cm, cartridge_s as cs
 from .kx import KX44, KX74, collar, hub, pins, retainer, spring
 
 OUT = Path(__file__).resolve().parents[1] / "out"
@@ -25,6 +25,8 @@ def main():
                  "kx74_retainer": retainer(KX74), "cartM_can": cm.can(), "coupon_gim6010_boltcircle": cm.coupon_motor(),
                  "kx44_male_horn_adapter": cs.horn_adapter(), "kx44_hub": hub(KX44), "kx44_collar": Rot(180, 0, 0) * collar(KX44),
                  "kx44_retainer": retainer(KX44), "cartS_sleeve": cs.sleeve()}
+    printable.update({"htd5m_pulley_20t": bs.pulley(20), "htd5m_pulley_40t": bs.pulley(40), "htd5m_pulley_50t": bs.pulley(50),
+                      "htd5m_pulley_60t": bs.pulley(60), "elbow_small_hub_20t": Rot(180, 0, 0) * bs.small_hub()})
     for n, p in printable.items():
         export_stl(p, str(OUT / f"{n}.stl"))
     e = 34
@@ -46,6 +48,22 @@ def main():
     for f in OUT.glob("*.stl"):
         if f.stem.startswith("asm_") and f.stem not in {f"asm_{n}" for n in asm}:
             f.unlink()
+    # elbow belt stage (cartridge above its pulley hub; belt to a 40T joint pulley 70 mm away)
+    from .kx import male_mated, balls_mated, collar as col
+    hub_g = bs.small_hub()
+    zp = hub_g.bounding_box().min.Z + bs.BRG_6004["B"] + 1 + 1.2       # pulley bottom (approx)
+    zbelt = zp - 0.2
+    el = {"e_hub": (hub_g, "white"), "e_brg": (bs.bearings_dummy(hub_g.bounding_box().min.Z + 2 * bs.BRG_6004["B"] + 1 + 2.4 + 16), "steel"),
+          "e_collar": (col(KX74), "orange"), "e_balls": (balls_mated(KX74), "steel"),
+          "e_adapter": (Pos(0, 0, KX74.gap + KX74.face_t + cm.NECK) * Rot(180, 0, 0) * cm.motor_adapter(), "dark"),
+          "e_motor": (Pos(0, 0, KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]) * Rot(180, 0, 0) * cm.motor_dummy(), "dark"),
+          "e_can": (Pos(0, 0, KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]) * Rot(180, 0, 0) * cm.can(), "white"),
+          "e_bigpulley": (Pos(70, 0, zp - 1.2) * bs.pulley(40, 16, bore=40), "orange"),
+          "e_belt": (Pos(0, 0, zp + 0.5) * bs.belt_loop(31.8, 63.7, 70), "dark")}
+    for n, (p, _) in el.items():
+        export_stl(p, str(OUT / f"asm_{n}.stl"))
+    (OUT / "asm_elbow.txt").write_text("\n".join(f"asm_{n} {c}" for n, (_, c) in el.items()))
+    asm.update(el)
     print("exported", len(printable), "printable parts and", len(asm), "assembly bodies to", OUT)
 
 
