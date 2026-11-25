@@ -72,6 +72,14 @@ def main():
     printable.update({"arm_upper_bone_unsplit": arm_mod.upper_bone(), "arm_forearm": arm_mod.forearm()})
     for n in ("arm_upper_bone_unsplit", "arm_forearm"):
         export_stl(printable[n], str(OUT / f"{n}.stl"))
+    from . import shoulder as sh_mod
+    sh = sh_mod.module()
+    for n, p, _ in sh:
+        export_stl(p, str(OUT / f"asm_sh_{n}.stl"))
+    (OUT / "asm_shoulder.txt").write_text("\n".join(f"asm_sh_{n} {c}" for n, _, c in sh))
+    for n, p in {"shoulder_bracket": sh_mod.bracket(), "shoulder_pitch_shaft": sh_mod.pitch_shaft(),
+                 "kxv_ferrule_arm_side": sh_mod.ferrule(male=True)}.items():
+        export_stl(p, str(OUT / f"{n}.stl"))
     print("exported", len(printable), "printable parts and", len(asm), "assembly bodies to", OUT)
 
 

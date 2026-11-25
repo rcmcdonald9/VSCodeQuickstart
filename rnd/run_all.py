@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import arm_sizing, belts, budget, drive, kx_check, spring, twin
+from . import arm_sizing, balancer, belts, budget, drive, kx_check, spring, twin
 from .params import BASELINE
 
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
@@ -70,6 +70,7 @@ def scorecard(d, res):
         ("R2 min joint margin, whole workspace (rated / 95th pct, 1 kg)", f"{ws_r:.2f}×", "≥ 1.5×", ws_r >= 1.5),
         ("R2 min joint margin, whole workspace (peak / worst pose)", f"{ws_p:.2f}×", "≥ 1.5×", ws_p >= 1.5),
         ("R2 belt safety at actuator peak (HTD 5M 15 mm, min)", f"{belt_sf:.2f}×", "≥ 1.2×", belt_sf >= 1.2),
+        ("R3 arm-detach clamp: lift-off moment / need (×1.5 dynamic)", f"{kx_check.detach_score(d):.1f}×", "≥ 1.5×", kx_check.detach_score(d) >= 1.5),
         ("R12 socket bearing static safety (min)", f"{kx_sock:.1f}", "≥ 2", kx_sock >= 2),
         ("R6 base speed at rated motor rpm", "0.96 m/s", "≥ 0.8 m/s", True),
         ("R4 15 mm threshold torque (45° heading)", f"{drive.threshold_torque_45(d):.1f} N·m / 5 rated", "< rated", drive.threshold_torque_45(d) < 5),
@@ -91,6 +92,7 @@ def main():
     (DOCS / "drivetrain.md").write_text(drive.report())
     (DOCS / "belts.md").write_text(belts.report() + "\n\n![elbow belt stage: cartridge M on its pulley hub, 20T→40T HTD 5M](img/elbow_belt_stage.png)\n")
     (DOCS / "spring.md").write_text(spring.report())
+    (DOCS / "balancer.md").write_text(balancer.report() + "\n\n![shoulder pitch module](img/shoulder_pitch_v0.png)\n")
     (DOCS / "kx.md").write_text(kx_check.report() + "\n\n![cartridges M and S, exploded](img/cartridge_m_exploded.png)\n")
     tw, res = twin_report(quick=quick)
     (DOCS / "twin.md").write_text(tw)

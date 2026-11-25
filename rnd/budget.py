@@ -29,9 +29,9 @@ def mass_budget(d: Design = BASELINE):
              ("carriage", u.carriage_mass), ("torso", u.torso_struct_mass), ("compute", u.compute_mass),
              ("head", u.head_mass), ("cables", u.cable_mass), ("handle", u.handle_mass),
              ("coupling (upper half)", b.coupling_mass / 2)]
-    upper += [("2× shoulder pitch stage + spring", 2 * (a_.shoulder_stage_mass + a_.spring_module_mass)),
+    upper += [("2× shoulder pitch module (CAD: stage, balancer, V-band)", 2 * a_.pitch_module_mass),
               ("2× arm shoulder_pitch", 2 * act(a_.joints["shoulder_pitch"][0])["mass"])]
-    arm_piece = [(n, m) for n, m in arms if n != "arm shoulder_pitch"] + [("roll stage", a_.shoulder_stage_mass)]
+    arm_piece = [(n, m) for n, m in arms if n != "arm shoulder_pitch"] + [("roll stage", a_.roll_stage_mass)]
     out = {"base": base, "battery": [("6S pack", b.battery_mass)]}
     if u.arms_detach:
         out["upper"] = upper

@@ -226,3 +226,33 @@ Newest entries at the bottom. Each entry: date (UTC), backlog item, what was don
   - The shoulder, torso and base are still primitives. Their CAD will need the same check.
   - Twin renders still show the default park pose.
 - **Next:** shoulder module CAD (pitch + roll stages, cable-spring balancer, detach plug).
+
+## 2026-11-25: loop 7, shoulder pitch module: real balancer + V-band arm detach
+
+**Picked:** shoulder module CAD (queue #3). It held two unresolved designs: the balancer mechanism, and how a detachable arm carries its bending moment.
+
+- **Balancer** (`rnd/balancer.py` → [rnd/balancer.md](rnd/balancer.md)):
+  - Zero-free-length cable-spring (Anglepoise / Herder / French & Widden): pulley A sits above the axis, pin B on a lever on the pitch shaft, and the cable runs back into a caged compression spring.
+  - Exact τ = k·a·b·sin(pitch). The Ø12 pulley adds ≤ 0.48 N·m of error, small next to 11.9 N·m rated.
+  - CAD forced b from 40 to **30 mm** so pin B clears pulley A when the arm points straight up (|a − b| ≥ 15 mm).
+  - Result: spring **2.7 N/mm**, 61 mm stroke, 213 N max. K is adjustable **3.6–5.2 N·m** by sliding pulley A.
+  - If the cable breaks, the motor alone still holds the arm.
+- **Arm-detach coupling KX-V** (in [kx.md](rnd/kx.md)):
+  - The detach plane carries the arm's **full bending** (19 N·m with ×1.5 dynamic), which the hand-twist collar can't preload for.
+  - Switched to a **V-band clamp**: printed 3" sanitary flanges so a stock stainless quick-release clamp fits, 3 dowels, face contact. Precedent: turbo V-band, Marman clamps, tri-clamp fittings.
+  - Lift-off **40 N·m at 1 kN preload → 2.1×** ✅. Flange pressure 0.9 MPa.
+- **Shoulder pitch module CAD** (`rnd/parts/shoulder.py`):
+  - Contents: bracket, pitch shaft (50T pulley without flanges, balancer lever, KX-V ferrule), small-pulley hub + KX74 socket, GIM cartridge, pulley A on a slotted post, horizontal spring cage.
+  - Interference-checked; one 0.07 cm³ touch at a bearing seat remains.
+  - Render: [img/shoulder_pitch_v0.png](rnd/img/shoulder_pitch_v0.png)
+- **Masses:** pitch module **0.81 kg from CAD** (estimate was 0.45). Roll stage re-estimated at 0.60 kg (was 0.30) by scaling from this CAD.
+
+| Scorecard | Before | After |
+|---|---|---|
+| Upper core / each arm | 6.2 / 3.1 kg | **6.9 / 3.4 kg** ✅ |
+| Assembled upper (info) | 12.5 kg | 13.8 kg |
+| 15 mm threshold torque | 4.3 N·m | **4.5 of 5 N·m** ⚠️ trend |
+| Tip margin | 68 mm | 72 mm |
+| Arm-detach lift-off | – | **2.1×** ✅ |
+
+- **Critique:** every CAD pass has roughly doubled an estimate. The assembled upper went 9.5 → 13.8 kg across loops 4–7. Carry pieces still pass, but base threshold torque is now the margin to watch. **Next loop: a mass diet**, with base-drive fallbacks ready (8" wheels or a belt gear-down).

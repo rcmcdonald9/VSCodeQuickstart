@@ -143,6 +143,7 @@ def report(d: Design = BASELINE) -> str:
     for s in socket_loads(d):
         flag = "✅" if s["s0"] >= 2 else ("⚠️" if s["s0"] >= 1 else "❌")
         L.append(f"| {s['joint']} | {s['kx']} | {s['moment']:.1f} | 2 × {s['brg']} | {s['f']:.0f} N | {s['s0']:.1f} {flag} |")
+    L += detach_report(d).split("\n")
     L += ["", "## Reading the numbers", "",
           "- **Printed grooves fail.** A steel ball pressed into a printed V-groove at working load reaches several times PETG's yield. "
           "It would dent and creep, and the joint would lose its zero. **Dowel-pin grooves are the baseline**, not a fallback. "
@@ -163,6 +164,48 @@ def score(d: Design = BASELINE):
     slip = min(r["slip"] / r["peak"] for r in rows)
     sock = min(s["s0"] for s in socket_loads(d))
     return slip, sock
+
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Arm-detach coupling "KX-V" (loop 7): unlike joint cartridges, the detach plane carries the arm's full bending.
+# Printed sanitary-style flanges (3" tri-clamp profile so stock stainless clamps fit) + 3 steel dowels + a quick-release
+# V-band clamp. Face contact over the whole ring carries the moment; dowels locate and carry torque.
+# Precedent: V-band (Marman) joints on turbochargers / spacecraft separation; tri-clamp sanitary fittings.
+VBAND = dict(flange_od=91.0, contact_r=40.0, groove_half_angle=20.0, preload_n=1000.0, dowels=3, dowel_d=6.0, dowel_r=30.0,
+             clamp_price=6.0)   # ESTIMATE: 3" ferrule OD 91 mm (ISO 2852 / DIN 32676), preload set by a lever clamp
+
+
+def detach_check(d: Design = BASELINE, dyn: float = 1.5):
+    from .spring import workspace_margins
+    sock = {s["joint"]: s for s in socket_loads(d)}
+    m_need = sock["shoulder_roll"]["moment"] * dyn                 # whole arm cantilevered from the shoulder, dynamic
+    t_need = workspace_margins(d)["shoulder_pitch"]["max"] * dyn   # pitch torque passes through the detach plane
+    v = VBAND
+    m_lift = v["preload_n"] * v["contact_r"] / 1000                # face ring: lift-off when the far edge unloads (≈ P·r)
+    t_fric = 0.25 * v["preload_n"] * v["contact_r"] / 1000         # PETG face friction (ESTIMATE μ 0.25)
+    dowel_shear = (t_need * 1000 / v["dowel_r"] / v["dowels"]) / (math.pi * v["dowel_d"] ** 2 / 4)   # MPa if friction slipped
+    bearing_p = v["preload_n"] / (2 * math.pi * v["flange_od"] / 2 * 4.0)                             # MPa on the 20° flanks (4 mm band)
+    return dict(m_need=m_need, m_lift=m_lift, t_need=t_need, t_fric=t_fric, dowel_shear=dowel_shear, bearing_p=bearing_p)
+
+
+def detach_report(d: Design = BASELINE) -> str:
+    r = detach_check(d)
+    return "\n".join(["", "## Arm-detach coupling KX-V (loop 7)", "",
+        "The arm comes off at the shoulder-pitch output for carrying (D1). Unlike a joint cartridge, this plane carries the whole arm's "
+        "bending, so it uses a **V-band clamp**: printed sanitary 3\" flanges (stock stainless quick-release clamp fits), 3 steel dowels for "
+        "location and torque, face contact over the full ring. Precedent: turbo / exhaust V-band joints, spacecraft Marman clamps, tri-clamp fittings.", "",
+        "| Check | Need (static × 1.5) | Capacity | |", "|---|---|---|---|",
+        f"| Bending (lift-off of the face ring) | {r['m_need']:.1f} N·m | {r['m_lift']:.1f} N·m at {VBAND['preload_n']:.0f} N preload | {r['m_lift'] / r['m_need']:.1f}× {'✅' if r['m_lift'] >= 1.5 * r['m_need'] else '❌'} |",
+        f"| Torque by face friction alone | {r['t_need']:.1f} N·m | {r['t_fric']:.1f} N·m | {r['t_fric'] / r['t_need']:.1f}× (dowels carry the rest: {r['dowel_shear']:.0f} MPa shear in Ø6 steel) |",
+        f"| Flange bearing pressure | – | {r['bearing_p']:.1f} MPa on printed PETG | ✅ |", "",
+        "The face is kinematically over-constrained (not a ball seat), so re-attachment repeats to ~0.05–0.1 mm (dowel fit), not microns. "
+        "That's fine for an arm that re-homes from its absolute joint encoders; a camera check corrects any residual offset."])
+
+
+def detach_score(d: Design = BASELINE):
+    r = detach_check(d)
+    return r["m_lift"] / r["m_need"]
 
 
 if __name__ == "__main__":

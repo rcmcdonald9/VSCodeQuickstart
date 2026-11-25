@@ -33,6 +33,18 @@
 | wrist_roll | KX44 | 1.0 | 2 × 61805 | 86 N | 30.2 ✅ |
 | drive wheel | KX74 | 3.3 | 2 × 61808 | 261 N | 15.9 ✅ |
 
+## Arm-detach coupling KX-V (loop 7)
+
+The arm comes off at the shoulder-pitch output for carrying (D1). Unlike a joint cartridge, this plane carries the whole arm's bending, so it uses a **V-band clamp**: printed sanitary 3" flanges (stock stainless quick-release clamp fits), 3 steel dowels for location and torque, face contact over the full ring. Precedent: turbo / exhaust V-band joints, spacecraft Marman clamps, tri-clamp fittings.
+
+| Check | Need (static × 1.5) | Capacity | |
+|---|---|---|---|
+| Bending (lift-off of the face ring) | 19.0 N·m | 40.0 N·m at 1000 N preload | 2.1× ✅ |
+| Torque by face friction alone | 15.2 N·m | 10.0 N·m | 0.7× (dowels carry the rest: 6 MPa shear in Ø6 steel) |
+| Flange bearing pressure | – | 0.9 MPa on printed PETG | ✅ |
+
+The face is kinematically over-constrained (not a ball seat), so re-attachment repeats to ~0.05–0.1 mm (dowel fit), not microns. That's fine for an arm that re-homes from its absolute joint encoders; a camera check corrects any residual offset.
+
 ## Reading the numbers
 
 - **Printed grooves fail.** A steel ball pressed into a printed V-groove at working load reaches several times PETG's yield. It would dent and creep, and the joint would lose its zero. **Dowel-pin grooves are the baseline**, not a fallback. Six Ø3–4 mm hardened pins plus three G25 balls per interface cost well under $1.

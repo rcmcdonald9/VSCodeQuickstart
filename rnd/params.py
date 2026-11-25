@@ -58,10 +58,10 @@ class Arm:
     # upper arm, just past the yaw joint, and drives the elbow through a long belt (precedent: Berkeley Blue moves
     # motors back along belts). The elbow then carries only a pulley hub + bearings.
     elbow_motor_at: float | None = None
-    shoulder_stage_mass: float = 0.30  # per shoulder belt stage (pitch, roll): KX74 socket + pulley hubs + bearings + housing
-                                       # share. ESTIMATE scaled from the elbow-stage CAD (loop 4)
+    pitch_module_mass: float = 0.81    # FROM CAD (loop 7, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
+                                       # KX-V ferrule, small hub + KX74 socket, bearings, spring/cable/pulley A, V-band clamp. Torso side.
+    roll_stage_mass: float = 0.60      # ESTIMATE scaled from the pitch-module CAD (no spring/clamp, 70T pulley, male ferrule). Arm side.
     yaw_stage_mass: float = 0.20       # upper-arm yaw belt stage (2:1, pulley hubs + bearings + belt), ESTIMATE from elbow-stage CAD
-    spring_module_mass: float = 0.15   # shoulder gravity-assist spring + cam (ESTIMATE, stays on the torso)
     elbow_hub_mass: float = 0.12   # big pulley + hub + 2×61808 + tensioner when the motor is remote (ESTIMATE)
     wrist_pitch_range_deg: float = 120.0   # ±140 folded the hand into the forearm (collision study); ±120 is realistic and reaches more
 
