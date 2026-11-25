@@ -510,7 +510,9 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
 ## 2026-11-25: looks pass v1 (owner request: round parts, new render)
 
 - **New helper** `rnd/parts/soft.py`: boxes and shells with every edge rounded.
-- **Torso:** now a rounded body (204 × 370 × 194 mm, two printable halves) that **encloses both shoulder pitch modules**. The arms emerge through round ports.
+- **Torso:** now a rounded body (230 × 390 × 210 mm, two printable halves) that **encloses both shoulder pitch modules**. The arms emerge through round ports.
+  - The first size (204 × 370 × 194) let the pitch-bracket corners poke through the rounded edges. The whole-robot check caught it, so the torso grew.
+  - Assembly check: 0 clashes, 57/57 printable.
 - **Head:** pill-shaped, with a rounded visor.
 - **Elbow housings:** soft on every edge.
 - **New covers:**
@@ -518,7 +520,7 @@ The owner asked why the head doesn't stay at the top. Evaluated and adopted:
   - a **rounded band** around the upper-arm twist (yaw) block
 - **Twin:** the torso collision box grows to match, and the cap is added to the shoulder hulls.
   - Reach stays **99 %**, bimanual **4/4**, tip margin 66 mm, workspace joint margin 1.51×.
-  - Upper core 7.3 → 7.5 kg (bigger torso shell). Head 0.88 → 0.82 kg.
+  - Upper core 7.3 → 7.6 kg (bigger torso shell). Head 0.88 → 0.82 kg.
 - **Render:** [img/robot_rounded_v1.png](rnd/img/robot_rounded_v1.png).
 - **Still to do for looks:**
   - the bare mast reads as a long neck (cover + light strip)

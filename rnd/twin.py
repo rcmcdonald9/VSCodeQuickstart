@@ -124,7 +124,7 @@ def build_xml(d: Design, geometry: str | None = None) -> str:
       {head_xml(head_z) if u.head_on_mast else ""}
       <body name="torso" pos="0 0 0">
         <joint name="lift" type="slide" axis="0 0 1" range="{u.lift_min} {u.lift_max}"/>
-        <geom type="box" size="0.102 0.185 0.097" pos="0.015 0 0" mass="{torso_m}" rgba=".95 .95 .95 1"/>
+        <geom type="box" size="0.115 0.195 0.105" pos="0.015 0 0" mass="{torso_m}" rgba=".95 .95 .95 1"/>
         {"" if u.head_on_mast else head_xml(0.22)}
 {hull("torso", "l")}{hull("torso", "r")}
                 {arm('r')}{arm('l')}

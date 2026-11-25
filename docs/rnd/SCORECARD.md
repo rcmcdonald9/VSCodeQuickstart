@@ -6,9 +6,9 @@
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 66 mm | ≥ 50 mm | ✅ |
 | R2 min joint margin at spec load (rated, planar check) | 1.91× | ≥ 1.5× | ✅ |
-| R3 upper core (arms detached) | 7.4 kg | ≤ 10 kg | ✅ |
+| R3 upper core (arms detached) | 7.6 kg | ≤ 10 kg | ✅ |
 | R3 each arm (detaches at the shoulder KX) | 3.9 kg | ≤ 10 kg | ✅ |
-| R3 assembled upper (core + arms, for reference) | 15.2 kg | info | — |
+| R3 assembled upper (core + arms, for reference) | 15.3 kg | info | — |
 | R3 base module mass | 6.3 kg | ≤ 8 kg (piece limit 10) | ✅ |
 | R3 battery mass | 1.5 kg | ≤ 3 kg | ✅ |
 | R7 runtime (estimated duty cycle) | 4.0 h | ≥ 2 h | ✅ |
@@ -20,14 +20,14 @@
 | R2 belt safety at actuator peak (HTD 5M 15 mm, min) | 1.27× | ≥ 1.2× | ✅ |
 | R3 arm-detach clamp: lift-off moment / need (×1.5 dynamic) | 1.9× | ≥ 1.5× | ✅ |
 | R12 socket bearing static safety (min) | 4.5 | ≥ 2 | ✅ |
-| R2 torso sway from mast bending (worst static) | 1.4 mm | ≤ 2 mm | ✅ |
-| R5 lift: torque margin / full-travel time | 2.06× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
+| R2 torso sway from mast bending (worst static) | 1.5 mm | ≤ 2 mm | ✅ |
+| R5 lift: torque margin / full-travel time | 2.04× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.2× (4.9 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md) | 19 h | ≤ 4 h | ❌ |
 | R8 cost from the itemised BOM (BOM_v4.md) | $3,221 | ≤ $3,300 | ✅ |
 | R13 printed pieces that fit the P2S (256 mm) | 57/57 | all | ✅ |
-| R13 cross-module clashes > 1 cm³ (3 lift heights) | 12 | 0 | ❌ |
+| R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
 | Twin v1: robustness (±15 mm perception error, 0.2–0.6 kg) | 8/8 | all | ✅ |
 | Twin v1: worst actuator use, peak / continuous (RMS vs rated) | 33% / 61% | ≤ 80 % / ≤ 70 % | ✅ |

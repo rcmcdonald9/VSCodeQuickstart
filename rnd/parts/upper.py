@@ -83,17 +83,17 @@ def torso(lift_mm: float):
     # Looks pass (owner request): a rounded body that encloses both shoulder pitch modules; the arms emerge through
     # round ports at the shoulders. Printed as left/right halves (each 185 mm wide).
     x0 = 15.0
-    shell = Pos(x0, 0, lift_mm) * soft_shell(204, 370, 194, 70, 40, 2.0)
+    shell = Pos(x0, 0, lift_mm) * soft_shell(230, 390, 210, 70, 40, 2.0)            # clears the pitch-bracket corners
     shell -= Pos(x0, 0, lift_mm) * Box(400, 1.0, 400)                                 # split line
     shell -= Pos(MAST_X, 0, lift_mm) * Box(W + 30, W + 30, 400)                       # mast + carriage passage
     for s in (1, -1):                                                                  # shoulder ports (pitch shaft + V-band)
-        shell -= Pos(D.arm.shoulder_x * 1000, s * 185, lift_mm) * Rot(90, 0, 0) * Cylinder(50, 40)
+        shell -= Pos(D.arm.shoulder_x * 1000, s * 195, lift_mm) * Rot(90, 0, 0) * Cylinder(50, 40)
     # electronics in front of the pitch cartridges (they reach into the torso at x −53 … 33)
     tray = Pos(75, 0, lift_mm - 40) * Box(60, 150, 6)
     pi = Pos(75, -20, lift_mm - 25.5) * Box(56, 85, 22)
     dcdc = Pos(75, 50, lift_mm - 23.5) * Box(50, 46, 26)
-    estop = Pos(-30, 80, lift_mm + 95) * Cylinder(15, 14, align=MIN)
-    light = Pos(x0 + 101, 0, lift_mm - 30) * soft_box(3, 160, 8, 1.2, 0.6)
+    estop = Pos(-30, 80, lift_mm + 105) * Cylinder(15, 14, align=MIN)
+    light = Pos(x0 + 116.5, 0, lift_mm - 30) * soft_box(3, 160, 8, 1.2, 0.6)
     return [("torso_shell", shell, "white"), ("e_tray", tray, "dark"), ("e_pi5", pi, "dark"), ("e_dcdc", dcdc, "dark"),
             ("estop", estop, "orange"), ("chest_light", light, "orange")]
 
