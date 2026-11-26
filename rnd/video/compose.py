@@ -107,14 +107,14 @@ def blur(a, r, down=4):
 def glow_and_streak(img, strength=1.0):
     small = np.asarray(Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).resize((W // 4, H // 4), Image.BILINEAR), np.float32) / 255
     lum = small @ np.array([0.3, 0.55, 0.15], np.float32)
-    m = np.clip((lum - 0.72) / 0.28, 0, 1)[..., None] * small
+    m = np.clip((lum - 0.86) / 0.14, 0, 1)[..., None] * small
     # anamorphic streak: wide horizontal blur
     k = np.ones(121, np.float32) / 121
     streak = np.apply_along_axis(lambda r: np.convolve(r, k, "same"), 1, m.mean(2))
     streak = np.repeat(streak[..., None], 3, 2) * np.array([0.55, 0.75, 1.0], np.float32)
     bloom = np.asarray(Image.fromarray((m * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(6)), np.float32) / 255
     add = np.asarray(Image.fromarray((np.clip(streak * 2.2 + bloom * 0.9, 0, 1) * 255).astype(np.uint8)).resize((W, H), Image.BILINEAR), np.float32) / 255
-    return img + add * 0.45 * strength
+    return img + add * 0.3 * strength
 
 
 _VIG = None
