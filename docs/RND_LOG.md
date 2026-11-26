@@ -742,3 +742,16 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - Same 3 failing rows: R10, torque pins, module clashes.
   - BOM $3,772 → $3,776; 62/62 printable; 0 cross-module clashes; FEA 8 cases ≥ 3.2×.
 - **Next:** hangers for the lift and the arm stages (pitch/roll/yaw/elbow), and radial slots for the wrist and tilt pins.
+
+## Loop 20 (2026-11-26): lift torque fork
+
+- **Picked:** queue item 1, the next cartridge on the torque-reaction list (lift).
+- **Problem:** the lift cartridge's pin points at the mast and sticks out behind the mount block; the cover left only ~1 mm of room. A screw-on hanger doesn't fit.
+- **Fix:** the fork is now part of the printed lift mount (`upper.lift_mount`):
+  - a 5.7 mm arm beside the can (can r 43.3)
+  - a 7 mm fork plate with an open radial slot
+  - load is vertical; hand calc 3.4 MPa at the GIM peak 367 N
+- **Cover:** y0 −88 → −91, so the pin tip clears it.
+- **Clashes:** no new ones. The belt-render box and the cover-at-mount-face overlaps were already there.
+- **Torque pins 4/21 → 5/21.** Scorecard 33 ✅ / 3 ❌, unchanged; 62/62 printable; 0 cross-module clashes.
+- **Next:** shoulder pitch (with the queue item 2 wall re-derivation), roll, yaw, elbow.

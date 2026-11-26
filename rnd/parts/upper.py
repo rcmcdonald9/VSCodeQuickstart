@@ -63,13 +63,28 @@ def lift_drive():
             ("lift_motor", T * Pos(0, 0, 0) * Rot(180, 0, 0) * Pos(0, 0, -zc) * cm.motor_dummy(), "dark"),
             ("lift_pulley", Pos(MAST_X - W / 2 - 50, -10, z) * Rot(-90, 0, 0) * pulley(20, 16), "orange"),
             ("lift_belt", Pos(MAST_X - W / 2 - 50 + 16, -2, z) * Box(3.6, 15, Z_TOP - z - 10, align=MIN), "dark"),
-            ("lift_mount", Pos(MAST_X - W / 2 - 30, -20, Z_BASE + 40) * Box(60, 90, 120, align=MIN)
-             - Pos(MAST_X - W / 2 - 50, -20, z) * Rot(90, 0, 0) * Cylinder(45, 200), "white")]
+            ("lift_mount", lift_mount(z, zc), "white")]
+
+
+def lift_mount(z, zc):
+    """Mount block at the mast foot + the lift cartridge's torque fork (loop 20). The Ø6 torque pin sits 30 mm from the
+    cartridge axis toward the mast (+X) and sticks out of the can rear (−Y). A 7 mm fork plate on an arm from the block's
+    −Y face catches it. The slot is open toward the cartridge axis (radial float); torque load is vertical (±Z)."""
+    xa = MAST_X - W / 2 - 50                                           # cartridge axis x
+    m = Pos(MAST_X - W / 2 - 30, -20, Z_BASE + 40) * Box(60, 90, 120, align=MIN)
+    m -= Pos(xa, -20, z) * Rot(90, 0, 0) * Cylinder(45, 200)
+    tp = cm.TORQUE_PIN
+    xp, y_out = xa + tp["r"], -20 - zc                                  # pin x; can rear face (y)
+    xr = MAST_X - W / 2                                                # mast face
+    m += Pos((xp + 14.3 + xr) / 2, (-65 + y_out - 9) / 2, z) * Box(xr - xp - 14.3, -65 - (y_out - 9), 48)      # arm beside the can (can r 43.3)
+    m += Pos((xp - 7 + xr) / 2, y_out - 5.5, z) * Box(xr - xp + 7, 7, 48)                                       # fork plate
+    m -= Pos(xp + 1.5, y_out - 5.5, z) * Box(17, 8, tp["d"] + 0.4)                                              # open radial slot
+    return m
 
 
 def lift_cover() -> Part:
     """Looks pass v2: rounded cover over the lift cartridge, pulley and mount at the mast foot (slot for the belt)."""
-    x0, x1, y0, y1, z0, z1 = -194.0, -91.0, -88.0, 36.0, Z_BASE + 41, Z_BASE + 172
+    x0, x1, y0, y1, z0, z1 = -194.0, -91.0, -91.0, 36.0, Z_BASE + 41, Z_BASE + 172      # y0 −88 → −91: clears the torque-pin tip (loop 20)
     c = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 30, 22, 2.0)
     c -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 + 2, y1 - y0 + 2, 6)      # open bottom
     c -= Pos(MAST_X - W / 2 - 34, -2, z1) * Box(26, 22, 10)                           # belt slot

@@ -12,7 +12,7 @@ Clash and printability checks miss parts that *don't touch*. This finds load pat
 
 A pin counts as reacted when its tip is in clear space and structure sits on both tangential sides of it (a slot or fork).
 
-**Torque reaction: 4/21 cartridge pins land in structure.**
+**Torque reaction: 5/21 cartridge pins land in structure.**
 
 | Check | Part | Result | Detail |
 |---|---|---|---|
@@ -20,7 +20,7 @@ A pin counts as reacted when its tip is in clear space and structure sits on bot
 | torque pin | w90_can | ✅ | w90_torque_hanger |
 | torque pin | w180_can | ✅ | w180_torque_hanger |
 | torque pin | w270_can | ✅ | w270_torque_hanger |
-| torque pin | lift_can | ❌ | pin tip in air |
+| torque pin | lift_can | ✅ | lift_mount |
 | torque pin | pan_sleeve | ❌ | pin tip in air |
 | torque pin | tilt_sleeve | ❌ | pin tip runs into structure (no slot) |
 | torque pin | l_sh_can | ❌ | pin tip in air |
