@@ -72,6 +72,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | D8 | **Head fixed on top of the mast** (owner's suggestion). The torso and arms ride the lift below it. Overall height is a constant **1.29 m**. The head camera always has the high vantage (tilts 60° down for floor work, level/up for shelves; precedent: Hello Robot Stretch). The bare mast no longer pokes through the head, and 0.6 kg leaves the lift's moving mass. Reach 98 %, bimanual 4/4 and tip margin unchanged | New 2026-11-25 | [head views](rnd/img/head_camera_views.png), [render](rnd/img/robot_head_on_mast.png) |
 | D9 | **Sensors favour accuracy and dexterity over cost** (owner, 2026-11-25). Sensor pack v2: joint-side absolute encoders on the 8 arm belt joints + lift (hand error 4.0 → 0.9 mm); global-shutter wrist cameras; magnetic-elastomer fingertip tactile pads (AnySkin/ReSkin principle); palm ToF; base cliff ToF; optical flow kept; 3 RP2040 CAN sensor nodes. +$276 | New (loop 15) | [accuracy](rnd/accuracy.md), [BOM](rnd/BOM_v4.md) |
 | D10 | **Compute:** the owner's Pi 5 runs I/O, real-time supervision, IK and state estimation (≈ 73 % of 4 cores, ESTIMATE). The torso **reserves a bay + 19 V 3 A branch + Ethernet for a Jetson-class AI computer**, bought in the AI phase (~$249) | New (loop 17) | [compute](rnd/compute.md) |
+| D11 | **Head face screen + touch panel** (owner, 2026-11-26). A bar-format LCD (~7–8", to fit the 196 × 66 mm visor; panel dimensions to verify) shows the face (the eyes are drawn on it) and status, and gives touch controls: pause/resume, home/park, joint jog, teach mode, task pick, and a STOP command. It runs on **its own ESP32-S3-class node on the CAN bus**, not on the Pi, so it still works if the Pi hangs, and the cable to the fixed head is power + one CAN pair. **The hard-wired torso e-stop stays the safety device**; the screen's STOP is a command beside it, not instead of it. ~$50–90, ~+150 g at the mast top, ~2–3 W | Adopted; design in queue item 5 | owner Q&A 2026-11-26 |
 | D6 | Toolchain: build123d CAD, MuJoCo twin generated from `rnd/params.py`, **arm collision geometry from CAD hulls** (`rnd/parts/collision.py`, loop 6), Blender renders | Holding | `rnd/` |
 | D4c | **Belt stages: HTD 5M, 15 mm, 20T small pulley** (pitch 20:50, roll 20:60, elbow 20:40), printed pulleys, the small pulley on its own bearing hub. **Elbow motor stays at the elbow:** a remote motor on a long belt (Blue-style) was evaluated and rejected (–0.5 N·m at the shoulder, +0.24 kg) | New (loop 3) | [belts](rnd/belts.md) |
 | D7 | **Power bus 24 V (6S Li-ion)**, replacing 48 V | Holding | [T01](rnd/T01_specs.md) |
@@ -102,16 +103,21 @@ Next (state after the confidence campaign; the hourly loop continues from here).
     - **Charger:** 6S Li-ion CC/CV to 25.2 V, sized ~4–5 A for a ~2.5 h full charge from empty (ESTIMATE). Check that the pack/BMS (Heltec 6S) takes charge through the same port while the robot is powered (load sharing).
     - **Finding the dock:** a lidar-visible profile on the dock face (precedent: robot vacuums, TurtleBot 4 / Create 3 dock) and an AprilTag for the head camera. The approach runs at threshold speed (≤ 0.15 m/s).
     - **Checks:** MuJoCo approach Monte Carlo (start pose ±0.3 m / ±20°, wheel slip), contact-force FEA, clashes with the skirt and wheels, BOM and wiring-plan lines, a scorecard row. Battery stays ≥ 15 % when it heads home.
-5. Remaining confidence-campaign sims: KX Monte Carlo (tolerance, μ, spring) + PETG creep under the KX preload and belt tension; threshold/carpet Monte Carlo.
-6. **R10 assembly time** (22 h vs 4 h, the one failing metric). Owner decision pending on splitting the target (one arm ≤ 4 h / robot ≤ 15 h). Levers: fewer distinct printed parts, snap-in cartridge cans, harness kits.
-7. **Coupon round C1: package READY** ([COUPONS.md](COUPONS.md), loop 18). It needs the owner's P2S and ~$25 of small parts:
+5. **Head screen (D11).**
+    - **CAD:** the visor becomes a bezel for the bar display, with a touch glass flush to the shell. The display node sits behind the panel. The Gemini 2 window below stays as it is.
+    - **Rest of the design:** add screen + node to the BOM; wiring plan (5 V / 12 V branch, CAN drop at the head); compute budget (Pi load drops slightly as the eye LEDs go); power budget (+2–3 W); mass (head +~150 g); re-run mast sway and tip margins.
+    - **Specify the CAN messages:** stop / hold / home / jog / teach / status.
+    - The eye LEDs come off the BOM.
+6. Remaining confidence-campaign sims: KX Monte Carlo (tolerance, μ, spring) + PETG creep under the KX preload and belt tension; threshold/carpet Monte Carlo.
+7. **R10 assembly time** (22 h vs 4 h, the one failing metric). Owner decision pending on splitting the target (one arm ≤ 4 h / robot ≤ 15 h). Levers: fewer distinct printed parts, snap-in cartridge cans, harness kits.
+8. **Coupon round C1: package READY** ([COUPONS.md](COUPONS.md), loop 18). It needs the owner's P2S and ~$25 of small parts:
     - print-in-place KX socket, eccentric bushing, GIM bolt-circle coupon
     - HTD pulley vs a real belt, ratchet + pawl
     - fin-ray finger (TPU)
     - measure, then replace the ESTIMATEs
-8. **Milestone M1 (buy decision for the owner):** priced at ≈ $1,100 ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)); everything except the bench PSU is reused in the full robot.
-9. **Twin v2:** belt/bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day simulation.
-10. **Looks:** wheel fender lips; head face/eye light language; colour options for owner approval.
-11. **Research watch (every ~6 loops):** GIM volume quote, DM-J4310 drawing, sensor prices (D9 lines are ESTIMATEs).
+9. **Milestone M1 (buy decision for the owner):** priced at ≈ $1,100 ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)); everything except the bench PSU is reused in the full robot.
+10. **Twin v2:** belt/bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day simulation.
+11. **Looks:** wheel fender lips; face animation set for the D11 screen; colour options for owner approval.
+12. **Research watch (every ~6 loops):** GIM volume quote, DM-J4310 drawing, sensor prices (D9 lines are ESTIMATEs).
 
 **Earlier queue history** is in [RND_LOG.md](RND_LOG.md).

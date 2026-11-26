@@ -796,3 +796,9 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 ## 2026-11-26: self-docking charger added to the queue (owner request)
 
 - Queue item 4. Spec covers: rear-skirt contacts with a handshake pin (dead until identified), printed funnel dock, 6S CC/CV charger ~4–5 A, lidar profile + AprilTag homing, approach Monte Carlo, contact FEA.
+
+## 2026-11-26: D11 head face screen adopted (owner)
+
+- Decision D11: a bar-format LCD in the visor, run by its own ESP32-S3 node on CAN so it works if the Pi hangs. It shows the face and status and gives touch controls, including STOP.
+- The hard-wired e-stop remains the safety device.
+- Queue item 5: CAD, BOM, wiring, power, mass/sway re-check, CAN command set.
