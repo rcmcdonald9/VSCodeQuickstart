@@ -26,8 +26,8 @@
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.3× (4.9 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md) | 22 h | ≤ 4 h | ❌ |
-| R8 cost from the itemised BOM (BOM_v4.md) | $3,772 | ≤ $4,000 (D9; limit $5,000) | ✅ |
-| R13 printed pieces that fit the P2S (256 mm) | 61/61 | all | ✅ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $3,776 | ≤ $4,000 (D9; limit $5,000) | ✅ |
+| R13 printed pieces that fit the P2S (256 mm) | 62/62 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
 | Twin v1: robustness (±15 mm perception error, 0.2–0.6 kg) | 8/8 | all | ✅ |
@@ -36,8 +36,8 @@
 | R4 sim: 15 mm threshold on hard floor + carpet (45°, ≤ 0.15 m/s), peak margin | crossed, 1.7× | cross, ≥ 1.5× | ✅ |
 | R4 sim: carpet cruise wheel torque (RMS / rated) | 2.2 / 5 N·m | ≤ 70 % | ✅ |
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 68 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
-| FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.2× (7 cases, max disp 1.88 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
+| FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.2× (8 cases, max disp 1.88 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Thermal: hottest motor, non-stop task day (MC worst corner) | 55 °C | ≤ 100 °C | ✅ |
-| Load path: cartridge torque pins landing in structure | 1/21 | all | ❌ |
+| Load path: cartridge torque pins landing in structure | 4/21 | all | ❌ |
 | Clashes inside modules (> 50 mm³, fused interfaces excluded) | 9 | 0 | ❌ |
 | R11 looks | engineering render v0 (robot_v0.png); industrial-design pass pending | owner approval | — |

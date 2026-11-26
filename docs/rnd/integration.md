@@ -10,31 +10,31 @@ Clash and printability checks miss parts that *don't touch*. This finds load pat
    > 50 mm³ inside the arm, roll/yaw, shoulder and hand modules are listed here. Interfaces that are meant to be fused,
    glued or meshed (`FUSED`) are excluded.
 
-A point counts as supported when some other structural solid lies within 1.5 mm of it.
+A pin counts as reacted when its tip is in clear space and structure sits on both tangential sides of it (a slot or fork).
 
-**Torque reaction: 1/21 cartridge pins land in structure.**
+**Torque reaction: 4/21 cartridge pins land in structure.**
 
 | Check | Part | Result | Detail |
 |---|---|---|---|
-| torque pin | w0_can | ❌ | pin tip in air |
-| torque pin | w90_can | ❌ | pin tip in air |
-| torque pin | w180_can | ❌ | pin tip in air |
-| torque pin | w270_can | ❌ | pin tip in air |
+| torque pin | w0_can | ✅ | w0_torque_hanger |
+| torque pin | w90_can | ✅ | w90_torque_hanger |
+| torque pin | w180_can | ✅ | w180_torque_hanger |
+| torque pin | w270_can | ✅ | w270_torque_hanger |
 | torque pin | lift_can | ❌ | pin tip in air |
 | torque pin | pan_sleeve | ❌ | pin tip in air |
-| torque pin | tilt_sleeve | ✅ | yoke |
+| torque pin | tilt_sleeve | ❌ | pin tip runs into structure (no slot) |
 | torque pin | l_sh_can | ❌ | pin tip in air |
 | torque pin | l_roll_roll_can | ❌ | pin tip in air |
 | torque pin | l_roll_yaw_can | ❌ | pin tip in air |
 | torque pin | l_arm_e_can | ❌ | pin tip in air |
-| torque pin | l_arm_wrist_can | ❌ | pin tip in air |
+| torque pin | l_arm_wrist_can | ❌ | pin tip runs into structure (no slot) |
 | torque pin | l_arm_hand_wr_sleeve | ❌ | pin tip in air |
 | torque pin | l_arm_hand_grip_servo_sleeve | ❌ | no pin seat found |
 | torque pin | r_sh_can | ❌ | pin tip in air |
 | torque pin | r_roll_roll_can | ❌ | pin tip in air |
 | torque pin | r_roll_yaw_can | ❌ | pin tip in air |
 | torque pin | r_arm_e_can | ❌ | pin tip in air |
-| torque pin | r_arm_wrist_can | ❌ | pin tip in air |
+| torque pin | r_arm_wrist_can | ❌ | pin tip runs into structure (no slot) |
 | torque pin | r_arm_hand_wr_sleeve | ❌ | pin tip in air |
 | torque pin | r_arm_hand_grip_servo_sleeve | ❌ | no pin seat found |
 

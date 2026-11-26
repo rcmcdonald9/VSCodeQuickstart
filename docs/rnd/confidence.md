@@ -20,7 +20,7 @@ Each number moves only when new evidence arrives; the evidence is linked.
 | The elbow 40T pulley was 9.4 mm out of the belt plane | **Fixed** (`BELT_Y`) |
 | Roll and yaw stages: hard-coded journal constants predated the taller print-in-place hub. Walls cut 2–3 mm into the KX hub and pulley (≈ 20 cm³ of clashes); belts 2.6 mm out of plane | **Fixed:** constants derived from the hub geometry |
 | Clevis bottom yaw plate was a free solid (no structural tie) | **Fixed:** 2 spacer posts outside the belt loop |
-| **Cartridge torque reaction: 18 of 19 torque pins end in air.** No stage has the slot the pin should engage | **Open, queue item 1** (one standard bay-ring/strap design for all stages) |
+| **Cartridge torque reaction: no stage had the slot the pin should engage** (a stricter fork test later showed the head-tilt "pass" was false; the wrist-pitch and tilt pins run into a wall) | **In progress:** standard `torque_hanger` part; wheels ×4 done (FEA 5.7×), **4/21** |
 | Shoulder pitch: same stale-hub issue (10.4 cm³) | Open, queue item 2 |
 | Elbow KX collar vs housing corner (1.8 cm³); forearm disc vs elbow boss (2.7 cm³, rotating) | Open, queue item 3 |
 | Monte Carlo bug: rescaling masses left MuJoCo's cached subtree mass stale, so tip margins read as −10 mm | Fixed in `sim.apply_perturb` |

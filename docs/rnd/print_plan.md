@@ -2,7 +2,7 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 12.3 kg of PETG (≈ $246 at $20/kg); 828 h generic ≈ 290 h on the P2S (≈ 12.1 days of continuous printing).**
+**Total: 12.4 kg of PETG (≈ $248 at $20/kg); 834 h generic ≈ 292 h on the P2S (≈ 12.2 days of continuous printing).**
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
@@ -17,7 +17,7 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | KX74 collar | 13 | 461 | 33.0 | 9 joints + 4 wheels |
 | roll link | 2 | 438 | 31.1 |  |
 | cartridge M adapter | 13 | 409 | 31.0 | carries the KX74 male face |
-| skirt quarter | 4 | 451 | 29.6 |  |
+| skirt quarter | 4 | 451 | 30.0 |  |
 | carriage | 1 | 383 | 22.4 |  |
 | wheel pod | 4 | 356 | 22.2 |  |
 | pitch shaft | 2 | 323 | 22.0 | 60T pulley + balancer lever + female ferrule |
@@ -33,6 +33,7 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | wheel shaft | 4 | 105 | 6.9 |  |
 | cartridge S sleeve | 4 | 81 | 5.9 |  |
 | KX44 collar | 4 | 81 | 5.9 |  |
+| torque hanger (wheel) | 4 | 87 | 5.8 | standard torque-reaction part, screws under the deck |
 | ferrule (arm side) | 2 | 79 | 5.3 |  |
 | KX44 hub | 4 | 72 | 5.1 | wrist roll ×2, head pan + tilt |
 | visor | 1 | 69 | 4.7 | dark PETG |

@@ -41,6 +41,23 @@ def can() -> Part:
     return body
 
 
+def torque_hanger(reach: float, width: float = 48.0, t: float = 7.0, flange: float = 26.0, slot_in: float = 6.0,
+                  slot_out: float = 10.0) -> Part:
+    """Standard torque-reaction part (confidence campaign): a printed plate with an open radial fork slot for the Ø6
+    torque pin, hanging from a flange that screws to the nearest flat structure (2 × M4 into heat-set inserts).
+    Local frame: pin axis +Z through the origin, radial direction +X (away from the cartridge axis), plate z ∈ [2, 2 + t],
+    mount face at x = reach. The fork is open at the inner end (−X), so the cartridge keeps its radial float.
+    Load: GIM peak 11 N·m / r 30 = 367 N along ±Y."""
+    tp = TORQUE_PIN
+    x0 = -slot_in - tp["d"] / 2
+    p = Pos((x0 + reach) / 2, 0, 2) * Box(reach - x0, width, t, align=MIN)
+    p += Pos(reach - 3, 0, 2 + t - flange) * Box(6, width, flange, align=MIN)                     # flange against the mount face
+    for y in (-width / 2 + 8, width / 2 - 8):
+        p -= Pos(reach - 3, y, 2 + t - flange / 2 - 3) * Rot(0, 90, 0) * Cylinder(2.2, 8)         # M4 clearance
+    p -= Pos((x0 + slot_out) / 2 - 1, 0, 2) * Box(slot_out - x0 + 2, tp["d"] + 0.4, t, align=MIN)  # open fork slot
+    return p
+
+
 def torque_pin() -> Part:
     tp = TORQUE_PIN
     return Pos(tp["r"], 0, FLOOR - 0.5 - tp["stick_out"] - FLOOR + 0.5) * Cylinder(tp["d"] / 2, tp["stick_out"] + FLOOR - 0.5, align=MIN)

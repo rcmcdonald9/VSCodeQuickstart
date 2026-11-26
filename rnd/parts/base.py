@@ -67,7 +67,16 @@ def wheel_module(ang):
             (f"w{ang}_motor", T * Pos(0, 0, zc) * Rot(180, 0, 0) * cm.motor_dummy(), "dark"),
             (f"w{ang}_collar", T * collar(KX74), "orange"), (f"w{ang}_hub", T * hub(KX74), "dark"),
             (f"w{ang}_shaft", T * wheel_shaft(), "orange"), (f"w{ang}_pod", T * pod(), "white"),
-            (f"w{ang}_wheel", T * omni_wheel(), "dark")]
+            (f"w{ang}_wheel", T * omni_wheel(), "dark"),
+            (f"w{ang}_torque_hanger", T * torque_hanger_pose(zc), "white")]
+
+
+def torque_hanger_pose(zc):
+    """Wheel torque hanger in the stage frame: pin at (x 30, y 0) behind the can floor (z = zc … zc + 10); the flange screws
+    under the deck (stage x = deck underside); the fork is open downward (stage −x), so the battery top stays clear."""
+    tp = cm.TORQUE_PIN
+    reach = (Z1 - DECK_T) - Z_AX - tp["r"]
+    return Pos(tp["r"], 0, zc) * cm.torque_hanger(reach, slot_in=4.0)
 
 
 def deck_quarter(q) -> Part:

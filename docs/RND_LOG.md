@@ -726,3 +726,19 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - Overall first build ≈ 55 % today, ≈ 65–70 % after queue items 1–3.
   - Staged build ≈ 90 %.
   - KX and creep stay capped until the C1 coupons.
+
+## Loop 19 (2026-11-26): standard torque hanger; wheels done
+
+- **Picked:** queue item 1, the cartridge torque-reaction path (the biggest open integration gap).
+- **New standard part `cartridge_m.torque_hanger(reach)`:**
+  - a 7 mm printed plate with an **open radial fork** for the Ø6 torque pin, so the cartridge keeps its radial float
+  - a flange that screws to the nearest flat (2 × M4 into heat-set inserts)
+  - designed for the GIM peak: 11 N·m / r 30 = 367 N
+- **Wheels ×4:** the hanger screws under the deck; the fork is open downward, keeping 1.2 mm above the battery. FEA: 2.1 MPa → **5.7×**, 0.08 mm. No clashes.
+- **Integration check made stricter:** the pin tip must be in clear space with structure on both tangential sides.
+  - This exposed two false passes: the head-tilt pin, and the wrist-pitch pins, which run *into* the forearm end wall.
+  - **Torque pins 1/21 → 4/21** (honest count; the 1 was false).
+- Scorecard 33 ✅ / 3 ❌, unchanged.
+  - Same 3 failing rows: R10, torque pins, module clashes.
+  - BOM $3,772 → $3,776; 62/62 printable; 0 cross-module clashes; FEA 8 cases ≥ 3.2×.
+- **Next:** hangers for the lift and the arm stages (pitch/roll/yaw/elbow), and radial slots for the wrist and tilt pins.

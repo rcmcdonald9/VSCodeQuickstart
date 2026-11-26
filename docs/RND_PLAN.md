@@ -85,7 +85,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 - see [BUILD_v4.md](BUILD_v4.md)
 
 Next (state after the confidence campaign; the hourly loop continues from here). **Items 1–3 come first: they are real design gaps found by the new checks.**
-1. **Torque-reaction path for every cartridge** ([integration.md](rnd/integration.md): 18/19 pins land in air). Each can's Ø6 rear torque pin needs a radial slot in structure. Proposed standard part:
+1. **Torque-reaction path for every cartridge** ([integration.md](rnd/integration.md): **4/21 after loop 19**; wheels done with the standard `cm.torque_hanger`). Next: lift, shoulder pitch ×2, roll ×2, yaw ×2, elbow ×2. The wrist-pitch and head-tilt pins currently *run into* a wall (no slot): cut a radial slot there. Each can's Ø6 rear torque pin needs a radial slot in structure. Proposed standard part:
     - an axial key rib along every can, engaging a radial notch in a printed **bay ring** on the nearest wall/plate
     - or, where the can sits in free space, a **torque strap** from the nearest wall to the can rear
     - stages: pitch ×2, roll ×2, yaw ×2, elbow ×2, wrist pitch ×2, wrist roll ×2, wheels ×4, lift, head pan

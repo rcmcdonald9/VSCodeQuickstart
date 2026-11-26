@@ -159,6 +159,12 @@ def cases():
               lambda x: (np.hypot(x[1] - RY, x[2]) < 20.5) & ((x[0] < W1[0] - 1) | (x[0] > W2[1] + 1)),
               [(lambda x, P=P: (np.hypot(x[0], x[1] - RY) < 26.3) & inp(x, P), (-345.0 + sg * Fy, 0, -28.0)) for P, sg in ((P1, 1), (P2, -1))]
               + [(lambda x, P=P: (np.hypot(x[0] + YC, x[1] - RY) < 19.4) & inp(x, P), (345.0, 0, 0)) for P in (P1, P2)]))
+    # 8. Standard torque hanger (wheel version): GIM peak 11 N·m on the Ø6 pin at r 30 → 367 N on the fork wall
+    from .parts import base as bs, cartridge_m as cm
+    reach = (bs.Z1 - bs.DECK_T) - bs.Z_AX - cm.TORQUE_PIN["r"]
+    C.append(("Torque hanger (wheel): GIM peak 11 N·m → 367 N on the fork", cm.torque_hanger(reach, slot_in=4.0), 1.5,
+              lambda x, r=reach: np.abs(x[0] - r) < 0.3,
+              [(lambda x: (np.abs(x[1] - 3.2) < 0.3) & (x[0] < 10) & (x[2] > 2) & (x[2] < 9), (0, 367.0, 0))]))
     return C
 
 
