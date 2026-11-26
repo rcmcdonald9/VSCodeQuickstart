@@ -1095,3 +1095,9 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - −82 first clipped the lift carriage (3.4 cm³ per can) → −78 leaves 2.3 mm.
 - Checks run (incremental): module clashes 0, cross-module 0, spacing hard 0, torque pins 21/21, bracket FEA 6.5× (1.8 MPa, 0.41 mm).
 - Scorecard 40 ✅ / 2 ❌ (R10, R14).
+
+## 2026-11-26: owner: R10 has no hard target (still a priority); dexterity check
+
+- R10 → tracked, no pass/fail.
+- **Bench IK dexterity map: yaw ±70° (loop 33) cut side grasps 68 % → 40 % and cross-body side grasps 60 % → 2 %.** Reach/bimanual hadn't shown it.
+- Queued as the top priority: restore yaw ±150° with a real cable crossing (spiral cassette + 20 g recovery, or a slip ring), plus a dexterity scorecard metric.

@@ -42,7 +42,7 @@ def _build_rows():
     rows = []
     if f.exists():
         h = json.loads(f.read_text())["hours"]
-        rows.append(("R10 first-build hands-on time (estimate, BUILD_v4.md)", f"{h:.0f} h", "≤ 4 h", h <= 4))
+        rows.append(("R10 first-build hands-on time (estimate, BUILD_v4.md): tracked, no hard target (owner 2026-11-26); lower is a priority", f"{h:.0f} h", "minimise", None))
     if g.exists():
         t = json.loads(g.read_text())["total"]
         rows.append(("R8 cost from the itemised BOM (BOM_v4.md)", f"${t:,.0f}", "≤ $4,000 (D9; limit $5,000)", t <= 4000))

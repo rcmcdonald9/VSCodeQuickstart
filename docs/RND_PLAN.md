@@ -69,7 +69,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | R7 | Runtime | 2 h light duty | 1 h |
 | R8 | Cost (excluding Pi) | ≤ $4,000 (was $3,300; raised for the D9 sensor pack, owner 2026-11-25) | $5,000 |
 | R9 | Reusable actuators | All motors in joint cartridges | – |
-| R10 | Assembly | First build ≤ 4 h hands-on; reconfiguration ≤ 1 h | – |
+| R10 | Assembly | **No hard target (owner, 2026-11-26), but reducing it is a priority.** Track first-build hands-on hours every run; reconfiguration ≤ 1 h | – |
 | R11 | Looks and motion | Reads as a robot: clean shells, expressed joints, light rings, expressive head, smooth motion | – |
 | R12 | Safety | Torque-limited joints, e-stop, protected 24 V, stable (tip margin ≥ 50 mm under worst static load) | – |
 | R13 | Printability | Parts ≤ 256 mm, support-free where possible | – |
@@ -114,6 +114,19 @@ Next (fresh critique after loop 31: torque paths 21/21, module clashes 0, dockin
 - S0.2 robot description export
 - S0.4 pipeline dry run with a pretrained checkpoint + open-data slice
 - (S1+ need the M1 kit)
+
+**TOP PRIORITY: arm dexterity (owner question "is the arm useful as is?", 2026-11-26).** A bench IK map (top-down / 45° / side grasps over a table grid, any approach heading):
+
+| Yaw range | Top-down | 45° | Side (horizontal) | Across the body (y > 0), side grasps |
+|---|---|---|---|---|
+| ±150° (before loop 33) | 36 % | 69 % | 68 % | 60 % |
+| ±70° (loop 33, for the cable) | 34 % | 57 % | **40 %** | **2 %** |
+
+- Loop 33's yaw limit cost far more dexterity than the reach/bimanual metrics showed: they test specific targets with the whole robot and its lift.
+- **Action:** restore yaw ±150° and give the yaw a real cable crossing. Options:
+  - a 12 mm spiral cassette (yaw_drop 0.112): it missed the shoulder-roll margin by only 0.01×, so recover ~20 g elsewhere
+  - a compact through-bore slip ring for power + CAN, with USB2 on a separate path
+- **Add a dexterity metric to the scorecard** (orientation-reachable workspace fraction per grasp type), so a range change can never hide this again.
 
 **External review #1 (Gemini 4 Neon, 2026-11-26) → queue A-items first** ([triage](review/triage_2026-11-26.md)):
 - **R14/R15 (owner, 2026-11-26), new design targets:** extend `rnd/assembly_seq.py` to straight-line insertion paths for every part, tool access for every screw and cartridge swap with the arm assembled. *`rnd/spacing.py` done in loop 36 (static; 7 → 2 hard violations, both the elbow cassette vs its pulley/belt → fixed by the D13 elbow redesign). Still to do: swept spacing over joint ranges, finger-probe nips, cable bend radius in CAD.*
