@@ -88,6 +88,24 @@ Each scheduled run (and any interactive session) does one **loop**:
 
 Next (fresh critique after loop 31: torque paths 21/21, module clashes 0, docking and face screen designed, every confidence Monte Carlo passing; **scorecard 38 ✅ / 1 ❌, R10 build time only**). The hourly loop works top-down:
 
+**External review #1 (Gemini 4 Neon, 2026-11-26) → queue A-items first** ([triage](review/triage_2026-11-26.md)):
+- A1 assemblability (split shafts, keys, assembly-sequence check)
+- A2 KX socket construction
+- A3 real clock-spring cavities + harness
+- A4 wrist bearings + head tilt
+- A5 e-stop electronics
+- A6 PETG thermal limit
+- A7 roll 18T + small_hub FEA
+- A8 FEA method + compliance chain
+- A9 balancer redesign
+- A10 tip cases
+- A11 wheels without KX + chassis ring
+- A12 dock fixes
+- A13 BMS
+- A14 CAN rates
+- A15 lift lock
+- A16 BOM contingency
+
 1. ~~Yaw cable crossing~~ *(loop 33: **yaw ±150° → ±70°**, crossed in torsion over ≈ 0.24 m between clamps. Reach 99 % and bimanual 4/4 unchanged; ±60° loses 3 of 4 bimanual tasks; the 12 mm cassette option dropped the shoulder-roll margin to 1.49×.)* *(Loop 34: yaw hard stops done: a Ø6 pin in the bottom yaw plate rides an arc slot in the yaw-shaft flange, stopping at ±75°.)*
 1b. *(Loop 32 done: rnd/harness.py analysis, D12, harness-kit segment table in harness.md.)* **Cable routing in CAD (build-enabling).** Model the harness:
     - paths through the hollow shafts (pitch Ø30, elbow Ø30, yaw Ø28 bores), service loops at each joint for its full range

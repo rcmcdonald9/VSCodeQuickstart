@@ -996,3 +996,15 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - Fault load: 22 N·m / 38 mm ≈ 580 N → ≈ 19 MPa bearing on the 5 mm flange. Acceptable for a fault-only load.
 - Scorecard 39 ✅ / 1 ❌ (unchanged).
 - **Next:** queue item 3, the stiffness / hand-accuracy chain.
+
+## 2026-11-26: external design review #1 (Gemini 4 Neon), owner request
+
+- `rnd/external_review.py` sends a 207 kB packet (scorecard, decisions, 20 reports, params.py, all part CAD, 2 renders) to `gemini-4-neon` (OpenAI-compatible endpoint, key injected by the environment proxy, reasoning high, streamed). It ran about 6.5 min.
+- **18 findings (7 critical).** Spot-verified 5 in the repo:
+  - trapped bearings in small_hub
+  - roll stage 20T in CAD vs 18T in belts/BOM
+  - wrist 61805s in the mass list only
+  - balancer stroke vs cage
+  - bumper_light ring blocking the dock pads
+- The big new class is **assembly sequence**: our clash checks never asked whether a part can be put in.
+- Triage and queue items A1–A16 in docs/review/triage_2026-11-26.md and RND_PLAN §4.
