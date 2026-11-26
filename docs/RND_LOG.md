@@ -792,3 +792,7 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - **Actuator idle:** 13 GIM × 0.8 W + 8 servos × 0.6 W.
 - **Average:** 47 → 52.7 W; **runtime 4.0 → 3.6 h** on the 222 Wh pack (85 % usable). R7 ≥ 2 h still passes.
 - With the future AI computer (~12 W average, ESTIMATE): ≈ 2.9 h. Non-stop manipulation: 2.4 h (2.1 h with AI). Standby only: 5.8 h.
+
+## 2026-11-26: self-docking charger added to the queue (owner request)
+
+- Queue item 4. Spec covers: rear-skirt contacts with a handshake pin (dead until identified), printed funnel dock, 6S CC/CV charger ~4–5 A, lidar profile + AprilTag homing, approach Monte Carlo, contact FEA.

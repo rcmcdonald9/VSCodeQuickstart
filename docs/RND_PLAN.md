@@ -96,16 +96,22 @@ Next (state after the confidence campaign; the hourly loop continues from here).
     - Collar Ø98 at the cartridge bay: housing too small. Raise HOUSING z1, or reduce the corner radius on the −Y side.
     - Forearm: move FORE_Y out ~2 mm, or recess the boss.
     - Then design the elbow bay ring for item 1.
-4. Remaining confidence-campaign sims: KX Monte Carlo (tolerance, μ, spring) + PETG creep under the KX preload and belt tension; threshold/carpet Monte Carlo.
-5. **R10 assembly time** (22 h vs 4 h, the one failing metric). Owner decision pending on splitting the target (one arm ≤ 4 h / robot ≤ 15 h). Levers: fewer distinct printed parts, snap-in cartridge cans, harness kits.
-6. **Coupon round C1: package READY** ([COUPONS.md](COUPONS.md), loop 18). It needs the owner's P2S and ~$25 of small parts:
+4. **Self-docking charger (owner request, 2026-11-26).** Goal: the robot charges itself whenever idle, so the 3.6 h runtime rarely matters.
+    - **Contacts:** two spring-loaded contacts at the back of the base skirt, plus a third pin (ID/handshake). The dock's terminals stay dead until the robot identifies itself, so no bare live contacts at floor level. Reverse-polarity protection and a fuse on the robot side.
+    - **Dock (printed):** a funnel/V-guide that self-centres the base within ±30 mm and ±10°, a weighted or screw-down foot, and a low profile so it doesn't block the lidar.
+    - **Charger:** 6S Li-ion CC/CV to 25.2 V, sized ~4–5 A for a ~2.5 h full charge from empty (ESTIMATE). Check that the pack/BMS (Heltec 6S) takes charge through the same port while the robot is powered (load sharing).
+    - **Finding the dock:** a lidar-visible profile on the dock face (precedent: robot vacuums, TurtleBot 4 / Create 3 dock) and an AprilTag for the head camera. The approach runs at threshold speed (≤ 0.15 m/s).
+    - **Checks:** MuJoCo approach Monte Carlo (start pose ±0.3 m / ±20°, wheel slip), contact-force FEA, clashes with the skirt and wheels, BOM and wiring-plan lines, a scorecard row. Battery stays ≥ 15 % when it heads home.
+5. Remaining confidence-campaign sims: KX Monte Carlo (tolerance, μ, spring) + PETG creep under the KX preload and belt tension; threshold/carpet Monte Carlo.
+6. **R10 assembly time** (22 h vs 4 h, the one failing metric). Owner decision pending on splitting the target (one arm ≤ 4 h / robot ≤ 15 h). Levers: fewer distinct printed parts, snap-in cartridge cans, harness kits.
+7. **Coupon round C1: package READY** ([COUPONS.md](COUPONS.md), loop 18). It needs the owner's P2S and ~$25 of small parts:
     - print-in-place KX socket, eccentric bushing, GIM bolt-circle coupon
     - HTD pulley vs a real belt, ratchet + pawl
     - fin-ray finger (TPU)
     - measure, then replace the ESTIMATEs
-7. **Milestone M1 (buy decision for the owner):** priced at ≈ $1,100 ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)); everything except the bench PSU is reused in the full robot.
-8. **Twin v2:** belt/bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day simulation.
-9. **Looks:** wheel fender lips; head face/eye light language; colour options for owner approval.
-10. **Research watch (every ~6 loops):** GIM volume quote, DM-J4310 drawing, sensor prices (D9 lines are ESTIMATEs).
+8. **Milestone M1 (buy decision for the owner):** priced at ≈ $1,100 ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)); everything except the bench PSU is reused in the full robot.
+9. **Twin v2:** belt/bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day simulation.
+10. **Looks:** wheel fender lips; head face/eye light language; colour options for owner approval.
+11. **Research watch (every ~6 loops):** GIM volume quote, DM-J4310 drawing, sensor prices (D9 lines are ESTIMATEs).
 
 **Earlier queue history** is in [RND_LOG.md](RND_LOG.md).
