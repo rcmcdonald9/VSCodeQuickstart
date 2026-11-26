@@ -29,6 +29,8 @@ Each scheduled run (and any interactive session) does one **loop**:
 6. **Record:** commit and push to `claude/robot-dog-p2s-printer-j4esie`, and add a log entry: what, numbers before → after, files, open questions.
 7. **Tell the owner:** a short summary every run. A **digest** (renders + scorecard delta + decisions taken) every ~4 runs, or after any major change. Digests **don't block**; work continues.
 
+**External review budget (owner, 2026-11-26):** Gemini 4 Neon (`rnd/external_review.py`) costs ≈ $1.67 per run. Use it **at most once per day**, and only after a significant batch of fixes. The script refuses a second run within 24 h.
+
 **The loop never "finishes".** When the queue is empty, the next run starts with a fresh critique of the whole design and writes a new queue: a stronger design, cheaper parts, easier assembly, better looks.
 
 **Guardrails:**

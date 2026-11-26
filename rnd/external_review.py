@@ -1,6 +1,14 @@
 """Send the Pip v4 design-review packet to Gemini 4 Neon (OpenAI-compatible endpoint; the key is proxy-injected)."""
-import base64, json, sys, urllib.request
+import base64, datetime, json, sys, urllib.request
 from pathlib import Path
+
+# Owner rule (2026-11-26): at most ONE Gemini 4 Neon run per day. A run costs ≈ $1.67 (207 kB packet, reasoning high).
+STAMP = Path(__file__).resolve().parent.parent / "docs" / "review" / "last_neon_run.txt"
+_now = datetime.datetime.now(datetime.timezone.utc)
+if STAMP.exists():
+    _last = datetime.datetime.fromisoformat(STAMP.read_text().strip())
+    if _now - _last < datetime.timedelta(hours=24):
+        raise SystemExit(f"Refusing: last Gemini 4 Neon run was {_last.isoformat()} (owner rule: at most one run per day).")
 R = Path(__file__).resolve().parent.parent
 OUT = Path(sys.argv[1])
 docs = ["docs/rnd/SCORECARD.md", "docs/RND_PLAN.md", "docs/rnd/confidence.md", "docs/rnd/BOM_v4.md", "docs/rnd/electrical.md",
@@ -78,4 +86,6 @@ with resp_cm as resp:
             msg.append((ch.get("delta") or {}).get("content") or "")
             finish = ch.get("finish_reason") or finish
 OUT.write_text("".join(msg))
+STAMP.parent.mkdir(parents=True, exist_ok=True)
+STAMP.write_text(_now.isoformat())
 print("finish:", finish, "usage:", usage, "chars:", len("".join(msg)), "packet chars:", len(text))
