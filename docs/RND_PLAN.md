@@ -142,7 +142,7 @@ Each scheduled run (and any interactive session) does one **loop**:
     - D19 capped seats + integral shaft-pulleys: roll, yaw, pitch, elbow (R14 now 2/6 with the pulley-bore rows)
     - shaft → link drive: clevis pinch clamps, forearm clamp on the elbow shaft, yaw-flange bolt pattern, CF-tube bond lengths (≥ 1 × OD)
     - ~~D15 male face~~ *loop 42: one relief channel per pin track; the rim now holds each ball past its equator over 58 % (KX44 53 %) of the circumference (was 0 %); modelled ball centres fixed; Ø4.1 insert holes for the retainer. Still to do: separate hub / collar / retainer print files*
-    - D16 wrist skirt: removable end cap so the 61804s can go in; spindle retained both ways
+    - ~~D16 wrist skirt~~ *loop 43: seat open below + screwed end cap; spindle in from above with a shoulder on the upper bearing, gripper base bolted to its end through a spacer boss on the lower inner race: held both ways; dog clearance 0.4 → 0.1 mm a side. R14 adds the spindle (passes)*
     - A5 v2: regen clamp sized by energy and pulse rating; pre-charge switched (not in parallel); category-0 drop protection (mechanical catch on the bench); watchdog timing budget
     - ~~safety.py v2~~ *done loop 41-sw: total drive torque bounded (kp·e + kd·ė + τ_ff ≤ rated), finite + fresh feedback, latched faults, reset only with the button released; the drive-side current limit is a day-1 setting*
     - balancer: check pin-B sign in shoulder.py against balancer.py; exact die-spring part; 41 % at the 65 mm slot end

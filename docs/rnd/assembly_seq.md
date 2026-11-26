@@ -11,7 +11,7 @@ things for every drive shaft:
    through (an integral pulley, flange or ferrule between or beyond two walls of a one-piece link) can't be put in.
    The shaft must be split (bolted pulley / flange), or the link must be split.
 
-**2/6 drive shafts can be assembled as drawn.**
+**3/7 drive shafts can be assembled as drawn.**
 
 | Shaft | Bearings and pulleys that can slide on (Ø = bore) | Insertion | Verdict |
 |---|---|---|---|
@@ -20,4 +20,5 @@ things for every drive shaft:
 | yaw shaft + flange (40T split on a hex) | z -72.1…-66.1 (Ø40.0): ✅ +Z end; z -106.1…-100.1 (Ø40.0): ✅ +Z end; z -100.1…-74.6 (Ø34.4): ❌ blocked both ways | ✅ | ❌ |
 | elbow shaft (40T split on a double-D; 2 × 61808 + 2 × 6708) | z 4.5…10.5 (Ø40.0): ✅ −Z end; z 38.5…43.7 (Ø40.0): ✅ −Z end; z -57.5…-50.5 (Ø40.0): ✅ −Z end; z 50.5…57.5 (Ø40.0): ✅ −Z end; z 13.0…29.0 (Ø36.4): ❌ blocked both ways | ✅ | ❌ |
 | D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow | z -30.5…-25.5 (Ø12.0): ✅ −Z end; z -63.5…-58.5 (Ø12.0): ✅ −Z end; z -58.0…-31.0 (Ø12.0): ✅ −Z end | ✅ | ✅ |
+| D16 wrist-roll spindle (loop 43: from above, shoulder on the upper bearing; bearings from below, end cap) | z -91.1…-84.1 (Ø20.0): ✅ −Z end; z -98.1…-91.1 (Ø20.0): ✅ −Z end | ✅ | ✅ |
 | wheel shaft + flange (×4) | z -44…-37 (Ø40.0): ✅ +Z end; z -39…-32 (Ø40.0): ✅ +Z end | ✅ | ✅ |

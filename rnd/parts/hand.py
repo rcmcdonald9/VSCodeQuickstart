@@ -98,27 +98,49 @@ def _zw():
 
 
 def wrist_roll_skirt() -> Part:
-    """Bearing skirt under the palm (part of the palm print): Ø38, seats for the two 61804, lip under the lower one."""
+    """Bearing skirt under the palm (part of the palm print), Ø38. Loop 43 (Astra review #2b finding 4): the seat is open
+    at the bottom so both 61804s press in from below, and a screwed end cap (wrist_roll_cap) holds the lower outer race;
+    the shoulder above the upper bearing stays. Loop 40's skirt had a lip on both sides of the seat: the bearings could
+    not be fitted."""
     zf = _zw()
     zP = SLEEVE_TOP - cs.SERVO["case_h"] - cs.SERVO["bottom"] - cs.FLOOR + 2
-    sk = Pos(0, 0, zf - 18.5) * Cylinder(19, zP + 1 - (zf - 18.5), align=MIN)
-    sk -= Pos(0, 0, zf - 18.5) * Cylinder(13.0, 40, align=MIN)                     # lip / shoulder bore
-    sk -= Pos(0, 0, zf - 17.0) * Cylinder(BRG_WR["D"] / 2 + 0.05, 2 * BRG_WR["B"], align=MIN)   # bearing seats
+    sk = Pos(0, 0, zf - 17.0) * Cylinder(19, zP + 1 - (zf - 17.0), align=MIN)
+    sk -= Pos(0, 0, zf - 17.0) * Cylinder(BRG_WR["D"] / 2 + 0.05, 2 * BRG_WR["B"], align=MIN)   # bearing seats, open below
+    sk -= Pos(0, 0, zf - 3.0) * Cylinder(13.0, 1.5, align=MIN)                     # shoulder over the upper outer race
     sk -= Pos(0, 0, zf - 1.5) * Cylinder(11.0, 40, align=MIN)                      # dog adapter clearance up to the servo
+    for k in range(3):                                                             # 3 × M2.5 into heat-set inserts for the cap
+        a = 2 * math.pi * k / 3 + math.pi / 6
+        sk -= Pos(17.4 * math.cos(a), 17.4 * math.sin(a), zf - 17.0) * Cylinder(1.6, 5, align=MIN)
     return sk
 
 
+def wrist_roll_cap() -> Part:
+    """End cap under the skirt: holds the lower bearing's outer race; the gripper's spacer boss turns inside it."""
+    zf = _zw()
+    c = Pos(0, 0, zf - 18.5) * (Cylinder(19, 1.5, align=MIN) - Cylinder(13.0, 1.5, align=MIN))
+    for k in range(3):
+        a = 2 * math.pi * k / 3 + math.pi / 6
+        c -= Pos(17.4 * math.cos(a), 17.4 * math.sin(a), zf - 18.5) * Cylinder(1.4, 1.5, align=MIN)
+    return c
+
+
 def wrist_roll_parts():
+    """Loop 43: the spindle goes in from above (cartridge S out) with a shoulder on the upper bearing's inner race; the
+    gripper base bolts to its lower end (4 × M3) through a spacer boss that clamps the lower inner race, so the spindle
+    is held both ways. Dog clearance 0.1 mm a side (was 0.4: ≈ ±2.5° lash)."""
     zf = _zw()
     zP = SLEEVE_TOP - cs.SERVO["case_h"] - cs.SERVO["bottom"] - cs.FLOOR + 2
     dog = Pos(0, 0, zf) * Cylinder(9.5, zP - 0.5 - zf, align=MIN)                  # on the Ø20 horn (4 × M3)
     dog += Pos(0, 0, zf - 3.5) * Box(4, 18, 3.5, align=MIN)
-    sp = Pos(0, 0, zf - 19.3) * Cylinder(BRG_WR["d"] / 2, 19.3 - 0.5 - 3.5 + 3.5, align=MIN)
-    sp -= Pos(0, 0, zf - 4.0) * Box(4.8, 30, 10, align=MIN)                         # dog slot (0.4 mm each side)
-    sp += Pos(0, 0, zf - 23.3) * Cylinder(20, 4, align=MIN)                          # flange (sits in a 4 mm pocket in the gripper base)
+    sp = Pos(0, 0, zf - SPINDLE_DROP) * Cylinder(BRG_WR["d"] / 2, SPINDLE_DROP - 0.5, align=MIN)
+    sp += Pos(0, 0, zf - 3.0) * Cylinder(11.5, 1.1, align=MIN)                     # shoulder on the upper inner race (0.4 mm under the skirt step)
+    sp -= Pos(0, 0, zf - 4.0) * Box(4.2, 30, 10, align=MIN)                         # dog slot
     sp -= Cylinder(4.0, 400)                                                         # wire pass (servo + tactile + ToF)
+    for k in range(4):                                                               # 4 × M3 tapped / insert holes for the gripper base
+        a = math.pi / 2 * k + math.pi / 4
+        sp -= Pos(7.0 * math.cos(a), 7.0 * math.sin(a), zf - SPINDLE_DROP) * Cylinder(1.25, 8, align=MIN)
     brg = lambda z0: Pos(0, 0, z0) * (Cylinder(BRG_WR["D"] / 2, BRG_WR["B"], align=MIN) - Cylinder(BRG_WR["d"] / 2, BRG_WR["B"], align=MIN))
-    return [("wr_dog", dog, "dark"), ("wr_spindle", sp, "steel"),
+    return [("wr_dog", dog, "dark"), ("wr_spindle", sp, "steel"), ("wr_cap", wrist_roll_cap(), "white"),
             ("wr_brg_U", brg(zf - 3.0 - BRG_WR["B"]), "steel"), ("wr_brg_L", brg(zf - 17.0), "steel")]
 
 
@@ -150,7 +172,8 @@ def gripper_parts(jaw_deg: float = 25.0):
     zb = wrist_roll_face_z() - SPINDLE_DROP      # D16: base plate top = spindle flange top (flange in a 4 mm pocket)
     parts = []
     base = Pos(5, 0, zb - 5) * soft_box(104, 46, 10, 18, 3.5)
-    base -= Pos(0, 0, zb - 4) * Cylinder(20.3, 5, align=MIN)                    # spindle flange pocket
+    base += Pos(0, 0, zb) * (Cylinder(11.5, SPINDLE_DROP - 17.0, align=MIN) - Cylinder(BRG_WR["d"] / 2 + 0.2, 10, align=MIN))   # loop 43: spacer boss on the lower inner race
+    base -= Pos(0, 0, zb - 11) * Cylinder(4.0, 20, align=MIN)                     # wire pass
     parts.append(("grip_base", base, "white"))
     zs = zb - 10 - 13.0                          # servo shaft height (servo hangs under the base)
     sx = -24.0                                   # shaft x

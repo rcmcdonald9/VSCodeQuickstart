@@ -75,6 +75,11 @@ def cases():
     C.append(("D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow", st["shaft_12"],
               [(bs.V2["jA"][0], bs.V2["jA"][1], bs.BRG_6801["d"]), (bs.V2["jB"][0], bs.V2["jB"][1], bs.BRG_6801["d"]),
                (bs.V2["pulley"][0], bs.V2["pulley"][1], bs.SHAFT_D)], None))
+    from .parts import hand
+    sp = dict((n, p) for n, p, _ in hand.wrist_roll_parts())["wr_spindle"]
+    zf = hand.wrist_roll_face_z()
+    C.append(("D16 wrist-roll spindle (loop 43: from above, shoulder on the upper bearing; bearings from below, end cap)", sp,
+              [(zf - 10.0, zf - 3.0, hand.BRG_WR["d"]), (zf - 17.0, zf - 10.0, hand.BRG_WR["d"])], None))
     ws = base.wheel_shaft()
     C.append(("wheel shaft + flange (×4)", ws, [(-44, -44 + 7, 40.0), (-40 + 8 - 7, -40 + 8, 40.0)], None))
     return C
