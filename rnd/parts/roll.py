@@ -111,6 +111,7 @@ def clevis_and_yaw_block() -> Part:
     for x0, x1 in ((W1[0] - 12, W1[0] - 2), (W2[1] + 2, W2[1] + 12)):            # clevis arms outside the walls
         arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 26, 10)           # arms end on the top plate (yaw pulley below is clear)
         arm -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(20.2, 100)           # clamps on the roll shaft ends
+        arm -= Pos(0, ROLL_Y, 0) * Cylinder(21.0, 400)                            # loop 31: 1 mm clear of the rotating Ø40 yaw shaft
         p += arm
     return p
 

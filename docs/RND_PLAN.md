@@ -85,36 +85,43 @@ Each scheduled run (and any interactive session) does one **loop**:
 - electrical plan, itemised BOM ($3,220), print plan (10.4 kg, ~255 h P2S) and build guide (~25 h hands-on)
 - see [BUILD_v4.md](BUILD_v4.md)
 
-Next (state after the confidence campaign; the hourly loop continues from here). **Items 1–3 come first: they are real design gaps found by the new checks.**
-1. ~~Torque-reaction path for every cartridge~~ **done, 21/21** (loops 19–25):
-    - wheels: `cm.torque_hanger`
-    - lift, shoulder pitch, roll, yaw, elbow, wrist pitch: forks/pads integral to their structure
-    - small servos (wrist roll, head pan/tilt): `parts/torque.with_pin_slot`
-    - gripper servos: screwed into the rectangular pocket by design
-    - **Follow-up:** head tilt sleeve × head shell overlap (373 mm³, pre-existing; the head isn't yet in the module-clash check: add it); the 3 gripper-jaw overlaps and the 0.3 cm³ yaw-shaft sliver.
-2. ~~Shoulder pitch walls re-derived from the hub geometry~~ (done in loop 21).
-3. ~~Elbow clashes (collar, can, forearm) + elbow torque arm~~ (done in loop 23).
-4. **Self-docking charger (owner request, 2026-11-26).** *Loop 26: approach Monte Carlo **100/100** (rnd/dock_sim.py, ±60° V dock, lateral current limit in contact), dock CAD (2 wings + contact tower, rnd/parts/dock.py), BOM. Loop 27: robot-side pads (flush brass pads in a carrier on the skirt at 45°; skirt seams moved into the wheel windows), charge path + handshake + robot-commanded charge stop in the wiring plan, contact loads checked by hand (leaf springs ~5 N; 60 N push on the 10 mm wings ≈ 0.7 MPa). Remaining: confirm common- vs split-port BMS before buying; dock-approach logic belongs to the software phase.* Goal: the robot charges itself whenever idle, so the 3.6 h runtime rarely matters.
-    - **Contacts:** two spring-loaded contacts at the back of the base skirt, plus a third pin (ID/handshake). The dock's terminals stay dead until the robot identifies itself, so no bare live contacts at floor level. Reverse-polarity protection and a fuse on the robot side.
-    - **Dock (printed):** a funnel/V-guide that self-centres the base within ±30 mm and ±10°, a weighted or screw-down foot, and a low profile so it doesn't block the lidar.
-    - **Charger:** 6S Li-ion CC/CV to 25.2 V, sized ~4–5 A for a ~2.5 h full charge from empty (ESTIMATE). Check that the pack/BMS (Heltec 6S) takes charge through the same port while the robot is powered (load sharing).
-    - **Finding the dock:** a lidar-visible profile on the dock face (precedent: robot vacuums, TurtleBot 4 / Create 3 dock) and an AprilTag for the head camera. The approach runs at threshold speed (≤ 0.15 m/s).
-    - **Checks:** MuJoCo approach Monte Carlo (start pose ±0.3 m / ±20°, wheel slip), contact-force FEA, clashes with the skirt and wheels, BOM and wiring-plan lines, a scorecard row. Battery stays ≥ 15 % when it heads home.
-5. **Head screen (D11).** *Loop 28: done in CAD. Waveshare ESP32-S3-Touch-LCD-4.3B ($37, CAN, 7–36 V input) behind a dark bezel; head +16 mm; camera window; BOM/power/wiring updated; existing head clashes fixed. Remaining: CAN command set spec (software phase); verify the board's real mass and the bezel window against the panel's active area.*
-    - **CAD:** the visor becomes a bezel for the bar display, with a touch glass flush to the shell. The display node sits behind the panel. The Gemini 2 window below stays as it is.
-    - **Rest of the design:** add screen + node to the BOM; wiring plan (5 V / 12 V branch, CAN drop at the head); compute budget (Pi load drops slightly as the eye LEDs go); power budget (+2–3 W); mass (head +~150 g); re-run mast sway and tip margins.
-    - **Specify the CAN messages:** stop / hold / home / jog / teach / status.
-    - The eye LEDs come off the BOM.
-6. *(Loop 29: KX Monte Carlo done, rnd/kx_mc.py. Never slips below rated; 15–26 % slip below peak after 10 y creep (warm joints lose ~7.5 % preload). C1 gains a 72 h / 50 °C creep hold. **Design option if C1 shows > 5 % loss:** a softer, longer-stroke preload spring, so creep costs less preload; bolted-joint practice.)* *(Loop 30: threshold/carpet Monte Carlo done, rnd/threshold_mc.py: 55/55 within 15 mm, 25/25 at 15–18 mm; 2 saturated the GIM peak but still crossed, one above the 0.15 m/s rule. Keep D2b.)* Remaining confidence-campaign sims (now only): KX Monte Carlo (tolerance, μ, spring) + PETG creep under the KX preload and belt tension; threshold/carpet Monte Carlo.
-7. **R10 assembly time** (22 h vs 4 h, the one failing metric). Owner decision pending on splitting the target (one arm ≤ 4 h / robot ≤ 15 h). Levers: fewer distinct printed parts, snap-in cartridge cans, harness kits.
-8. **Coupon round C1: package READY** ([COUPONS.md](COUPONS.md), loop 18). It needs the owner's P2S and ~$25 of small parts:
-    - print-in-place KX socket, eccentric bushing, GIM bolt-circle coupon
-    - HTD pulley vs a real belt, ratchet + pawl
-    - fin-ray finger (TPU)
-    - measure, then replace the ESTIMATEs
-9. **Milestone M1 (buy decision for the owner):** priced at ≈ $1,100 ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)); everything except the bench PSU is reused in the full robot.
-10. **Twin v2:** belt/bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day simulation.
-11. **Looks:** wheel fender lips; face animation set for the D11 screen; colour options for owner approval.
-12. **Research watch (every ~6 loops):** GIM volume quote, DM-J4310 drawing, sensor prices (D9 lines are ESTIMATEs).
+Next (fresh critique after loop 31: torque paths 21/21, module clashes 0, docking and face screen designed, every confidence Monte Carlo passing; **scorecard 38 ✅ / 1 ❌, R10 build time only**). The hourly loop works top-down:
+
+1. **Cable routing in CAD (build-enabling, and the biggest R10 lever).** Model the harness:
+    - paths through the hollow shafts (pitch Ø30, elbow Ø30, yaw Ø28 bores), service loops at each joint for its full range
+    - the arm detach plug mount beside the V-band, the upper↔base coupling plug
+    - torso e-tray ↔ shoulder ports, the head CAN/24 V drop along the mast
+
+    Check bend radii and that every loop survives the joint range in the twin. Output a harness drawing (lengths, connectors) for a pre-made **harness kit**, which removes most crimping from the build (R10).
+2. **R10 assembly time** (owner decision pending: one arm ≤ 4 h / robot ≤ 15 h). Levers beyond the harness kit:
+    - snap-fit covers in place of screws on the cosmetic shells
+    - one tool size (M3 / M4 hex) everywhere
+    - print-in-place collars already done
+
+    Re-estimate in BUILD_v4.md.
+3. **Stiffness / hand-accuracy chain.** A static FEA chain with the CF tubes (bone shells + tubes + KX contact compliance) gives the hand deflection under a 1 kg load at full reach. Joint encoders don't see link bending. Confidence item at ~65 %.
+4. **BOM headroom** ($96 under the $4,000 target). A cost pass:
+    - bearing sourcing (28 × 6808 at ~$2 vs $4.7)
+    - the wrist camera class
+    - dock electronics
+    - one fewer USB-CAN by merging buses?
+5. **Electronics thermal:** the Pi 5 at ~73 % load inside the closed torso shell (Pi throttles at 85 °C). Vent path / fan sizing.
+6. **Twin v2:** belt and bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day sim with docking.
+7. **Coupon round C1** (waits for the owner's P2S, ~30 days): package ready, now with the 72 h / 50 °C creep hold.
+8. **Milestone M1** (owner buy decision, ≈ $1,100).
+9. **Looks:** wheel fender lips; face animation set for the D11 screen; colour options.
+10. **Research watch (every ~6 loops):**
+    - GIM volume quote, DM-J4310 drawing
+    - the Waveshare 4.3B real mass and active area
+    - 6S BMS port type (common vs split) for the dock
+
+Done since the confidence campaign:
+- torque reaction 21/21 (loops 19–25)
+- shoulder/roll/yaw wall re-derivation (21–22)
+- elbow housing v2 (23)
+- docking charger (26–27)
+- D11 face screen (28)
+- KX + threshold Monte Carlo (29–30)
+- module clashes 0 with the head, base and upper included (31)
 
 **Earlier queue history** is in [RND_LOG.md](RND_LOG.md).

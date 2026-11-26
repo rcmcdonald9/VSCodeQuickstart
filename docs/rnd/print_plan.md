@@ -2,7 +2,7 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 13.9 kg of PETG (≈ $278 at $20/kg); 933 h generic ≈ 326 h on the P2S (≈ 13.6 days of continuous printing).**
+**Total: 13.9 kg of PETG (≈ $278 at $20/kg); 932 h generic ≈ 326 h on the P2S (≈ 13.6 days of continuous printing).**
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
@@ -15,7 +15,7 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | head_shell | 1 | 719 | 43.3 |  |
 | skirt quarter | 4 | 602 | 42.4 |  |
 | deck quarter | 4 | 577 | 40.0 |  |
-| clevis + yaw block | 2 | 504 | 37.0 |  |
+| clevis + yaw block | 2 | 499 | 36.9 |  |
 | dock_wing_l | 2 | 542 | 34.0 | self-docking charger: left + mirrored right wing |
 | KX74 collar | 13 | 461 | 33.0 | 9 joints + 4 wheels |
 | cartridge M adapter | 13 | 409 | 31.0 | carries the KX74 male face |
@@ -49,8 +49,8 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | head_bracket | 1 | 56 | 3.3 |  |
 | gripper grip_servo_sleeve | 2 | 38 | 3.1 |  |
 | cartridge D adapter | 2 | 36 | 3.1 |  |
-| gripper jaw_moving | 2 | 35 | 3.1 |  |
 | gripper grip_base | 2 | 47 | 2.9 |  |
+| gripper jaw_moving | 2 | 28 | 2.7 |  |
 | e_tray | 1 | 33 | 2.3 |  |
 | elbow cassette spacer | 4 | 13 | 1.3 |  |
 | handle | 1 | 21 | 1.3 |  |

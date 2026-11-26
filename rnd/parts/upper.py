@@ -81,6 +81,7 @@ def lift_mount(z, zc):
     m += Pos((xp + 14.3 + xr) / 2, (-65 + y_out - 9) / 2, z) * Box(xr - xp - 14.3, -65 - (y_out - 9), 48)      # arm beside the can (can r 43.3)
     m += Pos((xp - 7 + xr) / 2, y_out - 5.5, z) * Box(xr - xp + 7, 7, 48)                                       # fork plate
     m -= Pos(xp + 1.5, y_out - 5.5, z) * Box(17, 8, tp["d"] + 0.4)                                              # open radial slot
+    m -= Pos(xa + 16, -2, z) * Box(3.6 + 2, 15 + 2, 400, align=MIN)                                            # loop 31: belt slot (the belt ran through the block)
     return m
 
 
@@ -91,6 +92,8 @@ def lift_cover() -> Part:
     c -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 + 2, y1 - y0 + 2, 6)      # open bottom
     c -= Pos(MAST_X - W / 2 - 34, -2, z1) * Box(26, 22, 10)                           # belt slot
     c -= Pos(x1, (y0 + y1) / 2, (z0 + z1) / 2) * Box(36, y1 - y0 + 4, z1 - z0 + 4)       # open against the mast / mount face
+    zl = Z_BASE + 40 + 70
+    c -= lift_mount(zl, cm.stack_height())                                            # loop 31: no overlap with the mount it covers
     return c
 
 

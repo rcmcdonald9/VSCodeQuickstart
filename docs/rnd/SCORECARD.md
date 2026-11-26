@@ -42,5 +42,5 @@
 | KX Monte Carlo (tolerances, μ, spring, 10-year PETG creep): slip below rated / below peak; twist p95 | 0.00% / 26%; 2.9 N·m | ≤ 0.1 % below rated; twist ≤ 3 N·m | ✅ |
 | Thermal: hottest motor, non-stop task day (MC worst corner) | 55 °C | ≤ 100 °C | ✅ |
 | Load path: cartridge torque pins landing in structure | 21/21 | all | ✅ |
-| Clashes inside modules (> 50 mm³, fused interfaces excluded) | 4 | 0 | ❌ |
+| Clashes inside modules (> 50 mm³, fused interfaces excluded) | 0 | 0 | ✅ |
 | R11 looks | engineering render v0 (robot_v0.png); industrial-design pass pending | owner approval | — |

@@ -937,3 +937,28 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - **Confidence:** base/carpet ~60 % → 80 %; KX couplings → 60–65 % (loop 29).
 - **Results:** new scorecard row (passes). Scorecard 37 ✅ / 2 ❌.
 - **Next:** add the head to the module-clash check, then a fresh design critique (queue items 1–6 are done or waiting on the owner/coupons).
+
+## Loop 31 (2026-11-26): module-clash check widened; every module clash-free; fresh queue
+
+- `rnd.integration.module_clashes` now also covers the base, upper (mast/lift/torso/head) and the head at tilt ±30°.
+- **Fixed what it found:**
+  - **Lift belt ran through the lift mount block** (0.4 cm³) → belt slot. The first slot was misplaced: `MIN` in upper.py centres x/y.
+  - Lift cover overlapped the mount → the cover subtracts the mount.
+  - **Gripper moving jaw rubbed the base and the servo sleeve through its sweep.**
+    - Lever moved outside the base and shortened.
+    - Mount plate set 22 mm under the shaft, on its −x side only (a point r below the shaft rises to −r·cos θ as the jaw opens under the servo).
+    - Fin-ray top 19.5 → 25 mm under the shaft.
+    - Clear 0–45°.
+  - Wrist camera +2.5 mm off the fixed fin-ray.
+  - **Clevis arms were 1.2 mm inside the rotating Ø40 yaw shaft** → 1 mm clearance cut.
+- **Results:**
+  - Module clashes 4 → **0** with full coverage. Torque pins 21/21.
+  - **Scorecard 38 ✅ / 1 ❌** (only R10 build time, owner decision).
+  - Twin 8/8, reach 99 %, 64/64 printable.
+- **Fresh critique → new queue (RND_PLAN §4):**
+  1. cable routing + harness kit (the biggest R10 lever)
+  2. R10 levers
+  3. stiffness/hand-accuracy FEA chain
+  4. BOM cost pass ($96 headroom)
+  5. electronics thermal in the torso
+  6. twin v2

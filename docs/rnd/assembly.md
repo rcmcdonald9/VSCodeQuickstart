@@ -17,7 +17,7 @@
 | roll link | 107 × 140 × 192 | 268 | ✅ |
 | shoulder bracket | 150 × 179 × 181 | 354 | ✅ |
 | upper bone [1] | 110 × 140 × 178 | 115 | ✅ |
-| clevis + yaw block | 92 × 119 × 176 | 269 | ✅ |
+| clevis + yaw block | 92 × 119 × 176 | 265 | ✅ |
 | carriage | 88 × 101 × 160 | 557 | ✅ |
 | dock_tower | 50 × 59 × 150 | 435 | ✅ |
 | e_tray | 6 × 148 × 148 | 54 | ✅ |
@@ -56,8 +56,8 @@
 | KX56 male | 7 × 61 × 61 | 14 | ✅ |
 | cartridge D adapter | 10 × 61 × 61 | 21 | ✅ |
 | wheel shaft | 36 × 60 × 60 | 35 | ✅ |
-| gripper jaw_moving | 36 × 36 × 57 | 10 | ✅ |
 | KX44 hub | 12 × 56 × 56 | 25 | ✅ |
+| gripper jaw_moving | 33 × 40 × 51 | 9 | ✅ |
 | cartridge S sleeve | 30 × 38 × 51 | 16 | ✅ |
 | torque hanger (wheel) | 26 × 48 × 50 | 21 | ✅ |
 | gripper grip_servo_sleeve | 29 × 40 × 49 | 16 | ✅ |

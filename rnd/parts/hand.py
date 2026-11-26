@@ -120,10 +120,12 @@ def gripper_parts(jaw_deg: float = 25.0):
     parts.append(("grip_servo", Pos(sx + cs.SERVO["l"] / 2 - cs.SERVO["shaft_off"], 0, zs) * Box(cs.SERVO["l"], 36, 24.8), "dark"))
     # moving jaw: lever on the horn (+Y side) → finger under the servo, rotated by jaw_deg about the shaft
     tip = -L_HAND - zs                                           # jaw tip height relative to the shaft
-    jaw = Pos(0, 23, (tip + 12) / 2 + 6) * Box(12, 6, -tip + 12)  # lever on the horn, outside the servo
-    jaw += Pos(-6, 8, -16) * Box(12, 36, 7)                      # finger mount plate just under the servo body
+    # loop 31: the lever stopped 5 mm into the base and the mount plate rubbed the servo sleeve through the jaw sweep.
+    # Lever now ends 2 mm under the base, outside the base's width; plate centred on the shaft, low enough for ±40°.
+    jaw = Pos(0, 27, (tip + 11) / 2) * Box(12, 6, 11 - tip)       # lever on the horn, outside the servo and the base
+    jaw += Pos(-6, 10, -25.5) * Box(12, 40, 7)                   # finger mount plate: 22 mm under the shaft and only on its −x side (a point r below the shaft rises to −r·cos θ as the jaw opens under the servo)
     # gripper v2 (loop 16): fin-ray TPU finger (contact face +x) with a tactile pad window
-    jaw += Pos(0, 8, 0) * fin_ray(-19.5, tip - 12, 4.5, 18, 28, +1)
+    jaw += Pos(0, 8, 0) * fin_ray(-25.0, tip - 12, 4.5, 18, 28, +1)   # loop 31: top 25 mm under the shaft (was 19.5) so it clears the sleeve at 45°
     parts.append(("jaw_moving", Pos(sx, 0, zs) * Rot(0, -jaw_deg, 0) * jaw, "dark"))
     # fixed jaw: printed stem + fin-ray TPU finger (contact face −x) with the fingertip tactile pad behind its face
     stem = Pos(31, 0, zb - 10) * Box(10, 26, (zb - 10) + L_HAND - 25, align=(Align.CENTER, Align.CENTER, Align.MAX))
@@ -132,7 +134,7 @@ def gripper_parts(jaw_deg: float = 25.0):
     parts += [("jaw_fixed", stem, "white"), ("finray_fixed", fr, "orange"), ("pad_fixed", pad, "dark")]
     tof = Pos(48, 21, zb - 19) * Box(10, 8, 4)                                  # palm ToF (VL53L4CD) beside the wrist camera, looking down
     parts.append(("palm_tof", tof, "dark"))
-    cam = Pos(49, 0, zb - 21) * Box(24, 30, 22)
+    cam = Pos(51.5, 0, zb - 21) * Box(24, 30, 22)                # loop 31: +2.5 mm clear of the fixed fin-ray
     parts.append(("wrist_cam", cam, "dark"))
     return parts
 

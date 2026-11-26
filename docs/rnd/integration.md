@@ -38,11 +38,7 @@ A pin counts as reacted when its tip is in clear space and structure sits on bot
 | torque pin | r_arm_hand_wr_sleeve | ✅ | r_arm_hand_palm |
 | torque pin | r_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
 
-## Clashes inside modules: 4
+## Clashes inside modules: 0
 
 | Module | Part A | Part B | Overlap (mm³) |
 |---|---|---|---|
-| arm | hand_grip_base | hand_jaw_moving | 91 |
-| arm | hand_grip_servo_sleeve | hand_jaw_moving | 327 |
-| arm | hand_finray_fixed | hand_wrist_cam | 63 |
-| roll/yaw | yaw_block | yaw_shaft | 283 |

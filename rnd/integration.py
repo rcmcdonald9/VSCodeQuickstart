@@ -30,9 +30,11 @@ FUSED = {("ferrule_m", "roll_link"), ("roll_link", "shoulder_cap"), ("yaw_block"
 
 def module_clashes():
     import itertools
-    from .parts import arm, hand, roll, shoulder
+    from .parts import arm, base, hand, roll, shoulder, upper
     out = []
-    for mn, f in (("arm", arm.assembly), ("roll/yaw", roll.module), ("shoulder", shoulder.module)):
+    for mn, f in (("arm", arm.assembly), ("roll/yaw", roll.module), ("shoulder", shoulder.module), ("base", base.module),
+                  ("upper (mast, lift, torso, head)", lambda: upper.module(0.75)),
+                  ("head tilt −30°", lambda: upper.head(0, -30)), ("head tilt +30°", lambda: upper.head(0, 30))):
         for (a, pa, _), (b, pb, _) in itertools.combinations(f(), 2):
             if (a, b) in FUSED or (b, a) in FUSED:
                 continue
