@@ -38,6 +38,7 @@
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 68 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
 | FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.2× (8 cases, max disp 1.91 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip) | 100/100 (95 % LB 96%), worst pad error 19 mm | LB ≥ 90 %, within ±25 mm | ✅ |
+| Threshold/carpet Monte Carlo (5–15 mm, heading ±10°, 0.12–0.18 m/s, μ, mass, COM) | 55/55 (95 % LB 93%); 15–18 mm: 25/25 | LB ≥ 90 % | ✅ |
 | KX Monte Carlo (tolerances, μ, spring, 10-year PETG creep): slip below rated / below peak; twist p95 | 0.00% / 26%; 2.9 N·m | ≤ 0.1 % below rated; twist ≤ 3 N·m | ✅ |
 | Thermal: hottest motor, non-stop task day (MC worst corner) | 55 °C | ≤ 100 °C | ✅ |
 | Load path: cartridge torque pins landing in structure | 21/21 | all | ✅ |

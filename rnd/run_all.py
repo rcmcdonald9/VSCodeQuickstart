@@ -102,6 +102,11 @@ def _confidence_rows():
         a = json.loads(f.read_text())
         rows.append(("Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip)", f"{a['ok']}/{a['n']} (95 % LB {a['lb95']:.0%}), worst pad error {a['lat_max_mm']:.0f} mm",
                      "LB ≥ 90 %, within ±25 mm", a["lb95"] >= 0.9 and a["lat_max_mm"] <= 25))
+    f = DOCS / "threshold_mc.json"
+    if f.exists():
+        a = json.loads(f.read_text())
+        rows.append(("Threshold/carpet Monte Carlo (5–15 mm, heading ±10°, 0.12–0.18 m/s, μ, mass, COM)",
+                     f"{a['ok']}/{a['n']} (95 % LB {a['lb95']:.0%}); 15–18 mm: {a['beyond_ok']}/{a['beyond_n']}", "LB ≥ 90 %", a["lb95"] >= 0.9))
     f = DOCS / "kx_mc.json"
     if f.exists():
         a = json.loads(f.read_text())

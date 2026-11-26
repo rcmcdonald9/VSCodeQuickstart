@@ -38,8 +38,8 @@ Each number moves only when new evidence arrives; the evidence is linked.
 | Stiffness / accuracy | ~65 % | ~65 % | housing deflects 1.3 mm at 1.5× load; joint encoders don't see link deflection. Needs a stiffness sim with the CF tubes in the loop |
 | Lift | ~70 % | ~70 % | no new evidence (coupon C8 ratchet) |
 | Balancer | ~70 % | ~70 % | no new evidence |
-| Base / carpet | ~60 % | ~60 % | threshold/carpet Monte Carlo still queued |
-| KX couplings (preload, slip, repeatability) | ~50–60 % | ~55–60 % | collar FEA 8.7×. **Simulation can't settle this:** print tolerance, friction and creep need coupons C1–C4 |
+| Base / carpet | ~60 % | **80 %** | loop 30 roller-level Monte Carlo: 55/55 crossings ≤ 15 mm, 25/25 at 15–18 mm, with mass, COM, μ and speed spread. Cap: real roller compound and carpet pile (measure in the owner's home) |
+| KX couplings (preload, slip, repeatability) | ~50–60 % | ~60–65 % (loop 29 Monte Carlo: never below rated; creep thins the peak margin) | collar FEA 8.7×. **Simulation can't settle this:** print tolerance, friction and creep need coupons C1–C4 |
 | **Overall: works on the first full build** | 50–60 % | **≈ 55 % today, ≈ 65–70 % after queue items 1–3** | the fixes remove failures that would have happened at assembly |
 | **Overall: staged build (coupons → M1 bench arm → full robot)** | ~85 % | **≈ 90 %** | each stage catches the remaining unknowns cheaply |
 

@@ -925,3 +925,15 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - Queued design option if C1 loses > 5 %: a softer, longer-stroke preload spring.
 - New scorecard row (passes).
 - **Next:** threshold/carpet Monte Carlo; add the head to the module-clash check.
+
+## Loop 30 (2026-11-26): threshold / carpet Monte Carlo
+
+- **`rnd/threshold_mc.py`:** 80 runs of the roller-level omni model (80 free rollers), 4 workers.
+  - Inputs: threshold 5–18 mm, heading 45° ± 10°, speed 0.12–0.18 m/s, hard/carpet, μ ×0.6–1.1, mass 24.6–29.6 kg, COM 0.35–0.50 m.
+- **Results:**
+  - **Within the 15 mm design limit: 55/55 cross (95 % LB 93 %).** Beyond it, 15–18 mm: 25/25.
+  - Torque margin (11 N·m / peak) median 1.58×. 2 runs saturated the GIM peak but still crossed: one at 0.18 m/s (above the D2b 0.15 rule), one on low-friction floor μ ×0.61. Keep D2b.
+- **Harness fix:** the time limit was too tight (rollers slip on carpet, so progress runs up to ~30 % slower than commanded).
+- **Confidence:** base/carpet ~60 % → 80 %; KX couplings → 60–65 % (loop 29).
+- **Results:** new scorecard row (passes). Scorecard 37 ✅ / 2 ❌.
+- **Next:** add the head to the module-clash check, then a fresh design critique (queue items 1–6 are done or waiting on the owner/coupons).
