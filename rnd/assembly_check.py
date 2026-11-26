@@ -36,7 +36,7 @@ def printed_parts():
               **{n: p for n, p, c in upper.torso(750) if n in ("torso_shell", "e_tray")},
               **{n: p for n, p, c in upper.head() if n in ("head_bracket", "handle", "yoke", "head_shell", "visor")},
               "deck quarter": base.deck_quarter(0), "skirt quarter": base.skirt_quarter(0), "wheel pod": base.pod(),
-              "wheel shaft": base.wheel_shaft(), "torque hanger (wheel)": base.torque_hanger_pose(0), "mast coupling": base.coupling()[0]})
+              "wheel shaft": base.wheel_shaft(), **{n: p for n, p, c in __import__("rnd.parts.dock", fromlist=["parts"]).parts() if n in ("dock_wing_l", "dock_tower")}, "torque hanger (wheel)": base.torque_hanger_pose(0), "mast coupling": base.coupling()[0]})
     return P
 
 

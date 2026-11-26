@@ -859,3 +859,18 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - No new clashes in the head or hand.
 - **Queue item 1 closed.**
 - **Next:** queue item 4, the self-docking charger.
+
+## Loop 26 (2026-11-26): self-docking charger, approach sim + dock CAD
+
+- **`rnd/dock_sim.py`:** planar MuJoCo Monte Carlo.
+  - Model: a 25 kg R 0.25 disc on velocity servos (wheel force limits).
+  - Each run: start ±0.3 m / ±20°, dock-pose estimate error σ 10 mm / 1.5°, wheel slip ×0.9–1.1, lateral drift σ 10 mm/s.
+  - Approach: pre-dock 0.35 m out, then drive in at 0.10 m/s with a 60 N push limit. After first contact the lateral axis is current-limited to 5 N, so the V centres the base.
+- **What it took:**
+  - V faces ±40° → **±60°**, 250 mm long. With ±40° and 200 mm faces, a R 250 base touched the face ends, not the faces.
+  - Pads 40 → **60 mm** wide, because heading error dominates the pad's lateral error.
+  - Fixed three test-harness bugs: floor contacts counted as dock contacts, 2 contact points per wall double-counted, the seat formula.
+- **Result: 100/100 dock (95 % LB 96 %).** Worst pad error 18.8 mm vs ±25 mm capture; worst yaw 4.4°.
+- **`rnd/parts/dock.py`:** 2 wings + contact tower (2 leaf contacts at 60 / 100 mm, ID pogo pin at 40 mm, AprilTag on top). All fit the P2S.
+- **BOM:** +$59 (charger, dock electronics, contacts). Dock walls cut 20 → 10 mm (it is screwed down) to limit print time.
+- **Next:** robot-side pads and wiring on the skirt at 45°, contact FEA, wiring-plan entry.

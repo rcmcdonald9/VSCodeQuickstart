@@ -53,6 +53,11 @@ def items(d=BASELINE):
     A("Bearings", "6805-2RS (25×37×7), no-name 10-pack", 12, 1.15, "AliExpress snapshot; Zoro $5.69")
     A("Bearings", "625ZZ (carriage, idlers)", 10, 0.25, "Walmart 40-pack")
     A("Bearings", "6708-2RS thin section (40×50×6), elbow belt cassettes (2 per arm)", 4, 3.0, "ESTIMATE")
+    # --- self-docking charger (queue item 4, owner request; rnd/parts/dock.py, rnd/dock_sim.py) ---
+    A("Docking charger", "6S Li-ion CC/CV charger 25.2 V, 4–5 A (≈ 2.5 h full charge)", 1, 35.0, "ESTIMATE")
+    A("Docking charger", "Dock electronics: ESP32-C3 + MOSFET output switch + ID-pin handshake, fuse, DC jack, wiring", 1, 12.0, "ESTIMATE")
+    A("Docking charger", "Contacts: 2 spring leaf contacts + 1 pogo pin (dock); 2 brass pads 60 × 12 mm + reverse-polarity diode/fuse (robot)", 1, 10.0, "ESTIMATE")
+    A("Docking charger", "Floor screws + AprilTag print (dock)", 1, 2.0, "ESTIMATE")
     A("Drive & structure", "Torque hangers: 2 × M4×10 + 2 heat-set inserts each (wheels ×4 so far)", 4, 0.6, "ESTIMATE")
     A("Drive & structure", "Elbow belt cassette: 2 × M5×30 bolts + nylocs per arm; 4 × M3 heat-set inserts + screws for the bone cap", 2, 2.0, "ESTIMATE")
     A("KX interfaces (19 sockets)", "G25 balls: 39 × Ø10 ($0.32), 6 × Ø8, 12 × Ø6", 1, 13.9, "Intech / Zoro listings")

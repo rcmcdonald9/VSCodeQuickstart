@@ -37,7 +37,7 @@ QTY = {
     "carriage": (1, ""), "ratchet strip": (1, "4 segments"), "torso_shell": (1, "2 halves"), "e_tray": (1, ""),
     "head_bracket": (1, ""), "handle": (1, ""), "yoke": (1, ""), "head_shell": (1, ""), "visor": (1, "dark PETG"),
     "fin-ray finger": (4, "TPU 95A, 2 per gripper"),
-    "deck quarter": (4, ""), "skirt quarter": (4, ""), "wheel pod": (4, ""), "wheel shaft": (4, ""), "torque hanger (wheel)": (4, "standard torque-reaction part, screws under the deck"), "mast coupling": (1, ""),
+    "deck quarter": (4, ""), "skirt quarter": (4, ""), "wheel pod": (4, ""), "wheel shaft": (4, ""), "dock_wing_l": (2, "self-docking charger: left + mirrored right wing"), "dock_tower": (1, "dock contact tower"), "torque hanger (wheel)": (4, "standard torque-reaction part, screws under the deck"), "mast coupling": (1, ""),
 }
 
 

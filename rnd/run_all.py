@@ -97,6 +97,11 @@ def _confidence_rows():
         dmax = max(v["dmax"] for v in a.values())
         rows.append(("FEA critical printed parts: min margin vs 12 MPa (across layers)", f"{worst:.1f}× ({len(a)} cases, max disp {dmax:.2f} mm)", "≥ 1.5×, disp < 2 mm",
                      worst >= 1.5 and dmax < 2.0))
+    f = DOCS / "dock_sim.json"
+    if f.exists():
+        a = json.loads(f.read_text())
+        rows.append(("Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip)", f"{a['ok']}/{a['n']} (95 % LB {a['lb95']:.0%}), worst pad error {a['lat_max_mm']:.0f} mm",
+                     "LB ≥ 90 %, within ±25 mm", a["lb95"] >= 0.9 and a["lat_max_mm"] <= 25))
     f = DOCS / "thermal.json"
     if f.exists():
         a = json.loads(f.read_text())

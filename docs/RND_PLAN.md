@@ -94,7 +94,7 @@ Next (state after the confidence campaign; the hourly loop continues from here).
     - **Follow-up:** head tilt sleeve × head shell overlap (373 mm³, pre-existing; the head isn't yet in the module-clash check: add it); the 3 gripper-jaw overlaps and the 0.3 cm³ yaw-shaft sliver.
 2. ~~Shoulder pitch walls re-derived from the hub geometry~~ (done in loop 21).
 3. ~~Elbow clashes (collar, can, forearm) + elbow torque arm~~ (done in loop 23).
-4. **Self-docking charger (owner request, 2026-11-26).** Goal: the robot charges itself whenever idle, so the 3.6 h runtime rarely matters.
+4. **Self-docking charger (owner request, 2026-11-26).** *Loop 26: approach Monte Carlo **100/100** (rnd/dock_sim.py, ±60° V dock, lateral current limit in contact), dock CAD (2 wings + contact tower, rnd/parts/dock.py), BOM. Remaining: robot-side pads + wiring on the skirt at 45°, contact-force FEA, wiring plan.* Goal: the robot charges itself whenever idle, so the 3.6 h runtime rarely matters.
     - **Contacts:** two spring-loaded contacts at the back of the base skirt, plus a third pin (ID/handshake). The dock's terminals stay dead until the robot identifies itself, so no bare live contacts at floor level. Reverse-polarity protection and a fuse on the robot side.
     - **Dock (printed):** a funnel/V-guide that self-centres the base within ±30 mm and ±10°, a weighted or screw-down foot, and a low profile so it doesn't block the lidar.
     - **Charger:** 6S Li-ion CC/CV to 25.2 V, sized ~4–5 A for a ~2.5 h full charge from empty (ESTIMATE). Check that the pack/BMS (Heltec 6S) takes charge through the same port while the robot is powered (load sharing).

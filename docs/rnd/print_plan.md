@@ -2,7 +2,7 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 13.0 kg of PETG (≈ $259 at $20/kg); 872 h generic ≈ 305 h on the P2S (≈ 12.7 days of continuous printing).**
+**Total: 13.7 kg of PETG (≈ $274 at $20/kg); 915 h generic ≈ 320 h on the P2S (≈ 13.3 days of continuous printing).**
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
@@ -15,6 +15,7 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | deck quarter | 4 | 577 | 40.0 |  |
 | head_shell | 1 | 653 | 38.5 |  |
 | clevis + yaw block | 2 | 504 | 37.0 |  |
+| dock_wing_l | 2 | 542 | 34.0 | self-docking charger: left + mirrored right wing |
 | KX74 collar | 13 | 461 | 33.0 | 9 joints + 4 wheels |
 | cartridge M adapter | 13 | 409 | 31.0 | carries the KX74 male face |
 | skirt quarter | 4 | 451 | 29.6 |  |
@@ -28,6 +29,7 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | ratchet strip | 1 | 84 | 14.6 | 4 segments |
 | palm | 2 | 198 | 13.1 |  |
 | KX74 hub | 4 | 167 | 11.3 | wheel hubs, print-in-place with the collar (the 9 joint hubs are integral to the small-pulley hubs) |
+| dock_tower | 1 | 196 | 9.6 | dock contact tower |
 | yaw shaft | 2 | 123 | 8.3 | 40T pulley + flange |
 | mast coupling | 1 | 130 | 7.2 |  |
 | wheel shaft | 4 | 105 | 6.9 |  |
