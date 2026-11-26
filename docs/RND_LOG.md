@@ -1140,3 +1140,8 @@ One long push instead of half-hour runs. In order:
 
 - Skirt seat open below + 3 × M2.5 end cap; spindle inserted from above (shoulder on the upper inner race), gripper base bolted to the spindle end (4 × M3) through a spacer boss that clamps the lower inner race: retained both ways. Dog lash 0.4 → 0.1 mm a side.
 - Hand module: 0 clashes, spacing clean; R14 gains the spindle row (passes): 3/7 shafts (the 4 big-pulley shafts wait for D19).
+
+## Loop 43-sw (2026-11-26, software): CAN map for the bench arm (Astra finding 19)
+
+- sw/config/can_map.yaml: bus membership, command/feedback IDs, termination ends, node ports (PIO-CAN + MCP2562, SPI encoders, I²C tactile/ToF, half-duplex TTL servos) — the single file drivers and harness read. sw/can_map.py validates it: B1 46 %, B2 46 %, IDs unique, 2 terminations per bus, ratios = params.
+- Found the D14 buck under-sized (3 A vs 5.4 A for two stalled STS3215) → 6 A in the M1 kit.

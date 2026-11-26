@@ -36,7 +36,7 @@ def items(d=BASELINE):
         ("Structure", '3" quick-release tri-clamp (arm detach)', 1, 25.0, "KX-V ferrule at the shoulder", "ESTIMATE"),
         ("Balancer (A9)", "ISO 10243 light-load die spring, Ø25 hole, L0 ≈ 115 mm, rate ≈ 12 N/mm + 2 mm UHMWPE cord", 1, 14.0, "2:1 tackle balancer, K 4.5 N·m", "ESTIMATE"),
         ("Sensors", "4 × AS5048A joint encoders + 2 RP2040 CAN nodes (shoulder + elbow) + 2 tactile pads + palm ToF", 1, 4 * 12 + 20 + 2 * 10 + 8, "joint-side encoders (accuracy 0.9 mm)", "ESTIMATE"),
-        ("Sensors (D14)", "Elbow node power + bus: 24→12 V 3 A buck + half-duplex TTL transceiver", 1, 8.0, "D14: 12 V and TTL made in the arm", "ESTIMATE"),
+        ("Sensors (D14)", "Elbow node power + bus: 24→12 V **6 A** buck (two stalled STS3215 draw 5.4 A; Astra #16) + half-duplex TTL transceiver + 2 × MCP2562 CAN transceivers", 1, 14.0, "D14: 12 V and TTL made in the arm; CAN map sw/config/can_map.yaml", "ESTIMATE"),
         ("Sensors", "Global-shutter wrist camera (OV9281 MIPI-CSI) + CSI→USB UVC bridge + slim high-flex USB cable", 1, 70.0, "D12 wrist camera", "ESTIMATE"),
         ("Harness", "Clock-spring ribbon stock: 20 AWG silicone pair, 26 AWG twisted pairs, Kapton/PET carrier tape; JST-GH/VH kit", 1, 18.0, "6 joint crossings (rnd/harness.py)", "ESTIMATE"),
         ("Electronics (A14)", "USB-CAN adapter, candleLight / CANable 2.0 class", 2, 35.0, "A14: two CAN channels per arm (≈ 46 % load each at 500 Hz)", "verified"),

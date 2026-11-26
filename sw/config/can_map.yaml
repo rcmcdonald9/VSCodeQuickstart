@@ -1,0 +1,26 @@
+# Bench arm (M1) CAN map — the one file the drivers, the safety supervisor and the harness drawing read (S1; Astra #19).
+# Two independent 1 Mbit/s channels per arm (electrical.md A14). IDs are unique per bus; feedback ("master") IDs are
+# command ID + 0x10 where the motor lets us set it (Damiao: MST_ID in its config tool; GIM: from the SteadyWin manual).
+# Termination: exactly two 120 Ω resistors per bus, at the physical ends (adapter end + last node).
+bitrate: 1000000
+control_hz: 500
+buses:
+  B1:
+    adapter: "USB-CAN #1 (candleLight / gs_usb, SocketCAN can0)"
+    termination: [adapter, shoulder_node]
+    devices:
+      - {name: pitch, kind: gim6010, id: 0x01, fb_id: 0x11, ratio: 3.0, frames_per_cycle: 2}
+      - {name: roll,  kind: gim6010, id: 0x02, fb_id: 0x12, ratio: 4.444, frames_per_cycle: 2}
+      - {name: yaw,   kind: gim6010, id: 0x03, fb_id: 0x13, ratio: 2.0, frames_per_cycle: 2}
+      - {name: shoulder_node, kind: rp2040_node, id: 0x30, frames_per_cycle: 1,
+         ports: {can: "MCP2562 transceiver on PIO-CAN (can2040)", spi: "AS5048A × 3 (pitch, roll, yaw joint encoders)"}}
+  B2:
+    adapter: "USB-CAN #2 (candleLight / gs_usb, SocketCAN can1)"
+    termination: [adapter, elbow_node]
+    devices:
+      - {name: elbow,  kind: gim6010, id: 0x04, fb_id: 0x14, ratio: 2.0, frames_per_cycle: 2}
+      - {name: wpitch, kind: dm_j4310, id: 0x05, fb_id: 0x15, ratio: 1.0, frames_per_cycle: 2}
+      - {name: elbow_node, kind: rp2040_node, id: 0x31, frames_per_cycle: 3,
+         ports: {can: "MCP2562 transceiver on PIO-CAN (can2040)", spi: "AS5048A × 1 (elbow joint encoder)",
+                 i2c: "MLX90393 × 2 (tactile), VL53L4CD (palm ToF)",
+                 ttl: "half-duplex UART 1 Mbit/s → STS3215 wrist roll (servo ID 1) + gripper (servo ID 2), 12 V from the D14 buck (≥ 6 A peak: two stalled STS3215 draw 5.4 A)"}}
