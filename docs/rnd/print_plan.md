@@ -2,29 +2,29 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 12.4 kg of PETG (≈ $248 at $20/kg); 834 h generic ≈ 292 h on the P2S (≈ 12.2 days of continuous printing).**
+**Total: 12.9 kg of PETG (≈ $259 at $20/kg); 870 h generic ≈ 305 h on the P2S (≈ 12.7 days of continuous printing).**
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
 | torso_shell | 1 | 1872 | 110.1 | 2 halves |
+| upper bone | 2 | 874 | 60.3 |  |
+| shoulder bracket | 2 | 853 | 56.4 | mirror for the right arm |
 | cartridge M can | 13 | 846 | 55.8 | 8 arm + 4 wheel + 1 lift |
-| shoulder bracket | 2 | 817 | 52.8 | mirror for the right arm |
 | small-pulley hub | 9 | 734 | 50.7 | pitch, roll, yaw, elbow ×2 + lift (KX74 hub + 20T/18T pulley + journals) |
-| upper bone | 2 | 698 | 46.4 |  |
+| roll link | 2 | 677 | 45.5 |  |
 | deck quarter | 4 | 577 | 40.0 |  |
 | head_shell | 1 | 653 | 38.5 |  |
-| clevis + yaw block | 2 | 456 | 34.5 |  |
+| clevis + yaw block | 2 | 504 | 37.0 |  |
 | KX74 collar | 13 | 461 | 33.0 | 9 joints + 4 wheels |
-| roll link | 2 | 438 | 31.1 |  |
 | cartridge M adapter | 13 | 409 | 31.0 | carries the KX74 male face |
-| skirt quarter | 4 | 451 | 30.0 |  |
+| skirt quarter | 4 | 451 | 29.6 |  |
+| pitch shaft | 2 | 329 | 22.5 | 60T pulley + balancer lever + female ferrule |
 | carriage | 1 | 383 | 22.4 |  |
 | wheel pod | 4 | 356 | 22.2 |  |
-| pitch shaft | 2 | 323 | 22.0 | 60T pulley + balancer lever + female ferrule |
 | elbow cassette plate | 4 | 184 | 19.1 | 2 per arm (A + B) |
 | roll shaft | 2 | 291 | 18.9 | 72T pulley |
-| forearm (ends) | 2 | 281 | 17.3 | elbow end, wrist can, CF socket |
-| elbow pulley hub | 2 | 233 | 16.0 |  |
+| forearm (ends) | 2 | 280 | 17.3 | elbow end, wrist can, CF socket |
+| elbow pulley hub | 2 | 251 | 17.1 |  |
 | ratchet strip | 1 | 84 | 14.6 | 4 segments |
 | palm | 2 | 190 | 12.6 |  |
 | KX74 hub | 4 | 167 | 11.3 | wheel hubs, print-in-place with the collar (the 9 joint hubs are integral to the small-pulley hubs) |
@@ -38,9 +38,9 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | KX44 hub | 4 | 72 | 5.1 | wrist roll ×2, head pan + tilt |
 | visor | 1 | 69 | 4.7 | dark PETG |
 | cartridge D can | 2 | 67 | 4.6 |  |
+| upper bone cap | 2 | 56 | 4.6 | screw-on bottom cap: the cassette goes in from below |
 | eccentric bushing | 18 | 57 | 4.3 | 2 per small-pulley hub: belt tension |
 | yoke | 1 | 66 | 4.3 |  |
-| upper bone cap | 2 | 49 | 3.7 | screw-on bottom cap: the cassette goes in from below |
 | KX56 collar | 2 | 52 | 3.7 |  |
 | KX56 hub | 2 | 53 | 3.6 | wrist pitch |
 | cartridge S horn adapter | 4 | 44 | 3.4 |  |

@@ -5,7 +5,7 @@
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 64 mm | ≥ 50 mm | ✅ |
-| R2 min joint margin at spec load (rated, planar check) | 1.90× | ≥ 1.5× | ✅ |
+| R2 min joint margin at spec load (rated, planar check) | 1.91× | ≥ 1.5× | ✅ |
 | R3 upper core (arms detached) | 7.6 kg | ≤ 10 kg | ✅ |
 | R3 each arm (detaches at the shoulder KX) | 3.9 kg | ≤ 10 kg | ✅ |
 | R3 assembled upper (core + arms, for reference) | 15.5 kg | info | — |
@@ -26,7 +26,7 @@
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.3× (4.9 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md) | 22 h | ≤ 4 h | ❌ |
-| R8 cost from the itemised BOM (BOM_v4.md) | $3,776 | ≤ $4,000 (D9; limit $5,000) | ✅ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $3,788 | ≤ $4,000 (D9; limit $5,000) | ✅ |
 | R13 printed pieces that fit the P2S (256 mm) | 62/62 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
@@ -36,8 +36,8 @@
 | R4 sim: 15 mm threshold on hard floor + carpet (45°, ≤ 0.15 m/s), peak margin | crossed, 1.7× | cross, ≥ 1.5× | ✅ |
 | R4 sim: carpet cruise wheel torque (RMS / rated) | 2.2 / 5 N·m | ≤ 70 % | ✅ |
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 68 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
-| FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.2× (8 cases, max disp 1.87 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
+| FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.2× (8 cases, max disp 1.91 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Thermal: hottest motor, non-stop task day (MC worst corner) | 55 °C | ≤ 100 °C | ✅ |
-| Load path: cartridge torque pins landing in structure | 11/21 | all | ❌ |
-| Clashes inside modules (> 50 mm³, fused interfaces excluded) | 8 | 0 | ❌ |
+| Load path: cartridge torque pins landing in structure | 13/21 | all | ❌ |
+| Clashes inside modules (> 50 mm³, fused interfaces excluded) | 4 | 0 | ❌ |
 | R11 looks | engineering render v0 (robot_v0.png); industrial-design pass pending | owner approval | — |

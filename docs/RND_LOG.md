@@ -802,3 +802,31 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - Decision D11: a bar-format LCD in the visor, run by its own ESP32-S3 node on CAN so it works if the Pi hangs. It shows the face and status and gives touch controls, including STOP.
 - The hard-wired e-stop remains the safety device.
 - Queue item 5: CAD, BOM, wiring, power, mass/sway re-check, CAN command set.
+
+## Loop 23 (2026-11-26): elbow housing rebuilt around the real collar; elbow torque arm
+
+- **Picked:** queue item 3 (elbow clashes) + the elbow entry of item 1.
+- **Root causes:**
+  - The housing's soft corners (r 34) left only ±41 mm inside near the −Y wall; the can is ±43.3.
+  - The KX74 collar isn't round: lugs reach r ≈ 52 and the twist tab r 57. It turns 0 → +35° (locked → unlocked).
+  - The +Y bearing boss stuck out 4 mm into the forearm disc.
+  - The forearm's CF socket and tube swing within 3 mm of the +Y wall.
+- **Fixes:**
+  - **Housing 98 → 110 mm wide, top +8 mm.** Corners r 14 on the −Y (cartridge) half, r 34 on the +Y (forearm) half, built as two shell halves.
+  - A rectangular **twist-tab window** in the +X wall, which is also where you reach in to lock the collar.
+  - +Y boss moved inside the wall.
+  - **Forearm link +6 mm** (FORE_Y 66 → 72; the elbow hub is 12 mm longer). The hand stays on the centre plane.
+- **Elbow torque arm:**
+  - The can is clocked 180° so the pin (and the cable window) point up.
+  - Two 14 × 6 mm rails fused on the housing top, beside the CF neck socket, carry a 7 mm fork plate open downward (≈ 6.7 MPa hand calc).
+  - A first 60 mm solid plate weighed 46 g; the rails are 27 g.
+- **Sweeps:**
+  - The collar is clear through its whole 0 → 35° twist.
+  - The forearm is clear over the full elbow range −150 … 0° (the old housing clashed across the whole range).
+- **Mass from CAD:** a full upper-bone roll-up gives 0.647 kg; `bone_mass_upper` 0.66 → 0.65. The yaw KX socket had been double-counted in an earlier estimate.
+- **FEA mesher fix:** zero-volume sliver tets are now dropped (they made the solve singular/NaN). Housing 4.4×, 1.91 mm.
+- **Results:**
+  - Torque pins 11/21 → **13/21**.
+  - Module clashes 8 → **4** (remaining: 3 small gripper-jaw overlaps + the 0.3 cm³ yaw-shaft sliver).
+  - Scorecard 33 ✅ / 3 ❌: workspace margin 1.50×, twin success 8/8, 62/62 printable, 0 cross-module clashes. BOM $3,788.
+- **Next:** wrist pitch / wrist roll / head pan + tilt torque reaction (slots where the pins now run into walls), then queue item 4 (docking).

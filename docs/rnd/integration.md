@@ -12,7 +12,7 @@ Clash and printability checks miss parts that *don't touch*. This finds load pat
 
 A pin counts as reacted when its tip is in clear space and structure sits on both tangential sides of it (a slot or fork).
 
-**Torque reaction: 11/21 cartridge pins land in structure.**
+**Torque reaction: 13/21 cartridge pins land in structure.**
 
 | Check | Part | Result | Detail |
 |---|---|---|---|
@@ -26,26 +26,22 @@ A pin counts as reacted when its tip is in clear space and structure sits on bot
 | torque pin | l_sh_can | ✅ | l_sh_bracket |
 | torque pin | l_roll_roll_can | ✅ | l_roll_roll_link |
 | torque pin | l_roll_yaw_can | ✅ | l_roll_yaw_block |
-| torque pin | l_arm_e_can | ❌ | pin tip in air |
+| torque pin | l_arm_e_can | ✅ | l_arm_upper_bone |
 | torque pin | l_arm_wrist_can | ❌ | pin tip runs into structure (no slot) |
 | torque pin | l_arm_hand_wr_sleeve | ❌ | pin tip in air |
 | torque pin | l_arm_hand_grip_servo_sleeve | ❌ | no pin seat found |
 | torque pin | r_sh_can | ✅ | r_sh_bracket |
 | torque pin | r_roll_roll_can | ✅ | r_roll_roll_link |
 | torque pin | r_roll_yaw_can | ✅ | r_roll_yaw_block |
-| torque pin | r_arm_e_can | ❌ | pin tip in air |
+| torque pin | r_arm_e_can | ✅ | r_arm_upper_bone |
 | torque pin | r_arm_wrist_can | ❌ | pin tip runs into structure (no slot) |
 | torque pin | r_arm_hand_wr_sleeve | ❌ | pin tip in air |
 | torque pin | r_arm_hand_grip_servo_sleeve | ❌ | no pin seat found |
 
-## Clashes inside modules: 8
+## Clashes inside modules: 4
 
 | Module | Part A | Part B | Overlap (mm³) |
 |---|---|---|---|
-| arm | upper_bone | e_can | 377 |
-| arm | upper_bone | e_motor | 99 |
-| arm | upper_bone | e_collar | 1833 |
-| arm | upper_bone | forearm | 2686 |
 | arm | hand_grip_base | hand_jaw_moving | 91 |
 | arm | hand_grip_servo_sleeve | hand_jaw_moving | 327 |
 | arm | hand_finray_fixed | hand_wrist_cam | 63 |

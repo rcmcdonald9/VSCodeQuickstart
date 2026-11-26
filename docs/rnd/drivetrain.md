@@ -13,10 +13,10 @@ Robot + 2 kg payload = **24.9 kg**; 4 × 6" omni wheels (r = 76 mm) direct-drive
 
 | Step | Push needed per wheel | Torque if the wheel climbs head-on | Torque at 45° heading | vs 5 N·m rated |
 |---|---|---|---|---|
-| 5 mm | 23 N | 1.77 N·m | 2.51 N·m | ✅ |
-| 10 mm | 35 N | 2.65 N·m | 3.75 N·m | ✅ |
-| 15 mm | 45 N | 3.45 N·m | 4.88 N·m | ✅ |
-| 20 mm | 56 N | 4.26 N·m | 6.02 N·m | ⚠️ peak |
+| 5 mm | 23 N | 1.77 N·m | 2.50 N·m | ✅ |
+| 10 mm | 35 N | 2.65 N·m | 3.74 N·m | ✅ |
+| 15 mm | 45 N | 3.45 N·m | 4.87 N·m | ✅ |
+| 20 mm | 56 N | 4.25 N·m | 6.02 N·m | ⚠️ peak |
 
 **Catch:** a wheel rolling *sideways* meets the step with its small rollers (~25 mm, ESTIMATE). It can't climb more than a few mm on its own; the other wheels have to drag it over.
 **Rule for the planner:** cross thresholds at a **45° heading**, so every wheel uses its full diameter. That needs ≤ 4.9 N·m per wheel for 15 mm, within rating. **Must be bench-tested** (Phase-1 base test); fallback is 8" dual-row omni wheels (bigger rollers).

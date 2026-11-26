@@ -11,7 +11,7 @@ Each case lists its loads (worst static ×1.5 dynamic, or actuator peak for belt
 | Case | Elements | Von Mises (99.5th pct) | Max displacement | Margin vs 12 MPa |
 |---|---|---|---|---|
 | KX74 collar (locked): teeth at 1.5 × preload (240 N) | 50,694 | 1.4 MPa (max 9.4) | 0.04 mm | 8.7× ✅ |
-| Upper bone / elbow housing: forearm load ×1.5 on the elbow bosses | 49,990 | 2.6 MPa (max 6.8) | 1.28 mm | 4.6× ✅ |
+| Upper bone / elbow housing: forearm load ×1.5 on the elbow bosses | 64,647 | 2.7 MPa (max 17.5) | 1.91 mm | 4.4× ✅ |
 | Wheel pod: wheel load 168 N (×2 bumps) + 0.5 g lateral | 72,187 | 0.2 MPa (max 0.4) | 0.03 mm | 53.2× ✅ |
 | Shoulder pitch bracket: arm moment 19 N·m + belt peak 691 N | 83,136 | 2.0 MPa (max 4.1) | 0.33 mm | 5.9× ✅ |
 | Elbow belt cassette plate: 60 % of the belt peak (415 N) | 19,628 | 1.1 MPa (max 1.4) | 0.03 mm | 11.3× ✅ |

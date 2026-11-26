@@ -2,13 +2,13 @@
 
 6000 random right-arm poses across the full joint ranges (MuJoCo twin, static). A pitch-only balancer τ = K·sin(pitch) (zero-free-length spring + cable: Anglepoise / Herder gravity balancing) is fitted to the arm's own weight.
 
-**Design K = 4.50 N·m** (spring torque at the horizontal arm; `params.arm.spring_k_nm`). A least-squares fit to the bare arm gives 4.27 N·m; a K sweep showed 4.0 minimises the 95th-percentile motor torque for a 0.5 kg typical payload (0.5 kg: 5.2 N·m; 1 kg: 7.3 N·m). The spring preload is screw-adjustable (Anglepoise precedent), so K can be re-tuned per task.
+**Design K = 4.50 N·m** (spring torque at the horizontal arm; `params.arm.spring_k_nm`). A least-squares fit to the bare arm gives 4.26 N·m; a K sweep showed 4.0 minimises the 95th-percentile motor torque for a 0.5 kg typical payload (0.5 kg: 5.2 N·m; 1 kg: 7.3 N·m). The spring preload is screw-adjustable (Anglepoise precedent), so K can be re-tuned per task.
 
 | Motor torque needed at the pitch joint | 95th percentile | Worst pose |
 |---|---|---|
 | No spring, 1 kg payload | 12.0 N·m | 16.2 N·m |
 | Spring, arm only | 4.3 N·m | 7.9 N·m |
-| **Spring, 1 kg payload** | **8.6 N·m** | **11.8 N·m** |
+| **Spring, 1 kg payload** | **8.6 N·m** | **11.7 N·m** |
 | Joint capacity (GIM6010-8 × 3.0 belt), rated / peak | 14.2 | 31.3 |
 
 The spring cancels **40%** of the arm's self-weight torque at the 95th percentile (arm_sizing assumed 85 % everywhere).
@@ -20,7 +20,7 @@ The planar check in [arm sizing](arm_sizing.md) only looks at a straight horizon
 
 | Joint | Actuator × ratio | Need: 95th pct / worst (N·m) | Rated / peak | Margin rated/p95 | Margin peak/worst |
 |---|---|---|---|---|---|
-| shoulder_pitch | GIM6010-8 × 3 | 8.5 / 11.6 | 14.2 / 31.3 | 1.68 | 2.69 ✅ |
+| shoulder_pitch | GIM6010-8 × 3 | 8.5 / 11.6 | 14.2 / 31.3 | 1.68 | 2.70 ✅ |
 | shoulder_roll | GIM6010-8 × 4 | 12.6 / 16.3 | 19.0 / 41.8 | 1.50 | 2.56 ✅ |
 | upper_yaw | GIM6010-8 × 2 | 5.3 / 7.0 | 9.5 / 20.9 | 1.80 | 2.99 ✅ |
 | elbow | GIM6010-8 × 2 | 6.2 / 7.0 | 9.5 / 20.9 | 1.54 | 2.99 ✅ |

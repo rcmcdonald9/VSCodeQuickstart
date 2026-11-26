@@ -13,8 +13,8 @@ Moving mass 12.4 kg + 2 kg payload; travel 0.35–1.05 m; accel 1.0 m/s².
 
 | Check | Value |
 |---|---|
-| Force (moving + payload, with accel) | 156 N |
-| Motor torque on a 20T HTD 5M pulley | 2.48 N·m → **2.02×** rated margin |
+| Force (moving + payload, with accel) | 155 N |
+| Motor torque on a 20T HTD 5M pulley | 2.47 N·m → **2.02×** rated margin |
 | Speed at rated rpm / full travel | 0.20 m/s / 3.5 s (faster when lightly loaded, up to ~420 rpm) |
 | Belt (15 mm HTD 5M, open-ended along the spine) | safety 6.3× |
 | Pawl catch after a power loss mid-move (×3 shock) | ratchet tooth shear 9.4 MPa in PETG (limit ~30) |

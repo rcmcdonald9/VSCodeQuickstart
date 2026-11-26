@@ -10,11 +10,11 @@ Drive to a can on the floor → pick it top-down → drive to a table → place 
 | roll_r | 1.5 / 41.8 (4%) | 0.9 / 19.0 (5%) |
 | yaw_r | 0.3 / 20.9 (1%) | 0.1 / 9.5 (2%) |
 | elbow_r | 5.9 / 20.9 (28%) | 2.6 / 9.5 (27%) |
-| wpitch_r | 1.0 / 7.0 (15%) | 0.3 / 3.0 (9%) |
+| wpitch_r | 1.0 / 7.0 (15%) | 0.3 / 3.0 (8%) |
 | wroll_r | 0.0 / 2.9 (1%) | 0.0 / 1.0 (0%) |
-| lift | 166.2 / 691.8 (24%) | 118.4 / 314.5 (38%) |
+| lift | 166.0 / 691.8 (24%) | 118.2 / 314.5 (38%) |
 | base_x | 28.1 / 288.7 (10%) | 6.5 / 131.2 (5%) |
-| base_y | 0.9 / 288.7 (0%) | 0.1 / 131.2 (0%) |
+| base_y | 1.0 / 288.7 (0%) | 0.1 / 131.2 (0%) |
 | fing_a_r | 50.0 / 150.0 (33%) | 30.5 / 50.0 (61%) |
 
 **Dynamic tip margin (cart-table ZMP to the wheel polygon edge): min 75 mm** during "back away" at t = 19.5 s.

@@ -86,17 +86,14 @@ Each scheduled run (and any interactive session) does one **loop**:
 - see [BUILD_v4.md](BUILD_v4.md)
 
 Next (state after the confidence campaign; the hourly loop continues from here). **Items 1–3 come first: they are real design gaps found by the new checks.**
-1. **Torque-reaction path for every cartridge** ([integration.md](rnd/integration.md): **11/21 after loop 22**; wheels: standard `cm.torque_hanger`; lift, shoulder pitch, roll, yaw: forks integral to the mount / bracket / roll link / clevis). Next: elbow ×2, wrist pitch ×2, wrist roll ×2, head pan + tilt. Remaining from the original list: roll ×2, yaw ×2, elbow ×2. The wrist-pitch and head-tilt pins currently *run into* a wall (no slot): cut a radial slot there. Each can's Ø6 rear torque pin needs a radial slot in structure. Proposed standard part:
+1. **Torque-reaction path for every cartridge** ([integration.md](rnd/integration.md): **13/21 after loop 23**; wheels: standard `cm.torque_hanger`; lift, shoulder pitch, roll, yaw: forks integral to the mount / bracket / roll link / clevis). Next: wrist pitch ×2, wrist roll ×2, head pan + tilt. Remaining from the original list: roll ×2, yaw ×2, elbow ×2. The wrist-pitch and head-tilt pins currently *run into* a wall (no slot): cut a radial slot there. Each can's Ø6 rear torque pin needs a radial slot in structure. Proposed standard part:
     - an axial key rib along every can, engaging a radial notch in a printed **bay ring** on the nearest wall/plate
     - or, where the can sits in free space, a **torque strap** from the nearest wall to the can rear
     - stages: pitch ×2, roll ×2, yaw ×2, elbow ×2, wrist pitch ×2, wrist roll ×2, wheels ×4, lift, head pan
     - FEA each slot at peak motor torque (GIM 11 N·m at r 30 → 367 N)
     - make `rnd.integration` pass
 2. ~~Shoulder pitch walls re-derived from the hub geometry~~ (done in loop 21).
-3. **Elbow: collar vs housing top/corners (1.8 cm³) and forearm hub disc vs the +Y elbow boss (2.7 cm³, rotating).**
-    - Collar Ø98 at the cartridge bay: housing too small. Raise HOUSING z1, or reduce the corner radius on the −Y side.
-    - Forearm: move FORE_Y out ~2 mm, or recess the boss.
-    - Then design the elbow bay ring for item 1.
+3. ~~Elbow clashes (collar, can, forearm) + elbow torque arm~~ (done in loop 23).
 4. **Self-docking charger (owner request, 2026-11-26).** Goal: the robot charges itself whenever idle, so the 3.6 h runtime rarely matters.
     - **Contacts:** two spring-loaded contacts at the back of the base skirt, plus a third pin (ID/handshake). The dock's terminals stay dead until the robot identifies itself, so no bare live contacts at floor level. Reverse-polarity protection and a fuse on the robot side.
     - **Dock (printed):** a funnel/V-guide that self-centres the base within ±30 mm and ±10°, a weighted or screw-down foot, and a low profile so it doesn't block the lidar.

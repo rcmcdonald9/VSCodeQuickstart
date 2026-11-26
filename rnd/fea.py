@@ -42,6 +42,10 @@ def mesh_part(part, h=3.0):
         gmsh.finalize()
         m = meshio.read(str(msh))
     tets = np.vstack([c.data for c in m.cells if c.type == "tetra"])
+    P = m.points
+    vol = np.abs(np.einsum("ij,ij->i", P[tets[:, 1]] - P[tets[:, 0]],
+                           np.cross(P[tets[:, 2]] - P[tets[:, 0]], P[tets[:, 3]] - P[tets[:, 0]]))) / 6
+    tets = tets[vol > 1e-6 * np.median(vol)]                  # drop zero-volume slivers (they make the stiffness matrix singular)
     used = np.unique(tets)
     remap = -np.ones(len(m.points), int)
     remap[used] = np.arange(len(used))
@@ -83,6 +87,9 @@ def solve(mesh, fixed, loads):
     for k in range(t4.shape[1]):
         X = p[:, t4[:, k]]
         Jm = np.vstack([X[:, 1] - X[:, 0], X[:, 2] - X[:, 0], X[:, 3] - X[:, 0]]).T
+        if abs(np.linalg.det(Jm)) < 1e-9:                     # degenerate (sliver) tet from the mesher: no stress contribution
+            vm[k] = 0.0
+            continue
         Ji = np.linalg.inv(Jm)
         G = np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]]) @ Ji           # ∇N (4×3)
         Ue = np.array([[ux[c][t4[i, k]] for c in range(3)] for i in range(4)])     # 4×3

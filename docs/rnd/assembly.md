@@ -15,24 +15,24 @@
 | ratchet strip [4] | 6 × 14 × 206 | 16 | ✅ |
 | roll link | 107 × 140 × 192 | 268 | ✅ |
 | shoulder bracket | 150 × 179 × 181 | 354 | ✅ |
+| upper bone [1] | 110 × 140 × 178 | 115 | ✅ |
 | clevis + yaw block | 92 × 119 × 176 | 269 | ✅ |
-| upper bone [1] | 98 × 116 × 170 | 82 | ✅ |
 | carriage | 88 × 101 × 160 | 557 | ✅ |
 | e_tray | 6 × 148 × 148 | 54 | ✅ |
 | yoke | 60 × 148 × 148 | 105 | ✅ |
 | elbow cassette plate | 7 × 79 × 142 | 27 | ✅ |
 | visor | 66 × 141 × 141 | 77 | ✅ |
 | wheel pod | 26 × 80 × 124 | 114 | ✅ |
+| elbow pulley hub | 67 × 122 × 122 | 103 | ✅ |
 | roll shaft | 68 × 112 × 113 | 173 | ✅ |
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
-| elbow pulley hub | 67 × 113 × 113 | 97 | ✅ |
+| upper bone cap [1] | 10 × 102 × 109 | 13 | ✅ |
 | KX74 collar | 19 × 98 × 103 | 35 | ✅ |
 | mast coupling | 40 × 100 × 100 | 253 | ✅ |
-| upper bone cap [1] | 10 × 87 × 97 | 10 | ✅ |
+| upper bone cap [2] | 5 × 93 × 95 | 3 | ✅ |
 | forearm (ends) [1] | 53 × 65 × 95 | 38 | ✅ |
 | pitch shaft | 66 × 94 × 94 | 185 | ✅ |
 | pulley 60T | 16 × 94 × 94 | 107 | ✅ |
-| upper bone cap [2] | 5 × 83 × 93 | 2 | ✅ |
 | palm | 40 × 75 × 92 | 150 | ✅ |
 | gripper grip_base | 10 × 91 × 91 | 44 | ✅ |
 | ferrule (arm side) | 18 × 91 × 91 | 67 | ✅ |
@@ -79,6 +79,6 @@
 |---|---|
 | base | 6.31 |
 | upper core | 7.58 |
-| arm (each) | 3.94 |
+| arm (each) | 3.93 |
 | battery | 1.10 |
-| total robot | 22.88 |
+| total robot | 22.86 |

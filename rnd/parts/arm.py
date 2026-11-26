@@ -22,9 +22,9 @@ from ..params import BASELINE as _D
 ELBOW_Z = (_D.arm.l_upper - _D.arm.yaw_drop) * 1000   # yaw interface → elbow axis (loop 10: 230 → 200 mm)
 FORE_L = 280.0              # elbow axis → wrist axis (params: l_fore)
 BELT_C = 70.0               # elbow belt centre distance (rnd/belts.py)
-HOUSING = dict(x=98.0, y=108.0, z0=-ELBOW_Z - 42.0, z1=-ELBOW_Z + 70.0 + 48.0)
+HOUSING = dict(x=110.0, y=108.0, z0=-ELBOW_Z - 42.0, z1=-ELBOW_Z + 70.0 + 56.0, rv=34.0, rv_minus=14.0)   # loop 23: 98 → 110 wide, +8 top (the elbow KX collar lugs need r 52.5 clear through its 35° twist); corner r 14 on the −Y half, 34 on the +Y (forearm) half
 J4310 = dict(od=57.0, h=46.0)   # DM-J4310 (actuators.yaml)
-FORE_Y = HOUSING["y"] / 2 + 12.0  # forearm link centre plane (+Y side link)
+FORE_Y = HOUSING["y"] / 2 + 18.0  # forearm link centre plane (+Y side link); loop 23: +6 so the CF socket/tube clear the housing over the full elbow range
 # elbow belt cassette (housing frame, y spans of the two plates): set by the small-pulley hub's journals, whose position
 # is fixed by the cartridge stack (hub face at y = -20). Belt plane: small pulley y 1.4 … 17.4.
 BELT_Y = 9.4
@@ -37,6 +37,23 @@ WRIST_Y0, WRIST_Y1 = 43.0, 96.0   # wrist can span (holds the DM-J4310 cartridge
 def _rbox(x, y, z, r, align=(Align.CENTER, Align.CENTER, Align.CENTER)):
     b = Box(x, y, z, align=align)
     return fillet(b.edges().filter_by(Axis.Z), min(r, x / 2 - 0.1, y / 2 - 0.1))
+
+
+def _housing_solid(inset=0.0):
+    """Loop 23: housing envelope with big soft corners on the +Y half (the forearm's CF tube and socket swing within
+    3 mm of it) and tighter corners on the −Y half (room for the KX collar Ø98 and the cartridge can)."""
+    from .soft import soft_box
+    h = HOUSING
+    hz = h["z1"] - h["z0"]
+    c = Pos(0, 0, (h["z0"] + h["z1"]) / 2)
+    i = inset
+    plus = c * soft_box(h["x"] - 2 * i, h["y"] - 2 * i, hz - 2 * i, max(h["rv"] - i, 1), max(26 - i, 0.6))
+    minus = c * soft_box(h["x"] - 2 * i, h["y"] - 2 * i, hz - 2 * i, max(h["rv_minus"] - i, 1), max(26 - i, 0.6))
+    return (plus & Pos(0, 100, 0) * Box(400, 200, 600)) + (minus & Pos(0, -100, 0) * Box(400, 200, 600))
+
+
+def housing_shell():
+    return _housing_solid(0.0) - _housing_solid(WALL)
 
 
 def _hollow_rbox(x, y, z, r, wall=WALL):
@@ -54,11 +71,15 @@ def upper_bone() -> Part:
     for z in (-6 - 20, h["z1"] - 2):
         p += Pos(0, 0, z) * (Cylinder(23, 22, align=MIN) - Cylinder(20.1, 22, align=MIN))
     hz = h["z1"] - h["z0"]
-    p += Pos(0, 0, (h["z0"] + h["z1"]) / 2) * soft_shell(h["x"], h["y"], hz, 34, 26, WALL)     # looks pass: soft on every edge
+    p += housing_shell()                                                                 # looks pass: soft on every edge (loop 23: two corner radii)
     # bearing bosses through the ±Y walls: elbow axis (61808, OD 52). The small-pulley hub runs in the elbow belt
     # cassette (confidence campaign: FEA showed the shell can't carry belt tension; the journals never reached the walls)
-    for y in (-h["y"] / 2, h["y"] / 2):
-        p += Pos(0, y, -ELBOW_Z) * Rot(90, 0, 0) * _ring(52.0 + 10, 52.0, 8)
+    p += Pos(0, -h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * _ring(52.0 + 10, 52.0, 8)
+    p += Pos(0, h["y"] / 2 - 3.5, -ELBOW_Z) * Rot(90, 0, 0) * _ring(52.0 + 10, 52.0, 7)   # loop 23: +Y boss inside the wall (the forearm disc runs 1 mm outside it)
+    p += elbow_torque_arm()
+    # loop 23: window for the elbow KX collar's twist tab (its ±36° sweep pokes through the wall; also the access to lock it)
+    #    tab at r ≤ 57 on +X, sweeping 0 → +35° (locked → unlocked) about the cartridge axis: one clean rectangular window in the +X wall
+    p -= Pos(49.0, -20.5, -ELBOW_Z + BELT_C) * Box(24, 23, 94)
     # anti-rotation slot block for the cassette pin (slot radial to the elbow axis, so belt tension never reaches the shell)
     p += Pos(0, (CAS_B[1] + 10 + h["y"] / 2 - WALL) / 2, -92) * (Box(16, h["y"] / 2 - WALL - CAS_B[1] - 10, 16)
                                                                 - Box(5.4, 40, 12))
@@ -71,12 +92,34 @@ def upper_bone() -> Part:
     return p - Pos(0, 0, CAP_Z) * Box(200, 200, 100, align=(Align.CENTER, Align.CENTER, Align.MAX))
 
 
+def elbow_torque_arm() -> Part:
+    """Loop 23: torque reaction for the elbow cartridge. The can is clocked 180° (assembly) so its pin points up:
+    pin at (x 0, z = zS + 30) behind the can rear (y = -20 - zc). Two 14 × 6 mm rails, fused on the housing top
+    beside the CF neck socket, run over the can to a 7 mm fork plate. Its slot is open downward (toward the cartridge
+    axis). In-plane bending ≈ 6.7 MPa at 367 N (hand calc)."""
+    h = HOUSING
+    tp = cm.TORQUE_PIN
+    zc = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]
+    zS = -ELBOW_Z + BELT_C
+    y_rear, zp = -20 - zc, zS + tp["r"]
+    z_top = h["z1"]
+    root = -26.0                                                     # clear of the CF neck socket (r 23)
+    a = None
+    for x in (-23.0, 23.0):                                                                     # two 14 × 6 rails (≈ 6.7 MPa at 367 N)
+        r = Pos(x, (root + y_rear - 9) / 2, z_top + 3) * Box(14, root - (y_rear - 9), 6)
+        r += Pos(x, root - 7, z_top - 4) * Box(14, 14, 14)                                      # root pad fused through the top skin
+        a = r if a is None else a + r
+    f = Pos(0, y_rear - 5.5, (zp - 9 + z_top + 6) / 2) * Box(48, 7, z_top + 6 - (zp - 9))
+    f -= Pos(0, y_rear - 5.5, zp - 9 + 7) * Box(tp["d"] + 0.4, 8, 14 + 0.01)       # open bottom, closed 5 mm above the pin
+    return a + f - _housing_solid(WALL) - Pos(0, -h["y"] / 2, zS) * Rot(90, 0, 0) * Cylinder(cm.MOTOR["od"] / 2 + 4, 30)   # keep the bay hole clear
+
+
 def bone_cap() -> Part:
     """Screw-on bottom cap of the elbow housing (4 × M3 into heat-set inserts in the corners, ESTIMATE) with a 5 mm
     locating spigot. It closes the opening the elbow belt cassette is inserted through."""
     h = HOUSING
     hz = h["z1"] - h["z0"]
-    full = Pos(0, 0, (h["z0"] + h["z1"]) / 2) * soft_shell(h["x"], h["y"], hz, 34, 26, WALL)
+    full = housing_shell()
     cap = full & Pos(0, 0, CAP_Z) * Box(200, 200, 100, align=(Align.CENTER, Align.CENTER, Align.MAX))
     lx, ly = h["x"] - 2 * WALL - 12.6, h["y"] - 2 * WALL - 12.6                           # clears the soft bottom edge (r 26)
     lip = _rbox(lx, ly, 5, 26.5) - _rbox(lx - 3.2, ly - 3.2, 5, 24.9)                     # open 1.6 mm ring
@@ -149,7 +192,7 @@ def cf_fore() -> Part:
 def elbow_pulley_hub() -> Part:
     """40T elbow pulley + Ø40 shaft (runs in 2 × 61808) + bolt flange for the forearm."""
     from .belt_stage import pulley
-    p = Pos(0, 0, 0) * Rot(90, 0, 0) * Cylinder(20, HOUSING["y"] + 12)
+    p = Pos(0, 0, 0) * Rot(90, 0, 0) * Cylinder(20, HOUSING["y"] + 24)        # loop 23: +12 (forearm link moved out 6 mm)
     p += Pos(0, BELT_Y, 0) * Rot(-90, 0, 0) * Pos(0, 0, -8) * pulley(40, 16)      # on the small pulley's belt plane
     return p - Rot(90, 0, 0) * Cylinder(15, 300)              # hollow shaft (cable pass-through to the forearm)
 
@@ -188,8 +231,9 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     zc = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]
     h = small_hub()
     zp = h.bounding_box().min.Z + 7 + 1 + 1.2
-    out += [("e_can", st * Pos(0, 0, zc) * Rot(180, 0, 0) * cm.can(), "white"),
-            ("e_motor", st * Pos(0, 0, zc) * Rot(180, 0, 0) * cm.motor_dummy(), "dark"),
+    clk = Rot(0, 0, 180)                                     # loop 23: torque pin and cable window point up (elbow_torque_arm)
+    out += [("e_can", st * Pos(0, 0, zc) * Rot(180, 0, 0) * clk * cm.can(), "white"),
+            ("e_motor", st * Pos(0, 0, zc) * Rot(180, 0, 0) * clk * cm.motor_dummy(), "dark"),
             ("e_collar", st * collar(KX74), "orange"), ("e_hub", st * h, "dark"),
             ("e_belt", st * Pos(0, 0, zp + 0.5) * belt_loop(31.8, 63.7, BELT_C), "dark"),
             ("e_bigpulley", st * Pos(BELT_C, 0, zp - 1.2) * pulley(40, 16, bore=30), "orange")]
