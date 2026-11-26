@@ -874,3 +874,18 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - **`rnd/parts/dock.py`:** 2 wings + contact tower (2 leaf contacts at 60 / 100 mm, ID pogo pin at 40 mm, AprilTag on top). All fit the P2S.
 - **BOM:** +$59 (charger, dock electronics, contacts). Dock walls cut 20 → 10 mm (it is screwed down) to limit print time.
 - **Next:** robot-side pads and wiring on the skirt at 45°, contact FEA, wiring-plan entry.
+
+## Loop 27 (2026-11-26): docking charger, robot side
+
+- **Skirt seams** moved from 45°/135°/… into the wheel windows (0°/90°/…). This frees the 45° azimuth for the contacts and hides the seams. The quarters still fit the P2S (124 × 250 × 250).
+- **`base.dock_pad_carrier`:** a 6 mm carrier inside the skirt at 45° with flush pockets.
+  - Brass pads: + at 60 mm, − at 100 mm (60 × 12), ID at 40 mm (40 × 10). Ø4 wire holes.
+  - Heights match `rnd/parts/dock.py`; azimuth matches `dock_sim.PAD_AZ`.
+- **Wiring plan (`rnd/electrical.py`):**
+  - Charge path: dock pads → ideal-diode reverse-polarity guard → 7.5 A fuse → BMS charge port; charger 25.2 V CC/CV, 5 A.
+  - Handshake: the dock stays off until the base sensor node answers on the ID pad.
+  - **The robot commands the charge stop at 4.15 V/cell.** It may run while charging (idle 1.4 A of the 5 A), so a stock charger might never terminate.
+  - Open item: confirm a common-port BMS before buying.
+- **Contact loads (hand calc):** leaf springs ~5 N on the pads; the 60 N push on the 10 mm dock wings gives ≈ 0.7 MPa. No FEA needed.
+- **Results:** scorecard 35 ✅ / 2 ❌, unchanged. 64/64 printable, 0 cross-module clashes, BOM $3,866.
+- **Next:** queue item 5, the head screen (D11).

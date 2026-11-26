@@ -10,7 +10,13 @@
                                                               ├─ F 10 A → lift cartridge + pawl solenoid (CAN bus A)
                                                               ├─ F 15 A → left arm via detach plug (CAN bus B, TTL bus 1)
                                                               └─ F 15 A → right arm via detach plug (CAN bus C, TTL bus 2)
+DOCK PADS (skirt, 45°) ─ ideal-diode reverse-polarity guard ─ F 7.5 A ─ BMS charge port   (charger 25.2 V CC/CV, 5 A)
 ```
+
+**Docking charge path (loop 27):**
+- The dock's output is off until the robot answers on the ID pad: the base sensor node pulls a coded load, the dock's ESP32-C3 checks it, then closes its MOSFET.
+- The robot may run while it charges (idle ≈ 33 W ≈ 1.4 A of the 5 A), so a stock charger could never see current fall to its end-of-charge level. The robot therefore tells the dock to stop at 4.15 V/cell over the ID line (from BMS telemetry).
+- **Check before buying** whether the 6S BMS is common-port (charge and load on one port) or split-port; the wiring above assumes common-port (ESTIMATE).
 
 | Branch | Worst sustained bus current (A), for fuse/wire sizing | Peak (A) | Fuse (A, slow-blow) |
 |---|---|---|---|
@@ -48,6 +54,7 @@ Typical draw is far lower: the duty-cycle power budget averages **53 W ≈ 2.4 A
 | Arm detach plug (blind-mate, floats in a printed mount beside the V-band) | XT30 (24 V, 15 A branch) | 6-pin 2 mm pogo block: CAN H/L, 12 V, GND, TTL data, ID strap |
 | Upper ↔ base coupling (under the cam lever) | XT60 | 6-pin pogo: CAN A H/L, e-stop loop ×2, 5 V sense, GND |
 | Battery slide-out | XT60 (keyed) | balance lead to the charger only |
+| Dock contacts (skirt at 45°, flush brass pads) | + at 60 mm, − at 100 mm, 60 × 12 mm pads, 5 A | ID pad at 40 mm → base sensor node (handshake, stop-charge command) |
 | Every joint cartridge | 2-pin JST-VH (24 V) or GH (12 V) | 4-pin JST-GH CAN/TTL daisy chain |
 
 Cables run through the hollow shafts (Ø24–30 bores) and over service loops. Every joint stays within ±200°, so no slip rings are needed.

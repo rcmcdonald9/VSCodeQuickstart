@@ -105,10 +105,33 @@ def rim() -> Part:
 
 def skirt_quarter(q) -> Part:
     s = Pos(0, 0, Z0) * (Cylinder(R_SHELL, Z1 - Z0 - DECK_T, align=MIN) - Cylinder(R_SHELL - 2, Z1 - Z0 - DECK_T, align=MIN))
-    s &= Rot(0, 0, 90 * q + 45) * Pos(R_SHELL / 2 + 1, R_SHELL / 2 + 1, Z0) * Box(R_SHELL + 2, R_SHELL + 2, 200, align=MIN)
+    # loop 27: seams moved into the wheel windows (quarter q spans 90q … 90q + 90°), freeing the 45° azimuth for the dock pads
+    s &= Rot(0, 0, 90 * q) * Pos(R_SHELL / 2 + 1, R_SHELL / 2 + 1, Z0) * Box(R_SHELL + 2, R_SHELL + 2, 200, align=MIN)
     for k in range(4):                                                               # wheel windows
         s -= Rot(0, 0, 90 * k) * Pos(R_SHELL, 0, Z0 - 1) * Box(40, 140, 2 * (Z_AX + 62 - Z0) + 2)
+    if q == 0:
+        s = s + dock_pad_carrier()
+        for z, name in DOCK_PADS:
+            w, h = (62, 13) if name != "ID" else (42, 11)
+            s -= Rot(0, 0, DOCK_PAD_AZ) * Pos(R_SHELL - 0.5, 0, z) * Box(3, w, h)  # pads sit flush in the skirt
     return s
+
+
+DOCK_PAD_AZ = 45.0              # azimuth of the docking contacts (rnd/dock_sim.py PAD_AZ), between the wheels at 0° and 90°
+DOCK_PADS = ((60.0, "+"), (100.0, "−"), (40.0, "ID"))   # pad centre heights above the floor (match rnd/parts/dock.py)
+
+
+def dock_pad_carrier() -> Part:
+    """Loop 27: carrier inside the skirt at 45° for the docking contacts. Two brass pads 60 × 12 mm (+ at 60 mm, − at
+    100 mm) and a 40 × 10 mm ID pad (40 mm) sit in 1.5 mm pockets, flush with the skirt; wires leave through Ø4 holes.
+    Contact force is only the dock's leaf springs (~5 N each), so the 6 mm carrier is ample."""
+    c = Pos(R_SHELL - 2 - 3, 0, 28) * Box(6, 84, 90, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    c &= Cylinder(R_SHELL - 1.0, 400)                                                # follow the skirt's inner curvature
+    for z, name in DOCK_PADS:
+        w, h = (62, 13) if name != "ID" else (42, 11)
+        c -= Pos(R_SHELL - 1.5, 0, z) * Box(4, w, h)                               # pad pocket through the skirt wall
+        c -= Pos(R_SHELL - 5, 0, z) * Rot(0, 90, 0) * Cylinder(2, 12)              # wire hole
+    return Rot(0, 0, DOCK_PAD_AZ) * c
 
 
 def battery():

@@ -4,7 +4,7 @@
 
 | Piece | Best-fit size (mm) | Volume (cm³) | Fits |
 |---|---|---|---|
-| skirt quarter | 124 × 250 × 250 | 65 | ✅ |
+| skirt quarter | 124 × 250 × 250 | 96 | ✅ |
 | deck quarter | 6 × 246 × 246 | 249 | ✅ |
 | head_shell | 120 × 240 × 240 | 234 | ✅ |
 | torso_shell [1] | 195 × 210 × 230 | 314 | ✅ |
@@ -13,7 +13,7 @@
 | ratchet strip [2] | 6 × 14 × 206 | 16 | ✅ |
 | ratchet strip [3] | 6 × 14 × 206 | 16 | ✅ |
 | ratchet strip [4] | 6 × 14 × 206 | 16 | ✅ |
-| dock_wing_l | 160 × 199 × 204 | 806 | ✅ |
+| dock_wing_l | 160 × 191 × 198 | 406 | ✅ |
 | roll link | 107 × 140 × 192 | 268 | ✅ |
 | shoulder bracket | 150 × 179 × 181 | 354 | ✅ |
 | upper bone [1] | 110 × 140 × 178 | 115 | ✅ |
