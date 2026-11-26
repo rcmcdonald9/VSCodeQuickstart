@@ -34,7 +34,9 @@ JOINTS = [
     # pitch: bundle from the torso e-tray through the pitch shaft bore (Ø30) to the detach plug on the ferrule
     ("shoulder pitch", 260, 0.20, (22, 60), "inside the torso, around the pitch shaft between the bracket and the torso wall"),
     ("shoulder roll", 115, 0.10, (22, 50), "roll link, around the roll shaft between the walls and the clevis arms"),
-    ("upper-arm yaw", 300, 0.20, (0, 0), "NO ROOM today: the belt runs between the yaw plates, and the plates sit 2 mm from the roll pulley and the arm flange"),
+    # loop 33: yaw limited to ±70° (reach 99 % and bimanual 4/4 unchanged; ±60° loses 3 of 4 bimanual tasks). The bundle
+    # twists in torsion between a clamp at the roll-link top and one on the elbow-housing floor: free length ≈ 0.24 m
+    ("upper-arm yaw", 140, 0.24, (0, 0), "torsion: clamp at the roll-link top and on the elbow-housing floor (yaw shaft + neck + housing run); no spiral (no room: belt between the yaw plates)"),
     ("elbow", 150, 0.13, (22, 50), "elbow housing, +Y side, between cassette plate B (y 26) and the +Y wall (y 53)"),
     ("wrist pitch", 220, 0.06, (16, 30), "wrist can end, around the DM-J4310 (Ø57 can: little room)"),
     ("wrist roll", 360, 0.03, (14, 24), "palm, around the STS3215 wrist-roll servo"),

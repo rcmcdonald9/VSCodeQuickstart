@@ -12,9 +12,9 @@ calibration) and the unmeasured bending.
 
 | Joint | Without joint encoders: error (°) → at hand (mm) | With joint-side encoders |
 |---|---|---|
-| shoulder_pitch | 0.19° → 2.0 mm | 0.05° → 0.5 mm |
+| shoulder_pitch | 0.20° → 2.0 mm | 0.05° → 0.5 mm |
 | shoulder_roll | 0.21° → 2.2 mm | 0.05° → 0.5 mm |
-| upper_yaw | 0.25° → 1.9 mm | 0.05° → 0.4 mm |
+| upper_yaw | 0.24° → 1.9 mm | 0.05° → 0.4 mm |
 | elbow | 0.25° → 1.9 mm | 0.05° → 0.4 mm |
 | wrist_pitch | 0.05° → 0.1 mm | 0.05° → 0.1 mm |
 | **Joint RSS** | **4.0 mm** | **0.9 mm** |

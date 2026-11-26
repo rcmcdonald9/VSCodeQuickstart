@@ -13,13 +13,13 @@ joint (all cable data ESTIMATE until the datasheets are in hand):
 The joint ranges come from the twin (rnd/twin.py JR). The free lengths and the cavity sizes are read off the CAD
 (module dimensions; ESTIMATE ± 10 mm).
 
-**Joints the arm bundle can cross: 5/6 with D12** (CSI flat-flex through the wrist + slim Ø2.2 USB from the forearm); 3/6 with the camera's stock Ø3.8 USB cable.
+**Joints the arm bundle can cross: 6/6 with D12** (CSI flat-flex through the wrist + slim Ø2.2 USB from the forearm); 4/6 with the camera's stock Ø3.8 USB cable.
 
 | Joint | Range | Torsion: free length / needed | Spiral cavity r_in–r_out (mm) | Bend r (10×OD) | Spiral capacity (S = 0.6 m) | Method (D12) | Stock USB |
 |---|---|---|---|---|---|---|---|
 | shoulder pitch | 260° | 200 / 361 mm ❌ | 22–60 | 22 mm | 990° (need 312°) | clock spring ✅ | ✅ 332° |
 | shoulder roll | 115° | 100 / 160 mm ❌ | 22–50 | 22 mm | 875° (need 138°) | clock spring ✅ | ✅ 217° |
-| upper-arm yaw | 300° | 200 / 417 mm ❌ | 0–0 | 22 mm | 0° (need 360°) | ❌ | ❌ 0° |
+| upper-arm yaw | 140° | 240 / 194 mm ✅ | 0–0 | 22 mm | 0° (need 168°) | torsion ✅ | ✅ 0° |
 | elbow | 150° | 130 / 208 mm ❌ | 22–50 | 22 mm | 875° (need 180°) | clock spring ✅ | ✅ 217° |
 | wrist pitch | 220° | 60 / 306 mm ❌ | 16–30 | 12 mm | 1003° (need 264°) | clock spring ✅ | ❌ 0° |
 | wrist roll | 360° | 30 / 500 mm ❌ | 14–24 | 12 mm | 1023° (need 432°) | clock spring ✅ | ❌ 0° |

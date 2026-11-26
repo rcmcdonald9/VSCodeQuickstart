@@ -973,3 +973,17 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - **Finding 3 (open):** **the yaw joint has no cavity for a spiral.** The belt runs between the yaw plates, and the plates sit 2 mm from the roll pulley and the arm flange. Queue item 1 evaluates a 12 mm spiral cassette (yaw_drop +12) vs limiting yaw to ±70°, against R1.
 - **Harness kit:** segment table (lengths, connectors) in docs/rnd/harness.md.
 - **Results:** new scorecard row "cable routing 5/6" (❌) → scorecard 38 ✅ / 2 ❌. An honest new gap.
+
+## Loop 33 (2026-11-26): yaw cable crossing → yaw range ±70°
+
+- **Options compared:**
+
+  | Option | Reach | Bimanual | Shoulder-roll margin |
+  |---|---|---|---|
+  | baseline (±150°) | 99.1 % | 4/4 | 1.505× |
+  | (a) 12 mm spiral cassette (yaw_drop 0.112) | 99.1 % | — | **1.49× (fails ≥ 1.5)** |
+  | (b) yaw ±70° | 99.1 % | 4/4 | 1.516× |
+  | yaw ±60° | 99.1 % | **1/4** | — |
+
+- **Adopted (b):** twin JR yaw ±150° → **±70°**. The bundle twists between a clamp at the roll-link top and one on the elbow-housing floor: free length ≈ 0.24 m, against 0.194 m needed at ±360°/m (≈ 25 % headroom).
+- **Cable routing 5/6 → 6/6.** Queue: printed yaw hard stops at ±75°.
