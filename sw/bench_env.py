@@ -36,7 +36,7 @@ def xml(d=BASELINE) -> str:
     s = -1                              # right arm
     return f"""<mujoco model="pip_bench_arm">
 <option timestep="0.002" cone="elliptic" impratio="10"/>
-<visual><headlight ambient=".4 .4 .4"/><global offwidth="{IMG}" offheight="{IMG}"/></visual>
+<visual><headlight ambient=".4 .4 .4"/><global offwidth="640" offheight="640"/></visual>
 <asset><texture name="grid" type="2d" builtin="checker" rgb1=".55 .5 .45" rgb2=".5 .45 .4" width="64" height="64"/>
  <material name="tbl" texture="grid" texrepeat="6 6"/></asset>
 <worldbody>
