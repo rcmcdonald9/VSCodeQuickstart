@@ -1082,3 +1082,9 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - **Hard spacing violations 2 → 0** (7 under target).
 - Cassette still slides in from below; module clashes 0; torque pins 21/21. FEA cassette/housing unchanged in margin.
 - **Results:** scorecard **40 ✅ / 2 ❌** (R10 build time; R14 assembly sequence, since the remaining stages and the big-pulley shafts are not migrated yet).
+
+## 2026-11-26: software track added (owner); efficiency rules
+
+- docs/SOFTWARE_PLAN.md, starting with the bench arm. Open-data strategy: pretrained open VLA/ACT checkpoints, co-training on Open-X/DROID/LeRobot-hub slices, synthetic twin demos, EEF-delta actions + DROID-style cameras for transfer.
+- Phases S0 (sim, now) → S1–S4 (hardware); targets SW1–SW6.
+- RND_PLAN §1: runs alternate (:10 hardware, :40 software); efficiency rules (one deliverable per run, incremental checks, background jobs, short logs).

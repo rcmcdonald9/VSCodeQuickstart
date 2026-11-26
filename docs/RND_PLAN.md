@@ -33,6 +33,19 @@ Each scheduled run (and any interactive session) does one **loop**:
 
 **Cadence (owner, 2026-11-26):** runs every 30 minutes (two hourly scheduled tasks at :10 and :40, since one task can't run more often than hourly).
 
+**Two tracks (owner, 2026-11-26):** hardware (this plan) and **software** ([SOFTWARE_PLAN.md](SOFTWARE_PLAN.md), starting with the bench arm). Runs **alternate**: the :10 run does hardware, the :40 run does software, unless one track is blocked.
+
+**Efficiency rules (owner, 2026-11-26: "make more progress per run"):**
+1. **One concrete deliverable per run**, picked in under 2 minutes from the queue top. No re-deliberating settled decisions.
+2. **Incremental checks only.** Run the checks that cover what changed:
+   - CAD of the arm → integration, spacing, assembly_seq
+   - masses → spacing/workspace via `run_all --quick`
+
+   The slow full set (FEA, dynamic sim, print plan, Monte Carlos, full `run_all`) runs only when its inputs changed, and at most every 4th run.
+3. **Long jobs go to the background** while the next step proceeds. Run independent checks in parallel processes.
+4. **Commit early** (at least once per run), with a short log entry (5 lines max) and a short owner summary (3 lines max).
+5. **Don't chase the last 1 %:** stop when the deliverable passes its check. Queue polish separately.
+
 **The loop never "finishes".** When the queue is empty, the next run starts with a fresh critique of the whole design and writes a new queue: a stronger design, cheaper parts, easier assembly, better looks.
 
 **Guardrails:**
@@ -94,6 +107,13 @@ Each scheduled run (and any interactive session) does one **loop**:
 - see [BUILD_v4.md](BUILD_v4.md)
 
 Next (fresh critique after loop 31: torque paths 21/21, module clashes 0, docking and face screen designed, every confidence Monte Carlo passing; **scorecard 38 ✅ / 1 ❌, R10 build time only**). The hourly loop works top-down:
+
+**Software track queue** (see SOFTWARE_PLAN.md):
+- S0.1 bench env
+- S0.3 synthetic demos in LeRobot format
+- S0.2 robot description export
+- S0.4 pipeline dry run with a pretrained checkpoint + open-data slice
+- (S1+ need the M1 kit)
 
 **External review #1 (Gemini 4 Neon, 2026-11-26) → queue A-items first** ([triage](review/triage_2026-11-26.md)):
 - **R14/R15 (owner, 2026-11-26), new design targets:** extend `rnd/assembly_seq.py` to straight-line insertion paths for every part, tool access for every screw and cartridge swap with the arm assembled. *`rnd/spacing.py` done in loop 36 (static; 7 → 2 hard violations, both the elbow cassette vs its pulley/belt → fixed by the D13 elbow redesign). Still to do: swept spacing over joint ranges, finger-probe nips, cable bend radius in CAD.*
