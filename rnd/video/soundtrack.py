@@ -138,7 +138,7 @@ def main(path):
     for b in range(nb):
         t = b * BEAT
         if in_ranges(t, KICK_ON):
-            place(drums, K, t, 0.95)
+            place(drums, K, t, 1.25)
             i = int(t * SR); n = int(0.22 * SR)
             duck[i:i + n] = np.minimum(duck[i:i + n], 1 - 0.75 * np.exp(-np.arange(min(n, N - i)) / SR * 14))
             if t >= 16 and b % 2 == 1:
@@ -160,7 +160,7 @@ def main(path):
             # eighth-note pulse
             pulse = 0.55 + 0.45 * (np.sin(2 * np.pi * tt / (BEAT / 2)) > -0.2)
             place(bass, (sub + mid) * pulse * np.minimum(1, tt / 0.01), t0)
-        level = 0.10 if t0 < 8 else (0.16 if t0 < 60 else (0.05 if t0 < 62 else 0.2))
+        level = 0.06 if t0 < 8 else (0.12 if t0 < 60 else (0.05 if t0 < 62 else 0.2))
         if t0 < 78:
             p = sum(saw(f * (1 + d), tt, ph) for f in chord for d, ph in ((-0.004, 0.1), (0.0, 0.5), (0.005, 0.8)))
             p = lp(p, 1200 if t0 >= 8 else 500)
@@ -189,13 +189,15 @@ def main(path):
     click = hp(rng.standard_normal(len(tc)), 1500) * np.exp(-tc * 120) + np.sin(2 * np.pi * 2400 * tc) * np.exp(-tc * 90) * 0.6
     place(fx, click, CLICK, 0.9); place(fx, click, CLICK + 0.06, 0.6)
     # mix
-    mix = drums + bass * duck * 0.55 + pads * duck ** 0.5 + reverb(fx, 2.5, 0.35)
+    mix = drums + bass * duck * 0.45 + pads * duck ** 0.5 + reverb(fx, 2.5, 0.35)
     mix = reverb(mix, 1.2, 0.08)
     mix = hp(mix, 25)
     # fade the tail
     tail = int(76.5 * SR)
     mix[tail:] *= np.linspace(1, 0, len(mix) - tail) ** 2
     mix = mix[:int(DURATION * SR)]
+    tt = np.arange(len(mix)) / SR                       # keep the intro low so the first drop lands
+    mix *= np.interp(tt, [0, 5.5, 7.9, 8.0], [0.45, 0.5, 0.8, 1.0])
     mix = np.tanh(1.3 * mix / np.max(np.abs(mix)) * 1.4) * 0.92
     mix /= np.max(np.abs(mix)) / 0.95
     # light stereo: haas-delayed pads/fx on the right

@@ -9,8 +9,8 @@ from mathutils import Vector, Euler, Matrix
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 MAN, OUT, SHOT = json.loads(Path(argv[0]).read_text()), Path(argv[1]), argv[2]
-F0 = int(argv[3]) if len(argv) > 3 else None
-F1 = int(argv[4]) if len(argv) > 4 else None
+F0 = int(argv[3]) if len(argv) > 3 and argv[3] else None
+F1 = int(argv[4]) if len(argv) > 4 and argv[4] else None
 PCT = int(argv[5]) if len(argv) > 5 else 100
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -28,8 +28,8 @@ def mat(n, c, r=0.4, metal=0.0, emit=0.0, coat=0.0):
     return m
 
 
-PAL = {"black": ((0.02, 0.021, 0.024), 0.30, 0.6, 0.0, 0.3), "white": ((0.80, 0.81, 0.83), 0.30, 0.0, 0.0, 0.5),
-       "dark": ((0.035, 0.037, 0.042), 0.36, 0.2, 0.0, 0.2), "orange": ((1.0, 0.40, 0.05), 0.32, 0.0, 0.9, 0.3),
+PAL = {"black": ((0.02, 0.021, 0.024), 0.30, 0.6, 0.0, 0.3), "white": ((0.72, 0.73, 0.75), 0.30, 0.0, 0.0, 0.5),
+       "dark": ((0.035, 0.037, 0.042), 0.36, 0.2, 0.0, 0.2), "orange": ((1.0, 0.40, 0.05), 0.32, 0.0, 0.3, 0.3),
        "steel": ((0.62, 0.63, 0.66), 0.22, 1.0, 0.0, 0.0)}
 
 
@@ -156,7 +156,7 @@ def orbit(tgt, dist, az_deg, el_deg):
 
 # ---------------------------------------------------------------- shots
 def module_shot(scene, n_frames, az0, az1, el0, el1, d0, d1, hold=24, stagger=5, dur=16, spread=1.0, spin=25,
-                twist=None, lens=50, key_az=None):
+                twist=None, lens=50, key_az=None, roll=0.0):
     """Exploded parts snap into place one by one (largest first), camera orbiting; returns the per-frame updater."""
     objs = load(scene, per_object=True)
     lo, hi = wbbox(objs); c = (lo + hi) / 2; size = (hi - lo).length
@@ -166,10 +166,10 @@ def module_shot(scene, n_frames, az0, az1, el0, el1, d0, d1, hold=24, stagger=5,
     world((0.004, 0.005, 0.009))
     co = camera(lens)
     k = size * 1.6
-    area((k * 0.9, -k * 1.1, k * 1.2), (0, 0, 0), size * 1.2, 260 * size ** 2 * 4, (1.0, 0.93, 0.86), "key")
-    area((-k * 1.2, k * 0.4, k * 0.5), (0, 0, 0), size * 0.8, 380 * size ** 2 * 4, (1.0, 0.45, 0.12), "rim_o")
-    area((k * 0.2, k * 1.3, -k * 0.3), (0, 0, 0), size * 0.8, 320 * size ** 2 * 4, (0.25, 0.5, 1.0), "rim_b")
-    area((0, 0, k * 1.6), (0, 0, 0), size, 90 * size ** 2 * 4, (0.8, 0.85, 1.0), "top")
+    area((k * 0.9, -k * 1.1, k * 1.2), (0, 0, 0), size * 1.2, 260 * size ** 2 * 1.6, (1.0, 0.93, 0.86), "key")
+    area((-k * 1.2, k * 0.4, k * 0.5), (0, 0, 0), size * 0.8, 380 * size ** 2 * 1.6, (1.0, 0.45, 0.12), "rim_o")
+    area((k * 0.2, k * 1.3, -k * 0.3), (0, 0, 0), size * 0.8, 320 * size ** 2 * 1.6, (0.25, 0.5, 1.0), "rim_b")
+    area((0, 0, k * 1.6), (0, 0, 0), size, 90 * size ** 2 * 1.6, (0.8, 0.85, 1.0), "top")
     info = []
     vols = []
     for o in objs:
@@ -198,7 +198,7 @@ def module_shot(scene, n_frames, az0, az1, el0, el1, d0, d1, hold=24, stagger=5,
             o.rotation_euler = (Matrix.Rotation(ang, 3, it["ax"]) @ it["rot0"].to_matrix()).to_euler()
             # landing flash
             fl = max(0.0, 1 - abs(f - (it["start"] + dur * 0.55)) / 5.0)
-            base_emit = 0.9 if o["color"] == "orange" else 0.0
+            base_emit = 0.3 if o["color"] == "orange" else 0.0
             set_emit(it["m"], (1.0, 0.55, 0.2) if o["color"] != "white" else (1.0, 0.85, 0.7), base_emit + 3.5 * fl)
         if twist:                                           # (name, deg, frame0, frame1): the KX collar locks
             nm, deg, a, b = twist
@@ -206,12 +206,33 @@ def module_shot(scene, n_frames, az0, az1, el0, el1, d0, d1, hold=24, stagger=5,
             u = ease_out_back((f - a) / (b - a), 1.4)
             o.rotation_euler = Euler((0, 0, math.radians(deg) * (1 - u)))
         az = lerp(az0, az1, ease_in_out(t)); el = lerp(el0, el1, t); d = lerp(d0, d1, ease_out_cubic(t)) * size
-        aim(co, orbit((0, 0, 0), d, az, el), (0, 0, 0))
+        aim(co, orbit((0, 0, 0), d, az, el), (0, 0, 0), roll=math.radians(roll))
     return update, last
 
 
+def join_static(objs):
+    """Join parts by (material, lift flag): 234 objects -> ~12, which cuts EEVEE's per-frame sync time."""
+    groups = {}
+    for o in objs:
+        groups.setdefault((o.data.materials[0].name, bool(o["lift"])), []).append(o)
+    out = []
+    for (mname, lift), g in groups.items():
+        bpy.ops.object.select_all(action="DESELECT")
+        for o in g: o.select_set(True)
+        bpy.context.view_layer.objects.active = g[0]
+        if len(g) > 1: bpy.ops.object.join()
+        j = bpy.context.view_layer.objects.active; j["lift"] = lift; out.append(j)
+    return out
+
+
+HEAD = Vector((0.1, 0, 1.6))
+
+
 def robot_stage(scene, dark=False):
+    global HEAD
     objs = load(scene)
+    HEAD = obj_center(["head_shell", "visor"])
+    objs = join_static(objs)
     world((0.003, 0.004, 0.007) if dark else (0.006, 0.008, 0.014))
     floor()
     return objs
@@ -224,7 +245,7 @@ def obj_center(names):
 
 def shot_reveal(n=120):
     robot_stage("robot", dark=True)
-    head = obj_center(["head_shell", "visor"])
+    head = HEAD
     co = camera(65)
     rim1 = area((-1.4, 1.6, 2.2), head, 1.0, 0, (1.0, 0.42, 0.08), "rimO")
     rim2 = area((-1.2, -1.8, 1.8), head, 1.0, 0, (0.3, 0.5, 1.0), "rimB")
@@ -234,8 +255,8 @@ def shot_reveal(n=120):
 
     def update(f):
         t = f / (n - 1)
-        rim1.data.energy = 900 * smooth(t / 0.35); rim2.data.energy = 600 * smooth((t - 0.15) / 0.35)
-        top.data.energy = 1800 * smooth((t - 0.55) / 0.3)
+        rim1.data.energy = 700 * smooth(t / 0.35); rim2.data.energy = 450 * smooth((t - 0.15) / 0.35)
+        top.data.energy = 1100 * smooth((t - 0.55) / 0.3)
         # eyes: off, a two-blink power-up at ~55 %, then full
         on = 0.0
         if t > 0.5: on = 1.0 if (t > 0.62 or 0.52 < t < 0.55) else 0.15
@@ -252,9 +273,9 @@ def shot_lift(n=240):
     lifts = [o for o in objs if o["lift"]]
     home = {o.name: o.location.copy() for o in lifts}
     co = camera(35)
-    area((2.4, -1.8, 2.6), (0.1, 0, 0.7), 2.0, 700, (1.0, 0.92, 0.85), "key")
-    area((-1.6, 1.5, 1.6), (0.1, 0, 0.8), 1.5, 900, (1.0, 0.42, 0.1), "rimO")
-    area((-1.4, -1.7, 1.2), (0.1, 0, 0.8), 1.5, 700, (0.3, 0.5, 1.0), "rimB")
+    area((2.4, -1.8, 2.6), (0.1, 0, 0.7), 2.0, 380, (1.0, 0.92, 0.85), "key")
+    area((-1.6, 1.5, 1.6), (0.1, 0, 0.8), 1.5, 600, (1.0, 0.42, 0.1), "rimO")
+    area((-1.4, -1.7, 1.2), (0.1, 0, 0.8), 1.5, 450, (0.3, 0.5, 1.0), "rimB")
 
     def update(f):
         t = f / (n - 1)
@@ -270,10 +291,10 @@ def shot_lift(n=240):
 def shot_hero(n=300, scene="robot_hero"):
     robot_stage(scene)
     co = camera(40)
-    area((2.6, -1.6, 2.8), (0.1, 0, 0.8), 2.0, 650, (1.0, 0.93, 0.86), "key")
-    area((-1.8, 1.4, 1.8), (0.1, 0, 0.9), 1.2, 1400, (1.0, 0.42, 0.1), "rimO")
-    area((-1.5, -1.6, 1.4), (0.1, 0, 0.9), 1.2, 1000, (0.3, 0.5, 1.0), "rimB")
-    spot((0.3, 0.0, 3.4), (0.1, 0, 0.0), 2500, (1.0, 0.96, 0.9), 30, 0.7, "top")
+    area((2.6, -1.6, 2.8), (0.1, 0, 0.8), 2.0, 360, (1.0, 0.93, 0.86), "key")
+    area((-1.8, 1.4, 1.8), (0.1, 0, 0.9), 1.2, 800, (1.0, 0.42, 0.1), "rimO")
+    area((-1.5, -1.6, 1.4), (0.1, 0, 0.9), 1.2, 560, (0.3, 0.5, 1.0), "rimB")
+    spot((0.3, 0.0, 3.4), (0.1, 0, 0.0), 1200, (1.0, 0.96, 0.9), 30, 0.7, "top")
     set_emit(bpy.data.materials["eyes"], (1.0, 0.45, 0.08), 40.0)
 
     def update(f):
@@ -289,9 +310,9 @@ GLIMPSE = [(-30, 0.95, 1.2, 8), (35, 1.3, 1.0, -5), (-100, 0.6, 1.4, 12), (150, 
 def shot_glimpse(per=12):
     robot_stage("robot")
     co = camera(55)
-    area((2.6, -1.6, 2.8), (0.1, 0, 0.8), 2.0, 650, (1.0, 0.93, 0.86), "key")
-    area((-1.8, 1.4, 1.8), (0.1, 0, 0.9), 1.2, 1400, (1.0, 0.42, 0.1), "rimO")
-    area((-1.5, -1.6, 1.4), (0.1, 0, 0.9), 1.2, 1000, (0.3, 0.5, 1.0), "rimB")
+    area((2.6, -1.6, 2.8), (0.1, 0, 0.8), 2.0, 360, (1.0, 0.93, 0.86), "key")
+    area((-1.8, 1.4, 1.8), (0.1, 0, 0.9), 1.2, 800, (1.0, 0.42, 0.1), "rimO")
+    area((-1.5, -1.6, 1.4), (0.1, 0, 0.9), 1.2, 560, (0.3, 0.5, 1.0), "rimB")
     set_emit(bpy.data.materials["eyes"], (1.0, 0.45, 0.08), 40.0)
 
     def update(f):
@@ -309,12 +330,16 @@ if SHOT == "reveal": upd = shot_reveal(N)
 elif SHOT == "lift": upd = shot_lift(N)
 elif SHOT == "hero": upd = shot_hero(N)
 elif SHOT == "glimpse": upd = shot_glimpse()
-elif SHOT == "arm": upd, _ = module_shot("arm", N, -70, 10, 18, 8, 1.55, 1.05, hold=20, stagger=6, dur=18, spread=0.9, lens=45)
-elif SHOT == "kx": upd, _ = module_shot("kx", N, -40, 40, 28, 14, 1.9, 1.3, hold=14, stagger=5, dur=14, spread=1.0, twist=("collar", 35, 92, 108))
-elif SHOT == "roll": upd, _ = module_shot("roll", N, 30, 110, 20, 10, 1.7, 1.2, hold=12, stagger=4, dur=14, spread=0.9)
-elif SHOT == "hand": upd, _ = module_shot("hand", N, -150, -60, 15, 5, 1.7, 1.2, hold=12, stagger=5, dur=14, spread=0.9)
+elif SHOT == "arm": upd, _ = module_shot("arm", N, -70, 10, 14, 6, 3.0, 1.75, hold=18, stagger=3, dur=16, spread=0.35, lens=45, roll=-90)
+elif SHOT == "kx": upd, _ = module_shot("kx", N, -40, 40, 28, 14, 3.8, 2.6, hold=14, stagger=5, dur=14, spread=1.0, twist=("collar", 35, 92, 108))
+elif SHOT == "roll": upd, _ = module_shot("roll", N, 30, 110, 20, 10, 3.9, 2.8, hold=10, stagger=3, dur=14, spread=0.9)
+elif SHOT == "hand": upd, _ = module_shot("hand", N, -150, -60, 15, 5, 3.9, 2.8, hold=12, stagger=5, dur=14, spread=0.9)
 (OUT / SHOT).mkdir(parents=True, exist_ok=True)
-for f in range(F0 or 0, (F1 + 1) if F1 is not None else N):
+STEP = int(__import__("os").environ.get("HYPE_STEP", "1"))
+for f in range(F0 or 0, (F1 + 1) if F1 is not None else N, STEP):
+    fp = OUT / SHOT / f"{f:04d}.png"
+    if fp.exists() and __import__("os").environ.get("HYPE_RESUME", "1") == "1":
+        continue                                   # resume an interrupted render
     upd(f)
-    scn.render.filepath = str(OUT / SHOT / f"{f:04d}.png")
+    scn.render.filepath = str(fp)
     bpy.ops.render.render(write_still=True)
