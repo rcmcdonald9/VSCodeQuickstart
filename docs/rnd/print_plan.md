@@ -2,28 +2,29 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 12.1 kg of PETG (≈ $241 at $20/kg); 804 h generic ≈ 281 h on the P2S (≈ 11.7 days of continuous printing).**
+**Total: 12.3 kg of PETG (≈ $246 at $20/kg); 828 h generic ≈ 290 h on the P2S (≈ 12.1 days of continuous printing).**
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
 | torso_shell | 1 | 1872 | 110.1 | 2 halves |
 | cartridge M can | 13 | 846 | 55.8 | 8 arm + 4 wheel + 1 lift |
-| upper bone | 2 | 778 | 54.2 |  |
 | shoulder bracket | 2 | 817 | 52.8 | mirror for the right arm |
 | small-pulley hub | 9 | 734 | 50.7 | pitch, roll, yaw, elbow ×2 + lift (KX74 hub + 20T/18T pulley + journals) |
+| upper bone | 2 | 698 | 46.4 |  |
 | deck quarter | 4 | 577 | 40.0 |  |
 | head_shell | 1 | 653 | 38.5 |  |
+| clevis + yaw block | 2 | 456 | 34.5 |  |
 | KX74 collar | 13 | 461 | 33.0 | 9 joints + 4 wheels |
+| roll link | 2 | 438 | 31.1 |  |
 | cartridge M adapter | 13 | 409 | 31.0 | carries the KX74 male face |
-| roll link | 2 | 444 | 30.8 |  |
 | skirt quarter | 4 | 451 | 29.6 |  |
-| clevis + yaw block | 2 | 371 | 27.1 |  |
 | carriage | 1 | 383 | 22.4 |  |
 | wheel pod | 4 | 356 | 22.2 |  |
 | pitch shaft | 2 | 323 | 22.0 | 60T pulley + balancer lever + female ferrule |
+| elbow cassette plate | 4 | 184 | 19.1 | 2 per arm (A + B) |
 | roll shaft | 2 | 291 | 18.9 | 72T pulley |
 | forearm (ends) | 2 | 281 | 17.3 | elbow end, wrist can, CF socket |
-| elbow pulley hub | 2 | 234 | 16.0 |  |
+| elbow pulley hub | 2 | 233 | 16.0 |  |
 | ratchet strip | 1 | 84 | 14.6 | 4 segments |
 | palm | 2 | 190 | 12.6 |  |
 | KX74 hub | 4 | 167 | 11.3 | wheel hubs, print-in-place with the collar (the 9 joint hubs are integral to the small-pulley hubs) |
@@ -38,6 +39,7 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | cartridge D can | 2 | 67 | 4.6 |  |
 | eccentric bushing | 18 | 57 | 4.3 | 2 per small-pulley hub: belt tension |
 | yoke | 1 | 66 | 4.3 |  |
+| upper bone cap | 2 | 49 | 3.7 | screw-on bottom cap: the cassette goes in from below |
 | KX56 collar | 2 | 52 | 3.7 |  |
 | KX56 hub | 2 | 53 | 3.6 | wrist pitch |
 | cartridge S horn adapter | 4 | 44 | 3.4 |  |
@@ -47,6 +49,7 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | gripper jaw_moving | 2 | 35 | 3.1 |  |
 | gripper grip_base | 2 | 47 | 2.9 |  |
 | e_tray | 1 | 33 | 2.3 |  |
+| elbow cassette spacer | 4 | 13 | 1.3 |  |
 | handle | 1 | 21 | 1.3 |  |
 | gripper jaw_fixed | 2 | 8 | 0.6 |  |
 | fin-ray finger | 4 | 0 | 0.0 | TPU 95A, 2 per gripper |

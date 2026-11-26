@@ -14,6 +14,6 @@ Each case lists its loads (worst static ×1.5 dynamic, or actuator peak for belt
 | Upper bone / elbow housing: forearm load ×1.5 on the elbow bosses | 49,990 | 2.6 MPa (max 6.8) | 1.28 mm | 4.6× ✅ |
 | Wheel pod: wheel load 168 N (×2 bumps) + 0.5 g lateral | 72,187 | 0.2 MPa (max 0.4) | 0.03 mm | 53.2× ✅ |
 | Shoulder pitch bracket: arm moment 19 N·m + belt peak 691 N | 81,279 | 1.8 MPa (max 3.6) | 0.30 mm | 6.5× ✅ |
-| Elbow belt cassette plate: 60 % of the belt peak (415 N) | 18,588 | 1.1 MPa (max 1.4) | 0.03 mm | 11.2× ✅ |
+| Elbow belt cassette plate: 60 % of the belt peak (415 N) | 19,628 | 1.1 MPa (max 1.4) | 0.03 mm | 11.3× ✅ |
 | Roll link: roll belt peak 768 N + arm moment 19 N·m (couple 727 N) | 72,031 | 2.0 MPa (max 5.2) | 0.42 mm | 6.0× ✅ |
-| Clevis + yaw block: yaw belt peak 691 N + arm moment 19 N·m (couple 727 N) | 90,073 | 4.3 MPa (max 9.5) | 2.41 mm | 2.8× ✅ |
+| Clevis + yaw block: yaw belt peak 691 N + arm moment 19 N·m (couple 727 N) | 92,145 | 3.8 MPa (max 7.7) | 1.88 mm | 3.2× ✅ |

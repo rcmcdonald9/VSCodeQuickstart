@@ -85,7 +85,8 @@ def bone_cap() -> Part:
 
 def cassette_plate(side: str = "B") -> Part:
     """Elbow belt cassette (confidence campaign): one of two 7 mm plates that carry the small-pulley hub (61804 in an
-    eccentric bushing, Ø38.2 seat) and ride on the elbow pulley hub on their own 61808 (Ø52 seat). The belt loop closes
+    eccentric bushing, Ø38.2 seat) and ride on the elbow pulley hub on their own thin 6708 (40×50×6, Ø50 seat;
+    ~11 g vs 26 g for a 61808, which keeps the shoulder-roll workspace margin ≥ 1.5×; C0 ≈ 2.4 kN vs 0.7 kN belt peak). The belt loop closes
     inside the cassette. Plate B has the anti-rotation pin tab. Housing frame."""
     from build123d import Sketch, Circle, Rectangle, make_hull, extrude, Plane, Locations
     y0, y1 = CAS_A if side == "A" else CAS_B
@@ -100,7 +101,7 @@ def cassette_plate(side: str = "B") -> Part:
         p -= disc(x, CAS_POST_Z, 2.75)                                    # M5 through-bolt
     if side == "B":
         p += Pos(0, y0 + t / 2, (zS + 27 - 12 + -92) / 2) * Box(16, t, (-92) - (zS + 27 - 12) + 6)
-    p -= disc(0, zE, 26) + disc(0, zS, 19.1)
+    p -= disc(0, zE, 25) + disc(0, zS, 19.1)                              # 6708 (40×50×6) seat; eccentric-bushing seat
     return p
 
 

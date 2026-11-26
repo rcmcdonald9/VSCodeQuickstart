@@ -51,7 +51,7 @@ class Arm:
     })
     spring_k_nm: float = 4.5       # shoulder balancer torque at the horizontal arm, τ = K·sin(pitch). Loop 5 (rnd/spring.py):
                                    # replaces the "85 % everywhere" assumption; K tuned for a 0.5 kg typical payload
-    bone_mass_upper: float = 0.69  # FROM CAD (loop 9): 1.2 mm shell + CF Ø40 neck + yaw & elbow KX74 sockets + pulley hubs + bearings; +0.11 elbow belt cassette (2 plates ≈ 50 g printed, 2 × 61808, bolts) and bone cap (confidence campaign FEA)
+    bone_mass_upper: float = 0.66  # FROM CAD (loop 9): 1.2 mm shell + CF Ø40 neck + yaw & elbow KX74 sockets + pulley hubs + bearings; +0.08 elbow belt cassette (2 plates ≈ 50 g printed, 2 × 6708 thin, M5 bolts) and bone cap (confidence campaign FEA)
     bone_mass_fore: float = 0.31   # FROM CAD (loop 9): side link with CF Ø30 tube + wrist KX56 socket + bearings + fasteners
     bone_wall_mm: float = 1.2      # printed shell wall (rnd/bones.py: strength is never binding)
     cf_tubes: bool = True          # carbon-tube neck + forearm (loop 9: bone-bending sag at the hand 4.1 → 1.5 mm)

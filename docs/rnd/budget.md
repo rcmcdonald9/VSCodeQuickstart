@@ -5,8 +5,8 @@
 | base | 6.31 | ≤ 8 | ✅ |
 | battery | 1.10 | ≤ 3 | ✅ |
 | upper | 7.58 | ≤ 10 | ✅ |
-| arm (each, detachable) | 3.86 | ≤ 10 | ✅ |
-| **total robot** | **22.72** | | |
+| arm (each, detachable) | 3.94 | ≤ 10 | ✅ |
+| **total robot** | **22.88** | | |
 
 **base detail**
 
@@ -40,7 +40,7 @@
 
 | Item | kg |
 |---|---|
-| arm bones+shells | 0.890 |
+| arm bones+shells | 0.970 |
 | roll stage | 0.580 |
 | upper-arm yaw belt stage | 0.470 |
 | arm shoulder_roll | 0.388 |

@@ -714,7 +714,7 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - A first pass showed −10 mm tip margins. Cause: `apply_perturb` scaled `body_mass` without refreshing MuJoCo's cached `body_subtreemass`, which skewed the subtree COM. Fixed.
 - **FEA** (`rnd/fea.py`, gmsh + scikit-fem) of 7 critical printed parts: KX74 collar, elbow housing, elbow cassette plate, wheel pod, shoulder bracket, roll link, clevis/yaw block.
   - **It found the elbow small-pulley hub unsupported.** Its journals were 30 mm from the walls, and belt peak loaded the 1.2 mm shell (28 MPa, 14 mm).
-  - → **Elbow belt cassette:** 2 × 7 mm plates on their own 61808s, eccentric bushings, M5 posts, anti-rotation pin in a radial slot. It goes in through a new screw-on **bone cap**. +0.11 kg per arm (params).
+  - → **Elbow belt cassette:** 2 × 7 mm plates on their own thin 6708 bearings, eccentric bushings, M5 posts, anti-rotation pin in a radial slot. It goes in through a new screw-on **bone cap**. +0.08 kg per arm (params; 6708 thin bearings instead of 61808 keep the shoulder-roll workspace margin at 1.50×).
   - Also fixed: the 40T elbow pulley was 9.4 mm out of the belt plane (`BELT_Y`).
   - The clevis bottom yaw plate was a free solid: 2 posts added.
 - **Roll/yaw stage journal constants re-derived from the hub geometry.** The old values predated the taller print-in-place hub: ~20 cm³ of hub/wall clashes, belts 2.6 mm out of plane. ZF +2.4 mm keeps both plate clearances.

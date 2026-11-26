@@ -16,7 +16,7 @@ Each number moves only when new evidence arrives; the evidence is linked.
 
 | Finding | Status |
 |---|---|
-| The elbow small-pulley journals were 30 mm from the housing walls, so belt tension loaded the 1.2 mm shell. FEA: 28 MPa (2.4× over), 14 mm deflection | **Fixed:** elbow belt cassette (2 plates on their own 61808s, loop closed inside, pin in a radial slot) + screw-on bone cap. Cassette plate FEA 11×; housing now 4.6× |
+| The elbow small-pulley journals were 30 mm from the housing walls, so belt tension loaded the 1.2 mm shell. FEA: 28 MPa (2.4× over), 14 mm deflection | **Fixed:** elbow belt cassette (2 plates on their own thin 6708 bearings, loop closed inside, pin in a radial slot) + screw-on bone cap. Cassette plate FEA 11×; housing now 4.6× |
 | The elbow 40T pulley was 9.4 mm out of the belt plane | **Fixed** (`BELT_Y`) |
 | Roll and yaw stages: hard-coded journal constants predated the taller print-in-place hub. Walls cut 2–3 mm into the KX hub and pulley (≈ 20 cm³ of clashes); belts 2.6 mm out of plane | **Fixed:** constants derived from the hub geometry |
 | Clevis bottom yaw plate was a free solid (no structural tie) | **Fixed:** 2 spacer posts outside the belt loop |

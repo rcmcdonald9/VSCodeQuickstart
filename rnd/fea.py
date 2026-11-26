@@ -134,11 +134,11 @@ def cases():
               [(lambda x: (np.hypot(x[0], x[2]) < 27) & (np.abs(x[1] - shoulder.W_OUT) < 4.5), (0, 0, -F_m)),
                (lambda x: (np.hypot(x[0], x[2]) < 27) & (np.abs(x[1] - shoulder.W_IN) < 4.5), (0, 0, F_m)),
                (lambda x: (np.hypot(x[0] + shoulder.BELT_C, x[2]) < 20.5) & (np.abs(np.abs(x[1] - (shoulder.W_IN + shoulder.W_OUT) / 2) - 13) < 5), (691.0, 0, 0))]))
-    # 5. Elbow belt cassette plate: hangs on its 61808 (elbow axis); the small hub pulls the bushing seat with 60 % of the
+    # 5. Elbow belt cassette plate: hangs on its 6708 (elbow axis); the small hub pulls the bushing seat with 60 % of the
     #    peak belt load (the pulley sits a little nearer plate B).
     cp = arm.cassette_plate("B")
     C.append(("Elbow belt cassette plate: 60 % of the belt peak (415 N)", cp, 2.0,
-              lambda x: np.hypot(x[0], x[2] - zE) < 26.3,
+              lambda x: np.hypot(x[0], x[2] - zE) < 25.3,
               [(lambda x: np.hypot(x[0], x[2] - zS) < 19.4, (0, 0, -0.6 * 691.0))]))
     # 6. Roll link: bolted to the arm-side ferrule; roll belt peak 768 N between the seats (half per wall) + the arm moment
     #    19 N·m as a couple on the two 61808 seats (walls 25.4 mm apart)
