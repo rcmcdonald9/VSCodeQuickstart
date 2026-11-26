@@ -1,4 +1,28 @@
-# Confidence assessment, evidence-based (confidence campaign, 2026-11-25)
+# Confidence assessment, evidence-based (loop 40 update 2026-11-26; campaign 2026-11-25 below)
+
+"Confidence" means **the chance that the area works on the first physical build without a redesign** (software aside).
+
+## Loop 40 (backlog push before the M1 buy)
+
+| Area | Loop 31 | Now | What moved it / what still caps it |
+|---|---|---|---|
+| Actuator sizing (M1 motors) | 90 % | **90 %** | whole-workspace margins ≥ 1.53× rated / ≥ 2.58× peak with the heavier loop-40 arm, yaw ±150°, 1 kg; MC fetch 100 runs. Cap: real torque constant and belt compliance |
+| Motors / thermal / electrical | 85 % | **85 %** | winding ≤ 68 °C enclosed; **printed can wall 63 °C → ASA** (A6); regen clamp, pre-charge, cat-0 stop, 2 CAN channels per arm (A5, A14). Cap: ESTIMATE thermal constants |
+| Assemblability (R14) | ~40 % (review #1) | **85 %** | every arm shaft assembles (D13 + split pulleys); D15 socket buildable; spacing + swept 0 hard violations. Cap: real part dimensions (ESTIMATE pulleys/couplings) |
+| KX couplings | 60–65 % | **65–70 %** | D15 springs halve the creep loss (below-peak 26 → 13 %); twist p95 2.9 N·m. Simulation can't settle print tolerance and friction: coupons C1–C4 |
+| Wrist | ~70 % | **80 %** | D16 spindle removes a certain lift-off of the KX44 under 1 kg |
+| Balancer | 70 % | **75 %** | the old spring couldn't exist; die spring + tackle fits. Cap: catalogue rate, cord creep |
+| Cable routing | ~50 % (review #1) | **70 %** | real roll/yaw cassettes, D14 ribbon, 6/6 joints. Cap: ribbon life (coupon C11) |
+| Stiffness / accuracy | ~65 % | **55 %** | P2 FEA showed the printed shells far softer than P1 said; stiffened, still ≈ 12 mm raw at the hand (target 6). Encoders + wrist camera + a gravity model make this workable; the shells need another pass |
+| Dexterity | (not measured) | **85 %** | R16 34 / 70 / 66 / 54 % (cross-body side grasps were 2 % at yaw ±70°) |
+| Stability (full robot) | 92 % | **80 %** | the review's cases: a 35 N push at 1 m tips it between wheels; D18 casters → 45 N, planner rules |
+| **M1 bench arm works without a redesign of anything bought** | — | **≈ 85–90 %** | see [M1_READINESS.md](../M1_READINESS.md) |
+| **Overall: works on the first full build** | ≈ 55 % | **≈ 60 %** | many first-build failures removed (assembly, springs, wrist, cables); stiffness and tip-over findings added |
+| **Overall: staged build (coupons → M1 → full robot)** | ≈ 90 % | **≈ 90 %** | |
+
+---
+
+## Confidence campaign (2026-11-25)
 
 "Confidence" here means **the chance that the area works on the first physical build without a redesign** (software aside).
 Each number moves only when new evidence arrives; the evidence is linked.

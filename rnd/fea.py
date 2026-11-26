@@ -23,6 +23,17 @@ ALLOW = 12.0
 
 
 def mesh_part(part, h=3.0):
+    """Mesh with gmsh; on a PLC failure (self-intersecting facets after OCC import) retry with healing and other sizes."""
+    last = None
+    for k, hh in enumerate((h, h * 0.85, h * 1.15, h * 0.7, h * 1.3)):
+        try:
+            return _mesh_part(part, hh, heal=k > 0)
+        except Exception as e:                     # gmsh raises a plain Exception
+            last = e
+    raise last
+
+
+def _mesh_part(part, h=3.0, heal=False):
     import gmsh
     import meshio
     from build123d import export_step
@@ -32,11 +43,18 @@ def mesh_part(part, h=3.0):
         export_step(part, str(stp))
         gmsh.initialize()
         gmsh.option.setNumber("General.Terminal", 0)
+        if heal:
+            for opt in ("Geometry.OCCFixDegenerated", "Geometry.OCCFixSmallEdges", "Geometry.OCCFixSmallFaces", "Geometry.OCCSewFaces"):
+                gmsh.option.setNumber(opt, 1)
         gmsh.model.occ.importShapes(str(stp))
         gmsh.model.occ.synchronize()
         gmsh.option.setNumber("Mesh.CharacteristicLengthMax", h)
         gmsh.option.setNumber("Mesh.CharacteristicLengthMin", h * 0.35)
-        gmsh.model.mesh.generate(3)
+        try:
+            gmsh.model.mesh.generate(3)
+        except Exception:
+            gmsh.finalize()
+            raise
         msh = Path(td) / "p.msh"
         gmsh.write(str(msh))
         gmsh.finalize()

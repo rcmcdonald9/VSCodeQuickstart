@@ -18,8 +18,8 @@
 
 | Interface + actuator | Rated / peak (N·m) | Slip torque | Ball-on-pin stress, rated / peak (limit 4,200 MPa) | Same ball in a **printed** groove, rated (PETG yield ~50 MPa) | Twist to lock, greased / dry | Lug shear / tooth bending (PETG) |
 |---|---|---|---|---|---|---|
-| KX74 + GIM6010-8 | 5.00 / 11.00 | 12.7 N·m ✅ | 3,226 / 3,554 MPa ✅ | 170 MPa ❌ (3× yield) | 2.1 / 2.7 N·m ✅ | 1.3 / 14 MPa |
-| KX56 + DM-J4310-2EC_V1.1 | 3.00 / 7.00 | 8.3 N·m ✅ | 3,555 / 3,933 MPa ✅ | 188 MPa ❌ (4× yield) | 1.4 / 1.8 N·m ✅ | 1.7 / 17 MPa |
+| KX74 + GIM6010-8 | 5.00 / 11.00 | 12.7 N·m ✅ | 3,226 / 3,554 MPa ✅ | 170 MPa ❌ (3× yield) | 1.9 / 2.6 N·m ✅ | 1.3 / 14 MPa |
+| KX56 + DM-J4310-2EC_V1.1 | 3.00 / 7.00 | 8.3 N·m ✅ | 3,555 / 3,933 MPa ✅ | 188 MPa ❌ (4× yield) | 1.3 / 1.7 N·m ✅ | 1.7 / 17 MPa |
 | KX44 + STS3215-C018 | 0.98 / 2.94 | 3.4 N·m ✅ | 3,506 / 3,966 MPa ✅ | 185 MPa ❌ (4× yield) | 0.6 / 0.8 N·m ✅ | 1.2 / 12 MPa |
 
 ## Socket bearings (one pair per socket)

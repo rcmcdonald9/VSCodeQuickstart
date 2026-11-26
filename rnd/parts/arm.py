@@ -71,7 +71,7 @@ def housing_stiffener() -> Part:
     inner = _housing_solid(WALL - 0.4) - _housing_solid(WALL + STIFF_T)          # 0.4 mm overlap into the skin: coincident faces crash the fuse
     yw = h["y"] / 2 - WALL - STIFF_T - 0.5                                               # +Y face slab only (cassette plate B ends at y 43.7)
     st = (inner & Pos(0, yw + 100, 0) * Box(400, 200, 600)) + (inner & Pos(0, 0, h["z1"] - 10) * Box(400, 400, 20))
-    st -= Pos(0, -20, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(59.0, 40)          # keep the elbow KX collar and its thumb tabs (r ≈ 57) clear through the twist
+    st -= Pos(0, -20, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(61.0, 40)          # keep the elbow KX collar and its thumb tabs (r ≈ 57) clear through the twist (61: meshes cleanly)
     for k in range(4):
         a = 45 + 90 * k
         st += Rot(0, 0, a) * Pos(23 + 14, 0, h["z1"]) * Box(28, 3, 14, align=(Align.CENTER, Align.CENTER, Align.MIN))
