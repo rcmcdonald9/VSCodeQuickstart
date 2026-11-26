@@ -81,7 +81,7 @@ def lift_mount(z, zc):
     m += Pos((xp + 14.3 + xr) / 2, (-65 + y_out - 9) / 2, z) * Box(xr - xp - 14.3, -65 - (y_out - 9), 48)      # arm beside the can (can r 43.3)
     m += Pos((xp - 7 + xr) / 2, y_out - 5.5, z) * Box(xr - xp + 7, 7, 48)                                       # fork plate
     m -= Pos(xp + 1.5, y_out - 5.5, z) * Box(17, 8, tp["d"] + 0.4)                                              # open radial slot
-    m -= Pos(xa + 16, -2, z) * Box(3.6 + 2, 15 + 2, 400, align=MIN)                                            # loop 31: belt slot (the belt ran through the block)
+    m -= Pos(xa + 16, -2, z) * Box(3.6 + 6, 15 + 6, 400, align=MIN)        # R15: belt ≥ 3 mm from static parts                                            # loop 31: belt slot (the belt ran through the block)
     return m
 
 

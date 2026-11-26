@@ -61,7 +61,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | R12 | Safety | Torque-limited joints, e-stop, protected 24 V, stable (tip margin ≥ 50 mm under worst static load) | – |
 | R13 | Printability | Parts ≤ 256 mm, support-free where possible | – |
 | R14 | **Assembly simulation** (owner, 2026-11-26) | Every part has a simulated assembly sequence: (a) each bearing slides onto its journal from a free end; (b) each part reaches its installed position along a straight insertion path without colliding with parts already installed; (c) every screw has tool access (Ø12 mm clear along its axis for ≥ 50 mm for a hex key or driver); (d) every joint cartridge can be swapped with the arm assembled. Checked by `rnd/assembly_seq.py` | 100 % of parts | all drive shafts and cartridges |
-| R15 | **Spacing** (owner, 2026-11-26) | Minimum clearance between parts that are not fused or bolted together: ≥ 1.0 mm static; ≥ 2.0 mm between parts in relative motion over their full joint range (swept); belts ≥ 3 mm from any static part; cable bend radius ≥ 10 × OD; no belt/pulley nip reachable by a 12 mm finger probe. Checked by `rnd/spacing.py` | as stated | ≥ 0.5 mm static, ≥ 1.0 mm moving |
+| R15 | **Spacing** (owner, 2026-11-26) | Minimum clearance between parts that are not fused or bolted together: ≥ 1.0 mm static; running clearances set by a bearing, shim or guide ≥ 0.3 mm (loop 36 refinement); ≥ 2.0 mm between other parts in relative motion over their full joint range (swept); belts ≥ 3 mm from any static part; cable bend radius ≥ 10 × OD; no belt/pulley nip reachable by a 12 mm finger probe. Checked by `rnd/spacing.py` | as stated | ≥ 0.5 mm static, ≥ 1.0 mm moving |
 
 ## 3. Decisions (living; reversals logged)
 
@@ -96,7 +96,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 Next (fresh critique after loop 31: torque paths 21/21, module clashes 0, docking and face screen designed, every confidence Monte Carlo passing; **scorecard 38 ✅ / 1 ❌, R10 build time only**). The hourly loop works top-down:
 
 **External review #1 (Gemini 4 Neon, 2026-11-26) → queue A-items first** ([triage](review/triage_2026-11-26.md)):
-- **R14/R15 (owner, 2026-11-26), new design targets:** extend `rnd/assembly_seq.py` to straight-line insertion paths for every part, tool access for every screw and cartridge swap with the arm assembled. Add `rnd/spacing.py`: minimum distances between all non-fused part pairs, static and swept over joint ranges, plus belt clearance and finger-probe nips. Both become scorecard rows.
+- **R14/R15 (owner, 2026-11-26), new design targets:** extend `rnd/assembly_seq.py` to straight-line insertion paths for every part, tool access for every screw and cartridge swap with the arm assembled. *`rnd/spacing.py` done in loop 36 (static; 7 → 2 hard violations, both the elbow cassette vs its pulley/belt → fixed by the D13 elbow redesign). Still to do: swept spacing over joint ranges, finger-probe nips, cable bend radius in CAD.*
 - A1 assemblability: *check built, loop 35: 1/6 shafts pass; D13 adopted.* Next: small-stage v2 CAD (steel shaft, Al pulley, flange coupling; re-derive J1/J2/walls), then the big-pulley split shafts
 - A2 KX socket construction
 - A3 real clock-spring cavities + harness

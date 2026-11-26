@@ -84,7 +84,7 @@ def upper_bone() -> Part:
     p += Pos(0, (CAS_B[1] + 10 + h["y"] / 2 - WALL) / 2, -92) * (Box(16, h["y"] / 2 - WALL - CAS_B[1] - 10, 16)
                                                                 - Box(5.4, 40, 12))
     # openings: cartridge bay on -Y (the cartridge drops in from the side), elbow hub exit on +Y
-    p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(cm.MOTOR["od"] / 2 + 4, 20)
+    p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(cm.MOTOR["od"] / 2 + 4.5, 20)   # loop 36 (R15): 1.2 mm around the can
     p -= Pos(0, h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20)
     # (the old torque-pin slot cut here sat inside the bay hole and removed nothing: the cartridge torque-reaction path is
     #  open on every stage — see rnd/integration.py and the RND_PLAN queue)
@@ -170,7 +170,7 @@ def forearm() -> Part:
         p += Pos(0, y, z0) * (Cylinder(18, 24, align=MIN) - Cylinder(15.1, 24, align=MIN))
     # wrist housing: holds the wrist cartridge (axis Y, output toward -Y)
     # (loop 10) sized to the real DM-J4310 cartridge (rnd/parts/hand.py): KX56 face at y = WRIST_Y0, open toward -Y
-    can_d = J4310["od"] + 2 * 2.4 + 0.6 + 0.6
+    can_d = J4310["od"] + 2 * 2.4 + 0.6 + 2.0               # loop 36 (R15): 1 mm radial float for the cartridge (was 0.3)
     wy = WRIST_Y1 - WRIST_Y0
     p += Pos(0, WRIST_Y0, -FORE_L) * Rot(-90, 0, 0) * (Cylinder(can_d / 2 + WALL, wy, align=MIN) - Cylinder(can_d / 2, wy - WALL, align=MIN))
     p += Pos(0, y, -FORE_L + 38) * Box(56, link_t, 12)                                  # web joining link and wrist can

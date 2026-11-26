@@ -1038,3 +1038,26 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - cable bend radius ≥ 10 × OD
   - no 12 mm finger-probe nip
 - Queued at the top, alongside A1.
+
+## Loop 36 (2026-11-26): R15 spacing check
+
+- **`rnd/spacing.py`:** BRepExtrema minimum distance for every near pair, in five classes:
+  - mate: no rule
+  - running: ≥ 0.3 mm, bearing/shim/guide-defined
+  - belt: ≥ 3 mm
+  - moving: ≥ 2 mm
+  - static: ≥ 1 mm
+
+  R15 is refined to allow bearing-defined running clearances. A flat 2 mm rule would forbid every bearing shoulder.
+- **First run: 7 pairs under the hard limit.** Fixed this loop:
+  - yaw-shaft top 0.15 mm under the 72T roll pulley (moving) → shaft 2 mm shorter
+  - wrist can float 0.3 → 0.8 mm
+  - lift-belt slot 1 → 3 mm
+  - clevis vs yaw shaft 1.0 → 1.4 mm
+  - elbow bay 0.7 → 1.2 mm
+  - wrist camera +0.7 mm
+  - a mis-classified mate (servo in its sleeve)
+- **Results:**
+  - Remaining hard violations: **2**, the elbow cassette plates vs their 40T pulley (0.1 mm) and belt (0.03 mm). Both go away with the D13 elbow redesign.
+  - Under target: 5.
+- New scorecard row (R15, ❌ until D13). R14 row renamed.

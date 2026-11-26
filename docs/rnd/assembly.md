@@ -17,7 +17,7 @@
 | roll link | 107 × 140 × 192 | 268 | ✅ |
 | shoulder bracket | 150 × 179 × 181 | 354 | ✅ |
 | upper bone [1] | 110 × 140 × 178 | 115 | ✅ |
-| clevis + yaw block | 92 × 119 × 176 | 265 | ✅ |
+| clevis + yaw block | 92 × 119 × 176 | 263 | ✅ |
 | carriage | 88 × 101 × 160 | 557 | ✅ |
 | dock_tower | 50 × 59 × 150 | 435 | ✅ |
 | e_tray | 6 × 148 × 148 | 54 | ✅ |
@@ -31,8 +31,8 @@
 | upper bone cap [1] | 10 × 102 × 109 | 13 | ✅ |
 | KX74 collar | 19 × 98 × 103 | 35 | ✅ |
 | mast coupling | 40 × 100 × 100 | 253 | ✅ |
+| forearm (ends) [1] | 59 × 67 × 95 | 39 | ✅ |
 | upper bone cap [2] | 5 × 93 × 95 | 3 | ✅ |
-| forearm (ends) [1] | 59 × 65 × 95 | 39 | ✅ |
 | pitch shaft | 66 × 94 × 94 | 185 | ✅ |
 | pulley 60T | 16 × 94 × 94 | 107 | ✅ |
 | palm | 40 × 75 × 92 | 149 | ✅ |
@@ -41,7 +41,7 @@
 | KX74 hub | 12 × 90 × 90 | 68 | ✅ |
 | small-pulley hub | 46 × 90 × 90 | 82 | ✅ |
 | upper bone [2] | 26 × 90 × 90 | 46 | ✅ |
-| yaw shaft | 44 × 90 × 90 | 79 | ✅ |
+| yaw shaft | 42 × 90 × 90 | 75 | ✅ |
 | cartridge M can | 44 × 87 × 87 | 50 | ✅ |
 | KX56 collar | 18 × 78 × 85 | 26 | ✅ |
 | KX74 male | 8 × 80 × 80 | 29 | ✅ |

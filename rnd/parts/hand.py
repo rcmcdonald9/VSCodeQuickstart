@@ -134,7 +134,7 @@ def gripper_parts(jaw_deg: float = 25.0):
     parts += [("jaw_fixed", stem, "white"), ("finray_fixed", fr, "orange"), ("pad_fixed", pad, "dark")]
     tof = Pos(48, 21, zb - 19) * Box(10, 8, 4)                                  # palm ToF (VL53L4CD) beside the wrist camera, looking down
     parts.append(("palm_tof", tof, "dark"))
-    cam = Pos(51.5, 0, zb - 21) * Box(24, 30, 22)                # loop 31: +2.5 mm clear of the fixed fin-ray
+    cam = Pos(52.2, 0, zb - 21) * Box(24, 30, 22)                # loop 31: +2.5 mm clear of the fixed fin-ray
     parts.append(("wrist_cam", cam, "dark"))
     return parts
 
