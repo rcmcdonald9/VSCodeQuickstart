@@ -1,0 +1,62 @@
+[
+ {
+  "name": "pitch",
+  "actuator": "GIM6010-8",
+  "ratio": 3.0,
+  "lower": -3.490658503988659,
+  "upper": 1.0471975511965976,
+  "rated_nm": 15.0,
+  "peak_nm": 33.0,
+  "max_speed_rad_s": 14.660753333333332
+ },
+ {
+  "name": "roll",
+  "actuator": "GIM6010-8",
+  "ratio": 4.444444444444445,
+  "lower": -0.2617993877991494,
+  "upper": 1.7453292519943295,
+  "rated_nm": 22.22222222222222,
+  "peak_nm": 48.88888888888889,
+  "max_speed_rad_s": 9.896008499999999
+ },
+ {
+  "name": "yaw",
+  "actuator": "GIM6010-8",
+  "ratio": 2.0,
+  "lower": -2.6179938779914944,
+  "upper": 2.6179938779914944,
+  "rated_nm": 10.0,
+  "peak_nm": 22.0,
+  "max_speed_rad_s": 21.99113
+ },
+ {
+  "name": "elbow",
+  "actuator": "GIM6010-8",
+  "ratio": 2.0,
+  "lower": -2.6179938779914944,
+  "upper": 0.0,
+  "rated_nm": 10.0,
+  "peak_nm": 22.0,
+  "max_speed_rad_s": 21.99113
+ },
+ {
+  "name": "wpitch",
+  "actuator": "DM-J4310-2EC_V1.1",
+  "ratio": 1.0,
+  "lower": -2.0943951023931953,
+  "upper": 2.0943951023931953,
+  "rated_nm": 3.0,
+  "peak_nm": 7.0,
+  "max_speed_rad_s": 12.56636
+ },
+ {
+  "name": "wroll",
+  "actuator": "STS3215-C018",
+  "ratio": 1.0,
+  "lower": -3.141592653589793,
+  "upper": 3.141592653589793,
+  "rated_nm": 0.98,
+  "peak_nm": 2.94,
+  "max_speed_rad_s": 4.712384999999999
+ }
+]
