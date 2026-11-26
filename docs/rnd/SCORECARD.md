@@ -36,8 +36,8 @@
 | R4 sim: 15 mm threshold on hard floor + carpet (45°, ≤ 0.15 m/s), peak margin | crossed, 1.7× | cross, ≥ 1.5× | ✅ |
 | R4 sim: carpet cruise wheel torque (RMS / rated) | 2.2 / 5 N·m | ≤ 70 % | ✅ |
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 68 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
-| FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.2× (8 cases, max disp 1.88 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
+| FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.2× (8 cases, max disp 1.87 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Thermal: hottest motor, non-stop task day (MC worst corner) | 55 °C | ≤ 100 °C | ✅ |
-| Load path: cartridge torque pins landing in structure | 7/21 | all | ❌ |
+| Load path: cartridge torque pins landing in structure | 11/21 | all | ❌ |
 | Clashes inside modules (> 50 mm³, fused interfaces excluded) | 8 | 0 | ❌ |
 | R11 looks | engineering render v0 (robot_v0.png); industrial-design pass pending | owner approval | — |

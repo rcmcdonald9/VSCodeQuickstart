@@ -62,7 +62,25 @@ def roll_link() -> Part:
         w -= Pos(0, ROLL_Y, ROLL_C) * Rot(0, 90, 0) * Cylinder(19.1, 40)          # eccentric-bushing seat, small hub
         p += w
     p += _plate_x(W1[0], W2[1], 8, 12, 46, ROLL_C + 32, 4)                       # web joining the walls to the boss, above the roll pulley
-    return p
+    return p + roll_torque_fork()
+
+
+ZC = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]      # KX face → can rear
+
+
+def roll_torque_fork() -> Part:
+    """Loop 22: torque reaction for the roll cartridge. Its pin sits 30 mm above the cartridge axis (z = ROLL_C + 30) and
+    sticks out of the can rear (−X). The inner wall rises to z 147; a 6 mm plate runs over the can (85 mm wide in Y:
+    ≈ 3.8 MPa at 367 N) to a 7 mm fork plate with a slot open downward (toward the cartridge axis). Everything stays
+    > 105 mm from the roll axis, outside the swept envelope of the clevis and yaw block."""
+    tp = cm.TORQUE_PIN
+    x_rear, zp = XF - ZC, ROLL_C + tp["r"]
+    y0, y1 = 30.0, ROLL_Y + 40
+    riser = Pos((W1[0] + W1[1]) / 2, (y0 + y1) / 2, (ROLL_C + 32 - 2 + 147) / 2) * Box(W1[1] - W1[0], y1 - y0, 147 - (ROLL_C + 30))
+    top = Pos((x_rear - 9 + W1[1]) / 2, (y0 + y1) / 2, 144) * Box(W1[1] - (x_rear - 9), y1 - y0, 6)          # clears the KX collar (r 49.2 → z 139.2)
+    fork = Pos(x_rear - 5.5, ROLL_Y, (zp - 9 + 144) / 2) * Box(7, 48, 144 - (zp - 9))
+    fork -= Pos(x_rear - 5.5, ROLL_Y, zp - 9 + 7) * Box(8, tp["d"] + 0.4, 14 + 0.01)         # slot: open bottom, closed 5 mm above the pin
+    return riser + top + fork
 
 
 def roll_shaft() -> Part:
@@ -89,11 +107,25 @@ def clevis_and_yaw_block() -> Part:
     # (M5 through-bolts; the belt and both pulleys go in before the bottom plate)
     for xx, yy in ((-YAW_C / 2, ROLL_Y - 38), (-YAW_C / 2, ROLL_Y + 38), (-YAW_C - 24, ROLL_Y - 38), (-YAW_C - 24, ROLL_Y + 38)):
         p += Pos(xx, yy, P2[1]) * (Cylinder(7, P1[0] - P2[1], align=MIN) - Cylinder(2.75, P1[0] - P2[1], align=MIN))
+    p += yaw_torque_fork()
     for x0, x1 in ((W1[0] - 12, W1[0] - 2), (W2[1] + 2, W2[1] + 12)):            # clevis arms outside the walls
         arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 26, 10)           # arms end on the top plate (yaw pulley below is clear)
         arm -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(20.2, 100)           # clamps on the roll shaft ends
         p += arm
     return p
+
+
+def yaw_torque_fork() -> Part:
+    """Loop 22: torque reaction for the yaw cartridge (axis Z at x = −YAW_C). Its pin sits 30 mm toward the yaw axis
+    (x = −YAW_C + 30) above the can rear (z = ZF + ZC). A 7 mm fork plate, open toward the cartridge axis (−X), is fused to
+    the inboard clevis arm; the roll-shaft envelope is cut as in the arm. In-plane bending ≈ 2.8 MPa at 367 N."""
+    tp = cm.TORQUE_PIN
+    xp, z_rear = -YAW_C + tp["r"], ZF + ZC
+    xe = W1[0] - 7
+    f = Pos((xp - 9 + xe) / 2, ROLL_Y, z_rear + 5.5) * Box(xe - (xp - 9), 48, 7)
+    f -= Pos(xp - 9 + 7, ROLL_Y, z_rear + 5.5) * Box(14 + 0.01, tp["d"] + 0.4, 8)             # open slot toward −X, closed 5 mm past the pin
+    f -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(20.2, 60)                 # roll-shaft envelope, only where the shaft is (x ±30)
+    return f
 
 
 def yaw_shaft() -> Part:
@@ -107,8 +139,8 @@ def shoulder_cap() -> Part:
     """Looks pass: rounded cap over the roll cartridge and the top of the roll link (pitch body; open underneath).
     It stays clear of everything that rolls: the clevis stays within 37 mm of the roll axis and the cap starts 62 mm above it."""
     from .soft import soft_shell
-    c = Pos(-34, (10 + 140) / 2, (38 + 152) / 2) * soft_shell(134, 130, 114, 42, 30, 2.0)
-    c -= Pos(-34, 75, 38) * Box(140, 140, 4)                                  # open bottom (rear part)
+    c = Pos(-38, (10 + 140) / 2, (38 + 160) / 2) * soft_shell(142, 130, 122, 42, 30, 2.0)   # loop 22: +8 mm back and up over the roll torque fork
+    c -= Pos(-38, 75, 38) * Box(148, 140, 4)                                  # open bottom (rear part)
     c -= Pos(14, 75, 38 + 12) * Box(40, 140, 28)                              # front part opens higher (roll pulley sweep)
     c -= Pos(-8, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(62, 30)               # clearance around the roll pulley
     return c

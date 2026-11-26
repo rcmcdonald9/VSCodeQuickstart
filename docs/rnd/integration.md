@@ -12,7 +12,7 @@ Clash and printability checks miss parts that *don't touch*. This finds load pat
 
 A pin counts as reacted when its tip is in clear space and structure sits on both tangential sides of it (a slot or fork).
 
-**Torque reaction: 7/21 cartridge pins land in structure.**
+**Torque reaction: 11/21 cartridge pins land in structure.**
 
 | Check | Part | Result | Detail |
 |---|---|---|---|
@@ -24,15 +24,15 @@ A pin counts as reacted when its tip is in clear space and structure sits on bot
 | torque pin | pan_sleeve | ❌ | pin tip in air |
 | torque pin | tilt_sleeve | ❌ | pin tip runs into structure (no slot) |
 | torque pin | l_sh_can | ✅ | l_sh_bracket |
-| torque pin | l_roll_roll_can | ❌ | pin tip in air |
-| torque pin | l_roll_yaw_can | ❌ | pin tip in air |
+| torque pin | l_roll_roll_can | ✅ | l_roll_roll_link |
+| torque pin | l_roll_yaw_can | ✅ | l_roll_yaw_block |
 | torque pin | l_arm_e_can | ❌ | pin tip in air |
 | torque pin | l_arm_wrist_can | ❌ | pin tip runs into structure (no slot) |
 | torque pin | l_arm_hand_wr_sleeve | ❌ | pin tip in air |
 | torque pin | l_arm_hand_grip_servo_sleeve | ❌ | no pin seat found |
 | torque pin | r_sh_can | ✅ | r_sh_bracket |
-| torque pin | r_roll_roll_can | ❌ | pin tip in air |
-| torque pin | r_roll_yaw_can | ❌ | pin tip in air |
+| torque pin | r_roll_roll_can | ✅ | r_roll_roll_link |
+| torque pin | r_roll_yaw_can | ✅ | r_roll_yaw_block |
 | torque pin | r_arm_e_can | ❌ | pin tip in air |
 | torque pin | r_arm_wrist_can | ❌ | pin tip runs into structure (no slot) |
 | torque pin | r_arm_hand_wr_sleeve | ❌ | pin tip in air |

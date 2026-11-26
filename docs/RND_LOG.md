@@ -773,3 +773,14 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - Module clashes 9 → **8**.
   - Scorecard 33 ✅ / 3 ❌. Workspace margin 1.50×, 62/62 printable, 0 cross-module clashes.
 - **Next:** roll ×2 and yaw ×2 torque reaction (roll link / clevis), then the elbow (queue item 3).
+
+## Loop 22 (2026-11-26): roll and yaw torque forks
+
+- **Roll** (`roll.roll_torque_fork`): the inner wall rises to z 147. A 6 mm plate (85 mm wide) runs over the can, above the KX collar (r 49.2), to a 7 mm fork plate open downward.
+  - It stays > 105 mm from the roll axis, outside the swept envelope of the clevis and yaw block.
+  - The cosmetic shoulder cap grew 8 mm back and up so the fork stays inside it.
+- **Yaw** (`roll.yaw_torque_fork`): a 7 mm fork plate fused to the inboard clevis arm, 21 mm cantilever.
+  - The first version cut the roll-shaft envelope along its whole length and removed its own slot walls. The new check caught it; the cut is now limited to x ±30.
+- **FEA:** roll link 6.0× → 6.5× (0.61 mm), clevis 3.2× (1.87 mm).
+- **Results:** torque pins 7/21 → **11/21**. Module clashes 8, unchanged; no new overlaps. Scorecard 33 ✅ / 3 ❌.
+- **Next:** elbow (with queue item 3: collar and forearm clashes), then wrist pitch/roll and head pan/tilt (these need slots in walls the pins currently run into).

@@ -13,10 +13,10 @@
 | ratchet strip [2] | 6 × 14 × 206 | 16 | ✅ |
 | ratchet strip [3] | 6 × 14 × 206 | 16 | ✅ |
 | ratchet strip [4] | 6 × 14 × 206 | 16 | ✅ |
+| roll link | 107 × 140 × 192 | 268 | ✅ |
 | shoulder bracket | 150 × 179 × 181 | 354 | ✅ |
-| clevis + yaw block | 92 × 119 × 176 | 259 | ✅ |
+| clevis + yaw block | 92 × 119 × 176 | 269 | ✅ |
 | upper bone [1] | 98 × 116 × 170 | 82 | ✅ |
-| roll link | 90 × 107 × 167 | 203 | ✅ |
 | carriage | 88 × 101 × 160 | 557 | ✅ |
 | e_tray | 6 × 148 × 148 | 54 | ✅ |
 | yoke | 60 × 148 × 148 | 105 | ✅ |
