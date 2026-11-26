@@ -1131,3 +1131,7 @@ One long push instead of half-hour runs. In order:
 
 - One relief channel per pin track instead of one box over the whole ball: the capture rim at the ball equator is 58 % of the circumference (KX44 53 %), was 0 %.
 - balls_mated() now places the balls at z_ball (gap + recess); retainer holes Ø2.5 → Ø4.1 for M3 heat-set inserts. Coupon C2 gets a measured ≥ 20 N pull-out test.
+
+## Loop 42-sw (2026-11-26, software): LeRobot compatibility checked with the official loader (Astra finding 21)
+
+- LeRobot 0.7 rejects our hand-written v2.1 layout. New sw/to_lerobot_v3.py writes the demos through LeRobotDataset.create/add_frame/save_episode/finalize (format v3.0) and reloads them with the official loader: episodes, frame count, 224 px video features and exact action round-trip checked (docs/sw/lerobot_v3.json).

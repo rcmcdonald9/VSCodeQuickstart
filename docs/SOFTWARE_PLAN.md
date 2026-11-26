@@ -39,7 +39,7 @@ the gap. Design every interface to look like the large open datasets, so their d
 |---|---|---|
 | **S0.1** ✅ | `sw/bench_env.py`: MuJoCo bench-arm environment (one arm on a stand, table, objects; wrist + exterior cameras; EEF-delta action interface via our IK), gymnasium API | no |
 | **S0.2** ✅ (loop 40) | Robot description export: `sw/export_description.py` → URDF + MJCF + joints.json (limits, ratings) from the same model as the sims; CAD meshes still to add | no |
-| **S0.3** ✅ (loop 40) | `sw/gen_demos.py`: scripted expert (the twin's IK pick-and-place planner), domain-randomised (lighting, textures, object pose, camera jitter) → **synthetic demos in LeRobot format** | no |
+| **S0.3** ✅ (loop 40; v3.0 via the official writer, loop 42-sw: `sw/to_lerobot_v3.py`, reloaded with `LeRobotDataset`) | `sw/gen_demos.py`: scripted expert (the twin's IK pick-and-place planner), domain-randomised (lighting, textures, object pose, camera jitter) → **synthetic demos in LeRobot format** | no |
 | **S0.4a** ✅ (loop 40) | `sw/train_bc.py`: dataset → decode → train a small BC policy from scratch on CPU → closed-loop eval in the twin ([train_bc.md](sw/train_bc.md)) | no |
 | **S0.4b** ⛔ | Pretrained small policy (SmolVLA / π0-family) co-trained on synthetic + an open-dataset slice. **Blocked: this environment's network policy refuses huggingface.co** (owner decision to allow it) | no (GPU later) |
 | **S1** (partly ready, loop 40) | `sw/drivers/mit.py` DM-J4310 MIT frames ✅ tested; `sw/drivers/gim.py` interface (GIM protocol from the manual on day 1: the manual is blocked here). Bench bring-up: drivers (GIM6010 CAN, DM-J4310 MIT mode, STS3215 TTL, RP2040 encoder nodes), 500 Hz control loop, calibration, gravity compensation with the balancer | M1 kit |

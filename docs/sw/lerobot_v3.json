@@ -1,0 +1,30 @@
+{
+ "episodes": 200,
+ "frames": 13885,
+ "seconds": 440.16805505752563,
+ "max_action_error": 0.0,
+ "sample_shapes": {
+  "observation.state": [
+   14
+  ],
+  "action": [
+   7
+  ],
+  "timestamp": [],
+  "frame_index": [],
+  "episode_index": [],
+  "index": [],
+  "task_index": [],
+  "observation.images.wrist": [
+   3,
+   224,
+   224
+  ],
+  "observation.images.exterior": [
+   3,
+   224,
+   224
+  ]
+ },
+ "codebase": "v3.0"
+}
