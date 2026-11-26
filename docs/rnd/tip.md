@@ -13,27 +13,27 @@ Cases (both arms straight out at shoulder height, lift mid-travel, holding the l
 
 Target: ZMP margin ≥ 30 mm in every case (twin v1 dynamic rule); R12 keeps its 50 mm static rule.
 
-**Worst ZMP margin: wheels only -170 mm; with the D18 anti-tip casters -102 mm** (rule ≥ 30 mm). Mass 23.8 kg (+ load), COM height 0.52 m (lift mid, both arms straight out: the worst pose).
+**Worst ZMP margin: wheels only -169 mm; with the D18 anti-tip casters -102 mm** (rule ≥ 30 mm). Mass 24.1 kg (+ load), COM height 0.52 m (lift mid, both arms straight out: the worst pose).
 
-**Push to tip over, no load, 1.0 m high:** between wheels 35 N with wheels only, 45 N with the casters (arms tucked, COM centred).
+**Push to tip over, no load, 1.0 m high:** between wheels 35 N with wheels only, 46 N with the casters (arms tucked, COM centred).
 
 | Load | Direction | Braking 0.5 m/s² | Nudge 30 N @ 1 m | COM offset (mm) | ZMP offset (mm) | Margin, wheels only (mm) | Margin, + D18 casters (mm) | |
 |---|---|---|---|---|---|---|---|---|
-| 1.0 kg | 0° |  |  | 131 | 131 | 56 | 74 | ✅ |
-| 1.0 kg | 0° | yes |  | 131 | 158 | 37 | 49 | ✅ |
-| 1.0 kg | 0° |  | yes | 131 | 260 | -35 | -47 | ❌ |
-| 1.0 kg | 0° | yes | yes | 131 | 286 | -54 | -72 | ❌ |
-| 1.0 kg | 45° |  |  | 131 | 131 | 17 | 80 | ✅ |
-| 1.0 kg | 45° | yes |  | 131 | 158 | -9 | 56 | ✅ |
-| 1.0 kg | 45° |  | yes | 131 | 260 | -111 | -36 | ❌ |
-| 1.0 kg | 45° | yes | yes | 131 | 286 | -137 | -59 | ❌ |
-| 2.5 kg | 0° |  |  | 171 | 171 | 28 | 37 | ✅ |
-| 2.5 kg | 0° | yes |  | 171 | 198 | 9 | 12 | ❌ |
-| 2.5 kg | 0° |  | yes | 171 | 291 | -58 | -77 | ❌ |
-| 2.5 kg | 0° | yes | yes | 171 | 318 | -77 | -102 | ❌ |
-| 2.5 kg | 45° |  |  | 171 | 171 | -22 | 44 | ✅ |
-| 2.5 kg | 45° | yes |  | 171 | 198 | -49 | 20 | ❌ |
-| 2.5 kg | 45° |  | yes | 171 | 291 | -143 | -64 | ❌ |
-| 2.5 kg | 45° | yes | yes | 171 | 318 | -170 | -89 | ❌ |
+| 1.0 kg | 0° |  |  | 132 | 132 | 55 | 73 | ✅ |
+| 1.0 kg | 0° | yes |  | 132 | 159 | 36 | 48 | ✅ |
+| 1.0 kg | 0° |  | yes | 132 | 259 | -35 | -47 | ❌ |
+| 1.0 kg | 0° | yes | yes | 132 | 286 | -54 | -71 | ❌ |
+| 1.0 kg | 45° |  |  | 132 | 132 | 16 | 79 | ✅ |
+| 1.0 kg | 45° | yes |  | 132 | 159 | -10 | 55 | ✅ |
+| 1.0 kg | 45° |  | yes | 132 | 259 | -111 | -35 | ❌ |
+| 1.0 kg | 45° | yes | yes | 132 | 286 | -137 | -59 | ❌ |
+| 2.5 kg | 0° |  |  | 171 | 171 | 27 | 37 | ✅ |
+| 2.5 kg | 0° | yes |  | 171 | 198 | 8 | 11 | ❌ |
+| 2.5 kg | 0° |  | yes | 171 | 291 | -57 | -76 | ❌ |
+| 2.5 kg | 0° | yes | yes | 171 | 318 | -76 | -102 | ❌ |
+| 2.5 kg | 45° |  |  | 171 | 171 | -23 | 44 | ✅ |
+| 2.5 kg | 45° | yes |  | 171 | 198 | -50 | 20 | ❌ |
+| 2.5 kg | 45° |  | yes | 171 | 291 | -142 | -64 | ❌ |
+| 2.5 kg | 45° | yes | yes | 171 | 318 | -169 | -88 | ❌ |
 
 **Reading (A10, loop 40):** the x-drive diamond is the weak point, not the mass: its edge is 148 mm from the centre between wheels. **D18:** four spring-loaded ball-transfer casters at the diagonals (≈ 5 N preload, hard stop after 5 mm, so they ride over thresholds) fill the diamond out to an octagon. **Planner rules** for what still fails: with a load over 1 kg, carry it close to the body (elbows bent) and pointing at a wheel (the base is holonomic: a turn costs nothing); cap braking with a load to 0.3 m/s²; slow to a crawl when a person is within reach (a firm shove at shoulder height can tip any 24 kg robot this narrow). 10 of 16 worst-pose cases stay under 30 mm even with the casters; they are covered by the planner rules (no straight-arm carries with a load).

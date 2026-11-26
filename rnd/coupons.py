@@ -76,6 +76,10 @@ PROTOCOL = [
     ("C7", "Fin-ray wrap angle on a can; return after 100 squeezes", "≥ 30° wrap; no permanent set", "hand.fin_ray (rib count, wall)"),
     ("C8", "Ratchet tooth under 15 kg for 1 h; pawl engagement", "no tooth shear, < 0.5 mm creep", "upper.ratchet_strip tooth depth"),
     ("C9", "Real GIM6010-8 bolt circles (needs one motor)", "read PCD to ±0.5 mm", "cartridge_m.MOTOR out_pcd / rear_pcd"),
+    ("C10", "D16 wrist-roll dog coupling + spindle (loop 40): 2 × 61804 in the printed skirt; 1 kg on a 90 mm lever, rotate ±180° 1000 times by hand drill at low speed",
+     "no play you can feel at the gripper flange; dog slot wear ≤ 0.1 mm", "hand.py BRG_WR seats, dog slot width"),
+    ("C11", "Clock-spring ribbon life (loop 40, D14 ribbon in a printed yaw cassette): 10,000 cycles over ±150° on a spare GIM or a drill jig",
+     "no conductor break (continuity logged); USB still enumerates at the end", "harness.py SPIRAL lengths, ribbon carrier tape"),
 ]
 
 

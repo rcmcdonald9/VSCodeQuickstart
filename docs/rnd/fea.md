@@ -10,11 +10,11 @@ Each case lists its loads (worst static ×1.5 dynamic, or actuator peak for belt
 
 | Case | Elements | Von Mises (99.5th pct) | Max displacement | Margin vs 12 MPa |
 |---|---|---|---|---|
-| KX74 collar (locked): teeth at 1.5 × preload (240 N) | 50,694 | 1.4 MPa (max 9.4) | 0.04 mm | 8.7× ✅ |
-| Upper bone / elbow housing: forearm load ×1.5 on the elbow bosses | 63,800 | 2.8 MPa (max 17.3) | 1.91 mm | 4.3× ✅ |
+| KX74 collar (locked): teeth at 1.5 × preload (240 N) | 55,317 | 1.4 MPa (max 6.2) | 0.03 mm | 8.7× ✅ |
+| Upper bone / elbow housing: forearm load ×1.5 on the elbow bosses | 63,410 | 0.6 MPa (max 3.2) | 0.35 mm | 19.7× ✅ |
 | Wheel pod: wheel load 168 N (×2 bumps) + 0.5 g lateral | 72,187 | 0.2 MPa (max 0.4) | 0.03 mm | 53.2× ✅ |
-| Shoulder pitch bracket: arm moment 19 N·m + belt peak 691 N | 83,136 | 2.0 MPa (max 4.1) | 0.33 mm | 5.9× ✅ |
-| Elbow belt cassette plate: 60 % of the belt peak (415 N) | 18,517 | 1.2 MPa (max 1.5) | 0.04 mm | 9.7× ✅ |
-| Roll link: roll belt peak 768 N + arm moment 19 N·m (couple 727 N) | 95,455 | 1.8 MPa (max 5.1) | 0.61 mm | 6.5× ✅ |
-| Clevis + yaw block: yaw belt peak 691 N + arm moment 19 N·m (couple 727 N) | 94,988 | 3.8 MPa (max 8.3) | 1.93 mm | 3.2× ✅ |
+| Shoulder pitch bracket: arm moment 19 N·m + belt peak 691 N | 82,056 | 1.8 MPa (max 4.0) | 0.40 mm | 6.6× ✅ |
+| Elbow belt cassette plate: 60 % of the belt peak (415 N) | 17,078 | 1.2 MPa (max 1.6) | 0.04 mm | 9.7× ✅ |
+| Roll link: roll belt peak 768 N + arm moment 19 N·m (couple 559 N) | 105,028 | 1.8 MPa (max 4.7) | 0.72 mm | 6.8× ✅ |
+| Clevis + yaw block: yaw belt peak 691 N + arm moment 19 N·m (couple 559 N) | 95,027 | 1.1 MPa (max 4.9) | 0.29 mm | 10.6× ✅ |
 | Torque hanger (wheel): GIM peak 11 N·m → 367 N on the fork | 34,101 | 2.1 MPa (max 5.4) | 0.08 mm | 5.7× ✅ |

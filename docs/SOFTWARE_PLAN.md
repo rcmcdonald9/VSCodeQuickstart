@@ -37,12 +37,13 @@ the gap. Design every interface to look like the large open datasets, so their d
 
 | Phase | Deliverable | Needs hardware? |
 |---|---|---|
-| **S0.1** | `sw/bench_env.py`: MuJoCo bench-arm environment (one arm on a stand, table, objects; wrist + exterior cameras; EEF-delta action interface via our IK), gymnasium API | no |
-| **S0.2** | Robot description export (URDF + MJCF + meshes from the CAD) for ROS 2 / MoveIt / LeRobot | no |
-| **S0.3** | `sw/gen_demos.py`: scripted expert (the twin's IK pick-and-place planner), domain-randomised (lighting, textures, object pose, camera jitter) → **synthetic demos in LeRobot format** | no |
-| **S0.4** | Training-pipeline dry run: load a pretrained small policy, co-train on synthetic + an open-dataset slice (CPU smoke test; real runs on a GPU later) | no (GPU later) |
-| **S1** | Bench bring-up: drivers (GIM6010 CAN, DM-J4310 MIT mode, STS3215 TTL, RP2040 encoder nodes), 500 Hz control loop, calibration, gravity compensation with the balancer | M1 kit |
-| **S1-safety** | Safety supervisor (independent of the policy): torque/speed/workspace limits, watchdog, e-stop → torque-off | M1 kit |
+| **S0.1** ✅ | `sw/bench_env.py`: MuJoCo bench-arm environment (one arm on a stand, table, objects; wrist + exterior cameras; EEF-delta action interface via our IK), gymnasium API | no |
+| **S0.2** ✅ (loop 40) | Robot description export: `sw/export_description.py` → URDF + MJCF + joints.json (limits, ratings) from the same model as the sims; CAD meshes still to add | no |
+| **S0.3** ✅ (loop 40) | `sw/gen_demos.py`: scripted expert (the twin's IK pick-and-place planner), domain-randomised (lighting, textures, object pose, camera jitter) → **synthetic demos in LeRobot format** | no |
+| **S0.4a** ✅ (loop 40) | `sw/train_bc.py`: dataset → decode → train a small BC policy from scratch on CPU → closed-loop eval in the twin ([train_bc.md](sw/train_bc.md)) | no |
+| **S0.4b** ⛔ | Pretrained small policy (SmolVLA / π0-family) co-trained on synthetic + an open-dataset slice. **Blocked: this environment's network policy refuses huggingface.co** (owner decision to allow it) | no (GPU later) |
+| **S1** (partly ready, loop 40) | `sw/drivers/mit.py` DM-J4310 MIT frames ✅ tested; `sw/drivers/gim.py` interface (GIM protocol from the manual on day 1: the manual is blocked here). Bench bring-up: drivers (GIM6010 CAN, DM-J4310 MIT mode, STS3215 TTL, RP2040 encoder nodes), 500 Hz control loop, calibration, gravity compensation with the balancer | M1 kit |
+| **S1-safety** ✅ software (loop 40) | `sw/safety.py` + `sw/test_s1.py` (fault injection in the twin). Safety supervisor (independent of the policy): torque/speed/workspace limits, watchdog, e-stop → torque-off | M1 kit |
 | **S2** | Teleop and recording: EEF teleop (leader arm through IK, or VR hand tracking); LeRobot recorder | M1 kit + leader arm |
 | **S3.1** | Checkpoint shortlist benchmark on the bench task (zero-shot / 10 / 50 demos) | GPU (owned or rented) |
 | **S3.2** | First skill: pick-and-place a cup | GPU |

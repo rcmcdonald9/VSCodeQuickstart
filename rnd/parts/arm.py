@@ -31,7 +31,7 @@ from .belt_stage import V2 as _V2
 _y = lambda z: -20.0 - z
 BELT_Y = _y(_V2["belt_c"])                                         # 20.2
 CAS_A = (_y(_V2["jA"][1]) - 1.0, _y(_V2["jA"][0]))                  # 6 mm plate, bearing A flush on the pulley side (3.7 … 9.7; 0.5 mm to the pulley)
-CAS_B = (_y(_V2["jB"][1]), _y(_V2["jB"][0]) + 1.0)                  # 6 mm plate, bearing B flush on the pulley side (37.7 … 43.7)
+CAS_B = (_y(_V2["jB"][1]), _y(_V2["jB"][0]) + 0.2)                  # bearing B flush on the pulley side; loop 40: 6 → 5.2 mm (the D15 hub moved it 0.8 mm toward the +Y corner skin)
 CAS_POST_X, CAS_POST_Z = 35.0, -ELBOW_Z + BELT_C - 10.0     # loop 38: 32 → 35, boss r 7 (R15: belt ≥ 3 mm, +Y corner ≥ 1.5 mm)
 CAP_Z = HOUSING["z0"] + 10.0          # housing / bottom-cap split
 WRIST_Y0, WRIST_Y1 = 43.0, 96.0   # wrist can span (holds the DM-J4310 cartridge; its KX56 face at y ≈ 33.6, hand centre at y = 0)
@@ -71,6 +71,7 @@ def housing_stiffener() -> Part:
     inner = _housing_solid(WALL - 0.4) - _housing_solid(WALL + STIFF_T)          # 0.4 mm overlap into the skin: coincident faces crash the fuse
     yw = h["y"] / 2 - WALL - STIFF_T - 0.5                                               # +Y face slab only (cassette plate B ends at y 43.7)
     st = (inner & Pos(0, yw + 100, 0) * Box(400, 200, 600)) + (inner & Pos(0, 0, h["z1"] - 10) * Box(400, 400, 20))
+    st -= Pos(0, -20, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(59.0, 40)          # keep the elbow KX collar and its thumb tabs (r ≈ 57) clear through the twist
     for k in range(4):
         a = 45 + 90 * k
         st += Rot(0, 0, a) * Pos(23 + 14, 0, h["z1"]) * Box(28, 3, 14, align=(Align.CENTER, Align.CENTER, Align.MIN))

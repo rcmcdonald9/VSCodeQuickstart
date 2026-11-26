@@ -17,12 +17,12 @@ Pass rules:
   hard moves (the joint-side encoders detect it).
 - Twist torque ≤ 3 N·m in ≥ 95 %.
 
-**Worst P(slip < rated) = 0.000%** (rule ≤ 0.1 %). **Worst 95th-percentile twist = 3.0 N·m** (rule ≤ 3).
+**Worst P(slip < rated) = 0.000%** (rule ≤ 0.1 %). **Worst 95th-percentile twist = 2.9 N·m** (rule ≤ 3).
 
 | Interface | Rated / peak (N·m) | Nominal slip | 0.1 % slip | Mean preload loss (10 y creep + tol.) | P(slip < rated) | P(slip < peak) | Twist p95 (N·m) |
 |---|---|---|---|---|---|---|---|
-| KX74 + GIM6010-8 (warm) | 5.00 / 11.00 | 12.7 | 9.0 | 3.8% | 0.000% | 13.2% | 3.0 |
-| KX56 + DM-J4310-2EC_V1.1 (warm) | 3.00 / 7.00 | 8.3 | 5.9 | 3.7% | 0.000% | 9.3% | 2.0 |
+| KX74 + GIM6010-8 (warm) | 5.00 / 11.00 | 12.7 | 9.0 | 3.8% | 0.000% | 13.2% | 2.9 |
+| KX56 + DM-J4310-2EC_V1.1 (warm) | 3.00 / 7.00 | 8.3 | 5.9 | 3.7% | 0.000% | 9.3% | 1.9 |
 | KX44 + STS3215-C018 | 0.98 / 2.94 | 3.4 | 2.5 | 1.8% | 0.000% | 9.3% | 0.9 |
 
 **Reading:** coupon C1 (print-in-place KX socket) measures the real slip torque, twist and re-seat repeatability. These replace the ESTIMATE spreads above.

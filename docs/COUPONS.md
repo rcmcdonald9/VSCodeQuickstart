@@ -2,14 +2,14 @@
 
 **Why:** these are the riskiest *new* mechanisms in the design (see the confidence assessment in RND_LOG). They cost only filament. Print them first and record the measurements below; each result updates the named parameter, and the hourly R&D loop re-runs every check.
 
-**Total:** 267 g, 21.4 h with PrusaSlicer's generic profile ≈ **7.5 h on the P2S** (ESTIMATE).
+**Total:** 274 g, 22.1 h with PrusaSlicer's generic profile ≈ **7.8 h on the P2S** (ESTIMATE).
 
 STLs: `rnd/out/coupons/`.
 
 | Coupon | Material | Generic time (h) | Filament (g) | How to print |
 |---|---|---|---|---|
-| C1_kx74_pip_socket_and_collar | PETG | 5.3 | 78 | Pause 1 at the pin-centre layer (insert 6 × Ø5×14), pause 2 at the lip top (wave spring or 6 coil springs + PTFE washer) |
-| C2_kx74_male_face | PETG | 1.6 | 21 | Pause at the ball-centre layer: press in 3 × Ø10 balls |
+| C1_kx74_socket_and_collar | PETG | 6.0 | 85 | D15 screwed socket: print hub, collar and retainer separately; press 6 × Ø5×14 pins in radially, 6 × Ø4 coil springs in the step pockets, collar on, retainer 3 × M3 |
+| C2_kx74_male_face | PETG | 1.6 | 21 | Snap 3 × Ø10 balls past the equator (1 mm) with a drop of retaining compound; check they can't be pulled out by hand |
 | C3_clearance_ladder | PETG | 1.8 | 16 | Print-in-place; try to turn each pin by hand |
 | C4_pressfit_ladder | PETG | 4.3 | 64 | Press the real pins/balls in; note the tightest row that still assembles without cracking |
 | C5_eccentric_bushing | PETG | 0.2 | 3 | Fit a 6804 bearing; rotate in a Ø38.2 test hole |
@@ -22,7 +22,7 @@ STLs: `rnd/out/coupons/`.
 
 | # | Measure | Pass if | Updates | Result |
 |---|---|---|---|---|
-| C1 | KX socket: lock twist torque (luggage scale on the collar tab), slip torque (lever + scale), re-seat repeatability over 10 cycles (dial or calipers on a 100 mm arm). Then **creep hold** (loop 29): leave it locked on the P2S bed at 50 °C for 72 h and measure slip torque again | twist ≤ 3 N·m; slip ≥ 12 N·m; repeatability ≤ 0.05 mm at 100 mm; slip loss after the hold ≤ 5 % | kx.py: clearance, preload_n, ramp_deg, stroke; rnd/kx_mc.py creep ratio | |
+| C1 | KX socket: lock twist torque (luggage scale on the collar tab), slip torque (lever + scale), re-seat repeatability over 10 cycles (dial or calipers on a 100 mm arm). Then **creep hold** (loop 29): leave it locked on the P2S bed at 50 °C for 72 h and measure slip torque again | twist ≤ 3 N·m; slip ≥ 12 N·m; repeatability ≤ 0.05 mm at 100 mm; slip loss after the hold ≤ 5 %; preload from the 6 springs 160 ± 30 N (scale on the collar lip) | kx.py: clearance, preload_n, ramp_deg, stroke; rnd/kx_mc.py creep ratio | |
 | C2 | Male face: balls seated flush ±0.05 mm | no ball proud > 0.1 mm | kx.py: ball pocket fit | |
 | C3 | Smallest gap whose pin turns freely after printing | ≤ 0.30 mm frees | kx.py clearance (0.30) | |
 | C4 | Tightest press-fit row that assembles without cracking (pins, balls) | one row works | kx.py pin/ball hole diameters | |
@@ -31,6 +31,8 @@ STLs: `rnd/out/coupons/`.
 | C7 | Fin-ray wrap angle on a can; return after 100 squeezes | ≥ 30° wrap; no permanent set | hand.fin_ray (rib count, wall) | |
 | C8 | Ratchet tooth under 15 kg for 1 h; pawl engagement | no tooth shear, < 0.5 mm creep | upper.ratchet_strip tooth depth | |
 | C9 | Real GIM6010-8 bolt circles (needs one motor) | read PCD to ±0.5 mm | cartridge_m.MOTOR out_pcd / rear_pcd | |
+| C10 | D16 wrist-roll dog coupling + spindle (loop 40): 2 × 61804 in the printed skirt; 1 kg on a 90 mm lever, rotate ±180° 1000 times by hand drill at low speed | no play you can feel at the gripper flange; dog slot wear ≤ 0.1 mm | hand.py BRG_WR seats, dog slot width | |
+| C11 | Clock-spring ribbon life (loop 40, D14 ribbon in a printed yaw cassette): 10,000 cycles over ±150° on a spare GIM or a drill jig | no conductor break (continuity logged); USB still enumerates at the end | harness.py SPIRAL lengths, ribbon carrier tape | |
 
 **Small parts to buy for the coupons (≈ $25):**
 - a pack of Ø5×14 dowel pins

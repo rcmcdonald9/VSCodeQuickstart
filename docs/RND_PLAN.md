@@ -92,8 +92,14 @@ Each scheduled run (and any interactive session) does one **loop**:
 | D9 | **Sensors favour accuracy and dexterity over cost** (owner, 2026-11-25). Sensor pack v2: joint-side absolute encoders on the 8 arm belt joints + lift (hand error 4.0 → 0.9 mm); global-shutter wrist cameras; magnetic-elastomer fingertip tactile pads (AnySkin/ReSkin principle); palm ToF; base cliff ToF; optical flow kept; 3 RP2040 CAN sensor nodes. +$276 | New (loop 15) | [accuracy](rnd/accuracy.md), [BOM](rnd/BOM_v4.md) |
 | D10 | **Compute:** the owner's Pi 5 runs I/O, real-time supervision, IK and state estimation (≈ 73 % of 4 cores, ESTIMATE). The torso **reserves a bay + 19 V 3 A branch + Ethernet for a Jetson-class AI computer**, bought in the AI phase (~$249) | New (loop 17) | [compute](rnd/compute.md) |
 | D11 | **Head face screen + touch panel** (owner, 2026-11-26). A bar-format LCD (~7–8", to fit the 196 × 66 mm visor; panel dimensions to verify) shows the face (the eyes are drawn on it) and status, and gives touch controls: pause/resume, home/park, joint jog, teach mode, task pick, and a STOP command. It runs on **its own ESP32-S3-class node on the CAN bus**, not on the Pi, so it still works if the Pi hangs, and the cable to the fixed head is power + one CAN pair. **The hard-wired torso e-stop stays the safety device**; the screen's STOP is a command beside it, not instead of it. ~$50–90, ~+150 g at the mast top, ~2–3 W | Adopted; design in queue item 5 | owner Q&A 2026-11-26 |
-| D12 | **Cable routing: a clock-spring spiral at every joint; slim bundle.** Torsion through the short shaft bores can't absorb the ranges (cable ~±360°/m). The wrist camera becomes MIPI-CSI on an FFC through the wrist, with a CSI→USB bridge on the forearm and a slim 4-core USB (≤ Ø2.2) onward. The stiffest cable is then Ø2.2 mm (bend r 22 mm). | Adopted (loop 32); yaw cavity open | [harness.md](rnd/harness.md) |
+| D12 | **Cable routing: a clock-spring spiral at every joint; slim bundle.** (Loop 40: the yaw cavity is real CAD and yaw is back to ±150°, D13b.) Torsion through the short shaft bores can't absorb the ranges (cable ~±360°/m). The wrist camera becomes MIPI-CSI on an FFC through the wrist, with a CSI→USB bridge on the forearm and a slim 4-core USB (≤ Ø2.2) onward. The stiffest cable is then Ø2.2 mm (bend r 22 mm). | Adopted (loop 32); yaw cavity open | [harness.md](rnd/harness.md) |
 | D13 | **Belt stage v2 (assemblability, review #1 finding 1).** Small-pulley stage: a **steel Ø12 shaft** in 2 × 6801 (12×21×5) inside thicker eccentric bushings; an **off-the-shelf aluminium HTD 5M pulley** (20T; **18T on the roll stage**, fixing the 20/18 mismatch) with set screws on a flat; a **clamp flange coupling** bolted to the printed KX74 hub on a 4 × M4 circle (≈ 5 MPa on the PETG at 12.7 N·m). The bearings slide on from the free end; the shaft drops through the walls. Big-pulley stages (pitch 60T, roll 72T, yaw 40T, elbow 40T): the printed pulley becomes a **separate part bolted to a shaft flange** (≥ 4 × M4), inserted between the walls before the shaft. Every shaft→link joint gets a key or a bolted flange. ≈ +$68 net for 9 small stages (6801s replace 61804s). | Adopted (loop 35); CAD in queue A1 | [assembly_seq.md](rnd/assembly_seq.md), review #1 |
+| D14 | **Only 24 V + CAN + USB cross the shoulder.** The elbow sensor node makes 12 V (buck) and drives the TTL servo bus for the wrist roll and gripper, so the clock-spring ribbon through pitch, roll and yaw is 7.8 mm wide (2 × 20 AWG, 2 CAN pairs, slim USB). | Adopted (loop 40) | [harness.md](rnd/harness.md), [electrical.md](rnd/electrical.md) |
+| D15 | **KX socket as built:** screwed retainer (3 × M3), **6 coil springs Ø4 in pockets** in a 5.5 mm hub step (installed 5 mm, 3 mm compression), pins 1 mm prouder and balls 1 mm deeper in the male face (captured past the equator + retaining compound). Replaces the print-in-place socket (its 1 mm annulus held no real spring; the pause order was wrong). KX Monte Carlo: below-peak slips 26 % → 13 %. | Adopted (loop 40; review finding 2) | [kx_mc.md](rnd/kx_mc.md), COUPONS C1/C2 |
+| D16 | **Wrist roll on a bearing spindle:** the gripper bolts to a spindle in 2 × 61804 under the palm; the STS3215 drives it through a two-dog coupling (torque only). The KX44 seat would lift off at ≈ 0.6 N·m against ≈ 1.3 N·m dynamic with 1 kg. l_hand 0.15 → 0.156 m. Tools bolt to the spindle flange. The wrist-pitch KX56 stays (its bending lever is only the ≈ 40 mm hub offset). | Adopted (loop 40; review finding 5) | rnd/parts/hand.py |
+| D17 | **Wheels bolt to the GIM output** (no KX on the wheels: slip risk under threshold torques, review finding 12). A 3 mm aluminium ring ties the four deck quarters. | Adopted (loop 40) | [BOM](rnd/BOM_v4.md) |
+| D18 | **Anti-tip casters:** four spring-loaded ball-transfer units at the diagonals under the skirt (5 N preload, 5 mm stroke) turn the x-drive diamond (148 mm to the edge between wheels) into an octagon. Push-over force at 1 m between wheels 35 → 45 N. Plus planner rules for loads over 1 kg. | Adopted (loop 40; review finding 11) | [tip.md](rnd/tip.md) |
+| D13b | **Loop 40 completes D13 on the arm:** roll (18T:80T, ratio 4.44, belt 475 mm) and yaw on the D13 stage; every big pulley (pitch 60T, roll 80T, yaw 40T, elbow 40T) is split from its Ø40 tube and keyed by a double-D or a hex; yaw ±150° with real clock-spring cassettes; yaw block closed into a box; elbow housing stiffened (P2 FEA). Lift still on its pulley-on-KX layout (queue). | Done (loop 40) | [assembly_seq.md](rnd/assembly_seq.md), [swept.md](rnd/swept.md), [stiffness.md](rnd/stiffness.md) |
 | D6 | Toolchain: build123d CAD, MuJoCo twin generated from `rnd/params.py`, **arm collision geometry from CAD hulls** (`rnd/parts/collision.py`, loop 6), Blender renders | Holding | `rnd/` |
 | D4c | **Belt stages: HTD 5M, 15 mm, 20T small pulley** (pitch 20:50, roll 20:60, elbow 20:40), printed pulleys, the small pulley on its own bearing hub. **Elbow motor stays at the elbow:** a remote motor on a long belt (Blue-style) was evaluated and rejected (–0.5 N·m at the shoulder, +0.24 kg) | New (loop 3) | [belts](rnd/belts.md) |
 | D7 | **Power bus 24 V (6S Li-ion)**, replacing 48 V | Holding | [T01](rnd/T01_specs.md) |
@@ -106,83 +112,37 @@ Each scheduled run (and any interactive session) does one **loop**:
 - electrical plan, itemised BOM ($3,220), print plan (10.4 kg, ~255 h P2S) and build guide (~25 h hands-on)
 - see [BUILD_v4.md](BUILD_v4.md)
 
-Next (fresh critique after loop 31: torque paths 21/21, module clashes 0, docking and face screen designed, every confidence Monte Carlo passing; **scorecard 38 ✅ / 1 ❌, R10 build time only**). The hourly loop works top-down:
+**Loop 40 (owner: "work through the whole backlog before I buy the arm", 2026-11-26).** Closed in this push, with the check that closes each:
 
-**Software track queue** (see SOFTWARE_PLAN.md):
-- S0.1 bench env
-- S0.3 synthetic demos in LeRobot format
-- S0.2 robot description export
-- S0.4 pipeline dry run with a pretrained checkpoint + open-data slice
-- (S1+ need the M1 kit)
+| Item | Result | Check |
+|---|---|---|
+| Arm dexterity (top priority) | yaw back to ±150° with a real clock-spring cassette; side grasps across the body 2 % → 57 % | [dexterity.md](rnd/dexterity.md) (new R16 row) |
+| A1 / R14 assemblability | D13 on pitch, roll, yaw, elbow; all big pulleys split and keyed; **all arm shafts assemble** | [assembly_seq.md](rnd/assembly_seq.md) |
+| A2 KX socket | D15: screwed retainer, 6 coil springs, captured balls | [kx_mc.md](rnd/kx_mc.md) |
+| A3 cable cavities | roll + yaw cassettes in CAD; D14 slim ribbon; 6/6 joints | [harness.md](rnd/harness.md) |
+| A4 wrist bearings | D16 wrist-roll spindle (the KX44 would have lifted off); wrist-pitch KX56 checked OK | rnd/parts/hand.py |
+| A5 e-stop | category-0 hardware stop, pre-charge, regen clamp (mandatory on the bench supply), servos behind the contactor, watchdog | [electrical.md](rnd/electrical.md) |
+| A6 PETG thermal | can wall up to 63 °C → motor cans + motor-side couplings in ASA | [thermal.md](rnd/thermal.md) |
+| A7 roll teeth | superseded: aluminium HTD small pulleys (D13), roll 18T:80T | [belts.md](rnd/belts.md) |
+| A8 FEA method + stiffness chain (old item 3) | P2 tets: elbow housing and yaw block were 8× / 2.7× softer than P1 showed (≈ 37 mm at the hand); stiffened to ≈ 12 mm raw | [stiffness.md](rnd/stiffness.md) (new R2b row) |
+| A9 balancer | 2:1 tackle + ISO die spring (the old spring could not fit), grooved pulleys, park pin | [balancer.md](rnd/balancer.md) |
+| A10 tip cases | quasi-static ZMP cases + D18 anti-tip casters + planner rules | [tip.md](rnd/tip.md) |
+| A11 wheels | D17 bolted wheels + chassis ring | BOM |
+| A12 dock | bumper ring gap at the pads | rnd/parts/base.py |
+| A13 BMS | smart BMS with telemetry; weekly 4.20 V balance charge | BOM, electrical.md |
+| A14 CAN load | two channels per arm (≈ 46 % each), base at 250 Hz | electrical.md |
+| A15 lift lock | steel rack + steel pawl + belt guards (BOM; CAD next) | BOM |
+| A16 contingency | 15 % line in the BOM and the M1 kit | [BOM](rnd/BOM_v4.md), [M1](M1_BENCH_ARM.md) |
+| R15 swept spacing | roll and yaw sweeps; found and fixed a shoulder-cap clash at roll 55–95° (since loop 22) | [swept.md](rnd/swept.md) |
+| Software S0.2, S0.3, S0.4a, S1 | URDF/MJCF export; LeRobot-format synthetic demos; BC pipeline dry run; DM-J4310 MIT driver, safety supervisor + tests | [SOFTWARE_PLAN.md](SOFTWARE_PLAN.md) |
 
-**TOP PRIORITY: arm dexterity (owner question "is the arm useful as is?", 2026-11-26).** A bench IK map (top-down / 45° / side grasps over a table grid, any approach heading):
-
-| Yaw range | Top-down | 45° | Side (horizontal) | Across the body (y > 0), side grasps |
-|---|---|---|---|---|
-| ±150° (before loop 33) | 36 % | 69 % | 68 % | 60 % |
-| ±70° (loop 33, for the cable) | 34 % | 57 % | **40 %** | **2 %** |
-
-- Loop 33's yaw limit cost far more dexterity than the reach/bimanual metrics showed: they test specific targets with the whole robot and its lift.
-- **Action:** restore yaw ±150° and give the yaw a real cable crossing. Options:
-  - a 12 mm spiral cassette (yaw_drop 0.112): it missed the shoulder-roll margin by only 0.01×, so recover ~20 g elsewhere
-  - a compact through-bore slip ring for power + CAN, with USB2 on a separate path
-- **Add a dexterity metric to the scorecard** (orientation-reachable workspace fraction per grasp type), so a range change can never hide this again.
-
-**External review #1 (Gemini 4 Neon, 2026-11-26) → queue A-items first** ([triage](review/triage_2026-11-26.md)):
-- **R14/R15 (owner, 2026-11-26), new design targets:** extend `rnd/assembly_seq.py` to straight-line insertion paths for every part, tool access for every screw and cartridge swap with the arm assembled. *`rnd/spacing.py` done in loop 36 (static; 7 → 2 hard violations, both the elbow cassette vs its pulley/belt → fixed by the D13 elbow redesign). Still to do: swept spacing over joint ranges, finger-probe nips, cable bend radius in CAD.*
-- A1 assemblability: *check built, loop 35: 1/6 shafts pass; D13 adopted.* *Loop 37: small-stage v2 CAD done (`belt_stage.small_stage_v2`, `V2` stack: bearings at −24.7…−29.7 / −57.7…−62.7, belt centre −40.2, 18 mm longer than v1; passes R14 standalone).* *Loop 38: elbow migrated (cassette plates re-derived from V2, belt plane y 20.2, posts x ±35; **R15 hard violations 2 → 0**).* *Loop 39: shoulder pitch migrated (Y_F −58 → −78, walls from V2, Y_BAL −3).* Next: roll (18T), yaw, lift; then the big-pulley split shafts (elbow 40T hub first); BOM lines for D13
-- A2 KX socket construction
-- A3 real clock-spring cavities + harness
-- A4 wrist bearings + head tilt
-- A5 e-stop electronics
-- A6 PETG thermal limit
-- A7 roll 18T + small_hub FEA
-- A8 FEA method + compliance chain
-- A9 balancer redesign
-- A10 tip cases
-- A11 wheels without KX + chassis ring
-- A12 dock fixes
-- A13 BMS
-- A14 CAN rates
-- A15 lift lock
-- A16 BOM contingency
-
-1. ~~Yaw cable crossing~~ *(loop 33: **yaw ±150° → ±70°**, crossed in torsion over ≈ 0.24 m between clamps. Reach 99 % and bimanual 4/4 unchanged; ±60° loses 3 of 4 bimanual tasks; the 12 mm cassette option dropped the shoulder-roll margin to 1.49×.)* *(Loop 34: yaw hard stops done: a Ø6 pin in the bottom yaw plate rides an arc slot in the yaw-shaft flange, stopping at ±75°.)*
-1b. *(Loop 32 done: rnd/harness.py analysis, D12, harness-kit segment table in harness.md.)* **Cable routing in CAD (build-enabling).** Model the harness:
-    - paths through the hollow shafts (pitch Ø30, elbow Ø30, yaw Ø28 bores), service loops at each joint for its full range
-    - the arm detach plug mount beside the V-band, the upper↔base coupling plug
-    - torso e-tray ↔ shoulder ports, the head CAN/24 V drop along the mast
-
-    Check bend radii and that every loop survives the joint range in the twin. Output a harness drawing (lengths, connectors) for a pre-made **harness kit**, which removes most crimping from the build (R10).
-2. **R10 assembly time** (owner decision pending: one arm ≤ 4 h / robot ≤ 15 h). Levers beyond the harness kit:
-    - snap-fit covers in place of screws on the cosmetic shells
-    - one tool size (M3 / M4 hex) everywhere
-    - print-in-place collars already done
-
-    Re-estimate in BUILD_v4.md.
-3. **Stiffness / hand-accuracy chain.** A static FEA chain with the CF tubes (bone shells + tubes + KX contact compliance) gives the hand deflection under a 1 kg load at full reach. Joint encoders don't see link bending. Confidence item at ~65 %.
-4. **BOM headroom** ($96 under the $4,000 target). A cost pass:
-    - bearing sourcing (28 × 6808 at ~$2 vs $4.7)
-    - the wrist camera class
-    - dock electronics
-    - one fewer USB-CAN by merging buses?
-5. **Electronics thermal:** the Pi 5 at ~73 % load inside the closed torso shell (Pi throttles at 85 °C). Vent path / fan sizing.
-6. **Twin v2:** belt and bearing compliance in the dynamic sim; a second task (two-handed box lift); a battery-day sim with docking.
-7. **Coupon round C1** (waits for the owner's P2S, ~30 days): package ready, now with the 72 h / 50 °C creep hold.
-8. **Milestone M1** (owner buy decision, ≈ $1,100).
-9. **Looks:** wheel fender lips; face animation set for the D11 screen; colour options.
-10. **Research watch (every ~6 loops):**
-    - GIM volume quote, DM-J4310 drawing
-    - the Waveshare 4.3B real mass and active area
-    - 6S BMS port type (common vs split) for the dock
-
-Done since the confidence campaign:
-- torque reaction 21/21 (loops 19–25)
-- shoulder/roll/yaw wall re-derivation (21–22)
-- elbow housing v2 (23)
-- docking charger (26–27)
-- D11 face screen (28)
-- KX + threshold Monte Carlo (29–30)
-- module clashes 0 with the head, base and upper included (31)
+**Open queue (ordered):**
+1. **Hand stiffness, last mile:** the elbow housing is still the largest term (≈ 4 mm at the hand). Thicker variants failed to mesh (gmsh PLC error); fix the mesh, try a 5.5 mm +Y wall and a printed internal frame. Roll link web 4 → 8 mm.
+2. **Lift on the D13 stage:** its 20T pulley sits straight on the KX seat with the open belt's pull on it (the same failure class as the wrist roll). Move the lift onto small_stage_v2 with walls in the lift mount; steel rack CAD (A15).
+3. **GIM6010 CAN driver** from the SteadyWin manual (blocked here; day 1 of M1). **S0.4b** pretrained checkpoint + open-data slice: needs huggingface.co allowed in this environment (owner decision).
+4. **R10 build time** (no hard target, priority): the D15 sockets add ≈ 4 min each; harness kit, snap covers, one hex size.
+5. **Coupons C1–C9** when the P2S arrives (C1 now the D15 screwed socket; add C10: D16 dog coupling, C11: clock-spring ribbon cycle test 10k cycles).
+6. Twin v2 (belt compliance, two-handed box lift, battery day); Pi thermal; BOM cost pass (now $4.9k landed with contingency vs the $4,000 target); looks; research watch.
+7. **M1 bench arm** (owner buy decision): see [M1_READINESS.md](M1_READINESS.md).
 
 **Earlier queue history** is in [RND_LOG.md](RND_LOG.md).

@@ -9,14 +9,13 @@ things for every drive shaft:
    through (an integral pulley, flange or ferrule between or beyond two walls of a one-piece link) can't be put in.
    The shaft must be split (bolted pulley / flange), or the link must be split.
 
-**6/7 drive shafts can be assembled as drawn.**
+**6/6 drive shafts can be assembled as drawn.**
 
 | Shaft | Bearings that can slide on | Insertion | Verdict |
 |---|---|---|---|
-| v1 small-pulley hub (lift only now; retired from the arm in loops 38–40) | z -20.2…-12.2 (Ø20): ❌ blocked both ways; z -45.6…-38.6 (Ø20): ✅ −Z end | ✅ | ❌ |
-| pitch shaft (60T split on a double-D; balancer disc + ferrule outboard) | z 48.3…54.3 (Ø40): ✅ +Z end; z 14.3…20.3 (Ø40): ✅ +Z end | ✅ | ✅ |
+| pitch shaft (60T split on a double-D; balancer disc + ferrule outboard) | z -53.5…-47.5 (Ø40): ✅ −Z end; z -19.5…-13.5 (Ø40): ✅ −Z end | ✅ | ✅ |
 | roll shaft (80T split on a hex; clock-spring hub on the +X end) | z -16.5…-10.5 (Ø40): ✅ −Z end; z 17.5…23.5 (Ø40): ✅ −Z end | ✅ | ✅ |
 | yaw shaft + flange (40T split on a hex) | z -72.1…-66.1 (Ø40): ✅ +Z end; z -106.1…-100.1 (Ø40): ✅ +Z end | ✅ | ✅ |
-| elbow shaft (40T split on a double-D; 2 × 61808 + 2 × 6708) | z 3.7…9.7 (Ø40): ✅ −Z end; z 37.7…43.7 (Ø40): ✅ −Z end; z -57.5…-50.5 (Ø40): ✅ −Z end; z 50.5…57.5 (Ø40): ✅ −Z end | ✅ | ✅ |
-| D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow (lift: next) | z -29.7…-24.7 (Ø12): ✅ −Z end; z -62.7…-57.7 (Ø12): ✅ −Z end | ✅ | ✅ |
+| elbow shaft (40T split on a double-D; 2 × 61808 + 2 × 6708) | z 4.5…10.5 (Ø40): ✅ −Z end; z 38.5…43.7 (Ø40): ✅ −Z end; z -57.5…-50.5 (Ø40): ✅ −Z end; z 50.5…57.5 (Ø40): ✅ −Z end | ✅ | ✅ |
+| D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow | z -30.5…-25.5 (Ø12): ✅ −Z end; z -63.5…-58.5 (Ø12): ✅ −Z end | ✅ | ✅ |
 | wheel shaft + flange (×4) | z -44…-37 (Ø40): ✅ +Z end; z -39…-32 (Ø40): ✅ +Z end | ✅ | ✅ |

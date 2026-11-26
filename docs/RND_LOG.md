@@ -1101,3 +1101,17 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - R10 → tracked, no pass/fail.
 - **Bench IK dexterity map: yaw ±70° (loop 33) cut side grasps 68 % → 40 % and cross-body side grasps 60 % → 2 %.** Reach/bimanual hadn't shown it.
 - Queued as the top priority: restore yaw ±150° with a real cable crossing (spiral cassette + 20 g recovery, or a slip ring), plus a dexterity scorecard metric.
+
+## Loop 40 (2026-11-26, owner: "work through the whole backlog before I buy the arm")
+
+One long push instead of half-hour runs. In order:
+- **Dexterity:** yaw ±150° restored with a real clock-spring cassette between the split 40T pulley's hub and the bottom yaw plate (9.5 mm cavity); roll cassette on the +X end of the roll shaft. D14 (12 V + TTL made at the elbow node) narrows the ribbon to 7.8 mm. New R16 metric: 34 / 67 / 67 / 57 % (cross-body side grasps were 2 %).
+- **D13 on roll and yaw; every big pulley split** (hex / double-D on the Ø40 tubes). R14: all arm shafts assemble. The extra 0.16 kg cut the roll margin to 1.49×; roll 72T → **80T** (ratio 4.44, stock 475 belt, ROLL_Y 75 → 83) restores 1.62×. yaw_drop 0.100 → 0.113.
+- **Swept spacing** (new rnd/swept.py): the shoulder cap sat in the path of the yaw block and cartridge at roll 55–95° (true since loop 22). Cap cut by the swept envelope; 0 hard violations.
+- **D15 KX socket** (review 2): 6 coil springs in a wider step, screwed retainer, captured balls; KX MC below-peak 26 → 13 %.
+- **D16 wrist-roll spindle** (review 5): the KX44 would lift off at 0.6 N·m against 1.3 N·m dynamic.
+- **A9 balancer:** the 3 N/mm spring stores ≈ 11 J and could never fit its cage; 2:1 tackle + ISO die spring.
+- **A8 P2 FEA + compliance chain** (new rnd/stiffness.py): with quadratic tets the 1.2 mm elbow housing tilted 39 mrad (P1: 5) and the two-plate yaw block 22 mrad: ≈ 37 mm at the hand. Stiffener (4 mm +Y wall and top, gussets) and box walls on the yaw block: 4.3 + 1.5 mm. Thicker housing variants fail to mesh (queued).
+- **A6:** can wall up to 63 °C on a task day → ASA cans. **A5:** cat-0 stop, pre-charge, regen clamp (mandatory on a bench supply), watchdog. **A14:** two CAN channels per arm. **A10** tip cases + D18 casters. **A11/D17, A12, A13, A15, A16** in CAD/BOM.
+- **Software:** S0.2 URDF/MJCF export, S0.3 LeRobot demos (836 demos/h on 2 workers, expert 100 %), S1 DM-J4310 MIT frames + safety supervisor with fault-injection tests, S0.4a BC dry run. Blocked by the network policy: huggingface.co (pretrained checkpoints) and the GIM6010 manual.
+- BOM $4.9k landed with 15 % contingency (over the $4,000 target); M1 kit $1,290 + 15 % = $1,484.

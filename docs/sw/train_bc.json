@@ -1,0 +1,11 @@
+{
+ "episodes": 200,
+ "frames": 13885,
+ "load_s": 39.26253652572632,
+ "train_s": 848.4030668735504,
+ "epochs": 30,
+ "final_train": 0.09632735117912293,
+ "final_val": 0.11441052705049515,
+ "closed_loop_success": 0.1,
+ "eval_episodes": 20
+}

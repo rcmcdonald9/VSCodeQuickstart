@@ -81,6 +81,9 @@ def _assembly_rows():
             ("R13 cross-module clashes > 1 cm³ (3 lift heights)", f"{a['clashes']}", "0", a["clashes"] == 0)]
 
 
+SW_OUT = Path(__file__).resolve().parent.parent / "sw" / "out" / "pip_bench_pick_place"
+
+
 def _confidence_rows():
     """Confidence campaign: Monte Carlo, FEA, thermal, load-path integration (cached JSON from their own modules)."""
     import json
@@ -130,6 +133,39 @@ def _confidence_rows():
     if f.exists():
         a = json.loads(f.read_text())
         rows.append(("Thermal: hottest motor, non-stop task day (MC worst corner)", f"{a['task_max_c']:.0f} °C", "≤ 100 °C", a["task_max_c"] <= 100))
+    f = DOCS / "dexterity.json"
+    if f.exists():
+        a = json.loads(f.read_text())
+        rows.append(("R16 dexterity: bench table grid reachable with top-down / 45° / side / side across the body (rnd/dexterity.py)",
+                     f"{a['top-down']:.0%} / {a['45° angled']:.0%} / {a['side (horizontal)']:.0%} / {a['side, across the body']:.0%}", "≥ 30 / 63 / 62 / 54 %", a["ok"]))
+    f = DOCS / "swept.json"
+    if f.exists():
+        a = json.loads(f.read_text())
+        rows.append(("R15 swept spacing over the roll and yaw ranges: pairs under the hard limit (rnd/swept.py)", f"{a['under_hard']} (min roll {a['min']['roll']:.1f} / yaw {a['min']['yaw']:.1f} mm)", "0", a["under_hard"] == 0))
+    f = DOCS / "stiffness.json"
+    if f.exists():
+        a = json.loads(f.read_text())
+        rows.append(("R2b hand deflection, full compliance chain (P2 FEA + bearing play + tubes), 1 kg straight out: raw / after gravity model",
+                     f"{a['total_mm']:.1f} / {a['after_mm']:.1f} mm", "≤ 6 / ≤ 2 mm", a["total_mm"] <= 6 and a["after_mm"] <= 2))
+    f = DOCS / "tip.json"
+    if f.exists():
+        a = json.loads(f.read_text())
+        rows.append(("A10 tip-over, review cases (2.5 kg two-handed, 45°, braking, 30 N nudge; arms straight out) with D18 casters: worst ZMP margin",
+                     f"{a['worst'] * 1000:.0f} mm ({a['n'] - a['n_fail']}/{a['n']} cases ≥ 30 mm)", "≥ 30 mm, or a planner rule", None))
+    f = DOCS / "thermal.json"
+    if f.exists():
+        a = json.loads(f.read_text())
+        if "can_max_c" in a:
+            rows.append(("A6 printed can wall, non-stop task day (enclosed +10 K): ASA limit 75 °C", f"{a['can_max_c']:.0f} °C", "≤ 75 °C (ASA)", a["can_max_c"] <= 75))
+    f = DOCS.parent / "sw" / "train_bc.json"
+    g = SW_OUT / "meta" / "info.json"
+    if g.exists():
+        a = json.loads(g.read_text())["pip"]
+        rows.append(("SW6 synthetic demos: expert success / rate (sw/gen_demos.py, LeRobot format)", f"{a['expert_success']:.0%} / {a['demos_per_hour']:.0f} per h", "≥ 95 % / ≥ 500 per h",
+                     a["expert_success"] >= 0.95 and a["demos_per_hour"] >= 500))
+    if f.exists():
+        a = json.loads(f.read_text())
+        rows.append(("S0.4a pipeline dry run: BC policy from scratch, closed-loop success in the twin (info)", f"{a['closed_loop_success']:.0%} ({a['episodes']} demos, CPU)", "runs end to end", None))
     f = DOCS / "integration.json"
     if f.exists():
         a = json.loads(f.read_text())

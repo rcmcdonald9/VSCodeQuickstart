@@ -12,14 +12,14 @@ calibration) and the unmeasured bending.
 
 | Joint | Without joint encoders: error (°) → at hand (mm) | With joint-side encoders |
 |---|---|---|
-| shoulder_pitch | 0.20° → 2.0 mm | 0.05° → 0.5 mm |
+| shoulder_pitch | 0.20° → 2.1 mm | 0.05° → 0.5 mm |
 | shoulder_roll | 0.21° → 2.2 mm | 0.05° → 0.5 mm |
-| upper_yaw | 0.24° → 1.9 mm | 0.05° → 0.4 mm |
+| upper_yaw | 0.25° → 1.9 mm | 0.05° → 0.4 mm |
 | elbow | 0.25° → 1.9 mm | 0.05° → 0.4 mm |
 | wrist_pitch | 0.05° → 0.1 mm | 0.05° → 0.1 mm |
 | **Joint RSS** | **4.0 mm** | **0.9 mm** |
 
-Plus unmeasured bending: bones 1.8 mm, mast 1.5 mm (worst static, 1 kg).
+Plus unmeasured bending: bones 1.9 mm, mast 1.5 mm (worst static, 1 kg).
 The wrist camera closes the last loop on the object, so those terms matter for blind or fast moves, not for visually-servoed grasps.
 
 **Decision (D9):** fit AS5048A joint-side encoders on the 8 arm belt joints and the lift. That's about $140 including 3 small CAN encoder nodes. Precedent: link-side encoders on Franka and other research arms.

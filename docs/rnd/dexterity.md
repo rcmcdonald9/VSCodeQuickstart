@@ -12,11 +12,11 @@ can the hand reach **with a given grasp orientation**, from any approach heading
 
 Targets (set from the loop-32 arm with yaw ±150°: 36 / 69 / 68 / 60 %): no grasp class may drop more than 6 points.
 
-**Joint ranges:** yaw -150…150°, roll -15…100°, pitch -200…60°, elbow -150…0°. **All grasp classes on target ✅**
+**Joint ranges:** yaw -150…150°, roll -15…100°, pitch -200…60°, elbow -150…0°. **Below target ❌**
 
 | Grasp | Reachable (now) | Target | Loop 32 (yaw ±150°) | Loop 33–39 (yaw ±70°) | |
 |---|---|---|---|---|---|
 | top-down | 34% | ≥ 30% | 36% | 34% | ✅ |
-| 45° angled | 67% | ≥ 63% | 69% | 57% | ✅ |
-| side (horizontal) | 67% | ≥ 62% | 68% | 40% | ✅ |
-| side, across the body | 57% | ≥ 54% | 60% | 2% | ✅ |
+| 45° angled | 70% | ≥ 63% | 69% | 57% | ✅ |
+| side (horizontal) | 66% | ≥ 62% | 68% | 40% | ✅ |
+| side, across the body | 54% | ≥ 54% | 60% | 2% | ❌ |

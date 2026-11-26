@@ -51,7 +51,7 @@ class KX:
     pin_proud: float = 0.6      # pins stand this far above the hub face (sets the face gap); male face has reliefs
     ball_recess: float = 0.0    # D15: ball centre this far inside the male face (snap past the equator + retaining compound)
     twist_deg: float = 35.0
-    ramp_deg: float = 6.0       # below the friction angle (8.5° lubed, 14° dry PETG) -> self-locking
+    ramp_deg: float = 5.0       # below the friction angle (8.5° lubed, 14° dry PETG) -> self-locking. Loop 40: 6 → 5° (twist p95 sat at the 3 N·m rule with D15)
     clearance: float = 0.3
     spring_t: float = 2.0       # D15 (loop 40): gap between the hub step and the collar lip; 6 coil springs Ø4 sit in 3 mm
                                 # pockets in the step (installed 5 mm). Was 1.2 mm with a 1 mm-wide annulus: no real spring fits

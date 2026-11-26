@@ -54,15 +54,10 @@ def cases():
     from .parts import arm, base, roll, shoulder
     from .parts import belt_stage as bs
     C = []
-    b = bs.BRG_6004
-    sh = bs.small_hub()
-    hz = -45.6 + 33.4
-    C.append(("v1 small-pulley hub (lift only now; retired from the arm in loops 38–40)", sh,
-              [(hz - 8, hz, b["d"]), (-45.6, -45.6 + 7, b["d"])], None))
     # loop 40: every big pulley is split (double-D / hex), so the shafts are plain tubes + their outboard ends
-    ps = Rot(90, 0, 0) * shoulder.pitch_shaft()           # +Y → −Z: the ferrule end (outboard) is at −Z, the free end at +Z
+    ps = Rot(90, 0, 0) * shoulder.pitch_shaft()           # z = y: the ferrule end (outboard) is at +Z, the free inboard end at −Z
     C.append(("pitch shaft (60T split on a double-D; balancer disc + ferrule outboard)", ps,
-              [(-shoulder.W_IN - 3.0, -shoulder.W_IN + 3.0, 40.0), (-shoulder.W_OUT - 3.0, -shoulder.W_OUT + 3.0, 40.0)], None))
+              [(shoulder.W_IN - 3.0, shoulder.W_IN + 3.0, 40.0), (shoulder.W_OUT - 3.0, shoulder.W_OUT + 3.0, 40.0)], None))
     rs = Rot(0, -90, 0) * Pos(0, -roll.ROLL_Y, 0) * roll.roll_shaft()   # +X → +Z
     C.append(("roll shaft (80T split on a hex; clock-spring hub on the +X end)", rs,
               [(roll.W1[0], roll.W1[1], 40.0), (roll.W2[0], roll.W2[1], 40.0)], None))
@@ -73,7 +68,7 @@ def cases():
     C.append(("elbow shaft (40T split on a double-D; 2 × 61808 + 2 × 6708)", eh,
               [(arm.CAS_A[0], arm.CAS_A[1], 40.0), (arm.CAS_B[0], arm.CAS_B[1], 40.0), (-54 - 3.5, -54 + 3.5, 40.0), (54 - 3.5, 54 + 3.5, 40.0)], None))
     st = dict((n, p) for n, p, _ in bs.small_stage_v2(20))
-    C.append(("D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow (lift: next)", st["shaft_12"],
+    C.append(("D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow", st["shaft_12"],
               [(bs.V2["jA"][0], bs.V2["jA"][1], bs.BRG_6801["d"]), (bs.V2["jB"][0], bs.V2["jB"][1], bs.BRG_6801["d"])], None))
     ws = base.wheel_shaft()
     C.append(("wheel shaft + flange (×4)", ws, [(-44, -44 + 7, 40.0), (-40 + 8 - 7, -40 + 8, 40.0)], None))
