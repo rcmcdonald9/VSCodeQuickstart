@@ -1023,3 +1023,18 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - A bolted printed-to-printed joint at the Ø20 journal would see > 25 MPa, so it was rejected.
 - New scorecard row (assembly sequence 1/6, ❌) → scorecard **39 ✅ / 2 ❌**. The gap was already there; now it's measured.
 - **Next:** small-stage v2 CAD (it cascades into J1/J2/walls in shoulder/roll/arm), then the big-pulley split shafts.
+
+## 2026-11-26: owner: half-hour cadence; new targets R14 (assembly simulation) and R15 (spacing)
+
+- **Cadence:** a second hourly scheduled task at :40 joins the :10 one, giving a run every 30 min. A single task can't run more often than hourly.
+- **R14 assembly simulation:**
+  - bearings slide on from a free end
+  - straight-line insertion paths for every part
+  - tool access for every screw
+  - cartridge swap with the arm assembled
+- **R15 spacing:**
+  - ≥ 1.0 mm static and ≥ 2.0 mm moving (swept)
+  - belts ≥ 3 mm from static parts
+  - cable bend radius ≥ 10 × OD
+  - no 12 mm finger-probe nip
+- Queued at the top, alongside A1.

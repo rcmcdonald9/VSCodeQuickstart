@@ -31,6 +31,8 @@ Each scheduled run (and any interactive session) does one **loop**:
 
 **External review budget (owner, 2026-11-26):** Gemini 4 Neon (`rnd/external_review.py`) costs ≈ $1.67 per run. Use it **at most once per day**, and only after a significant batch of fixes. The script refuses a second run within 24 h.
 
+**Cadence (owner, 2026-11-26):** runs every 30 minutes (two hourly scheduled tasks at :10 and :40, since one task can't run more often than hourly).
+
 **The loop never "finishes".** When the queue is empty, the next run starts with a fresh critique of the whole design and writes a new queue: a stronger design, cheaper parts, easier assembly, better looks.
 
 **Guardrails:**
@@ -58,6 +60,8 @@ Each scheduled run (and any interactive session) does one **loop**:
 | R11 | Looks and motion | Reads as a robot: clean shells, expressed joints, light rings, expressive head, smooth motion | – |
 | R12 | Safety | Torque-limited joints, e-stop, protected 24 V, stable (tip margin ≥ 50 mm under worst static load) | – |
 | R13 | Printability | Parts ≤ 256 mm, support-free where possible | – |
+| R14 | **Assembly simulation** (owner, 2026-11-26) | Every part has a simulated assembly sequence: (a) each bearing slides onto its journal from a free end; (b) each part reaches its installed position along a straight insertion path without colliding with parts already installed; (c) every screw has tool access (Ø12 mm clear along its axis for ≥ 50 mm for a hex key or driver); (d) every joint cartridge can be swapped with the arm assembled. Checked by `rnd/assembly_seq.py` | 100 % of parts | all drive shafts and cartridges |
+| R15 | **Spacing** (owner, 2026-11-26) | Minimum clearance between parts that are not fused or bolted together: ≥ 1.0 mm static; ≥ 2.0 mm between parts in relative motion over their full joint range (swept); belts ≥ 3 mm from any static part; cable bend radius ≥ 10 × OD; no belt/pulley nip reachable by a 12 mm finger probe. Checked by `rnd/spacing.py` | as stated | ≥ 0.5 mm static, ≥ 1.0 mm moving |
 
 ## 3. Decisions (living; reversals logged)
 
@@ -92,6 +96,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 Next (fresh critique after loop 31: torque paths 21/21, module clashes 0, docking and face screen designed, every confidence Monte Carlo passing; **scorecard 38 ✅ / 1 ❌, R10 build time only**). The hourly loop works top-down:
 
 **External review #1 (Gemini 4 Neon, 2026-11-26) → queue A-items first** ([triage](review/triage_2026-11-26.md)):
+- **R14/R15 (owner, 2026-11-26), new design targets:** extend `rnd/assembly_seq.py` to straight-line insertion paths for every part, tool access for every screw and cartridge swap with the arm assembled. Add `rnd/spacing.py`: minimum distances between all non-fused part pairs, static and swept over joint ranges, plus belt clearance and finger-probe nips. Both become scorecard rows.
 - A1 assemblability: *check built, loop 35: 1/6 shafts pass; D13 adopted.* Next: small-stage v2 CAD (steel shaft, Al pulley, flange coupling; re-derive J1/J2/walls), then the big-pulley split shafts
 - A2 KX socket construction
 - A3 real clock-spring cavities + harness
