@@ -755,3 +755,21 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - **Clashes:** no new ones. The belt-render box and the cover-at-mount-face overlaps were already there.
 - **Torque pins 4/21 → 5/21.** Scorecard 33 ✅ / 3 ❌, unchanged; 62/62 printable; 0 cross-module clashes.
 - **Next:** shoulder pitch (with the queue item 2 wall re-derivation), roll, yaw, elbow.
+
+## Loop 21 (2026-11-26): shoulder pitch walls re-derived + torque fork
+
+- **Picked:** queue item 2, plus the shoulder entry of item 1.
+- **Walls from the hub geometry.** They were stale constants, the same issue as roll/yaw:
+  - W_IN −43.8 → −41.7; W_OUT −17.9 → −15.55; belt plane −31.2 → −28.6 (the 60T pulley follows)
+  - walls 8 → 7 mm, to fit the 7.4 / 7.1 mm gaps
+  - removed the 10.4 cm³ hub/wall clash and the outer-wall/pulley-flange overlap
+- **Torque fork.** A deep side plate runs inboard from the inner wall to a 7 mm fork plate.
+  - It first clipped the Ø98 KX collar (3.4 cm³); the clearance cut was widened to r 50.5.
+  - That leaves two 18.5 mm flanges (≈ 4.6 MPa, hand calc). The collar is still turned from the open −X side.
+- **FEA:** shoulder bracket 6.5× → 5.9×, 0.33 mm.
+- **Checker fix:** `rnd.integration` took the pin position from the hole face's centroid, which is off-axis for a partial cylinder. It now projects onto the true axis.
+- **Results:**
+  - Torque pins 5/21 → **7/21**.
+  - Module clashes 9 → **8**.
+  - Scorecard 33 ✅ / 3 ❌. Workspace margin 1.50×, 62/62 printable, 0 cross-module clashes.
+- **Next:** roll ×2 and yaw ×2 torque reaction (roll link / clevis), then the elbow (queue item 3).

@@ -57,8 +57,10 @@ def _cyl_faces(solid, r, tol=0.06):
         s = BRepAdaptor_Surface(f.wrapped)
         if s.GetType() == GeomAbs_Cylinder and abs(s.Cylinder().Radius() - r) < tol:
             ax = s.Cylinder().Axis()
-            out.append((np.array([f.center().X, f.center().Y, f.center().Z]),
-                        np.array([ax.Direction().X(), ax.Direction().Y(), ax.Direction().Z()])))
+            d = np.array([ax.Direction().X(), ax.Direction().Y(), ax.Direction().Z()])
+            loc = np.array([ax.Location().X(), ax.Location().Y(), ax.Location().Z()])
+            c = np.array([f.center().X, f.center().Y, f.center().Z])
+            out.append((loc + np.dot(c - loc, d) * d, d))          # on the true axis (a partial face's centroid is off-axis)
     return out
 
 

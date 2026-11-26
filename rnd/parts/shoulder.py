@@ -21,8 +21,14 @@ WALL = 1.6
 BELT_C = 70.0
 # Layout along Y follows the small-pulley hub stack (hub face at Y_F; cartridge inboard of it):
 Y_F = -58.0                # KX74 hub face of the pitch cartridge
-W_IN, W_OUT = -43.8, -17.9 # bracket wall centres (8 mm walls; each holds a 61804 for the small hub and a 61808 for the shaft)
-Y_BELT = -31.2             # belt plane
+# loop 21: walls and belt plane derived from the hub geometry (the old -43.8 / -17.9 / -31.2 predated the taller
+# print-in-place hub: the hub flange cut 2 mm into the inner wall and the outer wall overlapped the pulley flange)
+from .kx import hub_pip as _hub_pip
+_HUB_H = -_hub_pip(KX74).bounding_box().min.Z          # 12.2
+WALL_T = 7.0                                           # fits the 7.4 / 7.1 mm gaps between hub, journals and pulley flanges
+W_IN = Y_F + _HUB_H + 0.4 + 3.7                        # -41.7
+W_OUT = Y_F + _HUB_H + 8 + 1.2 + 16 + 1.2 + 0.3 + 3.55  # -15.55
+Y_BELT = Y_F + _HUB_H + 8 + 1.2 + 8                    # -28.6: small-pulley belt centre
 Y_BAL = -6.0               # balancer plane (outboard of the outer wall)
 Y_FER = 2.0                # ferrule spigot start; the detach plane (flat face) is at Y_FER + 18 = 20
 FERRULE = dict(od=91.0, t=8.0, taper_deg=20.0, dowel_r=30.0)
@@ -64,7 +70,7 @@ def pitch_shaft() -> Part:
 
 def bracket() -> Part:
     """Printed bracket: two walls with bearing bosses + a back web + the balancer slot + spring cage."""
-    wall_t = 8.0
+    wall_t = WALL_T
     xs, zs = 190.0, 150.0
     x0 = -BELT_C / 2 - 10
     walls = None
@@ -79,13 +85,31 @@ def bracket() -> Part:
     web = Pos(x0 - xs / 2 + 4, (W_IN + W_OUT) / 2, 10) * Box(8, W_OUT - W_IN, zs)
     p = walls + web
     # balancer slot: pulley A axle rides 35–65 mm above the axis in the inboard wall
-    post_y0, post_y1 = W_OUT + 4, Y_BAL - 3.5                                     # post beside pulley A (axle cantilevered)
+    post_y0, post_y1 = W_OUT + WALL_T / 2, Y_BAL - 3.5                                     # post beside pulley A (axle cantilevered)
     post = Pos(0, (post_y0 + post_y1) / 2, 58) * Box(16, post_y1 - post_y0, 40)
     post -= Pos(0, (post_y0 + post_y1) / 2, 55) * Box(4.2, 40, 24)                      # vertical slot: a = 45–65 mm
     p += post
     # spring cage: horizontal tube running back from pulley A (cable leaves A's top toward -X), above the small hub
     cage = Pos(-15, Y_BAL, 58) * Rot(0, -90, 0) * (Cylinder(14, 135, align=MIN) - Cylinder(14 - WALL, 135, align=MIN))
-    return p + cage
+    return p + cage + torque_fork()
+
+
+def torque_fork() -> Part:
+    """Loop 21: torque reaction for the pitch cartridge. Its Ø6 pin sits 30 mm toward the pitch axis (+X) from the
+    cartridge axis, behind the can rear (−Y). A deep side plate (6 mm, two 18.5 mm flanges at z ±26.5…45 around the collar clearance) runs inboard from the inner wall beside
+    the can and carries a 7 mm fork plate with an open radial slot (open toward the cartridge axis). Load ±Z, 367 N at
+    the GIM peak: plate bending ≈ 4.6 MPa (hand calc). The collar is still turned from the open side (−X)."""
+    tp = cm.TORQUE_PIN
+    zc = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]
+    xa, xp = -BELT_C, -BELT_C + tp["r"]                               # cartridge axis, pin
+    y_rear = Y_F - zc                                                  # can rear face
+    y_wall = W_IN - WALL_T / 2                                         # inner face of the inner wall
+    y_far = y_rear - 9
+    side = Pos(-24, (y_wall + y_far) / 2, 0) * Box(6, y_wall - y_far, 90)
+    side -= Pos(xa, 0, 0) * Rot(90, 0, 0) * Cylinder(KX74.r_collar_out + 1.3, 400)   # clear the KX collar (r 49.2) and the can: two 18.5 mm flanges remain (≈ 4.6 MPa)
+    fork = Pos((xp - 9 + -21) / 2, y_rear - 5.5, 0) * Box(-21 - (xp - 9), 7, 48)
+    fork -= Pos(xp - 4, y_rear - 5.5, 0) * Box(18, 8, tp["d"] + 0.4)                                 # open radial slot
+    return side + fork
 
 
 def pulley_a() -> Part:

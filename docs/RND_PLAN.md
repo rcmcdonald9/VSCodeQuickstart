@@ -85,16 +85,13 @@ Each scheduled run (and any interactive session) does one **loop**:
 - see [BUILD_v4.md](BUILD_v4.md)
 
 Next (state after the confidence campaign; the hourly loop continues from here). **Items 1–3 come first: they are real design gaps found by the new checks.**
-1. **Torque-reaction path for every cartridge** ([integration.md](rnd/integration.md): **5/21 after loop 20**; wheels done with the standard `cm.torque_hanger`, lift with a fork integral to the lift mount). Next: shoulder pitch ×2, roll ×2, yaw ×2, elbow ×2. The wrist-pitch and head-tilt pins currently *run into* a wall (no slot): cut a radial slot there. Each can's Ø6 rear torque pin needs a radial slot in structure. Proposed standard part:
+1. **Torque-reaction path for every cartridge** ([integration.md](rnd/integration.md): **7/21 after loop 21**; wheels: standard `cm.torque_hanger`; lift and shoulder pitch: forks integral to the lift mount / bracket). Next: roll ×2, yaw ×2, elbow ×2. The wrist-pitch and head-tilt pins currently *run into* a wall (no slot): cut a radial slot there. Each can's Ø6 rear torque pin needs a radial slot in structure. Proposed standard part:
     - an axial key rib along every can, engaging a radial notch in a printed **bay ring** on the nearest wall/plate
     - or, where the can sits in free space, a **torque strap** from the nearest wall to the can rear
     - stages: pitch ×2, roll ×2, yaw ×2, elbow ×2, wrist pitch ×2, wrist roll ×2, wheels ×4, lift, head pan
     - FEA each slot at peak motor torque (GIM 11 N·m at r 30 → 367 N)
     - make `rnd.integration` pass
-2. **Shoulder pitch stage: re-derive the walls from the hub geometry**, as done for roll/yaw.
-    - Measured: the KX74 hub flange cuts 2 mm into the inner wall (10.4 cm³), and the outer wall overlaps the pulley flange by ~2.5 mm.
-    - Hub face at y ≈ −58: journal 1 −45.8…−37.8, pulley flanges −37.8…−19.4, journal 2 −19.4…−12.0, belt centre −28.6.
-    - Check the 60T pulley plane on the pitch shaft, the balancer and Y_FER after moving W_IN/W_OUT.
+2. ~~Shoulder pitch walls re-derived from the hub geometry~~ (done in loop 21).
 3. **Elbow: collar vs housing top/corners (1.8 cm³) and forearm hub disc vs the +Y elbow boss (2.7 cm³, rotating).**
     - Collar Ø98 at the cartridge bay: housing too small. Raise HOUSING z1, or reduce the corner radius on the −Y side.
     - Forearm: move FORE_Y out ~2 mm, or recess the boss.
