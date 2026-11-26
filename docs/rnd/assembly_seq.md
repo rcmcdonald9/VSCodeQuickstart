@@ -9,7 +9,7 @@ things for every drive shaft:
    through (an integral pulley, flange or ferrule between or beyond two walls of a one-piece link) can't be put in.
    The shaft must be split (bolted pulley / flange), or the link must be split.
 
-**1/6 drive shafts can be assembled as drawn.**
+**2/7 drive shafts can be assembled as drawn.**
 
 | Shaft | Bearings that can slide on | Insertion | Verdict |
 |---|---|---|---|
@@ -18,4 +18,5 @@ things for every drive shaft:
 | roll shaft (72T fused) | z 9.4…16.8 (Ø40): ✅ +Z end; z -16.6…-9.5 (Ø40): ✅ −Z end | Ø115 72T pulley between the roll-link walls (seats Ø52): can't be inserted | ❌ |
 | yaw shaft (40T + flange fused) | z -67.1…-59.7 (Ø40): ✅ +Z end; z -93.1…-86.0 (Ø40): ❌ blocked both ways | Ø66 40T pulley between the one-piece clevis plates (seats Ø52); Ø90 flange below: can't be inserted | ❌ |
 | elbow pulley hub (40T fused, 132 mm) | z -7.4…-0.4 (Ø40): ✅ +Z end; z 18.9…25.9 (Ø40): ✅ +Z end; z -57.5…-50.5 (Ø40): ✅ −Z end; z 50.5…57.5 (Ø40): ✅ +Z end | 132 mm shaft longer than the 105.6 mm housing interior, Ø66 pulley vs Ø52 wall seats: can't be inserted | ❌ |
+| D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): designed, not yet migrated | z -29.7…-24.7 (Ø12): ✅ −Z end; z -62.7…-57.7 (Ø12): ✅ −Z end | ✅ | ✅ |
 | wheel shaft + flange (×4) | z -44…-37 (Ø40): ✅ +Z end; z -39…-32 (Ø40): ✅ +Z end | ✅ | ✅ |

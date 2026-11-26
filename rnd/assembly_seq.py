@@ -75,6 +75,9 @@ def cases():
     C.append(("elbow pulley hub (40T fused, 132 mm)", eh,
               [(arm.CAS_A[0], arm.CAS_A[1], 40.0), (arm.CAS_B[0], arm.CAS_B[1], 40.0), (-54 - 3.5, -54 + 3.5, 40.0), (54 - 3.5, 54 + 3.5, 40.0)],
               "132 mm shaft longer than the 105.6 mm housing interior, Ø66 pulley vs Ø52 wall seats: can't be inserted"))
+    st = dict((n, p) for n, p, _ in bs.small_stage_v2(20))
+    C.append(("D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): designed, not yet migrated", st["shaft_12"],
+              [(bs.V2["jA"][0], bs.V2["jA"][1], bs.BRG_6801["d"]), (bs.V2["jB"][0], bs.V2["jB"][1], bs.BRG_6801["d"])], None))
     ws = base.wheel_shaft()
     C.append(("wheel shaft + flange (×4)", ws, [(-44, -44 + 7, 40.0), (-40 + 8 - 7, -40 + 8, 40.0)], None))
     return C

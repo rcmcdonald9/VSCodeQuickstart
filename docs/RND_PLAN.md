@@ -97,7 +97,7 @@ Next (fresh critique after loop 31: torque paths 21/21, module clashes 0, dockin
 
 **External review #1 (Gemini 4 Neon, 2026-11-26) → queue A-items first** ([triage](review/triage_2026-11-26.md)):
 - **R14/R15 (owner, 2026-11-26), new design targets:** extend `rnd/assembly_seq.py` to straight-line insertion paths for every part, tool access for every screw and cartridge swap with the arm assembled. *`rnd/spacing.py` done in loop 36 (static; 7 → 2 hard violations, both the elbow cassette vs its pulley/belt → fixed by the D13 elbow redesign). Still to do: swept spacing over joint ranges, finger-probe nips, cable bend radius in CAD.*
-- A1 assemblability: *check built, loop 35: 1/6 shafts pass; D13 adopted.* Next: small-stage v2 CAD (steel shaft, Al pulley, flange coupling; re-derive J1/J2/walls), then the big-pulley split shafts
+- A1 assemblability: *check built, loop 35: 1/6 shafts pass; D13 adopted.* *Loop 37: small-stage v2 CAD done (`belt_stage.small_stage_v2`, `V2` stack: bearings at −24.7…−29.7 / −57.7…−62.7, belt centre −40.2, 18 mm longer than v1; passes R14 standalone).* Next: migrate the stages one by one — elbow first (also clears the 2 R15 hard violations), then shoulder pitch, roll (18T), yaw, lift — then the big-pulley split shafts
 - A2 KX socket construction
 - A3 real clock-spring cavities + harness
 - A4 wrist bearings + head tilt

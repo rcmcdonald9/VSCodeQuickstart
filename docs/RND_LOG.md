@@ -1061,3 +1061,12 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - Remaining hard violations: **2**, the elbow cassette plates vs their 40T pulley (0.1 mm) and belt (0.03 mm). Both go away with the D13 elbow redesign.
   - Under target: 5.
 - New scorecard row (R15, ❌ until D13). R14 row renamed.
+
+## Loop 37 (2026-11-26): D13 small-pulley stage v2 CAD
+
+- **`belt_stage.small_stage_v2(teeth)`:** steel Ø12 shaft, 2 × 6801 straddling the pulley, off-the-shelf aluminium HTD pulley, rigid flange coupling in a Ø32 × 6 pocket under the printed KX74 hub (4 × M4 into inserts).
+  - `eccentric_bushing_v2` for the 6801: thinnest wall ≈ 7.5 mm (the review flagged ≈ 2 mm on v1).
+- **Why straddled:** a cantilevered pulley would put ≈ 1.4 kN on the near 6801 (C0 ≈ 1.0 kN) at the 691 N belt peak.
+- **Stack (`V2`):** bearings −24.7…−29.7 and −57.7…−62.7, belt centre −40.2, end −63.7. That's ≈ 18 mm longer than v1 (−45.6).
+- No overlaps between the stage parts. **Passes the R14 assembly-sequence check standalone** (bearings slide on the plain shaft; the pulley is separate).
+- **Next:** migrate the stages (elbow first, which also clears the 2 R15 hard violations), then the big-pulley split shafts.

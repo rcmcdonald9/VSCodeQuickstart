@@ -78,3 +78,72 @@ def eccentric_bushing() -> Part:
     r = Cylinder(e["od"] / 2, e["t"], align=MIN) - Pos(e["e"], 0, 0) * Cylinder(BRG_6004["D"] / 2, e["t"], align=MIN)
     r += Pos(e["od"] / 2 + 3, 0, 0) * (Box(10, 8, 2.5, align=MIN) - Pos(2, 0, 0) * Cylinder(1.7, 3, align=MIN))
     return r
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# D13 small-pulley stage v2 (loop 37; external review #1 finding 1): assemblable from standard parts.
+#   steel Ø12 shaft · 2 × 6801 (12×21×5) in eccentric bushings (wall ≥ 7 mm, was 2 mm) · off-the-shelf aluminium HTD 5M
+#   pulley (set screws on a flat) · rigid flange coupling (clamp on the shaft, 4 × M4 into heat-set inserts in a pocket
+#   under the printed KX74 hub: ≈ 5 MPa bearing at 12.7 N·m).
+# Assembly: flange → hub (4 × M4); shaft into wall A's bearing, pulley slid on between the walls, shaft on into wall B's
+# bearing; coupling clamped on the shaft end; belt on; tension with the bushings.
+# Stage frame: KX face at z = 0, cartridge +Z, stack toward −Z. Part dimensions marked ESTIMATE until datasheets are in.
+SHAFT_D = 12.0
+BRG_6801 = dict(d=12.0, D=21.0, B=5.0)            # C0 ≈ 1.0 kN (ESTIMATE); 2 per stage straddle the pulley: ≈ 0.35 kN each at the 691 N peak
+FLANGE = dict(od=32.0, t=6.0, bolt_r=12.0, clamp_od=22.0, clamp_l=12.0)   # rigid flange coupling, 12 mm bore (ESTIMATE)
+AL_PULLEY = dict(flange_od=38.0, body_l=20.0, hub_d=24.0, hub_l=7.0)      # HTD 5M, 15 mm belt, 20T/18T (ESTIMATE)
+ECC_V2 = dict(od=38.0, e=1.0, t=5.0)
+
+
+def _v2_stack():
+    from .kx import KX74, hub_pip
+    hub_h = -hub_pip(KX74).bounding_box().min.Z                 # 12.2
+    z = -hub_h - FLANGE["clamp_l"]                              # bottom of the coupling's clamp hub
+    jA = (z - 0.5 - BRG_6801["B"], z - 0.5)
+    p0 = jA[0] - 0.5                                            # top of the pulley
+    pul = (p0 - AL_PULLEY["body_l"] - AL_PULLEY["hub_l"], p0)
+    jB = (pul[0] - 0.5 - BRG_6801["B"], pul[0] - 0.5)
+    return dict(hub_h=hub_h, jA=jA, jB=jB, pulley=pul, belt_c=p0 - AL_PULLEY["body_l"] / 2, end=jB[0] - 1.0)
+
+
+V2 = _v2_stack()
+
+
+def kx_hub_v2():
+    """Printed KX74 hub with the flange-coupling pocket underneath (pocket depth = flange thickness) and 4 insert holes."""
+    from .kx import KX74, hub_pip
+    h = hub_pip(KX74)
+    h -= Pos(0, 0, -V2["hub_h"]) * Cylinder(FLANGE["od"] / 2 + 0.3, FLANGE["t"], align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for k in range(4):
+        a = math.pi / 2 * k + math.pi / 4
+        h -= Pos(FLANGE["bolt_r"] * math.cos(a), FLANGE["bolt_r"] * math.sin(a), -V2["hub_h"]) * Cylinder(2.8, FLANGE["t"] + 5, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    return h
+
+
+def small_stage_v2(teeth: int = 20):
+    """(name, part, colour) list in the stage frame. teeth: 20 (pitch, yaw, elbow, lift) or 18 (roll)."""
+    MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
+    v = V2
+    flange = Pos(0, 0, -v["hub_h"]) * Cylinder(FLANGE["od"] / 2, FLANGE["t"], align=MINZ)
+    flange += Pos(0, 0, -v["hub_h"] - FLANGE["clamp_l"]) * Cylinder(FLANGE["clamp_od"] / 2, FLANGE["clamp_l"], align=MINZ)
+    flange -= Pos(0, 0, -200) * Cylinder(SHAFT_D / 2, 400, align=MINZ)
+    shaft_top = -v["hub_h"] - FLANGE["clamp_l"] + 2
+    shaft = Pos(0, 0, v["end"]) * Cylinder(SHAFT_D / 2, shaft_top - v["end"], align=MINZ)
+    brg = lambda j: Pos(0, 0, j[0]) * (Cylinder(BRG_6801["D"] / 2, BRG_6801["B"], align=MINZ) - Cylinder(BRG_6801["d"] / 2, BRG_6801["B"], align=MINZ))
+    pd = teeth * PITCH / math.pi
+    p0, p1 = v["pulley"][1], v["pulley"][0]
+    pul = Pos(0, 0, p0 - AL_PULLEY["body_l"]) * (Cylinder(pd / 2 - PLD, AL_PULLEY["body_l"], align=MINZ))
+    for z in (p0 - 1.5, p0 - AL_PULLEY["body_l"]):
+        pul += Pos(0, 0, z) * Cylinder(AL_PULLEY["flange_od"] / 2, 1.5, align=MINZ)
+    pul += Pos(0, 0, p1) * Cylinder(AL_PULLEY["hub_d"] / 2, AL_PULLEY["hub_l"], align=MINZ)
+    pul -= Pos(0, 0, -200) * Cylinder(SHAFT_D / 2, 400, align=MINZ)
+    return [("kx_hub_v2", kx_hub_v2(), "dark"), ("flange_coupling", flange, "steel"), ("shaft_12", shaft, "steel"),
+            ("brg_A_6801", brg(v["jA"]), "steel"), ("brg_B_6801", brg(v["jB"]), "steel"), ("al_pulley", pul, "steel")]
+
+
+def eccentric_bushing_v2() -> Part:
+    """Eccentric bushing for a 6801 (Ø21 seat, e = 1 mm) in the same Ø38 wall bore: thinnest wall ≈ 7.5 mm (was ≈ 2 mm)."""
+    e = ECC_V2
+    r = Cylinder(e["od"] / 2, e["t"], align=(Align.CENTER, Align.CENTER, Align.MIN)) - Pos(e["e"], 0, 0) * Cylinder(BRG_6801["D"] / 2, e["t"], align=(Align.CENTER, Align.CENTER, Align.MIN))
+    r += Pos(e["od"] / 2 + 3, 0, 0) * (Box(10, 8, 2.5, align=(Align.CENTER, Align.CENTER, Align.MIN)) - Pos(2, 0, 0) * Cylinder(1.7, 3, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    return r
