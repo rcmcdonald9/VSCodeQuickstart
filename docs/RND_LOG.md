@@ -1115,3 +1115,9 @@ One long push instead of half-hour runs. In order:
 - **A6:** can wall up to 63 °C on a task day → ASA cans. **A5:** cat-0 stop, pre-charge, regen clamp (mandatory on a bench supply), watchdog. **A14:** two CAN channels per arm. **A10** tip cases + D18 casters. **A11/D17, A12, A13, A15, A16** in CAD/BOM.
 - **Software:** S0.2 URDF/MJCF export, S0.3 LeRobot demos (836 demos/h on 2 workers, expert 100 %), S1 DM-J4310 MIT frames + safety supervisor with fault-injection tests, S0.4a BC dry run. Blocked by the network policy: huggingface.co (pretrained checkpoints) and the GIM6010 manual.
 - BOM $4.9k landed with 15 % contingency (over the $4,000 target); M1 kit $1,290 + 15 % = $1,484.
+
+## Loop 41 (2026-11-26, hardware): Astra triage → R14 catches loose pulleys; D19
+
+- Astra review #2b: 22 findings, 5 critical ones verified (pulley bores, KX ball relief, wrist skirt, regen resistor, safety torque path). Verdict: stage the M1 buy.
+- R14 now checks every loose pulley/hub bore as well as bearings: **2/6** (the four arm big-pulley shafts fail, correctly).
+- D19: integral shaft + pulley dropped into capped U-slot seats (also gives the clevis a real clamp). Queue item 0 lists the Astra criticals.

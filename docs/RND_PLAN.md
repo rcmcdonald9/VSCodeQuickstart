@@ -100,6 +100,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | D17 | **Wheels bolt to the GIM output** (no KX on the wheels: slip risk under threshold torques, review finding 12). A 3 mm aluminium ring ties the four deck quarters. | Adopted (loop 40) | [BOM](rnd/BOM_v4.md) |
 | D18 | **Anti-tip casters:** four spring-loaded ball-transfer units at the diagonals under the skirt (5 N preload, 5 mm stroke) turn the x-drive diamond (148 mm to the edge between wheels) into an octagon. Push-over force at 1 m between wheels 35 → 45 N. Plus planner rules for loads over 1 kg. | Adopted (loop 40; review finding 11) | [tip.md](rnd/tip.md) |
 | D13b | **Loop 40 completes D13 on the arm:** roll (18T:80T, ratio 4.44, belt 475 mm) and yaw on the D13 stage; every big pulley (pitch 60T, roll 80T, yaw 40T, elbow 40T) is split from its Ø40 tube and keyed by a double-D or a hex; yaw ±150° with real clock-spring cassettes; yaw block closed into a box; elbow housing stiffened (P2 FEA). Lift still on its pulley-on-KX layout (queue). | Done (loop 40) | [assembly_seq.md](rnd/assembly_seq.md), [swept.md](rnd/swept.md), [stiffness.md](rnd/stiffness.md) |
+| D19 | **Big-pulley stages: integral shaft + pulley sub-assemblies dropped into capped bearing seats** (replaces loop 40's split pulleys, which couldn't be fitted: the Ø40 tube can't pass a hex / double-D bore; Astra review #2b finding 1). Each big pulley is printed in one piece with its Ø40 tube again (no keyed joint to fail); the bearings slide onto the tube ends first; each wall's 61808 seat becomes a **U-slot with a bolted half-ring cap** (2 × M4 into heat-set inserts), oriented so the belt pull and the arm load press the bearing into the wall, not into the cap. The clevis arms get the same capped slots plus a pinch bolt, which also closes finding 2 (no clamp on the roll shaft). Elbow: the housing's ±Y seats open downward and the bone cap closes them, so the whole elbow cassette (shaft + pulley + plates + belt + D13 stage) goes in from below as one module. Rejected: keyed tubes (a printed key carries ≈ 2 kN at 42 N·m), keyless locking bushings (they need a metal shaft). | Adopted (2026-11-26, after Astra); CAD in queue item 1 | [triage_astra](review/triage_astra_2026-11-26.md), [assembly_seq.md](rnd/assembly_seq.md) |
 | D6 | Toolchain: build123d CAD, MuJoCo twin generated from `rnd/params.py`, **arm collision geometry from CAD hulls** (`rnd/parts/collision.py`, loop 6), Blender renders | Holding | `rnd/` |
 | D4c | **Belt stages: HTD 5M, 15 mm, 20T small pulley** (pitch 20:50, roll 20:60, elbow 20:40), printed pulleys, the small pulley on its own bearing hub. **Elbow motor stays at the elbow:** a remote motor on a long belt (Blue-style) was evaluated and rejected (–0.5 N·m at the shoulder, +0.24 kg) | New (loop 3) | [belts](rnd/belts.md) |
 | D7 | **Power bus 24 V (6S Li-ion)**, replacing 48 V | Holding | [T01](rnd/T01_specs.md) |
@@ -117,7 +118,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | Item | Result | Check |
 |---|---|---|
 | Arm dexterity (top priority) | yaw back to ±150° with a real clock-spring cassette; side grasps across the body 2 % → 57 % | [dexterity.md](rnd/dexterity.md) (new R16 row) |
-| A1 / R14 assemblability | D13 on pitch, roll, yaw, elbow; all big pulleys split and keyed; **all arm shafts assemble** | [assembly_seq.md](rnd/assembly_seq.md) |
+| A1 / R14 assemblability | D13 on pitch, roll, yaw, elbow; all big pulleys split and keyed. *Astra: the split pulleys can't be fitted (bore < tube); reopened as D19* | [assembly_seq.md](rnd/assembly_seq.md) |
 | A2 KX socket | D15: screwed retainer, 6 coil springs, captured balls | [kx_mc.md](rnd/kx_mc.md) |
 | A3 cable cavities | roll + yaw cassettes in CAD; D14 slim ribbon; 6/6 joints | [harness.md](rnd/harness.md) |
 | A4 wrist bearings | D16 wrist-roll spindle (the KX44 would have lifted off); wrist-pitch KX56 checked OK | rnd/parts/hand.py |
@@ -137,6 +138,15 @@ Each scheduled run (and any interactive session) does one **loop**:
 | Software S0.2, S0.3, S0.4a, S1 | URDF/MJCF export; LeRobot-format synthetic demos; BC pipeline dry run; DM-J4310 MIT driver, safety supervisor + tests | [SOFTWARE_PLAN.md](SOFTWARE_PLAN.md) |
 
 **Open queue (ordered):**
+0. **Astra review #2b criticals (verified, 2026-11-26)** — these come before anything else ([triage](review/triage_astra_2026-11-26.md)):
+    - D19 capped seats + integral shaft-pulleys: roll, yaw, pitch, elbow (R14 now 2/6 with the pulley-bore rows)
+    - shaft → link drive: clevis pinch clamps, forearm clamp on the elbow shaft, yaw-flange bolt pattern, CF-tube bond lengths (≥ 1 × OD)
+    - D15 male face: relieve only the two pin tracks so the ball capture survives; separate hub / collar / retainer print files
+    - D16 wrist skirt: removable end cap so the 61804s can go in; spindle retained both ways
+    - A5 v2: regen clamp sized by energy and pulse rating; pre-charge switched (not in parallel); category-0 drop protection (mechanical catch on the bench); watchdog timing budget
+    - safety.py v2: total torque/current limit in the drive, finite + fresh feedback required, latched faults, reset only with the button released
+    - balancer: check pin-B sign in shoulder.py against balancer.py; exact die-spring part; 41 % at the 65 mm slot end
+    - clock-spring capacity with ribbon thickness (Astra: yaw ≈ 306°, not 446°)
 1. **Hand stiffness, last mile:** the elbow housing is still the largest term (≈ 4 mm at the hand). Thicker variants failed to mesh (gmsh PLC error); fix the mesh, try a 5.5 mm +Y wall and a printed internal frame. Roll link web 4 → 8 mm.
 2. **Lift on the D13 stage:** its 20T pulley sits straight on the KX seat with the open belt's pull on it (the same failure class as the wrist roll). Move the lift onto small_stage_v2 with walls in the lift mount; steel rack CAD (A15).
 3. **GIM6010 CAN driver** from the SteadyWin manual (blocked here; day 1 of M1). **S0.4b** pretrained checkpoint + open-data slice: needs huggingface.co allowed in this environment (owner decision).

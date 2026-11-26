@@ -3,19 +3,21 @@
 The clash checks prove that parts don't overlap; they don't prove that the parts can be put together. This checks two
 things for every drive shaft:
 
-1. **Bearing slide-on.** Each bearing (bore d) must reach its journal from at least one end of the *same printed piece*
-   without passing a section wider than d/2 (radius profile sampled every 0.5 mm along the shaft axis).
+1. **Loose-part slide-on.** Each bearing (bore d) **and each separate pulley or hub** (its smallest bore: a hex or
+   double-D counts by its across-flats) must reach its seat from at least one end of the *same printed piece* without
+   passing a section wider than d/2 (radius profile sampled every 0.5 mm along the shaft axis). Astra review #2b found
+   that loop 40's split pulleys failed this (a Ø40 round tube can't pass a 34.4 mm hex bore); the pulley rows were added.
 2. **Shaft insertion.** A one-piece shaft carrying an element wider than the bearing seats of the walls it passes
    through (an integral pulley, flange or ferrule between or beyond two walls of a one-piece link) can't be put in.
    The shaft must be split (bolted pulley / flange), or the link must be split.
 
-**6/6 drive shafts can be assembled as drawn.**
+**2/6 drive shafts can be assembled as drawn.**
 
-| Shaft | Bearings that can slide on | Insertion | Verdict |
+| Shaft | Bearings and pulleys that can slide on (Ø = bore) | Insertion | Verdict |
 |---|---|---|---|
-| pitch shaft (60T split on a double-D; balancer disc + ferrule outboard) | z -53.5…-47.5 (Ø40): ✅ −Z end; z -19.5…-13.5 (Ø40): ✅ −Z end | ✅ | ✅ |
-| roll shaft (80T split on a hex; clock-spring hub on the +X end) | z -16.5…-10.5 (Ø40): ✅ −Z end; z 17.5…23.5 (Ø40): ✅ −Z end | ✅ | ✅ |
-| yaw shaft + flange (40T split on a hex) | z -72.1…-66.1 (Ø40): ✅ +Z end; z -106.1…-100.1 (Ø40): ✅ +Z end | ✅ | ✅ |
-| elbow shaft (40T split on a double-D; 2 × 61808 + 2 × 6708) | z 4.5…10.5 (Ø40): ✅ −Z end; z 38.5…43.7 (Ø40): ✅ −Z end; z -57.5…-50.5 (Ø40): ✅ −Z end; z 50.5…57.5 (Ø40): ✅ −Z end | ✅ | ✅ |
-| D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow | z -30.5…-25.5 (Ø12): ✅ −Z end; z -63.5…-58.5 (Ø12): ✅ −Z end | ✅ | ✅ |
-| wheel shaft + flange (×4) | z -44…-37 (Ø40): ✅ +Z end; z -39…-32 (Ø40): ✅ +Z end | ✅ | ✅ |
+| pitch shaft (60T split on a double-D; balancer disc + ferrule outboard) | z -53.5…-47.5 (Ø40.0): ✅ −Z end; z -19.5…-13.5 (Ø40.0): ✅ −Z end; z -45.0…-29.0 (Ø36.4): ❌ blocked both ways | ✅ | ❌ |
+| roll shaft (80T split on a hex; clock-spring hub on the +X end) | z -16.5…-10.5 (Ø40.0): ✅ −Z end; z 17.5…23.5 (Ø40.0): ✅ −Z end; z -8.0…8.0 (Ø34.4): ❌ blocked both ways | ✅ | ❌ |
+| yaw shaft + flange (40T split on a hex) | z -72.1…-66.1 (Ø40.0): ✅ +Z end; z -106.1…-100.1 (Ø40.0): ✅ +Z end; z -100.1…-74.6 (Ø34.4): ❌ blocked both ways | ✅ | ❌ |
+| elbow shaft (40T split on a double-D; 2 × 61808 + 2 × 6708) | z 4.5…10.5 (Ø40.0): ✅ −Z end; z 38.5…43.7 (Ø40.0): ✅ −Z end; z -57.5…-50.5 (Ø40.0): ✅ −Z end; z 50.5…57.5 (Ø40.0): ✅ −Z end; z 13.0…29.0 (Ø36.4): ❌ blocked both ways | ✅ | ❌ |
+| D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow | z -30.5…-25.5 (Ø12.0): ✅ −Z end; z -63.5…-58.5 (Ø12.0): ✅ −Z end; z -58.0…-31.0 (Ø12.0): ✅ −Z end | ✅ | ✅ |
+| wheel shaft + flange (×4) | z -44…-37 (Ø40.0): ✅ +Z end; z -39…-32 (Ø40.0): ✅ +Z end | ✅ | ✅ |
