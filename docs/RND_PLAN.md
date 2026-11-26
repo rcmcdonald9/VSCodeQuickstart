@@ -144,7 +144,7 @@ Each scheduled run (and any interactive session) does one **loop**:
     - D15 male face: relieve only the two pin tracks so the ball capture survives; separate hub / collar / retainer print files
     - D16 wrist skirt: removable end cap so the 61804s can go in; spindle retained both ways
     - A5 v2: regen clamp sized by energy and pulse rating; pre-charge switched (not in parallel); category-0 drop protection (mechanical catch on the bench); watchdog timing budget
-    - safety.py v2: total torque/current limit in the drive, finite + fresh feedback required, latched faults, reset only with the button released
+    - ~~safety.py v2~~ *done loop 41-sw: total drive torque bounded (kp·e + kd·ė + τ_ff ≤ rated), finite + fresh feedback, latched faults, reset only with the button released; the drive-side current limit is a day-1 setting*
     - balancer: check pin-B sign in shoulder.py against balancer.py; exact die-spring part; 41 % at the 65 mm slot end
     - clock-spring capacity with ribbon thickness (Astra: yaw ≈ 306°, not 446°)
 1. **Hand stiffness, last mile:** the elbow housing is still the largest term (≈ 4 mm at the hand). Thicker variants failed to mesh (gmsh PLC error); fix the mesh, try a 5.5 mm +Y wall and a printed internal frame. Roll link web 4 → 8 mm.

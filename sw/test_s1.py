@@ -61,7 +61,7 @@ def test_supervisor():
     os.environ.setdefault("MUJOCO_GL", "egl")
     import mujoco
     from sw.bench_env import BenchEnv, TABLE_Z
-    from sw.safety import Supervisor, WATCHDOG_S
+    from sw.safety import Supervisor, WATCHDOG_S, FB_MAX_AGE
     env = BenchEnv(render=False)
     env.reset(0)
     d2 = mujoco.MjData(env.m)
@@ -76,32 +76,55 @@ def test_supervisor():
     t = [0.0]
     sup = Supervisor(fk=fk, clock=lambda: t[0], ws_lo=(0.05, -0.5, TABLE_Z + 0.01), ws_hi=(0.85, 0.5, TABLE_Z + 0.7))
     q0 = np.array([env.d.qpos[a] for a in env.qadr])
-    sup.reset(q0)
+    v0 = np.zeros(6)
+    assert sup.reset(q0, 0.002)
     rng = np.random.default_rng(1)
-    viol = 0
+    viol = torque_viol = 0
     n = 3000
+    qm = q0.copy()
     for k in range(n):
         t[0] += 0.002
         sup.tick()
-        wild = q0 + rng.normal(0, 3.0, 6)                           # a policy gone mad: ±3 rad noise around home
-        v = sup.check(wild, t_ff=rng.normal(0, 40, 6), dt=0.002)
-        assert not v.stop
-        q = v.q
-        p = fk(q)
-        if np.any(q < sup.lo - 1e-9) or np.any(q > sup.hi + 1e-9) or np.any(p < sup.ws_lo - 1e-6) or np.any(p > sup.ws_hi + 1e-6):
+        wild = q0 + rng.normal(0, 3.0, 6)                           # a policy gone mad: wild targets, gains and torques
+        kp, kd, tf = rng.uniform(0, 200, 6), rng.uniform(0, 10, 6), rng.normal(0, 40, 6)
+        vm = rng.normal(0, 0.5, 6)
+        v = sup.check(wild, kp, kd, tf, qm, vm, 0.002)
+        assert not v.stop, v.reasons
+        tau = Supervisor.drive_torque(v, qm, vm)
+        if np.any(np.abs(tau) > sup.rated + 1e-6):
+            torque_viol += 1
+        p = fk(v.q)
+        if np.any(v.q < sup.lo - 1e-9) or np.any(v.q > sup.hi + 1e-9) or np.any(p < sup.ws_lo - 1e-6) or np.any(p > sup.ws_hi + 1e-6):
             viol += 1
-        assert np.all(np.abs(v.t_ff) <= sup.rated + 1e-9)
-    # faults: each must stop on the very next check
+        qm = v.q + rng.normal(0, 0.002, 6)                         # the arm follows (2 mrad noise)
+    assert viol == 0 and torque_viol == 0, (viol, torque_viol)
+    # faults: each stops on the very next check and stays latched
+    t[0] += 0.002; sup.tick()
+    assert sup.check(qm, 20 * np.ones(6), np.ones(6), None, qm * np.nan, v0, 0.002).stop          # NaN feedback
+    assert sup.check(qm, 20 * np.ones(6), np.ones(6), None, qm, v0, 0.002).stop                   # still latched
+    assert not sup.heartbeat_ok()
+    assert sup.reset(qm, 0.002)
+    t[0] += 0.002; sup.tick()
+    assert sup.check(qm, 20 * np.ones(6), np.ones(6), None, qm, v0, FB_MAX_AGE * 2).stop           # stale feedback
+    assert sup.reset(qm, 0.002)
     t[0] += WATCHDOG_S + 0.001
-    assert sup.check(q0).stop                                         # stalled loop
-    sup.tick(); sup.press_estop()
-    assert sup.check(q0).stop                                         # e-stop
-    sup.reset(q0)
-    assert sup.check(q0, temp=[40, 41, 60, 40, 40, 40]).stop          # over temperature
-    assert sup.check(q0, err=[0, 0, 0, 1, 0, 0]).stop                 # motor error
-    assert viol == 0, viol
-    return (f"Safety supervisor vs a random policy: {n} cycles, 0 limit/workspace violations; watchdog, e-stop, over-temperature and "
-            f"motor-error faults each stop within one cycle ✅ (overrides: {sup.counts})")
+    assert sup.check(qm, 20 * np.ones(6), np.ones(6), None, qm, v0, 0.002).stop                   # stalled loop
+    sup.press_estop()
+    assert not sup.reset(qm, 0.002)                                                                 # button still pressed
+    sup.release_estop()
+    assert sup.reset(qm, 0.002)
+    t[0] += 0.002; sup.tick()
+    assert sup.check(qm, 20 * np.ones(6), np.ones(6), None, qm, v0, 0.002, temp=[40, 41, 90, 40, 40, 40]).stop
+    assert sup.reset(qm, 0.002); t[0] += 0.002; sup.tick()
+    assert sup.check(qm, 20 * np.ones(6), np.ones(6), None, qm, v0, 0.002, err=[0, 0, 0, 1, 0, 0]).stop
+    assert sup.reset(qm, 0.002); t[0] += 0.002; sup.tick()
+    assert sup.check(qm, 20 * np.ones(6), np.ones(6), None, qm, v0 + 5.0, 0.002).stop             # measured overspeed
+    assert sup.reset(qm, 0.002); t[0] += 0.002; sup.tick()
+    assert sup.check(qm, 20 * np.ones(6), np.ones(6), None, qm + 0.5, v0, 0.002).stop             # tracking error
+    return (f"Safety supervisor v2 vs a random policy (random targets, gains 0–200 N·m/rad, τ_ff σ 40 N·m): {n} cycles, 0 limit/workspace "
+            f"violations, **0 cycles where the drive torque kp·e + kd·ė + τ_ff exceeds the rated torque**. NaN feedback, stale feedback, watchdog, "
+            f"e-stop (reset refused while pressed), over-temperature, motor error, overspeed and tracking error each stop on the next cycle and stay latched ✅ "
+            f"(overrides: {sup.counts})")
 
 
 def main():

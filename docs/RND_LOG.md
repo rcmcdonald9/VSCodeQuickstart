@@ -1121,3 +1121,8 @@ One long push instead of half-hour runs. In order:
 - Astra review #2b: 22 findings, 5 critical ones verified (pulley bores, KX ball relief, wrist skirt, regen resistor, safety torque path). Verdict: stage the M1 buy.
 - R14 now checks every loose pulley/hub bore as well as bearings: **2/6** (the four arm big-pulley shafts fail, correctly).
 - D19: integral shaft + pulley dropped into capped U-slot seats (also gives the clevis a real clamp). Queue item 0 lists the Astra criticals.
+
+## Loop 41-sw (2026-11-26, software): safety supervisor v2 (Astra finding 20)
+
+- sw/safety.py v2: bounds the torque the MIT drive will actually produce (kp·e + kd·ė + τ_ff ≤ rated; trims τ_ff, then kp, then kd), caps gains, requires finite feedback ≤ 10 ms old, latches every fault (watchdog, e-stop, NaN/stale feedback, overspeed, tracking, temperature, motor error), reset only with the button released; heartbeat only after a healthy cycle.
+- sw/test_s1.py: 3,000 random-policy cycles with random gains → 0 torque-bound and 0 limit/workspace violations; 8 fault types each stop and stay latched.
