@@ -57,26 +57,23 @@ def cases():
     b = bs.BRG_6004
     sh = bs.small_hub()
     hz = -45.6 + 33.4
-    C.append(("small-pulley hub (×9: pitch, roll, yaw, elbow ×2 arms + lift)", sh,
+    C.append(("v1 small-pulley hub (lift only now; retired from the arm in loops 38–40)", sh,
               [(hz - 8, hz, b["d"]), (-45.6, -45.6 + 7, b["d"])], None))
-    ps = Rot(-90, 0, 0) * shoulder.pitch_shaft()          # +Y → +Z
-    C.append(("pitch shaft (60T + balancer disc + ferrule fused)", ps,
-              [(shoulder.W_IN - 3.5, shoulder.W_IN + 3.5, 40.0), (shoulder.W_OUT - 3.5, shoulder.W_OUT + 3.5, 40.0)],
-              "Ø95 60T pulley between the two one-piece bracket walls (seats Ø52): can't be inserted"))
-    rs = Pos(0, 0, 0) * Rot(0, -90, 0) * Pos(0, -roll.ROLL_Y, 0) * roll.roll_shaft()   # +X → +Z
-    C.append(("roll shaft (72T fused)", rs,
-              [(-roll.W1[1], -roll.W1[0], 40.0), (-roll.W2[1], -roll.W2[0], 40.0)],
-              "Ø115 72T pulley between the roll-link walls (seats Ø52): can't be inserted"))
+    # loop 40: every big pulley is split (double-D / hex), so the shafts are plain tubes + their outboard ends
+    ps = Rot(90, 0, 0) * shoulder.pitch_shaft()           # +Y → −Z: the ferrule end (outboard) is at −Z, the free end at +Z
+    C.append(("pitch shaft (60T split on a double-D; balancer disc + ferrule outboard)", ps,
+              [(-shoulder.W_IN - 3.0, -shoulder.W_IN + 3.0, 40.0), (-shoulder.W_OUT - 3.0, -shoulder.W_OUT + 3.0, 40.0)], None))
+    rs = Rot(0, -90, 0) * Pos(0, -roll.ROLL_Y, 0) * roll.roll_shaft()   # +X → +Z
+    C.append(("roll shaft (80T split on a hex; clock-spring hub on the +X end)", rs,
+              [(roll.W1[0], roll.W1[1], 40.0), (roll.W2[0], roll.W2[1], 40.0)], None))
     ys = Pos(0, -roll.ROLL_Y, 0) * roll.yaw_shaft()
-    C.append(("yaw shaft (40T + flange fused)", ys,
-              [(roll.P1[0], roll.P1[1], 40.0), (roll.P2[0], roll.P2[1], 40.0)],
-              "Ø66 40T pulley between the one-piece clevis plates (seats Ø52); Ø90 flange below: can't be inserted"))
+    C.append(("yaw shaft + flange (40T split on a hex)", ys,
+              [(roll.P1[0], roll.P1[1], 40.0), (roll.P2[0], roll.P2[1], 40.0)], None))
     eh = Rot(-90, 0, 0) * arm.elbow_pulley_hub()
-    C.append(("elbow pulley hub (40T fused, 132 mm)", eh,
-              [(arm.CAS_A[0], arm.CAS_A[1], 40.0), (arm.CAS_B[0], arm.CAS_B[1], 40.0), (-54 - 3.5, -54 + 3.5, 40.0), (54 - 3.5, 54 + 3.5, 40.0)],
-              "132 mm shaft longer than the 105.6 mm housing interior, Ø66 pulley vs Ø52 wall seats: can't be inserted"))
+    C.append(("elbow shaft (40T split on a double-D; 2 × 61808 + 2 × 6708)", eh,
+              [(arm.CAS_A[0], arm.CAS_A[1], 40.0), (arm.CAS_B[0], arm.CAS_B[1], 40.0), (-54 - 3.5, -54 + 3.5, 40.0), (54 - 3.5, 54 + 3.5, 40.0)], None))
     st = dict((n, p) for n, p, _ in bs.small_stage_v2(20))
-    C.append(("D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): designed, not yet migrated", st["shaft_12"],
+    C.append(("D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow (lift: next)", st["shaft_12"],
               [(bs.V2["jA"][0], bs.V2["jA"][1], bs.BRG_6801["d"]), (bs.V2["jB"][0], bs.V2["jB"][1], bs.BRG_6801["d"])], None))
     ws = base.wheel_shaft()
     C.append(("wheel shaft + flange (×4)", ws, [(-44, -44 + 7, 40.0), (-40 + 8 - 7, -40 + 8, 40.0)], None))

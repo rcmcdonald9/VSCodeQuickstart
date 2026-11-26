@@ -72,7 +72,7 @@ def _palm_body() -> Part:
     # pocket for the flipped wrist-roll sleeve (slides in from the bottom, 2 screws)
     p -= Pos(cs.SERVO["l"] / 2 - cs.SERVO["shaft_off"], 0, zb - 1) * Box(cs.SERVO["l"] + 2 * (cs.FIT + cs.WALL) + 0.6,
                                                                        cs.SERVO["w"] + 2 * (cs.FIT + cs.WALL) + 0.6, SLEEVE_TOP - zb + 1.5, align=MIN)
-    return p
+    return p + wrist_roll_skirt()
 
 
 def wrist_roll_sleeve() -> Part:
@@ -81,6 +81,45 @@ def wrist_roll_sleeve() -> Part:
 
 def wrist_roll_face_z() -> float:
     return SLEEVE_TOP - cs.stack_height()
+
+
+# D16 (loop 40, external review finding 5 → A4): the wrist roll no longer hangs the gripper on the servo's KX44 seat.
+# With 1 kg in a horizontal hand the seat saw ≈ 0.9 N·m bending (1.3 N·m dynamic) against ≈ 0.6 N·m lift-off
+# (P·r_ball/2 = 80 N × 15.5 mm / 2). The gripper now bolts (4 × M3) to a spindle that runs in 2 × 61804 in a skirt under
+# the palm; the servo drives it through a two-dog coupling (torque only, floats axially). Cartridge S still slides out of
+# the palm (2 screws); tools (suction cup, …) bolt to the spindle flange. The wrist-pitch KX56 stays: its bending lever is
+# only the ≈ 40 mm hub offset (≈ 0.9 N·m dynamic vs ≈ 1.5 N·m lift-off).
+BRG_WR = dict(d=20.0, D=32.0, B=7.0)          # 61804 (reused: the D13 stages freed the arm's 61804s)
+SPINDLE_DROP = 19.3                            # wrist-roll face → gripper base top (was KX44 gap + 12.6 = 13.2)
+
+
+def _zw():
+    return wrist_roll_face_z()
+
+
+def wrist_roll_skirt() -> Part:
+    """Bearing skirt under the palm (part of the palm print): Ø38, seats for the two 61804, lip under the lower one."""
+    zf = _zw()
+    zP = SLEEVE_TOP - cs.SERVO["case_h"] - cs.SERVO["bottom"] - cs.FLOOR + 2
+    sk = Pos(0, 0, zf - 18.5) * Cylinder(19, zP + 1 - (zf - 18.5), align=MIN)
+    sk -= Pos(0, 0, zf - 18.5) * Cylinder(13.0, 40, align=MIN)                     # lip / shoulder bore
+    sk -= Pos(0, 0, zf - 17.0) * Cylinder(BRG_WR["D"] / 2 + 0.05, 2 * BRG_WR["B"], align=MIN)   # bearing seats
+    sk -= Pos(0, 0, zf - 1.5) * Cylinder(11.0, 40, align=MIN)                      # dog adapter clearance up to the servo
+    return sk
+
+
+def wrist_roll_parts():
+    zf = _zw()
+    zP = SLEEVE_TOP - cs.SERVO["case_h"] - cs.SERVO["bottom"] - cs.FLOOR + 2
+    dog = Pos(0, 0, zf) * Cylinder(9.5, zP - 0.5 - zf, align=MIN)                  # on the Ø20 horn (4 × M3)
+    dog += Pos(0, 0, zf - 3.5) * Box(4, 18, 3.5, align=MIN)
+    sp = Pos(0, 0, zf - 19.3) * Cylinder(BRG_WR["d"] / 2, 19.3 - 0.5 - 3.5 + 3.5, align=MIN)
+    sp -= Pos(0, 0, zf - 4.0) * Box(4.8, 30, 10, align=MIN)                         # dog slot (0.4 mm each side)
+    sp += Pos(0, 0, zf - 23.3) * Cylinder(20, 4, align=MIN)                          # flange (sits in a 4 mm pocket in the gripper base)
+    sp -= Cylinder(4.0, 400)                                                         # wire pass (servo + tactile + ToF)
+    brg = lambda z0: Pos(0, 0, z0) * (Cylinder(BRG_WR["D"] / 2, BRG_WR["B"], align=MIN) - Cylinder(BRG_WR["d"] / 2, BRG_WR["B"], align=MIN))
+    return [("wr_dog", dog, "dark"), ("wr_spindle", sp, "steel"),
+            ("wr_brg_U", brg(zf - 3.0 - BRG_WR["B"]), "steel"), ("wr_brg_L", brg(zf - 17.0), "steel")]
 
 
 # ---------------- fin-ray finger (TPU) ----------------
@@ -108,10 +147,10 @@ def fin_ray(top_z: float, tip_z: float, face_x: float, depth: float, thick: floa
 # Precedent: the SO-100 / LeRobot gripper: one fixed jaw + one jaw driven straight off the servo horn (fewest parts).
 # The gripper servo lies on its side under the base plate (shaft along Y, its 24.8 mm width along Z) so the hand stays short.
 def gripper_parts(jaw_deg: float = 25.0):
-    z0 = wrist_roll_face_z() - KX44.gap          # KX44 hub face (gripper side)
-    zb = z0 - 12.6                               # base plate top = bottom of the hub + retainer
+    zb = wrist_roll_face_z() - SPINDLE_DROP      # D16: base plate top = spindle flange top (flange in a 4 mm pocket)
     parts = []
     base = Pos(5, 0, zb - 5) * soft_box(104, 46, 10, 18, 3.5)
+    base -= Pos(0, 0, zb - 4) * Cylinder(20.3, 5, align=MIN)                    # spindle flange pocket
     parts.append(("grip_base", base, "white"))
     zs = zb - 10 - 13.0                          # servo shaft height (servo hangs under the base)
     sx = -24.0                                   # shaft x
@@ -144,14 +183,13 @@ def assembly(jaw_deg: float = 25.0):
     yf = WRIST_HUB_Y
     out = [("wp_hub", Pos(0, yf, 0) * Rot(-90, 0, 0) * hub(KX56), "dark"),
            ("wp_collar", Pos(0, yf, 0) * Rot(-90, 0, 0) * collar(KX56), "orange"),
-           ("palm", palm(), "white"), ("wr_sleeve", wrist_roll_sleeve(), "white"),
-           ("wr_collar", Pos(0, 0, wrist_roll_face_z() - KX44.gap) * collar(KX44), "orange"),
-           ("gr_hub", Pos(0, 0, wrist_roll_face_z() - KX44.gap) * hub(KX44), "dark")]
-    return out + gripper_parts(jaw_deg)
+           ("palm", palm(), "white"), ("wr_sleeve", wrist_roll_sleeve(), "white")]
+    return out + wrist_roll_parts() + gripper_parts(jaw_deg)
 
 
 def masses(density=1.27):
     printed = palm().volume + sum(p.volume for n, p, c in gripper_parts() if n in ("grip_base", "grip_servo_sleeve", "jaw_moving", "jaw_fixed"))
     return {"palm + gripper printed": printed / 1e6 * density * 0.7,
-            "2 × KX44/KX56 hub+collar (hand side)": (hub(KX56).volume + collar(KX56).volume + collar(KX44).volume) / 1e6 * density * 0.7,
+            "KX56 hub+collar (hand side)": (hub(KX56).volume + collar(KX56).volume) / 1e6 * density * 0.7,
+            "D16 wrist-roll spindle + dog (printed) + 2 × 61804": sum(p.volume for n, p, c in wrist_roll_parts() if n in ("wr_dog", "wr_spindle")) / 1e6 * density * 0.9 + 0.016,
             "wrist camera module (ESTIMATE)": 0.05, "TPU pads, rail screws (ESTIMATE)": 0.02}

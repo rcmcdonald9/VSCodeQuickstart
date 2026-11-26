@@ -13,16 +13,16 @@ joint (all cable data ESTIMATE until the datasheets are in hand):
 The joint ranges come from the twin (rnd/twin.py JR). The free lengths and the cavity sizes are read off the CAD
 (module dimensions; ESTIMATE ± 10 mm).
 
-**Joints the arm bundle can cross: 6/6 with D12** (CSI flat-flex through the wrist + slim Ø2.2 USB from the forearm); 4/6 with the camera's stock Ø3.8 USB cable.
+**Joints the arm bundle can cross: 6/6 with D12** (CSI flat-flex through the wrist + slim Ø2.2 USB from the forearm); 2/6 with the camera's stock Ø3.8 USB cable.
 
-| Joint | Range | Torsion: free length / needed | Spiral cavity r_in–r_out (mm) | Bend r (10×OD) | Spiral capacity (S = 0.6 m) | Method (D12) | Stock USB |
-|---|---|---|---|---|---|---|---|
-| shoulder pitch | 260° | 200 / 361 mm ❌ | 22–60 | 22 mm | 990° (need 312°) | clock spring ✅ | ✅ 332° |
-| shoulder roll | 115° | 100 / 160 mm ❌ | 22–50 | 22 mm | 875° (need 138°) | clock spring ✅ | ✅ 217° |
-| upper-arm yaw | 140° | 240 / 194 mm ✅ | 0–0 | 22 mm | 0° (need 168°) | torsion ✅ | ✅ 0° |
-| elbow | 150° | 130 / 208 mm ❌ | 22–50 | 22 mm | 875° (need 180°) | clock spring ✅ | ✅ 217° |
-| wrist pitch | 220° | 60 / 306 mm ❌ | 16–30 | 12 mm | 1003° (need 264°) | clock spring ✅ | ❌ 0° |
-| wrist roll | 360° | 30 / 500 mm ❌ | 14–24 | 12 mm | 1023° (need 432°) | clock spring ✅ | ❌ 0° |
+| Joint | Range | Torsion: free length / needed | Spiral cavity r_in–r_out (mm) | Bend r (10×OD) | Spiral S / capacity | Ribbon build / width | Method | Stock USB |
+|---|---|---|---|---|---|---|---|---|
+| shoulder pitch | 260° | 200 / 361 mm ❌ | 22–60 | 22 mm | 0.60 m / 990° (need 312°) | 9.5 mm / 7.8 mm | clock spring ✅ | ✅ 332° |
+| shoulder roll | 115° | 100 / 160 mm ❌ | 22.0–38.0 | 22 mm | 0.25 m / 274° (need 138°) | 4.0 mm / 7.8 mm | clock spring ✅ | ❌ 0° |
+| upper-arm yaw | 300° | 0 / 417 mm ❌ | 22.5–40.0 | 22 mm | 0.40 m / 446° (need 360°) | 6.2 mm / 7.8 mm | clock spring ✅ | ❌ 30° |
+| elbow | 150° | 130 / 208 mm ❌ | 22–50 | 22 mm | 0.60 m / 875° (need 180°) | 9.5 mm / 11.4 mm | clock spring ✅ | ✅ 217° |
+| wrist pitch | 220° | 60 / 306 mm ❌ | 16–30 | 12 mm | 0.40 m / 668° (need 264°) | 4.8 mm / — | clock spring ✅ | ❌ 0° |
+| wrist roll | 360° | 30 / 500 mm ❌ | 14–24 | 12 mm | 0.35 m / 597° (need 432°) | 4.8 mm / — | clock spring ✅ | ❌ 0° |
 
 **Findings (loop 32):**
 - **No joint can rely on torsion through its bore.** The free axial lengths are 30–200 mm, and the ranges need 160–500 mm at ±360°/m. The old electrical note ('cables through the hollow shafts, no slip rings') needs **clock-spring spirals** at each joint.
@@ -30,9 +30,11 @@ The joint ranges come from the twin (rnd/twin.py JR). The free lengths and the c
   - a MIPI-CSI camera on a thin FFC through both wrist joints
   - a CSI→USB (UVC) bridge board on the forearm
   - a slim 4-core high-flex USB cable (OD ≤ 2.2 mm) from there on
-- **Yaw (open):** the belt fills the space between the yaw plates, and there is no gap above or below them. Two fixes to evaluate against R1 reach:
-  - (a) a 12 mm spiral cassette under the yaw block (yaw_drop +12 mm)
-  - (b) limit yaw to about ±70° so torsion over the 0.2 m neck run suffices
+- **Loop 40: roll and yaw cassettes are now real CAD** (external review finding 4). Yaw is back to **±150°** (loop 33 had cut it to ±70°, which cost side grasps 68 → 40 %):
+  - **yaw:** a 9.5 mm cavity between the split 40T pulley's hub (rotating inner wall, r 22.5) and the bottom yaw plate, static ring r 40 screwed to the plate; the ribbon's inner end enters the yaw-shaft bore and runs down the neck
+  - **roll:** a cassette on the +X end of the roll shaft, outboard of the clevis arm; the static ring hangs on a bar that runs inboard at z ≈ 0 (a direction the roll output never sweeps) to the roll-link boss
+  - **D14:** the elbow sensor node makes 12 V and drives the TTL servo bus, so only 24 V + CAN + USB (a 7.8 mm flat ribbon) cross pitch, roll and yaw
+- The ribbon: the round cables side by side on a PET/Kapton carrier tape, wound as in a car's clock spring (cable bends, never twists).
 
 ## Harness kit (pre-made, one per arm + torso + base)
 | Segment | Contents | Length (ESTIMATE) | Ends |

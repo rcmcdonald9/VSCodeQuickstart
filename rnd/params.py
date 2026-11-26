@@ -34,15 +34,15 @@ def act(name: str) -> dict:
 class Arm:
     l_upper: float = 0.30          # shoulder pitch axis -> elbow axis (reach sweep: 0.25 -> 0.30)
     l_fore: float = 0.28           # elbow -> wrist pitch axis (reach sweep: 0.23 -> 0.28)
-    l_hand: float = 0.15           # wrist pitch -> grasp point (loop 10 hand CAD: wrist roll + KX44 + gripper servo stack; was 0.13)
+    l_hand: float = 0.156          # wrist pitch -> grasp point (loop 10 hand CAD: wrist roll + KX44 + gripper servo stack; was 0.13; loop 40 D16 wrist-roll spindle: +6 mm)
     shoulder_y: float = 0.20       # |y| of shoulder pitch axis from robot centre line
     shoulder_x: float = 0.06       # x of shoulder axis relative to spine
-    roll_offset_y: float = 0.075   # roll axis outboard of the pitch body / detach plane (loop 10 roll CAD: 0.05 → 0.075, the 72T pulley)
-    yaw_drop: float = 0.10         # roll axis → upper-arm yaw interface (loop 10 roll CAD: 0.07 → 0.10); the upper bone shortens to keep l_upper
+    roll_offset_y: float = 0.083   # roll axis outboard of the pitch body / detach plane (loop 10 roll CAD: 0.05 → 0.075, the 72T pulley; loop 40: 0.083, the 80T pulley)
+    yaw_drop: float = 0.1134       # roll axis → upper-arm yaw interface (loop 10 roll CAD: 0.07 → 0.10; loop 40 D13 yaw stage + 80T roll pulley: 0.113 = roll.YAW_DROP); the upper bone shortens to keep l_upper
     # actuator choice per joint and belt/linkage reduction in the bone
     joints: dict = field(default_factory=lambda: {
         "shoulder_pitch": ("GIM6010-8", 3.0),   # loop 10: 2.5 → 3 (20T:60T) after the hand CAD added 0.2 kg at the tip
-        "shoulder_roll":  ("GIM6010-8", 4.0),   # loop 10: 3.5 → 4 (18T:72T); loop 5: 3 → 3.5
+        "shoulder_roll":  ("GIM6010-8", 80 / 18),   # loop 40: 4.0 → 4.44 (18T:80T, D13 mass); loop 10: 3.5 → 4 (18T:72T); loop 5: 3 → 3.5
         "upper_yaw":      ("GIM6010-8", 2.0),   # loop 5: DM-J4310 direct was under-rated over the workspace (p95 4.6 N·m vs 3 rated)
         "elbow":          ("GIM6010-8", 2.0),
         "wrist_pitch":    ("DM-J4310-2EC_V1.1", 1.0),
@@ -64,8 +64,8 @@ class Arm:
     elbow_motor_at: float | None = None
     pitch_module_mass: float = 0.79    # FROM CAD (loop 7; loop 8 lightening 0.81 → 0.76; loop 10 60T pulley 0.79, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
                                        # KX-V ferrule, small hub + KX74 socket, bearings, spring/cable/pulley A, V-band clamp. Torso side.
-    roll_stage_mass: float = 0.58      # FROM CAD (loop 10, rnd/parts/roll.py): male ferrule, roll link, roll shaft + 72T, hub/socket, bearings
-    yaw_stage_mass: float = 0.47       # FROM CAD (loop 10): clevis + yaw block plates, yaw shaft + 40T + flange, hub/socket, bearings
+    roll_stage_mass: float = 0.70      # FROM CAD (loop 40, rnd/parts/roll.py masses(split=True)): ferrule, roll link + spring ring, roll shaft + split 72T + spring hub, D13 stage + KX74 socket, 2×61808. Loop 10: 0.58
+    yaw_stage_mass: float = 0.53       # FROM CAD (loop 40): clevis + yaw block, yaw shaft + flange + split 40T + spring ring, D13 stage + KX74 socket, 2×61808. Loop 10: 0.47
     elbow_hub_mass: float = 0.12   # big pulley + hub + 2×61808 + tensioner when the motor is remote (ESTIMATE)
     wrist_pitch_range_deg: float = 120.0   # ±140 folded the hand into the forearm (collision study); ±120 is realistic and reaches more
 

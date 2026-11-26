@@ -1,8 +1,8 @@
 """Monte Carlo of the KX joint couplings: tolerances, friction, spring scatter and PETG creep (queue item 6, loop 29).
 python -m rnd.kx_mc
 
-Model (rnd/kx_check.py): slip torque = P·r_ball / tan β; preload P = k·c. The spring rate is k ≈ P_nom / 1.5 mm and the
-compression is c ≈ 1.5 mm nominal. Each draw (all ESTIMATE until coupon C1 measures them):
+Model (rnd/kx_check.py): slip torque = P·r_ball / tan β; preload P = k·c. The spring rate is k ≈ P_nom / 3 mm and the
+compression is c ≈ 3 mm nominal (D15, loop 40: 6 coil springs; loops 29–39 used 1.5 mm). Each draw (all ESTIMATE until coupon C1 measures them):
 - spring rate ×N(1, 0.07): coil-spring tolerance ±10 % at ~1.5σ
 - compression error N(0, 0.07 mm): ±0.1 mm on each of the two printed seats (collar tooth, hub step)
 - contact angle β = 20° + N(0, 1°): dowel-pin positions in printed holes, ball pocket depth
@@ -31,6 +31,7 @@ from .params import BASELINE
 
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
 N = 200_000
+COMP = 3.0          # D15 (loop 40): spring compression at lock. Was 1.5 mm (a 1.2 mm wave stack); softer springs halve the creep loss
 
 
 def run(n=N, seed=11):
@@ -38,8 +39,8 @@ def run(n=N, seed=11):
     rows = []
     for r in kx_check.interface_rows(BASELINE):
         kx = r["kx"]
-        k = kx.preload_n / 1.5 * rng.normal(1, 0.07, n)
-        c = 1.5 + rng.normal(0, 0.07, n)
+        k = kx.preload_n / COMP * rng.normal(1, 0.07, n)
+        c = COMP + rng.normal(0, 0.10, n)                            # D15: 6 coil springs, 3 mm installed compression
         warm = r["act"].startswith(("GIM", "DM"))                    # arm/base GIM + DM joints sit next to a working motor
         ratio = rng.uniform(0.30, 0.40, n) if warm else rng.uniform(0.45, 0.60, n)
         creep = 0.06 * (1 / ratio - 1)                               # extra loop deflection (mm) after 10 years

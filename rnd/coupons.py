@@ -52,8 +52,8 @@ def parts():
     rs = ratchet_strip().solids()[0]
     bb = rs.bounding_box()
     return {
-        "C1_kx74_pip_socket_and_collar": (hub_pip(KX74) + collar(KX74, locked=False), "PETG", "Pause 1 at the pin-centre layer (insert 6 × Ø5×14), pause 2 at the lip top (wave spring or 6 coil springs + PTFE washer)"),
-        "C2_kx74_male_face": (male(KX74), "PETG", "Pause at the ball-centre layer: press in 3 × Ø10 balls"),
+        "C1_kx74_socket_and_collar": (hub_pip(KX74) + collar(KX74, locked=False), "PETG", "D15 screwed socket: print hub, collar and retainer separately; press 6 × Ø5×14 pins in radially, 6 × Ø4 coil springs in the step pockets, collar on, retainer 3 × M3"),
+        "C2_kx74_male_face": (male(KX74), "PETG", "Snap 3 × Ø10 balls past the equator (1 mm) with a drop of retaining compound; check they can't be pulled out by hand"),
         "C3_clearance_ladder": (clearance_ladder(), "PETG", "Print-in-place; try to turn each pin by hand"),
         "C4_pressfit_ladder": (pressfit_ladder(), "PETG", "Press the real pins/balls in; note the tightest row that still assembles without cracking"),
         "C5_eccentric_bushing": (eccentric_bushing(), "PETG", "Fit a 6804 bearing; rotate in a Ø38.2 test hole"),
@@ -67,7 +67,7 @@ def parts():
 PROTOCOL = [
     ("C1", "KX socket: lock twist torque (luggage scale on the collar tab), slip torque (lever + scale), re-seat repeatability over 10 cycles (dial or calipers on a 100 mm arm). "
      "Then **creep hold** (loop 29): leave it locked on the P2S bed at 50 °C for 72 h and measure slip torque again",
-     "twist ≤ 3 N·m; slip ≥ 12 N·m; repeatability ≤ 0.05 mm at 100 mm; slip loss after the hold ≤ 5 %", "kx.py: clearance, preload_n, ramp_deg, stroke; rnd/kx_mc.py creep ratio"),
+     "twist ≤ 3 N·m; slip ≥ 12 N·m; repeatability ≤ 0.05 mm at 100 mm; slip loss after the hold ≤ 5 %; preload from the 6 springs 160 ± 30 N (scale on the collar lip)", "kx.py: clearance, preload_n, ramp_deg, stroke; rnd/kx_mc.py creep ratio"),
     ("C2", "Male face: balls seated flush ±0.05 mm", "no ball proud > 0.1 mm", "kx.py: ball pocket fit"),
     ("C3", "Smallest gap whose pin turns freely after printing", "≤ 0.30 mm frees", "kx.py clearance (0.30)"),
     ("C4", "Tightest press-fit row that assembles without cracking (pins, balls)", "one row works", "kx.py pin/ball hole diameters"),

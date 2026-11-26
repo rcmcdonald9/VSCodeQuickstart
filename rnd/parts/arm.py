@@ -89,6 +89,7 @@ def upper_bone() -> Part:
     # openings: cartridge bay on -Y (the cartridge drops in from the side), elbow hub exit on +Y
     p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(cm.MOTOR["od"] / 2 + 4.5, 20)   # loop 36 (R15): 1.2 mm around the can
     p -= Pos(0, h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20)
+    p -= Pos(0, -h["y"] / 2 + 3, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20, align=MIN)   # loop 40: −Y wall opened for the elbow shaft (was blind; the shaft now goes in from −Y)
     # (the old torque-pin slot cut here sat inside the bay hole and removed nothing: the cartridge torque-reaction path is
     #  open on every stage — see rnd/integration.py and the RND_PLAN queue)
     # bottom cap is a separate print (bone_cap()): the cassette goes in from below
@@ -199,11 +200,19 @@ def cf_fore() -> Part:
 
 
 def elbow_pulley_hub() -> Part:
-    """40T elbow pulley + Ø40 shaft (runs in 2 × 61808) + bolt flange for the forearm."""
-    from .belt_stage import pulley
-    p = Pos(0, 0, 0) * Rot(90, 0, 0) * Cylinder(20, HOUSING["y"] + 24)        # loop 23: +12 (forearm link moved out 6 mm)
-    p += Pos(0, BELT_Y, 0) * Rot(-90, 0, 0) * Pos(0, 0, -8) * pulley(40, 16)      # on the small pulley's belt plane
-    return p - Rot(90, 0, 0) * Cylinder(15, 300)              # hollow shaft (cable pass-through to the forearm)
+    """Elbow shaft: Ø40 tube (2 × 61808 in the housing walls + 2 × 6708 in the cassette plates), forearm clamped on both
+    ends. Loop 40 (R14): the 40T pulley is separate (elbow_pulley) on a double-D, so the tube slides in from one side
+    through all four bearings and the pulley."""
+    from .belt_stage import dd_flats
+    L = HOUSING["y"] + 24                                     # loop 23: +12 (forearm link moved out 6 mm)
+    t = Cylinder(20, L, align=MIN) - Cylinder(15, L, align=MIN)
+    t -= dd_flats(L / 2 - BELT_Y - 10.0, 20)                  # stage frame: z = L/2 − y (pulley + its flanges)
+    return Pos(0, L / 2, 0) * Rot(90, 0, 0) * t
+
+
+def elbow_pulley() -> Part:
+    from .belt_stage import split_pulley
+    return Pos(0, BELT_Y, 0) * Rot(-90, 0, 0) * Pos(0, 0, -8) * split_pulley(40, 16, flange=True)
 
 
 PRINT = {
@@ -220,7 +229,7 @@ def masses(density=1.27):
     cf = {"CF tubes (neck Ø40 + forearm Ø30)": (cf_neck().volume + cf_fore().volume) / 1e6 * 1.55}
     kxv = lambda k: kx_hub(k).volume + kx_collar(k).volume + retainer(k).volume
     sockets = {"KX74 sockets ×2 (elbow, yaw: GIM since loop 5)": 2 * kxv(KX74), "KX56 socket (wrist)": kxv(KX56),
-               "elbow pulley hub (40T)": elbow_pulley_hub().volume, "elbow small-pulley hub": small_hub().volume - kx_hub(KX74).volume}
+               "elbow shaft + split 40T pulley": elbow_pulley_hub().volume + elbow_pulley().volume, "elbow small-pulley hub": small_hub().volume - kx_hub(KX74).volume}
     out = {k: v / 1e6 * density for k, v in shells.items()}
     out.update({k: v / 1e6 * density * 0.7 for k, v in sockets.items()})
     out.update(cf)
@@ -246,7 +255,8 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     out += [(f"e_{n}", st * pp, c) for n, pp, c in small_stage_v2(20)]                 # loop 38: D13 stage v2 (e_kx_hub_v2, e_shaft_12, …)
     bc = V2["belt_c"]
     out += [("e_belt", st * Pos(0, 0, bc - 7.5) * belt_loop(31.8, 63.7, BELT_C, width=15.0), "dark"),
-            ("e_bigpulley", st * Pos(BELT_C, 0, bc - 8) * pulley(40, 16, bore=30), "orange")]
+            ("e_bigpulley", Pos(0, 0, -ELBOW_Z) * elbow_pulley(), "orange"),            # loop 40: split 40T on the elbow shaft's double-D
+            ("e_shaft40", Pos(0, 0, -ELBOW_Z) * elbow_pulley_hub(), "steel")]
     # (the yaw stage above the flange lives in rnd/parts/roll.py)
     fe = Pos(0, 0, -ELBOW_Z) * Rot(0, elbow_deg, 0)
     out += [("forearm", fe * forearm(), "white"), ("cf_fore", fe * cf_fore(), "dark"), ("cf_neck", cf_neck(), "dark")]

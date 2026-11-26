@@ -24,7 +24,7 @@ from .params import BASELINE, Design, act  # noqa: E402
 JR = {  # joint ranges (deg). Conventions: arm hangs straight down at 0.
     # pitch about +Y: NEGATIVE swings the arm forward/up.  roll: positive = abduct outward.
     # elbow about +Y: NEGATIVE bends the forearm forward.
-    "pitch": (-200, 60), "roll": (-15, 100), "yaw": (-70, 70),          # yaw ±150 → ±70 (loop 33, D12: torsion crossing; reach 99 %, bimanual 4/4 kept)
+    "pitch": (-200, 60), "roll": (-15, 100), "yaw": (-150, 150),        # loop 33: ±150 → ±70 (torsion crossing); loop 40: back to ±150 with a clock-spring cassette (dexterity, owner 2026-11-26)
     "elbow": (-150, 0), "wpitch": (-110, 110), "wroll": (-180, 180)}
 
 

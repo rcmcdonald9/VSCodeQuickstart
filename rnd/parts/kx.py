@@ -49,10 +49,12 @@ class KX:
     beta_deg: float = 20.0      # ball-to-pin contact normal from the face plane. Lower = less lift-out per N·m
                                 # -> less preload -> easier twist (sweep in docs/rnd/kx.md: 30° needed 250 N, 20° needs 160 N)
     pin_proud: float = 0.6      # pins stand this far above the hub face (sets the face gap); male face has reliefs
+    ball_recess: float = 0.0    # D15: ball centre this far inside the male face (snap past the equator + retaining compound)
     twist_deg: float = 35.0
     ramp_deg: float = 6.0       # below the friction angle (8.5° lubed, 14° dry PETG) -> self-locking
     clearance: float = 0.3
-    spring_t: float = 1.2       # spring stack (wave spring or 6 small coil springs) installed height
+    spring_t: float = 2.0       # D15 (loop 40): gap between the hub step and the collar lip; 6 coil springs Ø4 sit in 3 mm
+                                # pockets in the step (installed 5 mm). Was 1.2 mm with a 1 mm-wide annulus: no real spring fits
     stroke: float = 1.0         # teeth sit this far below the lug backs: the last ~14° of twist lifts
                                 # the collar by `stroke`, compressing the spring -> preload (k ≈ preload / 1.5 mm)
 
@@ -72,7 +74,7 @@ class KX:
         return (self.ball_d + self.pin_d) * math.cos(math.radians(self.beta_deg))
 
     @property
-    def gap(self): return self.z_ball                           # male face height above hub face
+    def gap(self): return self.z_ball - self.ball_recess        # male face height above hub face
 
     @property
     def lug_back_z(self): return self.gap + self.face_t        # back of the male flange / lugs (mated)
@@ -91,17 +93,21 @@ class KX:
 
 
 # Cartridge M (GIM6010-8, DM-J4310). Cartridge S (STS3215).
+# D15 (loop 40, external review finding 2): pins 1 mm prouder and balls 1 mm deeper in the male face (captured past
+# their equator), so the face gap is unchanged.
 KX74 = KX("KX74", od=74, face_t=7, ball_d=10.0, ball_pcd=58, pin_d=5.0, pin_len=14,
-          lug_reach=6, lug_w=14, lug_t=3.0, tooth_t=2.4, preload_n=160)
+          lug_reach=6, lug_w=14, lug_t=3.0, tooth_t=2.4, preload_n=160, pin_proud=1.6, ball_recess=1.0)
 # DM-J4310 (Ø57, 7 N·m peak): KX74 is oversized for the wrist and upper-arm yaw (loop 4 mass pass)
 KX56 = KX("KX56", od=56, face_t=6, ball_d=8.0, ball_pcd=43, pin_d=4.0, pin_len=11,
-          lug_reach=5, lug_w=11, lug_t=2.5, tooth_t=2.2, preload_n=140)
+          lug_reach=5, lug_w=11, lug_t=2.5, tooth_t=2.2, preload_n=140, pin_proud=1.4, ball_recess=0.8)
 KX44 = KX("KX44", od=44, face_t=5, ball_d=6.0, ball_pcd=31, pin_d=3.0, pin_len=8,
-          lug_reach=4, lug_w=9, lug_t=2.5, tooth_t=2.0, preload_n=80)
+          lug_reach=4, lug_w=9, lug_t=2.5, tooth_t=2.0, preload_n=80, pin_proud=1.2, ball_recess=0.6)
 BALL_ANG = (90, 210, 330)
 LUG_ANG = (30, 150, 270)
 HUB_STEP = 6.0       # hub keeps r_hub from z=0 to -HUB_STEP, then steps in by STEP_IN
-STEP_IN = 1.5
+STEP_IN = 5.5        # D15: 1.5 → 5.5, room for the spring pockets
+SPRING_D, SPRING_POCKET = 4.4, 3.0
+SPRING_ANG = (0, 60, 120, 180, 240, 300)   # between the pin pairs (90/210/330) and the retainer screws (30/150/270)
 LIP_T = 2.0
 
 
@@ -117,8 +123,8 @@ def male(kx: KX, bore: float = 0.0) -> Part:
         # back face ramped like the collar teeth -> face contact, not an edge
         p += _at(kx.od / 2 + kx.lug_reach / 2 - 1, a) * Rot(0, 0, a) * Pos(0, 0, kx.face_t) * Rot(-kx.ramp_deg, 0, 0) * \
             Box(kx.lug_reach + 2, kx.lug_w, kx.lug_t, align=(Align.CENTER, Align.CENTER, Align.MAX))
-    for a in BALL_ANG:                                    # press-fit pockets, ball centre on the face
-        p -= _at(kx.r_ball, a) * Sphere(kx.ball_d / 2 - 0.05)
+    for a in BALL_ANG:                                    # D15: pockets past the equator (ball centre ball_recess inside the face)
+        p -= _at(kx.r_ball, a) * Pos(0, 0, kx.ball_recess) * Sphere(kx.ball_d / 2 - 0.05)
         # relief so the proud pins clear the face
         p -= _at(kx.r_ball, a) * Rot(0, 0, a) * Box(kx.pin_len + 2, kx.pin_sep + kx.pin_d + 2, 2 * (kx.pin_proud + 0.5))
     if bore:
@@ -164,6 +170,9 @@ def hub(kx: KX, depth: float = None, bore: float = 0.0, screws: bool = True) -> 
     # 3 × M3 holes for the retainer (screwed version only)
     for a in LUG_ANG if screws else ():
         p -= _at(kx.r_hub - STEP_IN - 3.5, a) * Pos(0, 0, -depth) * Cylinder(1.25, 8, align=MIN)
+    # D15: 6 spring pockets in the step face (springs push the collar lip down → teeth onto the lug backs → preload)
+    for a in SPRING_ANG:
+        p -= _at(kx.r_hub - STEP_IN / 2, a) * Pos(0, 0, -HUB_STEP) * Cylinder(SPRING_D / 2, SPRING_POCKET, align=MIN)
     if bore:
         p -= Cylinder(bore / 2, 100)
     return p
@@ -178,22 +187,28 @@ def retainer(kx: KX, depth: float = None) -> Part:
 
 
 def hub_pip(kx: KX, depth: float = None, bore: float = 0.0) -> Part:
-    """Print-in-place socket (loop 10, R10): hub + retainer fused into ONE print, with the collar printed around it
-    (all clearances ≥ 0.3 mm). Two print pauses:
-      1. at the pin-centre layer: drop the 6 dowel pins into their half-channels, resume (printing closes over them);
-      2. at the collar-lip top layer: lay the wave spring + PTFE washer on the lip, resume (the hub step bridges over).
-    This saves the 3 retainer screws and the press work: ~10 → ~4 min per socket (ESTIMATE). Coupon test needed: the
-    bridge over the spring and the 0.3 mm clearances."""
+    """D15 (loop 40): the socket as built = hub + screwed retainer (3 × M3 into heat-set inserts), shown as one solid
+    for geometry checks. The name is kept for callers.
+
+    Loop 10's print-in-place version (hub + retainer in one print, collar printed around it, pauses for the pins and the
+    spring) is retired for the first build (external review finding 2): its 1 mm spring annulus held no real spring,
+    the pauses were listed in the wrong order (the lip layer prints before the pin layer: the hub is printed face-up),
+    and the hub step had to bridge over a loose spring. It stays a coupon experiment (C1) for a later build-time cut.
+
+    Assembly: press the 6 dowel pins in radially; put 6 springs in the step pockets; slide the collar up from below;
+    screw the retainer on. ≈ 8 min per socket (ESTIMATE)."""
     depth = depth or HUB_STEP + LIP_T + kx.spring_t + 1.0
-    ring = Pos(0, 0, -depth - 2) * (Cylinder(kx.r_collar_in + 1.5, 2, align=MIN) - Cylinder(kx.r_hub - STEP_IN - 7, 2, align=MIN))
-    core = Pos(0, 0, -depth - 2) * Cylinder(kx.r_hub - STEP_IN, 2, align=MIN)
-    return hub(kx, depth, bore, screws=False) + ring + core - (Cylinder(bore / 2, 400) if bore else Pos(0, 0, 1000) * Cylinder(1, 1))
+    core = Pos(0, 0, -depth - 2) * Cylinder(kx.r_hub - STEP_IN - 7, 2, align=MIN)
+    return hub(kx, depth, bore, screws=True) + retainer(kx, depth) + core - (Cylinder(bore / 2, 400) if bore else Pos(0, 0, 1000) * Cylinder(1, 1))
 
 
 def spring(kx: KX) -> Part:
-    """Placeholder for the preload spring stack (sits under the hub step, above the collar lip)."""
-    return Pos(0, 0, -HUB_STEP - kx.spring_t) * (Cylinder(kx.r_hub - 0.2, kx.spring_t, align=MIN) -
-                                                 Cylinder(kx.r_hub - STEP_IN + 0.3, kx.spring_t, align=MIN))
+    """D15: the 6 coil springs (Ø4, installed 5 mm: 3 mm in the pockets + the 2 mm gap to the collar lip)."""
+    out = None
+    for a in SPRING_ANG:
+        c = _at(kx.r_hub - STEP_IN / 2, a) * Pos(0, 0, -HUB_STEP - kx.spring_t) * Cylinder(1.9, kx.spring_t + SPRING_POCKET - 0.2, align=MIN)
+        out = c if out is None else out + c
+    return out
 
 
 def collar(kx: KX, locked: bool = True) -> Part:

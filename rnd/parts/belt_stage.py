@@ -147,3 +147,28 @@ def eccentric_bushing_v2() -> Part:
     r = Cylinder(e["od"] / 2, e["t"], align=(Align.CENTER, Align.CENTER, Align.MIN)) - Pos(e["e"], 0, 0) * Cylinder(BRG_6801["D"] / 2, e["t"], align=(Align.CENTER, Align.CENTER, Align.MIN))
     r += Pos(e["od"] / 2 + 3, 0, 0) * (Box(10, 8, 2.5, align=(Align.CENTER, Align.CENTER, Align.MIN)) - Pos(2, 0, 0) * Cylinder(1.7, 3, align=(Align.CENTER, Align.CENTER, Align.MIN)))
     return r
+
+
+# Loop 40 (R14): split big pulleys. A printed pulley slides onto its Ø40 tube between the walls and drives it through a
+# double-D (two flats, 36 mm across): the tube still passes the 61808/6708 bores, so it can be inserted from one side.
+DD_AF = 36.0
+
+
+def dd_prism(h: float, af: float = DD_AF, r: float = 20.0) -> Part:
+    """Double-D section (Ø2r with two flats af apart, flats normal to X) extruded along Z from z = 0."""
+    return Cylinder(r, h, align=(Align.CENTER, Align.CENTER, Align.MIN)) & Box(af, 2 * r + 2, h, align=(Align.CENTER, Align.CENTER, Align.MIN))
+
+
+def dd_flats(z0: float, h: float, af: float = DD_AF, r: float = 20.0) -> Part:
+    """What to subtract from a Ø2r tube (axis Z) to cut the two flats over z0 … z0 + h."""
+    return Pos(0, 0, z0) * (Cylinder(r + 1, h, align=(Align.CENTER, Align.CENTER, Align.MIN)) - dd_prism(h, af, r))
+
+
+def split_pulley(teeth: int, width: float = 16.0, flange: bool = False, af: float = DD_AF, web: bool = True) -> Part:
+    """Printed HTD 5M pulley with a double-D bore (+0.4 mm), lightened to a 5 mm web when it is large."""
+    p = pulley(teeth, width, flange=flange) - dd_prism(width + 10, af + 0.4, 20.2).translate((0, 0, -5))
+    r_rim = teeth * PITCH / math.pi / 2 - PLD - DEPTH - 5.0
+    if web and r_rim > 34:
+        for z in (0.0, width / 2 + 2.5):
+            p -= Pos(0, 0, z) * (Cylinder(r_rim, width / 2 - 2.5, align=(Align.CENTER, Align.CENTER, Align.MIN)) - Cylinder(28, width / 2 - 2.5, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    return p

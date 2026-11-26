@@ -54,16 +54,25 @@ def ferrule(male: bool = True) -> Part:
 
 
 def pitch_shaft() -> Part:
-    """Ø40 hollow shaft: 50T pulley in the belt plane, balancer disc with pin B, ferrule on the outboard end."""
+    """Ø40 hollow shaft with the balancer disc (pin B) and the ferrule on the outboard end. Loop 40 (R14): the 60T pulley
+    is a separate part (pitch_pulley) on a double-D, so the shaft goes in from outboard through W_OUT's 61808, the pulley
+    and W_IN's 61808."""
     L = Y_FER - (W_IN - 4)
-    s = Pos(0, W_IN - 4, 0) * _rot_y(Cylinder(20, L, align=MIN) - Cylinder(15, L, align=MIN))
-    s += Pos(0, Y_BELT - 8, 0) * _rot_y(pulley(60, 16, flange=False, bore=30))   # flanges on the small pulley only
+    from .belt_stage import dd_flats
+    tube = Cylinder(20, L, align=MIN) - Cylinder(15, L, align=MIN)
+    tube -= dd_flats(Y_BELT - 8.5 - (W_IN - 4), 17)                        # loop 40 (R14): double-D under the split 60T pulley
+    s = Pos(0, W_IN - 4, 0) * _rot_y(tube)
     disc = Cylinder(25, 5, align=MIN) - Cylinder(15, 5, align=MIN)
     disc += Pos(0, -17, 0) * Box(14, 26, 5, align=MIN)                      # lever
     disc += Pos(0, -30, 0) * Cylinder(3, 9, align=MIN)                      # pin B, 30 mm from the axis (points down when the arm hangs)
     s += Pos(0, Y_BAL - 2.5, 0) * _rot_y(disc)
     s += Pos(0, Y_FER + 18, 0) * Rot(90, 0, 0) * ferrule(male=False)       # flat face outboard at the detach plane
     return s
+
+
+def pitch_pulley() -> Part:
+    from .belt_stage import split_pulley
+    return Pos(0, Y_BELT - 8, 0) * _rot_y(split_pulley(60))
 
 
 def bracket() -> Part:
@@ -119,7 +128,7 @@ def module(with_motor: bool = True):
     mapped so stage +Z → world -Y, hub face at Y_F, axis at x = -BELT_C."""
     st = Pos(-BELT_C, Y_F, 0) * Rot(90, 0, 0)
     zc = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]
-    out = [("bracket", bracket(), "white"), ("shaft", pitch_shaft(), "orange"), ("pulleyA", pulley_a(), "steel"),
+    out = [("bracket", bracket(), "white"), ("shaft", pitch_shaft(), "orange"), ("pitch_pulley60", pitch_pulley(), "orange"), ("pulleyA", pulley_a(), "steel"),
            ("collar", st * collar(KX74), "orange")]
     from .belt_stage import small_stage_v2
     out += [(n, st * pp, c) for n, pp, c in small_stage_v2(20)]                      # loop 39: D13 stage v2
@@ -131,7 +140,7 @@ def module(with_motor: bool = True):
 
 def masses(density=1.27):
     m = {"bracket (walls 8 mm, web, cage)": bracket().volume / 1e6 * density * 0.6,
-         "pitch shaft + 50T pulley + balancer disc + ferrule": pitch_shaft().volume / 1e6 * density * 0.7,
+         "pitch shaft + split 60T pulley + balancer disc + ferrule": (pitch_shaft().volume + pitch_pulley().volume) / 1e6 * density * 0.7,
          "small-pulley hub + KX74 socket (collar, retainer)": (small_hub().volume + collar(KX74).volume) / 1e6 * density * 0.7,
          "bearings 2×61808 + 2×61804 (ESTIMATE)": 0.056,
          "spring 2 N/mm + cable + pulley A + axle (ESTIMATE)": 0.09,
