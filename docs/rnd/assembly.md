@@ -14,8 +14,8 @@
 | ratchet strip [3] | 6 × 14 × 206 | 16 | ✅ |
 | ratchet strip [4] | 6 × 14 × 206 | 16 | ✅ |
 | dock_wing_l | 160 × 191 × 198 | 406 | ✅ |
+| shoulder bracket | 150 × 189 × 192 | 332 | ✅ |
 | roll link | 107 × 140 × 192 | 268 | ✅ |
-| shoulder bracket | 150 × 179 × 181 | 354 | ✅ |
 | upper bone [1] | 110 × 140 × 178 | 113 | ✅ |
 | clevis + yaw block | 92 × 119 × 176 | 263 | ✅ |
 | carriage | 88 × 101 × 160 | 557 | ✅ |
@@ -33,7 +33,7 @@
 | mast coupling | 40 × 100 × 100 | 253 | ✅ |
 | forearm (ends) [1] | 59 × 67 × 95 | 39 | ✅ |
 | upper bone cap [2] | 5 × 93 × 95 | 3 | ✅ |
-| pitch shaft | 66 × 94 × 94 | 185 | ✅ |
+| pitch shaft | 75 × 94 × 94 | 190 | ✅ |
 | pulley 60T | 16 × 94 × 94 | 107 | ✅ |
 | palm | 40 × 75 × 92 | 149 | ✅ |
 | gripper grip_base | 10 × 91 × 91 | 44 | ✅ |

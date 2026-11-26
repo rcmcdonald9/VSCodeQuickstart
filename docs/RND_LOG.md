@@ -1088,3 +1088,10 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - docs/SOFTWARE_PLAN.md, starting with the bench arm. Open-data strategy: pretrained open VLA/ACT checkpoints, co-training on Open-X/DROID/LeRobot-hub slices, synthetic twin demos, EEF-delta actions + DROID-style cameras for transfer.
 - Phases S0 (sim, now) → S1–S4 (hardware); targets SW1–SW6.
 - RND_PLAN §1: runs alternate (:10 hardware, :40 software); efficiency rules (one deliverable per run, incremental checks, background jobs, short logs).
+
+## Loop 39 (2026-11-26, hardware): shoulder pitch → D13 v2
+
+- Pitch cartridge Y_F −58 → **−78** (the 64 mm v2 stack). Walls from V2 (6 mm, bearings flush; W_IN −55.3, W_OUT −21.3); belt plane −41.8; Y_BAL −6 → −3, balancer post 7.8 mm.
+- −82 first clipped the lift carriage (3.4 cm³ per can) → −78 leaves 2.3 mm.
+- Checks run (incremental): module clashes 0, cross-module 0, spacing hard 0, torque pins 21/21, bracket FEA 6.5× (1.8 MPa, 0.41 mm).
+- Scorecard 40 ✅ / 2 ❌ (R10, R14).

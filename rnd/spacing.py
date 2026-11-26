@@ -36,7 +36,7 @@ MATE = [("can", "motor"), ("collar", "hub"), ("hub", "shaft"), ("shaft", "wheel"
         ("grip_servo_sleeve", "grip_servo"), ("kx_hub_v2", "flange_coupling"), ("flange_coupling", "shaft_12"), ("shaft_12", "brg_"),
         ("shaft_12", "al_pulley"), ("al_pulley", "belt"), ("bigpulley", "belt"), ("e_cassette", "brg_"), ("brg_", "al_pulley"),
         ("flange_coupling", "brg_")]   # bearing inner races, shims and the pulley rotate together on the shaft
-RUNNING = [("e_cassette", "e_al_pulley"), ("e_cassette", "e_kx_hub_v2"), ("e_cassette", "e_flange_coupling"), ("e_cassette", "e_hub"), ("roll_link", "roll_smallhub"), ("yaw_block", "yaw_smallhub"), ("bracket", "smallhub"),
+RUNNING = [("bracket", "kx_hub_v2"), ("bracket", "al_pulley"), ("bracket", "flange_coupling"), ("e_cassette", "e_al_pulley"), ("e_cassette", "e_kx_hub_v2"), ("e_cassette", "e_flange_coupling"), ("e_cassette", "e_hub"), ("roll_link", "roll_smallhub"), ("yaw_block", "yaw_smallhub"), ("bracket", "smallhub"),
            ("yaw_shaft", "yaw_stop_pin"), ("bracket", "pulleyA")]
 MOVING = [("e_cassette", "e_bigpulley"), ("roll_shaft", "yaw_shaft"), ("yaw_block", "yaw_shaft"), ("upper_bone", "forearm")]
 

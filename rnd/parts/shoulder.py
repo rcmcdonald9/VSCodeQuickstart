@@ -20,16 +20,14 @@ MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 WALL = 1.6
 BELT_C = 70.0
 # Layout along Y follows the small-pulley hub stack (hub face at Y_F; cartridge inboard of it):
-Y_F = -58.0                # KX74 hub face of the pitch cartridge
-# loop 21: walls and belt plane derived from the hub geometry (the old -43.8 / -17.9 / -31.2 predated the taller
-# print-in-place hub: the hub flange cut 2 mm into the inner wall and the outer wall overlapped the pulley flange)
-from .kx import hub_pip as _hub_pip
-_HUB_H = -_hub_pip(KX74).bounding_box().min.Z          # 12.2
-WALL_T = 7.0                                           # fits the 7.4 / 7.1 mm gaps between hub, journals and pulley flanges
-W_IN = Y_F + _HUB_H + 0.4 + 3.7                        # -41.7
-W_OUT = Y_F + _HUB_H + 8 + 1.2 + 16 + 1.2 + 0.3 + 3.55  # -15.55
-Y_BELT = Y_F + _HUB_H + 8 + 1.2 + 8                    # -28.6: small-pulley belt centre
-Y_BAL = -6.0               # balancer plane (outboard of the outer wall)
+Y_F = -78.0                # KX74 hub face of the pitch cartridge (loop 39: -58 → -78 for the 64 mm D13 v2 stack; can 1.3 mm clear of the lift carriage)
+# loop 39: walls and belt plane derived from the D13 small stage v2 stack (stage z → y = Y_F − z)
+from .belt_stage import V2 as _V2
+WALL_T = 6.0
+W_IN = Y_F - (_V2["jA"][1] + _V2["jA"][0]) / 2 - 0.5               # 6 mm wall, bearing A flush on the pulley side (−58.3 … −52.3)
+W_OUT = Y_F - (_V2["jB"][1] + _V2["jB"][0]) / 2 + 0.5               # 6 mm wall, bearing B flush on the pulley side (−24.3 … −18.3)
+Y_BELT = Y_F - _V2["belt_c"]                                        # belt plane
+Y_BAL = -3.0               # balancer plane (outboard of the outer wall); loop 39: -6 → -3 (post ≥ 7.8 mm, 2.5 mm to the ferrule spigot)
 Y_FER = 2.0                # ferrule spigot start; the detach plane (flat face) is at Y_FER + 18 = 20
 FERRULE = dict(od=91.0, t=8.0, taper_deg=20.0, dowel_r=30.0)
 
@@ -122,7 +120,9 @@ def module(with_motor: bool = True):
     st = Pos(-BELT_C, Y_F, 0) * Rot(90, 0, 0)
     zc = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]
     out = [("bracket", bracket(), "white"), ("shaft", pitch_shaft(), "orange"), ("pulleyA", pulley_a(), "steel"),
-           ("smallhub", st * small_hub(), "dark"), ("collar", st * collar(KX74), "orange")]
+           ("collar", st * collar(KX74), "orange")]
+    from .belt_stage import small_stage_v2
+    out += [(n, st * pp, c) for n, pp, c in small_stage_v2(20)]                      # loop 39: D13 stage v2
     if with_motor:
         out += [("can", st * Pos(0, 0, zc) * Rot(180, 0, 0) * cm.can(), "white"),
                 ("motor", st * Pos(0, 0, zc) * Rot(180, 0, 0) * cm.motor_dummy(), "dark")]
