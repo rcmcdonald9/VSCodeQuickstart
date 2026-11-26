@@ -88,7 +88,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 
 Next (fresh critique after loop 31: torque paths 21/21, module clashes 0, docking and face screen designed, every confidence Monte Carlo passing; **scorecard 38 ✅ / 1 ❌, R10 build time only**). The hourly loop works top-down:
 
-1. ~~Yaw cable crossing~~ *(loop 33: **yaw ±150° → ±70°**, crossed in torsion over ≈ 0.24 m between clamps. Reach 99 % and bimanual 4/4 unchanged; ±60° loses 3 of 4 bimanual tasks; the 12 mm cassette option dropped the shoulder-roll margin to 1.49×.)* Add printed yaw hard stops at ±75°.
+1. ~~Yaw cable crossing~~ *(loop 33: **yaw ±150° → ±70°**, crossed in torsion over ≈ 0.24 m between clamps. Reach 99 % and bimanual 4/4 unchanged; ±60° loses 3 of 4 bimanual tasks; the 12 mm cassette option dropped the shoulder-roll margin to 1.49×.)* *(Loop 34: yaw hard stops done: a Ø6 pin in the bottom yaw plate rides an arc slot in the yaw-shaft flange, stopping at ±75°.)*
 1b. *(Loop 32 done: rnd/harness.py analysis, D12, harness-kit segment table in harness.md.)* **Cable routing in CAD (build-enabling).** Model the harness:
     - paths through the hollow shafts (pitch Ø30, elbow Ø30, yaw Ø28 bores), service loops at each joint for its full range
     - the arm detach plug mount beside the V-band, the upper↔base coupling plug

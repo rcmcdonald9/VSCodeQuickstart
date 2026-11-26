@@ -5,6 +5,8 @@ Roll axis = X through (y = ROLL_Y, z = 0). Yaw axis = Z through (x = 0, y = ROLL
 """
 from __future__ import annotations
 
+import math
+
 from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 
 from . import cartridge_m as cm
@@ -108,6 +110,8 @@ def clevis_and_yaw_block() -> Part:
     for xx, yy in ((-YAW_C / 2, ROLL_Y - 38), (-YAW_C / 2, ROLL_Y + 38), (-YAW_C - 24, ROLL_Y - 38), (-YAW_C - 24, ROLL_Y + 38)):
         p += Pos(xx, yy, P2[1]) * (Cylinder(7, P1[0] - P2[1], align=MIN) - Cylinder(2.75, P1[0] - P2[1], align=MIN))
     p += yaw_torque_fork()
+    t = math.radians(STOP_PIN_AZ)
+    p -= Pos(STOP_PIN_R * math.cos(t), ROLL_Y + STOP_PIN_R * math.sin(t), P2[0]) * Cylinder(2.95, 5, align=MIN)   # loop 34: press-fit seat for the stop pin
     for x0, x1 in ((W1[0] - 12, W1[0] - 2), (W2[1] + 2, W2[1] + 12)):            # clevis arms outside the walls
         arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 26, 10)           # arms end on the top plate (yaw pulley below is clear)
         arm -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(20.2, 100)           # clamps on the roll shaft ends
@@ -133,7 +137,24 @@ def yaw_shaft() -> Part:
     s = Pos(0, ROLL_Y, -YAW_DROP) * (Cylinder(20, P1[1] - (-YAW_DROP) + 4, align=MIN) - Cylinder(14, 200, align=MIN))
     s += Pos(0, ROLL_Y, ZF - PUL_C - 8) * pulley(40, 16, flange=False, bore=28)          # on the small pulley's belt plane
     s += Pos(0, ROLL_Y, -YAW_DROP) * (Cylinder(45, 5, align=MIN) - Cylinder(14, 5, align=MIN))   # flange → upper bone
+    # loop 34: hard-stop arc slot for the fixed Ø6 stop pin (yaw software limit ±70°, hard stop ±75°: protects the cable
+    # bundle that crosses the yaw in torsion, D12)
+    for a in range(-YAW_STOP_DEG, YAW_STOP_DEG + 1, 3):
+        t = math.radians(STOP_PIN_AZ + a)
+        s -= Pos(STOP_PIN_R * math.cos(t), ROLL_Y + STOP_PIN_R * math.sin(t), -YAW_DROP - 1) * Cylinder(3.3, 7, align=MIN)
     return s
+
+
+YAW_STOP_DEG = 75                     # hard stops (software limit ±70°, rnd/twin.py JR)
+STOP_PIN_R, STOP_PIN_AZ = 38.0, 180.0 # stop pin radius and azimuth at yaw 0 (under the bottom plate, toward −X)
+
+
+def yaw_stop_pin() -> Part:
+    """Ø6 × 12 steel dowel (cut to 11.5) pressed 5 mm into the bottom yaw plate, protruding into the flange's arc slot.
+    A fault drive into the stop at the yaw's 22 N·m peak puts ≈ 580 N on the pin: ≈ 19 MPa bearing on the 5 mm printed flange,
+    acceptable for a fault-only load (the software limit is ±70°)."""
+    t = math.radians(STOP_PIN_AZ)
+    return Pos(STOP_PIN_R * math.cos(t), ROLL_Y + STOP_PIN_R * math.sin(t), P2[0] + 5) * Cylinder(3, 11.5, align=(Align.CENTER, Align.CENTER, Align.MAX))
 
 
 def shoulder_cap() -> Part:
@@ -163,6 +184,7 @@ def module():
     out += [("shoulder_cap", shoulder_cap(), "white"), ("yaw_band", yaw_band(), "white")]
     out += [(f"roll_{n}", p, c) for n, p, c in _stage(ROLL_T)]
     out += [(f"yaw_{n}", p, c) for n, p, c in _stage(YAW_T)]
+    out.append(("yaw_stop_pin", yaw_stop_pin(), "steel"))
     return out
 
 

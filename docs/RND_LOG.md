@@ -987,3 +987,12 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 
 - **Adopted (b):** twin JR yaw ±150° → **±70°**. The bundle twists between a clamp at the roll-link top and one on the elbow-housing floor: free length ≈ 0.24 m, against 0.194 m needed at ±360°/m (≈ 25 % headroom).
 - **Cable routing 5/6 → 6/6.** Queue: printed yaw hard stops at ±75°.
+
+## Loop 34 (2026-11-26): yaw hard stops
+
+- A Ø6 steel stop pin is pressed into the bottom yaw plate (r 38, toward −X). It rides an arc slot in the yaw-shaft flange, with hard stops at ±75°; the software limit is ±70° (loop 33).
+- Swept check: clear through ±75°, contact by ±80°. No new module overlaps.
+- **Why:** the cable bundle crosses the yaw in torsion (D12). A runaway past the range would overtwist it.
+- Fault load: 22 N·m / 38 mm ≈ 580 N → ≈ 19 MPa bearing on the 5 mm flange. Acceptable for a fault-only load.
+- Scorecard 39 ✅ / 1 ❌ (unchanged).
+- **Next:** queue item 3, the stiffness / hand-accuracy chain.
