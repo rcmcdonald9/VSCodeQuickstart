@@ -2,7 +2,7 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 12.9 kg of PETG (≈ $259 at $20/kg); 870 h generic ≈ 305 h on the P2S (≈ 12.7 days of continuous printing).**
+**Total: 12.9 kg of PETG (≈ $259 at $20/kg); 871 h generic ≈ 305 h on the P2S (≈ 12.7 days of continuous printing).**
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
@@ -23,7 +23,7 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | wheel pod | 4 | 356 | 22.2 |  |
 | elbow cassette plate | 4 | 184 | 19.1 | 2 per arm (A + B) |
 | roll shaft | 2 | 291 | 18.9 | 72T pulley |
-| forearm (ends) | 2 | 280 | 17.3 | elbow end, wrist can, CF socket |
+| forearm (ends) | 2 | 287 | 17.8 | elbow end, wrist can, CF socket |
 | elbow pulley hub | 2 | 251 | 17.1 |  |
 | ratchet strip | 1 | 84 | 14.6 | 4 segments |
 | palm | 2 | 190 | 12.6 |  |

@@ -30,7 +30,7 @@
 | KX74 collar | 19 × 98 × 103 | 35 | ✅ |
 | mast coupling | 40 × 100 × 100 | 253 | ✅ |
 | upper bone cap [2] | 5 × 93 × 95 | 3 | ✅ |
-| forearm (ends) [1] | 53 × 65 × 95 | 38 | ✅ |
+| forearm (ends) [1] | 59 × 65 × 95 | 39 | ✅ |
 | pitch shaft | 66 × 94 × 94 | 185 | ✅ |
 | pulley 60T | 16 × 94 × 94 | 107 | ✅ |
 | palm | 40 × 75 × 92 | 150 | ✅ |

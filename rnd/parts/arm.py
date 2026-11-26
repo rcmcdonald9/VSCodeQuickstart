@@ -174,6 +174,12 @@ def forearm() -> Part:
     wy = WRIST_Y1 - WRIST_Y0
     p += Pos(0, WRIST_Y0, -FORE_L) * Rot(-90, 0, 0) * (Cylinder(can_d / 2 + WALL, wy, align=MIN) - Cylinder(can_d / 2, wy - WALL, align=MIN))
     p += Pos(0, y, -FORE_L + 38) * Box(56, link_t, 12)                                  # web joining link and wrist can
+    # loop 24: torque reaction for the wrist-pitch cartridge D. Its Ø5 pin (r 22, +X) sticks out of the can rear through
+    # the 1.2 mm end wall; a 7.2 mm pad outside the wall, fused to the can rim, carries a radial slot (DM-J4310 peak
+    # 7 N·m / r 22 = 318 N → ≈ 8.8 MPa bearing on 5 × 7.2 mm).
+    pad_y0, pad_y1 = WRIST_Y1 - WALL, WRIST_Y1 + 6.0
+    p += Pos((12 + can_d / 2 + WALL) / 2, (pad_y0 + pad_y1) / 2, -FORE_L) * Box(can_d / 2 + WALL - 12, pad_y1 - pad_y0, 16)
+    p -= Pos((14 + 26.5) / 2, (pad_y0 + pad_y1) / 2, -FORE_L) * Box(26.5 - 14, pad_y1 - pad_y0 + 2, 5.4)
     return p
 
 

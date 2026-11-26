@@ -830,3 +830,16 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - Module clashes 8 → **4** (remaining: 3 small gripper-jaw overlaps + the 0.3 cm³ yaw-shaft sliver).
   - Scorecard 33 ✅ / 3 ❌: workspace margin 1.50×, twin success 8/8, 62/62 printable, 0 cross-module clashes. BOM $3,788.
 - **Next:** wrist pitch / wrist roll / head pan + tilt torque reaction (slots where the pins now run into walls), then queue item 4 (docking).
+
+## Loop 24 (2026-11-26): wrist-pitch torque pads
+
+- **Picked:** queue item 1, wrist pitch (cartridge D, Ø5 pin at r 22). The pin ran into the forearm's 1.2 mm wrist-housing end wall.
+- **Fix:** a 7.2 mm pad outside the end wall, fused to the can rim, with a radial slot through pad and wall.
+  - DM-J4310 peak 7 N·m / r 22 = 318 N → ≈ 8.8 MPa bearing (a slot in the bare 1.2 mm wall would have been ≈ 53 MPa).
+  - The pad adds 6 mm to the wrist width on the +Y side.
+  - No new clashes; collision hulls regenerated.
+- **Checker fix:** the build123d/OCC distance from a point to a solid is to its nearest *surface*, even when the point is inside. The fork test now scales its probe points to the measured pin radius (Ø6 / Ø5 / Ø4), instead of a fixed ±3.5 mm that only suited Ø6 pins. All earlier passes still pass.
+- **Results:**
+  - Torque pins 13/21 → **15/21**.
+  - Scorecard 33 ✅ / 3 ❌: reach 99 %, twin 8/8, workspace margin 1.50×, 62/62 printable, 0 cross-module clashes.
+- **Next:** cartridge S (wrist roll ×2, head pan/tilt). Then queue item 4 (docking charger).

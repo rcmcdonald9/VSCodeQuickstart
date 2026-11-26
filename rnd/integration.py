@@ -69,9 +69,10 @@ def _dist(pt, solid):
     return solid.distance_to(Vertex(*pt))
 
 
-def _fork(tip, tang, solids, own):
-    """A real torque slot: the pin tip is in clear space (≥ 2.5 mm from structure) and some structural solid sits on both
-    tangential sides of the pin (points ±3.5 mm along the tangent are inside or within 0.8 mm of it)."""
+def _fork(tip, tang, solids, own, r_pin=3.0):
+    """A real torque slot: the pin tip is in clear space (≥ r_pin − 0.25 from structure) and some structural solid sits on
+    both tangential sides (points ±(r_pin + 0.5) along the tangent within 0.8 mm of it: the CAD distance is to the nearest
+    surface, so a point just inside a slot wall reads as its depth into the wall)."""
     near = []
     for n, s in solids:
         if n in own:
@@ -80,10 +81,10 @@ def _fork(tip, tang, solids, own):
         if not (bb.min.X - 6 < tip[0] < bb.max.X + 6 and bb.min.Y - 6 < tip[1] < bb.max.Y + 6 and bb.min.Z - 6 < tip[2] < bb.max.Z + 6):
             continue
         near.append((n, s))
-    if any(_dist(tip, s) < 2.5 for _, s in near):
+    if any(_dist(tip, s) < r_pin - 0.25 for _, s in near):
         return False, "pin tip runs into structure (no slot)"
     for n, s in near:
-        if _dist(tip + 3.5 * tang, s) < 0.8 and _dist(tip - 3.5 * tang, s) < 0.8:
+        if _dist(tip + (r_pin + 0.5) * tang, s) < 0.8 and _dist(tip - (r_pin + 0.5) * tang, s) < 0.8:
             return True, n
     return False, "pin tip in air"
 
@@ -97,7 +98,12 @@ def run(lift=0.75):
     for n, p in parts:
         nl = n.lower()
         if nl.endswith("can") or nl.endswith("_can") or "can_d" in nl or "sleeve" in nl:
-            seats = _cyl_faces(p, cm.TORQUE_PIN["d"] / 2 - 0.05) or _cyl_faces(p, 2.45) or _cyl_faces(p, 1.95)
+            r_pin = 3.0
+            seats = _cyl_faces(p, cm.TORQUE_PIN["d"] / 2 - 0.05)
+            if not seats:
+                r_pin, seats = 2.5, _cyl_faces(p, 2.45)
+            if not seats:
+                r_pin, seats = 2.0, _cyl_faces(p, 1.95)
             if not seats:
                 rows.append(("torque pin", n, None, "no pin seat found"))
                 continue
@@ -107,7 +113,7 @@ def run(lift=0.75):
             tip = c + out * (2.0 + cm.TORQUE_PIN["stick_out"] / 2)
             rad = (c - cen) - np.dot(c - cen, ax) * ax                     # radial direction from the cartridge axis
             tang = np.cross(ax, rad / np.linalg.norm(rad))
-            ok, why = _fork(tip, tang, struct, {n})
+            ok, why = _fork(tip, tang, struct, {n}, r_pin)
             rows.append(("torque pin", n, ok, why))
     ok_n = sum(1 for r in rows if r[2])
     mc = module_clashes()
