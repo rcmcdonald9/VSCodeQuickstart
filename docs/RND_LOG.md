@@ -1008,3 +1008,18 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - bumper_light ring blocking the dock pads
 - The big new class is **assembly sequence**: our clash checks never asked whether a part can be put in.
 - Triage and queue items A1–A16 in docs/review/triage_2026-11-26.md and RND_PLAN §4.
+
+## Loop 35 (2026-11-26): assembly-sequence check → D13 belt stage v2
+
+- **`rnd/assembly_seq.py`** (review #1 finding 1):
+  - Bearing slide-on: radius profile along each shaft vs the bearing bore, from either end.
+  - Shaft insertion: is a fused element wider than the wall bearing seats?
+- **Result: 1/6 drive shafts assemble as drawn** (only the wheel shafts).
+  - The small-pulley hub (used ×9) traps its upper 61804 between the Ø87 KX hub and the Ø36 pulley flanges.
+  - Pitch, roll, yaw and elbow shafts carry fused pulleys wider than the Ø52 wall seats.
+- **D13 (belt stage v2):**
+  - Small stages: steel Ø12 shaft + 2 × 6801 + an off-the-shelf aluminium HTD pulley (18T on the roll stage) + a clamp flange coupling bolted to the printed KX74 hub (4 × M4, ≈ 5 MPa).
+  - Big stages: the printed pulley is bolted to a shaft flange.
+  - A bolted printed-to-printed joint at the Ø20 journal would see > 25 MPa, so it was rejected.
+- New scorecard row (assembly sequence 1/6, ❌) → scorecard **39 ✅ / 2 ❌**. The gap was already there; now it's measured.
+- **Next:** small-stage v2 CAD (it cascades into J1/J2/walls in shoulder/roll/arm), then the big-pulley split shafts.
