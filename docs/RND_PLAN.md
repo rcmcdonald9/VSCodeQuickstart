@@ -141,7 +141,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 0. **Astra review #2b criticals (verified, 2026-11-26)** — these come before anything else ([triage](review/triage_astra_2026-11-26.md)):
     - D19 capped seats + integral shaft-pulleys: roll, yaw, pitch, elbow (R14 now 2/6 with the pulley-bore rows)
     - shaft → link drive: clevis pinch clamps, forearm clamp on the elbow shaft, yaw-flange bolt pattern, CF-tube bond lengths (≥ 1 × OD)
-    - D15 male face: relieve only the two pin tracks so the ball capture survives; separate hub / collar / retainer print files
+    - ~~D15 male face~~ *loop 42: one relief channel per pin track; the rim now holds each ball past its equator over 58 % (KX44 53 %) of the circumference (was 0 %); modelled ball centres fixed; Ø4.1 insert holes for the retainer. Still to do: separate hub / collar / retainer print files*
     - D16 wrist skirt: removable end cap so the 61804s can go in; spindle retained both ways
     - A5 v2: regen clamp sized by energy and pulse rating; pre-charge switched (not in parallel); category-0 drop protection (mechanical catch on the bench); watchdog timing budget
     - ~~safety.py v2~~ *done loop 41-sw: total drive torque bounded (kp·e + kd·ė + τ_ff ≤ rated), finite + fresh feedback, latched faults, reset only with the button released; the drive-side current limit is a day-1 setting*

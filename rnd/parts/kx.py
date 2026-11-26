@@ -125,8 +125,12 @@ def male(kx: KX, bore: float = 0.0) -> Part:
             Box(kx.lug_reach + 2, kx.lug_w, kx.lug_t, align=(Align.CENTER, Align.CENTER, Align.MAX))
     for a in BALL_ANG:                                    # D15: pockets past the equator (ball centre ball_recess inside the face)
         p -= _at(kx.r_ball, a) * Pos(0, 0, kx.ball_recess) * Sphere(kx.ball_d / 2 - 0.05)
-        # relief so the proud pins clear the face
-        p -= _at(kx.r_ball, a) * Rot(0, 0, a) * Box(kx.pin_len + 2, kx.pin_sep + kx.pin_d + 2, 2 * (kx.pin_proud + 0.5))
+        # relief so the proud pins clear the face. Loop 42 (Astra review #2b finding 5): one channel per pin track only
+        # (width pin_d + 0.6, depth = pin top above the male face + 0.4). Loop 40 cut one box across the whole ball
+        # 2.1 mm deep, which removed the capture rim the D15 recess was meant to give.
+        depth = kx.pin_z + kx.pin_d / 2 - kx.gap + 0.4
+        for sd in (-1, 1):
+            p -= _at(kx.r_ball, a) * Rot(0, 0, a) * Pos(0, sd * kx.pin_sep / 2, 0) * Box(kx.pin_len + 2, kx.pin_d + 0.6, 2 * depth)
     if bore:
         p -= Cylinder(bore / 2, 100)
     return p
@@ -169,7 +173,7 @@ def hub(kx: KX, depth: float = None, bore: float = 0.0, screws: bool = True) -> 
         p -= Rot(0, 0, a) * Pos(kx.r_ball, 0, 0) * Box(kx.ball_d, kx.pin_sep - kx.pin_d, (kx.ball_d / 2 - kx.z_ball + 0.8) * 2)
     # 3 × M3 holes for the retainer (screwed version only)
     for a in LUG_ANG if screws else ():
-        p -= _at(kx.r_hub - STEP_IN - 3.5, a) * Pos(0, 0, -depth) * Cylinder(1.25, 8, align=MIN)
+        p -= _at(kx.r_hub - STEP_IN - 3.5, a) * Pos(0, 0, -depth) * Cylinder(2.05, 6, align=MIN)     # loop 42: Ø4.1 for M3 heat-set inserts (was Ø2.5)
     # D15: 6 spring pockets in the step face (springs push the collar lip down → teeth onto the lug backs → preload)
     for a in SPRING_ANG:
         p -= _at(kx.r_hub - STEP_IN / 2, a) * Pos(0, 0, -HUB_STEP) * Cylinder(SPRING_D / 2, SPRING_POCKET, align=MIN)
@@ -234,4 +238,4 @@ def male_mated(kx: KX, bore: float = 0.0) -> Part:
 
 
 def balls_mated(kx: KX) -> Part:
-    return Pos(0, 0, kx.gap) * balls(kx)
+    return Pos(0, 0, kx.gap + kx.ball_recess) * balls(kx)       # loop 42: ball centres at z_ball (were drawn at the face)

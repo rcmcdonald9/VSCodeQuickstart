@@ -1126,3 +1126,8 @@ One long push instead of half-hour runs. In order:
 
 - sw/safety.py v2: bounds the torque the MIT drive will actually produce (kp·e + kd·ė + τ_ff ≤ rated; trims τ_ff, then kp, then kd), caps gains, requires finite feedback ≤ 10 ms old, latches every fault (watchdog, e-stop, NaN/stale feedback, overspeed, tracking, temperature, motor error), reset only with the button released; heartbeat only after a healthy cycle.
 - sw/test_s1.py: 3,000 random-policy cycles with random gains → 0 torque-bound and 0 limit/workspace violations; 8 fault types each stop and stay latched.
+
+## Loop 42 (2026-11-26, hardware): D15 male face fixed (Astra finding 5)
+
+- One relief channel per pin track instead of one box over the whole ball: the capture rim at the ball equator is 58 % of the circumference (KX44 53 %), was 0 %.
+- balls_mated() now places the balls at z_ball (gap + recess); retainer holes Ø2.5 → Ø4.1 for M3 heat-set inserts. Coupon C2 gets a measured ≥ 20 N pull-out test.

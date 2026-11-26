@@ -53,7 +53,7 @@ def parts():
     bb = rs.bounding_box()
     return {
         "C1_kx74_socket_and_collar": (hub_pip(KX74) + collar(KX74, locked=False), "PETG", "D15 screwed socket: print hub, collar and retainer separately; press 6 × Ø5×14 pins in radially, 6 × Ø4 coil springs in the step pockets, collar on, retainer 3 × M3"),
-        "C2_kx74_male_face": (male(KX74), "PETG", "Snap 3 × Ø10 balls past the equator (1 mm) with a drop of retaining compound; check they can't be pulled out by hand"),
+        "C2_kx74_male_face": (male(KX74), "PETG", "Snap 3 × Ø10 balls past the equator (1 mm; the rim holds 58 % of the circumference, open only at the pin tracks), retaining compound; pull each ball out with a hook + luggage scale: ≥ 20 N"),
         "C3_clearance_ladder": (clearance_ladder(), "PETG", "Print-in-place; try to turn each pin by hand"),
         "C4_pressfit_ladder": (pressfit_ladder(), "PETG", "Press the real pins/balls in; note the tightest row that still assembles without cracking"),
         "C5_eccentric_bushing": (eccentric_bushing(), "PETG", "Fit a 6804 bearing; rotate in a Ø38.2 test hole"),
