@@ -24,7 +24,7 @@ SKIP = ("motor", "belt", "dummy", "brg", "battery", "lidar", "cam", "light")
 
 
 FUSED = {("ferrule_m", "roll_link"), ("roll_link", "shoulder_cap"), ("yaw_block", "yaw_band"), ("e_hub", "e_belt"),
-         ("e_belt", "e_bigpulley"), ("hand_grip_base", "hand_grip_servo_sleeve"), ("grip_base", "grip_servo_sleeve"),
+         ("e_belt", "e_bigpulley"), ("e_al_pulley", "e_belt"), ("hand_grip_base", "hand_grip_servo_sleeve"), ("grip_base", "grip_servo_sleeve"),
          ("hand_finray_fixed", "hand_pad_fixed"), ("finray_fixed", "pad_fixed")}
 
 

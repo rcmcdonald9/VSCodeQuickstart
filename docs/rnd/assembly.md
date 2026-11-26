@@ -16,13 +16,13 @@
 | dock_wing_l | 160 × 191 × 198 | 406 | ✅ |
 | roll link | 107 × 140 × 192 | 268 | ✅ |
 | shoulder bracket | 150 × 179 × 181 | 354 | ✅ |
-| upper bone [1] | 110 × 140 × 178 | 115 | ✅ |
+| upper bone [1] | 110 × 140 × 178 | 113 | ✅ |
 | clevis + yaw block | 92 × 119 × 176 | 263 | ✅ |
 | carriage | 88 × 101 × 160 | 557 | ✅ |
 | dock_tower | 50 × 59 × 150 | 435 | ✅ |
 | e_tray | 6 × 148 × 148 | 54 | ✅ |
 | yoke | 60 × 148 × 148 | 105 | ✅ |
-| elbow cassette plate | 7 × 79 × 142 | 27 | ✅ |
+| elbow cassette plate | 6 × 84 × 142 | 24 | ✅ |
 | visor | 86 × 141 × 141 | 68 | ✅ |
 | wheel pod | 26 × 80 × 124 | 114 | ✅ |
 | elbow pulley hub | 67 × 122 × 122 | 103 | ✅ |
@@ -66,8 +66,8 @@
 | eccentric bushing | 7 × 41 × 41 | 2 | ✅ |
 | fin-ray finger | 18 × 28 × 37 | 4 | ✅ |
 | forearm (ends) [3] | 24 × 36 × 36 | 7 | ✅ |
+| elbow cassette spacer | 14 × 14 × 28 | 4 | ✅ |
 | gripper jaw_fixed | 21 × 25 × 25 | 5 | ✅ |
-| elbow cassette spacer | 14 × 14 × 19 | 3 | ✅ |
 
 ## Cross-module interference (clashes > 1 cm³; render pose, or arms forward at the lowest lift)
 

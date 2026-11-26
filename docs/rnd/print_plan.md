@@ -2,12 +2,12 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 13.9 kg of PETG (≈ $278 at $20/kg); 932 h generic ≈ 326 h on the P2S (≈ 13.6 days of continuous printing).**
+**Total: 13.9 kg of PETG (≈ $278 at $20/kg); 931 h generic ≈ 326 h on the P2S (≈ 13.6 days of continuous printing).**
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
 | torso_shell | 1 | 1872 | 110.1 | 2 halves |
-| upper bone | 2 | 874 | 60.3 |  |
+| upper bone | 2 | 869 | 59.8 |  |
 | shoulder bracket | 2 | 853 | 56.4 | mirror for the right arm |
 | cartridge M can | 13 | 846 | 55.8 | 8 arm + 4 wheel + 1 lift |
 | small-pulley hub | 9 | 734 | 50.7 | pitch, roll, yaw, elbow ×2 + lift (KX74 hub + 20T/18T pulley + journals) |
@@ -22,15 +22,15 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | pitch shaft | 2 | 329 | 22.5 | 60T pulley + balancer lever + female ferrule |
 | carriage | 1 | 383 | 22.4 |  |
 | wheel pod | 4 | 356 | 22.2 |  |
-| elbow cassette plate | 4 | 184 | 19.1 | 2 per arm (A + B) |
 | roll shaft | 2 | 291 | 18.9 | 72T pulley |
-| forearm (ends) | 2 | 287 | 17.8 | elbow end, wrist can, CF socket |
-| elbow pulley hub | 2 | 251 | 17.1 |  |
+| elbow cassette plate | 4 | 181 | 18.3 | 2 per arm (A + B) |
+| forearm (ends) | 2 | 290 | 18.3 | elbow end, wrist can, CF socket |
+| elbow pulley hub | 2 | 252 | 17.2 |  |
 | ratchet strip | 1 | 84 | 14.6 | 4 segments |
 | palm | 2 | 198 | 13.1 |  |
 | KX74 hub | 4 | 167 | 11.3 | wheel hubs, print-in-place with the collar (the 9 joint hubs are integral to the small-pulley hubs) |
 | dock_tower | 1 | 196 | 9.6 | dock contact tower |
-| yaw shaft | 2 | 123 | 8.3 | 40T pulley + flange |
+| yaw shaft | 2 | 119 | 8.0 | 40T pulley + flange |
 | mast coupling | 1 | 130 | 7.2 |  |
 | wheel shaft | 4 | 105 | 6.9 |  |
 | cartridge S sleeve | 4 | 81 | 5.9 |  |
@@ -52,7 +52,7 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | gripper grip_base | 2 | 47 | 2.9 |  |
 | gripper jaw_moving | 2 | 28 | 2.7 |  |
 | e_tray | 1 | 33 | 2.3 |  |
-| elbow cassette spacer | 4 | 13 | 1.3 |  |
+| elbow cassette spacer | 4 | 18 | 1.4 |  |
 | handle | 1 | 21 | 1.3 |  |
 | gripper jaw_fixed | 2 | 8 | 0.6 |  |
 | fin-ray finger | 4 | 0 | 0.0 | TPU 95A, 2 per gripper |

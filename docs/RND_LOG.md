@@ -1070,3 +1070,15 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - **Stack (`V2`):** bearings −24.7…−29.7 and −57.7…−62.7, belt centre −40.2, end −63.7. That's ≈ 18 mm longer than v1 (−45.6).
 - No overlaps between the stage parts. **Passes the R14 assembly-sequence check standalone** (bearings slide on the plain shaft; the pulley is separate).
 - **Next:** migrate the stages (elbow first, which also clears the 2 R15 hard violations), then the big-pulley split shafts.
+
+## Loop 38 (2026-11-26): elbow migrated to the D13 small stage v2
+
+- **Elbow uses `small_stage_v2(20)`:** steel shaft, 6801s, aluminium pulley, flange coupling under the KX74 hub.
+  - Cassette plates re-derived from `V2`: CAS_A 3.7…9.7, CAS_B 37.7…43.7, bearings flush, 0.5 mm to the pulley.
+  - Belt plane y 9.4 → **20.2**; the 40T elbow pulley follows (BELT_Y).
+- **R15 spacing:**
+  - The spacer posts sat 0.03 mm from the belt → moved to x ±35 with r 7 bosses: 3.0 mm to the belt, 1.1 mm to the +Y housing corner.
+  - New mates registered (shaft, bearings, coupling, pulley rotate together).
+  - **Hard spacing violations 2 → 0** (7 under target).
+- Cassette still slides in from below; module clashes 0; torque pins 21/21. FEA cassette/housing unchanged in margin.
+- **Results:** scorecard **40 ✅ / 2 ❌** (R10 build time; R14 assembly sequence, since the remaining stages and the big-pulley shafts are not migrated yet).

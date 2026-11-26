@@ -25,11 +25,14 @@ BELT_C = 70.0               # elbow belt centre distance (rnd/belts.py)
 HOUSING = dict(x=110.0, y=108.0, z0=-ELBOW_Z - 42.0, z1=-ELBOW_Z + 70.0 + 56.0, rv=34.0, rv_minus=14.0)   # loop 23: 98 → 110 wide, +8 top (the elbow KX collar lugs need r 52.5 clear through its 35° twist); corner r 14 on the −Y half, 34 on the +Y (forearm) half
 J4310 = dict(od=57.0, h=46.0)   # DM-J4310 (actuators.yaml)
 FORE_Y = HOUSING["y"] / 2 + 18.0  # forearm link centre plane (+Y side link); loop 23: +6 so the CF socket/tube clear the housing over the full elbow range
-# elbow belt cassette (housing frame, y spans of the two plates): set by the small-pulley hub's journals, whose position
-# is fixed by the cartridge stack (hub face at y = -20). Belt plane: small pulley y 1.4 … 17.4.
-BELT_Y = 9.4
-CAS_A, CAS_B = (-7.4, -0.4), (18.9, 25.9)      # 0.4 / 0.3 mm axial clearance to the hub back face and the pulley flanges
-CAS_POST_X, CAS_POST_Z = 32.0, -ELBOW_Z + BELT_C - 10.0
+# elbow belt cassette (housing frame, y spans of the two plates): set by the D13 small stage v2 bearings (loop 38), whose
+# positions are fixed by the cartridge stack (KX face at y = -20, stack toward +Y: y = -20 - z_stage).
+from .belt_stage import V2 as _V2
+_y = lambda z: -20.0 - z
+BELT_Y = _y(_V2["belt_c"])                                         # 20.2
+CAS_A = (_y(_V2["jA"][1]) - 1.0, _y(_V2["jA"][0]))                  # 6 mm plate, bearing A flush on the pulley side (3.7 … 9.7; 0.5 mm to the pulley)
+CAS_B = (_y(_V2["jB"][1]), _y(_V2["jB"][0]) + 1.0)                  # 6 mm plate, bearing B flush on the pulley side (37.7 … 43.7)
+CAS_POST_X, CAS_POST_Z = 35.0, -ELBOW_Z + BELT_C - 10.0     # loop 38: 32 → 35, boss r 7 (R15: belt ≥ 3 mm, +Y corner ≥ 1.5 mm)
 CAP_Z = HOUSING["z0"] + 10.0          # housing / bottom-cap split
 WRIST_Y0, WRIST_Y1 = 43.0, 96.0   # wrist can span (holds the DM-J4310 cartridge; its KX56 face at y ≈ 33.6, hand centre at y = 0)
 
@@ -81,7 +84,7 @@ def upper_bone() -> Part:
     #    tab at r ≤ 57 on +X, sweeping 0 → +35° (locked → unlocked) about the cartridge axis: one clean rectangular window in the +X wall
     p -= Pos(49.0, -20.5, -ELBOW_Z + BELT_C) * Box(24, 23, 94)
     # anti-rotation slot block for the cassette pin (slot radial to the elbow axis, so belt tension never reaches the shell)
-    p += Pos(0, (CAS_B[1] + 10 + h["y"] / 2 - WALL) / 2, -92) * (Box(16, h["y"] / 2 - WALL - CAS_B[1] - 10, 16)
+    p += Pos(0, (CAS_B[1] + 2 + h["y"] / 2 - WALL) / 2, -92) * (Box(16, h["y"] / 2 - WALL - CAS_B[1] - 2, 16)
                                                                 - Box(5.4, 40, 12))
     # openings: cartridge bay on -Y (the cartridge drops in from the side), elbow hub exit on +Y
     p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(cm.MOTOR["od"] / 2 + 4.5, 20)   # loop 36 (R15): 1.2 mm around the can
@@ -140,7 +143,7 @@ def cassette_plate(side: str = "B") -> Part:
     # web between the seats (hull approximated by a tapered box)
     p += Pos(0, y0 + t / 2, (zE + zS) / 2) * Box(54, t, BELT_C)
     for x in (-CAS_POST_X, CAS_POST_X):
-        p += disc(x, CAS_POST_Z, 7.5) + Pos(x / 2, y0 + t / 2, CAS_POST_Z) * Box(abs(x), t, 14)
+        p += disc(x, CAS_POST_Z, 7.0) + Pos(x / 2, y0 + t / 2, CAS_POST_Z) * Box(abs(x), t, 14)
         p -= disc(x, CAS_POST_Z, 2.75)                                    # M5 through-bolt
     if side == "B":
         p += Pos(0, y0 + t / 2, (zS + 27 - 12 + -92) / 2) * Box(16, t, (-92) - (zS + 27 - 12) + 6)
@@ -235,14 +238,15 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     # elbow stage, built in the stage frame (cartridge +Z, big pulley at +X), then mapped: +Z→-Y, +X→-Z
     st = Pos(0, -20, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Rot(0, 0, -90)
     zc = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]
-    h = small_hub()
-    zp = h.bounding_box().min.Z + 7 + 1 + 1.2
+    from .belt_stage import small_stage_v2, V2
     clk = Rot(0, 0, 180)                                     # loop 23: torque pin and cable window point up (elbow_torque_arm)
     out += [("e_can", st * Pos(0, 0, zc) * Rot(180, 0, 0) * clk * cm.can(), "white"),
             ("e_motor", st * Pos(0, 0, zc) * Rot(180, 0, 0) * clk * cm.motor_dummy(), "dark"),
-            ("e_collar", st * collar(KX74), "orange"), ("e_hub", st * h, "dark"),
-            ("e_belt", st * Pos(0, 0, zp + 0.5) * belt_loop(31.8, 63.7, BELT_C), "dark"),
-            ("e_bigpulley", st * Pos(BELT_C, 0, zp - 1.2) * pulley(40, 16, bore=30), "orange")]
+            ("e_collar", st * collar(KX74), "orange")]
+    out += [(f"e_{n}", st * pp, c) for n, pp, c in small_stage_v2(20)]                 # loop 38: D13 stage v2 (e_kx_hub_v2, e_shaft_12, …)
+    bc = V2["belt_c"]
+    out += [("e_belt", st * Pos(0, 0, bc - 7.5) * belt_loop(31.8, 63.7, BELT_C, width=15.0), "dark"),
+            ("e_bigpulley", st * Pos(BELT_C, 0, bc - 8) * pulley(40, 16, bore=30), "orange")]
     # (the yaw stage above the flange lives in rnd/parts/roll.py)
     fe = Pos(0, 0, -ELBOW_Z) * Rot(0, elbow_deg, 0)
     out += [("forearm", fe * forearm(), "white"), ("cf_fore", fe * cf_fore(), "dark"), ("cf_neck", cf_neck(), "dark")]

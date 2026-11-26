@@ -14,14 +14,14 @@ pair is classified, and the first matching rule wins:
 Swept checks over the joint ranges are separate (`swept()`): the elbow over −150…0°, the gripper jaw 0…45°, the head
 over tilt ±30°, the KX collar twist 0…35°.
 
-**Pairs under target: 7; under the hard limit: 2.**
+**Pairs under target: 7; under the hard limit: 0.**
 
 | Module | Part A | Part B | Kind | Gap (mm) | Target / hard | |
 |---|---|---|---|---|---|---|
-| arm | e_cassette | e_belt | belt | 0.03 | 3.0 / 1.0 | ❌ hard |
-| arm | e_cassette | e_bigpulley | moving | 0.1 | 2.0 / 1.0 | ❌ hard |
 | roll/yaw | yaw_shaft | yaw_stop_pin | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
 | arm | forearm | wrist_can | static | 0.8 | 1.0 / 0.5 | ⚠️ target |
 | upper | handle | pan_sleeve | static | 0.9 | 1.0 / 0.5 | ⚠️ target |
+| arm | e_cassette | e_bigpulley | moving | 1.3 | 2.0 / 1.0 | ⚠️ target |
 | roll/yaw | yaw_block | yaw_shaft | moving | 1.4 | 2.0 / 1.0 | ⚠️ target |
+| arm | e_cassette | e_belt | belt | 3.0 | 3.0 / 1.0 | ⚠️ target |
 | upper | lift_belt | lift_mount | belt | 3.0 | 3.0 / 1.0 | ⚠️ target |
