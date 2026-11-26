@@ -2,7 +2,7 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 13.7 kg of PETG (≈ $274 at $20/kg); 915 h generic ≈ 320 h on the P2S (≈ 13.3 days of continuous printing).**
+**Total: 13.9 kg of PETG (≈ $278 at $20/kg); 933 h generic ≈ 326 h on the P2S (≈ 13.6 days of continuous printing).**
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
@@ -12,13 +12,13 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | cartridge M can | 13 | 846 | 55.8 | 8 arm + 4 wheel + 1 lift |
 | small-pulley hub | 9 | 734 | 50.7 | pitch, roll, yaw, elbow ×2 + lift (KX74 hub + 20T/18T pulley + journals) |
 | roll link | 2 | 677 | 45.5 |  |
+| head_shell | 1 | 719 | 43.3 |  |
+| skirt quarter | 4 | 602 | 42.4 |  |
 | deck quarter | 4 | 577 | 40.0 |  |
-| head_shell | 1 | 653 | 38.5 |  |
 | clevis + yaw block | 2 | 504 | 37.0 |  |
 | dock_wing_l | 2 | 542 | 34.0 | self-docking charger: left + mirrored right wing |
 | KX74 collar | 13 | 461 | 33.0 | 9 joints + 4 wheels |
 | cartridge M adapter | 13 | 409 | 31.0 | carries the KX74 male face |
-| skirt quarter | 4 | 451 | 29.6 |  |
 | pitch shaft | 2 | 329 | 22.5 | 60T pulley + balancer lever + female ferrule |
 | carriage | 1 | 383 | 22.4 |  |
 | wheel pod | 4 | 356 | 22.2 |  |
@@ -38,10 +38,10 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | torque hanger (wheel) | 4 | 87 | 5.8 | standard torque-reaction part, screws under the deck |
 | ferrule (arm side) | 2 | 79 | 5.3 |  |
 | KX44 hub | 4 | 72 | 5.1 | wrist roll ×2, head pan + tilt |
-| visor | 1 | 69 | 4.7 | dark PETG |
 | cartridge D can | 2 | 67 | 4.6 |  |
 | upper bone cap | 2 | 56 | 4.6 | screw-on bottom cap: the cassette goes in from below |
 | yoke | 1 | 68 | 4.5 |  |
+| visor | 1 | 62 | 4.4 | dark PETG |
 | eccentric bushing | 18 | 57 | 4.3 | 2 per small-pulley hub: belt tension |
 | KX56 collar | 2 | 52 | 3.7 |  |
 | KX56 hub | 2 | 53 | 3.6 | wrist pitch |

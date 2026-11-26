@@ -11,6 +11,8 @@
 """
 from __future__ import annotations
 
+import math
+
 from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 
 from ..params import BASELINE
@@ -140,15 +142,33 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     top = with_pin_slot(pan, top, 1.95, 2.0)
     yoke = with_pin_slot(tilt, yoke, 1.95, 2.0)
     T = Pos(0, 0, 40) * Rot(0, tilt_deg, 0)
-    shell = Pos(70, 0, 5) * soft_shell(160, 244, 120, 55, 38, 2.4)                  # pill-shaped head
-    shell -= Pos(150, 0, 8) * Box(20, 200, 70)                                       # visor opening
+    # D11 (loop 28): face screen. The shell grows 16 mm upward (120 → 136) so the 4.3" display board sits behind a flat
+    # dark bezel with the depth camera below it.
+    shell = Pos(70, 0, 13) * soft_shell(160, 244, 136, 55, 38, 2.4)                 # pill-shaped head
+    shell -= Pos(150, 0, 16) * Box(20, 200, 86)                                      # bezel opening
+    shell -= Pos(135, 0, -36) * Box(40, 96, 29)                                       # depth-camera window (Gemini 2)
     shell -= Pos(-20, 0, -20) * Box(110, 180, 90)                                    # neck opening at the back/bottom (yoke + pan servo)
-    visor = Pos(146, 0, 8) * soft_box(6, 196, 66, 2.8, 1.5)
-    eyes = [Pos(150, s * 48, 12) * Rot(0, 90, 0) * Cylinder(12, 2) for s in (1, -1)]
-    cam = Pos(128, 0, -20) * Box(30, 90, 25)
+    # bezel (dark PETG) with the screen window; Waveshare ESP32-S3-Touch-LCD-4.3B (112.4 × 75.1 mm board, 4.3" 800×480
+    # capacitive touch, CAN transceiver, 7–36 V input: runs straight off the 24 V bus) behind it
+    # loop 28: clearance for the tilt and pan cartridges over the whole tilt range (±30°) and any pan angle. The shell
+    # used to clip the tilt sleeve (0.4 cm³) and, at +30° tilt, the pan sleeve.
+    tb = tilt.bounding_box()
+    env_t = Pos(tb.center().X, tb.center().Y, tb.center().Z) * Box(tb.size.X + 4, tb.size.Y + 4, tb.size.Z + 4)
+    pb = (Pos(-MAST_X, 0, -yz) * pan).bounding_box()                                 # pan sleeve in the yoke (P) frame
+    r_pan = max(math.hypot(x, y) for x in (pb.min.X, pb.max.X) for y in (pb.min.Y, pb.max.Y)) + 2
+    env_p = Pos(0, 0, pb.min.Z - 2) * Cylinder(r_pan, pb.size.Z + 4, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    for td in range(-30, 31, 10):
+        inv = (Pos(0, 0, 40) * Rot(0, td, 0)).inverse()
+        shell -= inv * env_t
+        shell -= inv * env_p
+    visor = Pos(146, 0, 16) * soft_box(6, 196, 86, 2.8, 1.5) - Pos(146, 0, 16) * Box(10, 97, 56)
+    screen = Pos(138, 0, 16) * Box(9, 112.4, 75.1)
+    eyes = [Pos(142.8, s * 22, 18) * Rot(0, 90, 0) * Cylinder(9, 0.6) for s in (1, -1)]       # drawn on the screen (render only)
+    cam = Pos(128, 0, -36) * Box(30, 90, 25)                                         # Gemini 2, below the bezel
     out = [("head_bracket", top, "white"), ("handle", handle, "dark"), ("belt_idler", idler, "steel"),
            ("pan_sleeve", pan, "white"), ("yoke", P * yoke, "dark"), ("tilt_sleeve", P * tilt, "white"),
            ("head_shell", P * T * shell, "white"), ("visor", P * T * visor, "dark"),
+           ("head_screen", P * T * screen, "black"),
            ("eye_l", P * T * eyes[0], "orange"), ("eye_r", P * T * eyes[1], "orange"), ("head_cam", P * T * cam, "dark")]
     return out
 

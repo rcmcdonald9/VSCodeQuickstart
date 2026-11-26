@@ -6,7 +6,7 @@
 |---|---|---|---|
 | skirt quarter | 124 × 250 × 250 | 96 | ✅ |
 | deck quarter | 6 × 246 × 246 | 249 | ✅ |
-| head_shell | 120 × 240 × 240 | 234 | ✅ |
+| head_shell | 136 × 240 × 240 | 235 | ✅ |
 | torso_shell [1] | 195 × 210 × 230 | 314 | ✅ |
 | torso_shell [2] | 195 × 210 × 230 | 314 | ✅ |
 | ratchet strip [1] | 6 × 14 × 206 | 16 | ✅ |
@@ -23,7 +23,7 @@
 | e_tray | 6 × 148 × 148 | 54 | ✅ |
 | yoke | 60 × 148 × 148 | 105 | ✅ |
 | elbow cassette plate | 7 × 79 × 142 | 27 | ✅ |
-| visor | 66 × 141 × 141 | 77 | ✅ |
+| visor | 86 × 141 × 141 | 68 | ✅ |
 | wheel pod | 26 × 80 × 124 | 114 | ✅ |
 | elbow pulley hub | 67 × 122 × 122 | 103 | ✅ |
 | roll shaft | 68 × 112 × 113 | 173 | ✅ |
@@ -80,7 +80,7 @@
 | Piece | kg |
 |---|---|
 | base | 6.31 |
-| upper core | 7.58 |
+| upper core | 7.70 |
 | arm (each) | 3.93 |
 | battery | 1.10 |
-| total robot | 22.86 |
+| total robot | 22.98 |

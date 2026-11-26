@@ -889,3 +889,24 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - **Contact loads (hand calc):** leaf springs ~5 N on the pads; the 60 N push on the 10 mm dock wings gives ≈ 0.7 MPa. No FEA needed.
 - **Results:** scorecard 35 ✅ / 2 ❌, unchanged. 64/64 printable, 0 cross-module clashes, BOM $3,866.
 - **Next:** queue item 5, the head screen (D11).
+
+## Loop 28 (2026-11-26): D11 face screen in CAD
+
+- **Panel:** **Waveshare ESP32-S3-Touch-LCD-4.3B** (sourced: waveshare.com SKU 27848, $36.99).
+  - 4.3" 800×480 capacitive touch, onboard CAN transceiver.
+  - **7–36 V input**, so it runs straight off the 24 V bus.
+  - Isolated DI/DO; one DI senses the e-stop loop, so the screen can show the stop state even if the Pi is down.
+  - No bar-format ESP32-S3 board was found; the 4.3" sits centred in a dark bezel that spans the face.
+- **Head CAD:**
+  - Shell 16 mm taller (upward; overall height +16 mm).
+  - Flat dark bezel 196 × 86 with a 97 × 56 window; the board sits behind it.
+  - Eyes drawn on the screen; eye LEDs dropped.
+  - The Gemini 2 moves below the bezel, with its own window.
+- **Existing head clashes fixed:** the shell clipped the tilt sleeve (0.4 cm³) and, at +30° tilt, the pan sleeve. The shell now subtracts both servos' swept envelopes over tilt ±30° and any pan angle.
+- **Wiring:** always-on LOGIC 24 V, F 1 A, CAN A drop at the head (< 1 % bus load). The screen works when the e-stop has dropped motor power.
+- **Results:**
+  - head_mass 0.82 → 0.94 kg.
+  - R12 tip 64 mm (unchanged); mast sway 1.4 → 1.5 mm (≤ 2).
+  - Runtime 3.6 → 3.4 h; BOM $3,866 → **$3,904** (target $4,000: $96 left).
+  - Scorecard 35 ✅ / 2 ❌.
+- **Next:** queue item 6 (remaining confidence sims: KX Monte Carlo + creep, threshold/carpet Monte Carlo) and the head addition to the module-clash check.

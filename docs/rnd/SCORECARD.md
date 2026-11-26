@@ -6,12 +6,12 @@
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 64 mm | ≥ 50 mm | ✅ |
 | R2 min joint margin at spec load (rated, planar check) | 1.91× | ≥ 1.5× | ✅ |
-| R3 upper core (arms detached) | 7.6 kg | ≤ 10 kg | ✅ |
+| R3 upper core (arms detached) | 7.7 kg | ≤ 10 kg | ✅ |
 | R3 each arm (detaches at the shoulder KX) | 3.9 kg | ≤ 10 kg | ✅ |
-| R3 assembled upper (core + arms, for reference) | 15.5 kg | info | — |
+| R3 assembled upper (core + arms, for reference) | 15.6 kg | info | — |
 | R3 base module mass | 6.3 kg | ≤ 8 kg (piece limit 10) | ✅ |
 | R3 battery mass | 1.1 kg | ≤ 3 kg | ✅ |
-| R7 runtime (estimated duty cycle) | 3.6 h | ≥ 2 h | ✅ |
+| R7 runtime (estimated duty cycle) | 3.4 h | ≥ 2 h | ✅ |
 | R8 cost, parametric estimate (superseded by the BOM row) | $2,912 (actuators $1,617 ×21) | info | — |
 | R9 KX interface slip torque / actuator peak (min) | 1.16× | ≥ 1.1× | ✅ |
 | R2 min joint margin, whole workspace (rated / 95th pct, 1 kg) | 1.50× | ≥ 1.5× | ✅ |
@@ -24,9 +24,9 @@
 | R2 torso sway from mast bending (worst static) | 1.5 mm | ≤ 2 mm | ✅ |
 | R5 lift: torque margin / full-travel time | 2.02× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
-| R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.3× (4.9 of 11 N·m peak) | ≥ 1.5× | ✅ |
+| R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.2× (4.9 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md) | 22 h | ≤ 4 h | ❌ |
-| R8 cost from the itemised BOM (BOM_v4.md) | $3,866 | ≤ $4,000 (D9; limit $5,000) | ✅ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $3,904 | ≤ $4,000 (D9; limit $5,000) | ✅ |
 | R13 printed pieces that fit the P2S (256 mm) | 64/64 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |

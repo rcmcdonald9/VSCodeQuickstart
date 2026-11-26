@@ -4,9 +4,9 @@
 |---|---|---|---|
 | base | 6.31 | ≤ 8 | ✅ |
 | battery | 1.10 | ≤ 3 | ✅ |
-| upper | 7.58 | ≤ 10 | ✅ |
+| upper | 7.70 | ≤ 10 | ✅ |
 | arm (each, detachable) | 3.93 | ≤ 10 | ✅ |
-| **total robot** | **22.86** | | |
+| **total robot** | **22.98** | | |
 
 **base detail**
 
@@ -26,8 +26,8 @@
 |---|---|
 | 2× shoulder pitch module (CAD: stage, balancer, V-band) | 1.580 |
 | spine extrusion | 1.325 |
+| head | 0.940 |
 | torso | 0.867 |
-| head | 0.820 |
 | lift motor | 0.810 |
 | 2× arm shoulder_pitch | 0.776 |
 | carriage | 0.580 |
@@ -58,9 +58,9 @@
 
 | Mode | W | Share of time |
 |---|---|---|
-| standby (arms parked, base still) | 32 | 50% |
-| manipulating (arms holding/moving light objects) | 77 | 35% |
-| driving on carpet + arms parked | 62 | 15% |
-| **weighted average** | **53** | |
+| standby (arms parked, base still) | 35 | 50% |
+| manipulating (arms holding/moving light objects) | 80 | 35% |
+| driving on carpet + arms parked | 65 | 15% |
+| **weighted average** | **55** | |
 
-Runtime on 222 Wh (85 % usable): **3.6 h** (R7 target 2 h, limit 1 h).
+Runtime on 222 Wh (85 % usable): **3.4 h** (R7 target 2 h, limit 1 h).

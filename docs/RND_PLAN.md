@@ -100,7 +100,7 @@ Next (state after the confidence campaign; the hourly loop continues from here).
     - **Charger:** 6S Li-ion CC/CV to 25.2 V, sized ~4–5 A for a ~2.5 h full charge from empty (ESTIMATE). Check that the pack/BMS (Heltec 6S) takes charge through the same port while the robot is powered (load sharing).
     - **Finding the dock:** a lidar-visible profile on the dock face (precedent: robot vacuums, TurtleBot 4 / Create 3 dock) and an AprilTag for the head camera. The approach runs at threshold speed (≤ 0.15 m/s).
     - **Checks:** MuJoCo approach Monte Carlo (start pose ±0.3 m / ±20°, wheel slip), contact-force FEA, clashes with the skirt and wheels, BOM and wiring-plan lines, a scorecard row. Battery stays ≥ 15 % when it heads home.
-5. **Head screen (D11).**
+5. **Head screen (D11).** *Loop 28: done in CAD. Waveshare ESP32-S3-Touch-LCD-4.3B ($37, CAN, 7–36 V input) behind a dark bezel; head +16 mm; camera window; BOM/power/wiring updated; existing head clashes fixed. Remaining: CAN command set spec (software phase); verify the board's real mass and the bezel window against the panel's active area.*
     - **CAD:** the visor becomes a bezel for the bar display, with a touch glass flush to the shell. The display node sits behind the panel. The Gemini 2 window below stays as it is.
     - **Rest of the design:** add screen + node to the BOM; wiring plan (5 V / 12 V branch, CAN drop at the head); compute budget (Pi load drops slightly as the eye LEDs go); power budget (+2–3 W); mass (head +~150 g); re-run mast sway and tip margins.
     - **Specify the CAN messages:** stop / hold / home / jog / teach / status.

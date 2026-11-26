@@ -10,6 +10,7 @@
                                                               ├─ F 10 A → lift cartridge + pawl solenoid (CAN bus A)
                                                               ├─ F 15 A → left arm via detach plug (CAN bus B, TTL bus 1)
                                                               └─ F 15 A → right arm via detach plug (CAN bus C, TTL bus 2)
+LOGIC 24 V ─ F 1 A ─ D11 FACE SCREEN (ESP32-S3-Touch-LCD-4.3B, 7–36 V input; CAN A drop at the head; isolated DI senses the e-stop loop)
 DOCK PADS (skirt, 45°) ─ ideal-diode reverse-polarity guard ─ F 7.5 A ─ BMS charge port   (charger 25.2 V CC/CV, 5 A)
 ```
 
@@ -29,7 +30,7 @@ DOCK PADS (skirt, 45°) ─ ideal-diode reverse-polarity guard ─ F 7.5 A ─ B
 | Reserved: 24 → 19 V 3 A DC-DC → Jetson-class AI computer (D10, AI phase) | 0.8 | 1.2 | 3 |
 | **Pack** | **32.6** | **69** (diversity 0.6) | main 40 |
 
-Typical draw is far lower: the duty-cycle power budget averages **53 W ≈ 2.4 A** (runtime 3.6 h on 222 Wh).
+Typical draw is far lower: the duty-cycle power budget averages **55 W ≈ 2.5 A** (runtime 3.4 h on 222 Wh).
 
 **Battery requirement (new finding):** the pack's BMS must allow **≥ 30 A continuous and about 69 A for ~1 s**. Cheap 6S packs often have 10–15 A BMS boards (components.yaml), which would trip on arm or threshold peaks. Buy a scooter or power-tool class pack, or build one around a 40 A BMS.
 
@@ -41,7 +42,7 @@ Typical draw is far lower: the duty-cycle power budget averages **53 W ≈ 2.4 A
 ## Data buses
 | Bus | Members | Rate | Load at 500 Hz |
 |---|---|---|---|
-| CAN A (USB-CAN #1) | 4 wheels + lift (5 nodes) | 1 Mbps | ~65 % (2 frames × ~130 bit × 5 nodes × 500 Hz) |
+| CAN A (USB-CAN #1) | 4 wheels + lift (5 nodes) + D11 face screen (status/commands at ≤ 50 Hz: stop, hold, home, jog, teach, status) | 1 Mbps | ~66 % (2 frames × ~130 bit × 5 nodes × 500 Hz, screen < 1 %) |
 | CAN B (USB-CAN #2) | left arm: 4 GIM + DM-J4310 | 1 Mbps | ~65 % |
 | CAN C (USB-CAN #3) | right arm: 4 GIM + DM-J4310 | 1 Mbps | ~65 % |
 | TTL 1 / TTL 2 / TTL 3 | left wrist roll + gripper / right ditto / head pan + tilt | 1 Mbps half-duplex | light |
