@@ -63,7 +63,7 @@ def xml(d=BASELINE) -> str:
       <body name="hand" gravcomp="1" pos="0 0 -0.04">
        <joint name="wroll" axis="0 0 1" range="{JR['wroll'][0]} {JR['wroll'][1]}" damping="0.3" armature="0.005"/>
        <geom type="box" size="0.032 0.02 0.025" pos="0 0 -0.035" mass="{m['wrist_roll'] + m['gripper'] + a.gripper_mech_mass}" rgba=".15 .15 .15 1"/>
-       <camera name="wrist" pos="0.05 0 -0.03" xyaxes="0 -1 0 0.6 0 0.8" fovy="75"/>
+       <camera name="wrist" pos="0.05 0 -0.03" xyaxes="0 -1 0 0.95 0 0.3" fovy="80"/>  <!-- looks down past the fingertips (DROID-style wrist view) -->
        <site name="grasp" pos="0 0 {-(a.l_hand - 0.04)}" size="0.005"/>
        <body name="finger_a" gravcomp="1" pos="0.05 0 {-(a.l_hand - 0.04)}"><joint name="fa" type="slide" axis="-1 0 0" range="0 0.045" damping="5"/>
         <geom type="box" size="0.005 0.012 0.025" mass="0.03" friction="1.5 0.02 0.002" rgba=".95 .55 .2 1"/></body>
