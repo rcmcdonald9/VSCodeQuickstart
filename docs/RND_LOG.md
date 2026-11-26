@@ -910,3 +910,18 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - Runtime 3.6 → 3.4 h; BOM $3,866 → **$3,904** (target $4,000: $96 left).
   - Scorecard 35 ✅ / 2 ❌.
 - **Next:** queue item 6 (remaining confidence sims: KX Monte Carlo + creep, threshold/carpet Monte Carlo) and the head addition to the module-clash check.
+
+## Loop 29 (2026-11-26): KX coupling Monte Carlo + creep
+
+- **`rnd/kx_mc.py`:** 200k draws per interface.
+  - Inputs: spring rate ±7 % σ, compression σ 0.07 mm (printed seats), β 20° ± 1° σ, ramp μ 0.12–0.30.
+  - 10-year PETG creep in the preload loop: E(10 y)/E 0.45–0.6 at room temperature, 0.30–0.40 for joints next to a working motor at 55 °C (all ESTIMATE).
+- **Results:**
+  - **P(slip < rated) = 0 %** for KX74/GIM, KX56/DM-J4310 and KX44/STS. The couplings never slip in normal work.
+  - Twist p95 ≤ 2.9 N·m (rule 3).
+  - **After 10 years of creep, 15–26 % slip below actuator *peak*** (warm joints lose ~7.5 % preload). That is the designed overload-clutch behaviour; the fetch MC never exceeds 47 % of peak, and the joint-side encoders detect a slip.
+- **Actions:**
+  - Coupon C1 now ends with a **72 h creep hold at 50 °C on the P2S bed**, then re-measures slip.
+  - Queued design option if C1 loses > 5 %: a softer, longer-stroke preload spring.
+- New scorecard row (passes).
+- **Next:** threshold/carpet Monte Carlo; add the head to the module-clash check.

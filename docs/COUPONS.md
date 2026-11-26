@@ -22,7 +22,7 @@ STLs: `rnd/out/coupons/`.
 
 | # | Measure | Pass if | Updates | Result |
 |---|---|---|---|---|
-| C1 | KX socket: lock twist torque (luggage scale on the collar tab), slip torque (lever + scale), re-seat repeatability over 10 cycles (dial or calipers on a 100 mm arm) | twist ≤ 3 N·m; slip ≥ 12 N·m; repeatability ≤ 0.05 mm at 100 mm | kx.py: clearance, preload_n, ramp_deg, stroke | |
+| C1 | KX socket: lock twist torque (luggage scale on the collar tab), slip torque (lever + scale), re-seat repeatability over 10 cycles (dial or calipers on a 100 mm arm). Then **creep hold** (loop 29): leave it locked on the P2S bed at 50 °C for 72 h and measure slip torque again | twist ≤ 3 N·m; slip ≥ 12 N·m; repeatability ≤ 0.05 mm at 100 mm; slip loss after the hold ≤ 5 % | kx.py: clearance, preload_n, ramp_deg, stroke; rnd/kx_mc.py creep ratio | |
 | C2 | Male face: balls seated flush ±0.05 mm | no ball proud > 0.1 mm | kx.py: ball pocket fit | |
 | C3 | Smallest gap whose pin turns freely after printing | ≤ 0.30 mm frees | kx.py clearance (0.30) | |
 | C4 | Tightest press-fit row that assembles without cracking (pins, balls) | one row works | kx.py pin/ball hole diameters | |

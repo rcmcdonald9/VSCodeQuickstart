@@ -102,6 +102,12 @@ def _confidence_rows():
         a = json.loads(f.read_text())
         rows.append(("Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip)", f"{a['ok']}/{a['n']} (95 % LB {a['lb95']:.0%}), worst pad error {a['lat_max_mm']:.0f} mm",
                      "LB ≥ 90 %, within ±25 mm", a["lb95"] >= 0.9 and a["lat_max_mm"] <= 25))
+    f = DOCS / "kx_mc.json"
+    if f.exists():
+        a = json.loads(f.read_text())
+        rows.append(("KX Monte Carlo (tolerances, μ, spring, 10-year PETG creep): slip below rated / below peak; twist p95",
+                     f"{a['worst_p_below_rated']:.2%} / {a['worst_p_below_peak']:.0%}; {a['worst_twist_p95']:.1f} N·m", "≤ 0.1 % below rated; twist ≤ 3 N·m",
+                     a["worst_p_below_rated"] <= 0.001 and a["worst_twist_p95"] <= 3.0))
     f = DOCS / "thermal.json"
     if f.exists():
         a = json.loads(f.read_text())

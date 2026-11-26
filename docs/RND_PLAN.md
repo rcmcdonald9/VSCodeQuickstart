@@ -105,7 +105,7 @@ Next (state after the confidence campaign; the hourly loop continues from here).
     - **Rest of the design:** add screen + node to the BOM; wiring plan (5 V / 12 V branch, CAN drop at the head); compute budget (Pi load drops slightly as the eye LEDs go); power budget (+2–3 W); mass (head +~150 g); re-run mast sway and tip margins.
     - **Specify the CAN messages:** stop / hold / home / jog / teach / status.
     - The eye LEDs come off the BOM.
-6. Remaining confidence-campaign sims: KX Monte Carlo (tolerance, μ, spring) + PETG creep under the KX preload and belt tension; threshold/carpet Monte Carlo.
+6. *(Loop 29: KX Monte Carlo done, rnd/kx_mc.py. Never slips below rated; 15–26 % slip below peak after 10 y creep (warm joints lose ~7.5 % preload). C1 gains a 72 h / 50 °C creep hold. **Design option if C1 shows > 5 % loss:** a softer, longer-stroke preload spring, so creep costs less preload; bolted-joint practice.)* Remaining confidence-campaign sims: KX Monte Carlo (tolerance, μ, spring) + PETG creep under the KX preload and belt tension; threshold/carpet Monte Carlo.
 7. **R10 assembly time** (22 h vs 4 h, the one failing metric). Owner decision pending on splitting the target (one arm ≤ 4 h / robot ≤ 15 h). Levers: fewer distinct printed parts, snap-in cartridge cans, harness kits.
 8. **Coupon round C1: package READY** ([COUPONS.md](COUPONS.md), loop 18). It needs the owner's P2S and ~$25 of small parts:
     - print-in-place KX socket, eccentric bushing, GIM bolt-circle coupon
