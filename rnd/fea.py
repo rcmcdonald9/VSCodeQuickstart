@@ -192,3 +192,61 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def solve2(mesh, fixed, loads, order=2):
+    """A8 (loop 40, external review finding 9): P1 or P2 tets, vectorised von Mises at the quadrature points, and the
+    rigid-body motion (translation + rotation, least squares) of each loaded region and of the whole part, for the
+    compliance chain (rnd/stiffness.py)."""
+    from skfem import Basis, ElementTetP1, ElementTetP2, ElementVector, FacetBasis, LinearForm, asm, condense, solve as sk_solve
+    from skfem.models.elasticity import lame_parameters, linear_elasticity
+    el = ElementTetP2() if order == 2 else ElementTetP1()
+    e = ElementVector(el)
+    ib = Basis(mesh, e)
+    K = asm(linear_elasticity(*lame_parameters(E, NU)), ib)
+    f = np.zeros(K.shape[0])
+    bnd = mesh.boundary_facets()
+    mids = mesh.p[:, mesh.facets[:, bnd]].mean(axis=1)
+    regions = []
+    for sel, F in loads:
+        facets = bnd[sel(mids)]
+        if len(facets) == 0:
+            raise ValueError("load selection is empty")
+        fb = FacetBasis(mesh, e, facets=facets)
+        area = asm(LinearForm(lambda v, w: v[0] * 0 + 1.0), FacetBasis(mesh, ElementTetP1(), facets=facets)).sum()
+        t = np.asarray(F, float) / area
+
+        @LinearForm
+        def trac(v, w):
+            return t[0] * v[0] + t[1] * v[1] + t[2] * v[2]
+        f += asm(trac, fb)
+        regions.append(np.unique(mesh.facets[:, facets]))
+    fixed_facets = bnd[fixed(mids)]
+    D = ib.get_dofs(facets=fixed_facets).all()
+    u = sk_solve(*condense(K, f, D=D))
+    lam, mu = lame_parameters(E, NU)
+    G = ib.interpolate(u).grad                                       # (3, 3, nel, nqp)
+    eps = 0.5 * (G + np.transpose(G, (1, 0, 2, 3)))
+    tr = eps[0, 0] + eps[1, 1] + eps[2, 2]
+    sig = 2 * mu * eps
+    for i in range(3):
+        sig[i, i] += lam * tr
+    dev = sig.copy()
+    for i in range(3):
+        dev[i, i] -= (sig[0, 0] + sig[1, 1] + sig[2, 2]) / 3
+    vm = np.sqrt(1.5 * np.sum(dev ** 2, axis=(0, 1))).max(axis=1)    # per element: worst quadrature point
+    un = np.vstack([u[ib.nodal_dofs[c]] for c in range(3)])           # vertex displacements (3, nverts)
+
+    def rigid(nodes):
+        X = mesh.p[:, nodes].T
+        c = X.mean(axis=0)
+        U = un[:, nodes].T
+        A = np.zeros((3 * len(nodes), 6))
+        for k, x in enumerate(X - c):
+            A[3 * k:3 * k + 3, :3] = np.eye(3)
+            A[3 * k:3 * k + 3, 3:] = np.array([[0, x[2], -x[1]], [-x[2], 0, x[0]], [x[1], -x[0], 0]])   # ω × x
+        sol = np.linalg.lstsq(A, U.reshape(-1), rcond=None)[0]
+        return dict(c=c.tolist(), t=sol[:3].tolist(), w=sol[3:].tolist())
+    disp = np.sqrt((un ** 2).sum(axis=0))
+    return dict(vm99=float(np.quantile(vm, 0.995)), vmax=float(vm.max()), dmax=float(disp.max()), n=mesh.t.shape[1],
+                regions=[rigid(r) for r in regions], order=order)

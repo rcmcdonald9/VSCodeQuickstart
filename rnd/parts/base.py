@@ -42,7 +42,8 @@ def omni_wheel() -> Part:
 
 
 def wheel_shaft() -> Part:
-    s = Pos(0, 0, -44) * (Cylinder(20, 31.8, align=MIN) - Cylinder(12, 31.8, align=MIN))       # Ø40 through the bearings (below the hub)
+    hb = -hub(KX74).bounding_box().min.Z                                                       # loop 40: follows the D15 socket depth (13.0)
+    s = Pos(0, 0, -44) * (Cylinder(20, 44 - hb, align=MIN) - Cylinder(12, 44 - hb, align=MIN))   # Ø40 through the bearings (below the hub)
     s += Pos(0, 0, -48) * (Cylinder(30, 4, align=MIN) - Cylinder(12, 4, align=MIN))            # wheel flange
     return s
 
@@ -65,7 +66,7 @@ def wheel_module(ang):
     zc = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]
     return [(f"w{ang}_can", T * Pos(0, 0, zc) * Rot(180, 0, 0) * cm.can(), "white"),
             (f"w{ang}_motor", T * Pos(0, 0, zc) * Rot(180, 0, 0) * cm.motor_dummy(), "dark"),
-            (f"w{ang}_collar", T * collar(KX74), "orange"), (f"w{ang}_hub", T * hub(KX74), "dark"),
+            (f"w{ang}_hub", T * hub(KX74), "dark"),            # D17 (loop 40, A11): bolted to the GIM output (4 × M4), no KX collar; same envelope
             (f"w{ang}_shaft", T * wheel_shaft(), "orange"), (f"w{ang}_pod", T * pod(), "white"),
             (f"w{ang}_wheel", T * omni_wheel(), "dark"),
             (f"w{ang}_torque_hanger", T * torque_hanger_pose(zc), "white")]
@@ -121,6 +122,15 @@ DOCK_PAD_AZ = 45.0              # azimuth of the docking contacts (rnd/dock_sim.
 DOCK_PADS = ((60.0, "+"), (100.0, "−"), (40.0, "ID"))   # pad centre heights above the floor (match rnd/parts/dock.py)
 
 
+def bumper_light() -> Part:
+    """Light ring around the skirt. A12 (loop 40, review finding 13): it stood 4 mm proud at z 43–53 right across the dock
+    pads (ID pad at 40, + at 60), so the dock's V faces would have hit the ring, not the pads. The ring now has a 30°
+    gap centred on the pads."""
+    r = Pos(0, 0, Z0 + 18) * (Cylinder(R_SHELL + 4, 10, align=MIN) - Cylinder(R_SHELL, 10, align=MIN))
+    gap = Pos(R_SHELL, 0, Z0 + 13) * Box(2 * R_SHELL * math.sin(math.radians(15)) + 20, 2 * R_SHELL * math.sin(math.radians(15)), 20, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    return r - Rot(0, 0, DOCK_PAD_AZ) * gap
+
+
 def dock_pad_carrier() -> Part:
     """Loop 27: carrier inside the skirt at 45° for the docking contacts. Two brass pads 60 × 12 mm (+ at 60 mm, − at
     100 mm) and a 40 × 10 mm ID pad (40 mm) sit in 1.5 mm pockets, flush with the skirt; wires leave through Ø4 holes.
@@ -155,7 +165,7 @@ def module():
     c, lever, plug = coupling()
     out += [("rim", rim(), "white"), ("battery", battery(), "dark"), ("coupling", c, "white"), ("cam_lever", lever, "orange"), ("plug", plug, "dark"),
             ("lidar", Pos(R_SHELL - 70, 0, Z1) * Cylinder(28, 41, align=MIN), "dark"),
-            ("bumper_light", Pos(0, 0, Z0 + 18) * (Cylinder(R_SHELL + 4, 10, align=MIN) - Cylinder(R_SHELL, 10, align=MIN)), "orange"),
+            ("bumper_light", bumper_light(), "orange"),
             ("base_electronics", Rot(0, 0, 45) * Pos(135, 0, Z0 + 10) * Box(50, 70, 30, align=MIN), "dark")]
     return out
 
@@ -163,7 +173,7 @@ def module():
 def masses(density=1.27):
     pods = 4 * pod().volume / 1e6 * density * 0.6
     shafts = 4 * wheel_shaft().volume / 1e6 * density * 0.7
-    hubs = 4 * (hub(KX74).volume + collar(KX74).volume) / 1e6 * density * 0.7
+    hubs = 4 * hub(KX74).volume / 1e6 * density * 0.7                          # D17: no collars on the wheels
     deck = sum(deck_quarter(q).volume for q in range(4)) / 1e6 * density * 0.6
     skirt = sum(skirt_quarter(q).volume for q in range(4)) / 1e6 * density
     c, lever, plug = coupling()

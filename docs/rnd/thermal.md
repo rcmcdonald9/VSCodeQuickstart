@@ -14,28 +14,30 @@ Ambient 30 °C, limit 100 °C, ΔT at rated 60 K, τ 600 s (all ESTIMATE until t
 
 ## 1. Task day: fetch cycle back to back, Monte Carlo worst corner
 
-| Actuator | RMS torque/force | Rated (derated ×0.75) | Steady temperature |
-|---|---|---|---|
-| pitch | 6.90 | 10.69 | 55 °C ✅ |
-| roll | 1.25 | 14.25 | 30 °C ✅ |
-| yaw | 0.18 | 7.12 | 30 °C ✅ |
-| elbow | 3.39 | 7.12 | 44 °C ✅ |
-| wpitch | 0.40 | 2.25 | 32 °C ✅ |
-| wroll | 0.00 | 0.73 | 30 °C ✅ |
-| lift | 139.85 | 235.85 | 51 °C ✅ |
-| base_x | 6.88 | 98.43 | 30 °C ✅ |
-| base_y | 0.17 | 98.43 | 30 °C ✅ |
+| Actuator | RMS torque/force | Rated (derated ×0.75) | Winding (enclosed) | Can wall | PETG can (≤ 55 °C) | ASA can (≤ 75 °C) |
+|---|---|---|---|---|---|---|
+| pitch | 7.33 | 10.69 | 68 °C ✅ | 63 °C | ❌ | ✅ |
+| roll | 1.43 | 15.83 | 40 °C ✅ | 40 °C | ✅ | ✅ |
+| yaw | 0.26 | 7.12 | 40 °C ✅ | 40 °C | ✅ | ✅ |
+| elbow | 3.16 | 7.12 | 52 °C ✅ | 49 °C | ✅ | ✅ |
+| wpitch | 0.43 | 2.25 | 42 °C ✅ | 42 °C | ✅ | ✅ |
+| wroll | 0.02 | 0.73 | 40 °C ✅ | 40 °C | ✅ | ✅ |
+| lift | 143.14 | 235.85 | 62 °C ✅ | 58 °C | ❌ | ✅ |
+| base_x | 6.95 | 98.43 | 40 °C ✅ | 40 °C | ✅ | ✅ |
+| base_y | 0.52 | 98.43 | 40 °C ✅ | 40 °C | ✅ | ✅ |
 
-**Hottest motor on a non-stop task day: 55 °C** (limit 100 °C).
+**Hottest motor on a non-stop task day: 68 °C** winding (limit 100 °C); **hottest can wall 63 °C** (A6: enclosed air +10 K). **Decision (A6): motor cans, KX hubs/collars of motor stages and the D13 hubs print in ASA** (Bambu ASA, HDT ≈ 94 °C; the P2S is enclosed, so it prints well); the rest stays PETG. Each can gets a 3 × 8 mm vent slot pair. The M1 bench logs a can-wall thermistor to replace these ESTIMATEs.
 
 ## 2. Worst static hold (worst workspace pose, 1 kg payload, nominal motors)
 
 | Joint | Worst static torque (N·m) | Rated (N·m) | Steady temperature | Time to the limit |
 |---|---|---|---|---|
-| shoulder_pitch | 11.7 | 14.2 | 70 °C | unlimited ✅ |
-| shoulder_roll | 16.4 | 19.0 | 75 °C | unlimited ✅ |
-| upper_yaw | 7.0 | 9.5 | 62 °C | unlimited ✅ |
-| elbow | 7.0 | 9.5 | 62 °C | unlimited ✅ |
-| wrist_pitch | 1.8 | 3.0 | 52 °C | unlimited ✅ |
+| shoulder_pitch | 11.9 | 14.2 | 72 °C | unlimited ✅ |
+| shoulder_roll | 16.6 | 21.1 | 67 °C | unlimited ✅ |
+| upper_yaw | 7.0 | 9.5 | 63 °C | unlimited ✅ |
+| elbow | 7.0 | 9.5 | 63 °C | unlimited ✅ |
+| wrist_pitch | 1.9 | 3.0 | 53 °C | unlimited ✅ |
+
+**A6, can wall in the worst static hold (ASA limit 75 °C):** shoulder_pitch 74 °C (unlimited); shoulder_roll 70 °C (unlimited); upper_yaw 66 °C (unlimited); elbow 66 °C (unlimited); wrist_pitch 59 °C (unlimited).
 
 Every joint can hold its worst pose indefinitely.

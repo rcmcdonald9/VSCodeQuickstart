@@ -156,6 +156,9 @@ YAW_BELT = ZF - PUL_C                  # −76.2
 YAW_DROP = round(-(P2[0] - 2.3 - 5.0), 1)   # flange: 5 mm, 2.3 mm under the bottom plate (R15 moving ≥ 2; 113.4 = params.arm.yaw_drop)
 
 
+YAW_WALL_Y = 44.0                      # side-wall centre offset from the yaw axis (plates span ±46)
+
+
 def clevis_and_yaw_block() -> Part:
     p = None
     for z0, z1 in (P1, P2):
@@ -167,6 +170,11 @@ def clevis_and_yaw_block() -> Part:
     # (M5 through-bolts; the belt and both pulleys go in before the bottom plate)
     for xx, yy in ((-YAW_C / 2, ROLL_Y - 38), (-YAW_C / 2, ROLL_Y + 38), (-YAW_C - 24, ROLL_Y - 38), (-YAW_C - 24, ROLL_Y + 38)):
         p += Pos(xx, yy, P2[1]) * (Cylinder(7, P1[0] - P2[1], align=MIN) - Cylinder(2.75, P1[0] - P2[1], align=MIN))
+    # loop 40 (A8, rnd/stiffness.py): two plates on four posts tilted the yaw seats ≈ 22 mrad (P2) under the arm moment
+    # (≈ 17 mm at the hand). 4 mm side walls along both long edges close the block into a box section (belt clear by 9 mm;
+    # the +X end stays open for the ribbon). The walls belong to the top half; the bottom plate still bolts on last.
+    for yy in (ROLL_Y + YAW_WALL_Y, ROLL_Y - YAW_WALL_Y):
+        p += Pos((-112 + 32) / 2, yy, (P2[1] + P1[0]) / 2) * Box(144, 4, P1[0] - P2[1])
     p += yaw_torque_fork()
     t = math.radians(STOP_PIN_AZ)
     p -= Pos(STOP_PIN_R * math.cos(t), ROLL_Y + STOP_PIN_R * math.sin(t), P2[0]) * Cylinder(2.95, 5, align=MIN)   # loop 34: press-fit seat for the stop pin

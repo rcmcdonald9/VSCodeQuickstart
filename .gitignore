@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 rnd/out/asm_*
 rnd/out/asm_colors.txt
+sw/out/

@@ -59,6 +59,24 @@ def housing_shell():
     return _housing_solid(0.0) - _housing_solid(WALL)
 
 
+STIFF_T = 2.8                # loop 40 (A8): inner layer on the +Y half and the top (1.2 + 2.8 = 4 mm)
+
+
+def housing_stiffener() -> Part:
+    """Loop 40 (A8, rnd/stiffness.py): with P2 elements the 1.2 mm housing tilted the elbow bosses ≈ 39 mrad under 1 kg
+    straight out (≈ 20 mm at the hand; P1 had shown 5 mrad). The forearm load enters the +Y boss and has to reach the
+    neck socket on top: the +Y half and the top become 4 mm (an inner 2.8 mm layer), and four 3 mm gussets tie the neck
+    socket to the top plate. The −Y half (cartridge bay, KX collar room) keeps its 1.2 mm skin."""
+    h = HOUSING
+    inner = _housing_solid(WALL - 0.4) - _housing_solid(WALL + STIFF_T)          # 0.4 mm overlap into the skin: coincident faces crash the fuse
+    yw = h["y"] / 2 - WALL - STIFF_T - 0.5                                               # +Y face slab only (cassette plate B ends at y 43.7)
+    st = (inner & Pos(0, yw + 100, 0) * Box(400, 200, 600)) + (inner & Pos(0, 0, h["z1"] - 10) * Box(400, 400, 20))
+    for k in range(4):
+        a = 45 + 90 * k
+        st += Rot(0, 0, a) * Pos(23 + 14, 0, h["z1"]) * Box(28, 3, 14, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    return st
+
+
 def _hollow_rbox(x, y, z, r, wall=WALL):
     return _rbox(x, y, z, r) - _rbox(x - 2 * wall, y - 2 * wall, z - 2 * wall, max(r - wall, 0.5))
 
@@ -75,6 +93,7 @@ def upper_bone() -> Part:
         p += Pos(0, 0, z) * (Cylinder(23, 22, align=MIN) - Cylinder(20.1, 22, align=MIN))
     hz = h["z1"] - h["z0"]
     p += housing_shell()                                                                 # looks pass: soft on every edge (loop 23: two corner radii)
+    p += housing_stiffener()                                                             # loop 40 (A8): P2 FEA found the 1.2 mm shell far too soft
     # bearing bosses through the ±Y walls: elbow axis (61808, OD 52). The small-pulley hub runs in the elbow belt
     # cassette (confidence campaign: FEA showed the shell can't carry belt tension; the journals never reached the walls)
     p += Pos(0, -h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * _ring(52.0 + 10, 52.0, 8)

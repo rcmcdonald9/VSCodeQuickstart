@@ -26,15 +26,17 @@ def items(d=BASELINE):
         A("Actuators", n, q, act(n)["price"], "actuators.yaml (mid list price)")
     A("Wheels & power", '6" DuraOmni omni wheel', 4, 33.0, "components.yaml")
     A("Wheels & power", "6S 10 Ah 21700 Li-ion pack, 35 A cont., 975 g (Lumenier NAV class)", 1, 150.0, "racedayquads.com listing (loop 13)")
-    A("Wheels & power", "6S 30 A BMS, 100 A trip (Heltec class), inline", 1, 15.0, "aliexpress listing; price ESTIMATE")
+    A("Wheels & power", "6S smart BMS, 40 A cont., UART/CAN telemetry + active balancing (JK-BMS class) — A13: telemetry for the dock stop, weekly 4.20 V balance charge", 1, 45.0, "ESTIMATE")
     A("Wheels & power", "6S charger, balance (ToolKitRC C6 class)", 1, 30.0, "racedayquads.com listing")
     A("Wheels & power", "Fuses + holders (40 / 20 / 15 / 15 / 10 / 7.5 / 5 A)", 1, 15.0)
-    A("Wheels & power", "E-stop: 2 latching mushrooms + 24 V contactor + hold-up capacitor", 1, 35.0)
-    A("Wheels & power", "DC-DC 24→12 V 10 A, 24→5 V 5 A", 1, 30.0)
+    A("Wheels & power", "E-stop (A5): 2 two-channel latching mushrooms + 24 V contactor + 22 Ω 25 W pre-charge + timer relay + watchdog relay", 1, 55.0)
+    A("Wheels & power", "Regen clamp (A5): 26.5 V shunt regulator (MOSFET, comparator, 10 Ω 50 W Al-clad resistor) + 33 V TVS", 1, 16.0)
+    A("Wheels & power", "DC-DC 24→12 V 10 A (head servos), 24→5 V 5 A", 1, 30.0)
+    A("Wheels & power", "D14 elbow-node power: 24→12 V 3 A buck + half-duplex TTL transceiver (one per arm)", 2, 8.0)
     A("Wheels & power", "Connectors: XT60/XT30, 2 × 6-pin pogo blocks, JST-GH/VH, wire", 1, 50.0)
     A("Compute & sensors", "Raspberry Pi 5 8 GB", 1, 0.0, "owner has one")
     A("Compute & sensors", "Waveshare 2-CH CAN FD HAT for the Pi 5 (CAN B + C, mode A: separate SPI)", 1, 46.99, "waveshare.com (loop 14)")
-    A("Compute & sensors", "USB-CAN adapter (CAN A: base + lift; also the fallback if the HAT's 2nd channel fails on the Pi 5)", 1, 35.0, "components.yaml")
+    A("Compute & sensors", "USB-CAN adapter (A14: CAN A base + lift, and the second channel of each arm)", 3, 35.0, "components.yaml")
     A("Compute & sensors", "Bus-servo TTL adapter", 3, 8.0)
     A("Compute & sensors", "Powered USB3 hub", 1, 25.0)
     A("Compute & sensors", "Head RGB-D camera (Orbbec Gemini 2: 0.15–10 m, global-shutter IR, 98 g)", 1, 234.0, "store.orbbec.com (loop 14); Gemini 336 was $310")
@@ -50,8 +52,10 @@ def items(d=BASELINE):
     A("Compute & sensors", "Mic array + speaker + chest/bumper LEDs (eyes are now drawn on the D11 screen)", 1, 36.0, "ESTIMATE")
     A("Compute & sensors", "D11 face screen: Waveshare ESP32-S3-Touch-LCD-4.3B (4.3\" 800×480 cap. touch, CAN, 7–36 V input, isolated DI/DO)", 1, 36.99, "waveshare.com SKU 27848 (loop 28)")
     A("Bearings", "6808-2RS (40×52×7), no-name 10-pack (check the 2RS variant)", 24, 2.02, "AliExpress MOCHU snapshot (loop 14); Zoro generic $4.71")
-    A("Bearings", "6804-2RS (20×32×7), no-name 10-pack", 18, 0.92, "AliExpress MOCHU snapshot; Zoro $4.69")
-    A("Bearings", "6805-2RS (25×37×7), no-name 10-pack", 12, 1.15, "AliExpress snapshot; Zoro $5.69")
+    A("Bearings", "6804-2RS (20×32×7): lift small hub + D16 wrist-roll spindles", 6, 0.92, "AliExpress MOCHU snapshot; Zoro $4.69")
+    A("Bearings", "6801-2RS (12×21×5): D13 stage shafts, 2 per stage × 8 stages", 16, 0.9, "ESTIMATE")
+    A("Bearings", "6805-2RS (25×37×7): head tilt passive pivot (A4)", 4, 1.15, "AliExpress snapshot; Zoro $5.69")
+    A("Bearings", "U604ZZ grooved pulley bearings (A9 balancers: pulley A + tackle pulley)", 4, 1.5, "ESTIMATE")
     A("Bearings", "625ZZ (carriage, idlers)", 10, 0.25, "Walmart 40-pack")
     A("Bearings", "6708-2RS thin section (40×50×6), elbow belt cassettes (2 per arm)", 4, 3.0, "ESTIMATE")
     # --- self-docking charger (queue item 4, owner request; rnd/parts/dock.py, rnd/dock_sim.py) ---
@@ -61,29 +65,42 @@ def items(d=BASELINE):
     A("Docking charger", "Floor screws + AprilTag print (dock)", 1, 2.0, "ESTIMATE")
     A("Drive & structure", "Torque hangers: 2 × M4×10 + 2 heat-set inserts each (wheels ×4 so far)", 4, 0.6, "ESTIMATE")
     A("Drive & structure", "Elbow belt cassette: 2 × M5×30 bolts + nylocs per arm; 4 × M3 heat-set inserts + screws for the bone cap", 2, 2.0, "ESTIMATE")
-    A("KX interfaces (19 sockets)", "G25 balls: 39 × Ø10 ($0.32), 6 × Ø8, 12 × Ø6", 1, 13.9, "Intech / Zoro listings")
-    A("KX interfaces (19 sockets)", "Hardened dowel pins: 2 × 50 Ø5×14, 100 Ø4×12, 100 Ø3×8 (packs)", 1, 50.7, "Zoro listings")
-    A("KX interfaces (19 sockets)", "Preload: 6 small coil springs + PTFE washer per socket (80–86 mm wave springs are $17 each)", 19, 1.0, "wave-spring price: 123bearing")
-    A("KX interfaces (19 sockets)", "Torque pins Ø6/Ø5/Ø4 + magnet index", 19, 0.4)
+    # loop 40: 13 sockets (the wheels bolt on, D17/A11; the wrist roll lost its KX44, D16); D15 screwed sockets with 6 coil springs
+    A("KX interfaces (13 sockets)", "G25 balls: 27 × Ø10 ($0.32), 6 × Ø8, 6 × Ø6", 1, 11.0, "Intech / Zoro listings")
+    A("KX interfaces (13 sockets)", "Hardened dowel pins: 50 Ø5×14, 50 Ø4×12, 50 Ø3×8 (packs)", 1, 38.0, "Zoro listings")
+    A("KX interfaces (13 sockets)", "D15 preload: 6 coil springs Ø4 × 8 per socket (assortment) + PTFE washer; 3 × M3 retainer screws + inserts", 13, 1.2, "ESTIMATE")
+    A("KX interfaces (13 sockets)", "Torque pins Ø6/Ø5/Ø4 + magnet index", 13, 0.4)
+    A("Drive & structure", "D13 small stages ×8: Ø12 h6 steel rod (2 × 300 mm), aluminium rigid flange couplings 12 mm, aluminium HTD 5M 15 mm pulleys 12 mm bore (6 × 20T, 2 × 18T)", 8, 12.0, "ESTIMATE")
+    A("Drive & structure", "Wheel hubs bolted to the GIM output (D17/A11: no KX on the wheels): 4 × M4 per wheel", 4, 0.8, "ESTIMATE")
+    A("Drive & structure", "Chassis ring (A11): 3 mm 6061 laser-cut ring tying the 4 deck quarters", 1, 40.0, "ESTIMATE (SendCutSend class)")
+    A("Drive & structure", "Anti-tip casters (D18/A10): spring-loaded ball transfer units at the 4 diagonals", 4, 4.0, "ESTIMATE")
+    A("Drive & structure", "Clock-spring ribbon stock (A3): 20 AWG silicone pairs, 26 AWG twisted pairs, slim USB, PET/Kapton carrier tape", 1, 30.0, "ESTIMATE")
     A("Drive & structure", "HTD 5M 15 mm closed belts (" + ", ".join(f"{j} {l} mm" for j, l in belts) + ") × 2 arms", 8, 9.0, "Bestorq 400-5M-15 $7.67 at MROSupply (loop 14); Gates ≈ $20–28")
     A("Drive & structure", "HTD 5M 15 mm open belt for the lift (2.4 m at $8.32/m) + 2 clamps", 1, 25.0, "Acorn listing")
     A("Drive & structure", "Al square tube 60×60×2, 1.1 m (mast), black anodised", 1, 45.0, "no US listing found: ESTIMATE")
     A("Drive & structure", "Carbon tubes Ø40×38 (0.5 m) + Ø30×28 (1 m), roll-wrapped", 1, 70.0, "eBay / Carbonwebshop listings")
     A("Drive & structure", '3" quick-release squeeze tri-clamp, 304 SS (arm detach; flange OD 90.9 mm confirmed)', 2, 25.0, "hosewarehouse (Dixon 13MHHM-Q300)")
-    A("Drive & structure", "Lift pawl solenoid 12 V + springs; balancer springs 3 N/mm + 2 mm UHMWPE cord", 1, 20.0)
+    A("Drive & structure", "Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards", 1, 35.0, "ESTIMATE")
+    A("Drive & structure", "Balancers (A9): 2 × ISO 10243 light die spring Ø25 × 115 + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
     A("Drive & structure", "Fasteners, heat-set inserts, epoxy, grease", 1, 60.0)
     A("Printed parts", f"PETG {pp['kg']:.1f} kg + 20 % spare (print_plan.md)", 1, round(pp["kg"] * 1.2 * 20, 0))
+    A("Printed parts", "ASA 2 kg (A6: motor cans, KX hubs/collars and D13 hubs near motors)", 1, 40.0)
     return I
+
+
+CONTINGENCY = 0.15      # A16 (review finding 18): price drift, shipping, tax
 
 
 def report(d=BASELINE):
     I = items(d)
+    sub = sum(q * u for _, _, q, u, _ in I)
+    I.append(("Contingency (A16)", f"{CONTINGENCY:.0%} for price drift, shipping and tax", 1, round(sub * CONTINGENCY, 0), "review finding 18"))
     tot = sum(q * u for _, _, q, u, _ in I)
     cats = {}
     for c, _, q, u, _ in I:
         cats[c] = cats.get(c, 0) + q * u
     L = ["# Bill of materials v4 (auto-generated by `python -m rnd.bom`)", "",
-         f"**Total ≈ ${tot:,.0f}** (target ≤ $4,000 since D9 (owner: sensors over savings), was $3,300; limit $5,000; excludes the owner's Pi 5 and tools). Single-unit online prices; hardware lines are ESTIMATEs.", "",
+         f"**Total ≈ ${tot:,.0f} landed** (${sub:,.0f} + {CONTINGENCY:.0%} contingency; target ≤ $4,000 since D9 (owner: sensors over savings); limit $5,000; excludes the owner's Pi 5 and tools). Single-unit online prices; hardware lines are ESTIMATEs.", "",
          "| Category | Subtotal |", "|---|---|"] + [f"| {c} | ${v:,.0f} |" for c, v in cats.items()] + [
          "", "| Category | Item | Qty | Unit $ | Line $ | Source |", "|---|---|---|---|---|---|"]
     L += [f"| {c} | {n} | {q} | {u:,.2f} | {q * u:,.0f} | {s} |" for c, n, q, u, s in I]

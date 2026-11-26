@@ -4,8 +4,9 @@
 
 ```
 6S 10 Ah pack (BMS ≥ 30 A cont.) ─ XT60 ─ MAIN FUSE 40 A ─┬─ LOGIC branch (always on): 5 V 5 A DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters
-                                                         │                            12 V 10 A DC-DC → STS3215 servos (via servo relay)
-                                                         └─ E-STOP CONTACTOR (24 V coil through: torso mushroom + base mushroom + optional wireless)
+                                                         └─ PRE-CHARGE (22 Ω 25 W, 0.5 s) ∥ E-STOP CONTACTOR (coil through: torso + base mushrooms, watchdog relay)
+                                                              ├─ REGEN CLAMP on the motor bus: 26.5 V shunt (MOSFET + 10 Ω 50 W) + 33 V TVS (A5)
+                                                              ├─ 12 V 10 A DC-DC → STS3215 servos (A5: now downstream of the contactor)
                                                               ├─ F 20 A → base: 4 wheel cartridges (CAN bus A)
                                                               ├─ F 10 A → lift cartridge + pawl solenoid (CAN bus A)
                                                               ├─ F 15 A → left arm via detach plug (CAN bus B, TTL bus 1)
@@ -34,28 +35,35 @@ Typical draw is far lower: the duty-cycle power budget averages **55 W ≈ 2.5 A
 
 **Battery requirement (new finding):** the pack's BMS must allow **≥ 30 A continuous and about 69 A for ~1 s**. Cheap 6S packs often have 10–15 A BMS boards (components.yaml), which would trip on arm or threshold peaks. Buy a scooter or power-tool class pack, or build one around a 40 A BMS.
 
-## E-stop behaviour
-- **Mushrooms (torso back, base rear) open the contactor coil loop.** Motor power drops and logic stays up, so the robot can log and report.
-- **Torso:** the lift pawl is spring-applied, so it drops in and the torso holds.
-- **Arms:** they go limp, and the shoulder balancer plus belt friction slow the fall. Firmware does a *safe stop 1* first: a controlled stop in 300 ms, then the contactor opens. Hardware drops power regardless after 0.5 s (contactor coil hold-up capacitor sized for that).
+## E-stop behaviour (A5, loop 40: external review finding 6)
+- **Two-channel mushrooms (torso back, base rear).** Channel 1 opens the contactor coil loop directly (hardware, no software in the path). Channel 2 tells the Pi and the sensor nodes, which command a controlled stop. Motor power drops; logic stays up to log and report.
+- **Stop category:** loop 39 had a *safe stop 1* with a 0.5 s capacitor hold-up. A capacitor delay is not a dependable timer, so the **default is now category 0** (power cut at once). The arms go limp; the balancer and belt friction slow the fall (≈ 0.3 s to the stop at the hanging pose; a 1 kg payload is released by the gripper's own back-drive). SS1 can return later with a rated delay relay.
+- **Everything that moves is downstream of the contactor:** loop 39 fed the 12 V servo converter from the logic branch, so the wrists, grippers and head kept power in an e-stop. It now sits after the contactor.
+- **Pre-charge:** 13 motor drivers put several mF on the bus. Closing straight onto them welds contactor tips over time, so a 22 Ω resistor charges the bus for 0.5 s first (the reset button starts a timer relay).
+- **Regen clamp:** the GIM6010 drivers are rated to 28 V, and a full pack is 25.2 V. A decelerating or back-driven arm pumps the bus up when the BMS won't take charge (full pack) or after the contactor opens. A 26.5 V shunt regulator (comparator, MOSFET, 10 Ω 50 W aluminium resistor) plus a 33 V TVS hold the bus. **On the M1 bench this is mandatory:** a bench power supply can't sink current at all.
+- **Watchdog:** the Pi's control loop toggles a watchdog input on the e-stop relay board; if the loop stalls for 50 ms the contactor opens (SW2).
+- **Torso:** the lift pawl is spring-applied, so it drops in and the torso holds (A15 reviews the pawl itself).
+- Not a certified safety function. The bench arm runs inside a marked keep-out zone until SW2 is measured.
 
 ## Data buses
 | Bus | Members | Rate | Load at 500 Hz |
 |---|---|---|---|
-| CAN A (USB-CAN #1) | 4 wheels + lift (5 nodes) + D11 face screen (status/commands at ≤ 50 Hz: stop, hold, home, jog, teach, status) | 1 Mbps | ~66 % (2 frames × ~130 bit × 5 nodes × 500 Hz, screen < 1 %) |
-| CAN B (USB-CAN #2) | left arm: 4 GIM + DM-J4310 | 1 Mbps | ~65 % |
-| CAN C (USB-CAN #3) | right arm: 4 GIM + DM-J4310 | 1 Mbps | ~65 % |
-| TTL 1 / TTL 2 / TTL 3 | left wrist roll + gripper / right ditto / head pan + tilt | 1 Mbps half-duplex | light |
-| Sensor nodes (on CAN A/B/C) | per arm: 4 joint-side AS5048A encoders (SPI) + 2 fingertip magnetometers + palm ToF (I²C); base: lift encoder + 4 cliff ToF | 500 Hz | +~10 % per bus |
+| CAN A | 4 wheels + lift + base sensor node + D11 screen (≤ 50 Hz) | 1 Mbps, **250 Hz** | 39% |
+| CAN B1 / C1 (one per arm) | shoulder pitch, roll, yaw + the encoder frame of the elbow node | 1 Mbps, 500 Hz | 46% |
+| CAN B2 / C2 (one per arm) | elbow + DM-J4310 wrist pitch + the elbow node (tactile/ToF frame, TTL bridge for wrist roll + gripper, D14) | 1 Mbps, 500 Hz | 46% |
+| TTL 3 | head pan + tilt (torso node) | 1 Mbps half-duplex | light |
+| *Loop 39 layout, for reference* | *one bus per arm: 5 motors + node at 500 Hz (with D14's bridge)* | | *91%: too high (review finding 15)* |
+
+**A14 (loop 40):** each arm gets two CAN channels (≈ 45 % each, room for retries and jitter) and the base runs at 250 Hz. Five channels in all: a 2-channel CAN HAT on the Pi + 3 USB-CAN adapters (candleLight class). **M1 needs 2 channels** (one arm). Load model: 2 frames per motor per cycle (command + reply) and node frames, ≈ 130 bit per 8-byte frame with stuffing.
 | USB3 | head RGB-D (Gemini 2), 2 wrist cameras, lidar | – | Pi 5 has 2 × USB3; use a powered USB3 hub |
 
 ## Connectors
 | Interface | Power | Signal |
 |---|---|---|
-| Arm detach plug (blind-mate, floats in a printed mount beside the V-band) | XT30 (24 V, 15 A branch) | 6-pin 2 mm pogo block: CAN H/L, 12 V, GND, TTL data, ID strap |
+| Arm detach plug (blind-mate, floats in a printed mount beside the V-band) | XT30 (24 V, 15 A branch) | 6-pin 2 mm pogo block: CAN1 H/L, CAN2 H/L, GND, ID strap (loop 40: D14 + A14; 12 V and TTL are made in the arm) |
 | Upper ↔ base coupling (under the cam lever) | XT60 | 6-pin pogo: CAN A H/L, e-stop loop ×2, 5 V sense, GND |
 | Battery slide-out | XT60 (keyed) | balance lead to the charger only |
 | Dock contacts (skirt at 45°, flush brass pads) | + at 60 mm, − at 100 mm, 60 × 12 mm pads, 5 A | ID pad at 40 mm → base sensor node (handshake, stop-charge command) |
 | Every joint cartridge | 2-pin JST-VH (24 V) or GH (12 V) | 4-pin JST-GH CAN/TTL daisy chain |
 
-**Cable routing (loop 32, rnd/harness.py):** torsion through the short shaft bores can't absorb the joint ranges (cable rated ~±360°/m). Every joint crossing uses a **clock-spring spiral** (S ≈ 0.6 m) in an annular cavity around the joint axis. No slip rings. D12 keeps the stiffest cable at Ø2.2 mm: the wrist camera is MIPI-CSI on a flat-flex through the wrist, with a USB bridge on the forearm. The yaw (limited to ±70°, loop 33) is crossed in torsion over ≈ 0.24 m between clamps. See [harness.md](harness.md).
+**Cable routing (loop 32, rnd/harness.py):** torsion through the short shaft bores can't absorb the joint ranges (cable rated ~±360°/m). Every joint crossing uses a **clock-spring spiral** in an annular cavity around the joint axis. No slip rings. D12 keeps the stiffest cable at Ø2.2 mm: the wrist camera is MIPI-CSI on a flat-flex through the wrist, with a USB bridge on the forearm. Loop 40: yaw back to ±150° with a real clock-spring cassette; **D14:** the elbow node makes 12 V and drives the TTL servo bus, so only 24 V, CAN (two pairs, A14) and USB cross the shoulder joints. See [harness.md](harness.md).

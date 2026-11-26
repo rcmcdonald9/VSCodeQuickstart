@@ -1,1 +1,1 @@
-{"torque_ok": 21, "torque_n": 21, "module_clashes": 0, "module_clash_list": []}
+{"torque_ok": 21, "torque_n": 21, "module_clashes": 4, "module_clash_list": [["base", "w0_hub", "w0_shaft", 643], ["base", "w90_hub", "w90_shaft", 643], ["base", "w180_hub", "w180_shaft", 643], ["base", "w270_hub", "w270_shaft", 643]]}
