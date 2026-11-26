@@ -58,9 +58,9 @@
 
 | Mode | W | Share of time |
 |---|---|---|
-| standby (arms parked, base still) | 27 | 50% |
-| manipulating (arms holding/moving light objects) | 72 | 35% |
-| driving on carpet + arms parked | 57 | 15% |
-| **weighted average** | **47** | |
+| standby (arms parked, base still) | 32 | 50% |
+| manipulating (arms holding/moving light objects) | 77 | 35% |
+| driving on carpet + arms parked | 62 | 15% |
+| **weighted average** | **53** | |
 
-Runtime on 222 Wh (85 % usable): **4.0 h** (R7 target 2 h, limit 1 h).
+Runtime on 222 Wh (85 % usable): **3.6 h** (R7 target 2 h, limit 1 h).

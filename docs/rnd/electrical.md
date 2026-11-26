@@ -23,7 +23,7 @@
 | Reserved: 24 → 19 V 3 A DC-DC → Jetson-class AI computer (D10, AI phase) | 0.8 | 1.2 | 3 |
 | **Pack** | **32.6** | **69** (diversity 0.6) | main 40 |
 
-Typical draw is far lower: the duty-cycle power budget averages **47 W ≈ 2.1 A** (runtime 4.0 h on 222 Wh).
+Typical draw is far lower: the duty-cycle power budget averages **53 W ≈ 2.4 A** (runtime 3.6 h on 222 Wh).
 
 **Battery requirement (new finding):** the pack's BMS must allow **≥ 30 A continuous and about 69 A for ~1 s**. Cheap 6S packs often have 10–15 A BMS boards (components.yaml), which would trip on arm or threshold peaks. Buy a scooter or power-tool class pack, or build one around a 40 A BMS.
 

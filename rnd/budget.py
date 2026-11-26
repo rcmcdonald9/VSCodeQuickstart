@@ -56,9 +56,11 @@ def actuator_cost(d: Design = BASELINE):
 
 def power_budget(d: Design = BASELINE):
     """Average electrical power per mode (W). ESTIMATES until Phase-1 measurements."""
-    electronics = 5 + 3 + 1.5 + 1 + 3   # Pi 5, cameras, lidar, display, CAN/DC-DC losses
-    servo_idle = 10 * 0.6               # STS + Damiao idle electronics (ESTIMATE)
-    gim_idle = 9 * 0.8                  # GIM SDC104 idle (ESTIMATE)
+    # refreshed after D9/D10 (sensor pack v2, Pi 5 at ~73 % load); all ESTIMATE until measured on the M1 bench arm
+    electronics = 1.1 * (7.0 + 2.5 + 1.5 + 1.2 + 1.5 + 2.0)   # Pi 5 loaded, Gemini 2, 2 wrist cams, lidar, RP2040 nodes +
+    #                                                           encoders/tactile/ToF, IMU/flow/LEDs/audio; ×1.1 DC-DC losses
+    servo_idle = 8 * 0.6                # 2 DM-J4310 + 6 STS3215 idle electronics (ESTIMATE)
+    gim_idle = 13 * 0.8                 # 13 GIM SDC104 (8 arm + 4 wheels + lift) idle (ESTIMATE)
     modes = {
         "standby (arms parked, base still)": electronics + servo_idle + gim_idle,
         "manipulating (arms holding/moving light objects)": electronics + servo_idle + gim_idle + 45,

@@ -11,7 +11,7 @@
 | R3 assembled upper (core + arms, for reference) | 15.5 kg | info | — |
 | R3 base module mass | 6.3 kg | ≤ 8 kg (piece limit 10) | ✅ |
 | R3 battery mass | 1.1 kg | ≤ 3 kg | ✅ |
-| R7 runtime (estimated duty cycle) | 4.0 h | ≥ 2 h | ✅ |
+| R7 runtime (estimated duty cycle) | 3.6 h | ≥ 2 h | ✅ |
 | R8 cost, parametric estimate (superseded by the BOM row) | $2,912 (actuators $1,617 ×21) | info | — |
 | R9 KX interface slip torque / actuator peak (min) | 1.16× | ≥ 1.1× | ✅ |
 | R2 min joint margin, whole workspace (rated / 95th pct, 1 kg) | 1.50× | ≥ 1.5× | ✅ |

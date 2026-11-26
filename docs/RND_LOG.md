@@ -784,3 +784,11 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
 - **FEA:** roll link 6.0× → 6.5× (0.61 mm), clevis 3.2× (1.87 mm).
 - **Results:** torque pins 7/21 → **11/21**. Module clashes 8, unchanged; no new overlaps. Scorecard 33 ✅ / 3 ❌.
 - **Next:** elbow (with queue item 3: collar and forearm clashes), then wrist pitch/roll and head pan/tilt (these need slots in walls the pins currently run into).
+
+## 2026-11-26: power budget refreshed (owner question: battery life)
+
+- `budget.power_budget` was stale (pre-D9/D10, and it counted 9 GIMs instead of 13).
+- **Electronics:** 13.5 → 17.3 W (Pi 5 loaded, Gemini 2, wrist cameras, lidar, sensor nodes, ×1.1 DC-DC losses).
+- **Actuator idle:** 13 GIM × 0.8 W + 8 servos × 0.6 W.
+- **Average:** 47 → 52.7 W; **runtime 4.0 → 3.6 h** on the 222 Wh pack (85 % usable). R7 ≥ 2 h still passes.
+- With the future AI computer (~12 W average, ESTIMATE): ≈ 2.9 h. Non-stop manipulation: 2.4 h (2.1 h with AI). Standby only: 5.8 h.
