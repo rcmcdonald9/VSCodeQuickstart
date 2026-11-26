@@ -102,6 +102,10 @@ def _confidence_rows():
         a = json.loads(f.read_text())
         rows.append(("Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip)", f"{a['ok']}/{a['n']} (95 % LB {a['lb95']:.0%}), worst pad error {a['lat_max_mm']:.0f} mm",
                      "LB ≥ 90 %, within ±25 mm", a["lb95"] >= 0.9 and a["lat_max_mm"] <= 25))
+    f = DOCS / "harness.json"
+    if f.exists():
+        a = json.loads(f.read_text())
+        rows.append(("Cable routing: joints the arm bundle can cross over their full range (rnd/harness.py)", f"{a['ok']}/{a['n']}", "all", a["ok"] == a["n"]))
     f = DOCS / "threshold_mc.json"
     if f.exists():
         a = json.loads(f.read_text())

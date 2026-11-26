@@ -962,3 +962,14 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   4. BOM cost pass ($96 headroom)
   5. electronics thermal in the torso
   6. twin v2
+
+## Loop 32 (2026-11-26): cable routing across the joints (harness analysis) → D12
+
+- **`rnd/harness.py`:** per joint, compare torsion through the bore (cable ~±360°/m, ESTIMATE) with a clock-spring spiral, using capacity Δθ = S·(1/r_in − 1/r_out) and bend radius 10 × OD.
+- **Finding 1:** no joint can rely on torsion through its bore (free lengths 30–200 mm vs 160–500 mm needed). The electrical note "through the hollow shafts, no slip rings" was not enough on its own. Every joint needs a clock-spring spiral.
+- **Finding 2:** the camera's stock Ø3.8 USB cable (bend r 38 mm) fits through neither wrist joint.
+  - **D12:** a MIPI-CSI camera on an FFC through the wrist, a CSI→USB bridge on the forearm, and a slim 4-core USB (≤ Ø2.2) onward.
+  - Crossable joints: 3/6 → **5/6**.
+- **Finding 3 (open):** **the yaw joint has no cavity for a spiral.** The belt runs between the yaw plates, and the plates sit 2 mm from the roll pulley and the arm flange. Queue item 1 evaluates a 12 mm spiral cassette (yaw_drop +12) vs limiting yaw to ±70°, against R1.
+- **Harness kit:** segment table (lengths, connectors) in docs/rnd/harness.md.
+- **Results:** new scorecard row "cable routing 5/6" (❌) → scorecard 38 ✅ / 2 ❌. An honest new gap.

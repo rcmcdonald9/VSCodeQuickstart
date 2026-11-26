@@ -89,7 +89,10 @@ def report(d=BASELINE):
           "| Battery slide-out | XT60 (keyed) | balance lead to the charger only |",
           "| Dock contacts (skirt at 45°, flush brass pads) | + at 60 mm, − at 100 mm, 60 × 12 mm pads, 5 A | ID pad at 40 mm → base sensor node (handshake, stop-charge command) |",
           "| Every joint cartridge | 2-pin JST-VH (24 V) or GH (12 V) | 4-pin JST-GH CAN/TTL daisy chain |", "",
-          "Cables run through the hollow shafts (Ø24–30 bores) and over service loops. Every joint stays within ±200°, so no slip rings are needed."]
+          "**Cable routing (loop 32, rnd/harness.py):** torsion through the short shaft bores can't absorb the joint ranges (cable rated ~±360°/m). "
+          "Every joint crossing uses a **clock-spring spiral** (S ≈ 0.6 m) in an annular cavity around the joint axis. No slip rings. "
+          "D12 keeps the stiffest cable at Ø2.2 mm: the wrist camera is MIPI-CSI on a flat-flex through the wrist, with a USB bridge on the forearm. "
+          "Open: the yaw joint has no spiral cavity yet (see the queue). See [harness.md](harness.md)."]
     return "\n".join(L), cont, peak
 
 

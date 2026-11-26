@@ -73,6 +73,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | D9 | **Sensors favour accuracy and dexterity over cost** (owner, 2026-11-25). Sensor pack v2: joint-side absolute encoders on the 8 arm belt joints + lift (hand error 4.0 → 0.9 mm); global-shutter wrist cameras; magnetic-elastomer fingertip tactile pads (AnySkin/ReSkin principle); palm ToF; base cliff ToF; optical flow kept; 3 RP2040 CAN sensor nodes. +$276 | New (loop 15) | [accuracy](rnd/accuracy.md), [BOM](rnd/BOM_v4.md) |
 | D10 | **Compute:** the owner's Pi 5 runs I/O, real-time supervision, IK and state estimation (≈ 73 % of 4 cores, ESTIMATE). The torso **reserves a bay + 19 V 3 A branch + Ethernet for a Jetson-class AI computer**, bought in the AI phase (~$249) | New (loop 17) | [compute](rnd/compute.md) |
 | D11 | **Head face screen + touch panel** (owner, 2026-11-26). A bar-format LCD (~7–8", to fit the 196 × 66 mm visor; panel dimensions to verify) shows the face (the eyes are drawn on it) and status, and gives touch controls: pause/resume, home/park, joint jog, teach mode, task pick, and a STOP command. It runs on **its own ESP32-S3-class node on the CAN bus**, not on the Pi, so it still works if the Pi hangs, and the cable to the fixed head is power + one CAN pair. **The hard-wired torso e-stop stays the safety device**; the screen's STOP is a command beside it, not instead of it. ~$50–90, ~+150 g at the mast top, ~2–3 W | Adopted; design in queue item 5 | owner Q&A 2026-11-26 |
+| D12 | **Cable routing: a clock-spring spiral at every joint; slim bundle.** Torsion through the short shaft bores can't absorb the ranges (cable ~±360°/m). The wrist camera becomes MIPI-CSI on an FFC through the wrist, with a CSI→USB bridge on the forearm and a slim 4-core USB (≤ Ø2.2) onward. The stiffest cable is then Ø2.2 mm (bend r 22 mm). | Adopted (loop 32); yaw cavity open | [harness.md](rnd/harness.md) |
 | D6 | Toolchain: build123d CAD, MuJoCo twin generated from `rnd/params.py`, **arm collision geometry from CAD hulls** (`rnd/parts/collision.py`, loop 6), Blender renders | Holding | `rnd/` |
 | D4c | **Belt stages: HTD 5M, 15 mm, 20T small pulley** (pitch 20:50, roll 20:60, elbow 20:40), printed pulleys, the small pulley on its own bearing hub. **Elbow motor stays at the elbow:** a remote motor on a long belt (Blue-style) was evaluated and rejected (–0.5 N·m at the shoulder, +0.24 kg) | New (loop 3) | [belts](rnd/belts.md) |
 | D7 | **Power bus 24 V (6S Li-ion)**, replacing 48 V | Holding | [T01](rnd/T01_specs.md) |
@@ -87,7 +88,12 @@ Each scheduled run (and any interactive session) does one **loop**:
 
 Next (fresh critique after loop 31: torque paths 21/21, module clashes 0, docking and face screen designed, every confidence Monte Carlo passing; **scorecard 38 ✅ / 1 ❌, R10 build time only**). The hourly loop works top-down:
 
-1. **Cable routing in CAD (build-enabling, and the biggest R10 lever).** Model the harness:
+1. **Yaw cable crossing (from loop 32, blocks the routing check: 5/6).** The belt fills the space between the yaw plates, and there is no gap above or below. Evaluate against R1 reach / workspace margin:
+    - (a) a 12 mm clock-spring cassette under the yaw block (yaw_drop 0.100 → 0.112)
+    - (b) limit yaw to about ±70° (torsion over the 0.2 m neck run)
+
+    Then put the spiral cassettes in CAD at every joint (pitch, roll, elbow, wrist pitch, wrist roll).
+1b. *(Loop 32 done: rnd/harness.py analysis, D12, harness-kit segment table in harness.md.)* **Cable routing in CAD (build-enabling).** Model the harness:
     - paths through the hollow shafts (pitch Ø30, elbow Ø30, yaw Ø28 bores), service loops at each joint for its full range
     - the arm detach plug mount beside the V-band, the upper↔base coupling plug
     - torso e-tray ↔ shoulder ports, the head CAN/24 V drop along the mast

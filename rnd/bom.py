@@ -38,7 +38,7 @@ def items(d=BASELINE):
     A("Compute & sensors", "Bus-servo TTL adapter", 3, 8.0)
     A("Compute & sensors", "Powered USB3 hub", 1, 25.0)
     A("Compute & sensors", "Head RGB-D camera (Orbbec Gemini 2: 0.15–10 m, global-shutter IR, 98 g)", 1, 234.0, "store.orbbec.com (loop 14); Gemini 336 was $310")
-    A("Compute & sensors", "Wrist USB camera, global shutter (OV9281 class), no motion blur on moving grasps", 2, 55.0, "T01: good ones $60–155; ESTIMATE")
+    A("Compute & sensors", "Wrist camera (D12): global-shutter OV9281-class MIPI-CSI module + FFC through the wrist + CSI→USB (UVC) bridge on the forearm + slim 4-core high-flex USB (OD ≤ 2.2 mm)", 2, 55.0, "T01: USB versions $60–155; CSI module + bridge ESTIMATE")
     # --- sensor pack v2 (owner, loop 15: favour accuracy + dexterity over cost) ---
     A("Sensor pack v2", "Joint-side absolute encoders AS5048A + diametric magnets (8 arm belt joints + lift) → hand error 4.0 → 0.9 mm", 9, 12.0, "ESTIMATE")
     A("Sensor pack v2", "Sensor nodes: RP2040 + CAN transceiver (one per arm at the elbow, one in the base)", 3, 10.0, "ESTIMATE")

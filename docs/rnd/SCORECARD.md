@@ -26,7 +26,7 @@
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.2× (4.9 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md) | 22 h | ≤ 4 h | ❌ |
-| R8 cost from the itemised BOM (BOM_v4.md) | $3,904 | ≤ $4,000 (D9; limit $5,000) | ✅ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $3,903 | ≤ $4,000 (D9; limit $5,000) | ✅ |
 | R13 printed pieces that fit the P2S (256 mm) | 64/64 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
@@ -38,6 +38,7 @@
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 68 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
 | FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.2× (8 cases, max disp 1.91 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip) | 100/100 (95 % LB 96%), worst pad error 19 mm | LB ≥ 90 %, within ±25 mm | ✅ |
+| Cable routing: joints the arm bundle can cross over their full range (rnd/harness.py) | 5/6 | all | ❌ |
 | Threshold/carpet Monte Carlo (5–15 mm, heading ±10°, 0.12–0.18 m/s, μ, mass, COM) | 55/55 (95 % LB 93%); 15–18 mm: 25/25 | LB ≥ 90 % | ✅ |
 | KX Monte Carlo (tolerances, μ, spring, 10-year PETG creep): slip below rated / below peak; twist p95 | 0.00% / 26%; 2.9 N·m | ≤ 0.1 % below rated; twist ≤ 3 N·m | ✅ |
 | Thermal: hottest motor, non-stop task day (MC worst corner) | 55 °C | ≤ 100 °C | ✅ |
