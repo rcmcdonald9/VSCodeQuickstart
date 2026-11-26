@@ -105,7 +105,10 @@ def run(lift=0.75):
             if not seats:
                 r_pin, seats = 2.0, _cyl_faces(p, 1.95)
             if not seats:
-                rows.append(("torque pin", n, None, "no pin seat found"))
+                if "grip_servo_sleeve" in nl:             # by design: no pin; the sleeve is screwed into grip_base (FUSED)
+                    rows.append(("torque pin", n, True, "no pin by design: sleeve screwed into grip_base, rectangular servo pocket"))
+                else:
+                    rows.append(("torque pin", n, None, "no pin seat found"))
                 continue
             c, ax = seats[0]
             cen = np.array([p.center().X, p.center().Y, p.center().Z])

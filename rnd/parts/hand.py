@@ -61,6 +61,11 @@ def cartridge_d_stack() -> float:
 
 # ---------------- palm + wrist roll ----------------
 def palm() -> Part:
+    from .torque import with_pin_slot
+    return with_pin_slot(wrist_roll_sleeve(), _palm_body(), 1.95, 2.0)             # loop 25: slotted pad for the wrist-roll cartridge's Ø4 torque pin
+
+
+def _palm_body() -> Part:
     p = Pos(0, 0, -6) * Rot(90, 0, 0) * Cylinder(30, 40)               # boss around the wrist axis (KX56 hub bolts on +Y)
     zb = SLEEVE_TOP - cs.SERVO["case_h"] - cs.SERVO["bottom"] - cs.FLOOR + 2      # palm bottom ≈ servo top face
     p += Pos(cs.SERVO["l"] / 2 - cs.SERVO["shaft_off"], 0, zb + (-6 - zb) / 2) * soft_box(64, 40, -6 - zb, 16, 10)   # looks pass v2

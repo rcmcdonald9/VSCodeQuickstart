@@ -86,12 +86,12 @@ Each scheduled run (and any interactive session) does one **loop**:
 - see [BUILD_v4.md](BUILD_v4.md)
 
 Next (state after the confidence campaign; the hourly loop continues from here). **Items 1–3 come first: they are real design gaps found by the new checks.**
-1. **Torque-reaction path for every cartridge** ([integration.md](rnd/integration.md): **15/21 after loop 24**; wheels: standard `cm.torque_hanger`; lift, shoulder pitch, roll, yaw: forks integral to the mount / bracket / roll link / clevis). Next (cartridge S, Ø4 pins): wrist roll ×2, head pan + tilt; the gripper servos are screwed in (mark n/a in the check). Done also: wrist pitch ×2; wrist roll ×2, head pan + tilt. Remaining from the original list: roll ×2, yaw ×2, elbow ×2. The wrist-pitch and head-tilt pins currently *run into* a wall (no slot): cut a radial slot there. Each can's Ø6 rear torque pin needs a radial slot in structure. Proposed standard part:
-    - an axial key rib along every can, engaging a radial notch in a printed **bay ring** on the nearest wall/plate
-    - or, where the can sits in free space, a **torque strap** from the nearest wall to the can rear
-    - stages: pitch ×2, roll ×2, yaw ×2, elbow ×2, wrist pitch ×2, wrist roll ×2, wheels ×4, lift, head pan
-    - FEA each slot at peak motor torque (GIM 11 N·m at r 30 → 367 N)
-    - make `rnd.integration` pass
+1. ~~Torque-reaction path for every cartridge~~ **done, 21/21** (loops 19–25):
+    - wheels: `cm.torque_hanger`
+    - lift, shoulder pitch, roll, yaw, elbow, wrist pitch: forks/pads integral to their structure
+    - small servos (wrist roll, head pan/tilt): `parts/torque.with_pin_slot`
+    - gripper servos: screwed into the rectangular pocket by design
+    - **Follow-up:** head tilt sleeve × head shell overlap (373 mm³, pre-existing; the head isn't yet in the module-clash check: add it); the 3 gripper-jaw overlaps and the 0.3 cm³ yaw-shaft sliver.
 2. ~~Shoulder pitch walls re-derived from the hub geometry~~ (done in loop 21).
 3. ~~Elbow clashes (collar, can, forearm) + elbow torque arm~~ (done in loop 23).
 4. **Self-docking charger (owner request, 2026-11-26).** Goal: the robot charges itself whenever idle, so the 3.6 h runtime rarely matters.

@@ -2,7 +2,7 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 12.9 kg of PETG (≈ $259 at $20/kg); 871 h generic ≈ 305 h on the P2S (≈ 12.7 days of continuous printing).**
+**Total: 13.0 kg of PETG (≈ $259 at $20/kg); 872 h generic ≈ 305 h on the P2S (≈ 12.7 days of continuous printing).**
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
@@ -26,7 +26,7 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | forearm (ends) | 2 | 287 | 17.8 | elbow end, wrist can, CF socket |
 | elbow pulley hub | 2 | 251 | 17.1 |  |
 | ratchet strip | 1 | 84 | 14.6 | 4 segments |
-| palm | 2 | 190 | 12.6 |  |
+| palm | 2 | 198 | 13.1 |  |
 | KX74 hub | 4 | 167 | 11.3 | wheel hubs, print-in-place with the collar (the 9 joint hubs are integral to the small-pulley hubs) |
 | yaw shaft | 2 | 123 | 8.3 | 40T pulley + flange |
 | mast coupling | 1 | 130 | 7.2 |  |
@@ -39,8 +39,8 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | visor | 1 | 69 | 4.7 | dark PETG |
 | cartridge D can | 2 | 67 | 4.6 |  |
 | upper bone cap | 2 | 56 | 4.6 | screw-on bottom cap: the cassette goes in from below |
+| yoke | 1 | 68 | 4.5 |  |
 | eccentric bushing | 18 | 57 | 4.3 | 2 per small-pulley hub: belt tension |
-| yoke | 1 | 66 | 4.3 |  |
 | KX56 collar | 2 | 52 | 3.7 |  |
 | KX56 hub | 2 | 53 | 3.6 | wrist pitch |
 | cartridge S horn adapter | 4 | 44 | 3.4 |  |

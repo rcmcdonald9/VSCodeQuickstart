@@ -33,7 +33,7 @@
 | forearm (ends) [1] | 59 × 65 × 95 | 39 | ✅ |
 | pitch shaft | 66 × 94 × 94 | 185 | ✅ |
 | pulley 60T | 16 × 94 × 94 | 107 | ✅ |
-| palm | 40 × 75 × 92 | 150 | ✅ |
+| palm | 40 × 75 × 92 | 149 | ✅ |
 | gripper grip_base | 10 × 91 × 91 | 44 | ✅ |
 | ferrule (arm side) | 18 × 91 × 91 | 67 | ✅ |
 | KX74 hub | 12 × 90 × 90 | 68 | ✅ |

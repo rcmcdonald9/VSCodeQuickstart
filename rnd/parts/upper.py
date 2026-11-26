@@ -135,6 +135,10 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     P = Pos(MAST_X, 0, yz) * Rot(0, 0, pan_deg)
     yoke = Box(60, 150, 8, align=MIN) + Pos(0, 71, 0) * Box(40, 8, 60, align=MIN) + Pos(0, -71, 0) * Box(40, 8, 60, align=MIN)
     tilt = Pos(0, 75, 40) * Rot(-90, 0, 0) * cs.sleeve()
+    # loop 25: slotted torque pads for the pan and tilt cartridges' Ø4 pins (rnd/parts/torque.py)
+    from .torque import with_pin_slot
+    top = with_pin_slot(pan, top, 1.95, 2.0)
+    yoke = with_pin_slot(tilt, yoke, 1.95, 2.0)
     T = Pos(0, 0, 40) * Rot(0, tilt_deg, 0)
     shell = Pos(70, 0, 5) * soft_shell(160, 244, 120, 55, 38, 2.4)                  # pill-shaped head
     shell -= Pos(150, 0, 8) * Box(20, 200, 70)                                       # visor opening

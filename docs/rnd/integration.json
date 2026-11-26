@@ -1,1 +1,1 @@
-{"torque_ok": 15, "torque_n": 21, "module_clashes": 4, "module_clash_list": [["arm", "hand_grip_base", "hand_jaw_moving", 91], ["arm", "hand_grip_servo_sleeve", "hand_jaw_moving", 327], ["arm", "hand_finray_fixed", "hand_wrist_cam", 63], ["roll/yaw", "yaw_block", "yaw_shaft", 283]]}
+{"torque_ok": 21, "torque_n": 21, "module_clashes": 4, "module_clash_list": [["arm", "hand_grip_base", "hand_jaw_moving", 91], ["arm", "hand_grip_servo_sleeve", "hand_jaw_moving", 327], ["arm", "hand_finray_fixed", "hand_wrist_cam", 63], ["roll/yaw", "yaw_block", "yaw_shaft", 283]]}

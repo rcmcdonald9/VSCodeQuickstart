@@ -843,3 +843,19 @@ Research agent + verified listings (AliExpress prices are search snapshots, so c
   - Torque pins 13/21 → **15/21**.
   - Scorecard 33 ✅ / 3 ❌: reach 99 %, twin 8/8, workspace margin 1.50×, 62/62 printable, 0 cross-module clashes.
 - **Next:** cartridge S (wrist roll ×2, head pan/tilt). Then queue item 4 (docking charger).
+
+## Loop 25 (2026-11-26): small-servo torque slots; torque reaction complete (21/21)
+
+- **New `rnd/parts/torque.py` → `with_pin_slot(can, anchor, …)`:**
+  - finds the pin from the can's seat geometry
+  - adds a slotted pad around the tip, plus a Ø10 bridge to the anchor if they don't touch
+  - cuts the slot through pad *and* anchor (the pan pin had been boring into the solid head bracket)
+  - keeps the can itself clear
+- **Applied to:** head pan (head bracket), head tilt (yoke), wrist roll ×2 (palm).
+- **Gripper servo sleeves:** no pin by design (screwed into the rectangular pocket); the check now records that.
+- **Results:**
+  - Torque pins 15/21 → **21/21**.
+  - Scorecard **33 → 34 ✅, 3 → 2 ❌** (R10 build time, module clashes 4).
+  - No new clashes in the head or hand.
+- **Queue item 1 closed.**
+- **Next:** queue item 4, the self-docking charger.
