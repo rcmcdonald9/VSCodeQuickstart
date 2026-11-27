@@ -4,7 +4,7 @@ MuJoCo, planar. The base is a 25 kg disc of R 0.25 m on x/y slides + a yaw hinge
 limited to the wheel peak (approach) or to a soft limit (final push).
 
 The dock is a printed V block. Its two faces are at ±DOCK_V_DEG to the dock axis, with the spring contacts on the
-centre line, and it is screwed to the floor. The robot's contact pads sit on the skirt at azimuth PAD_AZ (between two
+centre line; it was screwed to the floor (finding 12: now a baseplate the robot's wheels hold down, see *Contacts and retention*). The robot's contact pads sit on the skirt at azimuth PAD_AZ (between two
 wheels, in view of the head camera).
 
 Each run draws:
@@ -35,6 +35,22 @@ R = 0.25
 DOCK_V_DEG = 60.0          # V faces at ±60° to the dock axis (loop 26: ±40° with 0.2 m faces never touched the R 0.25 disc on its faces)
 CAPTURE = 0.025            # pads 60 mm wide vs 8 mm spring leaves → ±25 mm lateral (loop 26: 40 → 60 mm, yaw error dominates)
 PAD_AZ = math.radians(45)  # contact pads on the skirt between the wheels at 0° and 90°
+
+# --- Contact geometry and retention (Neon review #2 finding 12, 2026-11-27). The CAD (rnd/parts/base.py DOCK_PADS +
+# dock_pad_carrier, rnd/parts/dock.py tower / wings) belongs to the CAD track: these are the numbers it has to adopt. ---
+PADS_V1 = (("ID", 40.0, 10.0), ("+", 60.0, 12.0), ("−", 100.0, 12.0))      # (name, centre z, height) mm: the CAD today
+PADS_V2 = (("ID", 40.0, 28.0), ("+", 84.0, 28.0), ("−", 128.0, 28.0))      # proposed: 28 mm tall, 44 mm pitch (16 mm gaps)
+PAD_W = 60.0                       # pad width (mm): sets the ±25 mm lateral capture above; unchanged (stacking stays vertical)
+SKIRT_Z = (25.0, 155.0)            # skirt span above the floor (params: clearance 25 + height 130)
+PATCH = 4.0                        # contact patch height of a leaf / the pogo tip (mm, ESTIMATE)
+DZ_BUDGET = dict(carpet=8.0, floor=2.0, tilt=1.0)   # vertical misalignment, worst case (mm, ESTIMATE): carpet sink difference, floor, base pitch
+F_LEAF, N_LEAF, F_POGO = 5.0, 2, 1.0                # dock contact forces (N, ESTIMATE; dock_pad_carrier: ~5 N leaves)
+CRR_OMNI = 0.02                    # rolling resistance of an unbraked 6" omni wheel, drives off (ESTIMATE, hard floor)
+ROBOT_KG = 25.26                   # docs/rnd/budget.md total
+WHEEL_R, R_W = 76.2, 210.0         # mm: 6" omni, contact points from the centre (params.base)
+GROOVE_H = 4.0                     # wheel-cradle groove depth in the dock baseplate (mm)
+MU_FEET = 0.6                      # baseplate rubber feet on hard floor (ESTIMATE)
+F_PUSH = 60.0                      # dock_sim final-push force limit (N, actuator forcerange below)
 
 
 def xml():
@@ -116,6 +132,64 @@ def run_one(rng, video=False):
     return dict(ok=bool(ok), lat_mm=float(pad[1] * 1000), yaw_deg=float(math.degrees(yaw_err)), gap_mm=float(gap * 1000), t=t, phase=phase, ntouch=len(touching), pos=(round(float(p[0]), 3), round(float(p[1]), 3)))
 
 
+def contact_design():
+    """Pad window, short-circuit margin and retention for the pad layouts (finding 12)."""
+    out = {}
+    budget = sum(DZ_BUDGET.values())
+    for tag, pads in (("v1 (CAD today)", PADS_V1), ("v2 (proposed)", PADS_V2)):
+        P = {n: (z, h) for n, z, h in pads}
+        win = min(h / 2 - PATCH / 2 for _, h in P.values())                 # vertical shift a contact tolerates and stays on its pad
+        z_id, h_id = P["ID"]; z_p, h_p = P["+"]
+        reach_id = (z_p - z_id) - h_id / 2 - PATCH / 2                      # shift that puts the + leaf on the ID pad
+        gap = min(abs(a[0] - b[0]) - a[1] / 2 - b[1] / 2 for a in P.values() for b in P.values() if a is not b)
+        lo, hi = min(z - h / 2 for z, h in P.values()), max(z + h / 2 for z, h in P.values())
+        out[tag] = dict(win=win, reach_id=reach_id, short_margin=reach_id - win, gap=gap, span=(lo, hi),
+                        fits=lo >= SKIRT_Z[0] and hi <= SKIRT_Z[1], ok_win=win >= budget)
+    F_back = N_LEAF * F_LEAF + F_POGO
+    N_w = ROBOT_KG * 9.81 / 4
+    F_roll = ROBOT_KG * 9.81 * CRR_OMNI
+    phi = math.acos(1 - GROOVE_H / WHEEL_R)
+    F_hold_w = N_w * math.tan(phi)                                          # per wheel along its rolling direction
+    F_need_w = 1.5 * F_back * math.cos(PAD_AZ)                              # 1.5 × the pushback, projected on each wheel (pads at 45° between them)
+    x_w = R / math.sin(math.radians(DOCK_V_DEG)) * 1000 - R_W * math.cos(PAD_AZ)
+    y_w = R_W * math.sin(PAD_AZ)
+    return dict(layouts=out, budget=budget, F_back=F_back, F_roll=F_roll, N_w=N_w, phi=math.degrees(phi), F_hold_w=F_hold_w,
+                F_need_w=F_need_w, F_plate=2 * N_w * MU_FEET, x_w=x_w, y_w=y_w)
+
+
+def contact_lines():
+    c = contact_design()
+    ok = lambda b: "✅" if b else "❌"
+    L = ["## Contacts and retention (Neon review #2 finding 12)", "",
+         "**Verified in part.** The review's 8 mm gap between the ID pad (34–46 mm) and the + pad (54–66 mm) is right, but the short it describes cannot happen "
+         "on a vertical shift alone: the ID pogo and the + leaf sit on the same dock tower and move together, and the dock's output is off until the ID handshake "
+         "passes. For the + leaf to land on the ID pad the ID pogo must already be off its pad (no handshake, no output). What the small pads do cause is a "
+         "**missed charge**: a contact stays on its pad only for a few mm of vertical error, less than a carpet's sink. The retention point is right: with the "
+         "drives off nothing holds the unbraked omni base against the leaf springs, and floor screws are not a consumer install.", "",
+         "| Pad layout (centre z / height mm) | Vertical window per contact | Shift that puts + on the ID pad | Margin (shift − window) | Smallest pad gap | Span (skirt 25–155) | Window ≥ worst-case error ({:.0f} mm) |".format(c["budget"]),
+         "|---|---|---|---|---|---|---|"]
+    for (tag, x), pads in zip(c["layouts"].items(), (PADS_V1, PADS_V2)):
+        L.append(f"| {tag}: " + ", ".join(f"{n} {z:.0f} / {h:.0f}" for n, z, h in pads) + f" | ±{x['win']:.1f} mm | {x['reach_id']:.1f} mm | {x['short_margin']:.1f} mm | "
+                 f"{x['gap']:.0f} mm | {x['span'][0]:.0f}–{x['span'][1]:.0f} {ok(x['fits'])} | {ok(x['ok_win'])} |")
+    L += ["", "Worst-case vertical error (ESTIMATE): " + " + ".join(f"{k} {v:.0f}" for k, v in DZ_BUDGET.items()) + f" = {c['budget']:.0f} mm. "
+          f"Contact patch {PATCH:.0f} mm (ESTIMATE). The pads stay stacked vertically: side-by-side pads 40 mm wide would cut the lateral capture to "
+          f"±{(40 - 8) / 2:.0f} mm, under the Monte Carlo's {19:.0f} mm worst lateral error.", "",
+          "| Retention | Value | Need | |", "|---|---|---|---|",
+          f"| Contact pushback ({N_LEAF} leaves × {F_LEAF:.0f} N + pogo {F_POGO:.0f} N, ESTIMATE) vs rolling resistance of the unbraked base ({ROBOT_KG:.1f} kg, C_rr {CRR_OMNI}) | "
+          f"{c['F_back']:.0f} N vs {c['F_roll']:.1f} N | resistance > pushback | {ok(c['F_roll'] > c['F_back'])} (the review is right: it rolls off) |",
+          f"| Wheel cradle: {GROOVE_H:.0f} mm groove under each of the two wheels flanking the pads (wheel r {WHEEL_R:.0f} mm, {c['N_w']:.0f} N each; climb angle {c['phi']:.1f}°) | "
+          f"{c['F_hold_w']:.0f} N per wheel along its rolling direction | ≥ 1.5 × pushback × cos 45° = {c['F_need_w']:.1f} N | {ok(c['F_hold_w'] >= c['F_need_w'])} |",
+          f"| Baseplate held by the robot's own weight (2 wheels on it, rubber feet μ {MU_FEET}, ESTIMATE): no floor screws | {c['F_plate']:.0f} N | ≥ the {F_PUSH:.0f} N final push | "
+          f"{ok(c['F_plate'] >= F_PUSH)} |", "",
+          "**What the CAD owner has to change (rnd/parts/base.py, rnd/parts/dock.py):**",
+          "- Skirt pads: " + ", ".join(f"{n} at {z:.0f} mm, {PAD_W:.0f} × {h:.0f} mm" for n, z, h in PADS_V2) + " (carrier z 26–142 instead of 28–118); the dock tower's two leaves and the ID pogo move to the same heights.",
+          f"- Dock: replace the floor tabs with a 6 mm baseplate between the wings (apex to x ≈ 230 mm, |y| ≤ 210 mm, 15° lead-in edge) on rubber feet, with two {GROOVE_H:.0f} mm "
+          f"wheel cradles centred at x ≈ {c['x_w']:.0f} mm, y ≈ ±{c['y_w']:.0f} mm from the apex (the seated wheel contact points), grooves parallel to each wheel's axle.",
+          "- Robot ID input: series 1 kΩ resistor + 5.6 V TVS at the base sensor node, so a wrong contact can only ever see a limited current (belt and braces to the handshake gate).",
+          "- The Monte Carlo above still models the V faces only; the cradle and the taller pads do not change the lateral capture.", ""]
+    return L
+
+
 def main(n=100, seed=3):
     rng = np.random.default_rng(seed)
     rows = [run_one(rng) for _ in range(n)]
@@ -129,6 +203,7 @@ def main(n=100, seed=3):
          f"Yaw error: worst {yw.max():.1f}°. Seated: {sum(r["gap_mm"] == 0 for r in rows)}/{n}.", "",
          "| Run | Result | Pad lateral (mm) | Yaw err (°) | Gap (mm) | Time (s) |", "|---|---|---|---|---|---|"]
     L += [f"| {i} | {'✅' if r['ok'] else '❌'} | {r['lat_mm']:+.1f} | {r['yaw_deg']:.1f} | {r['gap_mm']:.1f} | {r['t']:.1f} |" for i, r in enumerate(rows[:20])]
+    L += [""] + contact_lines()
     (DOCS / "dock_sim.md").write_text("\n".join(L))
     (DOCS / "dock_sim.json").write_text(json.dumps({"n": n, "ok": ns, "lb95": lb, "lat_max_mm": float(np.max(np.abs(lat)))}))
     print("\n".join(L[4:7]))

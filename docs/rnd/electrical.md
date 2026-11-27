@@ -3,10 +3,10 @@
 ## Power distribution (24 V class, 6S Li-ion)
 
 ```
-6S 10 Ah pack (BMS ≥ 30 A cont.) ─ XT60 ─ MAIN FUSE 40 A ─┬─ LOGIC branch (always on): 5 V 5 A DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters
+6S2P 10 Ah pack ─ JK-B2A8S20P BMS (200 A) ─ XT90 ─ MAIN FUSE 60 A ─┬─ LOGIC branch (always on): 5 V 5 A DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters
                                                          └─ E-STOP CONTACTOR (ALEV100, DC-rated; coil: mushroom NC ×2 in series → watchdog MOSFET; aux contact → feedback + discharge)
                                                             └─ PRE-CHARGE branch around it: relay K_PRE (opens on every stop) + 3.3 Ω RH-50 (A5 v2: switched, never permanent)
-                                                              ├─ REGEN CLAMP / BUS DISCHARGE on the motor bus: 26.5 V ± 1 % comparator, 0.4 V hysteresis → 2 × IRFB7530 → 2 × 0.56 Ω RH-50 (A5 v2); forced on by a 100 ms one-shot on the contactor's opening edge (never while K_PRE is closed)
+                                                              ├─ REGEN CLAMP / BUS DISCHARGE on the motor bus: 26.4 V ± 1 % TLV3202 comparator, 0.6 V hysteresis → 3 × IRFB7530 → 3 × 0.56 Ω NH-50, each with a freewheel Schottky (Neon #2 F1); forced on by a 100 ms one-shot on the contactor's opening edge (never while K_PRE is closed)
                                                               ├─ 12 V 10 A DC-DC → STS3215 servos (A5: now downstream of the contactor)
                                                               ├─ F 20 A → base: 4 wheel cartridges (CAN bus A)
                                                               ├─ F 10 A → lift cartridge + pawl solenoid (CAN bus A)
@@ -19,7 +19,7 @@ DOCK PADS (skirt, 45°) ─ ideal-diode reverse-polarity guard ─ F 7.5 A ─ B
 **Docking charge path (loop 27):**
 - The dock's output is off until the robot answers on the ID pad: the base sensor node pulls a coded load, the dock's ESP32-C3 checks it, then closes its MOSFET.
 - The robot may run while it charges (idle ≈ 33 W ≈ 1.4 A of the 5 A), so a stock charger could never see current fall to its end-of-charge level. The robot therefore tells the dock to stop at 4.15 V/cell over the ID line (from BMS telemetry).
-- **Check before buying** whether the 6S BMS is common-port (charge and load on one port) or split-port; the wiring above assumes common-port (ESTIMATE).
+- The JK-B2A8S20P is a common-port BMS (charge and load on the same P−); confirm on arrival, the wiring above assumes it.
 
 | Branch | Worst sustained bus current (A), for fuse/wire sizing | Peak (A) | Fuse (A, slow-blow) |
 |---|---|---|---|
@@ -30,11 +30,26 @@ DOCK PADS (skirt, 45°) ─ ideal-diode reverse-polarity guard ─ F 7.5 A ─ B
 | 12 V DC-DC → 6 × STS3215 (wrists, grippers, head) | 2.9 | 5.8 | 7.5 |
 | 5 V DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters | 2.0 | 2.6 | 5 |
 | Reserved: 24 → 19 V 3 A DC-DC → Jetson-class AI computer (D10, AI phase) | 0.8 | 1.2 | 3 |
-| **Pack** | **37.3** | **74** (diversity 0.6) | main 40 |
+| **Pack** | **37.3** | **74** (diversity 0.6) | main 60 |
 
 Typical draw is far lower: the duty-cycle power budget averages **55 W ≈ 2.5 A** (runtime 3.4 h on 222 Wh).
 
-**Battery requirement (new finding):** the pack's BMS must allow **≥ 30 A continuous and about 74 A for ~1 s**. Cheap 6S packs often have 10–15 A BMS boards (components.yaml), which would trip on arm or threshold peaks. Buy a scooter or power-tool class pack, or build one around a 40 A BMS.
+
+### Pack and BMS (Neon review #2 finding 11)
+**Verified.** The BOM paired a Lumenier NAV 6S 10 Ah 21700 (6S2P of 5 Ah cells, ESTIMATE) (an FPV pack: no BMS, no cell fusing; 35 A continuous only with an 80 °C cut-off, 20 A without, 90 A burst; racedayquads.com / getfpv.com listings (35 A cont. with 80 °C cut-off, 90 A burst)) with a “40 A JK class” BMS (ESTIMATE). The branch table gives 37.3 A worst sustained and ≈ 74 A peak: the 40 A BMS trips on the peak and the pack's own continuous rating is below the sustained figure. The review's alternatives do not fit this bus: a 24 V LiFePO4 pack is 8S (29.2 V full) and a 7S Li-ion pack is 29.4 V full, both over the drives' 28 V maximum (GIM6010 manual 12–28 V). So the pack stays 6S, gets a BMS with real headroom, and the software caps what it may draw:
+
+| Item | Choice | Rating | Load | |
+|---|---|---|---|---|
+| BMS | JK-B2A8S20P-HC smart BMS (4–8S, 200 A cont. / 350 A peak, 2 A active balance, CAN + RS485, 2 × NTC) ($95; nkon.nl €83.95 (≈ $95 incl. shipping share, ESTIMATE); 18650batterystore $145 (sold out)) | 200 A cont. / 350 A peak | 74 A peak | ✅ (2.7× on continuous) |
+| Pack, peak | Lumenier NAV 6S 10 Ah 21700 (6S2P of 5 Ah cells, ESTIMATE) | 90 A burst | software cap **70 A** (the 74 A diversity peak trimmed 6%, arms first) | ✅ (1.29×) |
+| Pack, sustained | same | 35 A with an 80 °C cut-off | software cap **28 A** over a 30 s rolling mean; BMS NTCs on the cells, discharge cut at 60 °C | ✅ |
+| Main fuse (pack → contactor) | 60 A MIDI bolt-down slow-blow (Littelfuse 498 class) + holder (ESTIMATE) | 60 A | ≥ 1.25 × 37.3 A = 47 A; the 70 A cap is 117% for ≤ 1 s | ✅ |
+| Pack connector | XT90 (Amass: 40 A cont. / 90 A burst) instead of the pack's XT60 (30 / 60 A) | 40 A | 28 A mean, 70 A peak | ✅ |
+| Voltage at the 70 A cap (6S2P, 15 mΩ/cell + 10 mΩ path, ESTIMATE: 55 mΩ) | – | drives 12–28 V | 18.0 V at 50 % SoC, 17.1 V at 20 % | ✅ (the review is right that it sags under 20 V; it trips nothing) |
+
+**Software budget (requirement for sw/, owner of the supervisor):** every cycle the supervisor sums the drives' estimated bus currents (the gim_bus_current model above, at the measured bus voltage) and scales the arm torque limits so the sum stays ≤ 70 A and the 30 s mean ≤ 28 A; base and lift keep priority (they hold the robot up). The BMS reports current and cell temperatures on CAN A, so the budget is checked against a measurement, not only the model. Typical draw is far below either cap (next paragraph).
+
+Packaging: the pack sits in a steel battery box in the base bay (ESTIMATE line in the BOM), the BMS's two NTCs taped to the cells; if the measured mean ever approaches the cap, the Lumenier NDAA variant of the same pack is listed at 60 A cont. / 120 A burst (GetFPV; price not found).
 
 ## E-stop behaviour (A5, loop 40: external review finding 6)
 - **Two-channel mushrooms (torso back, base rear).** Channel 1 opens the contactor coil loop directly (hardware, no software in the path). Channel 2 tells the Pi and the sensor nodes, which command a controlled stop. Motor power drops; logic stays up to log and report.
@@ -69,7 +84,7 @@ Continuous regen: lowering the torso at full speed returns 134 W, at the rated 0
 | Highest bus voltage while clamping (+1 % tol. + hysteresis + comparator delay × dV/dt) | 27.26 V | ≤ 28 V − 0.5 V | ✅ |
 | Clamp off at a full pack (lowest threshold − hysteresis) | 25.54 V (with the comparator delay 25.53 V) | > 25.2 V | ✅ |
 | Peak current (MOSFETs, wiring) | 146 A (49 A per MOSFET) | 195 A package limit each | ✅ |
-| MOSFET drain at turn-off, **RH-50 without a freewheel diode** (L ≈ 5 µH × 49 A / 0.3 µs) | 839 V (avalanche, 5.9 mJ per edge, thousands of edges per second) | ≤ 48 V (80 % of 60 V) | ❌ (the old design) |
+| MOSFET drain at turn-off, **RH-50 without a freewheel diode** (L ≈ 5 µH × 49 A / 0.3 µs) | 839 V (avalanche, 5.9 mJ per edge, thousands of edges per second; an NH-50 alone, ≈ 1 µH with leads, still 190 V) | ≤ 48 V (80 % of 60 V) | ❌ (the old design) |
 | MOSFET drain at turn-off, NH-50 + freewheel Schottky (V_bus + V_F + 30 nH loop × di/dt) | 32.7 V | ≤ 48 V | ✅ |
 | Freewheel pulse per diode | 49 A decaying with L/R ≈ 1.8 µs (NH-50 L ESTIMATE) | IFSM 3200 A (5 µs); ≥ 10× | ✅ |
 
@@ -221,10 +236,10 @@ Category 0 removes torque, so the arm falls (Astra 18). From horizontal, the M1 
 ## Connectors
 | Interface | Power | Signal |
 |---|---|---|
-| Arm detach plug (blind-mate, floats in a printed mount beside the V-band) | XT30 (24 V, 15 A branch) | 6-pin 2 mm pogo block: CAN1 H/L, CAN2 H/L, GND, ID strap (loop 40: D14 + A14; 12 V and TTL are made in the arm) |
-| Upper ↔ base coupling (under the cam lever) | XT60 | 6-pin pogo: CAN A H/L, e-stop loop ×2, 5 V sense, GND |
-| Battery slide-out | XT60 (keyed) | balance lead to the charger only |
-| Dock contacts (skirt at 45°, flush brass pads) | + at 60 mm, − at 100 mm, 60 × 12 mm pads, 5 A | ID pad at 40 mm → base sensor node (handshake, stop-charge command) |
+| Arm detach plug (blind-mate, floats in a printed mount beside the V-band) | **XT60** (Amass 30 A cont. / 60 A burst; was XT30, 15 A, under the 20 A fuse and the 38 A peak: Neon #2 F10) | **10-pin** 2 mm pogo block: CAN1 H/L, CAN2 H/L, **USB D+/D− (adjacent, GND pins either side)**, 3 × GND, ID strap (the old 6-pin block had no USB at all; rnd/harness.py) |
+| Upper ↔ base coupling (under the cam lever) | **3 × XT60**: left arm, right arm, lift + 12 V + logic (one XT60 at 30 A was under the upper's sustained load; rnd/harness.py *Lift umbilical*) | 10-pin pogo: CAN A H/L, e-stop loop ×2 (torso mushroom), ESTOP_SENSE, heartbeat, AUX_OK, 5 V sense, GND ×2 |
+| Battery slide-out | **XT90** (keyed; 40 A cont. / 90 A burst) | balance lead to the charger only |
+| Dock contacts (skirt at 45°, flush brass pads) | + at 84 mm, − at 128 mm, 60 × 28 mm pads, 5 A (Neon #2 F12: were 60 × 12 mm at 60 / 100) | ID pad at 40 mm (60 × 28) → 1 kΩ + 5.6 V TVS → base sensor node (handshake, stop-charge command); dock_sim.md *Contacts and retention* |
 | Every joint cartridge | 2-pin JST-VH (24 V) or GH (12 V) | 4-pin JST-GH CAN/TTL daisy chain |
 
-**Cable routing (loop 32, rnd/harness.py):** torsion through the short shaft bores can't absorb the joint ranges (cable rated ~±360°/m). Every joint crossing uses a **clock-spring spiral** in an annular cavity around the joint axis. No slip rings. D12 keeps the stiffest cable at Ø2.2 mm: the wrist camera is MIPI-CSI on a flat-flex through the wrist, with a USB bridge on the forearm. Loop 40: yaw back to ±150° with a real clock-spring cassette; **D14:** the elbow node makes 12 V and drives the TTL servo bus, so only 24 V, CAN (two pairs, A14) and USB cross the shoulder joints. See [harness.md](harness.md).
+**Cable routing (loop 32, rnd/harness.py):** torsion through the short shaft bores can't absorb the joint ranges (cable rated ~±360°/m). Every joint crossing uses a **clock-spring spiral** in an annular cavity around the joint axis. No slip rings. D12 keeps the stiffest cable at Ø2.2 mm: the wrist camera is MIPI-CSI on a flat-flex through the wrist, with a USB bridge on the forearm. Loop 40: yaw back to ±150° with a real clock-spring cassette; **D14:** the elbow node makes 12 V and drives the TTL servo bus, so only 24 V, CAN (two pairs, A14) and USB cross the shoulder joints. Neon #2 F10: the 24 V pair is 16 AWG thin-wall fluoropolymer (was 20 AWG silicone), the USB crosses the detach plug on its own pogo pair to a hub in the torso e-tray, and the base → torso lift umbilical is now specified. See [harness.md](harness.md).

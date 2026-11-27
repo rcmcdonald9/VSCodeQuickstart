@@ -4,7 +4,7 @@ MuJoCo, planar. The base is a 25 kg disc of R 0.25 m on x/y slides + a yaw hinge
 limited to the wheel peak (approach) or to a soft limit (final push).
 
 The dock is a printed V block. Its two faces are at ±DOCK_V_DEG to the dock axis, with the spring contacts on the
-centre line, and it is screwed to the floor. The robot's contact pads sit on the skirt at azimuth PAD_AZ (between two
+centre line; it was screwed to the floor (finding 12: now a baseplate the robot's wheels hold down, see *Contacts and retention*). The robot's contact pads sit on the skirt at azimuth PAD_AZ (between two
 wheels, in view of the head camera).
 
 Each run draws:
@@ -46,3 +46,26 @@ Pad lateral error: mean 4.7 mm, worst 18.8 mm (capture ±25). Yaw error: worst 4
 | 17 | ✅ | +2.7 | 0.7 | 0.0 | 7.3 |
 | 18 | ✅ | -3.7 | 0.9 | 0.0 | 5.9 |
 | 19 | ✅ | +4.6 | 1.1 | 0.0 | 6.1 |
+
+## Contacts and retention (Neon review #2 finding 12)
+
+**Verified in part.** The review's 8 mm gap between the ID pad (34–46 mm) and the + pad (54–66 mm) is right, but the short it describes cannot happen on a vertical shift alone: the ID pogo and the + leaf sit on the same dock tower and move together, and the dock's output is off until the ID handshake passes. For the + leaf to land on the ID pad the ID pogo must already be off its pad (no handshake, no output). What the small pads do cause is a **missed charge**: a contact stays on its pad only for a few mm of vertical error, less than a carpet's sink. The retention point is right: with the drives off nothing holds the unbraked omni base against the leaf springs, and floor screws are not a consumer install.
+
+| Pad layout (centre z / height mm) | Vertical window per contact | Shift that puts + on the ID pad | Margin (shift − window) | Smallest pad gap | Span (skirt 25–155) | Window ≥ worst-case error (11 mm) |
+|---|---|---|---|---|---|---|
+| v1 (CAD today): ID 40 / 10, + 60 / 12, − 100 / 12 | ±3.0 mm | 13.0 mm | 10.0 mm | 9 mm | 35–106 ✅ | ❌ |
+| v2 (proposed): ID 40 / 28, + 84 / 28, − 128 / 28 | ±12.0 mm | 28.0 mm | 16.0 mm | 16 mm | 26–142 ✅ | ✅ |
+
+Worst-case vertical error (ESTIMATE): carpet 8 + floor 2 + tilt 1 = 11 mm. Contact patch 4 mm (ESTIMATE). The pads stay stacked vertically: side-by-side pads 40 mm wide would cut the lateral capture to ±16 mm, under the Monte Carlo's 19 mm worst lateral error.
+
+| Retention | Value | Need | |
+|---|---|---|---|
+| Contact pushback (2 leaves × 5 N + pogo 1 N, ESTIMATE) vs rolling resistance of the unbraked base (25.3 kg, C_rr 0.02) | 11 N vs 5.0 N | resistance > pushback | ❌ (the review is right: it rolls off) |
+| Wheel cradle: 4 mm groove under each of the two wheels flanking the pads (wheel r 76 mm, 62 N each; climb angle 18.6°) | 21 N per wheel along its rolling direction | ≥ 1.5 × pushback × cos 45° = 11.7 N | ✅ |
+| Baseplate held by the robot's own weight (2 wheels on it, rubber feet μ 0.6, ESTIMATE): no floor screws | 74 N | ≥ the 60 N final push | ✅ |
+
+**What the CAD owner has to change (rnd/parts/base.py, rnd/parts/dock.py):**
+- Skirt pads: ID at 40 mm, 60 × 28 mm, + at 84 mm, 60 × 28 mm, − at 128 mm, 60 × 28 mm (carrier z 26–142 instead of 28–118); the dock tower's two leaves and the ID pogo move to the same heights.
+- Dock: replace the floor tabs with a 6 mm baseplate between the wings (apex to x ≈ 230 mm, |y| ≤ 210 mm, 15° lead-in edge) on rubber feet, with two 4 mm wheel cradles centred at x ≈ 140 mm, y ≈ ±148 mm from the apex (the seated wheel contact points), grooves parallel to each wheel's axle.
+- Robot ID input: series 1 kΩ resistor + 5.6 V TVS at the base sensor node, so a wrong contact can only ever see a limited current (belt and braces to the handshake gate).
+- The Monte Carlo above still models the V faces only; the cradle and the taller pads do not change the lateral capture.

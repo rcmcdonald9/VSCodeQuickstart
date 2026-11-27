@@ -10,6 +10,9 @@ import math
 from pathlib import Path
 
 from .params import BASELINE, SPECS, G, act
+from .dock_sim import PADS_V2 as _PADS, PAD_W as DOCK_PAD_W
+
+DOCK_PADS = {n: (z, h) for n, z, h in _PADS}      # Neon #2 F12 pad layout (rnd/dock_sim.py; the CAD track adopts it)
 
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
 V_MIN, V_NOM = 20.0, 22.2           # 6S: 3.33 V/cell cut-off, 3.7 V/cell nominal
@@ -152,7 +155,7 @@ ATO_CURVE = {1.10: (360000, None), 1.35: (0.75, 600), 2.00: (0.15, 5), 3.50: (0.
 # continuous at an 80 °C cut-off (20 A without one), 90 A burst (RaceDayQuads / GetFPV listings, 2026-11-27 search). The
 # old external BMS was a "40 A JK class" ESTIMATE (trips on the 74 A peak). Now JK-B2A8S20P-HC: 4–8S, 200 A continuous,
 # 350 A peak, 2 A active balance, CAN + RS485, two NTC inputs (nkon.nl €83.95; 18650batterystore $145, sold out).
-PACK = dict(name="Lumenier NAV 6S 10 Ah 21700 (6S2P, no BMS)", cont=35.0, cont_nocut=20.0, burst=90.0, cells_p=2,
+PACK = dict(name="Lumenier NAV 6S 10 Ah 21700 (6S2P of 5 Ah cells, ESTIMATE)", cont=35.0, cont_nocut=20.0, burst=90.0, cells_p=2,
             dcir_cell=0.015, ocv50=3.65, price=150.0, src="racedayquads.com / getfpv.com listings (35 A cont. with 80 °C cut-off, 90 A burst)")
 BMS = dict(name="JK-B2A8S20P-HC smart BMS (4–8S, 200 A cont. / 350 A peak, 2 A active balance, CAN + RS485, 2 × NTC)",
            cont=200.0, peak=350.0, price=95.0, src="nkon.nl €83.95 (≈ $95 incl. shipping share, ESTIMATE); 18650batterystore $145 (sold out)")
@@ -532,7 +535,7 @@ def a5v2_section(d=BASELINE):
           f"| Clamp off at a full pack (lowest threshold − hysteresis) | {cc['v_lo'] - CLAMP['hyst']:.2f} V (with the comparator delay {cc['v_off_min']:.2f} V) | > {V_FULL} V | {ok(cc['ok_off'] and cc['v_off_min'] > V_FULL)} |",
           f"| Peak current (MOSFETs, wiring) | {cc['I_pk']:.0f} A ({cc['I_each']:.0f} A per MOSFET) | 195 A package limit each | ✅ |",
           f"| MOSFET drain at turn-off, **RH-50 without a freewheel diode** (L ≈ {RH50['L'] * 1e6:.0f} µH × {cc['I_each']:.0f} A / {T_SW * 1e6:.1f} µs) | {cc['v_ds_rh']:.0f} V "
-          f"(avalanche, {cc['e_avalanche'] * 1e3:.1f} mJ per edge, thousands of edges per second) | ≤ {0.8 * IRFB7530_VDS:.0f} V (80 % of 60 V) | ❌ (the old design) |",
+          f"(avalanche, {cc['e_avalanche'] * 1e3:.1f} mJ per edge, thousands of edges per second; an NH-50 alone, ≈ {NH50['L'] * 1e6:.0f} µH with leads, still {cc['v_ds_nh']:.0f} V) | ≤ {0.8 * IRFB7530_VDS:.0f} V (80 % of 60 V) | ❌ (the old design) |",
           f"| MOSFET drain at turn-off, NH-50 + freewheel Schottky (V_bus + V_F + {L_LOOP * 1e9:.0f} nH loop × di/dt) | {cc['v_ds_diode']:.1f} V | ≤ {0.8 * IRFB7530_VDS:.0f} V | {ok(cc['ok_ds'])} |",
           f"| Freewheel pulse per diode | {cc['i_fw']:.0f} A decaying with L/R ≈ {cc['tau_fw'] * 1e6:.1f} µs (NH-50 L ESTIMATE) | IFSM {FREEWHEEL['ifsm']:.0f} A (5 µs); ≥ 10× | {ok(cc['ok_fw'])} |", "",
           "**Comparator speed and switching (finding 1, re-derived):** the clamp is a hysteretic brake chopper: it switches on at the upper threshold, "
@@ -592,6 +595,39 @@ def can_load(motors, node_frames, hz, bits=130, rate=1e6):
     return (2 * motors + node_frames) * bits * hz / rate
 
 
+def pack_check(cont, peak):
+    """Neon review #2 finding 11: pack, BMS, main fuse and the software pack-current budget against the branch currents."""
+    r_pack = 6 * PACK["dcir_cell"] / PACK["cells_p"] + R_PATH
+    sw = SW_PACK
+    return dict(r_pack=r_pack, sag=sw["i_peak"] * r_pack, v50=6 * PACK["ocv50"] - sw["i_peak"] * r_pack, v20=6 * 3.50 - sw["i_peak"] * r_pack,
+                v_sag_peak=6 * PACK["ocv50"] - peak * r_pack, trim=1 - sw["i_peak"] / peak)
+
+
+def pack_lines(cont, peak):
+    ok = lambda b: "✅" if b else "❌"
+    pc, P, B, sw, F = pack_check(cont, peak), PACK, BMS, SW_PACK, MAIN_FUSE
+    return ["### Pack and BMS (Neon review #2 finding 11)",
+            f"**Verified.** The BOM paired a {P['name']} (an FPV pack: no BMS, no cell fusing; {P['cont']:.0f} A continuous only with an 80 °C cut-off, "
+            f"{P['cont_nocut']:.0f} A without, {P['burst']:.0f} A burst; {P['src']}) with a “40 A JK class” BMS (ESTIMATE). The branch table gives "
+            f"{cont:.1f} A worst sustained and ≈ {peak:.0f} A peak: the 40 A BMS trips on the peak and the pack's own continuous rating is below the sustained figure. "
+            "The review's alternatives do not fit this bus: a 24 V LiFePO4 pack is 8S (29.2 V full) and a 7S Li-ion pack is 29.4 V full, both over the drives' 28 V "
+            "maximum (GIM6010 manual 12–28 V). So the pack stays 6S, gets a BMS with real headroom, and the software caps what it may draw:", "",
+            "| Item | Choice | Rating | Load | |", "|---|---|---|---|---|",
+            f"| BMS | {B['name']} (${B['price']:.0f}; {B['src']}) | {B['cont']:.0f} A cont. / {B['peak']:.0f} A peak | {peak:.0f} A peak | {ok(B['cont'] >= 2 * peak)} ({B['cont'] / peak:.1f}× on continuous) |",
+            f"| Pack, peak | {P['name']} | {P['burst']:.0f} A burst | software cap **{sw['i_peak']:.0f} A** (the {peak:.0f} A diversity peak trimmed {pc['trim']:.0%}, arms first) | {ok(sw['i_peak'] <= 0.8 * P['burst'])} ({P['burst'] / sw['i_peak']:.2f}×) |",
+            f"| Pack, sustained | same | {P['cont']:.0f} A with an 80 °C cut-off | software cap **{sw['i_avg']:.0f} A** over a {sw['t_avg']:.0f} s rolling mean; BMS NTCs on the cells, discharge cut at {sw['t_cell_max']:.0f} °C | {ok(sw['i_avg'] <= 0.8 * P['cont'])} |",
+            f"| Main fuse (pack → contactor) | {F['name']} ({F['src']}) | {F['rating']} A | ≥ 1.25 × {cont:.1f} A = {1.25 * cont:.0f} A; the {sw['i_peak']:.0f} A cap is {sw['i_peak'] / F['rating']:.0%} for ≤ 1 s | {ok(F['rating'] >= 1.25 * cont)} |",
+            f"| Pack connector | XT90 (Amass: 40 A cont. / 90 A burst) instead of the pack's XT60 (30 / 60 A) | 40 A | {sw['i_avg']:.0f} A mean, {sw['i_peak']:.0f} A peak | {ok(sw['i_avg'] <= 40 and sw['i_peak'] <= 90)} |",
+            f"| Voltage at the {sw['i_peak']:.0f} A cap (6S2P, {P['dcir_cell'] * 1e3:.0f} mΩ/cell + {R_PATH * 1e3:.0f} mΩ path, ESTIMATE: {pc['r_pack'] * 1e3:.0f} mΩ) | – | drives 12–28 V | "
+            f"{pc['v50']:.1f} V at 50 % SoC, {pc['v20']:.1f} V at 20 % | {ok(pc['v20'] >= 12)} (the review is right that it sags under 20 V; it trips nothing) |", "",
+            "**Software budget (requirement for sw/, owner of the supervisor):** every cycle the supervisor sums the drives' estimated bus currents "
+            f"(the gim_bus_current model above, at the measured bus voltage) and scales the arm torque limits so the sum stays ≤ {sw['i_peak']:.0f} A and the "
+            f"{sw['t_avg']:.0f} s mean ≤ {sw['i_avg']:.0f} A; base and lift keep priority (they hold the robot up). The BMS reports current and cell temperatures on CAN A, so the "
+            "budget is checked against a measurement, not only the model. Typical draw is far below either cap (next paragraph).", "",
+            f"Packaging: the pack sits in a steel battery box in the base bay (ESTIMATE line in the BOM), the BMS's two NTCs taped to the cells; "
+            "if the measured mean ever approaches the cap, the Lumenier NDAA variant of the same pack is listed at 60 A cont. / 120 A burst (GetFPV; price not found).", ""]
+
+
 def report(d=BASELINE):
     rows = branches(d)
     cont = sum(r[1] for r in rows)
@@ -599,10 +635,10 @@ def report(d=BASELINE):
     L = ["# Electrical architecture (auto-generated by `python -m rnd.electrical`)", "",
          "## Power distribution (24 V class, 6S Li-ion)", "",
          "```",
-         "6S 10 Ah pack (BMS ≥ 30 A cont.) ─ XT60 ─ MAIN FUSE 40 A ─┬─ LOGIC branch (always on): 5 V 5 A DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters",
+         "6S2P 10 Ah pack ─ JK-B2A8S20P BMS (200 A) ─ XT90 ─ MAIN FUSE 60 A ─┬─ LOGIC branch (always on): 5 V 5 A DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters",
          "                                                         └─ E-STOP CONTACTOR (ALEV100, DC-rated; coil: mushroom NC ×2 in series → watchdog MOSFET; aux contact → feedback + discharge)",
          "                                                            └─ PRE-CHARGE branch around it: relay K_PRE (opens on every stop) + 3.3 Ω RH-50 (A5 v2: switched, never permanent)",
-         "                                                              ├─ REGEN CLAMP / BUS DISCHARGE on the motor bus: 26.5 V ± 1 % comparator, 0.4 V hysteresis → 2 × IRFB7530 → 2 × 0.56 Ω RH-50 (A5 v2); forced on by a 100 ms one-shot on the contactor's opening edge (never while K_PRE is closed)",
+         "                                                              ├─ REGEN CLAMP / BUS DISCHARGE on the motor bus: 26.4 V ± 1 % TLV3202 comparator, 0.6 V hysteresis → 3 × IRFB7530 → 3 × 0.56 Ω NH-50, each with a freewheel Schottky (Neon #2 F1); forced on by a 100 ms one-shot on the contactor's opening edge (never while K_PRE is closed)",
          "                                                              ├─ 12 V 10 A DC-DC → STS3215 servos (A5: now downstream of the contactor)",
          "                                                              ├─ F 20 A → base: 4 wheel cartridges (CAN bus A)",
          "                                                              ├─ F 10 A → lift cartridge + pawl solenoid (CAN bus A)",
@@ -614,16 +650,14 @@ def report(d=BASELINE):
          "**Docking charge path (loop 27):**",
          "- The dock's output is off until the robot answers on the ID pad: the base sensor node pulls a coded load, the dock's ESP32-C3 checks it, then closes its MOSFET.",
          "- The robot may run while it charges (idle ≈ 33 W ≈ 1.4 A of the 5 A), so a stock charger could never see current fall to its end-of-charge level. The robot therefore tells the dock to stop at 4.15 V/cell over the ID line (from BMS telemetry).",
-         "- **Check before buying** whether the 6S BMS is common-port (charge and load on one port) or split-port; the wiring above assumes common-port (ESTIMATE).", "",
+         "- The JK-B2A8S20P is a common-port BMS (charge and load on the same P−); confirm on arrival, the wiring above assumes it.", "",
          "| Branch | Worst sustained bus current (A), for fuse/wire sizing | Peak (A) | Fuse (A, slow-blow) |", "|---|---|---|---|"]
     L += [f"| {n} | {c:.1f} | {p:.1f} | {f} |" for n, c, p, f in rows]
     from .budget import power_budget
     _, _, avg_w, hours = power_budget(d)
-    L += [f"| **Pack** | **{cont:.1f}** | **{peak:.0f}** (diversity 0.6) | main 40 |", "",
+    L += [f"| **Pack** | **{cont:.1f}** | **{peak:.0f}** (diversity 0.6) | main {MAIN_FUSE['rating']} |", "",
           f"Typical draw is far lower: the duty-cycle power budget averages **{avg_w:.0f} W ≈ {avg_w / V_NOM:.1f} A** (runtime {hours:.1f} h on 222 Wh).", "",
-          f"**Battery requirement (new finding):** the pack's BMS must allow **≥ 30 A continuous and about {peak:.0f} A for ~1 s**. "
-          "Cheap 6S packs often have 10–15 A BMS boards (components.yaml), which would trip on arm or threshold peaks. Buy a scooter or power-tool class pack, or build one around a 40 A BMS.",
-          "",
+          ""] + pack_lines(cont, peak) + [
           "## E-stop behaviour (A5, loop 40: external review finding 6)",
           "- **Two-channel mushrooms (torso back, base rear).** Channel 1 opens the contactor coil loop directly (hardware, no software in the path). "
           "Channel 2 tells the Pi and the sensor nodes, which command a controlled stop. Motor power drops; logic stays up to log and report.",
@@ -649,16 +683,20 @@ def report(d=BASELINE):
           "| USB3 | head RGB-D (Gemini 2), 2 wrist cameras, lidar | – | Pi 5 has 2 × USB3; use a powered USB3 hub |", "",
           "## Connectors",
           "| Interface | Power | Signal |", "|---|---|---|",
-          "| Arm detach plug (blind-mate, floats in a printed mount beside the V-band) | XT30 (24 V, 15 A branch) | 6-pin 2 mm pogo block: CAN1 H/L, CAN2 H/L, GND, ID strap (loop 40: D14 + A14; 12 V and TTL are made in the arm) |",
-          "| Upper ↔ base coupling (under the cam lever) | XT60 | 6-pin pogo: CAN A H/L, e-stop loop ×2, 5 V sense, GND |",
-          "| Battery slide-out | XT60 (keyed) | balance lead to the charger only |",
-          "| Dock contacts (skirt at 45°, flush brass pads) | + at 60 mm, − at 100 mm, 60 × 12 mm pads, 5 A | ID pad at 40 mm → base sensor node (handshake, stop-charge command) |",
+          "| Arm detach plug (blind-mate, floats in a printed mount beside the V-band) | **XT60** (Amass 30 A cont. / 60 A burst; was XT30, 15 A, under the 20 A fuse and the 38 A peak: Neon #2 F10) | "
+          "**10-pin** 2 mm pogo block: CAN1 H/L, CAN2 H/L, **USB D+/D− (adjacent, GND pins either side)**, 3 × GND, ID strap (the old 6-pin block had no USB at all; rnd/harness.py) |",
+          "| Upper ↔ base coupling (under the cam lever) | **3 × XT60**: left arm, right arm, lift + 12 V + logic (one XT60 at 30 A was under the upper's sustained load; rnd/harness.py *Lift umbilical*) | "
+          "10-pin pogo: CAN A H/L, e-stop loop ×2 (torso mushroom), ESTOP_SENSE, heartbeat, AUX_OK, 5 V sense, GND ×2 |",
+          "| Battery slide-out | **XT90** (keyed; 40 A cont. / 90 A burst) | balance lead to the charger only |",
+          f"| Dock contacts (skirt at 45°, flush brass pads) | + at {DOCK_PADS['+'][0]:.0f} mm, − at {DOCK_PADS['−'][0]:.0f} mm, {DOCK_PAD_W:.0f} × {DOCK_PADS['+'][1]:.0f} mm pads, 5 A (Neon #2 F12: were 60 × 12 mm at 60 / 100) | "
+          f"ID pad at {DOCK_PADS['ID'][0]:.0f} mm ({DOCK_PAD_W:.0f} × {DOCK_PADS['ID'][1]:.0f}) → 1 kΩ + 5.6 V TVS → base sensor node (handshake, stop-charge command); dock_sim.md *Contacts and retention* |",
           "| Every joint cartridge | 2-pin JST-VH (24 V) or GH (12 V) | 4-pin JST-GH CAN/TTL daisy chain |", "",
           "**Cable routing (loop 32, rnd/harness.py):** torsion through the short shaft bores can't absorb the joint ranges (cable rated ~±360°/m). "
           "Every joint crossing uses a **clock-spring spiral** in an annular cavity around the joint axis. No slip rings. "
           "D12 keeps the stiffest cable at Ø2.2 mm: the wrist camera is MIPI-CSI on a flat-flex through the wrist, with a USB bridge on the forearm. "
           "Loop 40: yaw back to ±150° with a real clock-spring cassette; **D14:** the elbow node makes 12 V and drives the TTL servo bus, so only 24 V, CAN (two pairs, A14) "
-          "and USB cross the shoulder joints. See [harness.md](harness.md)."]
+          "and USB cross the shoulder joints. Neon #2 F10: the 24 V pair is 16 AWG thin-wall fluoropolymer (was 20 AWG silicone), the USB crosses the detach plug on its own pogo pair "
+          "to a hub in the torso e-tray, and the base → torso lift umbilical is now specified. See [harness.md](harness.md)."]
     return "\n".join(L), cont, peak
 
 
