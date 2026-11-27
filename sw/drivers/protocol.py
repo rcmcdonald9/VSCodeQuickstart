@@ -36,9 +36,11 @@ NEEDED = {
 # 2 ms frame spacing passes any physical motion of these joints (wrist pitch: 7 N·m peak / 0.02 kg·m² ≈ 350 rad/s² →
 # 0.7 rad/s per frame, under the 2.3 rad/s bound) while a flipped high bit in position (≥ bit 9, 0.2 rad), velocity
 # (≥ bit 8, 3.7 rad/s) or a temperature byte is dropped.
-# dtau_frac: a torque step larger than this fraction of the frame's torque range (= the drive's limit, ±T_MAX) in one
-# frame is rejected (a flipped bit ≥ 10 of the 12-bit field); smaller corruptions stay under the collision threshold.
-GATE = dict(v_max=8.0, a_max=150.0, slack_s=0.010, dp0=0.02, dv0=0.5, dtemp=5.0, dtau_frac=0.3, n_reanchor=3)
+# Torque is NOT gated: the reported torque legitimately jumps within one frame (enable, gain or feed-forward switches),
+# so a torque bound rejected good frames on a clean bus and still let small corruptions through to the collision
+# observer (docs/sw/bus_realism.md). Torque corruption is fixed at the source (the CAN interface) and caught by the soak
+# test (no implausible frame in 2 h).
+GATE = dict(v_max=8.0, a_max=150.0, slack_s=0.010, dp0=0.02, dv0=0.5, dtemp=5.0, n_reanchor=3)
 
 
 class ProtocolTodo(RuntimeError):
@@ -259,8 +261,6 @@ class TableDriver(JointDriver):
         if abs(new["v_motor"] - old["v_motor"]) > r * (G["a_max"] * dt + G["dv0"]):
             return False
         if new["temp"] is not None and old["temp"] is not None and abs(new["temp"] - old["temp"]) > G["dtemp"]:
-            return False
-        if abs(new["t_motor"] - old["t_motor"]) > G["dtau_frac"] * self.r.t_max:
             return False
         return True
 

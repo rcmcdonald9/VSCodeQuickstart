@@ -25,6 +25,10 @@ joints:
   yaw:    {kp: 40, kd: 2.0, stop: [+1, 155], other: -155, span_check: true,  park: 0,   jog: 25}   # stop pin ±155° (rnd/harness.py)
   elbow:  {kp: 40, kd: 2.0, stop: [+1, 5],   other: -155, span_check: true,  park: -20, jog: 15}
   wpitch: {kp: 15, kd: 0.5, stop: [+1, 125], other: -125, span_check: true,  park: 0,   jog: 25}
+# Actuator sysid (sw/sysid.py, step "sysid" after gravity): the Step-1 joints. test_mass_kg: the known weight the operator
+# hangs at the grasp point / lever end (its torque comes from the kinematics only); speeds: fractions of the jog speed.
+sysid: {joints: [yaw, wpitch], test_mass_kg: 0.5, speeds_frac: [0.1, 0.2, 0.35, 0.6], backlash_amp_deg: 2.5, backlash_speed: 0.1,
+        latency_steps: 30, latency_frac: 0.08}
 # Gravity hold test: poses (all six joints; offline joints stay at fixture_pose). Each pose is approached from both
 # sides (±approach) so Coulomb friction cancels in the mean and shows in the difference.
 gravity:

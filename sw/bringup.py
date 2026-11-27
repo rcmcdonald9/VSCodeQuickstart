@@ -261,6 +261,8 @@ class BringUp:
         self.hold_v, self.hold_a = {}, {}
         self.twin = make_twin(self.cfg)
         self.n_cycles = 0
+        self.periods_ms = []          # wall-clock period of every control cycle (determinism: loop-period histogram)
+        self._t_cycle = None
         self.t_start = time.time()
         self.saved = {}
         self._sup = None              # the supervisor in charge of the loop (register waits keep cycling it: _reg_idle)
@@ -381,6 +383,10 @@ class BringUp:
         self.wait()
         self.poll_all()
         self.n_cycles += 1
+        t = time.perf_counter()
+        if self._t_cycle is not None and len(self.periods_ms) < 2_000_000:
+            self.periods_ms.append((t - self._t_cycle) * 1000.0)
+        self._t_cycle = t
         return v, self.feedback()
 
     def run(self, sup, n, fn):
@@ -1119,6 +1125,8 @@ class BringUp:
 
     # =================================================================================================================
     def run_all(self, until=None):
+        from sw import determinism
+        self.det_start = determinism.snapshot(self.buses)
         for name in STEPS:
             if not self.require(name):
                 continue
@@ -1146,7 +1154,15 @@ class BringUp:
             self.disable_all()
         except Exception:
             pass
+        self.det_end = determinism.snapshot(self.buses)
         return self.steps
+
+    def determinism(self):
+        from sw import determinism
+        start = getattr(self, "det_start", None) or determinism.snapshot(self.buses)
+        end = getattr(self, "det_end", None) or determinism.snapshot(self.buses)
+        hist = determinism.histogram(self.periods_ms, self.dt * 1000)
+        return dict(start=start, end=end, loop=hist, verdict=determinism.verdict(start, end, hist, virtual=self.plant is not None))
 
     # ---- report
     def report(self, out_dir="docs/sw", tag=None, bus_desc=""):
@@ -1160,8 +1176,10 @@ class BringUp:
                                    signs={j: self.drivers[j].sign for j in sorted(self.calibrated)}),
                   gim_todo=P.missing(self.tables["gim6010"]), cycles=self.n_cycles, wall_s=round(time.time() - self.t_start, 1),
                   heartbeat_gap_max_ms=round(self.hb_gap_max * 1000, 2), watchdog_ms=round(float(self.cfg.get("watchdog_s", 0.025)) * 1000, 1))
+        js["determinism"] = self.determinism()
         if self.plant is not None:
             js["virtual_truth"] = self.plant.truth()
+            js["virtual_bus"] = self.plant.bus_stats()
         jp = out_dir / f"bringup_{date}{tag}.json"
         jp.write_text(json.dumps(js, indent=1, default=_jsonable))
         mp = out_dir / f"bringup_{date}{tag}.md"
@@ -1196,6 +1214,23 @@ class BringUp:
                 if t is not None:
                     L.append(f"| {j} | {t:.2f} | {ct['basis'].get(j)} |")
             L += ["", "Load them with `sw.bringup.load_collision_thresholds('<this json>')`."]
+        sy = js["steps"].get("sysid", {}).get("data", {})
+        if sy.get("fits"):
+            L += ["", "## Fitted actuator model (sysid → actuators_<serial>.yaml; loaded by rnd/twin.py, sw/bench_env.py, sw/virtual_arm.py)", "",
+                  "| Joint | serial | F_c N·m | B N·m·s/rad | K (true/reported) | backlash ° | latency mean / p95 / max ms | file |", "|---|---|---|---|---|---|---|---|"]
+            for j, f in sy["fits"].items():
+                lt = f["latency_ms"]
+                L.append(f"| {j} | {f['serial']} | {f['coulomb_nm']:.4f} | {f['viscous_nms']:.4f} | {'—' if f['kt_scale'] is None else f'{f['kt_scale']:.4f}'} | "
+                         f"{'—' if f['backlash_rad'] is None else f'{math.degrees(f['backlash_rad']):.3f}'} | {lt['mean']:.1f} / {lt['p95']:.1f} / {lt['max']:.1f} | "
+                         f"{Path(f['file']).name} |")
+            from sw.sysid import NOT_RANDOMIZED, STILL_RANDOMIZED
+            L += ["", "**Not randomised once measured:** " + NOT_RANDOMIZED, "", "**Still randomised:** " + STILL_RANDOMIZED]
+            tv = sy.get("truth_vs_fit")
+            if tv:
+                L += ["", "Virtual run: hidden plant values vs the fit (error %): " + "; ".join(
+                    f"{j} " + ", ".join(f"{q} {v['err_pct']:+.1f} %" for q, v in t.items() if v["err_pct"] is not None) for j, t in tv.items())]
+        from sw.determinism import markdown as _det_md
+        L += [""] + _det_md(js["determinism"])
         L += ["", "## GIM6010 protocol table (sw/drivers/gim.py): fields still TODO", ""]
         if js["gim_todo"]:
             L += ["| Field | What to look up in the SteadyWin SDC104 manual |", "|---|---|"] + \

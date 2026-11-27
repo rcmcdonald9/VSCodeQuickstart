@@ -17,7 +17,8 @@ the bench fixture at `fixture_pose`.
 
 Faults for the tests (`faults=`): factory_id:<joint> (drive answers at its factory ID), estop_stuck (contactor welded),
 watchdog_dead (the monostable never times out), no_clamp (drive ignores its torque limit), reversed:<joint> (motor
-mounted the other way round), no_timeout (drive CAN timeout ignored).
+mounted the other way round), no_timeout (drive CAN timeout ignored), drift (Coulomb friction +25 %/K of motor temperature
+rise: a synthetic degrading drive for the soak test, sw/soak.py).
 
 Bus realism (`bus=`, sw/bus_sim.py): each CAN bus can delay (0–9 ms, FIFO, so frames bunch), drop, duplicate, CRC-reject
 (error counters, bus-off) or corrupt frames, in both directions; `bus="ideal"` (default) is the plain virtual bus.
@@ -510,6 +511,10 @@ class VirtualArm:
             self._physics(tau)
             self.clock.t += self.env.m.opt.timestep
         self.io.update()
+        if "drift" in self.faults:                            # synthetic degradation: Coulomb +25 %/K of motor temperature rise
+            for mt in self.motors:
+                k = ARM.index(mt.name)
+                self.env.m.dof_frictionloss[self.dadr[k]] = self.act[mt.name]["coulomb_nm"] * (1 + 0.25 * max(mt.temp - 32.0, 0.0))
         q = np.array([self.env.d.qpos[a] for a in self.qadr])
         qd = np.array([self.env.d.qvel[a] for a in self.dadr])
         for mt in self.motors:

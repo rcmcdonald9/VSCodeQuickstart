@@ -33,7 +33,7 @@ import numpy as np
 import yaml
 
 D2R = math.pi / 180
-DEFAULTS = dict(speeds_frac=[0.1, 0.2, 0.35, 0.6], test_mass_kg=0.5, backlash_amp_deg=2.5,
+DEFAULTS = dict(joints=["yaw", "wpitch"], speeds_frac=[0.1, 0.2, 0.35, 0.6], test_mass_kg=0.5, backlash_amp_deg=2.5,
                 backlash_speed=0.1, latency_steps=30, latency_frac=0.08, chirp_s=3.0)
 NOT_RANDOMIZED = ("Once measured these are fixed facts of each drive (per serial), not domain-randomised: Coulomb + viscous "
                   "friction, effective torque constant, backlash, the command → response latency distribution (use the "
@@ -348,7 +348,15 @@ def run(bu, step):
     bu._move(sup, {j: bu.jc(j)["park"] * D2R for j in bu.names}, settle=0.3)
     rows = {}
     kt_base = dict(res={}, args={})
+    todo = [j for j in bu.names if j in (cfgs.get("joints") or bu.names)]
     for j in bu.names:
+        if j not in todo:
+            step.notes.append(f"ℹ️ {j}: not identified in this run (bringup.yaml sysid.joints = {cfgs.get('joints')}: the Step-1 joints); datasheet model kept")
+    if not todo:
+        step.check("at least one joint to identify", False, f"online {bu.names}, sysid.joints {cfgs.get('joints')}")
+        bu.disable_all()
+        return
+    for j in todo:
         k = bu.names.index(j)
         c = bu.jc(j)
         park, A = c["park"] * D2R, c["jog"] * D2R
