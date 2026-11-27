@@ -25,7 +25,7 @@ def mass_budget(d: Design = BASELINE):
             ("chassis", b.struct_mass), ("shell", b.shell_mass), ("electronics", b.electronics_mass),
             ("lidar", b.lidar_mass), ("coupling (base half)", b.coupling_mass / 2),
             ("power board (A5 v2 contactor, pre-charge, clamp plate; A10 v2: in the base)", b.power_board_mass),
-            (f"anti-tip casters D18b ({nwheel} × lockable 2\" ball)", nwheel * b.caster_mass)]
+            (f"anti-tip casters D18b ({nwheel} × lockable skid feet)", nwheel * b.caster_mass)]
     arms = arm_items(d)
     upper = [("spine extrusion", u.spine_len * u.spine_mass_per_m), ("lift motor", u.lift_motor_mass),
              ("carriage", u.carriage_mass), ("torso", u.torso_struct_mass), ("compute", u.compute_mass),

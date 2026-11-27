@@ -162,15 +162,21 @@ def battery():
 # A10 v2 (2026-11-27, review finding 4; rnd/tip.py): D18b lockable casters, removable rear ballast, power board on the belly.
 CASTER_R = D.base.caster_r * 1000              # 205: ball contact radius at the diagonals
 CASTER_AZ = (45.0, 135.0, 225.0, 315.0)
-BALL_D = 50.8                                  # 2" steel ball transfer (bought; cup Ø60 ESTIMATE)
-CUP_R, CUP_Z0, CUP_H = 30.0, 21.0, 28.0        # the ball shows 21 mm below the cup: a 15 mm threshold meets bare ball
+# D26 cost-down (wave 11): the 2" ball transfer (≈ $45, and 0.54 kg of ball alone) → a printed PETG skid foot with a
+# replaceable Ø19 PTFE glide pad: a 44° cone flank (PTFE tape on it) from the pad (r 9.5, z 2) to r 30 at z 22, so any
+# step from ≈ 2 to 22 mm meets the flank, not a vertical face; then the Ø60 body up to the top plate (z 49, as before).
+GLIDE_R, GLIDE_T = 9.5, 2.0                    # Ø19 self-adhesive PTFE furniture glide (contact), 2 mm
+CUP_R, CUP_Z0, CUP_H = 30.0, 22.0, 27.0        # foot body: the flank ends at z 22, body to z 49
+FLANK = math.degrees(math.atan((CUP_Z0 - GLIDE_T) / (CUP_R - GLIDE_R)))   # 44.3°: climb force ≈ tan(flank + atan μ) × the spring force
 FLOAT = D.base.caster_float * 1000             # 22 mm free stroke when the lock is released
 TUBE_RI, TUBE_RO = 32.0, 34.0                  # printed guide tube round the cup (2 mm a side: moving pair)
 GUIDE_Z0 = CUP_Z0 + CUP_H + 4 + FLOAT + 3      # guide block bottom: the unit's top plate stops 3 mm under it at full float
 ROD_Y, ROD_R, BORE_R = 20.0, 4.0, 5.5          # 2 × Ø8 steel guide rods (one carries the lock plate), Ø11 bores (bushings not drawn)
 STEEL = 7.85e-3                                # g/mm³
-BAL_X, BAL_Y, BAL_Z = (-151.0, -49.0), (63.5, 106.5), (31.0, 102.0)   # left block (the right one mirrors y); clears the 180° can, the
-#                                             135° caster tube (r 34 at (−145, 145)) and the w90 can; lifts out through a deck hatch
+BAL_X, BAL_Y, BAL_Z = (-151.0, -59.0), (63.5, 107.95), (31.0, 107.2)  # left block (the right one mirrors y); clears the 180° can, the
+#                                             135° caster tube (r 34 at (−145, 145)) and the w90 can; lifts out through a deck hatch.
+#                                             D26: one saw-cut 92 mm drop of 1-3/4 × 3" (44.45 × 76.2) A36 flat bar (was 7 laser-cut 1/4" plates
+#                                             102 × 43 × 71): same 2.44 kg, 1.45 mm wider, 5.2 mm taller, 10 mm shorter
 PB_X, PB_Y, PB_Z = (50.0, 140.0), (-104.0, -48.0), (30.0, 75.0)       # power board envelope, front-right sector (315°)
 
 
@@ -179,11 +185,13 @@ def _at(az):
 
 
 def caster_unit(az, floated=False):
-    """Bought metal assembly: 2" ball transfer (ball + cup) on a top plate with two Ø8 guide rods, the 5 N spring and the
-    one-way rod lock (caulk-gun plate) acting on one rod. Deployed: the ball on the floor; floated: lifted FLOAT mm."""
-    from build123d import Sphere
+    """D18b v2 (D26): printed skid foot (PTFE glide + 44° flank + Ø60 body) on a steel top plate with two Ø8 guide rods, the
+    5 N spring and the one-way rod lock (caulk-gun plate) acting on one rod. Deployed: the glide on the floor; floated:
+    lifted FLOAT mm."""
+    from build123d import Cone
     z = FLOAT if floated else 0.0
-    u = Pos(0, 0, BALL_D / 2) * Sphere(BALL_D / 2)
+    u = Cylinder(GLIDE_R, GLIDE_T, align=MIN)
+    u += Pos(0, 0, GLIDE_T) * Cone(GLIDE_R, CUP_R, CUP_Z0 - GLIDE_T, align=MIN)
     u += Pos(0, 0, CUP_Z0) * Cylinder(CUP_R, CUP_H, align=MIN)
     u += Pos(0, 0, CUP_Z0 + CUP_H) * Box(2 * ROD_Y + 16, 20, 4, align=MIN)
     for s in (1, -1):
@@ -208,7 +216,7 @@ def caster_wells():
 
 
 def ballast(side=1):
-    """Removable steel block (S235, laser-cut slab stack or saw-cut flat bar), rear sector; side +1 left, −1 right."""
+    """Removable steel block (D26: a saw-cut drop of 1-3/4 × 3" A36 hot-rolled flat bar, ends deburred), rear sector; side +1 left, −1 right."""
     (x0, x1), (y0, y1), (z0, z1) = BAL_X, BAL_Y, BAL_Z
     y = (y0 + y1) / 2 * side
     return Pos((x0 + x1) / 2, y, z0) * Box(x1 - x0, y1 - y0, z1 - z0, align=MIN)
@@ -234,7 +242,7 @@ def _hatch(side=1, grow=0.0):
 
 
 def ballast_lid(side=1):
-    """Printed hatch lid over each block (snap tabs not drawn): lift it, lift the block out by its finger slot (R3, no tools)."""
+    """Printed hatch lid over each block (snap tabs not drawn): lift it, lift the block out by the webbing pull loop laid under it in the cradle (R3, no tools)."""
     return _hatch(side, -0.6)
 
 

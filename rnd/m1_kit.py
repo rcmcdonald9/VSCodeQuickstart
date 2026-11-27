@@ -48,13 +48,6 @@ OLDHAM_MOTOR_HUB = (15.0, "ESTIMATE: 6061-T6 from the drive_adapter STEP (Ø50 �
 # Cheapest credible alternatives (owner decision on the $5,500 limit; rnd/bom.py drivers()):
 OLDHAM_ALT = (25.0 + 12.0, "Huco 452H50.35 Ø50 hub, 12 mm bore with keyway, £19.43–20.21 ex VAT at RS UK (€23.37 RS IE, A$45.79 RS AU; confirm the clamp "
                            "variant and its torque rating) + Huco acetal disc ≈ $12 ESTIMATE (sold separately, not listed); the motor-side hub stays the 6061 CNC part")
-SLEEVE_ALT = (2.5, "ESTIMATE: Misumi configurable steel collars (length in 0.1 mm steps, precision class to ± 0.01; bores in 0.5 mm steps → Ø4.5 / 3.5 / 5.5), "
-                   "price not visible (Misumi host not reachable from this session); needs the collar steel's yield ≥ the 352 MPa sleeve stress (joints.md) "
-                   "and the print lengths rounded to 0.1 mm")
-BALL_ALT = (29.75, "Penn Tool: Hudson BT-1-1/2 CS 1-1/2\" carbon-steel ball transfer, 250 lb, $29.75 ($20.67 eBay; 2026-11-27): a Ø38.1 ball still meets a "
-                   "15 mm threshold below its equator (19 mm) but climbs harder; rnd/tip.py + threshold.py to re-run")
-BALLAST_ALT = (15.0, "ESTIMATE: two saw-cut drops of 1-3/4 × 3\" A36 flat bar from a local steel yard (≈ $1.5 / lb); 44.5 × 76 mm section, so the "
-                     "102 mm block is 2.71 kg (cut it 92 mm for 2.44 kg) and the cradle widens 1.5 / 5 mm; Zoro cut pieces are $103–113 each (no saving)")
 D63_SET = (130.0, "ESTIMATE: D63 shaft-side M5 clamp hub 12 H7 + 4 mm keyway + acetal disc, ≥ 25 N·m; scaled from the Ruland Ø50.8 hub + disc $103.64 "
                   "(Zoro); Ondrives 2-1/4\" clamp Oldham $84–157 (2026-11-27 search)")
 D63_MOTOR_HUB = (18.0, "ESTIMATE: 6061-T6 D63 × 4 flange + tenon, 4 × Ø3.4 + c'bore on PCD 30 (CNC, as the D50 hub)")
@@ -68,6 +61,19 @@ ELBOW_TUBE = (15.0, "ESTIMATE: 6061-T6 Ø30 × 1.5 metric tube, 0.5 m (Zoro 6061
 EPOXY = (25.0, "ESTIMATE: structural epoxy, Loctite EA 9466 / 3M DP420 class 50 ml cartridge + nozzles")
 BALL2 = (45.0, "ESTIMATE: 2\" (Ø50.8) steel-ball transfer unit; 2\" units are heavy-duty industrial lines (Motion: General Bearing 41200 series, quote "
                "required); 1-1/2\" Hudson BT-1-1/2 CS is $29.75 at Penn Tool, $20.67 on eBay (2026-11-27 search)")
+# D26 cost-down (wave 11): stock tube for the low-stress crush sleeves, PTFE skid feet for the D18b casters, saw-cut ballast.
+SLEEVE_TUBE = (10.0, "ESTIMATE: one 500 mm stick of seamless E235+C precision tube (EN 10305-1) per size, 8 × 1.2 and 6 × 0.8; eBay.de-class "
+                     "listings from ≈ €1.5 a stick (E235+C Ø3–20, 500 mm, 2026-11-27 search snapshot; host not reachable from this session) + a share "
+                     "of shipping to the US")
+FACING_JIG = (15.0, "ESTIMATE: mini tube cutter + 400 / 600-grit on a flat plate + a drilled steel guide block per sleeve OD (the 0–25 mm micrometer is a tool)")
+SLEEVE_ALT = (0.6, "ESTIMATE: 1/4\" × .035\" 4130 tube, normalized (F_ty ≥ 75 ksi), Aircraft Spruce 03-00300 by the foot (price not shown in the "
+                   "2026-11-27 snapshot; Zoro TW Metals 5 ft $91.49), ≈ 32 mm a sleeve")
+PTFE_GLIDES = (17.99, "Target: Unique Bargains PTFE screw-on furniture glides 0.75\" (19 mm), 20 pcs, regular $17.99 (sale $13.49 on 2026-11-27, "
+                      "Black Friday, end date not shown)")
+PTFE_TAPE = (10.0, "ESTIMATE: skived PTFE adhesive tape 0.1 mm × 25 mm, 5 m roll (flank of the 4 skid feet)")
+BALLAST_BAR = (25.0, "ESTIMATE: two 92 mm saw-cut drops of 1-3/4 × 3\" A36 hot-rolled flat bar (10.8 lb) from a local steel yard at ≈ $1.5 / lb + "
+                     "a cut charge; online: Speedy Metals-class ≈ $2.9 / in for 1-1/4 × 1-3/4 (2026-11-27 snapshot, ≈ $50 for ours + shipping), "
+                     "Zoro Online Metal Supply 1-3/4 × 3 × 9\" $102.99")
 SOLENOID = (12.99, "Walmart: JF-1039 24 V 400 mA, 10 mm stroke, 25 N push-pull solenoid $12.99; Fielect JF-1039-24V $67.99 elsewhere (2026-11-27 search)")
 BALLAST_PLATE = (7.0, "SendCutSend mild steel: their .25\" HRP&O 4.9 × 2\" example is $19.89 at 1, $7.02 at 10, $4.89 at 100 (2026-11-27 search); ours 4.0 × 2.8\", 14 off")
 KEYED_SHAFT = (15.0, "ESTIMATE: Ø12 h6 C45 ground rod 300 mm with a 4 × 2.5 DIN 6885 keyway (cartridge_m.parts_list)")
@@ -229,8 +235,14 @@ HOLD_B = dict(
           "ESTIMATE: JLCCNC / PCBWay-class instant quote ≈ $20–25 each at qty 2 + shipping share"),
          ("Drive (D24 inline)", "Ø80/Ø52 × 2 steel clamp ring + 8 × M5×16 DIN 7984 10.9, 3 × M4×10 ISO 10642, 3 × Ø4 m6 dowels", 1, 9.0,
           "adapter ↔ clevis arm clamp, boss ↔ adapter", E),
-         ("Drive (D24 inline, W8c)", "Crush sleeves, turned 42CrMo4+QT: clevis-arm M5 8 × Ø8 / 5.3 + rear mount 6 × Ø6 / 4.3 × 18.95 mm", 14, SLEEVE[0],
-          "Neon #2 F3/F6: the 8.5 mm PETG clevis clamp kept ≈ 12 % of its preload; the rear stack is now metal (plate + sleeves + motor), 69 % left after embedding", SLEEVE[1]),
+         ("Drive (D24 inline, W8c / D26)", "Crush sleeves from stock E235+C precision tube (D26; were turned 42CrMo4 at $7 each): clevis-arm M5 8 × Ø8 / 5.6 (8 × 1.2 tube) "
+          "+ rear mount 6 × Ø6 / 4.4 (6 × 0.8) × 18.95 mm, cut and faced by the builder to the measured print − 0.05 ± 0.02", 14, 0.0,
+          "Neon #2 F3/F6: the 8.5 mm PETG clevis clamp kept ≈ 12 % of its preload; the rear stack is metal (plate + sleeves + motor), 70 % left after embedding; "
+          "sleeve yield 1.69× (rear) / 2.34× (clevis) at 235 MPa (rnd/joints.py)", "material in the tube line below"),
+         ("Drive (D24 inline, W8c / D26)", "E235+C seamless precision tube, 500 mm sticks: 8 × 1.2 + 6 × 0.8 (the 28 clevis + rear sleeves of both arms)", 2, SLEEVE_TUBE[0],
+          "D26: stock tube where its yield clears the sleeve stress; pitch / yaw sleeves stay turned (rnd/joints.py SLEEVE_STOCK)", SLEEVE_TUBE[1]),
+         ("Drive (D24 inline, W8c / D26)", "Sleeve facing jig: mini tube cutter, abrasive on a flat plate, drilled guide blocks Ø6 / Ø8", 1, FACING_JIG[0],
+          "every sleeve to the measured print − 0.05 ± 0.02 (≈ 3 min each, 28 per robot)", FACING_JIG[1]),
          ("Drive (D24 inline, W8c)", "Stepped hard-stop bushes, 42CrMo4+QT (Ø10 × 8 proud / Ø7 tail), on 2 of the 8 rear M4", 2, STOP_BUSH_P[0],
           "Neon #2 F6d: the Ø10 stop pins had no seat wall; bush → plate → screws → housing closes in metal (1.81×)", STOP_BUSH_P[1]),
          ("Drive (D24 inline, W8c)", "Rear plate ring, 7075-T6 3 mm, Ø96 / 70", 1, PLATE_RING[0], "all-metal rear clamp (engagement 2.5–3.5 mm, no shim picking)", PLATE_RING[1]),
@@ -325,7 +337,7 @@ CHECKS = [
     "Oldham coupling: **D50, 12 mm clamp-style hub with a 4 mm keyway**, OD ≤ the D50 nose bore (cartridge_m MOTOR['nose']); measure the disc (thickness, slot width and "
     "depth) and set `OLDHAM` in rnd/parts/cartridge_m.py before ordering the 6061 motor-side hubs and printing the cans; read the disc's rated torque (≥ 14 N·m) "
     "off the maker's datasheet (the '9.5 N·m' in some listings is the clamp-screw seating torque).",
-    "Crush sleeves (W8c): measure each printed stack and order / face the sleeves to print − 0.05 mm; 42CrMo4+QT (R_p0.2 ≥ 750 MPa) on the certificate.",
+    "Crush sleeves (W8c, D26): measure each printed stack; pitch / yaw sleeves turned 42CrMo4+QT (R_p0.2 ≥ 750 MPa on the certificate) to print − 0.05 mm; clevis / rear sleeves cut from the E235+C tube sticks and faced in the jig to print − 0.05 ± 0.02 (micrometer).",
     "Vishay NH-50 (not RH-50) for the three clamp resistors: the part number starts NH050; the pre-charge and dummy-load resistors stay RH-50.",
     "Heat-set inserts: the short M4 (5.7 mm) the flange calls for; the long 8.1 mm ones don't fit the 6 mm flange.",
 ]

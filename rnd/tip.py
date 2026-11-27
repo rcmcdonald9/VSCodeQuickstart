@@ -69,7 +69,7 @@ def casters(d, kind):
     if kind == "D18":
         return dict(r=0.22, take_up=0.005, name="D18 (loop 40): ball transfers, 5 N, hard stop after 5 mm")
     if kind == "D18b":
-        return dict(r=b.caster_r, take_up=b.caster_take_up, name=f"D18b: lockable 2\" ball casters, locked (take-up {b.caster_take_up * 1000:.1f} mm)")
+        return dict(r=b.caster_r, take_up=b.caster_take_up, name=f"D18b v2: lockable PTFE skid feet, locked (take-up {b.caster_take_up * 1000:.1f} mm)")
     return None
 
 
@@ -331,13 +331,18 @@ def main():
          "and only once they carry load.",
          f"3. **Casters D18 → D18b.** D18's ball transfers rode on a 5 N spring with a hard stop after 5 mm: they carry nothing until the base has tilted "
          f"{math.degrees(0.005 / (0.22 - 0.148)):.1f}° about the wheel edge (COM ≈ {0.52 * 0.005 / (0.22 - 0.148) * 1000:.0f} mm outward first), and a "
-         "5 mm stroke can't clear a 15 mm threshold, and at the D2b 45° heading a caster is the leading point (review finding 4). D18b: a 2\" (Ø50.8) "
-         f"steel ball transfer at r {d1.base.caster_r * 1000:.0f} mm on a printed guide with **{d1.base.caster_float * 1000:.0f} mm of float** on a "
+         "5 mm stroke can't clear a 15 mm threshold, and at the D2b 45° heading a caster is the leading point (review finding 4). D18b v2 (D26 cost-down; "
+         "W8d had a 2\" steel ball transfer, ≈ $45 and 0.54 kg of ball each): a printed skid foot on a replaceable Ø19 PTFE glide pad with a "
+         f"{d1.base.caster_flank:.0f}° cone flank (PTFE tape) up to Ø60 at 22 mm, at r {d1.base.caster_r * 1000:.0f} mm on a printed guide with **{d1.base.caster_float * 1000:.0f} mm of float** on a "
          "5 N spring, and a **spring-applied one-way rod lock** (caulk-gun plate on a Ø8 steel rod) released by a 24 V pull solenoid. Locked, it can follow "
          "the floor down but not be pushed up, so it is a rigid support after the lock's take-up "
          f"({d1.base.caster_take_up * 1000:.1f} mm, ESTIMATE → {math.degrees(d1.base.caster_take_up / (d1.base.caster_r - 0.148)):.1f}°); released, it "
-         "floats over a 15 mm threshold (the ball's contact is below its equator for steps < 25 mm; ≈ 2.2 × the 5–10 N spring force to climb). Locked "
-         "casters carry only their 5 N preload at rest (20 N of ≈ 300 N off the wheels).",
+         f"floats over a 15 mm threshold: the edge meets the flank for any step of 2–22 mm, so the climb takes tan({d1.base.caster_flank:.0f}° + atan {d1.base.caster_mu}) = "
+         f"{math.tan(math.radians(d1.base.caster_flank) + math.atan(d1.base.caster_mu)):.2f} × the 5–10 N spring force "
+         f"({5 * math.tan(math.radians(d1.base.caster_flank) + math.atan(d1.base.caster_mu)):.0f}–{10 * math.tan(math.radians(d1.base.caster_flank) + math.atan(d1.base.caster_mu)):.0f} N; "
+         "the 2\" ball needed 2.2 × (11–22 N), a 1½\" ball 4.6 ×). Locked casters carry only their 5 N preload at rest (20 N of ≈ 300 N off the wheels); "
+         f"sliding, that is ≈ {4 * 5 * d1.base.caster_mu:.0f} N of drag on hard floors (PTFE μ ≈ {d1.base.caster_mu}, ESTIMATE; furniture-glide duty), against "
+         "the rolling ball's ≈ 1 N. Tip statics are unchanged (a friction force at the contact that carries the tip load has no moment about it).",
          "4. **Planner rules last** (below): the 8 push cases need SW-T1, the casters need SW-T2, the ballast's R4 cost needs SW-T4; the rest is enforced today.", "",
          "| Load | Load COM | Braking | Push 30 N @ 1 m | Pose (rules) | Decel m/s² | COM offset mm | h m | ZMP shift mm | Loop 40 reading | Before, honest | A10 v2, SW today | **A10 v2 + SW-T1/T2** | worst heading |",
          "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]

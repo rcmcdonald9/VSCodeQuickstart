@@ -36,7 +36,7 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | pitch | 11 | 11/11 ✅ | — |
 | elbow | 12 | 12/12 ✅ | — |
 | yaw | 10 | 10/10 ✅ | — |
-| lift | 4 | 4/4 (1 by ball-end) ✅ | — |
+| lift | 2 | 2/2 (1 by ball-end) ✅ | — |
 | wrist | 12 | 12/12 ✅ | — |
 | roll (inline) | 16 | 16/16 ✅ | — |
 
@@ -56,10 +56,8 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | yaw | flange ear screw -50° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | yaw | flange ear screw +145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | yaw | flange ear screw -145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
-| lift | flange ear screw +40° (M4, site lift4) | swap | ✅ straight Ø6 × 80 | — |
-| lift | flange ear screw -40° (M4, site lift4) | swap | ✅ straight Ø6 × 80 | — |
-| lift | flange ear screw +140° (M4, site lift4) | swap | ✅ straight Ø6 × 80 | — |
-| lift | flange ear screw -140° (M4, site lift4) | swap | ✅ ball-end 15° (az 225°) | rim |
+| lift | flange ear screw +140° (M4, site lift) | swap | ✅ straight Ø6 × 80 | — |
+| lift | flange ear screw -140° (M4, site lift) | swap | ✅ ball-end 15° (az 225°) | rim |
 | pitch | pitch hub tie nut M4 45° (arm detached) | service | ✅ straight Ø6 × 80 | — |
 | pitch | pitch hub tie nut M4 135° (arm detached) | service | ✅ straight Ø6 × 80 | — |
 | pitch | pitch hub tie nut M4 225° (arm detached) | service | ✅ straight Ø6 × 80 | — |
@@ -121,7 +119,7 @@ A cartridge flange needs ≥ 3 ears with no gap > 120° between neighbours, or �
 | pitch | pitch4 | +40, -40, +160 (rev), -120 (rev) | 120° | ✅ |
 | elbow | elbow | +40, -40, +140, -140 | 100° | ✅ |
 | yaw | yaw | +50, -50, +145, -145 | 100° | ✅ |
-| lift | lift4 | +40, -40, +140, -140 | 100° | ✅ |
+| lift | lift | +140, -140 | 280° | ❌ |
 
 ## R14 (d) cartridge swap (belt on, shaft in place)
 
