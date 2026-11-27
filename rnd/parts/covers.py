@@ -257,7 +257,9 @@ def mast_cap():
     bracket."""
     from . import upper
     xb, yb, tb, wb = _belt_xy()
-    x0, x1 = xb - (tb + 8) / 2 - WALL - 6, upper.MAST_X + upper.W / 2 + 6
+    hd = {n: p for n, p, _ in upper.head()}
+    x0 = min(xb - (tb + 8) / 2 - WALL - 6, _bb(hd["belt_idler"])[0] - 6)               # 6 mm behind the idler
+    x1 = upper.MAST_X + upper.W / 2 + 6
     y0, y1 = -upper.W / 2 - 10, upper.W / 2 + 10
     z0, z1 = upper.Z_TOP - 30, upper.Z_TOP + 24
     c = Pos((x0 + x1) / 2, 0, (z0 + z1) / 2) * soft_shell(x1 - x0 + 2 * WALL, y1 - y0 + 2 * WALL, z1 - z0, 8, 1, WALL)

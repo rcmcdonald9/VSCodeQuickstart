@@ -34,7 +34,7 @@ two-joint combinations (each joint is swept with the others at the reference pos
 
 **Result: 62 joint-nip gap fails, 31 exposed belt / pulley / motor parts. R17 needs 0 and 0.** Also listed: 27 reach-clamping zones (tier 2) and 16 exposed shafts (warnings).
 
-Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 13.8 min.
+Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 13.4 min.
 
 ## Exposed drive parts (accessible to the Ø12 probe at some step)
 
@@ -86,7 +86,7 @@ Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"p
 | l_sh_shaft_12 | rotating shaft | 211 | pitch -180 | ⚠️ shaft |
 | r_roll_yaw_shaft | rotating shaft | 211 | roll 100 | ⚠️ shaft |
 | l_roll_yaw_shaft | rotating shaft | 206 | roll 100 | ⚠️ shaft |
-| belt_idler | belt / pulley (draw-in) | 171 | pitch -180 | ❌ |
+| belt_idler | belt / pulley (draw-in) | 117 | pitch -180 | ❌ |
 
 ## Tier 1: joint nips (reachable, < 25 mm at some step; counted)
 

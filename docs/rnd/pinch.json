@@ -2151,7 +2151,7 @@
   {
    "part": "belt_idler",
    "kind": "belt / pulley (draw-in)",
-   "area": 171.42857142857144,
+   "area": 117.14285714285715,
    "joint": "pitch",
    "at": -180.0,
    "ok": false,
