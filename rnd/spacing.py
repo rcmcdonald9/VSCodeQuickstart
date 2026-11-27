@@ -23,7 +23,7 @@ from pathlib import Path
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
 
 MATE = [("can", "motor"), ("collar", "hub"), ("hub", "shaft"), ("shaft", "wheel"), ("pod", "deck"), ("torque_hanger", "deck"),
-        ("deck", "deck"), ("deck", "rim"), ("deck", "coupling"), ("skirt", "skirt"), ("skirt", "bumper"), ("coupling", "plug"),
+        ("deck", "deck"), ("deck", "rim"), ("deck", "coupling"), ("_guide", "deck"), ("ballast", "deck"), ("ballast", "ballast"), ("skirt", "skirt"), ("skirt", "bumper"), ("coupling", "plug"),
         ("mast", "ratchet"), ("mast", "lift_mount"), ("mast", "carriage"), ("mast", "head_bracket"), ("lift_pulley", "lift_belt"),
         ("lift_mount", "lift_cover"), ("torso_shell", "estop"), ("torso_shell", "chest_light"), ("torso_shell", "ai_bay"),
         ("e_tray", "e_"), ("head_bracket", "handle"), ("head_bracket", "pan_sleeve"), ("yoke", "tilt_sleeve"), ("yoke", "tilt_bearing"), ("head_shell", "head_pivot_stub"), ("head_shell", "head_drive_stub"), ("tilt_bearing", "head_pivot_stub"), ("head_shell", "visor"), ("head_shell", "neck_boot"),

@@ -151,10 +151,10 @@ class Base:
     caster_float: float = 0.022    # D18b free stroke when released: clears a 15 mm threshold + 7 mm of pile (R4)
     caster_take_up: float = 0.001  # ESTIMATE: travel before a locked caster carries load (rod-lock bite ≈ 0.5 mm + printed guide ≈ 0.5 mm); bench-test
     caster_mass: float = 0.15      # each, ESTIMATE: D18b lockable caster (2" steel ball transfer ≈ 0.09, printed guide + spring, one-way rod lock + pull solenoid ≈ 0.06)
-    ballast_mass: float = 4.9      # FROM CAD (rnd/parts/base.py ballast(): 2 × 100 × 60 × 52 mm steel, 7.85 g/cm³ = 2 × 2.45 kg): removable, lifts out through two deck hatches; carried as its own pieces (R3)
+    ballast_mass: float = 4.9      # FROM CAD (rnd/parts/base.py ballast(): 2 × 102 × 43 × 71 mm steel, 7.85 g/cm³ = 2 × 2.44 kg): removable, lifts out through two deck hatches; carried as its own pieces (R3)
     ballast_on: bool = True        # False = the robot without its ballast blocks (tip.py compares both)
-    ballast_xyz: tuple = (-0.098, 0.082, 0.054)   # FROM CAD: centroid of the left block (the right one mirrors y), m from the base centre / floor
-    power_board_xyz: tuple = (0.0955, -0.078, 0.050)  # FROM CAD: power_board envelope centroid (front-right sector, 315°)
+    ballast_xyz: tuple = (-0.100, 0.085, 0.0665)  # FROM CAD (base.BAL_X/Y/Z): centroid of the left block (the right one mirrors y), m from the base centre / floor
+    power_board_xyz: tuple = (0.095, -0.076, 0.0525)  # FROM CAD (base.PB_X/Y/Z): power_board envelope centroid (front-right sector, 315°)
 
 
 @dataclass

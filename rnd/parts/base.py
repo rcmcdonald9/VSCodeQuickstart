@@ -96,6 +96,8 @@ def deck_quarter(q) -> Part:
     for k in range(4):                                                               # wheel cut-outs (the wheels rise to z 152.5)
         p -= Rot(0, 0, 90 * k) * Pos(R_W, 0, Z1 - DECK_T) * Box(WHEEL_W + 6, 2 * _wheel_chord() + 6, DECK_T, align=MIN)
     p -= Pos(-60 + 40, 0, Z1 - 20) * Box(22, 42, 40, align=MIN)                      # blind-mate plug pass-through
+    for side in (1, -1):                                                             # A10 v2: ballast hatches (they straddle the 135°/225° seams)
+        p -= _hatch(side)
     return p
 
 
@@ -156,6 +158,93 @@ def battery():
     return Pos(0, 0, Z0 + 8) * Box(150, 75, 65, align=MIN)          # 6S 10 Ah pack envelope (ESTIMATE)
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# A10 v2 (2026-11-27, review finding 4; rnd/tip.py): D18b lockable casters, removable rear ballast, power board on the belly.
+CASTER_R = D.base.caster_r * 1000              # 205: ball contact radius at the diagonals
+CASTER_AZ = (45.0, 135.0, 225.0, 315.0)
+BALL_D = 50.8                                  # 2" steel ball transfer (bought; cup Ø60 ESTIMATE)
+CUP_R, CUP_Z0, CUP_H = 30.0, 21.0, 28.0        # the ball shows 21 mm below the cup: a 15 mm threshold meets bare ball
+FLOAT = D.base.caster_float * 1000             # 22 mm free stroke when the lock is released
+TUBE_RI, TUBE_RO = 32.0, 34.0                  # printed guide tube round the cup (2 mm a side: moving pair)
+GUIDE_Z0 = CUP_Z0 + CUP_H + 4 + FLOAT + 3      # guide block bottom: the unit's top plate stops 3 mm under it at full float
+ROD_Y, ROD_R, BORE_R = 20.0, 4.0, 5.5          # 2 × Ø8 steel guide rods (one carries the lock plate), Ø11 bores (bushings not drawn)
+STEEL = 7.85e-3                                # g/mm³
+BAL_X, BAL_Y, BAL_Z = (-151.0, -49.0), (63.5, 106.5), (31.0, 102.0)   # left block (the right one mirrors y); clears the 180° can, the
+#                                             135° caster tube (r 34 at (−145, 145)) and the w90 can; lifts out through a deck hatch
+PB_X, PB_Y, PB_Z = (50.0, 140.0), (-104.0, -48.0), (30.0, 75.0)       # power board envelope, front-right sector (315°)
+
+
+def _at(az):
+    return Rot(0, 0, az) * Pos(CASTER_R, 0, 0)
+
+
+def caster_unit(az, floated=False):
+    """Bought metal assembly: 2" ball transfer (ball + cup) on a top plate with two Ø8 guide rods, the 5 N spring and the
+    one-way rod lock (caulk-gun plate) acting on one rod. Deployed: the ball on the floor; floated: lifted FLOAT mm."""
+    from build123d import Sphere
+    z = FLOAT if floated else 0.0
+    u = Pos(0, 0, BALL_D / 2) * Sphere(BALL_D / 2)
+    u += Pos(0, 0, CUP_Z0) * Cylinder(CUP_R, CUP_H, align=MIN)
+    u += Pos(0, 0, CUP_Z0 + CUP_H) * Box(2 * ROD_Y + 16, 20, 4, align=MIN)
+    for s in (1, -1):
+        u += Pos(0, s * ROD_Y, CUP_Z0 + CUP_H + 4) * Cylinder(ROD_R, (Z1 - DECK_T - 3 - FLOAT) - (CUP_Z0 + CUP_H + 4), align=MIN)
+    return _at(az) * Pos(0, 0, z) * u
+
+
+def caster_guide(az):
+    """Printed (PETG) guide hung from the deck: a tube round the cup down to the belly pan (closes the base to a finger)
+    and a block with the two rod bores, the lock plate pocket and the 24 V pull solenoid (envelope)."""
+    zt = Z1 - DECK_T
+    g = Pos(0, 0, Z0 + 3) * (Cylinder(TUBE_RO, GUIDE_Z0 - Z0 - 3, align=MIN) - Cylinder(TUBE_RI, GUIDE_Z0 - Z0 - 3, align=MIN))
+    g += Pos(0, 0, GUIDE_Z0) * Cylinder(TUBE_RO, zt - GUIDE_Z0, align=MIN)
+    for s in (1, -1):
+        g -= Pos(0, s * ROD_Y, GUIDE_Z0) * Cylinder(BORE_R, zt - GUIDE_Z0, align=MIN)
+    return _at(az) * g
+
+
+def caster_wells():
+    """Cutters for the belly pan (covers.base_frame): the cup passes through it with 2 mm a side (a finger can't enter)."""
+    return [_at(az) * Pos(0, 0, Z0 - 5) * Cylinder(TUBE_RI, 20, align=MIN) for az in CASTER_AZ]
+
+
+def ballast(side=1):
+    """Removable steel block (S235, laser-cut slab stack or saw-cut flat bar), rear sector; side +1 left, −1 right."""
+    (x0, x1), (y0, y1), (z0, z1) = BAL_X, BAL_Y, BAL_Z
+    y = (y0 + y1) / 2 * side
+    return Pos((x0 + x1) / 2, y, z0) * Box(x1 - x0, y1 - y0, z1 - z0, align=MIN)
+
+
+def ballast_kg():
+    return 2 * ballast(1).volume * STEEL / 1000
+
+
+def ballast_cradle(side=1):
+    """Printed cradle: a 2.5 mm floor under the block, cantilevered from an inboard wall screwed to the deck underside."""
+    (x0, x1), (y0, y1), (z0, z1) = BAL_X, BAL_Y, BAL_Z
+    zt = Z1 - DECK_T
+    c = Pos((x0 + x1) / 2, side * (y0 + y1) / 2, z0 - 2.5) * Box(x1 - x0, y1 - y0, 2.5, align=MIN)
+    c += Pos((x0 + x1) / 2, side * (y0 - 2.5), z0 - 2.5) * Box(x1 - x0, 3.0, zt - (z0 - 2.5), align=MIN)
+    return c
+
+
+def _hatch(side=1, grow=0.0):
+    (x0, x1), (y0, y1), _ = BAL_X, BAL_Y, BAL_Z
+    y = (y0 + y1) / 2 * side
+    return Pos((x0 + x1) / 2, y, Z1 - DECK_T) * Box(x1 - x0 + 1 + grow, y1 - y0 + 1 + grow, DECK_T, align=MIN)
+
+
+def ballast_lid(side=1):
+    """Printed hatch lid over each block (snap tabs not drawn): lift it, lift the block out by its finger slot (R3, no tools)."""
+    return _hatch(side, -0.6)
+
+
+def power_board():
+    """A5 v2 power stage envelope on the belly: K1 contactor, K2 + pre-charge, the clamp's Al plate (3 RH-50 + 3 IRFB7530),
+    bulk cap, fuses. Short 10 AWG runs from the battery; the clamp plate faces the belly vents (thermal: electrical.md)."""
+    (x0, x1), (y0, y1), (z0, z1) = PB_X, PB_Y, PB_Z
+    return Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0, y1 - y0, z1 - z0, align=MIN)
+
+
 def coupling():
     """Mast socket on the deck at x = -60: printed block + cam lever (placeholder) + blind-mate plug housing."""
     c = Pos(-60, 0, Z1) * (Box(100, 100, 40, align=MIN) - Box(60.6, 60.6, 40, align=MIN))
@@ -175,6 +264,11 @@ def module():
             ("lidar", Pos(R_SHELL - 70, 0, Z1) * Cylinder(28, 41, align=MIN), "dark"),
             ("bumper_light", bumper_light(), "orange"),
             ("base_electronics", Rot(0, 0, 45) * Pos(135, 0, Z0 + 10) * Box(50, 70, 30, align=MIN), "dark")]
+    for az in CASTER_AZ:                                                             # A10 v2 (rnd/tip.py): D18b lockable casters
+        out += [(f"caster{az:.0f}_unit", caster_unit(az), "dark"), (f"caster{az:.0f}_guide", caster_guide(az), "white")]
+    for side, n in ((1, "l"), (-1, "r")):                                            # A10 v2: removable rear ballast
+        out += [(f"ballast_{n}", ballast(side), "dark"), (f"ballast_cradle_{n}", ballast_cradle(side), "white"), (f"ballast_lid_{n}", ballast_lid(side), "white")]
+    out.append(("power_board", power_board(), "dark"))
     return out
 
 

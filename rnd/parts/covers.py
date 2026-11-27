@@ -383,6 +383,8 @@ def base_frame():
         pan -= w
     for p in keep:
         pan -= p                                                                       # round the pod solid (its frame is open below)
+    for w in getattr(base, "caster_wells", lambda: [])():                             # A10 v2 D18b casters: the cup passes the pan, 2 mm a side
+        pan -= w
     for q in range(4):
         quarter = pan & (Rot(0, 0, 90 * q + 45) * Pos(base.R_SHELL / 2 + 0.15, base.R_SHELL / 2 + 0.15, zf) * Box(base.R_SHELL, base.R_SHELL, 20))
         out.append((f"belly_{q}", _main(quarter), "white"))
