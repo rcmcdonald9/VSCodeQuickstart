@@ -11,8 +11,8 @@ pair is classified, and the first matching rule wins:
 - **moving:** other pairs in relative motion. Target ≥ 2 mm (hard 1 mm).
 - **static:** everything else. Target ≥ 1 mm (hard 0.5 mm).
 
-Swept checks over the joint ranges are separate (`swept()`): the elbow over −150…0°, the gripper jaw 0…45°, the head
-over tilt ±30°, the KX collar twist 0…35°.
+Swept checks over the joint ranges are separate (rnd/swept.py, rnd/pinch.py); the head is also checked here at both
+ends of its tilt range (upper.TILT_RANGE), since its pivot moves the shell round the yoke.
 """
 from __future__ import annotations
 
@@ -77,7 +77,9 @@ RULES = {"running": (0.3, 0.2), "belt": (3.0, 1.0), "moving": (2.0, 1.0), "stati
 
 def run():
     from .parts import arm, base, roll, shoulder, upper
-    mods = {"arm": arm.assembly, "roll/yaw": roll.module, "shoulder": shoulder.module, "base": base.module, "upper": lambda: upper.module(0.75)}
+    lo, hi = upper.TILT_RANGE
+    mods = {"arm": arm.assembly, "roll/yaw": roll.module, "shoulder": shoulder.module, "base": base.module, "upper": lambda: upper.module(0.75),
+            f"head tilt {lo:+.0f}°": lambda: upper.head(0, lo), f"head tilt {hi:+.0f}°": lambda: upper.head(0, hi)}
     rows = []
     for mn, f in mods.items():
         for (a, pa, _), (b, pb, _) in itertools.combinations(f(), 2):

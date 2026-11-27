@@ -11,6 +11,6 @@ Motion: 45.0 s, RMS torque {'wpitch': 0.409} of rated, supervisor stops 0, impla
 - ℹ️ kernel real-time (PREEMPT_RT): 6.18.44-fc-v880 (PREEMPT_DYNAMIC (not RT)); policy SCHED_OTHER prio 0; isolated CPUs —; governor None — not the Pi: informational
 - ℹ️ CPU throttling / under-voltage (vcgencmd get_throttled): not available on this machine (skipped)
 - ℹ️ CPU temperature: no sensor readable (skipped)
-- ℹ️ loop period (SW1: p99 |period − 2 ms| < 1 ms): p50 0.49, p99.9 3.10, max 30.07 ms; jitter p99 1.62 ms; > 8 ms: 6 — virtual run: compute time per cycle, not a real-time measurement
+- ℹ️ loop period (SW1: p99 |period − 2 ms| < 1 ms): p50 0.50, p99.9 4.43, max 13.23 ms; jitter p99 1.61 ms; > 8 ms: 11 — virtual run: compute time per cycle, not a real-time measurement
 - ⚠️ CAN B2 controller health: state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +3, RX dropped +0
 - ✅ CAN B1 controller health: state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +0, RX dropped +0

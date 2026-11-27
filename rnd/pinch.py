@@ -37,6 +37,11 @@ working while the arm CAD changes:
 5. **Draw-in / exposed drive parts.** Belts, pulleys and idlers (draw-in), motors and cartridge cans (R17 "no exposed
    belt or motor") fail if any accessible patch ≥ 30 mm² shows at any step; exposed shafts are listed as warnings.
 
+6. **People-near ranges** (D25): joints with a software soft limit while a person is close (rnd/twin.JR_PEOPLE_NEAR,
+   applied by sw/safety.py's people-near mode) are evaluated a second time over the restricted range only (the same
+   sweep, its poses inside the restricted range, the soft limit itself added as a pose) and reported as a separate
+   column; a scan lists, for each lower limit swept, which of that joint's tier-1 rows still fail.
+
 Not covered: the gripper's own jaws (a gripper is meant to pinch; force-limited in software), wheel–floor nip,
 two-joint combinations (each joint is swept with the others at the reference pose), hair/clothing entanglement.
 """
@@ -86,6 +91,12 @@ def _ranges():
     w = BASELINE.arm.wrist_pitch_range_deg
     return {"pitch": JR["pitch"], "elbow": JR["elbow"], "wrist": (-w, w), "roll": JR["roll"], "yaw": JR["yaw"],
             "pan": getattr(upper, "PAN_RANGE", (-90, 90)), "tilt": getattr(upper, "TILT_RANGE", (-30, 30))}
+
+
+def people_near():
+    """{joint: (lo, hi)} deg: the D25 soft limits applied while a person is close (rnd/twin.JR_PEOPLE_NEAR)."""
+    from . import twin
+    return {k: tuple(float(x) for x in v) for k, v in getattr(twin, "JR_PEOPLE_NEAR", {}).items()}
 
 
 def judge_compliant(ranges=None):
@@ -556,18 +567,27 @@ def _tree(rb, tr):
     return parent, child
 
 
-def evaluate(rb, tr):
+def evaluate(rb, tr, window=None, joints=None):
     """Rows per location (joint, moving part, static part). Tier 1 (counted, R17): the moving body against its parent
     link (the joint's own nips: elbow fold, shoulder–torso, wrist–forearm, head–neck), and for the lift the carriage
     body against the mast, base, head and bellows. Tier 2 (listed): everything else, e.g. a hand reaching the base
     at an extreme yaw or a hanging arm on the base rim at the lowest lift; those are clamping zones handled by the
-    planner's keep-outs and force limiting (D23 (5)), not by cover geometry."""
+    planner's keep-outs and force limiting (D23 (5)), not by cover geometry.
+    window: {joint: (lo, hi)} evaluates those joints over the poses inside the window only (people-near ranges);
+    joints: evaluate only these joints."""
     parent, child = _tree(rb, tr)
     rows = {}
     for joint, hist in tr.gaps.items():
-        poses = hist.get("_poses", [])
+        if joints is not None and joint not in joints:
+            continue
+        wlo, whi = (window or {}).get(joint, (-np.inf, np.inf))
+        inside = lambda p_: wlo - 1e-6 <= p_ <= whi + 1e-6
+        poses = [p_ for p_ in hist.get("_poses", []) if inside(p_)]
         for key, h in hist.items():
             if key == "_poses":
+                continue
+            h = [e for e in h if inside(e[0])]
+            if not h:
                 continue
             mp = key >> 42
             if not any(r for *_, r in h):
@@ -613,12 +633,55 @@ def evaluate(rb, tr):
     return gaps, expo
 
 
-def _gap_table(rows):
-    L = ["| Joint | Moving part | Static part | Sides | Min gap (mm) | Max gap (mm) | Min at | |", "|---|---|---|---|---|---|---|---|"]
+def _loc(r):
+    return (r["joint"], r["moving"], r["static"], r["tier"])
+
+
+def _mx(v):
+    return "> 40" if v >= BOUND else f"{v:.1f}"
+
+
+def _mark(r):
+    return "⚠️ shear" if r.get("shear") else ("✅" if r["ok"] else "❌")
+
+
+def _gap_table(rows, pn=None):
+    """pn: (window, {loc: row}) adds a people-near column (the same location over the restricted range)."""
+    head = "| Joint | Moving part | Static part | Sides | Min gap (mm) | Max gap (mm) | Min at | |"
+    rule = "|---|---|---|---|---|---|---|---|"
+    if pn:
+        head += " People near (D25) |"
+        rule += "---|"
+    L = [head, rule]
     for r in rows:
-        mx = "> 40" if r["max"] >= BOUND else f"{r['max']:.1f}"
-        L.append(f"| {r['joint']} | {r['moving']} | {r['static']} | {'/'.join(sorted(r['sides']))} | {r['min']:.1f} | {mx} | {r['at']:.4g} | {'⚠️ shear' if r.get('shear') else ('✅' if r['ok'] else '❌')} |")
-    return L if rows else L + ["| none | | | | | | | ✅ |"]
+        line = f"| {r['joint']} | {r['moving']} | {r['static']} | {'/'.join(sorted(r['sides']))} | {r['min']:.1f} | {_mx(r['max'])} | {r['at']:.4g} | {_mark(r)} |"
+        if pn:
+            win, pmap = pn
+            q = pmap.get(_loc(r))
+            if r["joint"] not in win:
+                cell = "same"
+            elif q is None:
+                cell = "≥ 25 (or out of reach) ✅"
+            else:
+                cell = f"{q['min']:.1f} … {_mx(q['max'])} {_mark(q)}"
+            line += f" {cell} |"
+        L.append(line)
+    return L if rows else L + ["| none | | | | | | | ✅ |" + (" |" if pn else "")]
+
+
+def people_near_scan(rb, tr, pn):
+    """{joint: [{lower, fails, rows}]}: for each swept pose L up to the people-near upper limit, that joint's tier-1 fails
+    over L…hi (which lower soft limit closes which nip; the evidence for the D25 roll limit)."""
+    out = {}
+    for j, (lo, hi) in pn.items():
+        poses = sorted(p_ for p_ in tr.gaps.get(j, {}).get("_poses", []) if p_ < hi)
+        rows = []
+        for L in poses:
+            g, _ = evaluate(rb, tr, {j: (L, hi)}, joints={j})
+            f = [r for r in g if r["tier"] == 1 and not r["ok"]]
+            rows.append(dict(lower=float(L), fails=len(f), rows=[dict(moving=r["moving"], static=r["static"], min=r["min"], max=r["max"]) for r in f]))
+        out[j] = rows
+    return out
 
 
 def report(rb, tr, joints_done, skipped, t_run, quick):
@@ -627,11 +690,24 @@ def report(rb, tr, joints_done, skipped, t_run, quick):
     t2 = [r for r in gaps if r["tier"] == 2]
     gf = [r for r in t1 if not r["ok"]]
     ef = [r for r in expo if r["hard"]]
+    win = {j: v for j, v in people_near().items() if j in tr.gaps}
+    pn, pn_line, scan = None, "", {}
+    if win:
+        gpn, _ = evaluate(rb, tr, win)
+        pn = (win, {_loc(r): r for r in gpn})
+        pf = [r for r in gpn if r["tier"] == 1 and not r["ok"]]
+        pz = [r for r in gpn if r["tier"] == 2 and not r["ok"]]
+        wtxt = ", ".join(f"{j} {lo:g}…{hi:g}°" for j, (lo, hi) in win.items())
+        pn_line = (f"**People near (D25 soft limits: {wtxt}): {len(pf)} joint-nip gap fails, {len(ef)} exposed parts** "
+                   f"({sum(1 for r in t1 if r['joint'] in win and not r['ok'])} → {sum(1 for r in pf if r['joint'] in win)} on "
+                   f"{', '.join(win)}; {len(pz)} reach-clamping zones; exposure is reported over the full range).")
+        scan = people_near_scan(rb, tr, win)
+    tiers = evaluate.__doc__[evaluate.__doc__.index("Tier 1"):evaluate.__doc__.index("window:")]
     L = ["# Pinch, shear and draw-in check (generated by `python -m rnd.pinch`)", "",
-         __doc__.split("\n\n", 1)[1].strip(), "", "**Tiers.** " + " ".join(evaluate.__doc__[evaluate.__doc__.index("Tier 1"):].split()), "",
+         __doc__.split("\n\n", 1)[1].strip(), "", "**Tiers.** " + " ".join(tiers.split()), "",
          f"**Result: {len(gf)} joint-nip gap fails, {len(ef)} exposed belt / pulley / motor parts. R17 needs 0 and 0.** "
          f"Also listed: {sum(1 for r in t2 if not r['ok'])} reach-clamping zones (tier 2) and "
-         f"{sum(1 for r in expo if not r['hard'])} exposed shafts (warnings).", "",
+         f"{sum(1 for r in expo if not r['hard'])} exposed shafts (warnings).", ""] + ([pn_line, ""] if pn_line else []) + [
          f"Swept: {', '.join(joints_done)}" + (f"; not swept: {', '.join(skipped)}" if skipped else "")
          + f". Reference pose {json.dumps(REF)} at lift {REF_LIFT} m. {'Quick (coarse) steps. ' if quick else ''}Run time {t_run / 60:.1f} min.", "",
          "## Exposed drive parts (accessible to the Ø12 probe at some step)", "",
@@ -654,9 +730,17 @@ def report(rb, tr, joints_done, skipped, t_run, quick):
         L += ["", f"Soft parts with no declared spans (kept as drawn, not judged): {', '.join(rb.unjudged)}."]
     L += ["", "## Tier 1: joint nips (reachable, < 25 mm at some step; counted)", "",
           "Min/max over the sweep for the worst 20 mm cell of the moving part against the nearest part of the parent link.", ""]
-    L += _gap_table(t1)
+    L += _gap_table(t1, pn)
     L += ["", "## Tier 2: clamping at reach (listed; planner keep-outs + force limit, D23 (5))", ""]
-    L += _gap_table([r for r in t2 if not r["ok"]])
+    L += _gap_table([r for r in t2 if not r["ok"]], pn)
+    for j, rows in scan.items():
+        lo, hi = win[j]
+        L += ["", f"## People-near limit scan: {j} (D25)", "",
+              f"Tier-1 {j} fails over L…{hi:g}° for each lower limit L the sweep has a pose at (the soft limit in use: {lo:g}°).", "",
+              "| Lower limit L (°) | Tier-1 fails | Still failing (min … max mm) |", "|---|---|---|"]
+        for q in rows:
+            fl = "; ".join(f"{x['moving']} × {x['static']} {x['min']:.1f} … {_mx(x['max'])}" for x in q["rows"])
+            L.append(f"| {q['lower']:g}{' ← in use' if abs(q['lower'] - lo) < 1e-6 else ''} | {q['fails']} | {fl or '—'} |")
     (DOCS / "pinch.md").write_text("\n".join(L) + "\n")
     js = {"gap_fails": len(gf), "exposed_fails": len(ef), "fails": len(gf) + len(ef), "reach_zones": sum(1 for r in t2 if not r["ok"]),
           "joints": joints_done, "skipped": skipped, "quick": quick,
@@ -664,6 +748,9 @@ def report(rb, tr, joints_done, skipped, t_run, quick):
           "gaps": [{**r, "sides": sorted(r["sides"])} for r in gaps], "exposed": expo,
           "compliant": rb.compliant, "compliant_rule": {"wall_min_mm": TPU_WALL_MIN, "strain": TPU_STRAIN},
           "dropped": rb.dropped, "soft_unjudged": rb.unjudged}
+    if pn:
+        js["people_near"] = {"ranges": win, "gap_fails": len(pf), "exposed_fails": len(ef), "reach_zones": len(pz),
+                             "gaps": [{**r, "sides": sorted(r["sides"])} for r in gpn], "scan": scan}
     (DOCS / "pinch.json").write_text(json.dumps(js, indent=1, default=float))
     return L, len(gf), len(ef)
 
@@ -672,7 +759,13 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true", help="coarse steps (about 2× faster)")
     ap.add_argument("--joints", default="", help="comma list to sweep: pitch,elbow,wrist,roll,yaw,pan,tilt,lift")
+    ap.add_argument("--step", default="", help="step overrides, e.g. roll=2.5,tilt=5 (deg)")
+    ap.add_argument("--out", default="", help="write pinch.md / pinch.json here instead of docs/rnd (exploratory runs)")
     a = ap.parse_args(argv)
+    global DOCS
+    if a.out:
+        DOCS = Path(a.out)
+        DOCS.mkdir(parents=True, exist_ok=True)
     wanted = {j for j in a.joints.split(",") if j}
     t0 = time.time()
     log = lambda s: print(s, flush=True)
@@ -680,6 +773,8 @@ def main(argv=None):
     step = {"pitch": 20, "elbow": 15, "wrist": 20, "roll": 15, "yaw": 30, "pan": 30, "tilt": 10}
     if a.quick:
         step = {k: v * 2 for k, v in step.items()}
+    step.update({k: float(v) for k, v in (kv.split("=") for kv in a.step.split(",") if kv)})
+    pn = people_near()
     from .params import BASELINE
     u = BASELINE.upper
     lifts = [u.lift_min, REF_LIFT, u.lift_max] if a.quick else [u.lift_min, (u.lift_min + REF_LIFT) / 2, REF_LIFT, (REF_LIFT + u.lift_max) / 2, u.lift_max]
@@ -700,7 +795,9 @@ def main(argv=None):
             if wanted and key not in wanted:
                 continue
             log(f"  sweep {key} {lo}…{hi}")
-            run_joint(rb, tr, key, bodies, _steps(lo, hi, step[key]), a.quick)
+            angles = _steps(lo, hi, step[key])
+            angles = sorted({round(v, 6) for v in angles} | {round(float(v), 6) for v in pn.get(key, ()) if lo <= v <= hi})   # the soft limits are poses
+            run_joint(rb, tr, key, bodies, angles, a.quick)
             done.append(key)
         if not wanted or "lift" in wanted:
             log("  sweep lift")

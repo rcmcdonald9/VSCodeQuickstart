@@ -5,7 +5,8 @@ Writes, from the same parameters the simulations use (rnd/params.py, rnd/twin.py
 - sw/description/pip_bench_arm.urdf  URDF for ROS 2 / MoveIt / LeRobot: one link per MJCF body, a revolute or prismatic
   joint per body, inertials from the compiled MuJoCo model (mass, COM, principal inertia + frame), primitive
   collision/visual geometry from the MJCF geoms (capsules → cylinder + 2 spheres)
-- sw/description/joints.json          names, limits, velocity/effort limits (actuator specs) for the drivers (S1)
+- sw/description/joints.json          names, limits, velocity/effort limits (actuator specs) for the drivers (S1), and the
+  D25 people-near range of the joints that have one (rnd/twin.JR_PEOPLE_NEAR, applied by sw/safety.py)
 
 The URDF uses the MJCF body frames directly, so joint zeros match the twin (arm hanging straight down = 0).
 """
@@ -91,6 +92,7 @@ def urdf(m):
 def main():
     import mujoco
     from rnd.params import BASELINE, SPECS, act
+    from rnd.twin import JR_PEOPLE_NEAR
     from sw.bench_env import ARM, xml
     OUT.mkdir(exist_ok=True)
     x = xml()
@@ -107,8 +109,11 @@ def main():
         # the rated speed. (Was rated × 420/120 for every "GIM*", which gave the inline GIM8108-36 168 rpm against 48 rated.)
         rpm_max = SPECS[an].get("max_speed_rpm")
         w_max = rpm_max * 2 * math.pi / 60 if rpm_max else s["speed"]
-        out.append(dict(name=j, actuator=an, ratio=ratio, lower=float(m.jnt_range[jid][0]), upper=float(m.jnt_range[jid][1]),
-                        rated_nm=s["rated"] * ratio, peak_nm=s["peak"] * ratio, max_speed_rad_s=w_max / ratio))
+        row = dict(name=j, actuator=an, ratio=ratio, lower=float(m.jnt_range[jid][0]), upper=float(m.jnt_range[jid][1]),
+                   rated_nm=s["rated"] * ratio, peak_nm=s["peak"] * ratio, max_speed_rad_s=w_max / ratio)
+        if j in JR_PEOPLE_NEAR:                                       # D25: soft range while a person is near (sw/safety.py)
+            row["people_near"] = [math.radians(v) for v in JR_PEOPLE_NEAR[j]]
+        out.append(row)
     (OUT / "joints.json").write_text(json.dumps(out, indent=1))
     # self-check: the URDF parses and has one actuated joint per arm joint
     import xml.etree.ElementTree as ET

@@ -20,8 +20,8 @@
   <link name="roll">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
-      <mass value="1.29"/>
-      <inertia ixx="0.000745104" iyy="0.000745104" izz="0.000745104" ixy="0" ixz="0" iyz="0"/>
+      <mass value="1.35"/>
+      <inertia ixx="0.00077976" iyy="0.00077976" izz="0.00077976" ixy="0" ixz="0" iyz="0"/>
     </inertial>
     <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><sphere radius="0.038"/></geometry></visual>
     <collision><origin xyz="0 0 0" rpy="0 0 0"/><geometry><sphere radius="0.038"/></geometry></collision>
@@ -36,8 +36,8 @@
   <link name="upper">
     <inertial>
       <origin xyz="0 0 -0.10035" rpy="0 0 0"/>
-      <mass value="1.758"/>
-      <inertia ixx="0.00920991" iyy="0.00920991" izz="0.000868535" ixy="0" ixz="0" iyz="0"/>
+      <mass value="1.918"/>
+      <inertia ixx="0.0100481" iyy="0.0100481" izz="0.000947583" ixy="0" ixz="0" iyz="0"/>
     </inertial>
   </link>
   <joint name="yaw" type="revolute">

@@ -412,11 +412,12 @@ def compliant():
     joint, wall (mm), spans: [(name, free length mm, length(joint deg) mm)], note}]."""
     from . import upper
     return [dict(name="shoulder roll inboard fan bellows", part=None, joint="roll", wall=1.6, spans=_roll_inboard_spans(),
-                 note="not buildable: needs the wedge ≥ 25 mm at −15° (roll soft limit ≥ +15° near people, or ROLL_Y ≈ +23 mm); "
+                 note="not buildable: needs the wedge ≥ 25 mm at −15° (or ROLL_Y ≈ +23 mm); closed instead by the D25 people-near "
+                      "roll soft limit (twin.JR_PEOPLE_NEAR, sw/safety.py): ≥ 25 mm from ≈ +1°, limit +5°; "
                       "the outer sector is closed by the yaw hood (rigid)"),
             dict(name="neck boot (upper.neck_boot)", part="neck_boot", joint="tilt", wall=upper.NECK_BOOT_T, spans=[],
-                 note="rides the head, cut 1.5 mm clear of the yoke over −10…+30°: no deflection (integration clash gone); "
-                      "the hub's sweep leaves a slot in its floor"),
+                 note=f"rides the head, cut 1.5 mm clear of the yoke over {upper.TILT_RANGE[0]:+.0f}…{upper.TILT_RANGE[1]:+.0f}°: "
+                      "no deflection (integration clash gone); the yoke plate's and hub's sweep leaves a slot in its floor"),
             dict(name="neck boot floor bonded to the riser hub", part=None, joint="tilt", wall=upper.NECK_BOOT_T,
                  spans=upper.neck_boot_spans(),
                  note="not buildable: the D22 pivot (head COM, 67 mm above the yoke plate) moves the hub ≈ 84 mm under the head")]

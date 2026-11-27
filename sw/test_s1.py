@@ -5,7 +5,11 @@
    limits and the workspace), a stalled loop (watchdog), an e-stop, an over-temperature report. The arm must never leave
    its limits or the workspace box, and every fault must stop it within one cycle.
 3. Virtual-bus round trip for the DM-J4310 driver.
-4. Collision detection (D23 / R17, sw/collision.py): the bench twin as the plant with the 20 lb payload in hand and model
+4. People-near mode (D25 / R17): the shoulder-roll soft limit while a person is close. A random policy with the mode on
+   never puts the roll below the limit; switching the mode on with the arm inside the restricted zone walks it out
+   slowly (no stop, heartbeat kept); the trigger turns on within 1.5 m, fails safe without perception, and releases
+   with hysteresis.
+5. Collision detection (D23 / R17, sw/collision.py): the bench twin as the plant with the 20 lb payload in hand and model
    errors; no false trips over random motion, every injected contact trips within 20 ms, then a compliant hold.
 """
 from __future__ import annotations
@@ -147,6 +151,92 @@ def test_supervisor():
             f"violations, **0 cycles where the drive torque kp·e + kd·ė + τ_ff exceeds the rated torque**. NaN feedback, stale feedback, watchdog, "
             f"e-stop (reset refused while pressed), over-temperature, motor error, overspeed and tracking error each stop on the next cycle and stay latched ✅ "
             f"(overrides: {sup.counts})")
+
+
+def test_people_near():
+    """D25: people-near shoulder-roll soft limit (sw/safety.py set_people_near) against the bench twin."""
+    os.environ.setdefault("MUJOCO_GL", "egl")
+    import mujoco
+    from sw.bench_env import BenchEnv, TABLE_Z
+    from sw.safety import PN_EXIT_SPEED, PN_HOLD_S, PeopleNearTrigger, Supervisor
+    env = BenchEnv(render=False)
+    env.reset(0)
+    d2 = mujoco.MjData(env.m)
+
+    def fk(q):
+        d2.qpos[:] = env.d.qpos
+        for k, a in enumerate(env.qadr):
+            d2.qpos[a] = q[k]
+        mujoco.mj_kinematics(env.m, d2)
+        return d2.site_xpos[env.site].copy()
+
+    t, dt = [0.0], 0.002
+    sup = Supervisor(fk=fk, clock=lambda: t[0], ws_lo=(0.05, -0.5, TABLE_Z + 0.01), ws_hi=(0.85, 0.5, TABLE_Z + 0.7))
+    k = sup.names.index("roll")
+    soft = sup.pn_lo[k] - sup._margin                                 # the people-near limit itself (before the margin)
+    assert math.isfinite(soft) and soft > sup.lo[k], "joints.json has no people-near roll range (python -m sw.export_description)"
+    q0 = np.array([env.d.qpos[a] for a in env.qadr])
+    q0[k] = math.radians(-10.0)                                       # the arm deep in the restricted zone
+    assert sup.reset(q0, 0.002)
+    v0 = np.zeros(6)
+    qm = q0.copy()
+    rng = np.random.default_rng(5)
+    for _ in range(50):                                               # normal running near the stop
+        t[0] += dt; sup.tick()
+        v = sup.check(q0, 20 * np.ones(6), np.ones(6), None, qm, v0, dt)
+        qm = v.q.copy()
+    # 1. mode switch with the arm in the zone: walked out at PN_EXIT_SPEED, never stopped, the policy pushing deeper
+    sup.set_people_near(True)
+    r_prev, steps, max_rate = qm[k], 0, 0.0
+    while sup.people_near_exiting() or qm[k] < sup.pn_lo[k] - 1e-9:
+        t[0] += dt; sup.tick()
+        want = qm.copy(); want[k] = math.radians(-15.0)              # a policy still asking for the stop
+        v = sup.check(want, 20 * np.ones(6), np.ones(6), None, qm, v0, dt)
+        assert not v.stop and sup.heartbeat_ok(), v.reasons
+        assert v.q[k] >= r_prev - 1e-12, "people-near exit moved the roll deeper into the zone"
+        max_rate = max(max_rate, (v.q[k] - r_prev) / dt)
+        r_prev = v.q[k]
+        qm = v.q + rng.normal(0, 0.002, 6) * (np.arange(6) != k)
+        qm[k] = v.q[k]
+        steps += 1
+        assert steps < 5000, "people-near exit did not finish"
+    t_exit = steps * dt
+    t_expect = (sup.pn_lo[k] - math.radians(-10.0)) / PN_EXIT_SPEED
+    assert max_rate <= PN_EXIT_SPEED + 1e-6 and abs(t_exit - t_expect) < 0.05, (max_rate, t_exit, t_expect)
+    # 2. random policy with the mode on: 0 cycles with the roll target or the arm below the limit
+    below, n = 0, 3000
+    for _ in range(n):
+        t[0] += dt; sup.tick()
+        wild = q0 + rng.normal(0, 3.0, 6)
+        vm = rng.normal(0, 0.5, 6)
+        v = sup.check(wild, rng.uniform(0, 200, 6), rng.uniform(0, 10, 6), rng.normal(0, 40, 6), qm, vm, dt)
+        assert not v.stop, v.reasons
+        if v.q[k] < soft or qm[k] < soft - 0.004:                   # measured: the arm follows with 2 mrad noise
+            below += 1
+        qm = v.q + rng.normal(0, 0.002, 6)
+    assert below == 0, below
+    # 3. leaving the mode restores the full range at once
+    sup.set_people_near(False)
+    lo, _ = sup.target_bounds()
+    assert lo[k] == sup.lo[k] and not sup.people_near_exiting()
+    # 4. trigger: on within 1.5 m, fail-safe without perception, off after 2 s clear beyond 1.8 m
+    tc = [0.0]
+    trg = PeopleNearTrigger(clock=lambda: tc[0])
+    assert trg.update(None)                                           # no perception yet: on
+    seq = []
+    for dist, dur in (([3.0], 3.0), ([1.4], 0.5), ([1.7], 3.0), ([2.5], 1.0), ([2.5], 1.5), (None, 1.0)):
+        tt = 0.0
+        while tt < dur - 1e-9:
+            tc[0] += 0.1; tt += 0.1
+            on = trg.update(dist if dist is None else list(dist))
+        seq.append(on)
+    # clear 3 s → off; 1.4 m → on; 1.7 m (inside the release radius) keeps it on; 2.5 m for 1 s still on, 2.5 s off; stale → on
+    assert seq == [False, True, True, True, False, True], seq
+    return (f"People-near mode (D25/R17): roll soft limit {math.degrees(soft):+.0f}° (target bound {math.degrees(sup.pn_lo[k]):+.0f}° with the margin). "
+            f"Switched on with the roll at −10° and the policy still asking for −15°: walked out in {t_exit:.2f} s at ≤ {PN_EXIT_SPEED} rad/s, "
+            f"no stop, heartbeat kept; then a random policy for {n} cycles: **0 cycles with the roll below the limit**; leaving the mode restores "
+            f"the full range; the trigger (≤ {1.5} m on, > 1.8 m for {PN_HOLD_S:.0f} s off, no or stale perception = on) ✅ "
+            f"(overrides: { {a: b for a, b in sup.counts.items() if 'people' in a} })")
 
 
 class CollisionRig:
@@ -300,7 +390,7 @@ def test_collision():
 
 
 def main():
-    out = [test_mit(), test_driver(), test_supervisor(), test_collision()]
+    out = [test_mit(), test_driver(), test_supervisor(), test_people_near(), test_collision()]
     from pathlib import Path
     Path("docs/sw").mkdir(parents=True, exist_ok=True)
     Path("docs/sw/s1_tests.md").write_text("# S1 software tests (generated by `python -m sw.test_s1`)\n\n" + __doc__.split("\n\n", 1)[1].strip()
