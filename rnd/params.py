@@ -31,23 +31,25 @@ def act(name: str) -> dict:
     }
 
 
-# Shoulder-roll drive (D24, proposed 2026-11-27, awaiting the owner's OK): "belt" = GIM6010-8 cartridge + 18T:80T belt
-# (loops 10–44); "inline" = a GIM8108-36 on the roll axis, its output flange bolted to the clevis (rnd/parts/roll.py).
-# The default stays "belt" until the owner approves. PIP_ROLL_DRIVE=inline selects the other one for a whole run (CAD,
-# twin, checks): `PIP_ROLL_DRIVE=inline python -m rnd.roll_inline`. The numbers are the CAD's: roll.py warns if
-# roll_offset_y / yaw_drop drift from the geometry it derives.
-ROLL_DRIVE = os.environ.get("PIP_ROLL_DRIVE", "belt")
+# Shoulder-roll drive (D24; the owner approved the inline roll on 2026-11-27): "inline" (default) = a GIM8108-36 on the roll
+# axis, its output adapter bolted to the clevis (rnd/parts/roll.py); "belt" = GIM6010-8 cartridge + 18T:80T belt (loops
+# 10–44), kept buildable. PIP_ROLL_DRIVE=belt selects it for a whole run (CAD, twin, checks):
+# `PIP_ROLL_DRIVE=belt python -m rnd.roll_inline dome`. The numbers are the CAD's: roll.py warns if roll_offset_y /
+# yaw_drop drift from the geometry it derives.
+ROLL_DRIVE = os.environ.get("PIP_ROLL_DRIVE", "inline")   # owner approved the inline roll (2026-11-27); PIP_ROLL_DRIVE=belt keeps the belt variant
 ROLL_DRIVES = {
     # 2026-11-27 (wave 2, roll track): both roll-side stages on D24 bolted cartridges (roll 0.72 → 0.68: −65 g KX74 sockets/forks,
     # +20 g M5 clevis clamps and solid shaft ends; yaw 0.57 → 0.56); yaw_drop 116.0 → 113.4: the upper-arm flange sits in a
     # 2.2 mm pocket in the bottom yaw plate and the spring-ring gap is 0.4 (cavity still 11.3 mm). bone_upper_dm: the upper
     # bone's neck (CF tube + printed sleeve, ≈ 0.69 g/mm, rnd/parts/arm.py) is l_upper − yaw_drop long, so the inline roll's
-    # 12.1 mm shorter yaw drop makes it 12.1 mm longer: + 8 g (belt = the 0.79 kg reference).
+    # shorter yaw drop makes it longer by the difference (belt = the 0.79 kg reference).
     "belt": dict(roll_offset_y=0.083, yaw_drop=0.1134, shoulder_roll=("GIM6010-8", 80 / 18), roll_stage_mass=0.68, yaw_stage_mass=0.56, bone_upper_dm=0.0),
     # FROM CAD (rnd/parts/roll.py, inline): ROLL_Y = ferrule face 18 + 2 + motor r 50 (Ø100 ESTIMATE); the top yaw plate
     # clears the motor (r 50 + 4) instead of the Ø127 80T pulley (yaw_drop 116.0 → 103.9; wave 2: 101.3, the flange pocket); masses = roll.masses(split=True), the motor (1.0 kg) is the
     # roll actuator mass.
-    "inline": dict(roll_offset_y=0.070, yaw_drop=0.1013, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.27, yaw_stage_mass=0.54, bone_upper_dm=0.008),
+    # Seller drawing (2026-11-27): Ø96 × 57 with the driver, 8 × M4 PCD 84, Ø30 output boss → ROLL_Y 70 → 69, yaw_drop 99.3;
+    # roll body + 61 g 7075 output adapter + steel clamp ring + cup ring; neck 14.1 mm longer than the belt arm's (+ 10 g).
+    "inline": dict(roll_offset_y=0.069, yaw_drop=0.0993, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.30, yaw_stage_mass=0.55, bone_upper_dm=0.010),
 }
 assert ROLL_DRIVE in ROLL_DRIVES, f"PIP_ROLL_DRIVE must be one of {list(ROLL_DRIVES)}"
 _RD = ROLL_DRIVES[ROLL_DRIVE]

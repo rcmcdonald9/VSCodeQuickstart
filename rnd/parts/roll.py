@@ -24,10 +24,24 @@ from ..params import BASELINE as _D
 from .belt_stage import V3 as _V3, bolted_stage, wall_a_cuts
 INLINE = _D.arm.roll_drive == "inline"
 ROLL_Y = _D.arm.roll_offset_y * 1000                 # loop 10: 50 → 75 (the Ø114 roll pulley); loop 40: 83 (the 80T pulley clears the ferrule by 2 mm)
-# D24 inline roll: GIM8108-36, 36:1 planetary, 24 V SDC303 (rnd/specs/actuators.yaml). The frame diameter and flanges are
-# not published: Ø100 × 60 overall (56 housing + 4 output flange), 6 × M4 on the housing's rear face, 6 × M4 on the output
-# flange: all ESTIMATE until the seller's drawing (queue 0000).
-MOT36 = dict(od=100.0, h=56.0, fl_d=56.0, fl_h=4.0, rear_n=6, rear_pcd=84.0, out_n=6, out_pcd=44.0, out_brg=8.0)
+# D24 inline roll (owner-approved 2026-11-27): GIM8108-36, 36:1 planetary, 24 V SDC303 (rnd/specs/actuators.yaml). Seller
+# installation drawing (owner, 2026-11-27, docs/rnd/specs/gim8108-36_installation.png), ≈ 57 mm overall with the driver:
+#   driver face: Ø75 × 12.5 driver section (6 × M2 through on Ø70, 3 × M2 tapped on Ø56, unused here)
+#   body: Ø96 × 29, 8 × M4 tapped 3.5 deep on Ø84 on both faces (we use the driver-side face)
+#   output face: stepped Ø60 / Ø42 boss 15.5 long (split 10 / 5.5 ESTIMATE), Ø30 output boss with 3 × M4 tapped 4 deep on
+#   Ø28.5 + 3 × Ø4 H7 dowel holes. Which face is output vs driver is TO CONFIRM (low-res scan): assumed the Ø30-boss face.
+# Output-bearing radial rating: not on the drawing (open seller question). Boss protrusion 1.0 ESTIMATE.
+MOT36 = dict(od=96.0, drv_d=75.0, drv_h=12.5, body_h=29.0, step=((60.0, 10.0), (42.0, 5.5)), boss_d=30.0, boss_h=1.0,
+             rear_n=8, rear_pcd=84.0, rear_tap=3.5, out_n=3, out_pcd=28.5, out_tap=4.0, dowel_n=3, dowel_d=4.0, dowel_l=4.0, out_brg=8.0)
+REAR_ANG0 = 0.0                                                    # first of the 8 rear M4 (≥ 9 mm from the hard-stop lugs)
+MOT36["h"] = MOT36["body_h"] + sum(h for _, h in MOT36["step"])   # body rear face → output step face (44.5); + the driver = 57
+CUP_H = MOT36["drv_h"] + 0.5                                       # roll-link cup ring around the driver section
+REAR_SCREW = dict(size="M4 × 18 ISO 4762", grip=CUP_H + 6.0 - 3.5, engage=None)   # counterbore 3.5 deep in the 6 mm floor
+REAR_SCREW["engage"] = 18.0 - REAR_SCREW["grip"]                   # 2.5 mm into the 3.5 mm tapped holes (≤ 3.5, no bottoming; ≈ 1.6 kN thread shear each in Al, ESTIMATE)
+# Metal output adapter (7075-T6, Ø76 × 7, ESTIMATE): 3 × M4 × 10 countersunk (ISO 10642; 3.0 mm into the 4 mm tapped holes)
+# + 3 × Ø4 m6 hardened dowels in the H7 holes into the Ø30 boss, Ø30 pilot; 8 × M5 tapped on PCD 64 take the printed clevis
+# arm (bolted from +X through a steel clamp ring: M5 × 16 low-head, 6 mm into the adapter).
+ADAPT = dict(od=76.0, t=7.0, n=8, pcd=64.0, d=5.0, mat_density=2.81e-3)
 R_MOT = MOT36["od"] / 2
 FER_FACE = FERRULE["t"] + 10.0                        # ferrule spigot end (rnd/parts/shoulder.py ferrule): 18 mm off the detach plane
 ROLL_MIN = -15                                        # = twin.JR["roll"][0] (rnd/swept.py checks the whole range)
@@ -281,24 +295,26 @@ ROLL_OUT = {"roll_shaft", "roll_pulley72", "roll_spring_hub", "yaw_block", "yaw_
 # roll_arm_rear's edges (≈ 800 N at the 35 N·m rated torque limit set in the drive; fault only).
 # ---------------------------------------------------------------------------------------------------------------------
 BRG_R = dict(d=30.0, D=42.0, B=7.0)    # 61806, rear roll support
-# +X clevis arm ↔ GIM8108-36 output flange (Astra #2b finding 2): 6 × M4 low-head (DIN 7984) 10.9 into the flange's tapped
-# holes (ESTIMATE until the drawing), heads on a Ø56/Ø34 × 2 steel clamp ring in a counterbore (the PETG under it sees
-# ≈ 6 MPa at the design preload); fitted Ø4.1 holes give a bearing path behind the friction. Arm 10 → 14 mm for the
-# counterbore and 9 mm of bearing length. Capacities: drive_capacity().
-OUT_CLAMP = dict(arm_t=14.0, ring=(17.0, 28.0, 2.0), head_h=2.8, preload=1500.0, creep=0.75, mu=0.25)
-R_ARM = 34.0                           # clevis-arm boss radius about the roll axis (covers the Ø56 output flange)
+# +X clevis arm ↔ metal output adapter (Astra #2b finding 2; the motor's own 3 × M4 on PCD 28.5 are too small to go
+# straight into a print): 8 × M5 low-head (DIN 7984) 10.9 from +X through the arm into the adapter's threads, heads on a
+# Ø80/Ø52 × 2 steel clamp ring in a counterbore (≈ 5 MPa on the PETG at the design preload); fitted Ø5.1 holes give a
+# bearing path behind the friction. Capacities: drive_capacity().
+OUT_CLAMP = dict(arm_t=14.0, ring=(26.0, 40.0, 2.0), head_h=3.5, preload=1500.0, creep=0.75, mu=0.25)
+R_ARM = 42.0                           # clevis-arm boss radius about the roll axis (covers the Ø76 adapter and the ring)
 STOP_R, STOP_LUG_R = 44.0, 4.0
 STOP_AT = (ROLL_MIN - 4, 100 + 4)      # hard-stop contact angles (deg)
 if INLINE:
     _ycx = max(p.bounding_box().max.X for _, p, _c in _stage(YAW_T, 20) if p.bounding_box().max.Z > P1[1])
     X_ARM_R = (math.ceil((_ycx + 1.2) * 2) / 2, math.ceil((_ycx + 1.2) * 2) / 2 + 8.0)   # 1.2 mm past the yaw cartridge (its can, D24)
     X_FLOOR = (X_ARM_R[1] + 2.5, X_ARM_R[1] + 2.5 + 6.0)
-    X_MOT = (X_FLOOR[1], X_FLOOR[1] + MOT36["h"])
-    X_ARM_F = (X_MOT[1] + MOT36["fl_h"], X_MOT[1] + MOT36["fl_h"] + OUT_CLAMP["arm_t"])
+    X_CUP = (X_FLOOR[1], X_FLOOR[1] + CUP_H)                        # ring around the motor's driver section
+    X_MOT = (X_CUP[1], X_CUP[1] + MOT36["h"])                       # Ø96 body rear face → output step face
+    X_ADAPT = (X_MOT[1] + MOT36["boss_h"], X_MOT[1] + MOT36["boss_h"] + ADAPT["t"])   # on the Ø30 boss face; clears the step by boss_h
+    X_ARM_F = (X_ADAPT[1], X_ADAPT[1] + OUT_CLAMP["arm_t"])
     X_PL1 = X_ARM_F[1]
     ROLL_SPR_X = (X_ARM_F[1] + 1.5, X_ARM_F[1] + 1.5 + CAV_H)
     W1 = (X_ARM_R[0] + 0.5, X_ARM_R[0] + 0.5 + BRG_R["B"])          # 61806 (rnd/stiffness.py reads the bearing spans)
-    W2 = (X_MOT[1] - MOT36["out_brg"], X_MOT[1])                    # motor output bearing (ESTIMATE position)
+    W2 = (X_MOT[1] - MOT36["out_brg"], X_MOT[1])                    # motor output bearing, in the stepped boss (ESTIMATE position)
     ROLL_C = 0.0                                                    # roll actuator axis above the roll axis (covers.py)
     XF, ROLL_T = None, None
 
@@ -319,12 +335,13 @@ def roll_link_inline() -> Part:
     sx1 = ROLL_SPR_X[1] + 1.6
     p += _plate_x(xf0, sx1, 8, 18, zlo, zhi, 6) - Pos(0, 13, 0) * Rot(-90, 0, 0) * Cylinder(32.3, 12)            # frame around the spigot
     p += Pos(xf0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, xf1 - xf0, align=MIN)                            # floor
+    p += Pos(xf1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(R_MOT, CUP_H, align=MIN) - Cylinder(MOT36["drv_d"] / 2 + 0.5, CUP_H, align=MIN))   # cup around the driver
     p += _plate_x(xf0, xf1, 8, ROLL_Y, zlo, zhi, 4)                                                             # floor ↔ frame web
     for k in range(MOT36["rear_n"]):
-        a = 2 * math.pi * k / MOT36["rear_n"] + math.pi / 6
+        a = 2 * math.pi * k / MOT36["rear_n"] + REAR_ANG0
         y, z = ROLL_Y + MOT36["rear_pcd"] / 2 * math.cos(a), MOT36["rear_pcd"] / 2 * math.sin(a)
         p -= Pos(0, y, z) * Rot(0, 90, 0) * Cylinder(2.25, 400)
-        p -= Pos(xf0, y, z) * Rot(0, 90, 0) * Cylinder(3.8, 3.2, align=MIN)                                     # low-head counterbore
+        p -= Pos(xf0, y, z) * Rot(0, 90, 0) * Cylinder(3.8, 3.5, align=MIN)                                     # counterbore: M4 × 18 engages 2.5 of the 3.5 mm thread
     p -= Pos(xf1 - 2.5, (ROLL_Y + 8) / 2, 0) * Box(5, ROLL_Y - 8, 10)                                           # motor-lead groove to the frame
     x_st = W1[0]
     p += Pos(x_st, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(BRG_R["d"] / 2, xf0 - x_st, align=MIN) - Cylinder(9, xf0 - x_st, align=MIN))
@@ -362,13 +379,31 @@ def roll_arm_rear() -> Part:
 
 
 def roll_motor_housing() -> Part:
-    """GIM8108-36 housing (static), Ø100 × 56 (ESTIMATE), rear face on the roll-link floor."""
-    return Pos(X_MOT[0], ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, MOT36["h"], align=MIN)
+    """GIM8108-36 housing (static, seller drawing): Ø75 × 12.5 driver section in the roll link's cup, Ø96 × 29 body bolted
+    to the cup (8 × M4 on Ø84), stepped Ø60 / Ø42 boss on the output side."""
+    m = MOT36
+    h = Pos(X_MOT[0] - m["drv_h"], ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(m["drv_d"] / 2, m["drv_h"], align=MIN)
+    h += Pos(X_MOT[0], ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, m["body_h"], align=MIN)
+    x = X_MOT[0] + m["body_h"]
+    for d, l in m["step"]:
+        h += Pos(x, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(d / 2, l, align=MIN)
+        x += l
+    return h
 
 
 def roll_outflange() -> Part:
-    """GIM8108-36 output flange (rotates with the roll output), Ø56 × 4 (ESTIMATE), 0.4 mm proud of the housing face."""
-    return Pos(X_MOT[1] + 0.4, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(MOT36["fl_d"] / 2, MOT36["fl_h"] - 0.4, align=MIN)
+    """Rotating output: the motor's Ø30 boss (boss_h past the step) + the metal adapter (Ø76 × 7, 7075, ESTIMATE):
+    3 × M4 countersunk + 3 × Ø4 dowels on PCD 28.5 into the boss, 8 × M5 tapped on PCD 64 for the clevis arm, Ø16 centre."""
+    m, a = MOT36, ADAPT
+    boss = Pos(X_MOT[1] + 0.3, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(m["boss_d"] / 2, m["boss_h"] - 0.3, align=MIN)   # runs 0.3 off the static step
+    ad = Pos(X_ADAPT[0], ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(a["od"] / 2, a["t"], align=MIN) - Cylinder(8.0, a["t"], align=MIN))
+    for k in range(m["out_n"] + m["dowel_n"]):
+        t = 2 * math.pi * k / (m["out_n"] + m["dowel_n"])
+        ad -= Pos(0, ROLL_Y + m["out_pcd"] / 2 * math.cos(t), m["out_pcd"] / 2 * math.sin(t)) * Rot(0, 90, 0) * Cylinder(2.2 if k % 2 == 0 else 2.0, 400)
+    for k in range(a["n"]):
+        t = 2 * math.pi * k / a["n"] + math.pi / a["n"]
+        ad -= Pos(0, ROLL_Y + a["pcd"] / 2 * math.cos(t), a["pcd"] / 2 * math.sin(t)) * Rot(0, 90, 0) * Cylinder(a["d"] / 2 - 0.4, 400)
+    return boss + ad
 
 
 def roll_spring_ring() -> Part:
@@ -467,9 +502,9 @@ def clevis_and_yaw_block() -> Part:
         x0, x1 = X_ARM_F
         arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 0, 10) + Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_ARM, x1 - x0, align=MIN)
         arm -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(8.0, 400)                 # ribbon / cable pass to the spring cassette
-        for k in range(MOT36["out_n"]):
-            a = 2 * math.pi * k / MOT36["out_n"]
-            arm -= Pos(0, ROLL_Y + MOT36["out_pcd"] / 2 * math.cos(a), MOT36["out_pcd"] / 2 * math.sin(a)) * Rot(0, 90, 0) * Cylinder(2.05, 400)   # fitted Ø4.1 (bearing path)
+        for k in range(ADAPT["n"]):
+            a = 2 * math.pi * k / ADAPT["n"] + math.pi / ADAPT["n"]
+            arm -= Pos(0, ROLL_Y + ADAPT["pcd"] / 2 * math.cos(a), ADAPT["pcd"] / 2 * math.sin(a)) * Rot(0, 90, 0) * Cylinder(ADAPT["d"] / 2 + 0.05, 400)   # fitted Ø5.1 (bearing path)
         ri, ro, t = OUT_CLAMP["ring"]                                                 # steel clamp ring under the 6 low heads
         arm -= Pos(x1 - t - OUT_CLAMP["head_h"], ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(ro + 0.2, 20, align=MIN) - Cylinder(ri - 0.2, 20, align=MIN))
         p += arm
@@ -522,6 +557,7 @@ def yaw_shaft() -> Part:
     s += Pos(0, ROLL_Y, P2[1]) * (Cylinder(21.6, 1.0, align=MIN) - Cylinder(YF["bore_r"], 1.0, align=MIN))
     s += Pos(0, ROLL_Y, P2[1] + 1.0) * (Cylinder(YAW_SPR[0], YAW_BELT - 8 - P2[1] - 1.0, align=MIN) - Cylinder(YF["bore_r"], 30, align=MIN))
     s -= Pos(0, ROLL_Y, z0) * Rot(0, 0, 30) * _hex(YF["hex_af"] + 0.4, YF["hex_h"] + 0.2)   # torque socket for the flange's hex spigot
+    s -= Pos(0, ROLL_Y, P1[1] - 3) * Cylinder(14, 10, align=MIN)                     # top end: Ø28 bore (clears the 80T rim by ≥ 2 mm, R15 moving)
     for k in range(YF["n"]):                                                   # M3 heat-set inserts (Ø4.0 × 6) between the hex corners
         a = math.radians(60 * k)
         s -= Pos(YF["bolt_r"] * math.cos(a), ROLL_Y + YF["bolt_r"] * math.sin(a), z0) * Cylinder(2.0, 6.0, align=MIN)
@@ -710,16 +746,25 @@ def drive_capacity():
     T_yaw = act(a.joints["upper_yaw"][0])["peak"] * a.joints["upper_yaw"][1] * 0.95          # 20.9 (rnd/basket.py capacity, 95 % belt)
     if INLINE:
         m = act("GIM8108-36")
-        o, r = OUT_CLAMP, MOT36["out_pcd"] / 2000
-        F = MOT36["out_n"] * o["preload"] * o["creep"]
-        t_fr = o["mu"] * F * r
+        M, A, o = MOT36, ADAPT, OUT_CLAMP
+        r0, r1 = M["out_pcd"] / 2000, A["pcd"] / 2000
+        # (a) motor Ø30 boss → metal adapter (metal to metal; seller drawing: 3 × M4 tapped 4 deep + 3 × Ø4 H7)
+        t_m4 = M["out_n"] * 4000.0 * 0.15 * r0                                           # M4 12.9 at ≈ 4 kN (ESTIMATE), μ 0.15 steel/Al
+        t_sh = M["dowel_n"] * 7500.0 * r0                                                # Ø4 hardened dowel ≈ 7.5 kN single shear (lead)
+        t_bb = M["dowel_n"] * M["dowel_d"] * M["dowel_l"] * 150.0 * r0                   # bearing on the boss if it is Al (150 MPa, 4 mm deep, ESTIMATE)
+        basis0 = (f"{M['out_n']} × M4 × 10 csk (3.0 mm into 4 mm threads) friction {t_m4:.0f} N·m (≈ 4 kN, μ 0.15, ESTIMATE) + {M['dowel_n']} × Ø4 m6 dowels in H7: "
+                  f"shear {t_sh:.0f} N·m, bearing in an Al boss {t_bb:.0f} N·m (150 MPa, 4 mm, ESTIMATE; governs)")
+        rows.append(("roll (inline)", "motor Ø30 boss ↔ 7075 adapter vs the drive limit (35.1)", t_m4 + min(t_sh, t_bb), m["rated"], basis0))
+        rows.append(("roll (inline)", "motor Ø30 boss ↔ 7075 adapter vs stall", t_m4 + min(t_sh, t_bb), m["peak"], basis0 + f"; stall {m['peak']:.1f} N·m (actuators.yaml)"))
+        # (b) metal adapter → printed clevis arm
+        F = A["n"] * o["preload"] * o["creep"]
+        t_fr = o["mu"] * F * r1
         L = o["arm_t"] - o["ring"][2] - o["head_h"]
-        t_br = MOT36["out_n"] * 4.0 * L * 12.0 * r                                               # fitted holes at the 12 MPa across-layer allowable
-        basis = (f"6 × M4 at PCD {MOT36['out_pcd']:.0f} (ESTIMATE), {o['preload']:.0f} N preload × {o['creep']} creep, μ {o['mu']} PETG/Al (ESTIMATE)")
-        rows.append(("roll (inline)", "clevis arm ↔ output flange, friction", t_fr, m["rated"], basis + "; demand = the drive's torque limit (rated 35.1 N·m, actuators.yaml)"))
-        rows.append(("roll (inline)", "clevis arm ↔ output flange, bolt bearing (fitted Ø4.1, after ≤ 0.1 mm slip)", t_br, m["rated"],
-                     f"6 × Ø4 × {L:.1f} mm at 12 MPa (fea.py across-layer allowable); stall {m['peak']:.0f} N·m is NOT held: set the drive's limit"))
-        rows.append(("roll (inline)", "clevis arm ↔ output flange, friction vs the 1 kg workspace demand", t_fr, 19.0, "demand: arm moment 19 N·m (rnd/fea.py cases 6–7)"))
+        t_br = A["n"] * A["d"] * L * 12.0 * r1                                           # fitted holes at the 12 MPa across-layer allowable
+        basis = (f"{A['n']} × M5 on PCD {A['pcd']:.0f}, {o['preload']:.0f} N preload (≈ 5 MPa on the PETG under the steel ring) × {o['creep']} creep, μ {o['mu']} PETG/Al (ESTIMATE)")
+        rows.append(("roll (inline)", "adapter ↔ clevis arm, friction vs the drive limit (35.1)", t_fr, m["rated"], basis))
+        rows.append(("roll (inline)", "adapter ↔ clevis arm, friction + fitted-bolt bearing vs stall", t_fr + t_br, m["peak"],
+                     f"+ {A['n']} × Ø5 × {L:.1f} mm at 12 MPa (fea.py across-layer allowable) = {t_br:.0f} N·m after ≤ 0.1 mm slip; stall only on a fault"))
     else:
         p = PINCH
         T_roll = act(a.joints["shoulder_roll"][0])["peak"] * a.joints["shoulder_roll"][1] * 0.95   # 46.4 (rnd/basket.py capacity)

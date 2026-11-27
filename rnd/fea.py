@@ -204,22 +204,22 @@ def case_torque_hanger():
 def inline_roll_cases():
     """D24 inline roll (PIP_ROLL_DRIVE=inline): the equivalents of cases 6–7. The roll output is carried by the GIM8108-36's
     output bearing (W2, +X) and the rear 61806 on the roll link's Ø30 stub (W1, −X); the arm moment 19 N·m is a couple
-    between them, and the roll torque (the drive's 35.1 N·m limit, rated) reacts through the motor's 6 rear M4 into the
-    roll-link floor."""
+    between them, and the roll torque (the drive's 35.1 N·m limit, rated) reacts through the motor's 8 × M4 (PCD 84) into the
+    roll-link floor and cup."""
     from .parts import roll as rl
     W1, W2, RY = rl.W1, rl.W2, rl.ROLL_Y
     span = ((W2[0] + W2[1]) - (W1[0] + W1[1])) / 2000
     Fc = 19.0 / span
     T = 35.1
-    xf1 = rl.X_FLOOR[1]
+    xf1 = rl.X_MOT[0]                                              # the motor body seats on the cup ring (floor + cup carry the 8 × M4)
     arm_m = ((W2[0] + W2[1]) / 2 - xf1) / 1000                     # output bearing → floor face: the housing carries Fc × arm_m as a moment
     n, rp = rl.MOT36["rear_n"], rl.MOT36["rear_pcd"] / 2
     holes = []
     for k in range(n):
-        a = 2 * math.pi * k / n + math.pi / 6
+        a = 2 * math.pi * k / n + rl.REAR_ANG0
         y, z = RY + rp * math.cos(a), rp * math.sin(a)
         ft = T / (n * rp / 1000)                                    # tangential (torque about +X): direction (−sin a, cos a) in (y, z)
-        fx = Fc * arm_m * (z / 1000) / sum(((rp * math.sin(2 * math.pi * j / n + math.pi / 6)) / 1000) ** 2 for j in range(n))
+        fx = Fc * arm_m * (z / 1000) / sum(((rp * math.sin(2 * math.pi * j / n + rl.REAR_ANG0)) / 1000) ** 2 for j in range(n))
         holes.append((lambda x, y=y, z=z: (np.hypot(x[1] - y, x[2] - z) < 2.6) & (x[0] > rl.X_FLOOR[0] - 0.2) & (x[0] < xf1 + 0.2),
                       (-fx, -ft * math.sin(a), ft * math.cos(a) - Fc / n)))
     C = [(f"Roll link (D24 inline): rear 61806 stub + GIM8108-36 floor, arm moment 19 N·m (couple {Fc:.0f} N) + roll torque 35 N·m", rl.roll_link_inline(), 2.0,
@@ -231,8 +231,9 @@ def inline_roll_cases():
     Fy = 19.0 / ((P1[0] + P1[1] - P2[0] - P2[1]) / 2000)
     inp = lambda x, P: (x[2] > P[0] - 0.2) & (x[2] < P[1] + 0.2)
     xa = rl.X_ARM_F
-    out_holes = [(RY + rl.MOT36["out_pcd"] / 2 * math.cos(2 * math.pi * k / 6), rl.MOT36["out_pcd"] / 2 * math.sin(2 * math.pi * k / 6)) for k in range(6)]
-    fixed = lambda x: (((x[0] > xa[0] - 0.2) & (x[0] < xa[1] + 0.2) & np.any([np.hypot(x[1] - y, x[2] - z) < 2.3 for y, z in out_holes], axis=0))
+    na, pa = rl.ADAPT["n"], rl.ADAPT["pcd"] / 2
+    out_holes = [(RY + pa * math.cos(2 * math.pi * k / na + math.pi / na), pa * math.sin(2 * math.pi * k / na + math.pi / na)) for k in range(na)]
+    fixed = lambda x: (((x[0] > xa[0] - 0.2) & (x[0] < xa[1] + 0.2) & np.any([np.hypot(x[1] - y, x[2] - z) < 2.8 for y, z in out_holes], axis=0))
                        | ((np.hypot(x[1] - RY, x[2]) < rl.BRG_R["D"] / 2 + 0.3) & (x[0] > W1[0] - 0.2) & (x[0] < W1[1] + 0.2)))
     C.append((f"Clevis + yaw block (D24 inline, + rear arm): yaw belt peak 691 N + arm moment 19 N·m (couple {Fy:.0f} N)",
               rl.clevis_and_yaw_block() + rl.yaw_plate_bot() + rl.roll_arm_rear(), 2.5, fixed,

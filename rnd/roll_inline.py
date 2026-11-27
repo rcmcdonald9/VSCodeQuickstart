@@ -1,11 +1,11 @@
-"""D24 inline shoulder roll (GIM8108-36) vs the belt roll: the checks for both drives, side by side.
+"""D24 shoulder roll: the inline GIM8108-36 (default since the owner's approval, 2026-11-27) vs the belt roll, side by side.
 
-    python -m rnd.roll_inline dome                              # belt dome (the default drive)
-    PIP_ROLL_DRIVE=inline python -m rnd.roll_inline <check>     # check ∈ dome, drive, assembly_seq, spacing, swept, dexterity, basket
+    python -m rnd.roll_inline dome drive                          # inline (the default drive)
+    PIP_ROLL_DRIVE=belt python -m rnd.roll_inline <check>         # check ∈ dome, drive, assembly_seq, spacing, swept, dexterity, basket
 
 The CAD and the twin read params.ROLL_DRIVE at import, so each drive is a separate run. Results go to
 docs/rnd/roll_inline.json (one entry per drive and check) and docs/rnd/roll_inline.md; the baseline reports
-(assembly_seq.md, swept.md, ...) are not touched. Run one heavy check at a time.
+(assembly_seq.md, swept.md, ...) are those of the default (inline) drive and are not touched here. Run one heavy check at a time.
 """
 from __future__ import annotations
 

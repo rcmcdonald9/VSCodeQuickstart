@@ -43,7 +43,7 @@ GIM8108-8:
     - https://rcdrone.top/products/steadywin-gim8108-8-planetary-reducer-servo-motor
 
 GIM8108-36:
-  role: "slim-arm study (2026-11-27): inline shoulder pitch / roll, no belt"
+  role: "shoulder roll, inline (D24, owner-approved 2026-11-27; rnd/parts/roll.py)"
   maker: SteadyWin
   gear_ratio: 36
   voltage_nominal_v: 24      # SDC303 driver version (24 V); SDC103 is 48 V
@@ -51,12 +51,18 @@ GIM8108-36:
   peak_torque_nm: 102.9      # stall, SDC303
   rated_speed_rpm: 48        # nominal after reduction (48–51)
   mass_g: 1000               # one seller's net weight
-  outer_diameter_mm: 100     # ESTIMATE (8108 frame); not published
+  outer_diameter_mm: 96      # seller installation drawing (owner-supplied, 2026-11-27)
+  length_mm: 57              # ≈ 15.5 stepped Ø60/Ø42 output boss + 29 Ø96 body + 12.5 Ø75 driver section (≈ 49.5 without the driver); drawing, low-res scan
+  mount: "8 × M4 tapped 3.5 deep on PCD 84, both faces (drawing)"
+  output: "Ø30 boss, 3 × M4 tapped 4 deep on PCD 28.5 + 3 × Ø4 H7 dowel holes (drawing; which face is output TO CONFIRM)"
+  driver_face: "Ø75 section, 6 × M2 through on Ø70, 3 × M2 tapped 3 deep on Ø56 (drawing)"
+  output_bearing_radial_n: null   # not on the drawing: open seller question
   price_usd: [152, 190]
   sources:
     - https://aifitlab.com/products/steadywin-gim8108-36-planetary-reducer-servo-motor
     - https://openelab.com/products/steadywin-gim8108-36-robot-actuator
     - https://www.roboticscenter.ai/store/product/steadywin-gim8108-36-planetary-reducer-servo-motor/
+    - "owner-supplied seller installation drawing, 2026-11-27 (docs/rnd/specs/gim8108-36_installation.png)"
 
 DM-J4310-2EC_V1.1:
   role: cartridge M-light (upper-arm yaw, wrist pitch upgrade)
