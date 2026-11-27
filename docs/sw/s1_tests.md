@@ -5,10 +5,15 @@
    limits and the workspace), a stalled loop (watchdog), an e-stop, an over-temperature report. The arm must never leave
    its limits or the workspace box, and every fault must stop it within one cycle.
 3. Virtual-bus round trip for the DM-J4310 driver.
-4. Collision detection (D23 / R17, sw/collision.py): the bench twin as the plant with the 20 lb payload in hand and model
+4. People-near mode (D25 / R17): the shoulder-roll soft limit while a person is close. A random policy with the mode on
+   never puts the roll below the limit; switching the mode on with the arm inside the restricted zone walks it out
+   slowly (no stop, heartbeat kept); the trigger turns on within 1.5 m, fails safe without perception, and releases
+   with hysteresis.
+5. Collision detection (D23 / R17, sw/collision.py): the bench twin as the plant with the 20 lb payload in hand and model
    errors; no false trips over random motion, every injected contact trips within 20 ms, then a compliant hold.
 
 - MIT pack/unpack: worst error 0.50 quantisation steps over 2000 random commands ✅
 - DM-J4310 driver on a virtual bus: enable, command, feedback ✅
 - Load mode (R2d): with 4.54 kg in hand the hand stays in the load box over 800 random cycles (robot default: ≤ 0.45 m out, ≤ 0.80 m up), braking capped at 0.3 m/s², load heading checked against the wheel axes ✅. Safety supervisor v2 vs a random policy (random targets, gains 0–200 N·m/rad, τ_ff σ 40 N·m): 3000 cycles, 0 limit/workspace violations, **0 cycles where the drive torque kp·e + kd·ė + τ_ff exceeds the rated torque**. NaN feedback, stale feedback, watchdog, e-stop (reset refused while pressed), over-temperature, motor error, overspeed and tracking error each stop on the next cycle and stay latched ✅ (overrides: {'joint limit clamp': 3775, 'velocity clamp': 3800, 'gain cap': 3000, 'torque bound': 3000, 'feedback missing, NaN or stale': 2, 'watchdog': 1, 'e-stop': 1, 'over temperature or bad temperature reading': 1, 'motor error flag': 1, 'measured speed over limit': 1, 'tracking error': 1})
+- People-near mode (D25/R17): roll soft limit +5° (target bound +8° with the margin). Switched on with the roll at −10° and the policy still asking for −15°: walked out in 1.57 s at ≤ 0.2 rad/s, no stop, heartbeat kept; then a random policy for 3000 cycles: **0 cycles with the roll below the limit**; leaving the mode restores the full range; the trigger (≤ 1.5 m on, > 1.8 m for 2 s off, no or stale perception = on) ✅ (overrides: {'people-near on': 1, 'people-near clamp': 158})
 - Collision detection (D23/R17, momentum observer vs the twin's model torque, 4.54 kg payload, model errors: payload +5 %, COM 10 mm, friction, Kt ±4 %, current noise 1 %): **0 false trips over 3 × 3000 cycles** of random motion (peak residual 83% of the threshold); a 60 N forearm push trips in 10–12 ms and a joint torque of twice the trip level (3.9–10.1 N·m) on each monitored joint in 12–18 ms (limit 20 ms); after a trip the arm holds compliantly (no stop, drift < 0.3 rad over 0.5 s) until reset ✅

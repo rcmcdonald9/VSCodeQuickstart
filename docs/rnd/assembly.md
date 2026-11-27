@@ -10,7 +10,7 @@
 | cover belly_0 | 2 × 246 × 246 | 81 | ✅ |
 | cover belly_1 | 2 × 246 × 246 | 81 | ✅ |
 | cover belly_3 | 2 × 246 × 246 | 81 | ✅ |
-| head_shell | 184 × 243 × 243 | 294 | ✅ |
+| head_shell | 184 × 243 × 243 | 307 | ✅ |
 | upper bone | 98 × 112 × 233 | 280 | ✅ |
 | torso_shell [1] | 180 × 195 × 230 | 293 | ✅ |
 | torso_shell [2] | 180 × 195 × 230 | 293 | ✅ |
@@ -23,7 +23,7 @@
 | cover belt_duct [2/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [4/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [5/5] | 16 × 27 × 188 | 29 | ✅ |
-| neck_boot | 116 × 164 × 188 | 97 | ✅ |
+| neck_boot | 116 × 164 × 188 | 98 | ✅ |
 | yaw plate bottom | 8 × 185 × 185 | 72 | ✅ |
 | cover spine_pod | 55 × 110 × 167 | 89 | ✅ |
 | visor | 120 × 166 × 166 | 82 | ✅ |

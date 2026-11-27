@@ -11,8 +11,8 @@ pair is classified, and the first matching rule wins:
 - **moving:** other pairs in relative motion. Target ≥ 2 mm (hard 1 mm).
 - **static:** everything else. Target ≥ 1 mm (hard 0.5 mm).
 
-Swept checks over the joint ranges are separate (`swept()`): the elbow over −150…0°, the gripper jaw 0…45°, the head
-over tilt ±30°, the KX collar twist 0…35°.
+Swept checks over the joint ranges are separate (rnd/swept.py, rnd/pinch.py); the head is also checked here at both
+ends of its tilt range (upper.TILT_RANGE), since its pivot moves the shell round the yoke.
 
 **Pairs under target: 8; under the hard limit: 0.**
 
