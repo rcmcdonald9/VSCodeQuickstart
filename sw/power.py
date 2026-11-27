@@ -16,6 +16,9 @@ To this the supervisor adds a fixed allowance for the rest of the robot, REST_A:
 branch in electrical.md (base wheels 2.2 + lift 2.0 + 12 V servos 2.9 + 5 V compute/sensors 2.0 + AI reserve 0.8 = 9.9 A).
 With a BMS reading, the rest of the robot is max(REST_A, measured pack current − this arm's model draw), so the base and
 the lift keep priority when they really draw more, and the rolling mean uses the larger of model and measurement.
+The budget covers the drives of one Supervisor. On the two-arm robot either one supervisor runs both arms' drives, or
+each arm's supervisor gets the other arm's share in `rest_a` (Supervisor(rest_a=...)); two supervisors that each assume
+the whole budget would allow twice the arm current.
 
 Two limits (sw/safety.py Supervisor.check, after the per-joint torque bound):
 1. **Peak (70 A):** if the predicted total exceeds I_PEAK, every motoring joint's torque bound is lowered to s·|τ| (the

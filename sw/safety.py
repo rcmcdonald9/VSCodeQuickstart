@@ -152,7 +152,7 @@ class Supervisor:
         return r
 
     def _power_record(self, now, dt, arm_a, bms, extra=()):
-        """Log this cycle's pack current into the 30 s windows (drawn: the larger of model and BMS measurement)."""
+        """Log this cycle's pack current into the 30 s window (the larger of model, measured torque and BMS current)."""
         rest = self._rest(bms)
         self._arm_last = arm_a
         total = rest + arm_a
