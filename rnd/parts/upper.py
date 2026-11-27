@@ -278,7 +278,7 @@ def neck_boot(shell, px, pz):
     z 100), a floor 3.5 mm under the yoke plate with a Ø44 hole for the riser hub, out to x 80, and a front lip + side
     walls from the floor down to the shell's bottom. Lip seals 1.5 mm round the yoke
     beams: the boot flexes there with the tilt (−10…+30°; folding not modelled, ESTIMATE). One print, ≈ 116 × 188 × 164 mm."""
-    t = 2.0
+    t = NECK_BOOT_T
     zf = -40.0 - 1.5 - 2.0                                                           # floor top (the yoke plate is at z −40 at tilt 0)
     y1 = 94.0
     zt = 100.0                                                                       # up over the yoke-beam slots in the shell's back wall
@@ -294,6 +294,36 @@ def neck_boot(shell, px, pz):
     b -= Pos(0, 0, -40.0) * _yoke(px, 40.0 + pz, 1.5)                               # 1.5 mm round the yoke at tilt 0
     sols = b.solids()
     return max(sols, key=lambda q: q.volume) if len(sols) > 1 else b
+
+
+NECK_BOOT_T = 2.0                 # neck boot wall (TPU 95A)
+
+
+def neck_boot_spans():
+    """rnd/pinch.py compliant-cover rule (R17, wave 5): the neck boot is bonded to the head (rear wall foot at x −34, front
+    lip at x 78, side walls at y ±92, head frame) and its floor has to follow the yoke's riser hub (Ø44 collar, yoke frame),
+    which turns about the D22 pivot (head COM, 67 mm above the yoke plate) by −tilt relative to the head. Free spans of
+    the floor between the collar and those bonded edges, as (name, free length, length(tilt)): the hub travels ≈ 84 mm
+    over −10…+30°, so no span stays within ±40 % (rear 12 → 83 mm)."""
+    px, pz, _ = head_pivot()
+    zf = -40.0 - 1.5 - 2.0
+
+    def at(p, tilt):
+        x, z = p[0] - px, p[1] - pz
+        t = math.radians(-tilt)
+        return x * math.cos(t) + z * math.sin(t) + px, -x * math.sin(t) + z * math.cos(t) + pz
+
+    def span(hub, edge, dy=0.0):
+        f = lambda tilt: math.dist((*at(hub, tilt), dy), (*edge, 0.0))
+        return f(0.0), f
+
+    out = []
+    for name, hub, edge, dy in (("floor, collar → rear wall", (-22.0, zf), (-34.0, zf), 0.0),
+                                ("floor, collar → front lip", (22.0, zf), (78.0, zf), 0.0),
+                                ("floor, collar → side wall", (0.0, zf), (0.0, zf), 70.0)):
+        L0, f = span(hub, edge, dy)
+        out.append((name, L0, f))
+    return out
 
 
 def _yoke(px, zp, g=0.0):

@@ -24,6 +24,16 @@ working while the arm CAD changes:
    as open.
 4. **Soft parts** (names with bellows / boot / gaiter: TPU 95A or fabric) block the probe but are not pinch
    surfaces; in a rigid joint sweep they keep their reference shape (their folding is not simulated, ESTIMATE).
+   **Compliant-cover rule** (wave 5): a TPU 95A boot counts as closing the gaps it covers only if its wall is
+   ≥ TPU_WALL_MIN (1.2 mm) and, over the full range of the joint it spans, every free span between where it is fixed
+   to one body and where it is fixed to the other stays within ±TPU_STRAIN (40 %) of its as-printed (free) length.
+   Basis (ESTIMATE until a coupon test): a pleated elastomer bellows takes its stroke by bending the pleat flanks at the
+   folds, not by stretching the wall; moulded rubber and printed-TPU bellows are commonly rated at about 0.5–0.6 × free
+   length compressed and 1.4–1.5 × extended, beyond which the folds go flat (stretch) or stack solid (crush, and the boot
+   itself becomes a pinch); 40 % keeps the fold-root bending strain of a 1.2–2 mm TPU 95A wall with ≥ 1.5 mm fold radii
+   to roughly 10–15 %, well inside its elongation at break (> 400 %) for cyclic life. Each cover declares its spans
+   (covers.compliant()); a boot that fails is taken out of the model (it does not block the probe anywhere) and is
+   listed with the stroke it would need. A soft part with no declared spans is kept as drawn and listed as not judged.
 5. **Draw-in / exposed drive parts.** Belts, pulleys and idlers (draw-in), motors and cartridge cans (R17 "no exposed
    belt or motor") fail if any accessible patch ≥ 30 mm² shows at any step; exposed shafts are listed as warnings.
 
@@ -65,6 +75,8 @@ EXPOSE = [(re.compile(r"belt|pulley|idler"), "belt / pulley (draw-in)", True),
 SKIP_GAP = re.compile(r"jaw|finray|pad_fixed|finger")        # gripper fingers vs each other: gripping, not pinching
 COVER = re.compile(r"duct|cover|liner|belly|shield|mast_cap|collar_(top|bot)|spine_pod|back_plate")   # our own covers
 SOFT = re.compile(r"bellows|boot|gaiter")      # TPU / fabric: blocks the probe, gives under a finger (not a pinch surface)
+TPU_WALL_MIN = 1.2                # mm: thinnest TPU 95A wall that counts as a cover (≈ 3 perimeters of a 0.4 nozzle)
+TPU_STRAIN = 0.40                 # free spans of a compliant cover stay within ±40 % of the as-printed length over the stroke
 
 
 def _ranges():
@@ -74,6 +86,30 @@ def _ranges():
     w = BASELINE.arm.wrist_pitch_range_deg
     return {"pitch": JR["pitch"], "elbow": JR["elbow"], "wrist": (-w, w), "roll": JR["roll"], "yaw": JR["yaw"],
             "pan": getattr(upper, "PAN_RANGE", (-90, 90)), "tilt": getattr(upper, "TILT_RANGE", (-30, 30))}
+
+
+def judge_compliant(ranges=None):
+    """Judge every compliant cover declared by the CAD (covers.compliant()) against the rule in the module docstring.
+    Rows: name, part (robot part-name suffix, or None for a design study), joint, wall, worst span (free, min, max),
+    compression / extension of the worst span, ok, note."""
+    from .parts import covers
+    ranges = ranges or _ranges()
+    rows = []
+    for c in covers.compliant():
+        lo, hi = ranges[c["joint"]]
+        th = np.linspace(lo, hi, int(round(hi - lo)) + 1)
+        worst = None
+        for name, L0, f in c["spans"]:
+            L = np.array([f(t) for t in th])
+            comp, ext = 1 - L.min() / L0, L.max() / L0 - 1
+            k = max(comp, ext)
+            if worst is None or k > worst[0]:
+                worst = (k, name, L0, float(L.min()), float(L.max()), comp, ext)
+        k, sname, L0, lmin, lmax, comp, ext = worst
+        ok = bool(c["wall"] >= TPU_WALL_MIN and k <= TPU_STRAIN + 1e-9)
+        rows.append(dict(name=c["name"], part=c.get("part"), joint=c["joint"], range=(lo, hi), wall=c["wall"], span=sname,
+                         free=float(L0), min=lmin, max=lmax, comp=float(comp), ext=float(ext), ok=ok, note=c.get("note", "")))
+    return rows
 
 
 # ---------------------------------------------------------------------------------------------- CAD memo (speed only)
@@ -178,6 +214,12 @@ class Robot:
         self.robot, self.log = robot, log
         t0 = time.time()
         self.parts = robot.build(REF_LIFT, REF, covers=True)
+        self.compliant = judge_compliant()
+        bad = [r["part"] for r in self.compliant if r["part"] and not r["ok"]]
+        self.dropped = [n for n, _, _ in self.parts if any(_strip(n) == b for b in bad)]
+        self.parts = [q for q in self.parts if q[0] not in self.dropped]          # a boot that fails the rule closes nothing
+        judged = {r["part"] for r in self.compliant if r["part"]}
+        self.unjudged = sorted({_strip(n) for n, _, _ in self.parts if SOFT.search(n) and _strip(n) not in judged})
         self.names = [n for n, _, _ in self.parts]
         self.idx = {n: i for i, n in enumerate(self.names)}
         self.cen, self.sig = {}, {}
@@ -198,6 +240,8 @@ class Robot:
         from scipy.spatial import cKDTree
         out = {}
         for n, p, _ in parts:
+            if n not in self.idx:                       # e.g. a compliant cover the rule took out of the model
+                continue
             s0 = self.sig.get(n)
             s = _vsig(p)
             if s0 is None or len(s) != len(s0) or (len(s) and cKDTree(s0).query(s)[0].max() > tol):
@@ -596,6 +640,19 @@ def report(rb, tr, joints_done, skipped, t_run, quick):
     L += [f"| {r['part']} | {r['kind']} | {r['area']:.0f} | {r['joint']} {r['at']:.4g} | {'❌' if r['hard'] else '⚠️ shaft'} |" for r in expo]
     if not expo:
         L.append("| none | | | | ✅ |")
+    L += ["", "## Compliant covers (TPU 95A boots; rule in item 4 above)", "",
+          f"Wall ≥ {TPU_WALL_MIN} mm and every free span within ±{TPU_STRAIN:.0%} of its as-printed length over the joint's range. "
+          "A boot that fails is taken out of the model; a design study (no part) shows what a boot there would need.", "",
+          "| Cover | Part | Joint (range) | Wall (mm) | Worst span | Free (mm) | Min … max (mm) | Compression / extension | | Note |",
+          "|---|---|---|---|---|---|---|---|---|---|"]
+    for r in rb.compliant:
+        L.append(f"| {r['name']} | {r['part'] or 'study'} | {r['joint']} ({r['range'][0]:g}…{r['range'][1]:g}°) | {r['wall']:.1f} | {r['span']} | "
+                 f"{r['free']:.0f} | {r['min']:.0f} … {r['max']:.0f} | {r['comp']:.0%} / {r['ext']:.0%} | "
+                 f"{'✅ closes' if r['ok'] else ('❌ taken out' if r['part'] else '❌ not buildable')} | {r['note']} |")
+    if not rb.compliant:
+        L.append("| none | | | | | | | | | |")
+    if rb.unjudged:
+        L += ["", f"Soft parts with no declared spans (kept as drawn, not judged): {', '.join(rb.unjudged)}."]
     L += ["", "## Tier 1: joint nips (reachable, < 25 mm at some step; counted)", "",
           "Min/max over the sweep for the worst 20 mm cell of the moving part against the nearest part of the parent link.", ""]
     L += _gap_table(t1)
@@ -605,7 +662,9 @@ def report(rb, tr, joints_done, skipped, t_run, quick):
     js = {"gap_fails": len(gf), "exposed_fails": len(ef), "fails": len(gf) + len(ef), "reach_zones": sum(1 for r in t2 if not r["ok"]),
           "joints": joints_done, "skipped": skipped, "quick": quick,
           "rule": {"closed_mm": CLOSED, "open_mm": OPEN, "probe_d_mm": 2 * PROBE_R},
-          "gaps": [{**r, "sides": sorted(r["sides"])} for r in gaps], "exposed": expo}
+          "gaps": [{**r, "sides": sorted(r["sides"])} for r in gaps], "exposed": expo,
+          "compliant": rb.compliant, "compliant_rule": {"wall_min_mm": TPU_WALL_MIN, "strain": TPU_STRAIN},
+          "dropped": rb.dropped, "soft_unjudged": rb.unjudged}
     (DOCS / "pinch.json").write_text(json.dumps(js, indent=1, default=float))
     return L, len(gf), len(ef)
 

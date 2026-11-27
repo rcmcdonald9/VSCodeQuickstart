@@ -380,6 +380,36 @@ def base_frame():
     return out
 
 
+# ---------------------------------------------------------------------------------------------- compliant (TPU) covers
+def _roll_inboard_spans():
+    """Design study, shoulder roll (R17 wave 5): a TPU 95A fan bellows across the inboard wedge between the static
+    roll body (ferrule flange Ø91 / roll-link frame, lowest edge at φ_s) and the yaw block's inboard top edge (φ_b + roll),
+    pleats radiating from the roll axis (φ: 0 = −Z, + toward +Y). Developed length at the block's edge radius; floor 2 mm
+    (the closest approach, rnd/parts/roll.ferrule_sweep_gap ≥ 2). The wedge goes from ≈ 2 mm at −15° to ≈ 135 mm at
+    100°, so no pleat pitch keeps it within ±40 % (a printed fan would stack solid at −15° and be the pinch itself)."""
+    from . import roll
+    from .shoulder import FERRULE
+    r = math.hypot(46.0, -roll.P1[1])                                               # block inboard top edge (plates ±46, top at P1)
+    phi_b = -math.degrees(math.atan2(46.0, -roll.P1[1]))                            # −41.5°
+    phi_s = math.degrees(math.atan2(-(roll.ROLL_Y - 1.5), FERRULE["od"] / 2))        # ferrule flange's lowest edge, −55.4°
+    f = lambda a: max(2.0, r * math.radians(a + phi_b - phi_s))
+    lo, hi = roll.ROLL_MIN, 100.0
+    L0 = (f(lo) + f(hi)) / 2                                                        # best case: as printed at mid-stroke
+    return [("fan, block edge → ferrule (arc at r %.0f)" % r, L0, f)]
+
+
+def compliant():
+    """Compliant (TPU 95A) covers for rnd/pinch.py's rule: [{name, part (robot part-name suffix; None = design study),
+    joint, wall (mm), spans: [(name, free length mm, length(joint deg) mm)], note}]."""
+    from . import upper
+    return [dict(name="shoulder roll inboard fan bellows", part=None, joint="roll", wall=1.6, spans=_roll_inboard_spans(),
+                 note="not buildable: needs the wedge ≥ 25 mm at −15° (roll soft limit ≥ +15° near people, or ROLL_Y ≈ +23 mm); "
+                      "the outer sector is closed by the yaw hood (rigid)"),
+            dict(name="neck boot (upper.neck_boot)", part="neck_boot", joint="tilt", wall=upper.NECK_BOOT_T,
+                 spans=upper.neck_boot_spans(),
+                 note="the D22 pivot (head COM, 67 mm above the yoke plate) moves the riser hub ≈ 84 mm under the head over −10…+30°")]
+
+
 # ---------------------------------------------------------------------------------------------- printable list
 def printed():
     """{piece: solid} for the printability check (rigid pieces in PETG, gaiters in TPU 95A)."""
