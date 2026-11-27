@@ -4,10 +4,11 @@ Zero-free-length cable-spring balancer. Pulley A sits 40–60 mm above the pitch
 
 ## Loop 47 (Astra #2b finding 8)
 
-- **Pin-B sign: WRONG in the CAD.** shoulder.py puts pin B at (0, 0, **+30**) mm in the module frame; the arm hangs along −Z. B must lie along the arm (−Z when hanging). Opposite the arm the torque is −k·a·b·sin(pitch): it doubles the gravity load instead of cancelling it, and the hanging span is a − b = 20 mm, not a + b = 80 mm (Astra's 20 vs 80 mm).
+- **Pin-B sign: OK.** shoulder.py puts pin B at (0, -62, **-20**) mm in the module frame; the arm hangs along −Z. B must lie along the arm (−Z when hanging). Opposite the arm the torque is −k·a·b·sin(pitch): it doubles the gravity load instead of cancelling it, and the hanging span is a − b = 20 mm, not a + b = 80 mm (Astra's 20 vs 80 mm).
 - **The 41 %:** at the old 65 mm slot end the spring deflection is (65 + 30)/2 = 47.5 mm = **41.3% of L0** (ISO green maximum 40 %; 35% at the nominal 50 mm, already over the 30 % medium-life line). Worse, the 12 N/mm spring the model assumed is not a catalogue part: the real green Ø25 × 115 is 18.7 N/mm, which makes the old geometry K = 7.0 N·m instead of 4.5 N·m.
 - **Fix (this file):** keep the spring and the 2:1 tackle, change the geometry for the real rate: b = 20 mm, slot a = 40–60 mm. K = 4.5 N·m needs a = 48.1 mm.
-- **Cable vs shaft:** the straight A–B cable passes within the Ø40 shaft for pitch 0–180° from hanging (both directions) whenever the balancer plane holds the shaft. **The pin must sit beyond the shaft end** (a crank or end disc past the tube, the harness leaving the bore through a side window first) or the cable has to wrap the shaft, which breaks the law.
+- **Cable vs shaft:** a straight A–B cable passes within the Ø40 shaft for pitch 0–180° from hanging (both directions) whenever the balancer plane holds the shaft (loop 47 finding).
+- **Fix (2026-11-27, CAD-checked): the balancer plane moved inboard of the shaft's inboard end** (y -61.5 mm in the module frame): an aluminium crank on the tube's inboard end face carries pin B, 2.2 mm past the crank face; pulley A sits in a double-shear fork on the inner wall, the spring cage runs back in the same plane. Solids the cable sweep zone meets (pin B and pulley A excluded): **none ✅**. Outboard of the tube end the hub → ferrule load path and the harness would both have to cross the plane on the axis, which the cable sweeps at pitch 0° and 180°; so the harness now crosses pitch through a clock spring outboard of the outer wall (shoulder.PITCH_SPR) and enters the hub bore through a side window.
 
 | Quantity | Value |
 |---|---|
@@ -19,7 +20,7 @@ Zero-free-length cable-spring balancer. Pulley A sits 40–60 mm above the pitch
 | Spring deflection at the slot end a = 60 mm | 40.0 mm = **35%** of L0 (ISO max 40%) ✅ |
 | Spring force, nominal / slot end / ISO Fmax | 634 / 748 / 860 N |
 | Stored energy (nominal, hanging) | 10.7 J |
-| Cage: L0 + 12 ≤ 135 mm; bore Ø24.8 vs Ø25 spring hole | ✅; ❌ bore too small: open the cage to Ø25.5–26 |
+| Cage: L0 + 12 ≤ 135 mm; bore Ø26.0 vs Ø25 spring hole | ✅; ✅ |
 | B clears A at pitch 180° (|a − b| ≥ 15 mm over the slot) | ✅ (20 mm at the bottom of the slot) |
 | Law error from the Ø11 mm pulley (max over −200…60°) | 0.51 N·m (11% of K) |
 | Cable safety (2 mm UHMWPE, ESTIMATE 2000 N) | 6× |

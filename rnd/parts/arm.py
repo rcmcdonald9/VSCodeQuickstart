@@ -73,6 +73,7 @@ def housing_shell():
 
 
 STIFF_T = 2.8                # loop 40 (A8): inner layer on the +Y half and the top (1.2 + 2.8 = 4 mm)
+SIDE_T = 0.0                 # R2b last mile (2026-11-27): inner layer on the ±X side faces (0 = none)
 
 
 def housing_stiffener() -> Part:
@@ -84,6 +85,10 @@ def housing_stiffener() -> Part:
     inner = _housing_solid(WALL - 0.4) - _housing_solid(WALL + STIFF_T)          # 0.4 mm overlap into the skin: coincident faces crash the fuse
     yw = h["y"] / 2 - WALL - STIFF_T - 0.5                                               # +Y face slab only (cassette plate B ends at y 43.7)
     st = (inner & Pos(0, yw + 100, 0) * Box(400, 200, 600)) + (inner & Pos(0, 0, h["z1"] - 10) * Box(400, 400, 20))
+    if SIDE_T > 0:
+        side = _housing_solid(WALL - 0.4) - _housing_solid(WALL + SIDE_T)
+        xs = h["x"] / 2 - WALL - SIDE_T - 0.5
+        st += (side & Pos(xs + 100, 0, 0) * Box(200, 400, 600)) + (side & Pos(-xs - 100, 0, 0) * Box(200, 400, 600))
     if D20:                                                                            # over the whole can sleeve (y −75 … −18), skin left on top
         st -= Pos(0, -47, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(cm.can_r_out(MOT) + 1.7, 60)
     else:

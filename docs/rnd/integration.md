@@ -28,14 +28,14 @@ into structure within 3.2 mm (an insert or clearance hole in a wall, or a wall n
 | torque pin | tilt_sleeve | ✅ | yoke |
 | bolted flange (D24) | l_sh_can | ✅ | 6/6 screws (M4 into the flange inserts) land in structure |
 | torque pin | l_roll_roll_can | ✅ | l_roll_roll_link |
-| torque pin | l_roll_yaw_can | ✅ | l_roll_yaw_block |
+| torque pin | l_roll_yaw_can | ✅ | l_roll_roll_clevis_cap_in |
 | bolted flange (D24) | l_arm_e_can | ✅ | 6/6 screws (M4 into the flange inserts) land in structure |
 | bolted flange (D24) | l_arm_wrist_can | ✅ | 6/6 screws (M3 through the flange) land in structure |
 | torque pin | l_arm_hand_wr_sleeve | ✅ | l_arm_hand_palm |
 | torque pin | l_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
 | bolted flange (D24) | r_sh_can | ✅ | 6/6 screws (M4 into the flange inserts) land in structure |
 | torque pin | r_roll_roll_can | ✅ | r_roll_roll_link |
-| torque pin | r_roll_yaw_can | ✅ | r_roll_yaw_block |
+| torque pin | r_roll_yaw_can | ✅ | r_roll_roll_clevis_cap_in |
 | bolted flange (D24) | r_arm_e_can | ✅ | 6/6 screws (M4 into the flange inserts) land in structure |
 | bolted flange (D24) | r_arm_wrist_can | ✅ | 6/6 screws (M3 through the flange) land in structure |
 | torque pin | r_arm_hand_wr_sleeve | ✅ | r_arm_hand_palm |
