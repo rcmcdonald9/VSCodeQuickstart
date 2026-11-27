@@ -141,9 +141,11 @@ def items(d=BASELINE):
     A("Drive & structure", "Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards", 1, 35.0, "ESTIMATE")
     A("Drive & structure", "Balancers (A9): ISO 10243 green die spring Ø25/Ø12.5 × 115, 18.7 N/mm (Berger Tools V25-115 / Accu TJL25-115) + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
     A("Drive & structure", "Fasteners (other), heat-set inserts (base, torso, head), epoxy, grease", 1, 60.0)
-    kg = pp["kg"] + COVERS_KG                                   # print plan + the D23 rigid covers (not in print_plan.md)
+    cov = pp.get("covers_kg", 0.0)                              # W10: the print plan now slices the D23 / R17 covers itself
+    kg = pp["kg"] + (0.0 if cov else COVERS_KG)
     n10 = math.ceil(kg * 1.2 / 10)                              # loop 47: 10 kg bundles instead of $20/kg single spools
-    A("Printed parts", f"PETG {pp['kg']:.1f} kg (print_plan.md) + {COVERS_KG} kg D23 covers + 20 % spare = {kg * 1.2:.1f} kg: {n10} × Elegoo PETG Pro 10 kg bundle", n10, 109.99,
+    what = f"PETG {pp['kg']:.1f} kg (print_plan.md, the {cov:.1f} kg of D23 / R17 covers included)" if cov else f"PETG {pp['kg']:.1f} kg (print_plan.md) + {COVERS_KG} kg D23 covers"
+    A("Printed parts", f"{what} + 20 % spare = {kg * 1.2:.1f} kg: {n10} × Elegoo PETG Pro 10 kg bundle", n10, 109.99,
       "us.elegoo.com PETG Pro 10 kg $109.99 (2026-11; list $140)")
     A("Printed parts", "ASA 2 kg (A6: motor cans, KX hubs/collars and D13 hubs near motors)", 1, 40.0)
     return I

@@ -146,6 +146,6 @@ All four alternatives together: −$1,050 → $6,898, still +$1,398 against the 
 | Drive & structure | Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards | 1 | 35.00 | 35 | ESTIMATE |
 | Drive & structure | Balancers (A9): ISO 10243 green die spring Ø25/Ø12.5 × 115, 18.7 N/mm (Berger Tools V25-115 / Accu TJL25-115) + 2 mm UHMWPE cord | 2 | 12.00 | 24 | ESTIMATE |
 | Drive & structure | Fasteners (other), heat-set inserts (base, torso, head), epoxy, grease | 1 | 60.00 | 60 | ESTIMATE |
-| Printed parts | PETG 13.8 kg (print_plan.md) + 1.4 kg D23 covers + 20 % spare = 18.2 kg: 2 × Elegoo PETG Pro 10 kg bundle | 2 | 109.99 | 220 | us.elegoo.com PETG Pro 10 kg $109.99 (2026-11; list $140) |
+| Printed parts | PETG 14.8 kg (print_plan.md, the 2.0 kg of D23 / R17 covers included) + 20 % spare = 17.7 kg: 2 × Elegoo PETG Pro 10 kg bundle | 2 | 109.99 | 220 | us.elegoo.com PETG Pro 10 kg $109.99 (2026-11; list $140) |
 | Printed parts | ASA 2 kg (A6: motor cans, KX hubs/collars and D13 hubs near motors) | 1 | 40.00 | 40 | ESTIMATE |
 | Contingency (A16) | 15% for price drift, shipping and tax | 1 | 1,037.00 | 1,037 | review finding 18 |

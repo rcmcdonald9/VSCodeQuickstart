@@ -183,7 +183,8 @@ def main():
     md = "\n".join(L)
     (DOCS / "print_plan.md").write_text(md)
     (DOCS / "print_plan.json").write_text(json.dumps({"kg": tot_g / 1000, "hours_generic": tot_h, "hours_p2s": tot_h * P2S_FACTOR,
-                                                         "arm_kg": arm_g / 1000, "arm_hours_p2s": arm_h * P2S_FACTOR}))
+                                                         "arm_kg": arm_g / 1000, "arm_hours_p2s": arm_h * P2S_FACTOR,
+                                                         "covers_kg": sum(a["g"] for n, a in per.items() if n.startswith(("cover ", "lift cover"))) / 1000}))
     print(md)
 
 
