@@ -37,7 +37,7 @@ MAP = [  # (glob, checks)
     ("rnd/basket.py", ["rnd.basket"]),
     ("rnd/payload_study.py", ["rnd.payload_study"]),
     ("rnd/specs/*", ["rnd.run_all --quick"]),
-    ("sw/*", ["sw.test_s1"]),
+    ("sw/*", ["sw.test_s1", "sw.test_s2"]),
 ]
 
 
