@@ -152,10 +152,12 @@ class Base:
     caster_r: float = 0.205        # D18b ball contact radius at the 4 diagonals (FROM CAD: the housing clears the skirt and the 45° dock-pad carrier)
     caster_float: float = 0.022    # D18b free stroke when released: clears a 15 mm threshold + 7 mm of pile (R4)
     caster_take_up: float = 0.001  # ESTIMATE: travel before a locked caster carries load (rod-lock bite ≈ 0.5 mm + printed guide ≈ 0.5 mm); bench-test
-    caster_mass: float = 0.15      # each, ESTIMATE: D18b lockable caster (2" steel ball transfer ≈ 0.09, printed guide + spring, one-way rod lock + pull solenoid ≈ 0.06)
-    ballast_mass: float = 4.9      # FROM CAD (rnd/parts/base.py ballast(): 2 × 102 × 43 × 71 mm steel, 7.85 g/cm³ = 2 × 2.44 kg): removable, lifts out through two deck hatches; carried as its own pieces (R3)
+    caster_mass: float = 0.18      # each, ESTIMATE: D18b v2 (D26 skid foot): printed foot ≈ 0.03 + PTFE glide, 2 × Ø8 × 90 rods 0.07, steel top + lock plates 0.03, pull solenoid ≈ 0.05 (the 2" ball alone was 0.54 kg, not the 0.09 carried before)
+    caster_flank: float = 44.3     # deg, FROM CAD (base.FLANK): the skid foot's cone flank, PTFE glide r 9.5 at z 2 → r 30 at z 22
+    caster_mu: float = 0.15        # ESTIMATE: PTFE tape on the flank against a threshold edge (wood / aluminium), 0.1–0.2
+    ballast_mass: float = 4.9      # FROM CAD (rnd/parts/base.py ballast(): 2 × 92 × 44.45 × 76.2 mm steel (D26: saw-cut 1-3/4 × 3" flat bar), 7.85 g/cm³ = 2 × 2.45 kg): removable, lifts out through two deck hatches; carried as its own pieces (R3)
     ballast_on: bool = True        # False = the robot without its ballast blocks (tip.py compares both)
-    ballast_xyz: tuple = (-0.100, 0.085, 0.0665)  # FROM CAD (base.BAL_X/Y/Z): centroid of the left block (the right one mirrors y), m from the base centre / floor
+    ballast_xyz: tuple = (-0.105, 0.0857, 0.0691)  # FROM CAD (base.BAL_X/Y/Z): centroid of the left block (the right one mirrors y), m from the base centre / floor
     power_board_xyz: tuple = (0.095, -0.076, 0.0525)  # FROM CAD (base.PB_X/Y/Z): power_board envelope centroid (front-right sector, 315°)
 
 
