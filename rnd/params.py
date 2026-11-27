@@ -51,7 +51,7 @@ ROLL_DRIVES = {
     # roll actuator mass.
     # Seller drawing (2026-11-27): Ø96 × 57 with the driver, 8 × M4 PCD 84, Ø30 output boss → ROLL_Y 70 → 69, yaw_drop 99.3;
     # roll body + 61 g 7075 output adapter + steel clamp ring + cup ring; neck 14.1 mm longer than the belt arm's (+ 10 g).
-    "inline": dict(roll_offset_y=0.069, yaw_drop=0.0993, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.29, yaw_stage_mass=0.65, bone_upper_dm=0.010),   # D24 v2: yaw D50 Oldham, roll.masses yaw 0.552 → 0.579; + C1 6061 flange → 0.65
+    "inline": dict(roll_offset_y=0.069, yaw_drop=0.0993, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.35, yaw_stage_mass=0.67, bone_upper_dm=0.010),   # D24 v2: yaw D50 Oldham, roll.masses yaw 0.552 → 0.579; + C1 6061 flange → 0.65. R2b (2026-11-27): roll link side block + 53 g (roll.masses 0.297 → 0.350), yaw block +X end wall + 26 g (0.641 → 0.667)
 }
 assert ROLL_DRIVE in ROLL_DRIVES, f"PIP_ROLL_DRIVE must be one of {list(ROLL_DRIVES)}"
 _RD = ROLL_DRIVES[ROLL_DRIVE]

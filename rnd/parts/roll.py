@@ -361,6 +361,7 @@ def roll_link_inline() -> Part:
     p += Pos(xf0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, xf1 - xf0, align=MIN)                            # floor
     p += Pos(xf1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(R_MOT, CUP_H, align=MIN) - Cylinder(MOT36["drv_d"] / 2 + 0.5, CUP_H, align=MIN))   # cup around the driver
     p += _plate_x(xf0, xf1, 8, ROLL_Y, zlo, zhi, 4)                                                             # floor ↔ frame web
+    p += side_block()                                                                                          # R2b: floor + cup ↔ frame, beside the motor body
     for k in range(MOT36["rear_n"]):
         a = 2 * math.pi * k / MOT36["rear_n"] + REAR_ANG0
         y, z = ROLL_Y + MOT36["rear_pcd"] / 2 * math.cos(a), MOT36["rear_pcd"] / 2 * math.sin(a)
@@ -381,6 +382,27 @@ def roll_link_inline() -> Part:
     r1 = ROLL_SPR[1]
     p += Pos((x0 + 1 + x1 + 1.6) / 2, (12 + ROLL_Y - r1) / 2, 0) * Box(x1 + 1.6 - x0 - 1, ROLL_Y - r1 - 12 + 1, 14)   # spring bar
     return p
+
+
+# R2b (2026-11-27, rnd/stiffness.py): the 1 kg straight-out moment (16.1 N·m static about the pitch axis) reaches the
+# ferrule from the floor through the 6 mm floor ↔ frame web, which it twists (a 6 × 68 strip in torsion): 3.4 mrad at the
+# motor seat, 2.5 mm at the hand. The web becomes a solid block from the floor's −X face to the motor body's front face
+# (x −25 … 23), between the frame (y 8) and the roll axis, z −28 … 60, hollowed to r 48.5 round the motor body (0.5 mm
+# radial: the motor still slides in from +X) and to the driver bore in the cup: the floor, the cup ring and the frame
+# become one deep section. Its z −28 floor is the frame's (the yaw band passes it at roll −16.5°, ferrule_sweep_gap);
+# above the roll axis nothing on the roll output sweeps (the yaw plates and band stay below z −50 relative to it, roll
+# −16.5 … 104°). P2 FEA (stiffness.md): roll link 2.48 → 0.80 mm at the hand, + 69 cm³ (≈ 53 g at 60 % fill).
+SIDE_BLOCK = dict(zlo=-28.0, zhi=60.0, r_body=0.5)
+
+
+def side_block() -> Part:
+    b = SIDE_BLOCK
+    x0, x1 = X_FLOOR[0], X_MOT[0] + MOT36["body_h"]
+    blk = _plate_x(x0, x1, 8, ROLL_Y, b["zlo"], b["zhi"], 4)
+    blk -= Pos(X_FLOOR[1], ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(MOT36["drv_d"] / 2 + 0.5, 200, align=MIN)   # the cup's driver bore
+    blk -= Pos(X_MOT[0], ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT + b["r_body"], 200, align=MIN)          # round the motor body
+    blk -= Pos(0, 13, 0) * Rot(-90, 0, 0) * Cylinder(32.3, 12)                                              # ferrule spigot
+    return blk
 
 
 def _stop_lug_angles():
@@ -526,6 +548,9 @@ def yaw_plate_bot() -> Part:
         pl -= Pos(xx, yy, P2[0]) * Cylinder(2.75, 20, align=MIN)                  # post bolts
     t = math.radians(STOP_PIN_AZ)
     pl -= Pos(STOP_PIN_R * math.cos(t), ROLL_Y + STOP_PIN_R * math.sin(t), P2[0]) * Cylinder(2.95, 20, align=MIN)   # stop pin seat (through; pin flush with the cavity floor)
+    if INLINE:                                                                    # R2b: 2 × M4 up into the +X end wall (end_wall)
+        for s in (-1, 1):
+            pl -= Pos((END_WALL["x0"] + X_PL1) / 2, ROLL_Y + s * END_WALL["bolt_y"], P2[0] - 1) * Cylinder(2.25, 10, align=MIN)
     return pl
 
 
@@ -560,7 +585,30 @@ def clevis_and_yaw_block() -> Part:
         ri, ro, t = OUT_CLAMP["ring"]                                                 # steel clamp ring under the 6 low heads
         arm -= Pos(x1 - t - OUT_CLAMP["head_h"], ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(ro + 0.2, 20, align=MIN) - Cylinder(ri - 0.2, 20, align=MIN))
         p += arm
-        return p
+        return p + end_wall()
+    return _clevis_belt(p)
+
+
+# R2b (2026-11-27, rnd/stiffness.py): the bottom plate (yaw bearing B) reached the +X clevis arm only through the side
+# walls, which the Ø88 spring pocket cuts to 2 mm at x 0: under the yaw-seat couple it tilted 2.2 mrad (P2), 1.4 mm at
+# the hand. A wall right under the clevis arm (x 47 … X_PL1, full plate width, plate to plate) closes the box at +X and
+# ties the bottom plate straight to the arm: 1.39 → 0.40 mm, + 34 cm³ (≈ 26 g). It belongs to the top half (as the side
+# walls); the bottom plate bolts to it with 2 × M4 into heat-set inserts. A 16 × (CAV_H + 3) slot at its foot keeps the
+# ribbon's way out of the yaw spring ring (exit at x 41.5 … 45.5) to the clevis arm. Inline roll only (belt: X_PL1 48).
+END_WALL = dict(x0=47.0, slot_w=16.0, bolt_y=30.0, insert_d=5.6, insert_l=8.0)
+
+
+def end_wall() -> Part:
+    e = END_WALL
+    x0, x1, z0, z1 = e["x0"], X_PL1, P2[1], P1[0]
+    w = Pos((x0 + x1) / 2, ROLL_Y, (z0 + z1) / 2) * Box(x1 - x0, 92, z1 - z0)
+    w -= Pos((x0 + x1) / 2, ROLL_Y, z0 + (CAV_H + 3) / 2) * Box(x1 - x0 + 1, e["slot_w"], CAV_H + 3)
+    for s in (-1, 1):
+        w -= Pos((x0 + x1) / 2, ROLL_Y + s * e["bolt_y"], z0) * Cylinder(e["insert_d"] / 2, e["insert_l"], align=MIN)
+    return w
+
+
+def _clevis_belt(p):
     for x0, x1 in CLEVIS_X:                                                       # clevis arms outside the walls
         arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 0, 10)            # arms end on the top plate (yaw pulley below is clear)
         arm += Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(CLEVIS_R, x1 - x0, align=MIN)

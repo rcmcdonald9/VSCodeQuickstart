@@ -37,10 +37,10 @@ Before = the wave-2 joint (6 × M3 into heat-set inserts, ≈ 1.0 kN pull-out ES
 
 | Joint | Case | Pull-off (N) | Bending (N·m) | Worst pose | Before: inserts | After | Margin | |
 |---|---|---|---|---|---|---|---|---|
-| pitch hub ↔ tube | basket × 1.5 | 0 | 16.8 | floor pick, x 0.50 | 2.77× | no gap up to 84 N·m; bolt 1.58 kN; contact 7.9 MPa (≤ 12) | 1.52× | ✅ |
-| pitch hub ↔ tube | hug × 1.5 | 0 | 29.9 | yaw -45°, elbow -90° | 1.56× | no gap up to 84 N·m; bolt 1.93 kN; contact 8.9 MPa (≤ 12) | 1.34× | ✅ |
+| pitch hub ↔ tube | basket × 1.5 | 0 | 16.9 | floor pick, x 0.50 | 2.75× | no gap up to 84 N·m; bolt 1.58 kN; contact 7.9 MPa (≤ 12) | 1.51× | ✅ |
+| pitch hub ↔ tube | hug × 1.5 | 0 | 30.0 | yaw -45°, elbow -90° | 1.55× | no gap up to 84 N·m; bolt 1.93 kN; contact 9.0 MPa (≤ 12) | 1.34× | ✅ |
 | pitch hub ↔ tube | bump 140 N | 140 | 130.4 | abducted 90°, -Z | 0.35× | gaps; bolt 4.66 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (2.5× the bolt, need 1.5×); contact 17.0 MPa (≤ 40) | 1.56× | ✅ |
-| pitch hub ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 343 | 184.0 | roll stall, elbow 90° | 0.25× | gaps; bolt 6.14 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (1.9× the bolt, need 1.5×); contact 21.6 MPa (≤ 40) | 1.19× | ✅ |
+| pitch hub ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 343 | 184.1 | roll stall, elbow 90° | 0.25× | gaps; bolt 6.14 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (1.9× the bolt, need 1.5×); contact 21.6 MPa (≤ 40) | 1.19× | ✅ |
 | yaw flange ↔ tube | basket × 1.5 | 101 | 32.6 | floor pick, x 0.50 | 1.48× | no gap up to 71 N·m; bolt 1.45 kN; contact 10.3 MPa (≤ 12) | 1.16× | ✅ |
 | yaw flange ↔ tube | hug × 1.5 | 102 | 24.1 | yaw -45°, elbow -90° | 1.99× | no gap up to 71 N·m; bolt 1.27 kN; contact 9.5 MPa (≤ 12) | 1.27× | ✅ |
 | yaw flange ↔ tube | bump 140 N | 163 | 96.1 | abducted 90°, -Z | 0.51× | gaps; bolt 2.79 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (8.3 mm tapped) 11.3 kN (4.1× the bolt, need 1.5×); contact 16.7 MPa (≤ 40) | 1.75× | ✅ |
