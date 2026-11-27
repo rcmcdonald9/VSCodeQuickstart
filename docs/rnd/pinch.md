@@ -32,9 +32,9 @@ two-joint combinations (each joint is swept with the others at the reference pos
 
 **Tiers.** Tier 1 (counted, R17): the moving body against its parent link (the joint's own nips: elbow fold, shoulder–torso, wrist–forearm, head–neck), and for the lift the carriage body against the mast, base, head and bellows. Tier 2 (listed): everything else, e.g. a hand reaching the base at an extreme yaw or a hanging arm on the base rim at the lowest lift; those are clamping zones handled by the planner's keep-outs and force limiting (D23 (5)), not by cover geometry.
 
-**Result: 25 joint-nip gap fails, 22 exposed belt / pulley / motor parts. R17 needs 0 and 0.** Also listed: 35 reach-clamping zones (tier 2) and 12 exposed shafts (warnings).
+**Result: 21 joint-nip gap fails, 20 exposed belt / pulley / motor parts. R17 needs 0 and 0.** Also listed: 35 reach-clamping zones (tier 2) and 12 exposed shafts (warnings).
 
-Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 10.7 min.
+Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 10.5 min.
 
 ## Exposed drive parts (accessible to the Ø12 probe at some step)
 
@@ -64,7 +64,6 @@ Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"p
 | l_roll_yaw_motor | motor | 2454 | pitch -180 | ❌ |
 | l_sh_pulleyA | belt / pulley (draw-in) | 586 | pitch -180 | ❌ |
 | r_sh_pulleyA | belt / pulley (draw-in) | 546 | pitch -60 | ❌ |
-| lift_can | motor can | 277 | roll 90 | ❌ |
 | r_roll_yaw_shaft_12 | rotating shaft | 274 | pitch -40 | ⚠️ shaft |
 | r_arm_e_can | motor can | 263 | yaw 55 | ❌ |
 | r_sh_shaft_12 | rotating shaft | 260 | yaw -125 | ⚠️ shaft |
@@ -73,7 +72,6 @@ Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"p
 | l_roll_yaw_can_cap | motor can | 226 | pitch -80 | ❌ |
 | r_roll_yaw_can_cap | motor can | 169 | pitch -80 | ❌ |
 | l_arm_e_can | motor can | 163 | yaw -125 | ❌ |
-| belt_idler | belt / pulley (draw-in) | 106 | pitch 60 | ❌ |
 
 ## Tier 1: joint nips (reachable, < 25 mm at some step; counted)
 
@@ -86,10 +84,6 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 | elbow | arm_cf_fore | arm_upper_bone | l/r | 3.1 | 11.9 | -150 | ❌ |
 | elbow | arm_cover_forearm_f | arm_upper_bone | l/r | 3.2 | 9.6 | -150 | ❌ |
 | elbow | arm_forearm | arm_e_seat_cap_p | l/r | 7.0 | 8.4 | -90 | ❌ |
-| lift | back_plate | ratchet | - | 1.3 | 10.1 | 0.55 | ❌ |
-| lift | carriage | ratchet | - | 4.0 | 10.1 | 0.35 | ❌ |
-| lift | collar_bot | ratchet | - | 5.0 | 11.7 | 0.55 | ❌ |
-| lift | collar_top | ratchet | - | 5.0 | 11.0 | 0.35 | ❌ |
 | pitch | roll_roll_link | torso_shell | l/r | 13.0 | 18.4 | -120 | ❌ |
 | pitch | roll_yaw_band | torso_shell | l/r | 24.0 | 38.9 | -200 | ❌ |
 | roll | roll_yaw_block | roll_ferrule_m | l/r | 2.5 | 11.7 | -15 | ❌ |
@@ -102,23 +96,27 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 | roll | roll_yaw_motor | roll_roll_link | l/r | 20.2 | 26.6 | -15 | ❌ |
 | roll | roll_yaw_can_cap | roll_roll_link | l/r | 21.4 | 25.7 | 60 | ❌ |
 | tilt | head_shell | yoke | - | 3.0 | > 40 | 30 | ❌ |
-| tilt | head_drive_stub | tilt_sleeve | - | 6.6 | 8.3 | 0 | ❌ |
+| tilt | head_drive_stub | tilt_sleeve | - | 6.6 | 8.1 | 10 | ❌ |
 | tilt | head_shell | tilt_sleeve | - | 8.2 | 9.7 | 10 | ❌ |
 | tilt | visor | tilt_sleeve | - | 22.8 | 27.1 | 30 | ❌ |
 | yaw | arm_upper_bone | roll_yaw_stop_pin | l/r | 6.3 | 8.2 | 145 | ❌ |
 | elbow | arm_e_shaft40 | arm_cover_elbow_bay | l/r | 0.2 | 6.0 | -135 | ✅ |
 | elbow | arm_e_shaft40 | arm_e_seat_cap_m | l/r | 5.9 | 6.0 | -90 | ✅ |
 | elbow | arm_e_shaft40 | arm_upper_bone | l/r | 5.9 | 6.0 | -150 | ✅ |
-| lift | carriage | mast | - | 0.0 | 0.2 | 0.55 | ✅ |
-| lift | spine_pod | ratchet | - | 0.2 | 4.9 | 1.05 | ✅ |
+| lift | carriage | mast | - | 0.1 | 0.2 | 0.9 | ✅ |
 | lift | spine_pod | belt_duct | - | 3.0 | 3.0 | 1.05 | ✅ |
+| lift | carriage | ratchet | - | 3.0 | 3.0 | 0.9 | ✅ |
 | lift | collar_top | belt_duct | - | 3.0 | 3.0 | 1.05 | ✅ |
 | lift | collar_bot | mast | - | 5.0 | 5.0 | 0.35 | ✅ |
 | lift | collar_top | mast | - | 5.0 | 5.0 | 0.9 | ✅ |
+| lift | collar_bot | ratchet | - | 5.0 | 5.1 | 0.55 | ✅ |
+| lift | spine_pod | ratchet | - | 5.0 | 5.1 | 0.55 | ✅ |
+| lift | collar_top | ratchet | - | 5.0 | 5.0 | 0.35 | ✅ |
+| lift | back_plate | ratchet | - | 5.1 | 5.8 | 0.35 | ✅ |
 | lift | collar_bot | belt_duct | - | 5.8 | 6.0 | 0.35 | ✅ |
 | lift | torso_shell | mast | - | 15.0 | 15.0 | 1.05 | ⚠️ shear |
-| lift | torso_shell | ratchet | - | 17.0 | 17.0 | 0.35 | ⚠️ shear |
-| lift | spine_pod | mast | - | 24.2 | 24.3 | 0.55 | ⚠️ shear |
+| lift | spine_pod | mast | - | 16.7 | 16.8 | 0.9 | ⚠️ shear |
+| lift | torso_shell | ratchet | - | 17.0 | 17.0 | 0.75 | ⚠️ shear |
 | pan | yoke | pan_sleeve | - | 10.6 | 10.6 | -90 | ⚠️ shear |
 | pitch | roll_ferrule_m | sh_pitch_hub | l/r | 0.0 | 0.2 | -20 | ✅ |
 | pitch | roll_roll_link | sh_pitch_hub | l/r | 8.0 | 8.0 | -120 | ⚠️ shear |
@@ -132,7 +130,7 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 | roll | roll_yaw_band | roll_roll_spring_ring | l/r | 12.1 | 12.3 | 60 | ⚠️ shear |
 | roll | roll_roll_outflange | roll_roll_link | l | 13.0 | 13.4 | 100 | ⚠️ shear |
 | roll | roll_yaw_band | roll_roll_gim_housing | l/r | 22.8 | 22.9 | 60 | ⚠️ shear |
-| tilt | head_pivot_stub | tilt_bearing | - | 0.0 | 0.2 | 0 | ✅ |
+| tilt | head_pivot_stub | tilt_bearing | - | 0.0 | 0.2 | -10 | ✅ |
 | tilt | head_screen | yoke | - | 6.5 | 6.6 | 10 | ✅ |
 | tilt | visor | yoke | - | 16.4 | 16.7 | -10 | ⚠️ shear |
 | wrist | arm_hand_palm | arm_wrist_adapter | l/r | 0.0 | 0.2 | -40 | ✅ |
@@ -151,8 +149,8 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 | lift | arm_upper_bone | rim | l/r | 0.2 | > 40 | 0.35 | ❌ |
 | lift | arm_cover_elbow_bay | skirt3 | r | 0.2 | > 40 | 0.35 | ❌ |
 | lift | arm_cover_elbow_bay | skirt0 | l | 0.3 | > 40 | 0.35 | ❌ |
-| lift | arm_cover_elbow_bay | deck0 | l | 0.3 | > 40 | 0.35 | ❌ |
-| lift | arm_cover_elbow_bay | deck2 | r | 0.4 | > 40 | 0.35 | ❌ |
+| lift | arm_cover_elbow_bay | deck0 | l | 5.1 | > 40 | 0.35 | ❌ |
+| lift | arm_cover_elbow_bay | deck2 | r | 5.4 | > 40 | 0.35 | ❌ |
 | lift | arm_upper_bone | skirt3 | r | 6.3 | > 40 | 0.35 | ❌ |
 | lift | arm_upper_bone | skirt0 | l | 6.7 | > 40 | 0.35 | ❌ |
 | pitch | arm_hand_grip_servo_sleeve | skirt0 | l | 0.1 | > 40 | 40 | ❌ |
@@ -160,24 +158,24 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 | pitch | arm_hand_grip_servo_sleeve | rim | l/r | 0.2 | > 40 | 40 | ❌ |
 | pitch | arm_hand_grip_base | skirt3 | r | 0.2 | > 40 | 40 | ❌ |
 | pitch | arm_hand_grip_base | skirt0 | l | 0.3 | > 40 | 40 | ❌ |
-| pitch | arm_hand_grip_servo | rim | l/r | 0.9 | > 40 | 40 | ❌ |
+| pitch | arm_hand_grip_servo | rim | l/r | 1.0 | > 40 | 40 | ❌ |
+| pitch | arm_hand_grip_base | deck2 | r | 1.5 | > 40 | 40 | ❌ |
 | pitch | arm_hand_grip_servo | skirt3 | r | 2.2 | > 40 | 40 | ❌ |
 | pitch | arm_hand_grip_servo | skirt0 | l | 2.3 | > 40 | 40 | ❌ |
-| pitch | arm_hand_grip_base | skirt2 | r | 4.4 | > 40 | 40 | ❌ |
-| pitch | arm_hand_grip_base | skirt1 | l | 5.0 | > 40 | 40 | ❌ |
+| pitch | arm_hand_grip_base | deck0 | l | 2.9 | > 40 | 40 | ❌ |
 | pitch | arm_hand_grip_base | rim | l/r | 5.9 | > 40 | 40 | ❌ |
-| pitch | arm_hand_wr_cap | rim | l/r | 17.3 | > 40 | 40 | ❌ |
+| pitch | arm_hand_grip_base | skirt2 | r | 11.1 | > 40 | 40 | ❌ |
+| pitch | arm_hand_wr_cap | rim | l/r | 17.4 | > 40 | 40 | ❌ |
 | pitch | arm_hand_palm | rim | l/r | 19.2 | > 40 | 40 | ❌ |
-| pitch | arm_hand_wr_brg_L | rim | l | 19.7 | > 40 | 40 | ❌ |
 | roll | roll_yaw_band | torso_shell | l/r | 10.3 | 33.0 | -15 | ❌ |
 | roll | roll_cover_yaw | torso_shell | l/r | 17.5 | 37.1 | -15 | ❌ |
 | roll | roll_yaw_plate_bot | torso_shell | l/r | 18.0 | > 40 | -15 | ❌ |
 | roll | roll_yaw_block | torso_shell | l/r | 18.8 | 31.9 | -15 | ❌ |
 | roll | roll_yaw_flange | torso_shell | l/r | 21.6 | > 40 | -15 | ❌ |
 | roll | arm_upper_bone | torso_shell | l/r | 24.0 | > 40 | -15 | ❌ |
-| yaw | arm_hand_grip_servo_sleeve | deck2 | r | 0.1 | > 40 | -155 | ❌ |
-| yaw | arm_hand_grip_servo | deck2 | r | 0.1 | > 40 | -155 | ❌ |
-| yaw | arm_hand_grip_servo | deck0 | l | 0.2 | > 40 | -155 | ❌ |
+| yaw | arm_hand_grip_servo | deck0 | l | 0.1 | > 40 | -155 | ❌ |
 | yaw | arm_hand_grip_servo_sleeve | deck0 | l | 0.2 | > 40 | -155 | ❌ |
-| yaw | arm_hand_grip_base | deck2 | r | 1.8 | > 40 | -155 | ❌ |
-| yaw | arm_hand_grip_base | deck0 | l | 1.8 | > 40 | -155 | ❌ |
+| yaw | arm_hand_grip_servo_sleeve | deck2 | r | 0.2 | > 40 | -155 | ❌ |
+| yaw | arm_hand_grip_servo | deck2 | r | 0.3 | > 40 | -155 | ❌ |
+| yaw | arm_hand_grip_base | deck2 | r | 1.9 | > 40 | -155 | ❌ |
+| yaw | arm_hand_grip_base | deck0 | l | 1.9 | > 40 | -155 | ❌ |
