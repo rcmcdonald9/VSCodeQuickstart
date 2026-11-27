@@ -68,7 +68,7 @@ def mast() -> Part:
 # At lift_min (0.35 m) everything that rides the lift stays ≥ 25 mm above the static lift parts (R17 finger rule) with
 # the torso bottom at lift − 75 (it was lift − 105): D23 (3) asked for ≥ 120 mm under the torso, 155 → 275 mm = 120.
 LIFT_PD = 20 * 5.0 / math.pi                 # 20T HTD 5M pitch diameter (31.83 mm)
-EAR_SITE = "lift"                            # D24 v2 flange-ear pattern (cartridge_m.EAR_SITES), read by rnd/assembly_seq.py
+EAR_SITE = "lift4"                           # D24 v2 flange-ear pattern (cartridge_m.EAR_SITES), read by rnd/assembly_seq.py; W8b (Neon #2 finding 2): 4 ears, ±40° + ±140°
 LIFT_XF = -151.0                             # cartridge flange plane = wall A's cartridge-side face (stage z = 0)
 LIFT_Y = -2.0 - LIFT_PD / 2                  # stage axis y: the belt's rising strand leaves the pulley at y = −2
 LIFT_Z = 199.5                               # stage axis height: can bottom 1.2 mm over the deck (Z_BASE 155)
@@ -117,7 +117,7 @@ def lift_mount(*_):
     """One printed bracket (PETG-CF, ≈ 74 × 99 × 71 mm) on the deck behind the mast coupling: wall A (cartridge flange,
     2 × M4 ear bolts + nut pockets, eccentric seat for 6801 A: belt_stage.wall_a_cuts), wall B (eccentric seat for 6801 B), a web on
     the −Y side between them (clear of both strands) and a deck foot under the can's nose, 4 × M4 into deck inserts."""
-    from .belt_stage import V3, wall_a_cuts
+    from .belt_stage import V3, ear_tower, wall_a_cuts
     T = lift_stage_T()
     xa0, xa1 = LIFT_XF, LIFT_XF + 6.0                                          # wall A (stage z −6 … 0)
     xb0, xb1 = LIFT_XF - V3["end"] - 6.0, LIFT_XF - V3["end"]                   # wall B (stage z −40 … −34)
@@ -128,7 +128,8 @@ def lift_mount(*_):
     web = Pos((xa1 + xb0) / 2, yb0 + 2.5, Z_BASE) * Box(xb0 - xa1, 5, LIFT_WALL_TOP - Z_BASE, align=MIN)
     foot = Pos((xa0 + xb1) / 2, (ya0 + ya1) / 2, Z_BASE) * Box(xb1 - xa0, ya1 - ya0, 5, align=MIN)           # in front of the can (its belly is 1.2 mm off the deck)
     m = wa + wb + web + foot
-    m -= T * wall_a_cuts(None, EAR_SITE)                                         # D24 v2: 2 ears at ±140° (cartridge_m.EAR_SITES["lift"])
+    m += T * ear_tower(None, EAR_SITE, (40.0, -40.0))                           # W8b lift4: the ±40° ears stand 18 mm over LIFT_WALL_TOP
+    m -= T * wall_a_cuts(None, EAR_SITE)                                         # D24 v2 (W8b lift4): 4 ears at ±40° / ±140° (cartridge_m.EAR_SITES)
     m -= Pos(xb0 - 1, LIFT_Y, LIFT_Z) * Rot(0, 90, 0) * Cylinder(19.1, 8, align=MIN)          # wall B eccentric seat (Ø38.2)
     for x in (xa1 + 4, xb0 - 4):                                                # 4 × M4 inserts, screws from under the deck
         for y in (ya0 + 6, ya1 - 6):
@@ -182,6 +183,8 @@ def lift_cover() -> Part:
     cb = coupling()[0].bounding_box()
     c -= Pos(cb.center().X, cb.center().Y, cb.center().Z) * Box(cb.size.X + 6, cb.size.Y + 6, cb.size.Z + 6)   # 3 mm round the coupling
     c -= Pos(LIFT_XF + 3.0, LIFT_Y, Z_BASE) * Box(8.0, 84.0, LIFT_WALL_TOP - Z_BASE + 1.0, align=MIN)    # wall A + 1 mm (the riser stands on it)
+    from .belt_stage import ear_tower
+    c -= lift_stage_T() * ear_tower(None, EAR_SITE, (40.0, -40.0), grow=1.0)                      # W8b lift4: 1 mm round the ±40° ear towers
     sols = c.solids()
     return max(sols, key=lambda q: q.volume) if len(sols) > 1 else c
 
