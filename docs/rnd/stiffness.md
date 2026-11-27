@@ -10,21 +10,33 @@ chain adds those terms for the worst static case: 1 kg at the grasp point, arm s
    by t + ω × r (r = seat → hand). FEA loads are the ×1.5 design cases; the chain uses them ÷ 1.5.
 2. **Bearing play.** A 61808 pair with C0 radial clearance (≈ 10 µm each, ESTIMATE) tilts by 2·c/span. Shimmed
    (light axial preload) pairs remove most of it: the chain uses 30 % of the free play for shimmed pairs.
-3. **Carbon tubes** (rnd/bones.py) as before.
+3. **Carbon tubes** (rnd/bones.py), the CF segments only: bones.py also bends a printed "roll link" box (pitch → yaw)
+   and a printed "elbow housing" box, which are the same parts step 1 already solves by FEA (counted twice until
+   2026-11-27: 0.88 of its 1.85 mm).
+
+Static case for the inline roll (the default drive; model correction 2026-11-27): the roll link and the yaw block get the
+1 kg straight-out wrench itself instead of their ×1.5 strength cases ÷ 1.5. Pitch 90° with roll 0 puts the roll axis
+along gravity, so the roll torque is 0 (the strength case also carries the drive's 35 N·m rated limit, ÷ 1.5 = 23 N·m,
+at the same time), and the yaw torque is 0, so the yaw belt carries only its preload, which is there at zero payload
+too (the strength case has the 691 N belt peak). The arm moment comes from the twin's point masses
+(rnd/arm_sizing.point_masses): everything on the roll output about the roll axis for the roll link, everything hung
+from the yaw shaft about the yaw seats' mid-level for the yaw block (the strength cases use 19 N·m ÷ 1.5 = 12.7 N·m for
+both, which under-loads the roll link). The arm's ≈ 32 N shear at the yaw seats (< 6 % of the couple) is left out. The
+bracket and the elbow housing keep their strength cases ÷ 1.5 (belt peak, a 3 kg forearm load: conservative).
 
 The total is the static error a calibrated gravity model can largely remove (it is repeatable); the wrist camera closes
 the loop for grasping in any case. Target R2b: uncompensated ≤ 6 mm, after the gravity model (assumed to remove 80 %) ≤ 2 mm.
 
-**Static hand deflection, 1 kg straight out: 8.5 mm uncompensated (target ≤ 6), 1.7 mm after a gravity model (target ≤ 2).** ❌
+**Static hand deflection, 1 kg straight out: 5.1 mm uncompensated (target ≤ 6), 1.0 mm after a gravity model (target ≤ 2).** ✅
 
 ## 1. Printed parts (P2 vs P1 on the same mesh)
 
 | Part | Elements | Seat rotation P1 → P2 (mrad, static) | P2/P1 | Seat translation (mm) | Lever to hand (mm) | Hand (mm) | Von Mises P2 max / 99.5 % (P1 99.5 %) |
 |---|---|---|---|---|---|---|---|
 | Upper bone / elbow housing | 34,552 | 0.83 → 3.37 | 4.08 | 0.12 | 436 | 1.59 | 2.4 / 1.1 (0.4) MPa |
-| Shoulder pitch bracket | 29,943 | 0.71 → 1.39 | 1.96 | 0.10 | 736 | 1.12 | 4.7 / 1.6 (1.2) MPa |
-| Roll link | 13,651 | 1.61 → 2.72 | 1.69 | 0.09 | 736 | 2.09 | 5.8 / 2.8 (2.0) MPa |
-| Clevis + yaw block | 32,708 | 0.86 → 1.89 | 2.19 | 0.08 | 736 | 1.47 | 8.8 / 2.0 (0.8) MPa |
+| Shoulder pitch bracket | 30,775 | 0.69 → 1.27 | 1.86 | 0.10 | 736 | 1.03 | 4.7 / 1.5 (1.2) MPa |
+| Roll link | 18,635 | 0.64 → 1.04 | 1.64 | 0.04 | 736 | 0.80 | 7.7 / 1.4 (0.7) MPa |
+| Clevis + yaw block | 36,668 | 0.32 → 0.49 | 1.56 | 0.04 | 736 | 0.40 | 2.9 / 0.9 (0.5) MPa |
 
 ## 2. Bearing play (shimmed pairs, 30 % of 10 µm C0 clearance)
 
@@ -35,6 +47,8 @@ the loop for grasping in any case. Target R2b: uncompensated ≤ 6 mm, after the
 | yaw (61808 pair) | 36 | 0.12 |
 | elbow (61808 + 6708) | 108 | 0.02 |
 
-## 3. Carbon tubes (rnd/bones.py): 1.8 mm
+## 3. Carbon tubes (rnd/bones.py, CF segments only): 0.97 mm (bones.py's whole beam, incl. the printed boxes the FEA already solves: 1.85 mm)
+
+Static arm moments, 1 kg straight out (point masses): 16.1 N·m at the roll link, 13.0 N·m at the yaw seats. Cases solved: Upper bone / elbow housing; Shoulder pitch bracket; Roll link (D24 inline); Clevis + yaw block (D24 inline, + rear arm).
 
 **Reading:** P2 elements roughly double the P1 bending rotations here, as the review said; P1 FEA alone under-states the deflection. The stress margins in fea.md (P1, 99.5th percentile) are re-checked by the P2 column: compare with the 12 MPa across-layer allowable.
