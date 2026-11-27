@@ -26,7 +26,7 @@ MOTOR = dict(od=80.0, h=40.0,                     # with SDC104 driver (manual: 
 # ESTIMATE. The 22 N·m stall (2× the GIM6010's 11) doubles the Oldham tongue load, so a Ø50 Oldham (tongue bearing
 # ≈ 3T/(2·h·R²) ≈ 17 MPa at 22 N·m vs 26 MPa on the Ø40; hand calc, ESTIMATE) in an Ø84 flange disc; D24 v2 (Fable M6):
 # D63 Oldham (nose r 32.5 / 35.5), ears at r 56 outside the Ø102.6 sleeve (22 / (4 × 56 mm) ≈ 98 N per screw), the shared
-# Ø12 stage with a steel keyed 20T (belt_stage.AL_PULLEY note) and an 18 N·m flash torque limit; parts list D20_PARTS.
+# Ø12 stage with a steel keyed 20T (belt_stage.AL_PULLEY note) and an 18 N·m flash torque limit; parts_list(MOTOR_8108).
 MOTOR_8108 = dict(od=96.0, h=50.0, out_holes=8, out_pcd=30.0, rear_holes=6, rear_pcd=70.0,
                   oldham=63.0, nose=(32.5, 35.5), flange=(84.0, 37.0))   # D63: the 22 N·m stall (D50 ≈ 14.8 N·m would be 0.67×)
 MOTORS = {"GIM6010-8": MOTOR, "GIM8108-8": MOTOR_8108}
@@ -207,6 +207,11 @@ def can_r_out(m: dict | None = None) -> float:
     return (m or MOTOR)["od"] / 2 + WALL + 0.3
 
 
+def cap_screw_r(m: dict | None = None) -> float:
+    """Rear-cap screw radius: the lug centre (2.3 mm of sleeve to the motor bore, 3.1 mm to the lug's outer edge)."""
+    return can_r_out(m) + CAP["lug_out"] - 5.0
+
+
 def ear_r(m: dict | None = None) -> float:
     """Ear bolt radius: a Ø6 driver shank runs past the sleeve with driver_clear to spare (GIM6010 48.0, GIM8108-8 56.0)."""
     return can_r_out(m) + EAR["driver_r"] + EAR["driver_clear"]
@@ -264,7 +269,7 @@ def can_bolted(m: dict | None = None, site: str = "default") -> Part:
                                                                                  align=(Align.MIN, Align.CENTER, Align.MIN))
     body -= Pos(r_out, 0, (L["motor_face"] + z_rear) / 2) * Box(12, 16, m["h"] - 8)   # side window: CAN + power pigtail
     body -= Pos(0, 0, z_rear - c["lug_h"] - 4) * (Cylinder(r_out + 1, 2) - Cylinder(r_out - 1.2, 2))   # light-ring groove (in front of the lugs)
-    r_s = r_out + c["lug_out"] / 2
+    r_s = cap_screw_r(m)
     for a in c["ang"]:
         t = math.radians(a)
         body -= Pos(0, 0, z_rear - c["ear_t"]) * Rot(0, 0, a) * Pos((r_in + r_out + c["lug_out"]) / 2, 0, 0) * Box(r_out + c["lug_out"] - r_in + 2, c["ear_w"] + 0.4, c["ear_t"] + 1, align=MIN)   # notch = torque dog
@@ -282,7 +287,7 @@ def can_cap_bolted(m: dict | None = None) -> Part:
     z0 = L["rear"] - CAP_T
     c = CAP
     r_out = can_r_out(m)
-    r_s = r_out + c["lug_out"] / 2
+    r_s = cap_screw_r(m)
     cap = Pos(0, 0, z0) * Cylinder(m["od"] / 2 + 0.2, CAP_T, align=MIN)
     for a in c["ang"]:
         t = math.radians(a)
@@ -313,7 +318,7 @@ def cap_fasteners(m: dict | None = None):
     """Rear-cap screws (bench: they stay in when the cartridge is swapped): (name, head-top point, axis) in the stage frame."""
     m = m or MOTOR
     L = bolted_levels(m)
-    r_s = can_r_out(m) + CAP["lug_out"] / 2
+    r_s = cap_screw_r(m)
     out = [(f"cap screw {a:+.0f}°", (r_s * math.cos(math.radians(a)), r_s * math.sin(math.radians(a)), L["rear"] + 1.65), (0.0, 0.0, 1.0))
            for a in CAP["ang"]]
     for k in range(0, m["rear_holes"], 2):
@@ -354,3 +359,26 @@ def oldham_parts(m: dict | None = None):
 
 def motor_adapter_bolted(m: dict | None = None) -> Part:
     return dict((n, p) for n, p, _ in oldham_parts(m))["drive_adapter"]
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Bought parts per bolted stage (D24 v2, Fable C3/M5/M6, 2026-11-27): for the BOM / M1 kit. Standard designations; sizes
+# not on a datasheet are ESTIMATE. Ear-screw count per site: EAR_SITES (elbow 4, pitch 3, yaw 2, lift 2).
+def parts_list(m: dict | None = None, site: str = "default"):
+    """[(item, spec, qty)] for one bolted cartridge + its small stage, motor m at site."""
+    m = m or MOTOR
+    d20 = m is MOTOR_8108
+    n_ear = len(EAR_SITES[site])
+    out = [("actuator", "SteadyWin GIM8108-8 (8:1) with driver; 24 V operation to confirm (D20 gate)" if d20 else "SteadyWin GIM6010-8 with SDC104 driver", 1),
+           ("Oldham coupling", f"D{m['oldham']:.0f} clamp-hub Oldham, shaft hub bore 12 H7 with 4 mm keyway, acetal disc "
+                               "(the motor-side half is the printed ASA tongue adapter)", 1),
+           ("stage shaft", "Ø12 h6 C45 / 1045 ground steel, 4 × 2.5 DIN 6885 keyway from the pulley seat to the end", 1),
+           ("keys", f"DIN 6885 A 4 × 4 × {20 if d20 else 16} (pulley) + 4 × 4 × {16 if d20 else 11} (Oldham hub)", 2),
+           ("small pulley", f"HTD 5M 20T for 15 mm belt, {'steel C45' if d20 else 'aluminium'}, bore 12 H7 + 4 mm keyway, set screw on the key", 1),
+           ("bearings", "6801-2RS (12 × 21 × 5)", 2),
+           ("flange ear screws", f"{EAR['screw']}", n_ear),
+           ("rear cap", f"{CAP['screw']} × 2; {CAP['motor_screw']} × {m['rear_holes'] // 2} into the motor", 1)]
+    if d20:
+        out += [("belt", "HTD 5M 15 mm PU steel-cord (Fable M6): 355-5M at the pitch, 380-5M at the elbow", 1),
+                ("firmware", "flash torque limit 18 N·m motor-side (sw/bringup.py limit step): D63 disc 1.3×, 6801 s0 1.6× at that limit", 1)]
+    return out

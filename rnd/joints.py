@@ -369,7 +369,7 @@ def report(loads=None):
          "Assembly: tube into the inner wall → crank + studs from the inboard side → belt → outer wall → hub over the double-D and the studs → ring, nuts.",
          f"- **Yaw flange ↔ yaw tube** (rnd/parts/roll.py YAW_TIE): the flange is now 6061-T6 (machined, ESTIMATE $25; its hex spigot stays the torque path). "
          f"{y['n']} × M{y['d']:.0f} × {y['L']:.0f} ISO 4762 class {y['grade']} go down from the tube's top end, heads on a steel clamp ring r {y['ring'][0]}–{y['ring'][1]} × {y['ring'][2]:.0f} "
-         f"in a Ø{2 * y['cb_r']:.0f} × {y['cb_depth']:.1f} counterbore (heads {y['top_gap']} mm under the top, which runs 2 mm under the roll motor), through Ø{y['hole']} holes in the "
+         f"in a Ø{2 * y['cb_r']:.0f} × {y['cb_depth']:.1f} counterbore (heads {y['top_gap']} mm under the top, 0.5 mm under the top plate, under the yaw AS5048A board), through Ø{y['hole']} holes in the "
          f"wall (bore Ø16 for the ribbon) into M3 threads tapped at the hex corners (r {y['r']:.0f}) of the flange's spigot + plate ({lv['engaged']:.1f} mm engaged, tips "
          f"{lv['tip_to_face']:.1f} mm inside its underside, Loctite 243); {y['preload'] / 1e3:.1f} kN each (≈ 0.5 N·m). Tightened from above on the bench, before the yaw block goes onto "
          "the roll output.",

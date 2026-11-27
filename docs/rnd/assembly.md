@@ -45,7 +45,7 @@
 | wheel pod | 26 × 80 × 124 | 114 | ✅ |
 | palm | 60 × 75 × 122 | 197 | ✅ |
 | roll link | 96 × 112 × 120 | 138 | ✅ |
-| lift cover | 89 × 99 × 118 | 94 | ✅ |
+| lift cover | 89 × 109 × 118 | 96 | ✅ |
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
 | cover collar_bot | 2 × 110 × 110 | 15 | ✅ |
 | forearm (ends) [1] | 53 × 80 × 108 | 44 | ✅ |
@@ -70,8 +70,8 @@
 | KX74 male | 8 × 80 × 80 | 29 | ✅ |
 | cartridge M adapter | 12 × 80 × 80 | 45 | ✅ |
 | cartridge M rear cap (D24) | 4 × 80 × 80 | 18 | ✅ |
-| cover wrist_f | 40 × 68 × 80 | 21 | ✅ |
-| cover wrist_r | 40 × 68 × 80 | 21 | ✅ |
+| cover wrist_f | 40 × 68 × 80 | 22 | ✅ |
+| cover wrist_r | 40 × 68 × 80 | 22 | ✅ |
 | cartridge D can | 54 × 80 × 80 | 37 | ✅ |
 | cover elbow_cap | 6 × 80 × 80 | 12 | ✅ |
 | forearm (ends) [2] | 64 × 78 × 80 | 80 | ✅ |
@@ -80,7 +80,7 @@
 | KX56 hub | 13 × 70 × 70 | 39 | ✅ |
 | pulley 40T | 18 × 67 × 67 | 54 | ✅ |
 | handle | 34 × 65 × 65 | 22 | ✅ |
-| yaw shaft | 46 × 62 × 62 | 69 | ✅ |
+| yaw shaft | 43 × 62 × 62 | 67 | ✅ |
 | KX56 male | 6 × 61 × 61 | 14 | ✅ |
 | wheel shaft | 35 × 60 × 60 | 34 | ✅ |
 | KX44 hub | 13 × 56 × 56 | 24 | ✅ |

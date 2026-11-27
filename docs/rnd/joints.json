@@ -59,7 +59,7 @@
    "joint": "yaw flange \u2194 tube",
    "case": "preload (assembly)",
    "verdict": true,
-   "text": "6 \u00d7 M3 12.9 at 1.0 kN = 6.0 kN \u2192 9.5 MPa on the printed contact annulus r 14.1\u201320.0 (\u00d7 0.75 after creep); M_gap at N = 0: 71 N\u00b7m"
+   "text": "6 \u00d7 M3 12.9 at 1.0 kN = 6.0 kN \u2192 9.5 MPa on the printed contact annulus r 14.1\u201320.0 (\u00d7 0.75 after creep); M_gap at N = 0: 72 N\u00b7m"
   },
   {
    "joint": "yaw flange \u2194 tube",
@@ -70,7 +70,7 @@
    "pose": "floor pick, x 0.50",
    "margin": 1.16,
    "verdict": true,
-   "text": "no gap up to 70 N\u00b7m; bolt 1.44 kN; contact 10.4 MPa (\u2264 12)",
+   "text": "no gap up to 71 N\u00b7m; bolt 1.45 kN; contact 10.3 MPa (\u2264 12)",
    "before": 1.48
   },
   {
@@ -80,9 +80,9 @@
    "M": 24.05,
    "T": 0.0,
    "pose": "yaw -45\u00b0, elbow -90\u00b0",
-   "margin": 1.26,
+   "margin": 1.27,
    "verdict": true,
-   "text": "no gap up to 70 N\u00b7m; bolt 1.26 kN; contact 9.5 MPa (\u2264 12)",
+   "text": "no gap up to 71 N\u00b7m; bolt 1.27 kN; contact 9.5 MPa (\u2264 12)",
    "before": 1.99
   },
   {
@@ -92,9 +92,9 @@
    "M": 96.14,
    "T": 61.04,
    "pose": "abducted 90\u00b0, -Z",
-   "margin": 1.76,
+   "margin": 1.75,
    "verdict": true,
-   "text": "gaps; bolt 2.77 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (10.8 mm tapped) 14.7 kN (5.3\u00d7 the bolt, need 1.5\u00d7); contact 16.9 MPa (\u2264 40)",
+   "text": "gaps; bolt 2.79 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (8.3 mm tapped) 11.3 kN (4.1\u00d7 the bolt, need 1.5\u00d7); contact 16.7 MPa (\u2264 40)",
    "before": 0.51
   },
   {
@@ -104,9 +104,9 @@
    "M": 98.58,
    "T": 149.55,
    "pose": "elbow stall, forward",
-   "margin": 1.73,
+   "margin": 1.72,
    "verdict": true,
-   "text": "gaps; bolt 2.82 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (10.8 mm tapped) 14.7 kN (5.2\u00d7 the bolt, need 1.5\u00d7); contact 17.2 MPa (\u2264 40)",
+   "text": "gaps; bolt 2.84 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (8.3 mm tapped) 11.3 kN (4.0\u00d7 the bolt, need 1.5\u00d7); contact 17.0 MPa (\u2264 40)",
    "before": 0.5
   }
  ],

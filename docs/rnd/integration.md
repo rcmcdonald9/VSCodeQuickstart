@@ -26,25 +26,23 @@ into structure within 3.2 mm (an insert or clearance hole in a wall, or a wall n
 | bolted flange (D24) | lift_can | ✅ | 2/2 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | torque pin | pan_sleeve | ✅ | head_bracket |
 | torque pin | tilt_sleeve | ✅ | yoke |
-| bolted flange (D24) | l_sh_can | ✅ | 2/2 screws (M4 through the flange ears into nuts in wall A) land in structure |
+| bolted flange (D24) | l_sh_can | ✅ | 3/3 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | bolted flange (D24) | l_roll_yaw_can | ✅ | 2/2 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | bolted flange (D24) | l_arm_e_can | ✅ | 4/4 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | bolted flange (D24) | l_arm_wrist_can | ✅ | 6/6 screws (M3 through the flange) land in structure |
 | torque pin | l_arm_hand_wr_sleeve | ✅ | l_arm_hand_palm |
 | torque pin | l_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
-| bolted flange (D24) | r_sh_can | ✅ | 2/2 screws (M4 through the flange ears into nuts in wall A) land in structure |
+| bolted flange (D24) | r_sh_can | ✅ | 3/3 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | bolted flange (D24) | r_roll_yaw_can | ✅ | 2/2 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | bolted flange (D24) | r_arm_e_can | ✅ | 4/4 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | bolted flange (D24) | r_arm_wrist_can | ✅ | 6/6 screws (M3 through the flange) land in structure |
 | torque pin | r_arm_hand_wr_sleeve | ✅ | r_arm_hand_palm |
 | torque pin | r_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
 
-## Clashes inside modules: 5
+## Clashes inside modules: 3
 
 | Module | Part A | Part B | Overlap (mm³) |
 |---|---|---|---|
-| upper (mast, lift, torso, head) | lift_can | lift_cover | 122 |
-| upper (mast, lift, torso, head) | lift_can_cap | lift_cover | 102 |
 | upper (mast, lift, torso, head) | lift_al_pulley | lift_belt | 75 |
 | head tilt -10° | yoke | neck_boot | 2437 |
 | head tilt +30° | yoke | neck_boot | 1478 |

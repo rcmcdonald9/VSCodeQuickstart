@@ -1,7 +1,7 @@
 """Shoulder-pitch module v0 (torso side of the arm-detach plane). Left arm; outboard = +Y. Pitch axis = Y at the origin.
 
 - Pitch cartridge M (GIM6010-8) behind the axis (x = -BELT_C), its output facing outboard, bolted to the inner wall
-  (D24: 6 × M4 flange, Oldham drive into the D13 small stage).
+  (D24 v2: 3 × M4 flange ears from the cartridge side into nuts on the wall, side-exit slot; Oldham drive into the D13 small stage).
 - HTD 5M 20T → 60T belt (3:1, loop 10) in the belt plane; the 60T is integral with the pitch shaft (D19; Ø40, 2 × 61808
   in the bracket walls, the outer wall a separate bolted print).
 - Balancer plane **inboard of the shaft's inboard end** (2026-11-27): an aluminium crank disc bolted to the tube's inboard
@@ -30,6 +30,7 @@ from .belt_stage import pulley
 from ..params import BASELINE as _D
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
+EAR_SITE = "pitch"          # D24 v2 flange-ear pattern + side exit (cartridge_m.EAR_SITES / EXIT_SITES), read by rnd/assembly_seq.py
 MOT = cm.MOTORS[_D.arm.joints["shoulder_pitch"][0]]   # D20 switch (params.ARM_MOTORS): GIM6010-8, or the GIM8108-8 (Ø96 ESTIMATE, Ø50 Oldham, Ø84 flange)
 WALL = 1.6
 BELT_C = 70.0
@@ -55,7 +56,12 @@ Y_TUBE_END = Y_DISC - 2.5  # tube end face (−5.5)
 # cable plane, its tube trimmed to y −75.4 … −48.3 so it stays 3 mm off the belt and ≥ 1 mm off the can sleeve (both motors).
 Y_TUBE_IN = W_IN - 4.0     # tube inboard end face (−55.3)
 CRANK_T = 4.0
-Y_BAL = Y_TUBE_IN - CRANK_T - 2.2   # cable plane (−61.5): 2.2 mm past the crank face (Ø2 cable: 1.2 mm clear)
+# M3 (Fable, 2026-11-27): the pitch AS5048A board (rnd/parts/encoder.py) sits between the crank's inboard face and the
+# cable: 0.5 gap + 0.8 FR4 + 1.2 IC + 0.5 to the cable zone, so the cable plane moved 2.2 → 4.2 mm past the crank face.
+# Pin B stands 4.2 mm out: ≤ 374 N cable (M8: 748 N spring / 2:1 tackle; balancer.study Fmax 313 N) × 4.2 mm ≈ 1.6 N·m on the Ø6 pin ≈ 73 MPa (hand
+# calc; a hardened ISO 8734 dowel). The cage tube follows the plane inside the same y trim: its −Y side opens a 10 mm
+# window over the spring (still held over ≈ 290° of the Ø26 bore; the spring rides its Ø12.5 rod).
+Y_BAL = Y_TUBE_IN - CRANK_T - 4.2   # cable plane (−63.5): 4.2 mm past the crank face (Ø2 cable: 3.2 mm clear)
 PIN_B = (0.0, Y_BAL, -20.0)         # b = 20 mm along the hanging arm (−Z at pitch 0)
 CAGE = dict(z=58.0, x0=-15.0, L=135.0, r_out=14.6, r_in=13.0, y_lo=-75.4, y_hi=W_IN + WALL_T / 2)   # Ø26 bore for the Ø25 die spring
 # M8 (Fable review 2026-11-27): pulley A was a U604ZZ (C0 ≈ 0.3 kN) under up to 748 N. Now a 608-2Z (C0 1.37 kN, SKF) in a
@@ -184,7 +190,7 @@ def _wall(y: float, inner: bool) -> Part:
     w -= Pos(0, y, 0) * Rot(-90, 0, 0) * Cylinder(26, WALL_T + 1)                      # 61808 seat (OD 52)
     if inner:
         from .belt_stage import wall_a_cuts
-        w -= _ST * wall_a_cuts(MOT)       # D24: eccentric seat, cartridge spigot counterbore, 6 × M4 countersunk clearance
+        w -= _ST * wall_a_cuts(MOT, EAR_SITE)   # D24 v2: eccentric seat, spigot counterbore, 3 ear bolts + nut pockets (pulley side)
     else:
         w -= Pos(-BELT_C, y, 0) * Rot(-90, 0, 0) * Cylinder(19.1, WALL_T + 1)       # eccentric-bushing seat (Ø38) for bearing B
     # lightening (loop 8 diet): keep ≥ 10 mm of material around both bearing seats and along the back web
@@ -198,6 +204,8 @@ def bracket_body() -> Part:
     the D24 flange carries the cartridge torque into the inner wall."""
     p = _wall(W_IN, True)
     p += balancer_mount()
+    from .encoder import pitch_post
+    p += pitch_post()                                                                   # M3: post for the pitch AS5048A strip
     y1 = W_OUT - WALL_T / 2
     p += Pos(WEB_X, (W_IN + y1) / 2, 10) * Box(8, y1 - W_IN, _ZS)
     for z in WEB_INSERTS_Z:
@@ -239,14 +247,16 @@ def crank() -> Part:
     """Balancer crank (7075-T6, ESTIMATE): Ø44 × 4 disc on the tube's inboard end face, tapped M4 through for the 4
     HUB_TIE studs (C1: it is the "nut" of the pitch-hub clamp; the studs end flush with its inboard face), Ø6 steel pin B
     pressed in at b = 20 mm along the hanging arm, standing 5.2 mm into the cable plane. It also holds bearing A's inner
-    race. Pin moment ≈ 318 N × 2.2 mm ≈ 0.7 N·m (hand calc); the balancer torque (K 4.5 N·m) reaches the tube through
+    race. Pin moment ≈ 374 N × 4.2 mm ≈ 1.6 N·m (hand calc, M3 cable plane); the AS5048A magnet sits flush in a Ø6.1 × 2.5
+    pocket at the centre of the inboard face (rnd/parts/encoder.py). The balancer torque (K 4.5 N·m) reaches the tube through
     the clamp friction and the studs in shear (≈ 73 N each)."""
     d = Pos(0, Y_TUBE_IN, 0) * Rot(90, 0, 0) * Cylinder(22, CRANK_T, align=MIN)          # y −55.3 … −59.3
     for a in _tie_angles():
         x, z = HUB_TIE["r"] * math.cos(a), HUB_TIE["r"] * math.sin(a)
         d -= Pos(x, Y_TUBE_IN, z) * Rot(90, 0, 0) * Cylinder(1.65, CRANK_T, align=MIN)  # M4 tapped through (Ø3.3 drill)
     d += Pos(PIN_B[0], Y_TUBE_IN - CRANK_T + 1.0, PIN_B[2]) * Rot(90, 0, 0) * Cylinder(3.0, Y_TUBE_IN - CRANK_T + 1.0 - (Y_BAL - 3.0), align=MIN)
-    return d
+    from .encoder import pitch_magnet_pocket
+    return d - pitch_magnet_pocket()
 
 
 def spring_ring() -> Part:
@@ -275,13 +285,15 @@ def module(with_motor: bool = True):
     """(name, part, colour) list in the module frame. Stage frame (belt_stage.small_stage_v3): flange plane z = 0,
     cartridge +Z; mapped so stage +Z → world −Y, flange plane at Y_F, axis at x = −BELT_C."""
     from .belt_stage import small_stage_v3, bolted_cartridge
+    from . import encoder as _enc
     out = [("bracket", bracket_body(), "white"), ("bracket_wall", bracket_wall_out(), "white"), ("shaft", pitch_shaft(), "orange"),
-           ("pitch_hub", pitch_hub(), "orange"), ("pitch_hub_crank", crank(), "steel"), ("pitch_hub_collar", hub_clamp_ring(), "steel"),   # name: a "collar"/"hub" mate in rnd.spacing
+           ("pitch_hub", pitch_hub(), "orange"), ("pitch_hub_crank", crank() + _enc.pitch_magnet(), "steel"),   # M3: magnet bonded in the crank ("pitch_hub_collar", hub_clamp_ring(), "steel"),   # name: a "collar"/"hub" mate in rnd.spacing
            ("pulleyA", pulley_a(), "steel"),
            ("bracket_wall_spring_ring", spring_ring(), "dark")]   # screwed to the outer wall (a mate for rnd.spacing)
     out += [(n, _ST * pp, c) for n, pp, c in small_stage_v3(20, MOT)]                # D24: Oldham drive + D13 stage
+    out += _enc.pitch_parts()                                                          # M3: AS5048A strip board ("enc_pcb")
     if with_motor:
-        out += [(n, _ST * pp, c) for n, pp, c in bolted_cartridge(MOT)]
+        out += [(n, _ST * pp, c) for n, pp, c in bolted_cartridge(MOT, EAR_SITE)]
     return out
 
 
@@ -291,7 +303,7 @@ def masses(density=1.27):
     from .belt_stage import small_stage_v3
     st = dict((n, p) for n, p, _ in small_stage_v3(20, MOT))
     oldham = st["flange_coupling"].volume * 2.7e-3 * 0.8 + st["oldham_disc"].volume * 1.41e-3 + st["kx_hub_v2"].volume * density * 0.7e-3
-    can_extra = (cm.can_bolted(MOT).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-3
+    can_extra = (cm.can_bolted(MOT, EAR_SITE).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-3
     m = {"bracket body + bolted outer wall (walls, web, cage)": bracket().volume / 1e6 * density * 0.6,
          "pitch shaft + integral 60T + pitch hub (ferrule) + clock-spring ring": (pitch_shaft().volume + pitch_hub().volume + spring_ring().volume) / 1e6 * density * 0.7,
          "balancer crank (aluminium) + Ø6 pin B": crank().volume * 2.7e-6,
@@ -300,5 +312,5 @@ def masses(density=1.27):
          "bearings 2×61808 + 2×61804 (ESTIMATE)": 0.056,
          "spring + cable + 2 × (608-2Z + POM tyre) + Ø8 axles (ESTIMATE; M8: was U604, 0.09)": 0.11,
          "V-band clamp, stainless 3\" (ESTIMATE)": 0.11,
-         "screws: 6 × M4 flange, 3 × M4 wall, inserts (ESTIMATE)": 0.010}
+         "screws: 3 × M4 ear bolts + nuts, 3 × M4 wall, inserts (ESTIMATE)": 0.010}
     return m

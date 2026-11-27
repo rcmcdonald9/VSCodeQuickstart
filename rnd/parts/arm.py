@@ -134,7 +134,11 @@ def upper_bone() -> Part:
         p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(MOT["od"] / 2 + 4.5, 20)   # loop 36 (R15): 1.2 mm around the can
     # D24 v2 (Fable C3): the cartridge's flange ears (r 48; D20 r 56) pass the −Y wall on the way in and out, and the same
     # notches are the driver paths to the 4 ear screws (straight Ø6 along −Y past the sleeve; rnd/assembly_seq.py R14 c/d)
-    p -= STAGE * cm.can_envelope(MOT, EAR_SITE, 0.6, Y_E + 30.0, 140.0)
+    # (D20: the upper ±140° ears (r 56) reach the housing stiffener in front of plate A, so the cut starts at the flange plane)
+    p -= STAGE * cm.can_envelope(MOT, EAR_SITE, 0.6, -0.6 if D20 else Y_E + 30.0, 140.0)
+    if D20:                                                                              # … and plate A's lobes under those ears (r 7.5) sat in it too
+        for a_ in cm.EAR_SITES[EAR_SITE]:
+            p -= STAGE * cm._lobe(cm.ear_r(MOT), a_, 7.5 + 0.6, (CAS_A[1] - CAS_A[0]) + 1.2, -(CAS_A[1] - CAS_A[0]) - 0.6)
     p -= Pos(0, h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20)
     p -= Pos(0, -h["y"] / 2 + 3, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20, align=MIN)   # loop 40: −Y wall opened for the elbow shaft (was blind; the shaft now goes in from −Y)
     # D19: U-slots under both elbow seats: the whole cassette (shaft + 40T + plates + belt + small stage, 61808s on the tube
@@ -281,13 +285,23 @@ def forearm() -> Part:
     p += Pos(0, WRIST_Y0, -FORE_L) * Rot(-90, 0, 0) * (Cylinder(can_d / 2 + WALL, wy, align=MIN) - Cylinder(can_d / 2, wy - WALL, align=MIN))
     p += Pos(0, y, -FORE_L + 38) * Box(56, link_t, 12)                                  # web joining link and wrist can
     p -= Pos(0, y + TUBE_DY, -FORE_L + 38) * Cylinder(15.1, 2 * FORE_SOCKET, align=MIN)  # the CF tube runs 30 mm into the wrist socket
-    # D24 (2026-11-27): the wrist cartridge bolts to a 5 mm rim (Ø80) with 6 × M3 heat-set inserts (r 36); loop 24's
-    # torque pad and slot are gone (no torque pin)
+    # D24 (2026-11-27): the wrist cartridge bolts to a 5 mm rim (Ø80) at r 36; loop 24's torque pad and slot are gone (no
+    # torque pin). D24 v2 (Fable C3, 2026-11-27): the 6 × M3 went into heat-set inserts pressed in from the mating face, so
+    # each screw pulled its insert out of the rim. Now ISO 4762 M3 × 12 from the hand side through the can flange (4) and
+    # the rim (5) into ISO 4032 M3 nuts (s 5.5, m 2.4) in hex pockets on the rim's +Y face (2.6 deep → 2.4 mm floor): a
+    # through-bolt, rim and flange in compression. A flat faces the axis: 0.5 mm to the housing tube (r 32.7).
+    from build123d import RegularPolygon, extrude
     rim = Pos(0, WRIST_Y0, -FORE_L) * Rot(-90, 0, 0) * (Cylinder(40.0, 5.0, align=MIN) - Cylinder(can_d / 2, 5.0, align=MIN))
+    hexp = extrude(RegularPolygon(WRIST_NUT["af"] / math.sqrt(3), 6), WRIST_NUT["pocket"] + 0.01)
     for k in range(6):
         a = math.pi / 3 * k + math.pi / 6
-        rim -= Pos(36.0 * math.cos(a), WRIST_Y0, -FORE_L + 36.0 * math.sin(a)) * Rot(-90, 0, 0) * Cylinder(2.0, 5.0, align=MIN)
+        at = Pos(36.0 * math.cos(a), WRIST_Y0, -FORE_L + 36.0 * math.sin(a))
+        rim -= at * Rot(-90, 0, 0) * Cylinder(WRIST_NUT["clr_d"] / 2, 5.0, align=MIN)
+        rim -= at * Pos(0, 5.0 - WRIST_NUT["pocket"], 0) * Rot(-90, 0, 0) * Rot(0, 0, 30.0 - math.degrees(a)) * hexp   # a flat toward the axis
     return p + rim
+
+
+WRIST_NUT = dict(af=5.6, pocket=2.6, clr_d=3.4, screw="ISO 4762 M3 × 12 + ISO 4032 M3 nut in a hex pocket")   # D24 v2 wrist flange (pocket af = 5.5 + 0.1)
 
 
 def cf_neck() -> Part:

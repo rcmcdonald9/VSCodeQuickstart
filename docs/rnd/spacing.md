@@ -14,23 +14,14 @@ pair is classified, and the first matching rule wins:
 Swept checks over the joint ranges are separate (`swept()`): the elbow over −150…0°, the gripper jaw 0…45°, the head
 over tilt ±30°, the KX collar twist 0…35°.
 
-**Pairs under target: 17; under the hard limit: 7.**
+**Pairs under target: 8; under the hard limit: 0.**
 
 | Module | Part A | Part B | Kind | Gap (mm) | Target / hard | |
 |---|---|---|---|---|---|---|
-| arm | upper_bone | enc_bracket | static | 0.0 | 1.0 / 0.5 | ❌ hard |
-| arm | enc_bracket | enc_pcb | static | 0.0 | 1.0 / 0.5 | ❌ hard |
-| arm | enc_magnet_holder | enc_magnet | static | 0.0 | 1.0 / 0.5 | ❌ hard |
-| base | deck3 | lidar | static | 0.0 | 1.0 / 0.5 | ❌ hard |
-| upper | lift_can | lift_cover | static | 0.0 | 1.0 / 0.5 | ❌ hard |
-| upper | lift_can_cap | lift_cover | static | 0.0 | 1.0 / 0.5 | ❌ hard |
-| arm | e_shaft40 | enc_magnet_holder | static | 0.05 | 1.0 / 0.5 | ❌ hard |
 | roll/yaw | roll_gim_housing | roll_outflange | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
 | roll/yaw | yaw_flange | yaw_stop_pin | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
 | roll/yaw | roll_arm_rear | yaw_can | static | 0.5 | 1.0 / 0.5 | ⚠️ target |
 | upper | lift_bracket | lift_cover | static | 0.84 | 1.0 / 0.5 | ⚠️ target |
-| arm | enc_pcb | enc_magnet_holder | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
-| arm | enc_pcb | enc_magnet | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
 | base | w90_hub | w90_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
 | base | w180_hub | w180_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
 | base | w270_hub | w270_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |

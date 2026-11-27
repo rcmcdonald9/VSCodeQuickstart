@@ -3,16 +3,27 @@ the static side.  python -m rnd.parts.encoder   (writes docs/rnd/encoders.md)
 
 sw/config/can_map.yaml expects an AS5048A on pitch, roll, yaw (shoulder node) and elbow (elbow node). The AS5048A is an
 on-axis sensor: a diametrically magnetised magnet on the rotating shaft's axis, the IC centred over it on the static side.
-Datasheet (ams AS5048A/AS5048B, "Magnet" / "Mechanical data" sections; the figures below are the ones this file designs
-to — re-check against the current revision before ordering):
+Datasheet: ams AS5048A/AS5048B, 14-bit rotary position sensor, sections "Magnet requirements" and "Package drawings"
+(the figures below are the ones this file designs to — re-check against the current revision before ordering):
   - magnet: diametric NdFeB cylinder, Ø6 × 2.5 mm used here (Ø8 × 3 also listed);
-  - air gap, magnet face → IC package surface: 0.5 … 2.5 mm (designed to the middle, ≈ 1–1.6 mm);
+  - air gap, magnet face → IC package surface: 0.5 … 2.5 mm (designed to 1.0–1.3 mm here; where the IC reads through
+    its board, the FR4 counts in the gap: it is non-magnetic);
+  - package TSSOP-14: 5.0 × 6.4 mm body + leads, 1.2 mm max height (JEDEC MO-153);
   - lateral offset IC centre ↔ magnet axis: keep ≤ ±0.25 mm (VERIFY with the datasheet's error-vs-displacement plot):
     the PCB is located on the same printed part that holds the joint's bearing, never on a cover.
-On-axis room exists at the elbow (the elbow tube's −Y end is free: the harness crosses on the +Y side) and at the yaw
-(the yaw tube's top end: the ribbon leaves the bore lower down, at the clock-spring hub). Pitch and roll have their axes
-taken (balancer cable plane / ribbon pass); report() lists what their owners would need.
-Frames: elbow parts in the upper-arm frame (rnd/parts/arm.py), yaw parts in the roll frame (rnd/parts/roll.py).
+On-axis room, per joint (Fable M3: all four joints now have a mount):
+  - elbow: the elbow tube's −Y end (the harness crosses on the +Y side) → bracket on the −Y 61808 boss;
+  - pitch: the balancer crank's centre (inboard tube end) → a 0.8 mm FR4 strip cantilevered from a post on the inner wall
+    (which holds pitch bearing A), crossing pin B's circle only where pin B never goes; the cable plane moved 2 mm inboard;
+  - yaw: the yaw tube's top end (the ribbon leaves the bore lower down, at the clock-spring hub; C1's tie heads sit in the
+    counterbore at r ≥ 8.25) → a strip board on pads on the top yaw plate (which holds yaw bearing A), IC hanging into the
+    counterbore; the tube top is 0.5 mm under the plate top (roll.YAW_TOP);
+  - inline roll: the roll clock-spring hub's +X end (a web in its bore carries the magnet; the ribbon's inner end enters the
+    hub in front of it) → a board on a bridge across the static spring ring's cover hole.
+  Steel fasteners near the magnets (pitch hub-tie studs r 15.5, yaw tie screws r 11, clevis M5 r 32) turn with the magnet,
+  so they distort a field that rotates rigidly with it (offset / harmonics, calibrated at bring-up; VERIFY on the bench).
+Frames: elbow parts in the upper-arm frame (rnd/parts/arm.py), pitch parts in the shoulder-module frame
+(rnd/parts/shoulder.py), yaw and roll parts in the roll frame (rnd/parts/roll.py).
 """
 from __future__ import annotations
 
@@ -100,39 +111,189 @@ def elbow_parts():
 
 
 # ---------------- yaw: tube top end (rotates with the upper arm) → board on the top yaw plate (static) ----------------
-YAW_TRIM = 0.3        # the yaw tube's top must end 0.3 mm under the top plate's top face (roll.py today: 2.0 mm above it)
+YAW_PAD = 1.0         # board on 1.0 mm pads on the top plate: 2.0 mm over the tube rim (swept target), 2.2 under the roll motor
 
 
 def _yaw_geo():
     from . import roll
     z_plate = roll.P1[1]
-    z_tube = z_plate - YAW_TRIM                          # tube top (after the roll owner's trim) = magnet face
-    pcb0 = z_plate + 0.5                                 # PCB on 0.5 mm pads at r ≥ 27 (clear of the 61808's inner race)
-    return dict(z_plate=z_plate, z_tube=z_tube, pcb=(pcb0, pcb0 + PCB_THIN), ic_top=pcb0 + PCB_THIN + AS5048A["ic"][2],
-                gap=pcb0 - z_tube, y=roll.ROLL_Y, screw_x=30.0)
+    pcb0 = z_plate + YAW_PAD                             # board underside
+    ic_bot = pcb0 - AS5048A["ic"][2]                     # IC on the underside, facing the magnet, hanging into the counterbore
+    mag = ic_bot - 1.0                                   # magnet face: 1.0 mm air gap
+    return dict(z_plate=z_plate, z_tube=roll.YAW_TOP, pcb=(pcb0, pcb0 + PCB_THIN), ic_bot=ic_bot, mag=mag, gap=ic_bot - mag,
+                y=roll.ROLL_Y, screw_y=30.0, bore_r=roll.YF["bore_r"])
 
 
 def yaw_magnet_holder() -> Part:
-    """Printed plug pressed 8 mm into the yaw tube's Ø20 top bore, magnet flush with the (trimmed) tube top."""
+    """Printed plug pressed 8 mm into the yaw tube's Ø16 bore (C1: the ribbon bore), inside the tie ring (r 8.5) and the
+    screw heads (r ≥ 8.25); the magnet flush in its top face, 0.2 mm under the tube top."""
     g = _yaw_geo()
-    plug = Pos(0, g["y"], g["z_tube"] - 8.0) * Cylinder(9.95, 8.0, align=MIN)
-    return plug - Pos(0, g["y"], g["z_tube"] - AS5048A["magnet"][1] + 0.01) * Cylinder(AS5048A["magnet"][0] / 2 + 0.05, AS5048A["magnet"][1], align=MIN)
+    plug = Pos(0, g["y"], g["mag"] - 8.0) * Cylinder(g["bore_r"] - 0.05, 8.0, align=MIN)
+    return plug - Pos(0, g["y"], g["mag"] - AS5048A["magnet"][1] + 0.01) * Cylinder(AS5048A["magnet"][0] / 2 + 0.05, AS5048A["magnet"][1], align=MIN)
+
+
+def yaw_magnet() -> Part:
+    g = _yaw_geo()
+    return Pos(0, g["y"], g["mag"] - AS5048A["magnet"][1]) * Cylinder(AS5048A["magnet"][0] / 2, AS5048A["magnet"][1], align=MIN)
 
 
 def yaw_pcb() -> Part:
     """Strip board 14 × 66 × 0.8 (ESTIMATE) across the tube end along Y (along X it would reach the −X clevis arm's foot),
-    IC on top over the axis (reads through the FR4), 2 × M2 at y ±30 into the top plate on 0.5 mm pads."""
+    the IC on its underside over the axis, 2 × M2 at y ±30 into the top plate on 1.0 mm pads (modelled with the board)."""
     g = _yaw_geo()
     p0, p1 = g["pcb"]
     b = Pos(0, g["y"], p0) * Box(14, 66, p1 - p0, align=MIN)
-    b += Pos(0, g["y"], p1) * Box(AS5048A["ic"][0], AS5048A["ic"][1], AS5048A["ic"][2], align=MIN)
-    for dy in (-g["screw_x"], g["screw_x"]):
-        b += Pos(0, g["y"] + dy, g["z_plate"]) * (Cylinder(4.0, 0.5, align=MIN) - Cylinder(1.1, 0.5, align=MIN))      # pads
+    b += Pos(0, g["y"], g["ic_bot"]) * Box(AS5048A["ic"][0], AS5048A["ic"][1], AS5048A["ic"][2], align=MIN)
+    for dy in (-g["screw_y"], g["screw_y"]):
+        b += Pos(0, g["y"] + dy, g["z_plate"]) * (Cylinder(4.0, YAW_PAD, align=MIN) - Cylinder(1.1, YAW_PAD, align=MIN))      # pads
     return b
 
 
+def yaw_pilot_cuts() -> Part:
+    """2 × Ø1.8 × 6 pilots for the M2 board screws in the top yaw plate (roll.clevis_and_yaw_block)."""
+    g = _yaw_geo()
+    a, b = (Pos(0, g["y"] + dy, g["z_plate"] - 6.0) * Cylinder(0.9, 6.01, align=MIN) for dy in (-g["screw_y"], g["screw_y"]))
+    return a + b
+
+
 def yaw_parts():
-    return [("enc_pcb", yaw_pcb(), "green")], [("enc_magnet_holder", yaw_magnet_holder(), "dark")]
+    """(static board, rotating holder + magnet): roll.module_inline() adds the board as "yaw_enc_pcb" and unions the
+    holder + magnet into "yaw_shaft" (they turn with it; rnd/swept.py)."""
+    return [("enc_pcb", yaw_pcb(), "green")], [("enc_magnet_holder", yaw_magnet_holder(), "dark"), ("enc_magnet", yaw_magnet(), "steel")]
+
+
+# ---------------- pitch: balancer crank centre (rotates with the arm) → strip on a post on the inner wall (static) ----------------
+# Shoulder-module frame: pitch axis = Y, x forward, z up, inboard = −Y. Pin B (r 20 on the crank, standing into the cable
+# plane) points along the hanging arm: at pitch θ it sits at azimuth −90° − θ (robot.build turns the pitch output by
+# Rot(0, θ, 0)), so over twin.JR pitch −200…60° it never visits azimuths 110…210°. The strip crosses pin B's circle
+# (r 17–23) at 133° (±17° with its 3 mm half-width and the pin's r 3: 116…150°). Its post sits outside r 26 (the 61808
+# seat), between pulley A's lowest slot position (Ø28 tyre at a 38: 1.5 mm) and the path of the pitch cartridge's 40° ear
+# when the cartridge leaves through its downward side exit (D20 ear r 56: x ≤ −21.6; 0.8 mm). Stack from the crank's
+# inboard face (y −59.3): 0.5 running gap → FR4 0.8 → IC 1.2 on the inboard side, read through the board (magnet →
+# package 1.3 mm) → 0.5 mm to the cable zone (Ø2 cable + 0.4, plane shoulder.Y_BAL −63.5, was −61.5).
+PITCH_STRIP = dict(w=6.0, pad=9.0, cross=(23.5, 133.0), posts=((-17.8, 24.2), (-14.9, 27.0)), post_r=3.0, gap=0.5)
+
+
+def _pitch_geo():
+    import math
+    from . import shoulder
+    y_c = shoulder.Y_TUBE_IN - shoulder.CRANK_T                    # crank inboard face (magnet face)
+    b0 = y_c - PITCH_STRIP["gap"]
+    r, a = PITCH_STRIP["cross"]
+    return dict(y_c=y_c, pcb=(b0 - PCB_THIN, b0), ic=(b0 - PCB_THIN - AS5048A["ic"][2], b0 - PCB_THIN), gap=PITCH_STRIP["gap"] + PCB_THIN,
+                wall=shoulder.Y_F, B=(r * math.cos(math.radians(a)), r * math.sin(math.radians(a))), y_bal=shoulder.Y_BAL)
+
+
+def _seg(p, q, w, y0, t) -> Part:
+    """Bar of width w from p to q (module x, z) with round ends, y0 … y0 + t."""
+    import math
+    dx, dz = q[0] - p[0], q[1] - p[1]
+    bar = Pos((p[0] + q[0]) / 2, y0, (p[1] + q[1]) / 2) * Rot(0, -math.degrees(math.atan2(dz, dx)), 0) * Box(math.hypot(dx, dz), t, w, align=(Align.CENTER, Align.MIN, Align.CENTER))
+    for c in (p, q):
+        bar += Pos(c[0], y0, c[1]) * Rot(-90, 0, 0) * Cylinder(w / 2, t, align=MIN)
+    return bar
+
+
+def pitch_magnet_pocket() -> Part:
+    """Ø6.1 × 2.5 pocket in the crank's inboard-face centre (7075: 1.5 mm left; magnet bonded in, face flush)."""
+    g = _pitch_geo()
+    return Pos(0, g["y_c"] - 0.01, 0) * Rot(-90, 0, 0) * Cylinder(AS5048A["magnet"][0] / 2 + 0.05, AS5048A["magnet"][1] + 0.01, align=MIN)
+
+
+def pitch_magnet() -> Part:
+    g = _pitch_geo()
+    return Pos(0, g["y_c"], 0) * Rot(-90, 0, 0) * Cylinder(AS5048A["magnet"][0] / 2, AS5048A["magnet"][1], align=MIN)
+
+
+def pitch_pcb() -> Part:
+    """FR4 0.8 strip (ESTIMATE layout: 6 mm wide, 6 SPI + power traces): a 9 × 9 pad on the axis with the AS5048A on its
+    inboard face, a leg along 133° to r 23.5, a dog-leg to the two M2 holes on the post."""
+    g = _pitch_geo()
+    y0, y1 = g["pcb"]
+    w, (q1, q2) = PITCH_STRIP["w"], PITCH_STRIP["posts"]
+    b = Pos(0, y0, 0) * Box(PITCH_STRIP["pad"], y1 - y0, PITCH_STRIP["pad"], align=(Align.CENTER, Align.MIN, Align.CENTER))
+    b += _seg((0.0, 0.0), g["B"], w, y0, y1 - y0) + _seg(g["B"], q1, w, y0, y1 - y0) + _seg(q1, q2, w, y0, y1 - y0)
+    for q in (q1, q2):
+        b -= Pos(q[0], y0 - 1, q[1]) * Rot(-90, 0, 0) * Cylinder(1.1, 3, align=MIN)
+    i0, i1 = g["ic"]
+    return b + Pos(0, i0, 0) * Box(AS5048A["ic"][0], i1 - i0, AS5048A["ic"][1], align=(Align.CENTER, Align.MIN, Align.CENTER))
+
+
+def pitch_post() -> Part:
+    """Post on the inner wall's inboard face (part of shoulder.bracket_body, the print that holds pitch bearing A): a 6 mm
+    stadium from the wall to the board, 2 × M2 pilots (Ø1.6 × 5)."""
+    g = _pitch_geo()
+    q1, q2 = PITCH_STRIP["posts"]
+    y0, y1 = g["pcb"][1], g["wall"]
+    p = _seg(q1, q2, 2 * PITCH_STRIP["post_r"], y0, y1 - y0 + 0.5)
+    for q in (q1, q2):
+        p -= Pos(q[0], y0 - 0.01, q[1]) * Rot(-90, 0, 0) * Cylinder(0.8, 5.0, align=MIN)
+    return p
+
+
+def pitch_parts():
+    """Static board only: shoulder.module() adds it as "enc_pcb"; the magnet is unioned into the crank (pitch_hub_crank)."""
+    return [("enc_pcb", pitch_pcb(), "green")]
+
+
+# ---------------- inline roll: spring-hub web (rotates with the roll output) → board on the spring ring's cover (static) ----------------
+# Roll frame, roll axis = X through (y ROLL_Y, z 0). The hub sleeve (r 20.1–22, x 62 … 72.8) gets a 3.5 mm web at
+# x 66 … 69.5, the magnet flush in its +X face; the static spring ring's cover (x 73.3 … 74.9, Ø45 hole) gets a 12 mm bridge
+# across the hole carrying a 14 × 14 × 1.6 board on its −X face (inside the hub bore, 10 mm radial clearance), the IC
+# facing the magnet: 1.0 mm air gap. The ribbon's inner end enters the hub through its sleeve at x 62 … 66 (in front of
+# the web) and turns into the clevis arm's Ø16 bore. The ring is located on the roll link's spring bar (VERIFY the ±0.25
+# lateral offset; else calibrate the offset at bring-up).
+ROLL_ENC = dict(web=(66.0, 69.5), bridge_w=12.0, pcb=14.0, pcb_t=1.6, screw_z=5.0)
+
+
+def _roll_geo():
+    from . import roll
+    x1 = roll.ROLL_SPR_X[1]
+    p1 = x1                                           # cover x1 … x1 + 1.6 (roll.roll_spring_ring); board on its −X face
+    p0 = p1 - ROLL_ENC["pcb_t"]
+    ic0 = p0 - AS5048A["ic"][2]
+    return dict(y=roll.ROLL_Y, web=ROLL_ENC["web"], mag=ROLL_ENC["web"][1], pcb=(p0, p1), ic=(ic0, p0), gap=ic0 - ROLL_ENC["web"][1],
+                cover=(x1, x1 + 1.6), hole_r=roll.ROLL_SPR[0] + 0.5)
+
+
+def roll_hub_web() -> Part:
+    """Added to roll.roll_spring_hub(): the web (r 20.3, fused into the r 20.1 sleeve bore) minus the magnet pocket."""
+    g = _roll_geo()
+    w0, w1 = g["web"]
+    web = Pos(w0, g["y"], 0) * Rot(0, 90, 0) * Cylinder(20.3, w1 - w0, align=MIN)
+    return web - Pos(w1 - AS5048A["magnet"][1], g["y"], 0) * Rot(0, 90, 0) * Cylinder(AS5048A["magnet"][0] / 2 + 0.05, AS5048A["magnet"][1] + 0.01, align=MIN)
+
+
+def roll_magnet() -> Part:
+    g = _roll_geo()
+    return Pos(g["mag"] - AS5048A["magnet"][1], g["y"], 0) * Rot(0, 90, 0) * Cylinder(AS5048A["magnet"][0] / 2, AS5048A["magnet"][1], align=MIN)
+
+
+def roll_bridge() -> Part:
+    """Added to roll.roll_spring_ring(): a bridge across the cover hole in the cover plane (into the cover past r 22.5),
+    2 × M2 pilots (Ø1.6) at z ±5 for the board."""
+    g = _roll_geo()
+    c0, c1 = g["cover"]
+    br = Pos(c0, g["y"], 0) * Box(c1 - c0, 2 * g["hole_r"] + 4.0, ROLL_ENC["bridge_w"], align=(Align.MIN, Align.CENTER, Align.CENTER))
+    for z in (-ROLL_ENC["screw_z"], ROLL_ENC["screw_z"]):
+        br -= Pos(c0 - 0.01, g["y"], z) * Rot(0, 90, 0) * Cylinder(0.8, c1 - c0 + 0.02, align=MIN)
+    return br
+
+
+def roll_pcb() -> Part:
+    g = _roll_geo()
+    p0, p1 = g["pcb"]
+    b = Pos(p0, g["y"], 0) * Box(p1 - p0, ROLL_ENC["pcb"], ROLL_ENC["pcb"], align=(Align.MIN, Align.CENTER, Align.CENTER))
+    for z in (-ROLL_ENC["screw_z"], ROLL_ENC["screw_z"]):
+        b -= Pos(p0 - 0.01, g["y"], z) * Rot(0, 90, 0) * Cylinder(1.1, p1 - p0 + 0.02, align=MIN)
+    i0, i1 = g["ic"]
+    return b + Pos(i0, g["y"], 0) * Box(i1 - i0, AS5048A["ic"][1], AS5048A["ic"][0], align=(Align.MIN, Align.CENTER, Align.CENTER))
+
+
+def roll_parts():
+    """(static board, rotating magnet): roll.module_inline() adds the board as "roll_enc_pcb" and unions the magnet into
+    "roll_spring_hub" (on the roll output)."""
+    return [("enc_pcb", roll_pcb(), "green")], [("enc_magnet", roll_magnet(), "steel")]
 
 
 # ---------------- checks ----------------
@@ -160,35 +321,46 @@ def report():
           f"IC {g['gap']:.1f} mm off it {'✅' if ok_gap else '❌'} (datasheet {AS5048A['gap'][0]}–{AS5048A['gap'][1]} mm), board 22 × 22 × 1.6 on a "
           f"bracket with two legs to the −Y 61808 boss (r {g['leg_r']}, {g['leg_ang'][0]:.0f}°/{g['leg_ang'][1]:.0f}°), 2 × M3 into inserts in the boss face.",
           f"- Clashes with the arm at elbow 0°: {len(clashes)} {'✅' if not clashes else '❌ ' + str(clashes)}"]
-    # yaw (parts here; needs the roll owner's trim)
-    y = _yaw_geo()
-    stat, rot = yaw_parts()
+    # yaw, inline roll (built into roll.module_inline) and pitch (shoulder.module): each board against its module
+    def _hits(board, mod, skip):
+        out = []
+        for n, q in mod.items():
+            if n in skip or "enc_pcb" in n:
+                continue
+            v = _clear(board, q)
+            if v > 0.05:
+                out.append((n, round(v, 2)))
+        return out
+
+    def _ok(gap):
+        return "✅" if AS5048A["gap"][0] <= gap <= AS5048A["gap"][1] else "❌"
+
     mod = {n: p for n, p, _ in roll.module()}
-    tube_top = mod["yaw_shaft"].bounding_box().max.Z
-    hits = [(a, b, round(_clear(p, q), 2)) for a, p, _ in stat for b, q in mod.items()]
-    hits = [h for h in hits if h[2] > 0.05]
-    ok_y = AS5048A["gap"][0] <= y["gap"] + PCB_THIN <= AS5048A["gap"][1]
-    L += ["", "## Yaw (parts in this file; the roll owner adds them to roll.module() after two edits in rnd/parts/roll.py)", "",
-          f"- Magnet in a plug in the yaw tube's Ø20 top bore, board 14 × 66 × 0.8 across the tube end on the top yaw plate (2 × M2 at y ROLL_Y ±{y['screw_x']:.0f}, "
-          f"0.5 mm pads), IC on top reading through the board: magnet → package {y['gap'] + PCB_THIN:.1f} mm {'✅' if ok_y else '❌'}; IC top at z "
-          f"{y['ic_top']:.1f}, under the roll housing (z −48 on the yaw axis).",
-          f"- Needs in roll.py: (1) yaw_shaft() top end at P1[1] − {YAW_TRIM} = {y['z_tube']:.1f} (today {tube_top:.1f}: the tube's 2 mm above the plate "
-          f"carry nothing); (2) 2 × Ø1.8 pilots in the top plate at (0, ROLL_Y ± {y['screw_x']:.0f}); then append encoder.yaw_parts() to module_inline().",
-          f"- Today the board would hit: {sorted(set(h[1] for h in hits)) or 'nothing'}."]
-    L += ["", "## Pitch and roll (owner: rnd/parts/shoulder.py, roll.py): geometry to adopt", "",
-          "- **Pitch:** both tube ends are taken: the outboard end carries the harness to the detach plug, and at pitch 0° the balancer cable "
-          "(pin B r 20 → pulley A) crosses the axis at y −61.5, 2.2 mm past the crank face. Fix: magnet Ø6 × 2.5 flush in a pocket at the crank's centre "
-          "(inboard face, y −59.3); board 20 × 20 × 1.6 with the IC toward the crank (IC surface y −60.3, 1.0 mm air gap; board back −63.1) on a 2 mm "
-          "printed cantilever (to −65.1) from the inner wall's inboard face, entering at azimuth +20° (x forward, z up): pin B sweeps −290° … −30° over "
-          "pitch −200° … +60°, so −30° … +70° is never visited; cable plane Y_BAL −61.5 → −67.0 (pin B stand-off 5.2 → 10.7 mm: ≈ 2.8 N·m on the Ø6 pin, "
-          "≈ 130 MPa: a hardened dowel, ESTIMATE).",
-          "- **Roll (inline):** the +X end has the Ø16 ribbon pass through the output adapter and clevis arm, and the −X end of roll_arm_rear is 1.2 mm "
-          "from the yaw can (which turns with roll). On-axis AS5048A does not fit as drawn: route the ribbon off-axis through a 6 × 16 slot at r 12 in the "
-          "adapter and clevis arm, put the magnet in a Ø6.1 × 2.5 pocket at the adapter's +X centre, and the board (20 × 20) on a static bridge from the roll "
-          "link's spring bar inside the spring ring, 1.0 mm off; or use an off-axis ring-magnet encoder on the Ø60 output step (not an AS5048A)."]
+    y = _yaw_geo()
+    L += ["", "## Yaw (built: rnd/parts/roll.py module_inline, `yaw_enc_pcb`; holder + magnet in `yaw_shaft`)", "",
+          f"- Magnet in a plug in the yaw tube's Ø16 bore (inside C1's tie ring), face at z {y['mag']:.1f}; tube top trimmed to z {y['z_tube']:.1f} "
+          f"(roll.YAW_TOP, 1.0 under the plate; the tie screws M3 × {roll.YAW_TIE['L']:.0f}, {roll.yaw_tie_levels()['engaged']:.1f} mm engaged). Board "
+          f"14 × 66 × 0.8 on 1.0 mm pads on the top yaw plate (2 × M2 at y ROLL_Y ±{y['screw_y']:.0f}), IC on its underside: air gap {y['gap']:.1f} mm "
+          f"{_ok(y['gap'])}; board top z {y['pcb'][1]:.1f} under the roll motor (r {roll.R_MOT:.0f} → z −{roll.R_MOT:.0f} on the yaw axis).",
+          f"- Overlaps with the roll module: {_hits(mod.get('yaw_enc_pcb', yaw_pcb()), mod, ('yaw_block',)) or 'none'} (the pads sit on the yaw block)."]
+    if roll.INLINE:
+        r = _roll_geo()
+        L += ["", "## Shoulder roll, inline (built: roll.module_inline, `roll_enc_pcb`; web + magnet in `roll_spring_hub`)", "",
+              f"- Magnet in a web inside the spring hub (x {r['web'][0]:.1f}–{r['web'][1]:.1f}), board 14 × 14 × 1.6 on a bridge across the spring ring's "
+              f"cover hole, IC facing the magnet: air gap {r['gap']:.1f} mm {_ok(r['gap'])}.",
+              f"- Overlaps with the roll module: {_hits(mod.get('roll_enc_pcb', roll_pcb()), mod, ('roll_spring_ring',)) or 'none'} (it sits on the bridge)."]
+    from . import shoulder
+    pg = _pitch_geo()
+    smod = {n: p for n, p, _ in shoulder.module()}
+    L += ["", "## Shoulder pitch (built: rnd/parts/shoulder.py module, `enc_pcb`; magnet in `pitch_hub_crank`, post on `bracket`)", "",
+          f"- Magnet flush in the crank's inboard face (y {pg['y_c']:.1f}), FR4 0.8 strip on a post on the inner wall, IC on its inboard face read "
+          f"through the board: magnet → package {pg['gap']:.1f} mm {_ok(pg['gap'])}; IC to the cable zone (plane {pg['y_bal']:.1f}, Ø2 + 0.4): "
+          f"{pg['ic'][0] - (pg['y_bal'] + 1.2):.1f} mm.",
+          f"- Overlaps with the shoulder module: {_hits(smod.get('enc_pcb', pitch_pcb()), smod, ('bracket',)) or 'none'} (it sits on the post); "
+          "pin B never reaches the strip (azimuths 110…210° unvisited); the cable check is rnd/balancer.py (cad_plane_clear)."]
     (DOCS / "encoders.md").write_text("\n".join(L))
     print("\n".join(L))
-    return clashes, hits
+    return clashes
 
 
 if __name__ == "__main__":

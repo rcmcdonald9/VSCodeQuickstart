@@ -148,7 +148,9 @@ def lift_cover() -> Part:
     from .base import coupling
     t = 2.2
     xb, yb, wx, ty = lift_belt_xy()
-    can_r, can_back = 43.3, LIFT_XF - 69.1                                    # bolted can Ø86.6, rear cap at stage z 69.1
+    from . import cartridge_m as cm
+    can_r, can_back = cm.can_r_out(), LIFT_XF - cm.bolted_levels()["rear"]       # bolted can Ø86.6, rear cap at stage z 69.1
+    lug_r, lug_h, lug_w = can_r + cm.CAP["lug_out"], cm.CAP["lug_h"], cm.CAP["ear_w"] + 0.4   # D24 v2 rear-cap lugs at stage ±90° = world ±Y
     y0, y1 = LIFT_Y - can_r - 3.0 - t, LIFT_Y + can_r + 3.0 + t + 2.0           # +Y side 2 mm wider: over the deck, not the wheel cut-out
     zc_top = LIFT_Z + can_r + 1.5 + t
     zp_top = LIFT_WALL_TOP + 2.8 + t
@@ -164,6 +166,12 @@ def lift_cover() -> Part:
     outer += Pos(xb, yb, zp_top - 4) * Box(ix, iy, LIFT_COVER_TOP - zp_top + 4, align=MIN)            # chimney
     inner = (box(xc0 + t, xc1 - t, y0 + t, y1 - t, zb - 30, zc_top - t, 10 - t, 6 - t)
              + box(xp0 + t, xp1 - t, y0 + t, y1 - t, zb - 30, zp_top - t, 10 - t, 6 - t))
+    for sy in (1, -1):        # C3 (D24 v2): a bump over each rear-cap lug (they stand 6.2 mm proud of the sleeve), 3 mm round it
+        ya, yb_ = LIFT_Y + sy * (can_r + 1.0), LIFT_Y + sy * (lug_r + 3.0)
+        lo, hi = min(ya, yb_), max(ya, yb_)
+        xl1 = can_back + lug_h + 3.0
+        outer += box(xc0, xl1 + t, lo - (t if sy < 0 else 0), hi + (t if sy > 0 else 0), LIFT_Z - lug_w / 2 - 3.0 - t, LIFT_Z + lug_w / 2 + 3.0 + t, 4, 2)
+        inner += box(xc0 + t, xl1, lo - (0 if sy < 0 else 1), hi + (1 if sy < 0 else 0), LIFT_Z - lug_w / 2 - 3.0, LIFT_Z + lug_w / 2 + 3.0, 3, 1.5)
     c = (outer - inner) & Pos((xc0 + xp1) / 2, 0, zb) * Box(xp1 - xc0 + 2, 400, 200, align=MIN)          # open below, 3 mm off the deck
     c -= Pos(xb, yb, LIFT_Z) * Box(wx + 6.4, ty + 6.4, 200, align=MIN)                                   # belt passage (≥ 3 mm round the belt)
     cb = coupling()[0].bounding_box()
@@ -184,6 +192,13 @@ def carriage(lift_mm: float) -> Part:
     # pawl box (pawl + 12 V solenoid) on the back, beside the slot; A15: pocket for the steel pawl (1.2 mm round it)
     c += Pos(MAST_X - W / 2 - 20, 23, lift_mm - 30) * Box(14, 22, 40)
     c -= Pos(-108.6, RACK["y"], lift_mm - 30) * Box(15.2, 8.4, 30.0)
+    if D.arm.arm_motors == "d20":
+        # C3 (D24 v2, R14 (d)): the D20 pitch cans' rear ends sit 2.6 mm off the carriage's side faces and must back off
+        # 4.5 mm (Oldham tongue) before they drop out through their side exit, so each side wall is 12 → 8 mm thick over
+        # a slot under the can (x −66 … −15, carriage bottom → 56 mm over the pitch axis). D20 only; ESTIMATE: re-run the
+        # carriage FEA / rnd.stiffness with PIP_ARM_MOTORS=d20 before printing.
+        for sy in (1, -1):
+            c -= Pos(-40.5, sy * (W / 2 + 12.0), zc - h / 2 - 1) * Box(51.0, 6.0, lift_mm + 56 - (zc - h / 2) + 1, align=(Align.CENTER, Align.CENTER, Align.MIN))   # |y| W/2 + 9 … + 15 (the 625 bosses too)
     return c
 
 
@@ -205,7 +220,9 @@ def torso(lift_mm: float):
     tray = Pos(75, 0, lift_mm - 40) * Box(60, 150, 6)
     pi = Pos(75, -20, lift_mm - 25.5) * Box(56, 85, 22)
     dcdc = Pos(75, 50, lift_mm - 23.5) * Box(50, 46, 26)
-    ai_bay = Pos(75, 0, lift_mm + 25) * (Box(105, 95, 40) - Box(101, 91, 40))          # D10: reserved Jetson-class AI computer bay
+    # D10: reserved Jetson-class AI computer bay (inner 98 × 91 × 40). C3 (2026-11-27): raised 39 mm and 3 mm shorter — the
+    # D20 pitch cans' rear ends sat 0.9 mm inside it and could not move the 4.5 mm their side-exit swap needs.
+    ai_bay = Pos(74, 0, lift_mm + 64) * (Box(102, 95, 40) - Box(98, 91, 40))
     estop = Pos(-30, 80, lift_mm + 105) * Cylinder(15, 14, align=MIN)
     light = Pos(x0 + 116.5, 0, lift_mm - 30) * soft_box(3, 160, 8, 1.2, 0.6)
     return [("torso_shell", shell, "white"), ("ai_bay", ai_bay, "dark"), ("e_tray", tray, "dark"), ("e_pi5", pi, "dark"), ("e_dcdc", dcdc, "dark"),
