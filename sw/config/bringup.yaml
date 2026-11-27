@@ -20,7 +20,10 @@ fixture_pose: {pitch: 0, roll: 0, yaw: 0, elbow: -90, wpitch: 0, wroll: 0}   # G
 balancer: {joint: pitch, k_nm: 4.5}           # A9 shoulder balancer, τ = K·sin(pitch) (rnd/balancer.py); 0 if not fitted
 joints:
   # stop: the reference hard stop (side +1 = upper, −1 = lower) and its angle; other: the opposite stop (span check)
-  pitch:  {kp: 60, kd: 3.0, stop: [+1, 65],  other: -205, span_check: false, park: 0,   jog: 20}   # ESTIMATE stops: limit + 5°
+  # cal_pose: where the joints already zeroed go before this joint seeks its stop (back to their park after it parks)
+  pitch:  {kp: 60, kd: 3.0, stop: [+1, 65],  other: -205, span_check: false, park: 0,   jog: 20,   # ESTIMATE stops: limit + 5°
+           cal_pose: {elbow: -140}}   # elbow folded (15° off its −155° stop): twin gravity max over the seek 5.4 → ≈ 2.3 N·m (balancer
+                                      # included), limp equilibrium ≈ +60° so gravity helps toward the +65° stop; no support under the arm
   roll:   {kp: 60, kd: 3.0, stop: [-1, -20], other: 105,  span_check: false, park: 10,  jog: 15}
   yaw:    {kp: 40, kd: 2.0, stop: [+1, 155], other: -155, span_check: true,  park: 0,   jog: 25}   # stop pin ±155° (rnd/harness.py)
   elbow:  {kp: 40, kd: 2.0, stop: [+1, 5],   other: -155, span_check: true,  park: -20, jog: 15}

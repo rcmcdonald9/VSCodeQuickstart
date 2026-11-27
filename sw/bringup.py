@@ -21,7 +21,12 @@ loop with the safety supervisor (sw/safety.py) in it, the hardware heartbeat tog
 4. **calibrate** — distal joints first, each against its reference hard stop at low current (calibration torque from
    the twin's gravity over the joint's range + margin, set in the drive): seek at 0.3 rad/s, detect the stall, check it
    is a stiff stop (not gravity or binding), zero = stop angle; optional span check against the opposite stop (catches a
-   wrong belt ratio or stop position); back to the operating limit, park.
+   wrong belt ratio or stop position); back to the operating limit, park. A joint with a `cal_pose` (bringup.yaml) first
+   moves the joints already zeroed there: pitch, calibrated last, seeks with the elbow folded to −140° (forearm and
+   hand close to the shoulder axis: twin gravity max over the seek ≈ 2.3 N·m instead of 5.4 N·m at the −20° elbow park,
+   balancer included), and the fold moves the limp arm's hanging equilibrium to ≈ +60°, so the +65° stop is the one
+   gravity helps toward (the −205° stop would lift the arm over the top). No hand or printed support under the arm: it
+   would carry load the twin does not know (wrong calibration torque) and could pass the stiffness check as the stop.
 5. **jog** — each joint in turn, ± its jog amplitude at 10 % of its max speed, supervisor slewing at that speed; tracking
    error, peak speed, direction (the operator confirms which way it moved), torque; the momentum observer
    (sw/collision.py) runs in observe mode and records its peak residual.
@@ -853,17 +858,30 @@ class BringUp:
             th_other = c["other"] * D2R
             span = abs(th_stop - th_other)
             rated = self.J[j]["rated_nm"]
+            # 0. calibration pose: the joints already zeroed move to this joint's `cal_pose` first (pitch: the elbow folded,
+            #    so the forearm and hand sit close to the shoulder axis and the pitch moment over the seek is small); this
+            #    joint hangs limp meanwhile and follows its gravity equilibrium. They go back to their park afterwards.
+            pose = {x: v * D2R for x, v in (c.get("cal_pose") or {}).items() if x in self.calibrated}
+            if pose:
+                sup_p = self.supervisor(limits=self._raw_limits(span), v_max=self._vmax(j))
+                self.start(sup_p)
+                self.enable_all(sup_p)
+                self._move(sup_p, pose, speed=self.cfg["cal_speed"], settle=1.0)
+                s.notes.append(f"{j} calibration pose: " + ", ".join(f"{x} moved to {math.degrees(v):.0f}°" for x, v in pose.items())
+                               + f" before the seek ({j} hanging limp, following its gravity equilibrium), back to park after {j} parked")
             # 1. calibration torque from the twin's gravity (others where they are now; this joint anywhere in its range)
             sup0 = self.supervisor(limits=self._raw_limits(span))
             self.start(sup0)
             fb = self.feedback()
             gmax = self._gmax(j, fb.q)
             t_cal = max(0.15 * rated, 1.4 * gmax + 0.10 * rated)
-            row = dict(joint=j, g_max_nm=round(gmax, 3), t_cal_nm=round(t_cal, 3))
+            row = dict(joint=j, g_max_nm=round(gmax, 3), t_cal_nm=round(t_cal, 3), t_cal_frac=round(t_cal / rated, 3),
+                       cal_pose_deg={x: round(math.degrees(v), 1) for x, v in pose.items()})
             if t_cal > self.cfg["cal_frac_max"] * rated:
                 rows.append(row)
                 s.check(f"{j}: calibration torque {t_cal:.2f} N·m ≤ {self.cfg['cal_frac_max']:.0%} of rated", False,
-                        "gravity over the range is too large at low current: support the arm or choose the other stop")
+                        "gravity over the range is too large at low current: fold the distal joints (cal_pose in bringup.yaml), "
+                        "calibrate against the stop gravity helps toward, or support the arm")
                 break
             self._set_limit(d, t_cal)
             # 2. seek the reference stop with the supervisor bounding torque at 1.5 × t_cal (the drive clamps at t_cal)
@@ -911,9 +929,12 @@ class BringUp:
             self.enable_all(sup)
             self.hold_q[j] = self.feedback().q[self.names.index(j)]
             self._move(sup, {j: c["park"] * D2R}, speed=self.cfg["cal_speed"])
+            if pose:
+                self._move(sup, {x: self.jc(x)["park"] * D2R for x in pose}, speed=self.cfg["cal_speed"])
             rows.append(row)
             s.check(f"{j}: zeroed against the {'upper' if side > 0 else 'lower'} stop ({c['stop'][1]}°), parked at {c['park']}°", True,
-                    f"offset {d.offset:+.4f} rad, calibration torque {t_cal:.2f} N·m (gravity max {gmax:.2f})")
+                    f"offset {d.offset:+.4f} rad, calibration torque {t_cal:.2f} N·m = {t_cal / rated:.0%} of rated (gravity max {gmax:.2f}"
+                    + ("; " + ", ".join(f"{x} at {math.degrees(v):.0f}°" for x, v in pose.items()) if pose else "") + ")")
         s.data = dict(joints=rows, offsets={j: self.drivers[j].offset for j in self.calibrated},
                       signs={j: self.drivers[j].sign for j in self.calibrated})
         s.check("all online joints calibrated", self.calibrated == set(self.names), ", ".join(sorted(self.calibrated)))
