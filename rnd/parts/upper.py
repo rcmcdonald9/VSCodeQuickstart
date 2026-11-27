@@ -148,7 +148,9 @@ def lift_cover() -> Part:
     from .base import coupling
     t = 2.2
     xb, yb, wx, ty = lift_belt_xy()
-    can_r, can_back = 43.3, LIFT_XF - 69.1                                    # bolted can Ø86.6, rear cap at stage z 69.1
+    from . import cartridge_m as cm
+    can_r, can_back = cm.can_r_out(), LIFT_XF - cm.bolted_levels()["rear"]       # bolted can Ø86.6, rear cap at stage z 69.1
+    lug_r, lug_h, lug_w = can_r + cm.CAP["lug_out"], cm.CAP["lug_h"], cm.CAP["ear_w"] + 0.4   # D24 v2 rear-cap lugs at stage ±90° = world ±Y
     y0, y1 = LIFT_Y - can_r - 3.0 - t, LIFT_Y + can_r + 3.0 + t + 2.0           # +Y side 2 mm wider: over the deck, not the wheel cut-out
     zc_top = LIFT_Z + can_r + 1.5 + t
     zp_top = LIFT_WALL_TOP + 2.8 + t
@@ -164,6 +166,12 @@ def lift_cover() -> Part:
     outer += Pos(xb, yb, zp_top - 4) * Box(ix, iy, LIFT_COVER_TOP - zp_top + 4, align=MIN)            # chimney
     inner = (box(xc0 + t, xc1 - t, y0 + t, y1 - t, zb - 30, zc_top - t, 10 - t, 6 - t)
              + box(xp0 + t, xp1 - t, y0 + t, y1 - t, zb - 30, zp_top - t, 10 - t, 6 - t))
+    for sy in (1, -1):        # C3 (D24 v2): a bump over each rear-cap lug (they stand 6.2 mm proud of the sleeve), 3 mm round it
+        ya, yb_ = LIFT_Y + sy * (can_r + 1.0), LIFT_Y + sy * (lug_r + 3.0)
+        lo, hi = min(ya, yb_), max(ya, yb_)
+        xl1 = can_back + lug_h + 3.0
+        outer += box(xc0, xl1 + t, lo - (t if sy < 0 else 0), hi + (t if sy > 0 else 0), LIFT_Z - lug_w / 2 - 3.0 - t, LIFT_Z + lug_w / 2 + 3.0 + t, 4, 2)
+        inner += box(xc0 + t, xl1, lo - (0 if sy < 0 else 1), hi + (1 if sy < 0 else 0), LIFT_Z - lug_w / 2 - 3.0, LIFT_Z + lug_w / 2 + 3.0, 3, 1.5)
     c = (outer - inner) & Pos((xc0 + xp1) / 2, 0, zb) * Box(xp1 - xc0 + 2, 400, 200, align=MIN)          # open below, 3 mm off the deck
     c -= Pos(xb, yb, LIFT_Z) * Box(wx + 6.4, ty + 6.4, 200, align=MIN)                                   # belt passage (≥ 3 mm round the belt)
     cb = coupling()[0].bounding_box()

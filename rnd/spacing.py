@@ -45,13 +45,14 @@ MATE = [("can", "motor"), ("collar", "hub"), ("hub", "shaft"), ("shaft", "wheel"
         ("can", "can_cap"), ("motor", "kx_hub_v2"), ("oldham_disc", "kx_hub_v2"), ("oldham_disc", "flange_coupling"),
         ("bracket", "can"), ("e_cassette", "e_can"), ("roll_link", "roll_can"), ("yaw_block", "yaw_can"), ("bracket", "bracket_wall"), ("shaft", "pitch_hub"), ("brg_", "pitch_hub"),
         ("e_shaft40", "e_belt"), ("e_shaft40", "forearm"), ("upper_bone", "e_seat_cap"), ("bone_cap", "e_seat_cap"), ("forearm", "wrist_can"), ("wrist_adapter", "palm"),
-        ("bracket", "enc_pcb"), ("yaw_block", "yaw_enc_pcb"), ("roll_spring_ring", "roll_enc_pcb")]   # M3: AS5048A boards on their posts / pads / bridge   # dog: 0.1 mm a side by design (lash); the base boss clamps the lower inner race   # bearing inner races, shims and the pulley rotate together on the shaft
+        ("bracket", "enc_pcb"), ("yaw_block", "yaw_enc_pcb"), ("roll_spring_ring", "roll_enc_pcb"),
+        ("upper_bone", "enc_bracket"), ("enc_magnet_holder", "enc_magnet"), ("e_shaft40", "enc_magnet_holder"), ("deck", "lidar")]   # M3: AS5048A boards on their posts / pads / bridge, the elbow bracket on its boss, magnets in their holders, the holder pressed in the elbow tube; the lidar stands on deck 3   # dog: 0.1 mm a side by design (lash); the base boss clamps the lower inner race   # bearing inner races, shims and the pulley rotate together on the shaft
 RUNNING = [("head_drive_stub", "tilt_sleeve"), ("yoke", "head_pivot_stub"), ("bracket", "pitch_hub"), ("yaw_plate_bot", "yaw_shaft"), ("yaw_flange", "yaw_stop_pin"), ("bracket", "kx_hub_v2"), ("bracket", "al_pulley"), ("bracket", "flange_coupling"), ("e_cassette", "e_al_pulley"), ("e_cassette", "e_kx_hub_v2"), ("e_cassette", "e_flange_coupling"), ("e_cassette", "e_hub"), ("roll_link", "roll_smallhub"), ("yaw_block", "yaw_smallhub"), ("bracket", "smallhub"),
            ("yaw_shaft", "yaw_stop_pin"), ("bracket", "pulleyA"), ("roll_link", "al_pulley"), ("yaw_block", "al_pulley"),
            ("roll_link", "roll_spring_hub"), ("yaw_spring_ring", "yaw_shaft"), ("yaw_plate_bot", "al_pulley"), ("roll_link", "roll_pulley72"), ("yaw_block", "yaw_pulley40"),
            ("palm", "wr_spindle"), ("palm", "grip_base"), ("wr_brg", "wr_dog"), ("wr_cap", "grip_base"), ("wr_cap", "wr_spindle"),
            ("roll_gim_housing", "roll_outflange"), ("roll_link", "roll_arm_rear"), ("roll_spring_ring", "roll_spring_hub"),
-           ("enc_pcb", "pitch_hub_crank"), ("enc_pcb", "yaw_shaft"), ("enc_pcb", "roll_spring_hub")]   # M3: AS5048A air gaps (board ↔ magnet side, one bearing set)   # D24 inline roll: motor bearing, 61806 set
+           ("enc_pcb", "pitch_hub_crank"), ("enc_pcb", "yaw_shaft"), ("enc_pcb", "roll_spring_hub"), ("enc_pcb", "enc_magnet")]   # M3: AS5048A air gaps (board ↔ magnet side, one bearing set)   # D24 inline roll: motor bearing, 61806 set
 MOVING = [("yaw_plate_bot", "yaw_flange"), ("e_cassette", "e_bigpulley"), ("roll_shaft", "yaw_shaft"), ("yaw_block", "yaw_shaft"), ("upper_bone", "forearm")]
 
 
