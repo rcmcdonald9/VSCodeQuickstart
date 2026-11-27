@@ -33,7 +33,7 @@
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 1.7× (6.6 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md): tracked, no hard target (owner 2026-11-26); lower is a priority | 23 h | minimise | — |
-| R8 cost from the itemised BOM (BOM_v4.md) | $5,485 | ≤ $5,500 limit (owner 2026-11-27; aim $4,000) | ✅ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $5,845 | ≤ $5,500 limit (owner 2026-11-27; aim $4,000) | ❌ |
 | R13 printed pieces that fit the P2S (256 mm) | 99/99 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
@@ -43,6 +43,7 @@
 | R4 sim: 15 mm threshold on hard floor + carpet (45°, ≤ 0.15 m/s), peak margin | crossed, 1.7× | cross, ≥ 1.5× | ✅ |
 | R4 sim: carpet cruise wheel torque (RMS / rated) | 2.2 / 5 N·m | ≤ 70 % | ✅ |
 | R4 15 mm threshold with the A10 v2 mass (rnd/threshold.py roller model re-run by rnd/tip.py, 45°): peak margin at 0.15 m/s (D2b) / 0.12 m/s (SW-T4) | 1.45× / 1.71× (33.0 kg) | ≥ 1.5× at the planner's crossing speed | ❌ |
+| R5 door stow (rnd/stow.py): whole-robot width across a 45° threshold crossing (D2b), both arms stowed, collision-free, cross-body gaps ≥ 25 mm, valid with people near (roll ≥ +8°) | 567 mm (clear 650 − 2 × 40), tip ≥ 82 mm | ≤ 570 mm, tip ≥ 30 mm | ✅ |
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 66 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
 | FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.1× (13 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip) | 100/100 (95 % LB 96%), worst pad error 19 mm | LB ≥ 90 %, within ±25 mm | ✅ |
@@ -56,6 +57,7 @@
 | R15 swept spacing over the roll and yaw ranges: pairs under the hard limit (rnd/swept.py) | 0 (min roll 0.3 / yaw 1.0 mm) | 0 | ✅ |
 | R2b hand deflection, full compliance chain (P2 FEA + bearing play + tubes), 1 kg straight out: raw / after gravity model | 5.1 / 1.0 mm | ≤ 6 / ≤ 2 mm | ✅ |
 | A6 printed can wall, non-stop task day (enclosed +10 K): ASA limit 75 °C | 49 °C | ≤ 75 °C (ASA) | ✅ |
+| SW6 synthetic demos: expert success / rate (sw/gen_demos.py, LeRobot format) | 98% / 887 per h | ≥ 95 % / ≥ 500 per h | ✅ |
 | S0.4a pipeline dry run: BC policy from scratch, closed-loop success in the twin (info) | 10% (200 demos, CPU) | runs end to end | — |
 | Load path: cartridge torque pins landing in structure | 19/19 | all | ✅ |
 | Clashes inside modules (> 50 mm³, fused interfaces excluded) | 0 | 0 | ✅ |

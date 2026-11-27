@@ -234,6 +234,14 @@ def _heavy_carry_rows(d):
     return rows
 
 
+def _stow_rows():
+    from . import stow
+    try:
+        return stow.scorecard_rows()
+    except (OSError, ValueError, KeyError):
+        return []
+
+
 def _tip_extra_rows():
     import json
     f = DOCS / "tip.json"
@@ -302,6 +310,7 @@ def scorecard(d, res):
         *_sim_rows(),
         *_threshold_rows(),
         *_tip_extra_rows(),
+        *_stow_rows(),
         *_confidence_rows(),
         ("R11 looks", "engineering render v0 (robot_v0.png); industrial-design pass pending", "owner approval", None),
     ]
