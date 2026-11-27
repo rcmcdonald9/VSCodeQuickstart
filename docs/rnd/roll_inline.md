@@ -11,15 +11,14 @@ docs/rnd/roll_inline.json (one entry per drive and check) and docs/rnd/roll_inli
 |---|---|---|
 | Shoulder dome, fore-aft × height (mm), CAD | not run | 115 × 100 (slim-study ESTIMATE 128 × 120) |
 | Dome reach outboard of the detach plane (mm) | not run | 120 |
-| ROLL_Y / yaw_drop (mm) | not run | 70.0 / 100.3 |
+| ROLL_Y / yaw_drop (mm) | not run | 70.0 / 101.3 |
 | Roll / yaw stage mass, CAD (kg, actuator not included) | not run | 0.27 / 0.54 |
 | R14 assembly sequence, roll row | not run | ✅ (5/7 shafts) |
-| R15 spacing, roll/yaw module (under target / hard) | not run | 2 / 0 ✅ |
-| R15 swept: min gap roll / yaw (mm); pairs under target / hard | not run | not run |
-| R16 dexterity: top-down / 45° / side / across | not run | not run |
-| R2d basket: worst duty margin; roll peak margin | not run | not run |
+| R15 spacing, roll/yaw module (under target / hard) | not run | 1 / 0 ✅ |
+| R15 swept: min gap roll / yaw (mm); pairs under target / hard | not run | 0.4 / 2.3; 0 / 0 ✅ |
+| R16 dexterity: top-down / 45° / side / across | not run | 35% / 71% / 66% / 62% ✅ |
+| R2d basket: worst duty margin; roll peak margin | not run | 1.48; 52.6× ✅ |
 
 Spacing pairs under target (inline):
 
-- roll_gim_housing ↔ roll_outflange (running) 0.3 mm (target 0.3)
 - yaw_flange ↔ yaw_stop_pin (running) 0.3 mm (target 0.3)

@@ -7,12 +7,12 @@
    "z_top": 50.0,
    "z_bot": -50.0,
    "roll_y": 70.0,
-   "yaw_drop": 100.3,
+   "yaw_drop": 101.3,
    "masses": [
     0.273,
     0.542
    ],
-   "ferrule_gap": 3.43,
+   "ferrule_gap": 3.36,
    "est": [
     128,
     120
@@ -34,69 +34,13 @@
        "\u2212Z end"
       ]
      ]
-    },
-    {
-     "name": "D13 small stage v2 (steel \u00d812 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow",
-     "ok": true,
-     "bearings": [
-      [
-       -30.5,
-       -25.5,
-       12.0,
-       true,
-       "\u2212Z end"
-      ],
-      [
-       -63.5,
-       -58.5,
-       12.0,
-       true,
-       "\u2212Z end"
-      ],
-      [
-       -58.0,
-       -31.0,
-       12.0,
-       true,
-       "\u2212Z end"
-      ]
-     ]
-    },
-    {
-     "name": "D16 wrist-roll spindle (loop 43: from above, shoulder on the upper bearing; bearings from below, end cap)",
-     "ok": true,
-     "bearings": [
-      [
-       -91.1,
-       -84.1,
-       20.0,
-       true,
-       "\u2212Z end"
-      ],
-      [
-       -98.1,
-       -91.1,
-       20.0,
-       true,
-       "\u2212Z end"
-      ]
-     ]
     }
    ]
   },
   "spacing": {
-   "under_target": 2,
+   "under_target": 1,
    "under_hard": 0,
    "rows": [
-    {
-     "a": "roll_gim_housing",
-     "b": "roll_outflange",
-     "kind": "running",
-     "d": 0.3,
-     "target": 0.3,
-     "hard": 0.2,
-     "hard_fail": false
-    },
     {
      "a": "yaw_flange",
      "b": "yaw_stop_pin",
@@ -107,6 +51,104 @@
      "hard_fail": false
     }
    ]
+  },
+  "swept": {
+   "min": {
+    "roll": 0.4,
+    "yaw": 2.3
+   },
+   "under_target": 0,
+   "under_hard": 0,
+   "rows": [],
+   "closest": {
+    "roll": [
+     [
+      0.4,
+      "roll_outflange",
+      "roll_gim_housing",
+      -15
+     ],
+     [
+      0.71,
+      "roll_spring_hub",
+      "roll_spring_ring",
+      95
+     ],
+     [
+      1.04,
+      "roll_spring_hub",
+      "roll_link",
+      -15
+     ],
+     [
+      2.0,
+      "roll_arm_rear",
+      "roll_link",
+      55
+     ]
+    ],
+    "yaw": [
+     [
+      2.3,
+      "yaw_flange",
+      "yaw_plate_bot",
+      -155
+     ],
+     [
+      2.5,
+      "yaw_shaft",
+      "yaw_block",
+      -155
+     ],
+     [
+      3.64,
+      "yaw_shaft",
+      "yaw_plate_bot",
+      -155
+     ],
+     [
+      3.8,
+      "yaw_flange",
+      "yaw_band",
+      155
+     ]
+    ]
+   }
+  },
+  "dexterity": {
+   "top-down": 0.34615384615384615,
+   "45\u00b0 angled": 0.7076923076923077,
+   "side (horizontal)": 0.6576923076923077,
+   "side, across the body": 0.625,
+   "ok": true
+  },
+  "basket": {
+   "ok": true,
+   "worst": 1.48,
+   "roll_peak_margin": 52.58,
+   "no_ik": 0,
+   "cap": {
+    "pitch": [
+     21.4,
+     62.7
+    ],
+    "roll": [
+     35.1,
+     102.9
+    ],
+    "yaw": [
+     9.5,
+     20.9
+    ],
+    "elbow": [
+     21.4,
+     62.7
+    ],
+    "wpitch": [
+     3.0,
+     7.0
+    ]
+   }
   }
  }
 }
