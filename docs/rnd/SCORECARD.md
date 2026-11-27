@@ -4,29 +4,29 @@
 |---|---|---|---|
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 94% | ≥ 95 % | ❌ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
-| R12 min tip-over margin, 1 kg at reach | 75 mm | ≥ 50 mm | ✅ |
+| R12 min tip-over margin, 1 kg at reach | 76 mm | ≥ 50 mm | ✅ |
 | R2 min joint margin at spec load (rated, planar check) | 2.21× | ≥ 1.5× | ✅ |
-| R3 upper core (arms detached) | 7.6 kg | ≤ 10 kg | ✅ |
-| R3 each arm (detaches at the shoulder KX) | 4.4 kg | ≤ 10 kg | ✅ |
-| R3 assembled upper (core + arms, for reference) | 16.5 kg | info | — |
+| R3 upper core (arms detached) | 7.7 kg | ≤ 10 kg | ✅ |
+| R3 each arm (detaches at the shoulder KX) | 4.5 kg | ≤ 10 kg | ✅ |
+| R3 assembled upper (core + arms, for reference) | 16.6 kg | info | — |
 | R3 base module mass | 6.3 kg | ≤ 8 kg (piece limit 10) | ✅ |
 | R3 battery mass | 1.1 kg | ≤ 3 kg | ✅ |
 | R7 runtime (estimated duty cycle) | 3.4 h | ≥ 2 h | ✅ |
 | R8 cost, parametric estimate (superseded by the BOM row) | $3,070 (actuators $1,775 ×21) | info | — |
 | R9 KX interface slip torque / actuator peak (min) | 1.16× | ≥ 1.1× | ✅ |
 | R2 min joint margin, whole workspace (rated / 95th pct, 1 kg) | 1.55× | ≥ 1.5× | ✅ |
-| R2 min joint margin, whole workspace (peak / worst pose) | 2.66× | ≥ 1.5× | ✅ |
+| R2 min joint margin, whole workspace (peak / worst pose) | 2.65× | ≥ 1.5× | ✅ |
 | R2 hand sag from bone bending, 1 kg straight out (static) | 1.8 mm | ≤ 2 mm | ✅ |
 | R2 belts: sustained pull vs working rating / peak vs ultimate (min) | 1.5× / 5.6× | ≥ 1.2× / ≥ 3× | ✅ |
 | R3 arm-detach clamp: lift-off moment / need (×1.5 dynamic) | 1.8× | ≥ 1.5× | ✅ |
 | R12 socket bearing static safety (min) | 3.9 | ≥ 2 | ✅ |
 | R2 hand positioning error, joint chain RSS at 0.6 m (with joint-side encoders; without) | 0.9 mm (3.4) | ≤ 2 mm | ✅ |
 | R2 torso sway from mast bending (worst static) | 1.5 mm | ≤ 2 mm | ✅ |
-| R5 lift: torque margin / full-travel time | 1.90× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
+| R5 lift: torque margin / full-travel time | 1.88× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.2× (5.1 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md): tracked, no hard target (owner 2026-11-26); lower is a priority | 23 h | minimise | — |
-| R8 cost from the itemised BOM (BOM_v4.md) | $5,199 | ≤ $4,000 (D9; limit $5,000) | ❌ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $5,308 | ≤ $4,000 (D9; limit $5,000) | ❌ |
 | R13 printed pieces that fit the P2S (256 mm) | 100/100 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 1 | 0 | ❌ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
@@ -40,13 +40,13 @@
 | Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip) | 100/100 (95 % LB 96%), worst pad error 19 mm | LB ≥ 90 %, within ±25 mm | ✅ |
 | R15 spacing: pairs under the hard limit / under target (static 1, running 0.3, moving 2, belt 3 mm) | 1 / 9 | 0 under hard | ❌ |
 | R14 assembly sequence: drive shafts whose bearings slide on and whose shaft can be inserted (rnd/assembly_seq.py) | 7/7 | all | ✅ |
-| Cable routing: joints the arm bundle can cross over their full range (rnd/harness.py) | 5/6 | all | ❌ |
+| Cable routing: joints the arm bundle can cross over their full range (rnd/harness.py) | 6/6 | all | ✅ |
 | Threshold/carpet Monte Carlo (5–15 mm, heading ±10°, 0.12–0.18 m/s, μ, mass, COM) | 55/55 (95 % LB 93%); 15–18 mm: 25/25 | LB ≥ 90 % | ✅ |
 | KX Monte Carlo (tolerances, μ, spring, 10-year PETG creep): slip below rated / below peak; twist p95 | 0.00% / 13%; 2.9 N·m | ≤ 0.1 % below rated; twist ≤ 3 N·m | ✅ |
 | Thermal: hottest motor, non-stop task day (MC worst corner) | 69 °C | ≤ 100 °C | ✅ |
 | R16 dexterity: bench table grid reachable with top-down / 45° / side / side across the body (rnd/dexterity.py) | 36% / 69% / 66% / 61% | ≥ 30 / 63 / 62 / 54 % | ✅ |
 | R15 swept spacing over the roll and yaw ranges: pairs under the hard limit (rnd/swept.py) | 0 (min roll 0.3 / yaw 2.0 mm) | 0 | ✅ |
-| R2b hand deflection, full compliance chain (P2 FEA + bearing play + tubes), 1 kg straight out: raw / after gravity model | 11.0 / 2.2 mm | ≤ 6 / ≤ 2 mm | ❌ |
+| R2b hand deflection, full compliance chain (P2 FEA + bearing play + tubes), 1 kg straight out: raw / after gravity model | 8.5 / 1.7 mm | ≤ 6 / ≤ 2 mm | ❌ |
 | A10 tip-over, review cases (2.5 kg two-handed, 45°, braking, 30 N nudge; arms straight out) with D18 casters: worst ZMP margin | -102 mm (6/16 cases ≥ 30 mm) | ≥ 30 mm, or a planner rule | — |
 | A6 printed can wall, non-stop task day (enclosed +10 K): ASA limit 75 °C | 63 °C | ≤ 75 °C (ASA) | ✅ |
 | SW6 synthetic demos: expert success / rate (sw/gen_demos.py, LeRobot format) | 98% / 887 per h | ≥ 95 % / ≥ 500 per h | ✅ |

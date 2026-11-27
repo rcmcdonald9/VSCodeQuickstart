@@ -15,24 +15,24 @@ chain adds those terms for the worst static case: 1 kg at the grasp point, arm s
 The total is the static error a calibrated gravity model can largely remove (it is repeatable); the wrist camera closes
 the loop for grasping in any case. Target R2b: uncompensated ≤ 6 mm, after the gravity model (assumed to remove 80 %) ≤ 2 mm.
 
-**Static hand deflection, 1 kg straight out: 8.5 mm uncompensated (target ≤ 6), 1.7 mm after a gravity model (target ≤ 2).** ❌
+**Static hand deflection, 1 kg straight out: 8.3 mm uncompensated (target ≤ 6), 1.7 mm after a gravity model (target ≤ 2).** ❌
 
 ## 1. Printed parts (P2 vs P1 on the same mesh)
 
 | Part | Elements | Seat rotation P1 → P2 (mrad, static) | P2/P1 | Seat translation (mm) | Lever to hand (mm) | Hand (mm) | Von Mises P2 max / 99.5 % (P1 99.5 %) |
 |---|---|---|---|---|---|---|---|
-| Upper bone / elbow housing | 32,883 | 0.76 → 3.00 | 3.96 | 0.11 | 436 | 1.42 | 2.2 / 1.1 (0.4) MPa |
+| Upper bone / elbow housing | 33,930 | 0.83 → 3.31 | 3.96 | 0.12 | 436 | 1.56 | 2.4 / 1.1 (0.4) MPa |
 | Shoulder pitch bracket | 31,148 | 0.68 → 1.21 | 1.78 | 0.10 | 736 | 0.99 | 4.7 / 1.6 (1.2) MPa |
-| Roll link | 22,707 | 1.75 → 2.84 | 1.62 | 0.18 | 736 | 2.27 | 8.3 / 2.3 (1.4) MPa |
-| Clevis + yaw block | 23,263 | 0.95 → 1.93 | 2.03 | 0.12 | 736 | 1.53 | 6.6 / 2.3 (0.9) MPa |
+| Roll link | 14,216 | 1.61 → 2.73 | 1.70 | 0.09 | 736 | 2.10 | 5.8 / 2.8 (2.0) MPa |
+| Clevis + yaw block | 32,984 | 0.87 → 1.90 | 2.17 | 0.09 | 736 | 1.48 | 8.9 / 2.0 (0.8) MPa |
 
 ## 2. Bearing play (shimmed pairs, 30 % of 10 µm C0 clearance)
 
 | Joint | Span (mm) | Hand (mm) |
 |---|---|---|
 | pitch (61808 pair) | 34 | 0.13 |
-| roll (61808 pair) | 34 | 0.13 |
-| yaw (61808 pair) | 37 | 0.12 |
+| roll (61808 pair) | 66 | 0.07 |
+| yaw (61808 pair) | 36 | 0.12 |
 | elbow (61808 + 6708) | 108 | 0.02 |
 
 ## 3. Carbon tubes (rnd/bones.py): 1.8 mm

@@ -2,7 +2,7 @@
 
 6000 random right-arm poses across the full joint ranges (MuJoCo twin, static). A pitch-only balancer τ = K·sin(pitch) (zero-free-length spring + cable: Anglepoise / Herder gravity balancing) is fitted to the arm's own weight.
 
-**Design K = 4.50 N·m** (spring torque at the horizontal arm; `params.arm.spring_k_nm`). A least-squares fit to the bare arm gives 4.39 N·m; a K sweep showed 4.0 minimises the 95th-percentile motor torque for a 0.5 kg typical payload (0.5 kg: 5.2 N·m; 1 kg: 7.3 N·m). The spring preload is screw-adjustable (Anglepoise precedent), so K can be re-tuned per task.
+**Design K = 4.50 N·m** (spring torque at the horizontal arm; `params.arm.spring_k_nm`). A least-squares fit to the bare arm gives 4.41 N·m; a K sweep showed 4.0 minimises the 95th-percentile motor torque for a 0.5 kg typical payload (0.5 kg: 5.2 N·m; 1 kg: 7.3 N·m). The spring preload is screw-adjustable (Anglepoise precedent), so K can be re-tuned per task.
 
 | Motor torque needed at the pitch joint | 95th percentile | Worst pose |
 |---|---|---|
@@ -12,7 +12,7 @@
 | Joint capacity (GIM6010-8 × 3.0 belt), rated / peak | 14.2 | 31.3 |
 
 The spring cancels **40%** of the arm's self-weight torque at the 95th percentile (arm_sizing assumed 85 % everywhere).
-Margin with payload: rated / 95th pct **1.64×**, peak / worst pose **2.63×**.
+Margin with payload: rated / 95th pct **1.64×**, peak / worst pose **2.62×**.
 
 ## Every arm joint over the whole workspace (1 kg payload, static, balancer on)
 
@@ -20,8 +20,8 @@ The planar check in [arm sizing](arm_sizing.md) only looks at a straight horizon
 
 | Joint | Actuator × ratio | Need: 95th pct / worst (N·m) | Rated / peak | Margin rated/p95 | Margin peak/worst |
 |---|---|---|---|---|---|
-| shoulder_pitch | GIM6010-8 × 3 | 8.6 / 11.8 | 14.2 / 31.3 | 1.66 | 2.66 ✅ |
-| shoulder_roll | GIM8108-36 × 1 | 12.8 / 16.5 | 35.1 / 102.9 | 2.74 | 6.24 ✅ |
+| shoulder_pitch | GIM6010-8 × 3 | 8.6 / 11.8 | 14.2 / 31.3 | 1.66 | 2.65 ✅ |
+| shoulder_roll | GIM8108-36 × 1 | 12.8 / 16.5 | 35.1 / 102.9 | 2.74 | 6.22 ✅ |
 | upper_yaw | GIM6010-8 × 2 | 5.2 / 6.9 | 9.5 / 20.9 | 1.82 | 3.01 ✅ |
 | elbow | GIM6010-8 × 2 | 6.1 / 6.9 | 9.5 / 20.9 | 1.55 | 3.01 ✅ |
 | wrist_pitch | DM-J4310-2EC_V1.1 × 1 | 1.8 / 1.9 | 3.0 / 7.0 | 1.70 | 3.77 ✅ |
