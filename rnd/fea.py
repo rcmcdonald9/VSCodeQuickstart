@@ -166,7 +166,7 @@ def cases():
     cp = arm.cassette_plate("B")
     C.append(("Elbow belt cassette plate: 60 % of the belt peak (415 N)", cp, 2.0,
               lambda x: np.hypot(x[0], x[2] - zE) < 25.3,
-              [(lambda x: np.hypot(x[0], x[2] - zS) < 19.4, (0, 0, -0.6 * 691.0))]))
+              [(lambda x: np.hypot(x[0], x[2] - zS) < 20.7, (0, 0, -0.6 * 691.0))]))
     C += c1_tie_cases()
     C.append(carriage_case())
     # 6. Roll link: bolted to the arm-side ferrule; roll belt peak 768 N between the seats (half per wall) + the arm moment
@@ -182,7 +182,7 @@ def cases():
     C.append((f"Roll link: roll belt peak 768 N + arm moment 19 N·m (couple {Fc:.0f} N)", rl.roll_link(), 2.5,
               lambda x: (np.abs(x[1] - 8) < 0.3) & (np.hypot(x[0], x[2]) < 45),
               [(lambda x, W=W: (np.hypot(x[1] - RY, x[2]) < 26.3) & inw(x, W), (0, 0, 384.0 + sg * Fc)) for W, sg in ((W1, 1), (W2, -1))]
-              + [(lambda x, W=W: (np.hypot(x[1] - RY, x[2] - RC) < 19.4) & inw(x, W), (0, 0, -384.0)) for W in (W1, W2)]))
+              + [(lambda x, W=W: (np.hypot(x[1] - RY, x[2] - RC) < 20.7) & inw(x, W), (0, 0, -384.0)) for W in (W1, W2)]))
     # 7. Clevis + yaw block: held on the roll shaft by the clevis arms; yaw belt peak 691 N between the seats + the upper-arm
     #    moment 19 N·m as a couple on the two yaw 61808 seats + its weight
     P1, P2, YC = rl.P1, rl.P2, rl.YAW_C
@@ -191,7 +191,7 @@ def cases():
     C.append((f"Clevis + yaw block: yaw belt peak 691 N + arm moment 19 N·m (couple {Fy:.0f} N)", rl.clevis_and_yaw_block() + rl.yaw_plate_bot(), 2.5,   # loop 44 made the bottom plate a bolted print: taken as bonded here
               lambda x: (np.hypot(x[1] - RY, x[2]) < 20.5) & ((x[0] < W1[0] - 1) | (x[0] > W2[1] + 1)),
               [(lambda x, P=P: (np.hypot(x[0], x[1] - RY) < 26.3) & inp(x, P), (-345.0 + sg * Fy, 0, -28.0)) for P, sg in ((P1, 1), (P2, -1))]
-              + [(lambda x, P=P: (np.hypot(x[0] + YC, x[1] - RY) < 19.4) & inp(x, P), (345.0, 0, 0)) for P in (P1, P2)]))
+              + [(lambda x, P=P: (np.hypot(x[0] + YC, x[1] - RY) < 20.7) & inp(x, P), (345.0, 0, 0)) for P in (P1, P2)]))
     C.append(case_torque_hanger())
     return C
 
@@ -409,7 +409,7 @@ def inline_roll_cases(M=19.0, T=35.1, belt=691.0, weight=28.0):
     C.append((f"Clevis + yaw block (D24 inline, + rear arm): yaw belt {'peak ' if belt == 691.0 else ''}{belt:.0f} N + arm moment {M:.0f} N·m (couple {Fy:.0f} N)",
               rl.clevis_and_yaw_block() + rl.yaw_plate_bot() + rl.roll_arm_rear(), 2.5, fixed,
               [(lambda x, P=P: (np.hypot(x[0], x[1] - RY) < 26.3) & inp(x, P), (-belt / 2 + sg * Fy, 0, -weight)) for P, sg in ((P1, 1), (P2, -1))]
-              + [(lambda x, P=P: (np.hypot(x[0] + YC, x[1] - RY) < 19.4) & inp(x, P), (belt / 2, 0, 0)) for P in (P1, P2)]))
+              + [(lambda x, P=P: (np.hypot(x[0] + YC, x[1] - RY) < 20.7) & inp(x, P), (belt / 2, 0, 0)) for P in (P1, P2)]))   # D26: wall A has a Ø40.6 hole now (was the Ø38.2 eccentric seat)
     return C
 
 

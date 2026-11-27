@@ -45,7 +45,7 @@ ROLL_DRIVES = {
     # shorter yaw drop makes it longer by the difference (belt = the 0.79 kg reference).
     # C1 (Fable review 2026-11-27): the yaw flange is 6061-T6 with a steel clamp ring and 6 × M3 × 45 (was printed, on M3
     # inserts): roll.masses(split=True) yaw 0.552 → 0.617 inline, 0.623 belt → yaw_stage_mass 0.62 for both drives.
-    "belt": dict(roll_offset_y=0.083, yaw_drop=0.1134, shoulder_roll=("GIM6010-8", 80 / 18), roll_stage_mass=0.71, yaw_stage_mass=0.65, bone_upper_dm=0.0),   # D24 v2: D50 Oldham +0.03 per stage; + C1 6061 yaw flange +0.06 → 0.65
+    "belt": dict(roll_offset_y=0.083, yaw_drop=0.1134, shoulder_roll=("GIM6010-8", 80 / 18), roll_stage_mass=0.69, yaw_stage_mass=0.63, bone_upper_dm=0.0),   # D26: no Oldham −0.02 per stage   # D24 v2: D50 Oldham +0.03 per stage; + C1 6061 yaw flange +0.06 → 0.65
     # FROM CAD (rnd/parts/roll.py, inline): ROLL_Y = ferrule face 18 + 2 + motor r 50 (Ø100 ESTIMATE); the top yaw plate
     # clears the motor (r 50 + 4) instead of the Ø127 80T pulley (yaw_drop 116.0 → 103.9; wave 2: 101.3, the flange pocket); masses = roll.masses(split=True), the motor (1.0 kg) is the
     # roll actuator mass.
@@ -53,7 +53,7 @@ ROLL_DRIVES = {
     # roll body + 61 g 7075 output adapter + steel clamp ring + cup ring; neck 14.1 mm longer than the belt arm's (+ 10 g).
     # Neon review (2026-11-27, findings 3/6): 7075 rear plate + steel sleeves + 2 stop bushes (+50 g), motor stack 3 mm to +X
     # (rear arm half-width 26 → 28.2, yaw block +X end wall + 3 mm), yaw tie crush sleeves: roll.masses 0.35 → 0.41, yaw 0.67 → 0.69.
-    "inline": dict(roll_offset_y=0.069, yaw_drop=0.0993, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.41, yaw_stage_mass=0.71, bone_upper_dm=0.010),   # + metal yaw Oldham hub (+17 g, Neon #2 F2)   # D24 v2: yaw D50 Oldham, roll.masses yaw 0.552 → 0.579; + C1 6061 flange → 0.65. R2b (2026-11-27): roll link side block + 53 g (roll.masses 0.297 → 0.350), yaw block +X end wall + 26 g (0.641 → 0.667)
+    "inline": dict(roll_offset_y=0.069, yaw_drop=0.0993, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.41, yaw_stage_mass=0.69, bone_upper_dm=0.010),   # D26: yaw Oldham out, stub + 6001 in (roll.masses −18 g)   # + metal yaw Oldham hub (+17 g, Neon #2 F2)   # D24 v2: yaw D50 Oldham, roll.masses yaw 0.552 → 0.579; + C1 6061 flange → 0.65. R2b (2026-11-27): roll link side block + 53 g (roll.masses 0.297 → 0.350), yaw block +X end wall + 26 g (0.641 → 0.667)
 }
 assert ROLL_DRIVE in ROLL_DRIVES, f"PIP_ROLL_DRIVE must be one of {list(ROLL_DRIVES)}"
 _RD = ROLL_DRIVES[ROLL_DRIVE]
@@ -67,15 +67,16 @@ _RD = ROLL_DRIVES[ROLL_DRIVE]
 ARM_MOTORS = os.environ.get("PIP_ARM_MOTORS", "gim6010")
 ARM_MOTOR_SETS = {
     # elbow_belt_c (Fable M5, 2026-11-27): the exact centre for the stock belt (rnd/belts.py centre_for: 295-5M → 70.70 mm,
-    # 380-5M → 83.89 mm), so the ±1 mm eccentric sits mid-range (at 70.00 the belt used 70 % of it just to fit).
-    "gim6010": dict(shoulder_pitch=("GIM6010-8", 3.0), elbow=("GIM6010-8", 2.0), elbow_teeth=40, elbow_belt_c=0.07070,
-                    bone_mass_upper=0.92, pitch_module_mass=0.95),   # merged: + Neon F3 crush sleeves (+0.05) + metal pitch Oldham hub (+0.017)   # Neon #2 (2026-11-27, cartridge track): + 6061 elbow core tube (51 g, arm.ELBOW_CORE) + metal motor-side Oldham hub (+17 g over the printed one) = 0.85 → 0.92; the pitch hub (+17 g) and the yaw hub (+17 g) are for shoulder.masses() / roll.masses() (they still count it printed)    # merged: + C1/M8 hub tie studs + ring + 608 balancer pulleys (+0.05)    # D24 v2 / Fable M5 (2026-11-27): D50 Oldham (+29 g per stage; arm.masses 1.028 → 1.055, shoulder.masses 0.791 → 0.818) + the elbow AS5048A bracket/board/magnet (+12 g, ESTIMATE): 0.81 → 0.85, 0.80 → 0.83. R2b last mile (2026-11-27): housing 238 → 349 g (arm.STIFF_T 4.3 + SIDE_T 2.8), 0.79 → 0.90, minus the yaw KX74 socket (88 g, now in the roll track's bolted yaw stage) → 0.81; shoulder.masses() 0.729 → 0.791 (balancer crank + fork + spring ring, closed bracket windows), 0.76 → 0.80
+    # 380-5M → 83.89 mm), so the ±1 mm eccentric sits mid-range (at 70.00 the belt used 70 % of it just to fit). D26 (2026-11-27):
+    # no eccentric any more (fixed centre, rnd/belts.py FIXED_CENTRE): + 0.25 mm of designed preload stretch → 70.95 / 84.14.
+    "gim6010": dict(shoulder_pitch=("GIM6010-8", 3.0), elbow=("GIM6010-8", 2.0), elbow_teeth=40, elbow_belt_c=0.07095,
+                    bone_mass_upper=0.89, pitch_module_mass=0.93),   # D26 (2026-11-27): no Oldham, C45 stub + 6001, pitch idler: CAD −34 g arm, −24 g pitch module   # merged: + Neon F3 crush sleeves (+0.05) + metal pitch Oldham hub (+0.017)   # Neon #2 (2026-11-27, cartridge track): + 6061 elbow core tube (51 g, arm.ELBOW_CORE) + metal motor-side Oldham hub (+17 g over the printed one) = 0.85 → 0.92; the pitch hub (+17 g) and the yaw hub (+17 g) are for shoulder.masses() / roll.masses() (they still count it printed)    # merged: + C1/M8 hub tie studs + ring + 608 balancer pulleys (+0.05)    # D24 v2 / Fable M5 (2026-11-27): D50 Oldham (+29 g per stage; arm.masses 1.028 → 1.055, shoulder.masses 0.791 → 0.818) + the elbow AS5048A bracket/board/magnet (+12 g, ESTIMATE): 0.81 → 0.85, 0.80 → 0.83. R2b last mile (2026-11-27): housing 238 → 349 g (arm.STIFF_T 4.3 + SIDE_T 2.8), 0.79 → 0.90, minus the yaw KX74 socket (88 g, now in the roll track's bolted yaw stage) → 0.81; shoulder.masses() 0.729 → 0.791 (balancer crank + fork + spring ring, closed bracket windows), 0.76 → 0.80
     # FROM CAD (2026-11-27, PIP_ARM_MOTORS=d20): elbow housing 98 → 109 wide (the Ø102.6 can), 12 mm taller at the top (belt centre
     # 70 → 84.0 mm, 76T belt: the can has to clear the −Y 61808 boss) and 16 mm deeper (the integral 60T), Ø50 Oldham,
     # Ø84 flange. CAD deltas over the GIM6010 set: arm.masses() 0.995 → 1.138 kg (+0.14: housing + seat caps +40 g, 60T +37 g,
     # Ø50 Oldham + Ø102.6 can +68 g), shoulder.masses() 0.758 → 0.824 kg (+0.07, Ø50 Oldham + can). Motor +8 g via act().
-    "d20": dict(shoulder_pitch=("GIM8108-8", 3.0), elbow=("GIM8108-8", 3.0), elbow_teeth=60, elbow_belt_c=0.08389,
-                bone_mass_upper=1.02, pitch_module_mass=1.03),   # merged: + Neon F3 crush sleeves (+0.05) + metal pitch Oldham hub (+0.017)   # Neon #2: + core tube 51 g + metal D63 motor hub (+26 g) = 0.94 → 1.02    # merged: + C1/M8 (+0.05)    # D24 v2 / Fable M6: D63 Oldham (+48 g per stage over the D50) + the elbow encoder (+12 g): 0.88 → 0.94, 0.86 → 0.91; incl. the 5.5 mm +Y face (+35 g; no side layer beside the can); yaw KX74 socket dropped (−88 g)
+    "d20": dict(shoulder_pitch=("GIM8108-8", 3.0), elbow=("GIM8108-8", 3.0), elbow_teeth=60, elbow_belt_c=0.08414,
+                bone_mass_upper=0.93, pitch_module_mass=0.95),   # D26: no D63 Oldham (CAD −90 g arm, −78 g pitch module)   # merged: + Neon F3 crush sleeves (+0.05) + metal pitch Oldham hub (+0.017)   # Neon #2: + core tube 51 g + metal D63 motor hub (+26 g) = 0.94 → 1.02    # merged: + C1/M8 (+0.05)    # D24 v2 / Fable M6: D63 Oldham (+48 g per stage over the D50) + the elbow encoder (+12 g): 0.88 → 0.94, 0.86 → 0.91; incl. the 5.5 mm +Y face (+35 g; no side layer beside the can); yaw KX74 socket dropped (−88 g)
 }
 assert ARM_MOTORS in ARM_MOTOR_SETS, f"PIP_ARM_MOTORS must be one of {list(ARM_MOTOR_SETS)}"
 _AM = ARM_MOTOR_SETS[ARM_MOTORS]

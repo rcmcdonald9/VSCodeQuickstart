@@ -26,6 +26,127 @@ def pitch_length(z_small, z_big, centre):
     return 2 * centre * math.cos(phi) + math.pi * (D + d) / 2 + phi * (D - d)
 
 
+def loop_path(circles):
+    """Pitch-line path of a closed belt round circles [(x, y, r_pitch, σ)] in loop order, travelling CCW (σ +1: the belt
+    wraps the circle with its teeth, the circle is inside the loop; σ −1: a back-side idler outside the loop). Returns
+    (length mm, [wrap deg per circle], [(tangent point out, tangent point in of the next circle)])."""
+    n = len(circles)
+    th = []
+    for i in range(n):
+        xi, yi, ri, si = circles[i]
+        xj, yj, rj, sj = circles[(i + 1) % n]
+        D, a, k = math.hypot(xj - xi, yj - yi), math.atan2(yj - yi, xj - xi), sj * rj - si * ri
+        t = a - math.asin(k / D)
+        L_ = (-math.sin(t), math.cos(t))
+        ti = (xi - si * ri * L_[0], yi - si * ri * L_[1])
+        tj = (xj - sj * rj * L_[0], yj - sj * rj * L_[1])
+        th.append((t, math.sqrt(D * D - k * k), ti, tj))
+    length, wraps = sum(s for _, s, _, _ in th), []
+    for i in range(n):
+        w = (circles[i][3] * (th[i][0] - th[i - 1][0])) % (2 * math.pi)
+        wraps.append(math.degrees(w))
+        length += circles[i][2] * w
+    return length, wraps, [(ti, tj) for _, _, ti, tj in th]
+
+
+BACK = 0.97                         # HTD 5M: pitch line → belt back (3.6 thick, 2.06 tooth, pitch line 0.57 above the land)
+# D26 (2026-11-27): slotted-idler take-up. Fixed centres (the motor is fixed), so the idler covers installation slack,
+# preload stretch and the tolerances (all ESTIMATE until a belt is measured):
+#   - preload per strand T0 = 0.25 × the peak effective pull (rnd/lift.py PRELOAD), stretch T0·L / EA, EA ≈ 50 kN for a
+#     15 mm glass-cord HTD 5M (ESTIMATE; a stiffer belt only shortens the travel needed);
+#   - belt length ± 0.46 mm (Gates PowerGrip / HTD centre-distance tolerance class ± 0.009 in for 10–15 in belts, ×2),
+#     printed centre distance ± 0.2 mm (× 2 in length), 0.2 mm stretch-in;
+#   - installation: no slack is needed. The small pulley keeps only its motor-side flange (the hub-side flange is turned
+#     off), so with the idler retracted the belt slides axially, in mesh, off the pulley's teeth onto the hub toward wall B
+#     (and back on): Gates' rule for fixed-centre drives (one pulley flangeless on the installation side). The big pulleys
+#     (pitch 60T, yaw 40T flangeless; elbow 40T flanged both sides) and the idler's flanges keep the belt tracking.
+IDLER_TAKEUP = dict(preload=0.25, EA=50e3, tol_belt=0.46, tol_centre=0.4, stretch_in=0.2)
+INSTALL_SLACK = 0.0
+RELEASE_SLACK = 0.5                 # slack with the idler at the retracted end of its slot (the belt slides off loose)
+# Idlers: 2 × 625-2RS (5 × 16 × 5, SKF 625: C 1.72 kN, C0 0.68 kN, catalogue) on the plain shank of an ISO 4762 M5 × 50
+# axle bolt (aluminium Ø8 round spacers to the walls), clamped across both walls through slots; an M4 jack screw in the
+# slot's end boss holds the position (the clamp alone creeps, Neon #2 F3). Kinds:
+#   back   — printed PETG-CF flat roller Ø26 (r 13), 1.5 mm flanges r + 2.5, on the belt's back outside the loop (adds
+#            wrap on the small pulley);
+#   inside — printed HTD 5M 18T idler (pitch Ø28.6, root Ø23.4 over the Ø16 bearings), flanges, inside the loop.
+# side: +1 = the stage +Y strand, −1 = −Y; f: the idler's foot along the strand from the small pulley (0 … 1).
+IDLERS = {"shoulder_pitch": dict(kind="back", side=1, f=0.45), "elbow": dict(kind="inside", side=1, f=0.62),
+          "upper_yaw": dict(kind="inside", side=-1, f=0.55), "elbow_d20": dict(kind="inside", side=1, f=0.6),
+          "lift": dict(kind="back", side=1, f=0.5)}
+IDLER_HW = dict(back=dict(r_roll=12.5, flange=2.5, width=16.0), inside=dict(teeth=18, flange=2.0, width=16.0))
+
+
+def _strand(z_small, z_big, centre, side):
+    """Tangent points (small, big) of the straight open-belt strand on side ±1 (stage frame: small at 0, big at +X)."""
+    r1, r2 = pd(z_small) / 2, pd(z_big) / 2
+    s = (r2 - r1) / centre
+    c = math.sqrt(1 - s * s)
+    return (-r1 * s, side * r1 * c), (centre - r2 * s, side * r2 * c)
+
+
+def idler_circles(z_small, z_big, centre, idler, delta):
+    """Loop circles (CCW, belts.loop_path) with the idler pushed delta mm off the straight strand (inward for a back-side
+    roller, outward for an inside idler), plus the idler centre."""
+    p1, p2 = _strand(z_small, z_big, centre, idler["side"])
+    l = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+    ux, uy = (p2[0] - p1[0]) / l, (p2[1] - p1[1]) / l
+    nx, ny = -uy, ux
+    if ny * idler["side"] < 0:
+        nx, ny = -nx, -ny                                       # outward normal of the strand
+    bx, by = p1[0] + idler["f"] * l * ux, p1[1] + idler["f"] * l * uy
+    hw = IDLER_HW[idler["kind"]]
+    if idler["kind"] == "back":
+        r = hw["r_roll"] + BACK
+        c = (bx + (r - delta) * nx, by + (r - delta) * ny, r, -1)
+    else:
+        r = pd(hw["teeth"]) / 2
+        c = (bx - (r - delta) * nx, by - (r - delta) * ny, r, 1)
+    small, big = (0.0, 0.0, pd(z_small) / 2, 1), (centre, 0.0, pd(z_big) / 2, 1)
+    return ([small, big, c] if idler["side"] > 0 else [small, c, big]), (c[0], c[1]), (nx, ny)
+
+
+def _solve_delta(z_small, z_big, centre, idler, target):
+    lo, hi = 0.0, 30.0
+    for _ in range(60):
+        m = (lo + hi) / 2
+        try:
+            L = loop_path(idler_circles(z_small, z_big, centre, idler, m)[0])[0]
+        except ValueError:                                  # the idler would overlap a pulley: past any useful travel
+            L = 1e9
+        lo, hi = (m, hi) if L < target else (lo, m)
+    return (lo + hi) / 2
+
+
+def idler_geom(joint, z_small, z_big, centre, belt_teeth, peak_pull, spec=None):
+    """Slotted idler for one stage: nominal / slot-end positions (stage frame), travel, teeth in mesh, loads. The slot runs
+    from the installation position (≥ INSTALL_SLACK of slack, or the strand just touched) to the long-belt end."""
+    sp = dict(spec or IDLERS[joint])
+    hw = IDLER_HW[sp["kind"]]
+    tk = IDLER_TAKEUP
+    L_belt = belt_teeth * PITCH
+    T0 = tk["preload"] * peak_pull
+    pre = T0 * L_belt / sp.get("EA", tk["EA"])
+    L2 = pitch_length(z_small, z_big, centre)
+    rel = max(INSTALL_SLACK, RELEASE_SLACK)
+    d_lo = _solve_delta(z_small, z_big, centre, sp, L_belt - rel) if L2 < L_belt - rel else 0.0
+    d_nom = _solve_delta(z_small, z_big, centre, sp, L_belt + pre)
+    d_hi = _solve_delta(z_small, z_big, centre, sp, L_belt + pre + tk["tol_belt"] + tk["tol_centre"] + tk["stretch_in"])
+    d_short = _solve_delta(z_small, z_big, centre, sp, L_belt + pre - tk["tol_belt"] - tk["tol_centre"])
+    circ, cen, n = idler_circles(z_small, z_big, centre, sp, d_nom)
+    _, w, _ = loop_path(circ)
+    i_id = 2 if sp["side"] > 0 else 1
+    pos = lambda d: idler_circles(z_small, z_big, centre, sp, d)[1]
+    tims = [z_small * loop_path(idler_circles(z_small, z_big, centre, sp, d)[0])[1][0] / 360 for d in (d_short, d_nom, d_hi)]
+    T1 = peak_pull + T0                                       # tight strand at the peak (conservative: slack side keeps T0)
+    F_id = 2 * T1 * math.sin(math.radians(w[i_id]) / 2)      # idler load if its strand is the tight one
+    r_out = (hw["r_roll"] if sp["kind"] == "back" else pd(hw["teeth"]) / 2 - 0.5715) + hw["flange"]
+    out = dict(sp, **hw, joint=joint, belt=L_belt, L2=L2, cad=centre, slack0=L_belt - L2, pre=pre, T0=T0, d_lo=d_lo, d_nom=d_nom, d_hi=d_hi,
+               d_short=d_short, centre=cen, normal=n, slot=(pos(d_lo), pos(d_hi)), travel=d_hi - d_lo, circles=circ,
+               wrap_small=w[0], wrap_idler=w[i_id], tim=tims[1], tim_min=min(tims), F_idler=F_id, T1=T1, r_out=r_out,
+               install_ok=L2 < L_belt - rel + 1e-6)
+    return out
+
+
 def centre_for(z_small, z_big, belt_teeth):
     """Centre distance (mm) at which a stock belt of belt_teeth × 5 mm pitch length fits with zero slack (bisection on
     pitch_length). Fable review M5 (2026-11-27): the CAD centres are set to this, so the ±1 mm eccentric sits mid-range."""
@@ -57,6 +178,101 @@ def adjuster(d: Design = BASELINE):
         c = centre_for(z, zb, n)
         out.append(dict(joint=joint, belt=n * PITCH, exact=c, cad=cad[joint], used=abs(c - cad[joint]) / ECC_E))
     return out
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# D26 (owner, 2026-11-27): no Oldham couplings. Each GIM stage drives its 20T from a turned stub on the motor output
+# (belt_stage.small_stage_v4) between the motor's output bearing and a 6001 in wall B, the motor fixed. Tension:
+#   - shoulder pitch: a back-side slotted idler (IDLERS, idler_geom), the only stage with room for one outside the loop;
+#   - elbow and yaw: FIXED CENTRE, no tensioner. Their stock belts' exact centres (295-5M 70.70, 315-5M 80.93, D20 380-5M
+#     83.89 mm) are the CAD centres the D24 stages already used, so each CAD centre is that + FIXED_CENTRE mm of designed
+#     stretch (within the ±0.3 mm the D26 brief allows). Tolerance argument (fixed_centre()): belt length ± 0.46 mm (Gates
+#     class, ESTIMATE) and the two seats' distance within ONE print ± 0.1 mm (cartridge spigot and the big pulley's seat
+#     are in the same plate at both stages, ESTIMATE) give, by RSS, ± 0.25 mm of centre → the preload runs from ≈ 0 to ≈ 2 ×
+#     nominal. The belt cannot jump teeth at a fixed centre without stretching by about a tooth height over the wrap
+#     (it self-tensions as it climbs), so the low end costs smoothness, not torque; printing the plates after the belts
+#     are measured (centre_for on the measured length + FIXED_CENTRE) takes the belt term out (± 0.1 mm left);
+#   - lift: its open belt is tensioned at the carriage clamps already (no eccentric was ever needed there).
+FIXED_CENTRE = {"elbow": 0.25, "upper_yaw": 0.25, "elbow_d20": 0.25}
+PRINT_CENTRE_TOL = 0.1               # mm, two bearing seats in one FDM print (ESTIMATE; ream in a drill jig if the coupon misses it)
+GIM6010_OUT_BRG_N = 800.0            # GIM6010-8 output: "max radial load 800 N, max axial 200 N" (OpenELAB reseller listing, found
+                                     # 2026-11-27, https://openelab.io/a/s/products/steadywin-gim6010-8-robot-motor; load point not stated,
+                                     # no SteadyWin datasheet reached from this session: ESTIMATE until the seller confirms)
+GIM8108_OUT_BRG_N = None             # GIM8108-8: not published (seller question, as the GIM8108-36's)
+
+
+def fixed_centre(joint, z_small, z_big, centre, belt_teeth, peak_pull):
+    """Fixed-centre preload: nominal and the RSS tolerance band (N per strand), from the CAD centre vs the stock belt."""
+    tk = IDLER_TAKEUP
+    L_belt = belt_teeth * PITCH
+    exact = centre_for(z_small, z_big, belt_teeth)
+    dLdC = (pitch_length(z_small, z_big, centre + 0.01) - pitch_length(z_small, z_big, centre - 0.01)) / 0.02
+    stretch = pitch_length(z_small, z_big, centre) - L_belt
+    tol_c = math.hypot(tk["tol_belt"] / 2, PRINT_CENTRE_TOL)
+    k = tk["EA"] / L_belt
+    T0 = stretch * k
+    lo, hi = max(0.0, (stretch - dLdC * tol_c) * k), (stretch + dLdC * tol_c) * k
+    lo_meas = max(0.0, (stretch - dLdC * PRINT_CENTRE_TOL) * k)
+    D, d = pd(z_big), pd(z_small)
+    tim = z_small * (math.pi - 2 * math.asin((D - d) / (2 * centre))) / (2 * math.pi)
+    return dict(joint=joint, belt=L_belt, exact=exact, cad=centre, offset=centre - exact, stretch=stretch, T0=T0, T0_lo=lo,
+                T0_hi=hi, T0_lo_measured=lo_meas, tol_c=tol_c, tim=tim, preload_target=tk["preload"] * peak_pull)
+
+
+def d26_stages(d: Design = BASELINE):
+    """Tension method per arm stage (D26) for the active motor set: (joint, method, dict)."""
+    from .parts import arm, roll, shoulder
+    out = []
+    pk = lambda j: act(d.arm.joints[j][0])["peak"] * 1000 / (pd(20) / 2)
+    out.append(("shoulder_pitch", "idler", shoulder.idler()))
+    ek = "elbow_d20" if arm.E_TEETH == 60 else "elbow"
+    out.append(("elbow", "fixed", fixed_centre(ek, 20, arm.E_TEETH, arm.BELT_C, STOCK_TEETH[ek], pk("elbow"))))
+    out.append(("upper_yaw", "fixed", fixed_centre("upper_yaw", 20, 40, roll.YAW_C, STOCK_TEETH["upper_yaw"], pk("upper_yaw"))))
+    return out
+
+
+def motor_bearing_rows(d: Design = BASELINE):
+    """(motor, torque, shaft load, motor bearing N, its rating, 6001 N, 6001 C0) at the peak (and D20's flash limit)."""
+    from .parts import belt_stage as bs, cartridge_m as cm
+    rows = []
+    for m, T, lab in ((cm.MOTOR, 11.0, "GIM6010-8 at its 11 N·m peak"), (cm.MOTOR_8108, 22.0, "GIM8108-8 (D20) at its 22 N·m stall"),
+                      (cm.MOTOR_8108, 18.0, "GIM8108-8 (D20) at the 18 N·m flash limit")):
+        mb, b6, sh, _ = cm.direct_brg_load(m, T)
+        rows.append(dict(label=lab, T=T, shaft=sh, motor=mb, rating=GIM8108_OUT_BRG_N if m is cm.MOTOR_8108 else GIM6010_OUT_BRG_N,
+                         b6001=b6, C0=bs.BRG_B["C0"], split=bs.support_split(m)))
+    return rows
+
+
+def d26_report(d: Design = BASELINE):
+    from .parts import belt_stage as bs
+    L = ["", "## D26 direct stages: tension, teeth in mesh, motor bearing (no Oldham)", "",
+         "Each GIM stage drives its 20T from a turned C45 stub bolted to the motor output (8 × M3), supported by the motor's own "
+         f"output bearing and a {bs.BRG_B['name']} in wall B (bonded align-and-bond bushing); the motor is fixed (belt_stage.small_stage_v4).", "",
+         "| Joint | Tension | Belt | Centre CAD / exact | Preload per strand | Teeth in mesh (nominal / worst) | Idler load at peak |", "|---|---|---|---|---|---|---|"]
+    for j, meth, g in d26_stages(d):
+        if meth == "idler":
+            L.append(f"| {j} | back-side slotted idler (f {g['f']:.2f} on the +Y strand), travel {g['travel']:.1f} mm "
+                     f"(δ {g['d_lo']:.1f} … {g['d_hi']:.1f}, nominal {g['d_nom']:.1f}) | {g['belt']:.0f}-5M | {g['cad']:.2f} / "
+                     f"{centre_for(20, 60, round(g['belt'] / PITCH)):.2f} | {g['T0']:.0f} N set at the idler ✅ | {g['tim']:.2f} / {g['tim_min']:.2f} "
+                     f"{'✅' if g['tim_min'] >= MIN_TEETH_IN_MESH else '❌'} | {g['F_idler']:.0f} N on 2 × 625 (C0 1.36 kN) → {1360 / g['F_idler']:.1f}× |")
+        else:
+            L.append(f"| {j} | fixed centre (+{g['offset']:.2f} mm over the stock belt's exact centre), no tensioner | {g['belt']:.0f}-5M | "
+                     f"{g['cad']:.2f} / {g['exact']:.2f} | {g['T0']:.0f} N nominal, {g['T0_lo']:.0f}–{g['T0_hi']:.0f} N over ± {g['tol_c']:.2f} mm "
+                     f"({g['T0_lo_measured']:.0f} N worst with the plates printed to the measured belt; target {g['preload_target']:.0f}) ⚠️ | "
+                     f"{g['tim']:.2f} {'✅' if g['tim'] >= MIN_TEETH_IN_MESH else '❌'} | — |")
+    L += ["", "| Motor bearing check | Shaft load (F + 2·T0) | Motor bearing (share) | Its rating | 6001 in wall B | 6001 C0 |", "|---|---|---|---|---|---|"]
+    for r in motor_bearing_rows(d):
+        rt = f"{r['rating']:.0f} N (reseller listing, ESTIMATE) → {r['rating'] / r['motor']:.1f}×" if r["rating"] else "not published (seller question) ⚠️"
+        L.append(f"| {r['label']} | {r['shaft']:.0f} N | {r['motor']:.0f} N ({r['split'][0]:.0%}) | {rt} | {r['b6001']:.0f} N ({r['split'][1]:.0%}) | "
+                 f"{r['C0'] / 1000:.2f} kN → {r['C0'] / r['b6001']:.1f}× |")
+    a, b = bs.support_split()[2:]
+    L += ["", f"- Span: motor bearing {a:.1f} mm above the belt plane (its centre {bs.MOTOR_BRG_DEPTH:.0f} mm behind the output face, ESTIMATE), "
+          f"6001 {b:.1f} mm below. An overhung pulley on the bare output (no wall-B bearing) would put the whole {motor_bearing_rows(d)[0]['shaft']:.0f} N "
+          f"plus ≈ {motor_bearing_rows(d)[0]['shaft'] * (a + 0.0) / 1000:.0f} N·m of tilting on the GIM6010's bearing: over the 800 N listing before the moment, rejected.",
+          "- Hyperstatic check: the stub is simply supported only if the motor's bearing tilts a few arcmin (a single deep-groove "
+          "row, ESTIMATE). If it is moment-rigid, the bushing's align-and-bond keeps the offset ≲ 0.05 mm → ≲ 100 N of preload "
+          "(stub cantilever ≈ 2 kN/mm); a swapped motor re-centres within the spigot fit (≈ 0.15 mm → ≲ 300 N, inside the 6001's margin)."]
+    return L
 
 
 def sustained_motor_torque(joint, ratio, d: Design = BASELINE):
@@ -91,7 +307,7 @@ def stage(joint, ratio, z_small, centre_mm, width_mm, d: Design = BASELINE):
 # centres = the CAD's (cad_centres(); the elbow from params.elbow_belt_c). Fable M5 (2026-11-27): the elbow is set to the
 # exact centre for its stock belt (70.70 for 295-5M, D20 83.89 for 380-5M); pitch 70 → 70.15 and yaw 80 → 80.93 belong to
 # shoulder.py / roll.py (adjuster() reports what each CAD centre leaves of the ±1 mm eccentric).
-STAGES = [("shoulder_pitch", 3.0, 20, 70, 15), ("shoulder_roll", 80 / 18, 18, 103.3, 15), ("upper_yaw", 2.0, 20, 80, 15),
+STAGES = [("shoulder_pitch", 3.0, 20, 70, 15), ("shoulder_roll", 80 / 18, 18, 103.3, 15), ("upper_yaw", 2.0, 20, 81.18, 15),
           ("elbow", BASELINE.arm.elbow_teeth / 20, 20, round(BASELINE.arm.elbow_belt_c * 1000, 2), 15)]   # D20 switch: 20T:40T or 20T:60T
 from .params import ROLL_DRIVE as _RD                     # D24 (owner, 2026-11-27): the inline GIM8108-36 roll has no belt
 if _RD == "inline":
@@ -113,13 +329,7 @@ def report(d: Design = BASELINE):
         L.append(f"| {s['joint']} | {s['z'][0]}:{s['z'][1]} ({s['ratio_exact']:.2f}:1) | {s['pd'][0]:.1f} / {s['pd'][1]:.1f} | "
                  f"{s['pull_sus']:.0f} / {s['work']:.0f} N → {s['sf_sus']:.1f}× {f1} | {s['pull_peak']:.0f} N → {s['sf_ult']:.1f}× ultimate {f2} | {s['tim']:.1f} {g} | "
                  f"{s['centre']} / {s['length']:.0f} mm |")
-    L += ["", "## Centre distances vs the stock belts (Fable M5)", "",
-          f"Exact pitch length 2C·cos φ + π(D+d)/2 + φ(D−d); the eccentric bushings give ±{ECC_E:.1f} mm. 'Used' = the share of that "
-          "range the CAD centre needs just to fit the belt (0 % = mid-range, the whole range left for tension and tolerances).", "",
-          "| Joint | Stock belt | Exact centre | CAD centre | Adjuster used |", "|---|---|---|---|---|"]
-    for a in adjuster(d):
-        f = "✅" if a["used"] <= 0.25 else ("⚠️" if a["used"] <= 0.5 else "❌")
-        L.append(f"| {a['joint']} | {a['belt']:.0f}-5M | {a['exact']:.2f} | {a['cad']:.2f} | {a['used']:.0%} {f} |")
+    L += d26_report(d)
     L += ["", "## Shaft joints at the motor peak (Fable M5/M6)", "", "| Joint | Motor | Torque | Capacity | Margin |", "|---|---|---|---|---|"]
     for r in shaft_joints():
         f = "✅" if r[4] >= 1.25 else ("⚠️" if r[4] >= 1.0 else "❌")
@@ -127,15 +337,16 @@ def report(d: Design = BASELINE):
     L += ["", "- D20 motor-side hub under its 18 N·m limit: 4 × M3 friction is short (⚠️/❌ above); its output pattern is still ESTIMATE. "
           "If the GIM8108-8 drawing has dowel holes, 2 × ISO 8734 Ø3 dowels go through the hub into them; otherwise the hub face is "
           "bonded to the output with Loctite 638 (ESTIMATE ≈ 10 MPa on ≈ 1.7e3 mm², far above the limit; heat to remove).",
-          f"- upper_yaw: the centre for the stock 315-5M is {centre_for(20, 40, 63):.2f} mm; roll.YAW_C (roll track) is still 80.00, "
-          "so the eccentric starts 93 % used. No stock 5M length lands at 80.00 (310-5M → 78.38, 315-5M → 80.93); YAW_C has to move."]
+          "- D26 rows (stub, 8 × M3): the Oldham rows above are kept for the record; D26 removed the Oldham from every arm stage."]
     from .parts.cartridge_m import FLANGE_LOAD, flange_rows
     fl = FLANGE_LOAD
     L += ["", "## Cartridge flange ears: tipping and bolt load (Neon #2 finding 2)", "",
           f"Applied moment at the actuator peak = cartridge mass × {fl['g']:.0f} g × motor mid-length + Oldham side load "
           f"(μ {fl['mu_oldham']} · T / (D/3)) × the tenon height; tipping when it beats the ears' preload × their distance from the "
           f"flange's edge line in the worst direction; preload {fl['preload']:.0f} N per M4, and {fl['retained']:.0%} of it after "
-          "printed-joint creep (ESTIMATE). Friction torque μ 0.3 · n · F_p · r. Rule: ≥ 3 ears with no gap > 120°, or ≥ 4 with no gap > 180°.", "",
+          "printed-joint creep (ESTIMATE). Friction torque μ 0.3 · n · F_p · r. Rule: ≥ 3 ears with no gap > 120°, or ≥ 4 with no gap > 180°. "
+          "**D26 'now' rows (direct stages, no Oldham):** the side-load term is the motor bearing's share of the belt pull at the peak "
+          "(cartridge_m.direct_brg_load) × its height over the flange (31 mm); the centring lip takes the shear. Lift 'now' is still the Oldham stage.", "",
           "| Joint | Motor | Ears (largest gap) | Applied | Tipping at full / 30 % preload | Friction at 30 % vs peak | Max bolt load |",
           "|---|---|---|---|---|---|---|"]
     for j, mot, b, a in flange_rows():
@@ -148,7 +359,7 @@ def report(d: Design = BASELINE):
           "(outer-wall holes, wall-A bosses + cover cut) before those modules switch EAR_SITE.",
           "- D20 at 30 % preload: friction 15 N·m < 22 N·m stall, so the ears go into bearing (≈ 98 N per M4, ≈ 4 MPa on the 6 mm ear) "
           "after a slip; at the 18 N·m flash limit 0.8×. Full preload: 50 N·m (2.3×)."]
-    L += ["", "- Belt lengths round to stock sizes; eccentric bushings set the tension (loop 10).",
+    L += ["", "- Belt lengths round to stock sizes. D26: no eccentric bushings any more; the pitch idler and the fixed elbow / yaw centres set the tension (table above).",
           "- If coupon tests show tooth jump or creep: switch to PU steel-cord HTD 5M (1268 N working, Mädler) at the same geometry, or to 25 mm belts.",
           "- **Rejected (loop 3):** remote elbow motor on a long belt."]
     return "\n".join(L)
@@ -187,7 +398,11 @@ def shaft_joints():
             # (≈ 27 MPa), μ 0.3; 6061 (cartridge_m.MOTOR_HUB): 1.0 kN (8.8) / 1.3 kN (10.9), μ 0.2 metal on metal (ESTIMATE).
             ("Oldham motor-side tenon adapter, printed ASA, 4 × M3 at 0.4 kN (D24 v2)", "GIM6010-8", 11.0, 0.3 * 4 * 0.4 * 17.0),
             ("Oldham motor-side hub, 6061, 4 × M3 8.8 at 1.0 kN (Neon #2)", "GIM6010-8", 11.0, 0.2 * 4 * 1.0 * 17.0),
-            ("Oldham motor-side hub, 6061, 4 × M3 10.9 at 1.3 kN, at the 18 N·m flash limit", "GIM8108-8 (D20)", 18.0, 0.2 * 4 * 1.3 * 15.0)]
+            ("Oldham motor-side hub, 6061, 4 × M3 10.9 at 1.3 kN, at the 18 N·m flash limit", "GIM8108-8 (D20)", 18.0, 0.2 * 4 * 1.3 * 15.0),
+            # D26 (2026-11-27): the C45 drive stub on the motor output, all 8 holes, friction μ 0.2 steel on aluminium (ESTIMATE)
+            ("D26 drive stub (C45) → motor output, 8 × M3 8.8 at 1.0 kN, PCD 34", "GIM6010-8", 11.0, 0.2 * 8 * 1.0 * 17.0),
+            ("D26 drive stub (C45) → motor output, 8 × M3 10.9 at 1.3 kN, PCD 30", "GIM8108-8 (D20)", 22.0, 0.2 * 8 * 1.3 * 15.0),
+            ("D26 drive stub, as above, at the 18 N·m flash limit", "GIM8108-8 (D20)", 18.0, 0.2 * 8 * 1.3 * 15.0)]
     return [(j, m, t, c, c / t) for j, m, t, c in rows]
 
 

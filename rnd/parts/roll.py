@@ -21,9 +21,10 @@ from .shoulder import FERRULE, ferrule
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 from ..params import BASELINE as _D
-from .belt_stage import V3 as _V3, bolted_stage, wall_a_cuts
+from .belt_stage import V3 as _V3, bolted_stage_v4, wall_a_cuts_v4
 INLINE = _D.arm.roll_drive == "inline"
 EAR_SITE = "yaw"            # D24 v2 flange-ear pattern (cartridge_m.EAR_SITES) of the yaw stage (and the belt-roll fallback), read by rnd/assembly_seq.py
+DRIVE = "direct"            # D26 (2026-11-27): both GIM6010 stages here are direct stages v4 (no Oldham), fixed centres (rnd/belts.py FIXED_CENTRE)
 ROLL_Y = _D.arm.roll_offset_y * 1000                 # loop 10: 50 → 75 (the Ø114 roll pulley); loop 40: 83 (the 80T pulley clears the ferrule by 2 mm)
 # D24 inline roll (owner-approved 2026-11-27): GIM8108-36, 36:1 planetary, 24 V SDC303 (rnd/specs/actuators.yaml). Seller
 # installation drawing (owner, 2026-11-27, docs/rnd/specs/gim8108-36_installation.png), ≈ 57 mm overall with the driver:
@@ -69,7 +70,7 @@ if INLINE:
 #  - roll 72T → 80T (ratio 4.0 → 4.44): the D13 stages put 0.16 kg more on the shoulder, and the whole-workspace roll
 #    margin (rated / p95, 1 kg, yaw ±150°) fell to 1.49×; 80T restores ≈ 1.6× with no motor change.
 ROLL_TEETH = 80
-ROLL_C, YAW_C = 103.3, 80.93         # 80T:18T roll on a stock 475 mm belt; yaw 80.93 = exact centre for a stock 315-5M belt (Neon #2 F7: at 80.00 it used 93 % of the ±1 mm adjuster)
+ROLL_C, YAW_C = 103.3, 81.18         # 80T:18T roll on a stock 475 mm belt; yaw: the exact centre for a stock 315-5M belt (80.93, Neon #2 F7) + 0.25 mm of fixed-centre preload (D26, rnd/belts.py FIXED_CENTRE)
 # D24 (2026-11-27): both stages are belt_stage.small_stage_v3 with the bolted cartridge (D24 v2, Fable C3: M4 ear bolts from
 # the cartridge side into nuts on wall A's pulley face, site EAR_SITE; centring lip in the wall's counterbore, Oldham drive). Stage frame: z = 0 is the
 # flange plane = the cartridge-side face of wall A; the bearings, pulley and belt plane sit where the KX74 V2 stack had them.
@@ -80,8 +81,8 @@ R_CAN = cm.MOTOR["od"] / 2 + cm.WALL + 0.3               # bolted can sleeve rad
 
 
 def _stage(T, teeth=20):
-    """D24 bolted cartridge + Oldham + D13 small stage v3 (belt_stage.bolted_stage), stage frame mapped by T."""
-    return bolted_stage(T, teeth, site=EAR_SITE)
+    """D26: bolted cartridge + direct stage v4 (belt_stage.bolted_stage_v4: stub on the motor, 6001 in wall B), mapped by T."""
+    return bolted_stage_v4(T, teeth, site=EAR_SITE)
 
 
 def _fl(b, r, dims):
@@ -126,7 +127,7 @@ def roll_link() -> Part:
         for yy in (ROLL_Y - SEAT_BOLT_Y, ROLL_Y + SEAT_BOLT_Y):
             w -= Pos((x0 + x1) / 2, yy, -22) * Cylinder(2.8, 8, align=MIN)          # M4 heat-set inserts for the cap
         if (x0, x1) == W1:
-            w -= ROLL_T * wall_a_cuts(None, EAR_SITE)                             # D24 v2: eccentric seat, spigot counterbore, ear bolts + nut pockets
+            w -= ROLL_T * wall_a_cuts_v4(None, EAR_SITE)                          # D26: Ø40.6 pulley hole, spigot counterbore, ear bolts + nut pockets
         else:
             w -= Pos(0, ROLL_Y, ROLL_C) * Rot(0, 90, 0) * Cylinder(19.1, 100)     # eccentric-bushing seat, D13 bearing B
             w -= ROLL_T * flange_screw_access(W2[1] - XF + 1)                     # D24: driver holes to the 6 flange screws (swap with the belt on)
@@ -612,7 +613,7 @@ def clevis_and_yaw_block() -> Part:
     for z0, z1 in (P1,):                                                           # D19: P2 is yaw_plate_bot()
         pl = _plate_z(-YAW_C - 48, X_PL1, ROLL_Y - 46, ROLL_Y + 46, z0, z1, 16)
         pl -= Pos(0, ROLL_Y, 0) * Cylinder(26, 400)                                # 61808 seat, yaw shaft
-        pl -= YAW_T * wall_a_cuts(None, EAR_SITE)                                 # D24 v2: eccentric seat, spigot counterbore, 2 ear bolts + nut pockets
+        pl -= YAW_T * wall_a_cuts_v4(None, EAR_SITE)                              # D26: Ø40.6 pulley hole, spigot counterbore, ear bolts + nut pockets
         from .encoder import yaw_pilot_cuts
         pl -= yaw_pilot_cuts()                                                    # M3: 2 × M2 pilots for the yaw AS5048A board
         p = pl if p is None else p + pl
@@ -912,12 +913,11 @@ def masses(density=1.27, split=False):
     pulley, 6801 at 60 % of solid steel). split=True → (roll-body mass, yaw-stage mass) for params.
     D24 (2026-11-27): each stage is small_stage_v3 + the bolted cartridge; as in shoulder.masses the sleeve counts only by
     what it adds over the loop-10 can (nose, flange, rear cap), the Oldham drive replaces the KX74 hub + collar + coupling."""
-    from .belt_stage import small_stage_v3
-    st = dict((n, p) for n, p, _ in small_stage_v3(20))
-    d13 = (st["shaft_12"].volume * 7.85e-3 + st["al_pulley"].volume * 2.7e-3
-           + (st["brg_A_6801"].volume + st["brg_B_6801"].volume) * 7.85e-3 * 0.6) / 1e3          # one stage, kg
-    sock = (st["flange_coupling"].volume * 2.7e-3 * 0.8 + st["oldham_disc"].volume * 1.41e-3 + st["kx_hub_v2"].volume * density * 0.7e-3
-            + (cm.can_bolted().volume + cm.can_cap_bolted().volume - cm.can().volume) * density * 0.8e-3) / 1e3 + 0.006   # + 6 × M4 csk, inserts
+    from .belt_stage import small_stage_v4
+    st = dict((n, p) for n, p, _ in small_stage_v4(20))
+    d13 = ((st["shaft_12"].volume + st["kx_hub_v2"].volume) * 7.85e-3 + st["al_pulley"].volume * 2.7e-3
+           + st["brg_B_6001"].volume * 7.85e-3 * 0.6 + st["brg_B_bushing"].volume * density * 0.8e-3) / 1e3   # D26 direct stage, one, kg
+    sock = ((cm.can_bolted().volume + cm.can_cap_bolted().volume - cm.can().volume) * density * 0.8e-3) / 1e3 + 0.006   # + ear screws, inserts (no Oldham, D26)
     pr = lambda v, f: v * f / 1e6 * density
     if INLINE:      # the GIM8108-36 itself (1.0 kg) is the roll actuator mass in params.arm.joints, not counted here
         roll = {"roll link: ferrule boss, frame, motor floor, support stub, spring bar (printed)": pr(roll_link().volume, 0.6),
@@ -929,13 +929,13 @@ def masses(density=1.27, split=False):
     else:
         roll = {"roll link + seat caps + spring ring/bar (printed)": pr(roll_link().volume + roll_seat_cap(W1).volume + roll_seat_cap(W2).volume, 0.6) + pr(roll_spring_ring().volume, 0.8),
                 "roll shaft + 80T (one piece, D19) + spring hub": pr(roll_shaft().volume, 0.7) + pr(roll_spring_hub().volume, 0.8),
-                "roll D13 v3 stage + Oldham + bolted can flange/nose/cap": d13 + sock, "2 × 61808 (ESTIMATE)": 0.04, "male ferrule (printed) + dowels + belt + screws + ribbon (ESTIMATE)": pr(67213, 0.7) + 0.05}
+                "roll D26 direct stage + bolted can flange/nose/cap": d13 + sock, "2 × 61808 (ESTIMATE)": 0.04, "male ferrule (printed) + dowels + belt + screws + ribbon (ESTIMATE)": pr(67213, 0.7) + 0.05}
     caps = 0.0 if INLINE else roll_clevis_cap(0).volume + roll_clevis_cap(1).volume
     yaw = {"clevis + caps + yaw block plates + posts (printed)": pr(clevis_and_yaw_block().volume + caps + yaw_plate_bot().volume, 0.6),
            "yaw shaft + 40T + spring hub (one piece), spring ring (printed)": pr(yaw_shaft().volume, 0.7) + pr(yaw_spring_ring().volume, 0.8),
            "C1 yaw flange (6061-T6) + steel clamp ring + 6 × M3 × 40 12.9 + 6 crush sleeves": yaw_flange().volume * 2.7e-6 + yaw_tie_ring().volume * 7.85e-6
            + 6 * (5.03 * YAW_TIE["L"] + 45) * 7.85e-6 + YAW_TIE["n"] * math.pi / 4 * (YAW_TIE["sleeve"][0] ** 2 - YAW_TIE["sleeve"][1] ** 2) * 30.0 * 7.85e-6,
-           "yaw D13 v3 stage + Oldham + bolted can flange/nose/cap": d13 + sock, "2 × 61808 + stop pin + belt + screws + ribbon (ESTIMATE)": 0.075}
+           "yaw D26 direct stage + bolted can flange/nose/cap": d13 + sock, "2 × 61808 + stop pin + belt + screws + ribbon (ESTIMATE)": 0.075}
     if split:
         return sum(roll.values()), sum(yaw.values())
     return {**{"roll: " + k: v for k, v in roll.items()}, **{"yaw: " + k: v for k, v in yaw.items()}}

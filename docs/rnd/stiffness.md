@@ -27,28 +27,28 @@ bracket and the elbow housing keep their strength cases ÷ 1.5 (belt peak, a 3 k
 The total is the static error a calibrated gravity model can largely remove (it is repeatable); the wrist camera closes
 the loop for grasping in any case. Target R2b: uncompensated ≤ 6 mm, after the gravity model (assumed to remove 80 %) ≤ 2 mm.
 
-**Static hand deflection, 1 kg straight out: 5.1 mm uncompensated (target ≤ 6), 1.0 mm after a gravity model (target ≤ 2).** ✅
+**Static hand deflection, 1 kg straight out: 5.4 mm uncompensated (target ≤ 6), 1.1 mm after a gravity model (target ≤ 2).** ✅
 
 ## 1. Printed parts (P2 vs P1 on the same mesh)
 
 | Part | Elements | Seat rotation P1 → P2 (mrad, static) | P2/P1 | Seat translation (mm) | Lever to hand (mm) | Hand (mm) | Von Mises P2 max / 99.5 % (P1 99.5 %) |
 |---|---|---|---|---|---|---|---|
-| Upper bone / elbow housing | 34,552 | 0.83 → 3.37 | 4.08 | 0.12 | 436 | 1.59 | 2.4 / 1.1 (0.4) MPa |
-| Shoulder pitch bracket | 30,775 | 0.69 → 1.27 | 1.86 | 0.10 | 736 | 1.03 | 4.7 / 1.5 (1.2) MPa |
-| Roll link | 18,635 | 0.64 → 1.04 | 1.64 | 0.04 | 736 | 0.80 | 7.7 / 1.4 (0.7) MPa |
-| Clevis + yaw block | 36,668 | 0.32 → 0.49 | 1.56 | 0.04 | 736 | 0.40 | 2.9 / 0.9 (0.5) MPa |
+| Upper bone / elbow housing | 34,645 | 0.83 → 3.38 | 4.08 | 0.12 | 436 | 1.59 | 2.4 / 1.1 (0.4) MPa |
+| Shoulder pitch bracket | 33,938 | 0.88 → 1.87 | 2.12 | 0.14 | 736 | 1.52 | 35.6 / 3.3 (1.8) MPa |
+| Roll link | 19,388 | 0.50 → 0.77 | 1.52 | 0.03 | 736 | 0.59 | 6.1 / 1.0 (0.6) MPa |
+| Clevis + yaw block | 36,740 | 0.30 → 0.47 | 1.59 | 0.03 | 736 | 0.38 | 2.9 / 0.9 (0.5) MPa |
 
 ## 2. Bearing play (shimmed pairs, 30 % of 10 µm C0 clearance)
 
 | Joint | Span (mm) | Hand (mm) |
 |---|---|---|
 | pitch (61808 pair) | 34 | 0.13 |
-| roll (61808 pair) | 66 | 0.07 |
+| roll (61808 pair) | 69 | 0.06 |
 | yaw (61808 pair) | 36 | 0.12 |
 | elbow (61808 + 6708) | 108 | 0.02 |
 
 ## 3. Carbon tubes (rnd/bones.py, CF segments only): 0.97 mm (bones.py's whole beam, incl. the printed boxes the FEA already solves: 1.85 mm)
 
-Static arm moments, 1 kg straight out (point masses): 16.1 N·m at the roll link, 13.0 N·m at the yaw seats. Cases solved: Upper bone / elbow housing; Shoulder pitch bracket; Roll link (D24 inline); Clevis + yaw block (D24 inline, + rear arm).
+Static arm moments, 1 kg straight out (point masses): 16.2 N·m at the roll link, 13.1 N·m at the yaw seats. Cases solved: Upper bone / elbow housing; Shoulder pitch bracket; Roll link (D24 inline); Clevis + yaw block (D24 inline, + rear arm).
 
 **Reading:** P2 elements roughly double the P1 bending rotations here, as the review said; P1 FEA alone under-states the deflection. The stress margins in fea.md (P1, 99.5th percentile) are re-checked by the P2 column: compare with the 12 MPa across-layer allowable.

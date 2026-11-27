@@ -81,10 +81,10 @@ def cases():
     eh = Rot(90, 0, 0) * arm.elbow_pulley_hub()           # z = y (loop 40 used Rot(-90): z = −y, which mirrored the journals)
     C.append(("elbow shaft (D19: 40T one piece; 2 × 61808 in capped U-seats + 2 × 6708; the cassette goes in from below)", eh,
               [(arm.CAS_A[0], arm.CAS_A[1], 40.0), (arm.CAS_B[0], arm.CAS_B[1], 40.0), (-54 - 3.5, -54 + 3.5, 40.0), (54 - 3.5, 54 + 3.5, 40.0)], None))
-    st = dict((n, p) for n, p, _ in bs.small_stage_v3(20))
-    C.append(("D13 small stage v3 (D24 bolted cartridge, Oldham hub; steel Ø12 shaft, pulley and bearings separate) at pitch, roll, yaw, elbow", st["shaft_12"],
-              [(bs.V3["jA"][0], bs.V3["jA"][1], bs.BRG_6801["d"]), (bs.V3["jB"][0], bs.V3["jB"][1], bs.BRG_6801["d"]),
-               (bs.V3["pulley"][0], bs.V3["pulley"][1], bs.SHAFT_D)], None))
+    st = dict((n, p) for n, p, _ in bs.small_stage_v4(20))
+    C.append(("D26 direct stage v4 (C45 stub = Ø42 flange on the motor output + Ø12 shaft, one piece; keyed pulley and the 6001 slide on from its free end) at pitch, yaw, elbow",
+              st["kx_hub_v2"] + st["shaft_12"],
+              [(bs.V4["jB"][0], bs.V4["jB"][1], bs.BRG_B["d"]), (bs.V4["pulley"][0], bs.V4["pulley"][1], bs.SHAFT_D)], None))
     from .parts import hand
     sp = dict((n, p) for n, p, _ in hand.wrist_roll_parts())["wr_spindle"]
     zf = hand.wrist_roll_face_z()
@@ -110,7 +110,7 @@ def cases():
 #     150 mm) from any disengaged position. The belt and the shaft never move.
 SERVICE_POSE = dict(lift=0.75, pitch=0.0, elbow=-90.0, wrist=0.0)   # arm down, forearm level (hand clear of the base)
 REMOVED_ALWAYS = ("cover", "boot", "duct")         # D23 covers / boots / ducts come off first for any drive service
-REMOVED_AT = {"pitch": ("torso_shell",)}           # the pitch cartridges sit inside the torso: its half-shell comes off
+REMOVED_AT = {"pitch": ("torso_shell", "bracket_slot")}   # the pitch cartridges sit inside the torso: its half-shell comes off; D26: + the exit-slot key and strap
 DRIVER = dict(r=3.0, L=80.0, key_r=1.25, tilts=(15.0, 25.0), az=8, tol=0.5)
 
 
@@ -177,6 +177,14 @@ def _driver(T, pt, ax, cb=0.0, tilt=0.0, az=0.0):
     return T * (sh if pr is None else pr + sh)
 
 
+def drives():
+    """joint → "direct" (D26 stage v4: the pulley, stub and 6001 leave with the cartridge) or "oldham" (D24 v3), from each
+    module's DRIVE (default "oldham")."""
+    from .parts import arm, roll, shoulder, upper
+    d = lambda mod: getattr(mod, "DRIVE", "oldham")
+    return {"pitch": d(shoulder), "elbow": d(arm), "yaw": d(roll), "lift": d(upper), "roll (belt)": d(roll)}
+
+
 def ear_sites(fr=None):
     """(joint, stage→robot Location, motor, ear site) of every bolted cartridge. The site is the module's EAR_SITE (the
     pattern its CAD passes to belt_stage), "default" when the module names none."""
@@ -202,6 +210,15 @@ def fasteners(fr=None):
     for j, T, m, site in ear_sites(fr):
         for lab, pt, ax in cm.ear_fasteners(m, site):
             out.append((j, f"flange {lab} (M4, site {site})", T, pt, ax, 0.0, (), "swap"))
+    # D26: the exit-slot strap's 4 × M4 (key and strap come off for a pitch swap)
+    for lab, pt, ax in getattr(shoulder, "slot_key_fasteners", lambda: [])():
+        out.append(("pitch", lab, fr["shoulder"], pt, ax, 0.0, (), "swap"))
+    # D26: the pitch idler's M5 axle bolt, head on the outer wall's outboard face (loosened to release the belt for a swap)
+    if hasattr(shoulder, "idler"):
+        g = shoulder.idler()
+        x, y = g["centre"]
+        out.append(("pitch", "idler axle M5 (head on the outer wall)", fr["shoulder"] * shoulder._ST, (x, y, g["wall_b_out"] - 5.0), (0.0, 0.0, -1.0),
+                    0.0, (), "swap"))
     # pitch (C1): the 4 HUB_TIE nuts on the clamp ring in the detach-face recess (arm detached; the studs are Loctited into
     # the crank, nothing to undo inboard), outer wall (3 × M4 into the web)
     ht = shoulder.HUB_TIE
@@ -295,6 +312,8 @@ def cartridge_swap(parts=None, fr=None, step=2.5):
     fr = fr or _frames()
     jobs = [(j, {"pitch": "l_sh_", "elbow": "l_arm_e_", "yaw": "l_roll_yaw_", "lift": "lift_", "roll (belt)": "l_roll_roll_"}[j], T, m, site)
             for j, T, m, site in ear_sites(fr)]
+    drv = drives()
+    from .parts import belt_stage as bs
     wr = fr["forearm"] * Pos(0, 0, -arm.FORE_L) * Pos(0, hand.WRIST_HUB_Y + hand.KX56.gap + hand.cartridge_d_stack(), 0) * Rot(90, 0, 0)
     rows = []
     for j, pre, T, m, site in jobs + [("wrist (hand off)", "l_arm_wrist_", wr, None, None)]:
@@ -302,12 +321,21 @@ def cartridge_swap(parts=None, fr=None, step=2.5):
         if j.startswith("wrist"):                       # can local +Z → −Y: it comes out toward the hand side
             names = [pre + k for k in ("can", "motor", "adapter")]
             stay = [q for q in parts if q[0] not in names and not q[0].startswith("l_arm_hand_")]
-            length, dis, exit_a = hand.cartridge_d_stack() + 10.0, 3.0, None
+            length, dis, exit_a, wall_exit = hand.cartridge_d_stack() + 10.0, 3.0, None, None
+        elif drv.get(j) == "direct":                     # D26: stub, pulley and 6001 come out with it; the belt (released by the
+            # idler or, at a fixed centre, simply in mesh) slides off the single-flange pulley's teeth toward wall B and stays
+            names = [pre + k for k in ("can", "can_cap", "motor", "kx_hub_v2", "shaft_12", "al_pulley", "brg_B_6001")]
+            stay = [q for q in parts if q[0] not in names and not (q[0].startswith(pre) and "belt" in q[0])]
+            length = cm.stack_height_bolted(m) - bs.V4["end"] + 1.5
+            exit_a = None
+            wall_exit = cm.WALL_EXIT.get(site)
+            dis = cm.DIRECT_LIFT if wall_exit is not None else -bs.V4["end"] + 0.5
         else:
             names = [pre + k for k in ("can", "can_cap", "motor", "kx_hub_v2")]
             stay = [q for q in parts if q[0] not in names]
             length, dis = cm.stack_height_bolted(m) + 1.5, cm.EXIT_LIFT
             exit_a = cm.EXIT_SITES.get(site)
+            wall_exit = None
         stay = [q for q in stay if not any(k in q[0] for k in gone)]
         mov = [p for n, p, _ in parts if n in names]
         if not mov:
@@ -327,9 +355,11 @@ def cartridge_swap(parts=None, fr=None, step=2.5):
             rows.append((j, True, f"straight out {length:.0f} mm along its axis", []))
             continue
         if free < dis:
-            rows.append((j, False, f"stuck after {free:.1f} mm (needs {dis:.1f} to clear the tongue and lip)", sorted(set(block))))
+            rows.append((j, False, f"stuck after {free:.1f} mm (needs {dis:.1f} to disengage)", sorted(set(block))))
             continue
         dirs = ([(-_m.cos(_m.radians(exit_a)), -_m.sin(_m.radians(exit_a)), f"its side exit (slot at {exit_a:.0f}°)")] if exit_a is not None else [])
+        if wall_exit is not None:                       # D26: the pulley and stub leave through wall A's U-slot
+            dirs = [(_m.cos(_m.radians(wall_exit)), _m.sin(_m.radians(wall_exit)), f"wall A's exit slot ({wall_exit:.0f}°)")]
         dirs += [(1, 0, "stage +X"), (-1, 0, "stage −X"), (0, 1, "stage +Y"), (0, -1, "stage −Y")]
         how, side_block = None, []
         for dx, dy, lab in dirs:
@@ -392,9 +422,13 @@ def main():
     L += [f"| {j} | {s} | {', '.join(f'{a:+.0f}' + (' (rev)' if a in cm.EAR_REVERSED.get(s, ()) else '') for a in ang)} | {g:.0f}° | {'✅' if ok else '❌'} |"
           for j, s, ang, g, ok in er]
     L += ["", "## R14 (d) cartridge swap (belt on, shaft in place)", "",
-          "Flange screws out (rows above), then the cartridge (sleeve + rear cap + motor + motor-side Oldham adapter; the disc stays "
-          "on the shaft-side hub) moves along its axis in 2.5 mm steps: straight out its own length, or 4.5 mm (adapter tongue and spigot "
-          "lip clear) and then 150 mm sideways; pitch and lift have a side-exit slot in the flange (cartridge_m.EXIT_SITES).", "",
+          "Flange screws out (rows above), then the cartridge moves along its axis in 2.5 mm steps: straight out its own length, or, once "
+          "disengaged, 150 mm sideways. **D26 direct stages (pitch, elbow, yaw):** the cartridge takes its stub, pulley and 6001 with it "
+          "(its length grows by the 42 mm stub); the belt, released by the pitch idler "
+          "or in mesh at the fixed centres, slides off the single-flange pulley toward wall B and stays (the belt part is left out of this "
+          "step); disengaged = the stub end clear of wall A, or, at the pitch, 8.5 mm (the 6001 out of wall B) and then down through wall "
+          "A's U-slot (cartridge_m.WALL_EXIT). Oldham stages (lift): 4.5 mm (adapter tongue and spigot lip clear), side-exit slot in the "
+          "flange (cartridge_m.EXIT_SITES).", "",
           "| Joint | Swap | How / blocked by |", "|---|---|---|"]
     L += [f"| {j} | {'✅' if ok else '❌'} | {how}{(' (' + ', '.join(b) + ')') if b else ''} |" for j, ok, how, b in sw]
     (DOCS / "assembly_seq.md").write_text("\n".join(L))
