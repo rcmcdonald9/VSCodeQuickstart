@@ -4,7 +4,7 @@ Arm straight out horizontally with 1.0 kg (the worst static case), loads ×1.5 f
 
 | Wall | Peak stress per segment (MPa) | Hand deflection, static |
 |---|---|---|
-| 2.4 mm printed | roll link (pitch → yaw): 1.0; upper-arm neck Ø72 printed: 2.1; elbow housing 98×108: 0.5; forearm side link 22×56 printed: 2.3 ✅ | 3.44 mm ⚠️ |
+| 2.4 mm printed | roll link (pitch → yaw): 1.0; upper-arm neck Ø72 printed: 2.1; elbow housing 98×108: 0.5; forearm side link 22×56 printed: 2.3 ✅ | 3.43 mm ⚠️ |
 | 1.6 mm printed | roll link (pitch → yaw): 1.2; upper-arm neck Ø72 printed: 3.0; elbow housing 98×108: 0.7; forearm side link 22×56 printed: 3.2 ✅ | 4.80 mm ⚠️ |
 | 1.2 mm printed | roll link (pitch → yaw): 1.2; upper-arm neck Ø72 printed: 3.9; elbow housing 98×108: 0.9; forearm side link 22×56 printed: 4.2 ✅ | 6.07 mm ⚠️ |
 | 1.6 mm printed + **CF tubes** | roll link (pitch → yaw): 1.2; upper-arm neck CF Ø40×1: 15.7; elbow housing 98×108: 0.7; forearm CF Ø30×1: 16.4 ✅ | 1.78 mm ✅ |

@@ -4,19 +4,28 @@ HTD 5M, 15 mm, printed pulleys, small pulley on its own bearing hub. **Loop 13 r
 
 | Joint | Teeth | Pitch Ø small / big | Sustained pull vs working | Peak pull vs ultimate/3 | Teeth in mesh | Centre / belt length |
 |---|---|---|---|---|---|---|
-| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 195 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 355 mm |
-| upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 173 / 312 N → 1.8× ✅ | 691 N → 5.6× ultimate ✅ | 8.7 ✅ | 80 / 313 mm |
-| elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 202 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.6 ✅ | 70.7 / 295 mm |
+| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 193 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 355 mm |
+| upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 173 / 312 N → 1.8× ✅ | 691 N → 5.6× ultimate ✅ | 8.7 ✅ | 81.18 / 315 mm |
+| elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 202 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.6 ✅ | 70.95 / 295 mm |
 
-## Centre distances vs the stock belts (Fable M5)
+## D26 direct stages: tension, teeth in mesh, motor bearing (no Oldham)
 
-Exact pitch length 2C·cos φ + π(D+d)/2 + φ(D−d); the eccentric bushings give ±1.0 mm. 'Used' = the share of that range the CAD centre needs just to fit the belt (0 % = mid-range, the whole range left for tension and tolerances).
+Each GIM stage drives its 20T from a turned C45 stub bolted to the motor output (8 × M3), supported by the motor's own output bearing and a 6001-2RS in wall B (bonded align-and-bond bushing); the motor is fixed (belt_stage.small_stage_v4).
 
-| Joint | Stock belt | Exact centre | CAD centre | Adjuster used |
-|---|---|---|---|---|
-| shoulder_pitch | 355-5M | 70.15 | 70.00 | 15% ✅ |
-| upper_yaw | 315-5M | 80.93 | 80.93 | 0% ✅ |
-| elbow | 295-5M | 70.70 | 70.70 | 0% ✅ |
+| Joint | Tension | Belt | Centre CAD / exact | Preload per strand | Teeth in mesh (nominal / worst) | Idler load at peak |
+|---|---|---|---|---|---|---|
+| shoulder_pitch | back-side slotted idler (f 0.45 on the +Y strand), travel 8.3 mm (δ 0.0 … 8.3, nominal 6.4) | 355-5M | 70.00 / 70.15 | 173 N set at the idler ✅ | 7.82 / 7.52 ✅ | 421 N on 2 × 625 (C0 1.36 kN) → 3.2× |
+| elbow | fixed centre (+0.25 mm over the stock belt's exact centre), no tensioner | 295-5M | 70.95 / 70.70 | 82 N nominal, 0–165 N over ± 0.25 mm (49 N worst with the plates printed to the measured belt; target 173) ⚠️ | 8.56 ✅ | — |
+| upper_yaw | fixed centre (+0.25 mm over the stock belt's exact centre), no tensioner | 315-5M | 81.18 / 80.93 | 78 N nominal, 0–156 N over ± 0.25 mm (47 N worst with the plates printed to the measured belt; target 173) ⚠️ | 8.74 ✅ | — |
+
+| Motor bearing check | Shaft load (F + 2·T0) | Motor bearing (share) | Its rating | 6001 in wall B | 6001 C0 |
+|---|---|---|---|---|---|
+| GIM6010-8 at its 11 N·m peak | 1037 N | 323 N (31%) | 800 N (reseller listing, ESTIMATE) → 2.5× | 714 N (69%) | 2.36 kN → 3.3× |
+| GIM8108-8 (D20) at its 22 N·m stall | 2073 N | 645 N (31%) | not published (seller question) ⚠️ | 1428 N (69%) | 2.36 kN → 1.7× |
+| GIM8108-8 (D20) at the 18 N·m flash limit | 1696 N | 528 N (31%) | not published (seller question) ⚠️ | 1169 N (69%) | 2.36 kN → 2.0× |
+
+- Span: motor bearing 47.6 mm above the belt plane (its centre 6 mm behind the output face, ESTIMATE), 6001 21.5 mm below. An overhung pulley on the bare output (no wall-B bearing) would put the whole 1037 N plus ≈ 49 N·m of tilting on the GIM6010's bearing: over the 800 N listing before the moment, rejected.
+- Hyperstatic check: the stub is simply supported only if the motor's bearing tilts a few arcmin (a single deep-groove row, ESTIMATE). If it is moment-rigid, the bushing's align-and-bond keeps the offset ≲ 0.05 mm → ≲ 100 N of preload (stub cantilever ≈ 2 kN/mm); a swapped motor re-centres within the spigot fit (≈ 0.15 mm → ≲ 300 N, inside the 6001's margin).
 
 ## Shaft joints at the motor peak (Fable M5/M6)
 
@@ -36,33 +45,36 @@ Exact pitch length 2C·cos φ + π(D+d)/2 + φ(D−d); the eccentric bushings gi
 | Oldham motor-side tenon adapter, printed ASA, 4 × M3 at 0.4 kN (D24 v2) | GIM6010-8 | 11 N·m | 8.2 N·m | 0.74× ❌ |
 | Oldham motor-side hub, 6061, 4 × M3 8.8 at 1.0 kN (Neon #2) | GIM6010-8 | 11 N·m | 13.6 N·m | 1.24× ⚠️ |
 | Oldham motor-side hub, 6061, 4 × M3 10.9 at 1.3 kN, at the 18 N·m flash limit | GIM8108-8 (D20) | 18 N·m | 15.6 N·m | 0.87× ❌ |
+| D26 drive stub (C45) → motor output, 8 × M3 8.8 at 1.0 kN, PCD 34 | GIM6010-8 | 11 N·m | 27.2 N·m | 2.47× ✅ |
+| D26 drive stub (C45) → motor output, 8 × M3 10.9 at 1.3 kN, PCD 30 | GIM8108-8 (D20) | 22 N·m | 31.2 N·m | 1.42× ✅ |
+| D26 drive stub, as above, at the 18 N·m flash limit | GIM8108-8 (D20) | 18 N·m | 31.2 N·m | 1.73× ✅ |
 
 - D20 motor-side hub under its 18 N·m limit: 4 × M3 friction is short (⚠️/❌ above); its output pattern is still ESTIMATE. If the GIM8108-8 drawing has dowel holes, 2 × ISO 8734 Ø3 dowels go through the hub into them; otherwise the hub face is bonded to the output with Loctite 638 (ESTIMATE ≈ 10 MPa on ≈ 1.7e3 mm², far above the limit; heat to remove).
-- upper_yaw: the centre for the stock 315-5M is 80.93 mm; roll.YAW_C (roll track) is still 80.00, so the eccentric starts 93 % used. No stock 5M length lands at 80.00 (310-5M → 78.38, 315-5M → 80.93); YAW_C has to move.
+- D26 rows (stub, 8 × M3): the Oldham rows above are kept for the record; D26 removed the Oldham from every arm stage.
 
 ## Cartridge flange ears: tipping and bolt load (Neon #2 finding 2)
 
-Applied moment at the actuator peak = cartridge mass × 3 g × motor mid-length + Oldham side load (μ 0.2 · T / (D/3)) × the tenon height; tipping when it beats the ears' preload × their distance from the flange's edge line in the worst direction; preload 750 N per M4, and 30% of it after printed-joint creep (ESTIMATE). Friction torque μ 0.3 · n · F_p · r. Rule: ≥ 3 ears with no gap > 120°, or ≥ 4 with no gap > 180°.
+Applied moment at the actuator peak = cartridge mass × 3 g × motor mid-length + Oldham side load (μ 0.2 · T / (D/3)) × the tenon height; tipping when it beats the ears' preload × their distance from the flange's edge line in the worst direction; preload 750 N per M4, and 30% of it after printed-joint creep (ESTIMATE). Friction torque μ 0.3 · n · F_p · r. Rule: ≥ 3 ears with no gap > 120°, or ≥ 4 with no gap > 180°. **D26 'now' rows (direct stages, no Oldham):** the side-load term is the motor bearing's share of the belt pull at the peak (cartridge_m.direct_brg_load) × its height over the flange (31 mm); the centring lip takes the shear. Lift 'now' is still the Oldham stage.
 
 | Joint | Motor | Ears (largest gap) | Applied | Tipping at full / 30 % preload | Friction at 30 % vs peak | Max bolt load |
 |---|---|---|---|---|---|---|
 | pitch (C3) | GIM6010-8 | 3 (250°) ❌ | 3.2 N·m | 32.5 / 9.8 N·m → 10.2× / 3.1× | 10 vs 11 N·m → 0.88× | 843 N (6.0× proof) ❌ |
-| pitch (now) | GIM6010-8 | 4 (120°) ✅ | 3.2 N·m | 109.3 / 32.8 N·m → 34.3× / 10.3× | 13 vs 11 N·m → 1.18× | 774 N (6.6× proof) ✅ |
+| pitch (now) | GIM6010-8 | 4 (120°) ✅ | 10.7 N·m | 109.3 / 32.8 N·m → 10.2× / 3.1× | 13 vs 11 N·m → 1.18× | 831 N (6.1× proof) ✅ |
 | elbow (C3) | GIM6010-8 | 4 (100°) ✅ | 3.2 N·m | 109.1 / 32.7 N·m → 34.3× / 10.3× | 13 vs 11 N·m → 1.18× | 774 N (6.6× proof) ✅ |
-| elbow (now) | GIM6010-8 | 4 (100°) ✅ | 3.2 N·m | 109.1 / 32.7 N·m → 34.3× / 10.3× | 13 vs 11 N·m → 1.18× | 774 N (6.6× proof) ✅ |
+| elbow (now) | GIM6010-8 | 4 (100°) ✅ | 10.7 N·m | 109.1 / 32.7 N·m → 10.2× / 3.0× | 13 vs 11 N·m → 1.18× | 829 N (6.1× proof) ✅ |
 | yaw (C3) | GIM6010-8 | 2 (290°) ❌ | 3.2 N·m | 8.2 / 2.5 N·m → 2.6× / 0.8× | 6 vs 11 N·m → 0.59× | 1039 N (4.9× proof) ❌ |
-| yaw (now) | GIM6010-8 | 4 (100°) ✅ | 3.2 N·m | 112.9 / 33.9 N·m → 35.5× / 10.6× | 13 vs 11 N·m → 1.18× | 775 N (6.6× proof) ✅ |
+| yaw (now) | GIM6010-8 | 4 (100°) ✅ | 10.7 N·m | 112.9 / 33.9 N·m → 10.5× / 3.2× | 13 vs 11 N·m → 1.18× | 836 N (6.1× proof) ✅ |
 | lift (C3) | GIM6010-8 | 2 (280°) ❌ | 3.2 N·m | 8.3 / 2.5 N·m → 2.6× / 0.8× | 6 vs 11 N·m → 0.59× | 1039 N (4.9× proof) ❌ |
 | lift (now) | GIM6010-8 | 4 (100°) ✅ | 3.2 N·m | 109.1 / 32.7 N·m → 34.3× / 10.3× | 13 vs 11 N·m → 1.18× | 774 N (6.6× proof) ✅ |
 | pitch (C3) | GIM8108-8 (D20) | 3 (250°) ❌ | 4.8 N·m | 35.9 / 10.8 N·m → 7.5× / 2.2× | 11 vs 22 N·m → 0.52× | 875 N (5.8× proof) ❌ |
-| pitch (now) | GIM8108-8 (D20) | 4 (120°) ✅ | 4.8 N·m | 124.7 / 37.4 N·m → 25.9× / 7.8× | 15 vs 22 N·m → 0.69× | 781 N (6.5× proof) ❌ |
+| pitch (now) | GIM8108-8 (D20) | 4 (120°) ✅ | 20.9 N·m | 124.7 / 37.4 N·m → 6.0× / 1.8× | 15 vs 22 N·m → 0.69× | 886 N (5.7× proof) ❌ |
 | elbow (C3) | GIM8108-8 (D20) | 4 (100°) ✅ | 4.8 N·m | 126.0 / 37.8 N·m → 26.2× / 7.9× | 15 vs 22 N·m → 0.69× | 781 N (6.5× proof) ❌ |
-| elbow (now) | GIM8108-8 (D20) | 4 (100°) ✅ | 4.8 N·m | 126.0 / 37.8 N·m → 26.2× / 7.9× | 15 vs 22 N·m → 0.69× | 781 N (6.5× proof) ❌ |
+| elbow (now) | GIM8108-8 (D20) | 4 (100°) ✅ | 20.9 N·m | 126.0 / 37.8 N·m → 6.0× / 1.8× | 15 vs 22 N·m → 0.69× | 883 N (5.8× proof) ❌ |
 
 - pitch and lift 'now' are the pitch4 / lift4 patterns (cartridge_m.EAR_SITES); they need shoulder.py / upper.py geometry (outer-wall holes, wall-A bosses + cover cut) before those modules switch EAR_SITE.
 - D20 at 30 % preload: friction 15 N·m < 22 N·m stall, so the ears go into bearing (≈ 98 N per M4, ≈ 4 MPa on the 6 mm ear) after a slip; at the 18 N·m flash limit 0.8×. Full preload: 50 N·m (2.3×).
 
-- Belt lengths round to stock sizes; eccentric bushings set the tension (loop 10).
+- Belt lengths round to stock sizes. D26: no eccentric bushings any more; the pitch idler and the fixed elbow / yaw centres set the tension (table above).
 - If coupon tests show tooth jump or creep: switch to PU steel-cord HTD 5M (1268 N working, Mädler) at the same geometry, or to 25 mm belts.
 - **Rejected (loop 3):** remote elbow motor on a long belt.
 
