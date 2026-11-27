@@ -223,12 +223,13 @@ def fasteners(fr=None):
         out.append(("elbow", f"forearm pinch M5 y {yy:.1f}", fr["forearm"], (xs + 5.0, yy, 29.0), (1, 0, 0), 0.0, (), "service"))
         out.append(("elbow", f"forearm pinch M5 y {yy:.1f} (head −X)", fr["forearm"], (-xs - 5.0, yy, 29.0), (-1, 0, 0), 0.0, (), "service"))
     # yaw (C1): flange → tube tie, 6 × M3 from the tube's top end (heads on the clamp ring in the counterbore). Tightened on
-    # the bench before the yaw block goes onto the roll output (roll.py YAW_TIE), so probed on the yaw block alone ("only:").
+    # the bench before the yaw block goes onto the roll output (roll.py YAW_TIE), so probed on the yaw block alone ("only:"),
+    # before its AS5048A board (2 × M2) goes on over the tube end.
     lv = roll.yaw_tie_levels()
     for a in roll._yaw_tie_angles():
         r = roll.YAW_TIE["r"]
         out.append(("yaw", f"yaw tie M3 {_m.degrees(a):.0f}° (bench: yaw block off the roll output)", fr["roll"],
-                    (r * _m.cos(a), roll.ROLL_Y + r * _m.sin(a), lv["head"] + roll.YAW_TIE["head_h"]), (0, 0, 1), 0.0, ("only:l_roll_yaw_",), "service"))
+                    (r * _m.cos(a), roll.ROLL_Y + r * _m.sin(a), lv["head"] + roll.YAW_TIE["head_h"]), (0, 0, 1), 0.0, ("only:l_roll_yaw_", "l_roll_yaw_enc_pcb"), "service"))   # the AS5048A board goes on after
     # wrist: hand off (6 × M3 palm screws from the palm's −Y face), then the can flange (6 × M3 from the hand side)
     for k in range(6):
         a = _m.pi / 3 * k

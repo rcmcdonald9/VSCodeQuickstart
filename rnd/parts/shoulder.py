@@ -58,7 +58,7 @@ Y_TUBE_IN = W_IN - 4.0     # tube inboard end face (−55.3)
 CRANK_T = 4.0
 # M3 (Fable, 2026-11-27): the pitch AS5048A board (rnd/parts/encoder.py) sits between the crank's inboard face and the
 # cable: 0.5 gap + 0.8 FR4 + 1.2 IC + 0.5 to the cable zone, so the cable plane moved 2.2 → 4.2 mm past the crank face.
-# Pin B stands 4.2 mm further out: ≤ 374 N cable (rnd/balancer.py) × 4.2 mm ≈ 1.6 N·m on the Ø6 pin ≈ 73 MPa (hand
+# Pin B stands 4.2 mm out: ≤ 374 N cable (M8: 748 N spring / 2:1 tackle; balancer.study Fmax 313 N) × 4.2 mm ≈ 1.6 N·m on the Ø6 pin ≈ 73 MPa (hand
 # calc; a hardened ISO 8734 dowel). The cage tube follows the plane inside the same y trim: its −Y side opens a 10 mm
 # window over the spring (still held over ≈ 290° of the Ø26 bore; the spring rides its Ø12.5 rod).
 Y_BAL = Y_TUBE_IN - CRANK_T - 4.2   # cable plane (−63.5): 4.2 mm past the crank face (Ø2 cable: 3.2 mm clear)
