@@ -1236,3 +1236,7 @@ One long push instead of half-hour runs. In order:
 ### 2026-11-27 — Owner approved the inline GIM8108-36 at shoulder roll (D24)
 - After the side-by-side render (docs/rnd/img/roll_inline_vs_belt.png). ROLL_DRIVE default → inline (roll track applying it now, belt kept as fallback via PIP_ROLL_DRIVE=belt).
 - M1 kit: Hold B marked approved; waits only on the seller's drawing. Today's plan (GIM6010 at pitch + elbow, inline roll) = $1,869 with contingency; with D20 too = $1,927.
+
+### 2026-11-27 — GIM8108-36 installation drawing (owner-supplied, docs/rnd/specs/gim8108-36_drawing.jpg)
+- Frame Ø96 (CAD assumed Ø100); mount 8 × M4 on PCD 84 (assumed 6 × M4); Ø75 rear recess; output Ø30 boss, 3 × M4 on PCD 28.5 + 3 × Ø4; Ø60 step; axial ≈ 29 + 12.5 mm (≈ 42 mm vs the 60 mm ESTIMATE; to confirm).
+- Fits the inline roll envelope with room to spare. The small output pattern needs the metal output adapter (3 × M4 at r 14 mm into plastic ≈ 85 N·m < 103 N·m peak). Roll track updating the CAD. Still open with the seller: output-bearing radial rating (≥ 280 N).
