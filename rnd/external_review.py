@@ -14,12 +14,15 @@ OUT = Path(sys.argv[1])
 docs = ["docs/rnd/SCORECARD.md", "docs/RND_PLAN.md", "docs/rnd/confidence.md", "docs/rnd/BOM_v4.md", "docs/rnd/electrical.md",
         "docs/rnd/fea.md", "docs/rnd/integration.md", "docs/rnd/harness.md", "docs/rnd/kx.md", "docs/rnd/kx_mc.md", "docs/rnd/mc.md",
         "docs/rnd/threshold_mc.md", "docs/rnd/dock_sim.md", "docs/rnd/thermal.md", "docs/rnd/belts.md", "docs/rnd/spring.md",
-        "docs/rnd/twin.md", "docs/rnd/sim.md", "docs/rnd/assembly.md", "docs/BUILD_v4.md", "docs/COUPONS.md"]
-code = ["rnd/params.py"] + sorted(str(p.relative_to(R)) for p in (R / "rnd/parts").glob("*.py"))
+        "docs/rnd/twin.md", "docs/rnd/sim.md", "docs/rnd/assembly.md", "docs/BUILD_v4.md", "docs/COUPONS.md",
+        "docs/rnd/joints.md", "docs/rnd/stiffness.md", "docs/rnd/pinch.md", "docs/rnd/assembly_seq.md", "docs/rnd/roll_inline.md",
+        "docs/M1_BENCH_ARM.md", "docs/M1_READINESS.md", "docs/review/fable_review_2026-11-27.md", "docs/sw/sim2real_bench.md"]
+code = ["rnd/params.py", "sw/safety.py", "sw/collision.py"] + sorted(str(p.relative_to(R)) for p in (R / "rnd/parts").glob("*.py"))
 packet = ["# Pip v4: design-review packet", "",
-          "A general-purpose home utility robot: an omni base, a lift on a mast, two 7-DOF arms, and a head with a face screen. "
-          "It is fully 3D-printed in PETG on a Bambu P2S (256 mm bed) around off-the-shelf actuators: SteadyWin GIM6010-8, Damiao DM-J4310, "
-          "Feetech STS3215. Target under $4,000. Hardware only (no AI stack yet). Everything is generated from rnd/params.py by build123d CAD, "
+          "A general-purpose home utility robot: an omni base, a lift on a mast, two 6-DOF arms with parallel grippers, and a head with a 7\" face screen. "
+          "It is 3D-printed (PETG / ASA / PETG-CF) on a Bambu P2S (256 mm bed) around off-the-shelf actuators: SteadyWin GIM6010-8 on belt stages, an inline "
+          "GIM8108-36 at shoulder roll, optional GIM8108-8 (D20), Damiao DM-J4310, Feetech STS3215. Requirements include a 20 lb two-handed carry and a "
+          "laundry basket, consumer pinch safety (R17). Budget limit $5,500. A Fable review the same day is included with its fixes; check them. Everything is generated from rnd/params.py by build123d CAD, "
           "MuJoCo sims, FEA and Monte Carlo checks; numbers marked ESTIMATE are unmeasured.", ""]
 for f in docs:
     p = R / f
@@ -33,8 +36,9 @@ prompt = """You are a senior mechanical/mechatronics design reviewer (robot arms
 Review the design in the packet below critically and independently. Do not restate what it already says; find what is wrong, missing, risky or over-optimistic.
 
 Cover at least:
-- the KX twist-lock joint couplings (balls on dowel pins, breech-lock collar, spring preload, PETG creep)
-- the belt stages and the printed pulleys
+- the D24 bolted motor cartridges (ear flanges, through-bolts into nuts, Oldham drive) and the D19 one-piece shaft-pulleys
+- the inline GIM8108-36 shoulder roll (output adapter, dowels, rear bearing, hard stops) and the C1 tie-rod joints (rnd/joints.py)
+- the belt stages and the pulleys
 - printed-part strength and stiffness assumptions (FEA method, allowables, layer orientation)
 - actuator sizing, thermal behaviour and the electrical system (24 V, BMS, e-stop)
 - cable routing (clock springs, yaw torsion)
@@ -42,7 +46,8 @@ Cover at least:
 - docking
 - manufacturability on a 256 mm FDM printer and the assembly time
 - cost realism
-- safety
+- safety: mechanical pinch (R17, rnd/pinch.py), the e-stop / pre-charge / clamp / watchdog chain, the software supervisor and collision detection
+- whether the M1 bench-arm Step 1 / Step 2 purchase plan is sound
 
 For each finding give, as a numbered list:
 1. a title
@@ -54,7 +59,7 @@ For each finding give, as a numbered list:
 
 Then list the 5 assumptions you think are most likely wrong, and the 5 strongest aspects of the design. Be specific and quantitative."""
 content = [{"type": "text", "text": prompt + "\n\n" + text}]
-for img in ("docs/rnd/img/robot_v6.png", "docs/rnd/img/sim_fetch_frames.png"):
+for img in ("docs/rnd/img/robot_v8_covers_concept.png", "docs/rnd/img/roll_inline_vs_belt.png"):
     p = R / img
     if p.exists():
         import io
