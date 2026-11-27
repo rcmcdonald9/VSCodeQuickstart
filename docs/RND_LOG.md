@@ -1308,3 +1308,9 @@ One long push instead of half-hour runs. In order:
 ### 2026-11-27 — Scorecard 46/0 on the merged tree; owner decisions D25 (R17)
 - integration re-run: module clashes 2 → 0 (the yoke × neck_boot rows were a stale report from a merge). **Scorecard 46 ✅ / 0 ❌.**
 - D25 (owner): shoulder wedge → software soft limit near people (roll ≥ ≈ +15°); head tilt −10…≈ +15°. Wave 7 implements both and re-runs pinch.py.
+
+### 2026-11-27 — Gemini 4 Neon review #2 (docs/review/neon_2026-11-27/gemini4neon_review.md)
+- Two HTTP 502s on 622 / 477 kB packets; the third (docs + params, 239 kB) ran. 5 critical, 10 major, 1 minor.
+- Critical: (1) safety-board netlist bugs — inductive RH-50 clamp resistors with no freewheel path, K1/K2 chatter on bus sag (PRE_OK in the hold term), a 40 A fuse that never clears on a 41.7 A supply; (2) C3 left only 2–3 clustered flange ears (yaw/lift 2 screws over a 70–80° arc) + D40 Oldham / printed tongue still in BOM; (3) C1 tie-rod preload lost to PETG creep (30–57 µm bolt stretch) → Belleville stacks or crush sleeves; (4) tip-over: 10/16 A10 cases fail (to −102 mm), D18 casters vs thresholds/doors; (5) R17 not a scorecard gate, D25 soft limit relies on non-safety perception, Cat-0 drop.
+- Major: inline roll dowel allowable 150 → 240 MPa unjustified, rear mount creep, hyperstatic 61806; elbow shaft cross-layer bending, yaw belt centre 93 % of adjuster, default config fails R2c/R2d; thermal caps vs rear PCB; FEA method; harness (20 AWG, 3.25 m USB, lift umbilical); BMS 40 A vs 74 A peak; docking; print/assembly time; BOM realism; Step 1 kit content.
+- → wave 8 (4 tracks). D25 challenge goes to the owner.
