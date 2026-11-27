@@ -1294,3 +1294,8 @@ One long push instead of half-hour runs. In order:
 - Lessons adopted: make the hardware deterministic instead of training the policy to hedge; clean, low-latency CAN (they moved to SPI-CAN MCP2518FD); PREEMPT_RT + cooling + no thermal throttling; "only randomize what's actually random" — measure actuators (real2sim) rather than randomize around them.
 - W6 engineer: CAN latency/jitter/drop/corruption injection in the virtual bench (safety + collision thresholds re-checked), actuator sysid step in bring-up feeding the twin, determinism checks (jitter, throttle flags, RT kernel, CAN error counters) + a 2 h soak test as a Step-1 exit criterion, USB-CAN vs SPI-CAN (MCP2518FD) decision note.
 - (Owner follow-up) Saved the simulator note from the Menlo post: mjlab for fast iteration, Isaac Lab (Newton) for later-stage physics, sim2sim across both → docs/sw/simulator_options.md; to revisit at S3/S4 (Isaac Lab needs a GPU → owner decision).
+
+### 2026-11-27 — Wave 5 covers merged (R17 25/22 → 21/16)
+- Yaw hood now covers the yaw can front (can, motor, cap closed to the probe on both arms); neck boot cut 1.5 mm clear of the yoke over −10…+30° (integration clash gone).
+- pinch.py compliant-cover rule: TPU 95A boot closes a gap only with wall ≥ 1.2 mm and every free span within ±40 % of as-printed over the joint range (ESTIMATE until a coupon). It shows no boot can close the inboard roll wedge (≈ 2 → 135 mm over −15…+100°) or a hub-bonded neck floor (+590 %).
+- Remaining R17 needs product calls (asked the owner): shoulder wedge → ≈ +23 mm roll offset or a roll soft limit near people; head → neck redesign (raise the head ≈ 70 mm on an outside fork, or lower pivot / less tilt); elbow/wrist → flat forearm inner face (arm.py).
