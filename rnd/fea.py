@@ -10,6 +10,7 @@ Each case lists its loads (worst static ×1.5 dynamic, or actuator peak for belt
 """
 from __future__ import annotations
 
+import functools
 import json
 import math
 import os
@@ -167,6 +168,7 @@ def cases():
               lambda x: np.hypot(x[0], x[2] - zE) < 25.3,
               [(lambda x: np.hypot(x[0], x[2] - zS) < 19.4, (0, 0, -0.6 * 691.0))]))
     C += c1_tie_cases()
+    C.append(carriage_case())
     # 6. Roll link: bolted to the arm-side ferrule; roll belt peak 768 N between the seats (half per wall) + the arm moment
     #    19 N·m as a couple on the two 61808 seats (walls 25.4 mm apart)
     from .parts import roll as rl
@@ -234,10 +236,10 @@ def c1_tie_cases():
     rho = lambda x: np.hypot(x[0], x[2])
     part = sh.pitch_shaft() + sh.pitch_hub()
     fixed = lambda x: (np.abs(rho(x) - 20.0) < 0.35) & (((x[1] > sh.W_IN - 3.5) & (x[1] < sh.W_IN + 3.5)) | ((x[1] > sh.W_OUT - 3.5) & (x[1] < sh.W_OUT + 3.5)))
-    for tag, (M, N), k in (("service (basket/hug × 1.5)", worst("pitch hub ↔ tube", True, (29.6, 0.0)), 1.0),
-                           ("fault (bump/stall) × 0.5", worst("pitch hub ↔ tube", False, (184.0, 343.0)), 0.5)):
+    for tag, (M, N), k in (("service: basket/hug × 1.5", worst("pitch hub ↔ tube", True, (29.6, 0.0)), 1.0),
+                           ("fault: bump/stall × 0.5", worst("pitch hub ↔ tube", False, (184.0, 343.0)), 0.5)):
         F = M * 1000 / (2 * zc)
-        C.append((f"Pitch tube + hub (C1 tie, {h['n']} × M4 at {Fp / 1e3:.1f} kN): {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", part, 3.0, fixed,
+        C.append((f"Pitch tube + hub (C1 tie, {h['n']} × M4 at {Fp / 1e3:.1f} kN), {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", part, 3.0, fixed,
                   [(lambda x: (np.abs(x[1] - y_seat) < 0.3) & (rho(x) > 11.0) & (rho(x) < 21.0), (0, -Fp * k, 0)),
                    (lambda x: (np.abs(x[1] - y_in) < 0.3) & (rho(x) > 10.5), (0, Fp * k, 0)),
                    (lambda x: (np.abs(x[1] - y_face) < 0.3) & (rho(x) > 21.2) & (x[2] > 0), (0, (F + N / 2) * k, 0)),
@@ -250,14 +252,125 @@ def c1_tie_cases():
     zc = _half_annulus_centroid(14.1, 20.0)
     rh = lambda x: np.hypot(x[0], x[1] - rl.ROLL_Y)
     fixed = lambda x: (np.abs(rh(x) - 20.0) < 0.35) & (((x[2] > rl.P1[0]) & (x[2] < rl.P1[1])) | ((x[2] > rl.YAW_BRG_B[0]) & (x[2] < rl.YAW_BRG_B[1])))
-    for tag, (M, N), k in (("service (basket/hug × 1.5)", worst("yaw flange ↔ tube", True, (32.5, 100.0)), 1.0),
-                           ("fault (bump/stall) × 0.5", worst("yaw flange ↔ tube", False, (98.5, 166.0)), 0.5)):
+    for tag, (M, N), k in (("service: basket/hug × 1.5", worst("yaw flange ↔ tube", True, (32.5, 100.0)), 1.0),
+                           ("fault: bump/stall × 0.5", worst("yaw flange ↔ tube", False, (98.5, 166.0)), 0.5)):
         F = M * 1000 / (2 * zc)
-        C.append((f"Yaw tube (C1 tie, {y['n']} × M3 at {Fp / 1e3:.1f} kN): {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", rl.yaw_shaft(), 3.0, fixed,
+        C.append((f"Yaw tube (C1 tie, {y['n']} × M3 at {Fp / 1e3:.1f} kN), {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", rl.yaw_shaft(), 3.0, fixed,
                   [(lambda x: (np.abs(x[2] - z_seat) < 0.3) & (rh(x) > 8.2) & (rh(x) < 17.0), (0, 0, -Fp * k)),
                    (lambda x: (np.abs(x[2] - z_end) < 0.3) & (rh(x) > 12.0) & (x[0] > 0), (0, 0, (Fp / 2 + F - N / 2) * k)),
                    (lambda x: (np.abs(x[2] - z_end) < 0.3) & (rh(x) > 12.0) & (x[0] < 0), (0, 0, (Fp / 2 - F - N / 2) * k))]))
     return C
+
+
+@functools.lru_cache(maxsize=1)
+def carriage_wrench():
+    """Worst service wrench (× 1.5) one arm puts on the carriage's side face, from the twin with the D20 basket design
+    (rnd/basket.py: D20 CAD masses, 4.54 kg per hand, every collision-free IK solution of the basket targets, + the hug
+    poses of rnd/joints.py): everything outboard of the pitch joint (sh_r subtree) + the static pitch module
+    (params pitch_module_mass, taken at the pitch axis, ESTIMATE), about the centre of the carriage's −Y side face
+    (torso frame: x MAST_X, y −(W/2 + 13), z +10 mm from the pitch axis). → (F N, M N·m) in the robot frame."""
+    import mujoco
+    from .basket import POSES as BPOSES, HALF_SPAN, PER_HAND, design
+    from .joints import _model, _q, DYN, G
+    from .parts import upper
+    db = design()
+    R, _ = _model(db)
+    m, dat = R.m, R.d
+    bid = lambda n: mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n)
+    sh, torso, fore, pay = bid("sh_r"), bid("torso"), bid("fore_r"), bid("payload_r")
+    sub = [b for b in range(m.nbody) if any(p == sh for p in _ancestors(m, b))]
+    off = np.array([upper.MAST_X / 1000, -(upper.W / 2 + 13) / 1000, 0.010])          # torso frame (= robot frame, lift along z)
+
+    def wr(q, ext=(), payload_on=True):
+        dat.qpos[R.adr] = q
+        mujoco.mj_kinematics(m, dat)
+        P = dat.xpos[torso] + dat.xmat[torso].reshape(3, 3) @ off
+        pts = [(dat.xipos[b], m.body_mass[b]) for b in sub if payload_on or b != pay] + [(dat.xpos[sh], db.arm.pitch_module_mass)]
+        F, M = np.zeros(3), np.zeros(3)
+        for x, mass in pts:
+            fg = np.array([0, 0, -G * mass])
+            F, M = F + fg, M + np.cross(x - P, fg)
+        for x, fe in ext:
+            F, M = F + fe, M + np.cross(x - P, fe)
+        return F * DYN, M * DYN
+    best = None
+    for name, z, xs, rule in BPOSES:
+        for x in xs:
+            for q in R.solve(np.array([x, -HALF_SPAN, z]), [0, 0, -1.0], seeds=6):
+                w = wr(q)
+                if best is None or np.linalg.norm(w[1]) > np.linalg.norm(best[1]):
+                    best = (*w, f"basket {name}, x {x:.2f}")
+    for yaw in (-45, 0, 45):
+        for el in (-90, 90):
+            q = _q(0, 0, yaw, el)
+            dat.qpos[R.adr] = q
+            mujoco.mj_kinematics(m, dat)
+            xh = dat.xpos[fore] + dat.xmat[fore].reshape(3, 3) @ np.array([0, 0, -0.30])
+            w = wr(q, [(xh, np.array([0, 0, -G * PER_HAND]))], payload_on=False)
+            if np.linalg.norm(w[1]) > np.linalg.norm(best[1]):
+                best = (*w, f"hug yaw {yaw}°, elbow {el}°")
+    return tuple(best[0].round(1)), tuple(best[1].round(2)), best[2]
+
+
+def _ancestors(m, b):
+    out = []
+    while b > 0:
+        out.append(b)
+        b = m.body_parentid[b]
+    return out
+
+
+def carriage_case():
+    """C3 follow-up (wave 4, D20 only): the lift carriage with its side walls thinned 12 → 8 mm over the slot under the
+    D20 pitch cans (rnd/parts/upper.py carriage, read here with arm_motors = d20 whatever the run's motor set). Held at
+    the inner faces of the 8 × 625 bearing bosses (all DOF: the belt clamp / pawl's vertical reaction is taken there
+    too, ESTIMATE). Each side face (|y| = W/2 + 13, outside the slot and the bosses) takes one arm's wrench
+    (carriage_wrench(), the left arm mirrored): the force as a uniform traction, the moment as couples between the
+    upper/lower halves (normal, M_x) and the front/back halves (vertical for M_y, normal for M_z), each split at the
+    face's area centroid. The shoulder-module ↔ carriage interface is not drawn (upper.py: "both pitch modules bolt
+    to it"), so the load is spread over the whole side face: ESTIMATE until it is."""
+    import dataclasses
+    from build123d import Box as _Box, Pos as _Pos
+    from .parts import upper
+    D0 = upper.D
+    upper.D = dataclasses.replace(D0, arm=dataclasses.replace(D0.arm, arm_motors="d20"))
+    try:
+        L = 750.0
+        part = upper.carriage(L)
+    finally:
+        upper.D = D0
+    F, M, pose = carriage_wrench()
+    yf = upper.W / 2 + 13
+    xm, zc = upper.MAST_X, L + 10.0
+    faces = [f for f in part.faces() if abs(abs(f.center().Y) - yf) < 0.01 and abs(abs(f.normal_at().Y) - 1) < 1e-6 and f.center().Y < 0]
+    A = sum(f.area for f in faces)
+    cx = sum(f.area * f.center().X for f in faces) / A
+    cz = sum(f.area * f.center().Z for f in faces) / A
+
+    def cen(box):
+        parts = [(f & box) for f in faces]
+        a = sum(p.area for p in parts)
+        return a, sum(p.area * p.center().X for p in parts) / a, sum(p.area * p.center().Z for p in parts) / a
+    big = 400.0
+    _, _, zu = cen(_Pos(cx, 0, cz + big / 2) * _Box(big, big, big))
+    _, _, zl = cen(_Pos(cx, 0, cz - big / 2) * _Box(big, big, big))
+    _, xf, _ = cen(_Pos(cx + big / 2, 0, cz) * _Box(big, big, big))
+    _, xb, _ = cen(_Pos(cx - big / 2, 0, cz) * _Box(big, big, big))
+    Mx, My, Mz = (1000 * v for v in M)                                  # N·mm about (cx, −yf, cz) (the wrench is about the face centre)
+    fu = -Mx / (zu - zl)                                                # Fy on the upper half (lower −fu): M_x = −fu·(zu − zl)
+    gf = -My / (xf - xb)                                                # Fz on the front half (back −gf): M_y = −gf·(xf − xb)
+    hf = Mz / (xf - xb)                                                 # Fy on the front half (back −hf): M_z = hf·(xf − xb)
+    on = lambda x, s: (np.abs(x[1] - s * yf) < 0.3)
+    loads = []
+    for s in (-1, 1):                                                   # s = −1: the right arm (the twin's); s = +1: the left, mirrored in XZ
+        k = -s                                                          # mirror: F_y, M_x, M_z change sign (so fu, hf do), F_x, F_z, M_y keep it
+        loads += [(lambda x, s=s: on(x, s), (F[0], k * F[1], F[2])),
+                  (lambda x, s=s: on(x, s) & (x[2] > cz), (0, k * fu, 0)), (lambda x, s=s: on(x, s) & (x[2] <= cz), (0, -k * fu, 0)),
+                  (lambda x, s=s: on(x, s) & (x[0] > cx), (0, k * hf, gf)), (lambda x, s=s: on(x, s) & (x[0] <= cx), (0, -k * hf, -gf))]
+    hw = upper.W / 2
+    fixed = lambda x: (((np.abs(np.abs(x[0] - xm) - hw) < 0.3) & (np.abs(x[1]) < 15.2)) | ((np.abs(np.abs(x[1]) - hw) < 0.3) & (np.abs(x[0] - xm) < 15.2)))
+    return (f"Lift carriage (D20 slot, side walls 8 mm): one arm per side, F ({F[0]:.0f}, {F[1]:.0f}, {F[2]:.0f}) N, "
+            f"M ({M[0]:.0f}, {M[1]:.0f}, {M[2]:.0f}) N·m × 1.5 ({pose})", part, 3.0, fixed, loads)
 
 
 def inline_roll_cases():

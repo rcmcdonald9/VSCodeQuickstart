@@ -59,11 +59,13 @@ CRANK_T = 4.0
 # M3 (Fable, 2026-11-27): the pitch AS5048A board (rnd/parts/encoder.py) sits between the crank's inboard face and the
 # cable: 0.5 gap + 0.8 FR4 + 1.2 IC + 0.5 to the cable zone, so the cable plane moved 2.2 → 4.2 mm past the crank face.
 # Pin B stands 4.2 mm out: ≤ 374 N cable (M8: 748 N spring / 2:1 tackle; balancer.study Fmax 313 N) × 4.2 mm ≈ 1.6 N·m on the Ø6 pin ≈ 73 MPa (hand
-# calc; a hardened ISO 8734 dowel). The cage tube follows the plane inside the same y trim: its −Y side opens a 10 mm
-# window over the spring (still held over ≈ 290° of the Ø26 bore; the spring rides its Ø12.5 rod).
+# calc; a hardened ISO 8734 dowel). The cage tube follows the plane inside the same y trim, which opened a 10 mm window
+# on its −Y side over the spring. Wave 5: a closing strip (CAGE z_close) shuts it again: the tube's full wall beyond the
+# trim, but only above z_close, so the D20 can body (top z ≈ 50.3 under it, from y −76.4) stays ≥ 1 mm away; the full
+# tube would come within 0.65 mm of it. The bore is whole again (360°; the wall thins to ≈ 0.7 mm at the window's lower corner).
 Y_BAL = Y_TUBE_IN - CRANK_T - 4.2   # cable plane (−63.5): 4.2 mm past the crank face (Ø2 cable: 3.2 mm clear)
 PIN_B = (0.0, Y_BAL, -20.0)         # b = 20 mm along the hanging arm (−Z at pitch 0)
-CAGE = dict(z=58.0, x0=-15.0, L=135.0, r_out=14.6, r_in=13.0, y_lo=-75.4, y_hi=W_IN + WALL_T / 2)   # Ø26 bore for the Ø25 die spring
+CAGE = dict(z=58.0, x0=-15.0, L=135.0, r_out=14.6, r_in=13.0, y_lo=-75.4, y_hi=W_IN + WALL_T / 2, z_close=52.3)   # Ø26 bore for the Ø25 die spring
 # M8 (Fable review 2026-11-27): pulley A was a U604ZZ (C0 ≈ 0.3 kN) under up to 748 N. Now a 608-2Z (C0 1.37 kN, SKF) in a
 # POM U-groove tyre (PULLEY_A) on a Ø8 steel axle that bears in the post + inner wall (the slot runs through both) and in
 # a 7 mm outer cheek; the fork gap is Y_BAL ± 4.5 and the bridge sits higher. Rating table: rnd/balancer.py.
@@ -236,8 +238,10 @@ def balancer_mount() -> Part:
     yb0, yb1 = CHEEK_Y[0], POST_Y[0]
     p += Pos(0, (yb0 + yb1) / 2, 80.5) * Box(16, yb1 - yb0, 7)                          # bridge over pulley A (M8: Ø28 at a = 60 → top 74)
     tube = Pos(c["x0"], 0, c["z"]) * Rot(0, -90, 0) * Cylinder(c["r_out"], c["L"], align=MIN)
-    tube = tube.translate((0, Y_BAL, 0)) & Pos(0, (c["y_lo"] + c["y_hi"]) / 2, 0) * Box(400, c["y_hi"] - c["y_lo"], 400)
-    p += tube
+    tube = tube.translate((0, Y_BAL, 0))
+    y_out = Y_BAL - c["r_out"] - 0.5
+    p += tube & Pos(0, (c["y_lo"] + c["y_hi"]) / 2, 0) * Box(400, c["y_hi"] - c["y_lo"], 400)
+    p += tube & Pos(0, (y_out + c["y_lo"]) / 2, c["z_close"]) * Box(400, c["y_lo"] - y_out, 100, align=(Align.CENTER, Align.CENTER, Align.MIN))   # wave 5: closing strip
     p += Pos(c["x0"] - c["L"] / 2, W_IN, c["z"]) * Box(c["L"], WALL_T, 2 * c["r_out"])  # fill the lightening hole under the cage
     p -= Pos(c["x0"] + 1, Y_BAL, c["z"]) * Rot(0, -90, 0) * Cylinder(c["r_in"], c["L"] + 2, align=MIN)
     return p

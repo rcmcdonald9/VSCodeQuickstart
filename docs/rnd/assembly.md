@@ -27,7 +27,7 @@
 | yaw plate bottom | 8 × 185 × 185 | 72 | ✅ |
 | cover spine_pod | 55 × 110 × 167 | 89 | ✅ |
 | visor | 120 × 166 × 166 | 82 | ✅ |
-| shoulder bracket body | 150 × 158 × 161 | 195 | ✅ |
+| shoulder bracket body | 150 × 158 × 162 | 197 | ✅ |
 | carriage | 88 × 101 × 160 | 554 | ✅ |
 | cover liner_w90 | 124 × 158 × 158 | 66 | ✅ |
 | cover liner_w270 | 124 × 158 × 158 | 66 | ✅ |
@@ -43,7 +43,7 @@
 | elbow pulley hub | 67 × 132 × 132 | 112 | ✅ |
 | elbow cassette plate | 5 × 81 × 129 | 19 | ✅ |
 | wheel pod | 26 × 80 × 124 | 114 | ✅ |
-| palm | 60 × 75 × 122 | 197 | ✅ |
+| palm | 58 × 75 × 122 | 193 | ✅ |
 | roll link | 96 × 112 × 120 | 138 | ✅ |
 | lift cover | 89 × 109 × 118 | 96 | ✅ |
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
@@ -87,7 +87,7 @@
 | head_pivot_stub | 36 × 44 × 55 | 18 | ✅ |
 | gripper jaw_moving | 33 × 40 × 51 | 9 | ✅ |
 | cartridge S sleeve | 30 × 38 × 51 | 16 | ✅ |
-| cartridge D adapter | 6 × 50 × 50 | 7 | ✅ |
+| cartridge D adapter | 8 × 50 × 50 | 10 | ✅ |
 | cartridge M Oldham adapter (D24) | 8 × 50 × 50 | 9 | ✅ |
 | torque hanger (wheel) | 26 × 48 × 50 | 21 | ✅ |
 | gripper grip_servo_sleeve | 29 × 40 × 49 | 16 | ✅ |

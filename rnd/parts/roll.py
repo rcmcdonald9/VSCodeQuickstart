@@ -316,6 +316,7 @@ ROLL_OUT = {"roll_shaft", "roll_pulley72", "roll_spring_hub", "yaw_block", "yaw_
 # the load on the print). Rows: rnd/joints.py.
 # ---------------------------------------------------------------------------------------------------------------------
 BRG_R = dict(d=30.0, D=42.0, B=7.0)    # 61806, rear roll support
+STUB_RELIEF = 0.5                      # the Ø30 stub's −X end stops this far inside the 61806's −X face (yaw can clearance, rnd.swept)
 # +X clevis arm ↔ metal output adapter (Astra #2b finding 2; the motor's own 3 × M4 on PCD 28.5 are too small to go
 # straight into a print): 8 × M5 low-head (DIN 7984) 10.9 from +X through the arm into the adapter's threads, heads on a
 # Ø80/Ø52 × 2 steel clamp ring in a counterbore (≈ 5 MPa on the PETG at the design preload); fitted Ø5.1 holes give a
@@ -366,7 +367,11 @@ def roll_link_inline() -> Part:
         p -= Pos(0, y, z) * Rot(0, 90, 0) * Cylinder(2.25, 400)
         p -= Pos(xf0, y, z) * Rot(0, 90, 0) * Cylinder(REAR_SCREW["cb_d"] / 2, REAR_SCREW["cb_depth"], align=MIN)   # M1: head + washer + shim; M4 × 18 engages 3.0 of 3.5
     p -= Pos(xf1 - 2.5, (ROLL_Y + 8) / 2, 0) * Box(5, ROLL_Y - 8, 10)                                           # motor-lead groove to the frame
-    x_st = W1[0]
+    # wave 5 (rnd.swept: 1.7 mm vs the 2 mm target): the yaw can's rear ring (r 43.3, its top 6 mm; the sleeve below is
+    # r 42.55) passed 1.7 mm off the stub's −X end at every roll angle. The stub now stops STUB_RELIEF short of the 61806's
+    # −X face: 2.2 mm to the ring, the inner race 0.5 proud (seated on 6.5 of its 7 mm). Open: the end washer + M5 of the
+    # assembly note are not drawn, and a head has no room in front of the can (a retaining ring inside the bore would)
+    x_st = W1[0] + STUB_RELIEF
     p += Pos(x_st, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(BRG_R["d"] / 2, xf0 - x_st, align=MIN) - Cylinder(9, xf0 - x_st, align=MIN))
     p += Pos(W1[1] + 0.3, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(17, xf0 - W1[1] - 0.3, align=MIN) - Cylinder(9, 20, align=MIN))   # inner-race shoulder
     for deg in STOP_LUG_ANG:
