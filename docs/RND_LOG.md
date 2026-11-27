@@ -1151,3 +1151,9 @@ One long push instead of half-hour runs. In order:
 - Yaw shaft one piece again (Ø40 tube + 40T + clock-spring hub); flange is a separate part bolted to the tube end (4 × M4); the bottom yaw plate is its own print, bolted on last (it was fused to the top half since loop 10: Astra #14).
 - Tried capped U-slots first: the +X clevis arm stands over the slot and the caps hit the flange and spring ring, so the separable bottom plate is the cleaner fix here.
 - R14 4/7 (yaw passes); roll/yaw module clean (only the intended stop-pin press fit).
+
+## Loop 44-x (2026-11-27): payload study for the owner's "20 lb" requirement
+
+- rnd/payload_study.py: planar statics. One hand at reach needs 70 / 42 / 14 N·m (shoulder / elbow / wrist) vs 14 / 9.5 / 3 rated → a different robot.
+- Two-handed hug (10 lb per arm, load 0.2–0.3 m out on the forearms): shoulder 12–16 and elbow 12–16 N·m vs 14 and 9.5 rated → holds need ≈ 2× today's continuous torque at shoulder pitch and elbow; brief lifts (< 10 s) work at 0.2 m on peak torque. Corrects the first estimate given to the owner ("same motors, higher ratios").
+- M1 motor purchase on hold until the owner picks the scenario.
