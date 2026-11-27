@@ -10,10 +10,10 @@
 | cover belly_0 | 2 × 246 × 246 | 74 | ✅ |
 | cover belly_1 | 2 × 246 × 246 | 74 | ✅ |
 | cover belly_3 | 2 × 246 × 246 | 74 | ✅ |
-| head_shell | 184 × 243 × 243 | 294 | ✅ |
 | upper bone | 98 × 112 × 233 | 280 | ✅ |
 | torso_shell [1] | 180 × 195 × 230 | 293 | ✅ |
 | torso_shell [2] | 180 × 195 × 230 | 293 | ✅ |
+| head_shell | 176 × 230 × 230 | 245 | ✅ |
 | cover forearm_r | 18 × 32 × 214 | 18 | ✅ |
 | cover forearm_f | 18 × 32 × 214 | 18 | ✅ |
 | dock_wing_l | 160 × 191 × 198 | 406 | ✅ |
@@ -23,7 +23,6 @@
 | cover belt_duct [2/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [4/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [5/5] | 16 × 27 × 188 | 29 | ✅ |
-| neck_boot | 116 × 164 × 188 | 98 | ✅ |
 | yaw plate bottom | 8 × 188 × 188 | 73 | ✅ |
 | cover spine_pod | 55 × 110 × 167 | 89 | ✅ |
 | visor | 120 × 166 × 166 | 82 | ✅ |
@@ -33,9 +32,9 @@
 | cover liner_w270 | 124 × 158 × 158 | 66 | ✅ |
 | cover liner_w180 | 124 × 158 × 158 | 66 | ✅ |
 | cover liner_w0 | 124 × 158 × 158 | 66 | ✅ |
-| yoke | 111 × 150 × 157 | 191 | ✅ |
 | shoulder bracket outer wall | 127 × 149 × 150 | 143 | ✅ |
 | dock_tower | 50 × 59 × 150 | 435 | ✅ |
+| yoke [1] | 114 × 123 × 149 | 193 | ✅ |
 | e_tray | 6 × 148 × 148 | 54 | ✅ |
 | cover collar_top | 2 × 110 × 148 | 23 | ✅ |
 | elbow cassette plate A | 6 × 84 × 146 | 31 | ✅ |
@@ -45,7 +44,7 @@
 | wheel pod | 26 × 80 × 124 | 114 | ✅ |
 | roll link | 108 × 112 × 122 | 226 | ✅ |
 | palm | 58 × 75 × 122 | 193 | ✅ |
-| lift cover | 89 × 109 × 118 | 96 | ✅ |
+| lift cover | 89 × 109 × 118 | 95 | ✅ |
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
 | cover collar_bot | 2 × 110 × 110 | 15 | ✅ |
 | cover yaw hood (inline roll) | 71 × 99 × 109 | 76 | ✅ |
@@ -64,10 +63,10 @@
 | ferrule (arm side) | 18 × 91 × 91 | 67 | ✅ |
 | KX74 hub | 13 × 90 × 90 | 67 | ✅ |
 | small-pulley hub | 46 × 90 × 90 | 82 | ✅ |
+| lift bracket (D13 stage walls) | 40 × 82 × 89 | 66 | ✅ |
 | roll arm rear | 18 × 71 × 88 | 32 | ✅ |
 | cartridge M can | 44 × 87 × 87 | 50 | ✅ |
 | KX56 collar | 19 × 78 × 85 | 28 | ✅ |
-| lift bracket (D13 stage walls) | 40 × 71 × 82 | 63 | ✅ |
 | KX74 male | 8 × 80 × 80 | 29 | ✅ |
 | cartridge M adapter | 12 × 80 × 80 | 45 | ✅ |
 | cartridge M rear cap (D24) | 4 × 80 × 80 | 18 | ✅ |
@@ -81,11 +80,11 @@
 | KX56 hub | 13 × 70 × 70 | 39 | ✅ |
 | pulley 40T | 18 × 67 × 67 | 54 | ✅ |
 | handle | 34 × 65 × 65 | 22 | ✅ |
+| head_pivot_stub | 44 × 63 × 64 | 20 | ✅ |
 | yaw shaft | 43 × 62 × 62 | 65 | ✅ |
 | KX56 male | 6 × 61 × 61 | 14 | ✅ |
 | wheel shaft | 35 × 60 × 60 | 34 | ✅ |
 | KX44 hub | 13 × 56 × 56 | 24 | ✅ |
-| head_pivot_stub | 36 × 44 × 55 | 18 | ✅ |
 | gripper jaw_moving | 33 × 40 × 51 | 9 | ✅ |
 | cartridge S sleeve | 30 × 38 × 51 | 16 | ✅ |
 | cartridge D adapter | 8 × 50 × 50 | 10 | ✅ |
@@ -94,7 +93,8 @@
 | gripper grip_servo_sleeve | 29 × 40 × 49 | 16 | ✅ |
 | KX44 male | 5 × 48 × 48 | 7 | ✅ |
 | cartridge S horn adapter | 9 × 48 × 48 | 11 | ✅ |
-| head_drive_stub | 7 × 37 × 44 | 7 | ✅ |
+| head_drive_stub | 19 × 37 × 44 | 14 | ✅ |
+| yoke [2] | 8 × 44 × 44 | 4 | ✅ |
 | cover back_plate | 15 × 44 × 44 | 1 | ✅ |
 | eccentric bushing | 7 × 41 × 41 | 2 | ✅ |
 | fin-ray finger | 18 × 28 × 37 | 4 | ✅ |
