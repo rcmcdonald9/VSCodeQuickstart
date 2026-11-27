@@ -92,7 +92,7 @@ HUB_Y0 = W_OUT + WALL_T / 2 + 0.5   # pitch hub sleeve starts 0.5 mm outboard of
 # metal stack's. Crank: the 4 mm thread with its chamfers and the flush stud end (≈ 2.95 mm effective) strips at
 # ≈ 7.6 kN in 7075-T6 — the row in rnd/joints.py says whether that is ≥ 1.5× the fault stud force (crank_mat).
 HUB_TIE = dict(n=4, r=15.5, ang0=45.0, d=4.0, pitch=0.7, As=8.78, hole=4.5, grade="10.9", proof=830.0, preload=1500.0,
-               ring=(11.0, 21.0, 2.0), nut_h=3.2, face_gap=0.5, tube_r_in=11.0, crank_t=4.0, crank_mat="7075-T6", crank_density=2.81e-3,
+               ring=(11.0, 21.0, 2.0), nut_h=3.2, face_gap=0.5, tube_r_in=11.0, crank_t=4.0, crank_mat="7075-T6", crank_density=2.81e-6,
                sleeve=(7.0, 4.3), sleeve_hole=7.1, squeeze=0.05, bell="M4", n_bell=0)
 
 
