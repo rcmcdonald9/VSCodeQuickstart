@@ -140,7 +140,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | Software S0.2, S0.3, S0.4a, S1 | URDF/MJCF export; LeRobot-format synthetic demos; BC pipeline dry run; DM-J4310 MIT driver, safety supervisor + tests | [SOFTWARE_PLAN.md](SOFTWARE_PLAN.md) |
 
 **Open queue (ordered):**
-00a. **R2d / D21 laundry basket:** fingertip hooks on the fixed jaws; wrist-pitch outboard support (forearm fork + 61804) or bolted wrist flange; re-run rnd/basket.py after the D20 CAD.
+00a. **R2d / D21 laundry basket:** ~~fingertip hooks~~ *(loop 46: rigid PETG-CF hook on each fixed jaw, side rails around the wrist camera, foot 9 mm past the jaw face; hand module clean)*; wrist-pitch outboard support (forearm fork + 61804) or bolted wrist flange; re-run rnd/basket.py after the D20 CAD.
 00. **R2c / D20 (owner, 2026-11-27: "it needs to hold 20 lb", scenario B accepted).** M1 motors for shoulder pitch + elbow on hold until the GIM8108-8's 24 V operation is confirmed. Then: actuator swap in params, cartridge can + KX for Ø96, elbow 60T in a larger housing, lift and base re-check with +9 kg, gripper/forearm pads for the hug.
 0. **Astra review #2b criticals (verified, 2026-11-26)** — these come before anything else ([triage](review/triage_astra_2026-11-26.md)):
     - D19 integral shaft-pulleys: ~~yaw~~ *(loop 44: one-piece tube + 40T + spring hub; the bottom plate is a separate bolted print, so no capped seats were needed there — the slot idea clashed with the +X clevis arm)*; roll, pitch, elbow still to do (capped seats or a separable wall)

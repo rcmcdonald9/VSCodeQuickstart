@@ -194,11 +194,37 @@ def gripper_parts(jaw_deg: float = 25.0):
     fr = fin_ray(-L_HAND + 25, -L_HAND - 12, 21.0, 18, 28, -1)
     pad = Pos(24.5, 0, -L_HAND + 2) * Box(3, 20, 14)                     # MLX90393 + magnetic elastomer (tactile)
     parts += [("jaw_fixed", stem, "white"), ("finray_fixed", fr, "orange"), ("pad_fixed", pad, "dark")]
-    tof = Pos(48, 21, zb - 19) * Box(10, 8, 4)                                  # palm ToF (VL53L4CD) beside the wrist camera, looking down
+    parts.append(("finger_hook", finger_hook(), "dark"))
+    tof = Pos(48, 26, zb - 19) * Box(10, 8, 4)                                  # loop 46: y 21 → 26, clear of the D21 hook rail                                  # palm ToF (VL53L4CD) beside the wrist camera, looking down
     parts.append(("palm_tof", tof, "dark"))
     cam = Pos(52.2, 0, zb - 21) * Box(24, 30, 22)                # loop 31: +2.5 mm clear of the fixed fin-ray
     parts.append(("wrist_cam", cam, "dark"))
     return parts
+
+
+HOOK = dict(t=8.0, w=14.0, reach=9.0, lip=8.0)       # spine thickness (x), width (y), hook reach past the jaw face, foot height
+
+
+def finger_hook() -> Part:
+    """D21 (laundry basket, R2d): a rigid PETG-CF hook for the fixed jaw. A vertical spine runs down behind the fin-ray
+    finger (bridged to the jaw stem), and a foot under the fingertip reaches 9 mm past the contact face toward the
+    moving jaw. The fixed jaw goes inside the basket wall, the foot passes out under the handle bar, and the moving jaw
+    closes on the bar from outside, so the 4.5 kg per hand hangs on the hook, not on TPU friction.
+    Foot: 8 × 14 mm with a Ø3 steel pin along it; bending at the spine ≈ 90 N (2× static) × 28 mm = 2.5 N·m → ≈ 17 MPa in
+    the printed section alone (PETG-CF in-layer ≈ 25 MPa; the pin carries most of it). Printed flat, layers along the spine."""
+    h = HOOK
+    top, tip = -L_HAND + 25, -L_HAND - 12
+    x0 = 21.0 + 18.0 + 0.5                                   # just behind the fin-ray's back face (x 39 at its top)
+    # two side rails (y ±16.5…20.5) pass either side of the wrist camera (y ±15) and the fin-ray (y ±14)
+    out = None
+    for sy in (-1, 1):
+        yc = sy * 18.5
+        rail = Pos(x0 + h["t"] / 2, yc, (top + 6 + tip - h["lip"]) / 2) * Box(h["t"], 4, top + 6 - (tip - h["lip"]))
+        bridge = Pos((26 + x0 + h["t"]) / 2, yc, top + 6) * Box(x0 + h["t"] - 26, 4, 12)          # onto the jaw stem's sides
+        out = rail + bridge if out is None else out + rail + bridge
+    out += Pos(0, 0, top + 6) * Pos((26 + x0 + h["t"]) / 2 - 0, 0, 0) * Box(x0 + h["t"] - 26, 41, 4) - Pos(52.2, 0, top + 6) * Box(27, 33, 6)
+    foot = Pos((21.0 - h["reach"] + x0 + h["t"]) / 2, 0, tip - h["lip"] / 2) * Box(x0 + h["t"] - (21.0 - h["reach"]), 41, h["lip"])
+    return out + foot
 
 
 def assembly(jaw_deg: float = 25.0):
@@ -215,4 +241,5 @@ def masses(density=1.27):
     return {"palm + gripper printed": printed / 1e6 * density * 0.7,
             "KX56 hub+collar (hand side)": (hub(KX56).volume + collar(KX56).volume) / 1e6 * density * 0.7,
             "D16 wrist-roll spindle + dog (printed) + 2 × 61804": sum(p.volume for n, p, c in wrist_roll_parts() if n in ("wr_dog", "wr_spindle")) / 1e6 * density * 0.9 + 0.016,
+            "D21 finger hook (PETG-CF, 80 %) + Ø3 pin": finger_hook().volume / 1e6 * 1.3 * 0.8 + 0.004,
             "wrist camera module (ESTIMATE)": 0.05, "TPU pads, rail screws (ESTIMATE)": 0.02}

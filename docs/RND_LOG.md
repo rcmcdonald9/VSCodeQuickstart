@@ -1178,3 +1178,8 @@ One long push instead of half-hour runs. In order:
 
 - sw/safety.py set_payload(kg): above 1 kg the hand workspace shrinks to the box rnd/basket.py passed (load ≤ 0.45 m out, ≤ 0.80 m up), base braking caps at 0.3 m/s², load_heading_ok() checks the load points within ±20° of a wheel.
 - sw/test_s1.py: 800 random-policy cycles with 4.54 kg in hand → 0 cycles outside the load box; all earlier S1 tests still pass.
+
+## Loop 46 (2026-11-27, hardware): D21 finger hook (laundry basket)
+
+- finger_hook(): two PETG-CF rails behind the fixed fin-ray (either side of the wrist camera), a 41 × 8 mm foot under the fingertip reaching 9 mm past the jaw face, Ø3 steel pin; ≈ 2.5 N·m at 2× load → ≈ 17 MPa in the print alone.
+- Palm ToF moved y 21 → 26 for the rail. Hand module: 0 clashes, spacing clean; moving jaw clears the hook by ≥ 14 mm over its sweep. +19 g per hand.
