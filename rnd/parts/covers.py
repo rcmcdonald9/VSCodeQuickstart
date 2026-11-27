@@ -305,10 +305,10 @@ def base_frame():
                 liner += Pos(px, py, zf + (zd - zf) / 2) * Box(sx_, sy_, zd - zf)
             sh = parts[n.replace("_wheel", "_shaft")]
             sx0, sx1, sy0, sy1, sz0, sz1 = _bb(sh)
-            ax = "x" if (sx1 - sx0) > (sy1 - sy0) else "y"
+            ax = "x" if abs(ux) > 0.5 else "y"                                          # the shaft is radial (its flange makes the box wider than long)
             r = (sz1 - sz0) / 2 + 3
             c = ((sx0 + sx1) / 2, (sy0 + sy1) / 2, (sz0 + sz1) / 2)
-            liner -= Pos(*c) * (Rot(0, 90, 0) if ax == "x" else Rot(90, 0, 0)) * Cylinder(r, 400)
+            liner -= Pos(*c) * (Rot(0, 90, 0) if ax == "x" else Rot(90, 0, 0)) * Cylinder(r, (sx1 - sx0 if ax == "x" else sy1 - sy0) + 40)   # R17: through the inner wall only (was 400 mm along the tangent: a Ø66 hole through both side walls and the inner wall, the probe's way into the base)
             ang = math.degrees(math.atan2((y0 + y1) / 2, (x0 + x1) / 2))
             wy = (y1 - y0) if ax == "x" else (x1 - x0)                                  # wheel diameter (tangential)
             liner -= Rot(0, 0, ang) * Pos(base.R_SHELL, 0, zf + (z1 - zf) / 2) * Box(40, wy + 12, z1 - zf)   # window where the wheel leaves the skirt
