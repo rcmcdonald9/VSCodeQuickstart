@@ -271,6 +271,46 @@ class Reacher:
         self.robot = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "robot")
         self.rejected = 0
         self.park = {}          # solution -> idle-arm park pose, when it wasn't the default
+        self.roll_free = self._roll_free() if check_collision else None
+
+    def _roll_free(self, pen=0.002):
+        """Smallest shoulder roll (rad) at which the roll body's hulls clear the torso's at every pitch angle.
+        With the inline roll (D24) the yaw block sits 19 mm off the detach plane (the belt roll's sat 37 mm off), and at
+        the −15° adduction limit its hull is 5 mm into the torso pitch-module hull. So the roll's lower limit depends on
+        pitch, which a planner has to respect. The IK below has no collision term: from most starts it presses the arm
+        onto the roll limit and is then rejected, even where the target can be reached with less adduction."""
+        m, d = self.m, self.d
+        rb, tb = (mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, b) for b in ("roll_r", "torso"))
+        q = np.clip(np.array([0.7, 0, 0, 0, math.radians(-90), 0, 0]), self.lo, self.hi)
+        lo = self.lo[2]
+        for roll in np.arange(lo, lo + math.radians(30), math.radians(0.5)):
+            hit = False
+            for pitch in np.arange(self.lo[1], self.hi[1] + 1e-9, math.radians(5)):
+                q[1], q[2] = pitch, roll
+                self.fk(q)
+                mujoco.mj_collision(m, d)
+                hit = any(d.contact[i].dist < -pen and {m.geom_bodyid[d.contact[i].geom1], m.geom_bodyid[d.contact[i].geom2]} == {rb, tb}
+                          for i in range(d.ncon))
+                if hit:
+                    break
+            if not hit:
+                return float(roll) if roll > lo + 1e-9 else None
+        return None
+
+    def _accept(self, x):
+        """Collision check of an IK solution (the idle arm may re-park; keep the first park pose that clears)."""
+        if not (self.check and in_collision(self.m, self.d)):
+            return True
+        for pose in TUCKS[1:]:
+            tuck(self.m, self.d, "l", pose)
+            self.fk(x)
+            if not in_collision(self.m, self.d):
+                self.park[tuple(x)] = pose
+                tuck(self.m, self.d, "l")
+                return True
+        tuck(self.m, self.d, "l")
+        self.rejected += 1
+        return False
 
     def fk(self, q):
         self.d.qpos[self.adr] = q
@@ -300,24 +340,21 @@ class Reacher:
             [0.45, r_(-20), r_(20), 0, r_(-20), r_(40 if axis[2] < 0 else 0), 0]]
         starts = [np.clip(np.array(s_), self.lo, self.hi) for s_ in structured] + \
                  [rng.uniform(self.lo, self.hi) for _ in range(seeds)]
+        def ok(x):
+            p, a = self.fk(x)
+            return np.linalg.norm(p - target) < 0.01 and a @ axis > math.cos(math.radians(20))
         for q0 in starts:
             r = least_squares(res, q0, bounds=(self.lo, self.hi), xtol=1e-9, ftol=1e-10, max_nfev=1500)
-            p, a = self.fk(r.x)
-            if np.linalg.norm(p - target) < 0.01 and a @ axis > math.cos(math.radians(20)):
-                if self.check and in_collision(self.m, self.d):
-                    # the idle arm may re-park; keep the first park pose that clears
-                    for pose in TUCKS[1:]:
-                        tuck(self.m, self.d, "l", pose)
-                        self.fk(r.x)
-                        if not in_collision(self.m, self.d):
-                            break
-                    else:
-                        tuck(self.m, self.d, "l")
-                        self.rejected += 1
-                        continue
-                    self.park[tuple(r.x)] = pose
-                    tuck(self.m, self.d, "l")
+            if not ok(r.x):
+                continue
+            if self._accept(r.x):
                 sols.append(r.x)
+            elif self.roll_free is not None and r.x[2] < self.roll_free:
+                # rejected while adducted into the torso: solve again from there with roll kept clear of it (_roll_free)
+                lo = self.lo.copy(); lo[2] = self.roll_free
+                r2 = least_squares(res, np.clip(r.x, lo, self.hi), bounds=(lo, self.hi), xtol=1e-9, ftol=1e-10, max_nfev=1500)
+                if ok(r2.x) and self._accept(r2.x):
+                    sols.append(r2.x)
         return sols
 
 
