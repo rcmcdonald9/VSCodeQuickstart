@@ -110,7 +110,7 @@ Hold A (D20) costs **+$112** against the GIM6010 lines (up to +$339 at the deare
 
 ### Hold B: inline GIM8108-36 at shoulder roll (D24, **approved by the owner 2026-11-27**)
 
-**Waits on:** the seller's answers (output face, output-bearing radial rating ≥ 280 N, backlash, SDC303 protocol and CAN timeout) and the Step-1 protocol result; the *no* list is the fallback (belt roll).
+**Waits on:** the seller's answers (output face, output-bearing radial rating ≥ 612 N and tilting moment, backlash, SDC303 protocol and CAN timeout) and the Step-1 protocol result; the *no* list is the fallback (belt roll).
 
 **If yes, buy** ($290):
 
@@ -142,7 +142,7 @@ Hold A (D20) costs **+$112** against the GIM6010 lines (up to +$339 at the deare
 1. **GIM8108-8, 24 V:** we run a 24 V bus (6S Li-ion, 25.2 V full; our regen clamp switches on at 26.4 V and holds it ≤ 27.3 V, absolute max 28 V). Which driver version of the GIM8108-8 (SDC104, GDZ468, GDS68?) do you ship, and is it specified for 24 V? Please give rated torque, rated speed, no-load speed and continuous current at 24 V (listings quote 48 V). Price and lead time for 2 now (4 later).
 2. **GIM8108-8 drawing:** installation drawing with frame diameter and height, output-flange bolt pattern (hole count, PCD, thread, depth) and housing / rear mounting pattern, and the connector position.
 3. **GIM8108-36 (SDC303, 24 V):** which face is the output; the output flange material and the dowel-hole depth; reducer **backlash** (listings say 15 arcmin: measured how?); frame and connector position (we have the Ø96 × 57 drawing).
-4. **GIM8108-36 output bearing:** bearing type and allowable radial load at the output flange: we need **≈ 280 N radial** continuous, with a second support bearing 68 mm behind the flange; also the allowable axial load and tilting moment (one listing gives 1000 N radial / 250 N axial: please confirm and say where it is measured). Price with the SDC303 driver and lead time.
+4. **GIM8108-36 output bearing:** bearing type and allowable radial load at the output flange: we need **≈ 612 N radial in service** (W8c, 2026-11-27: the external 61806 now floats axially, so the output bearing carries more; was ≈ 280 N), and a **tilting-moment rating** (≥ 137 N·m would let us delete the 61806 support); also the allowable axial load and tilting moment (one listing gives 1000 N radial / 250 N axial: please confirm and say where it is measured). Price with the SDC303 driver and lead time.
 5. **CAN protocol manual** for the SDC104 (GIM6010-8), SDC303 (GIM8108-36) and the GIM8108-8's driver: frame formats; is the MIT / impedance mode (position, velocity, kp, kd, torque feed-forward) the default or selected in the tool, and its float ranges; how to set the node ID and the feedback ID; 1 Mbit/s; a **CAN-command timeout** (the drive disables itself when commands stop) and its unit; a torque / current-limit parameter **saved to flash**; encoder zero (is the output angle kept over a power cycle?); status and error codes; under/over-voltage behaviour. **Is it the same protocol on all three drivers?**
 6. **GIM6010-8:** confirm the unit is the 24 V **SDC104** version (not a 48 V listing), with its installation drawing and which face carries the housing mounting holes (rear or output face: our cartridge cap depends on it, Fable C3).
 
