@@ -399,7 +399,7 @@
     [
      "wpitch: drive torque report consistent with its limit at the stop",
      true,
-     "0.82 N\u00b7m reported vs limit 0.83 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
+     "0.83 N\u00b7m reported vs limit 0.83 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
     ],
     [
      "wpitch: span stop-to-stop 250.2\u00b0 vs 250.0\u00b0 expected",
@@ -427,7 +427,7 @@
       "stop_raw_rad": 1.49214,
       "stop_deg": 125,
       "stiffness_dq_deg": 0.022,
-      "tau_at_stop_nm": 0.824,
+      "tau_at_stop_nm": 0.825,
       "offset_rad": -0.68952,
       "span_measured_deg": 250.17,
       "span_expected_deg": 250.0
@@ -439,7 +439,7 @@
     "signs": {
      "wpitch": 1
     },
-    "wall_s": 6.22
+    "wall_s": 7.42
    }
   },
   "jog": {
@@ -471,8 +471,8 @@
       "peak_speed": 1.194,
       "max_track_err_deg": 0.49,
       "rms_track_err_deg": 0.35,
-      "peak_torque_nm": 1.157,
-      "observer_peak_nm": 0.166,
+      "peak_torque_nm": 1.158,
+      "observer_peak_nm": 0.16,
       "direction": 1,
       "corr": 1.0,
       "overrides": {
@@ -483,7 +483,7 @@
     "supervisor_overrides": {
      "velocity clamp": 1
     },
-    "wall_s": 0.81
+    "wall_s": 1.19
    }
   },
   "gravity": {
@@ -515,16 +515,16 @@
        -0.327
       ],
       "measured": [
-       -0.4013
+       -0.4012
       ],
       "residual": [
-       -0.0743
+       -0.0742
       ],
       "friction": [
-       0.0074
+       0.0069
       ],
       "noise": [
-       0.0152
+       0.0153
       ]
      },
      {
@@ -538,16 +538,16 @@
        -0.3567
       ],
       "measured": [
-       -0.4453
+       -0.4452
       ],
       "residual": [
-       -0.0886
+       -0.0885
       ],
       "friction": [
-       0.0111
+       0.0114
       ],
       "noise": [
-       0.0158
+       0.0156
       ]
      },
      {
@@ -561,16 +561,16 @@
        -0.2667
       ],
       "measured": [
-       -0.3282
+       -0.3279
       ],
       "residual": [
-       -0.0615
+       -0.0613
       ],
       "friction": [
-       0.0072
+       0.0075
       ],
       "noise": [
-       0.0172
+       0.0173
       ]
      },
      {
@@ -584,16 +584,16 @@
        -0.3788
       ],
       "measured": [
-       -0.4702
+       -0.4699
       ],
       "residual": [
-       -0.0915
+       -0.0912
       ],
       "friction": [
-       0.0107
+       0.0105
       ],
       "noise": [
-       0.0149
+       0.0151
       ]
      },
      {
@@ -607,16 +607,16 @@
        -0.0654
       ],
       "measured": [
-       -0.0812
+       -0.0817
       ],
       "residual": [
-       -0.0159
+       -0.0164
       ],
       "friction": [
-       0.006
+       0.0059
       ],
       "noise": [
-       0.0144
+       0.0145
       ]
      }
     ],
@@ -624,22 +624,22 @@
      "wpitch"
     ],
     "residual_max": [
-     0.0915
+     0.0912
     ],
     "residual_mean": [
      -0.0663
     ],
     "friction_max": [
-     0.0111
+     0.0114
     ],
     "noise_max": [
-     0.0172
+     0.0173
     ],
     "sag_test": {
      "wpitch": {
       "tested": true,
-      "limit_nm": 0.1893781347804721,
-      "gravity_nm": 0.3787562695609442,
+      "limit_nm": 0.1893781330802797,
+      "gravity_nm": 0.3787562661605594,
       "moved_deg": 3.038114500769976,
       "secs": 0.13800000000016865,
       "sagged": "True"
@@ -665,13 +665,303 @@
      ],
      "basis": {
       "wpitch": {
-       "observer_peak": 0.166,
-       "static": 0.1715
+       "observer_peak": 0.16,
+       "static": 0.1717
       }
      },
      "rule": "thr = max(0.3, 1.5 \u00d7 max(jog observer peak, |static residual| + friction + 4\u03c3)) N\u00b7m; rel 10 % of |\u03c4|"
     },
-    "wall_s": 4.09
+    "wall_s": 4.97
+   }
+  },
+  "sysid": {
+   "status": "PASS",
+   "summary": "wpitch F_c 0.039 B 0.501 K 0.9728 backlash 0.00\u00b0 latency 2.0 ms \u2192 actuators_7804993.yaml",
+   "checks": [
+    [
+     "wpitch: friction F_c 0.039 N\u00b7m, B 0.501 N\u00b7m\u00b7s/rad (4 speeds, line fit)",
+     true,
+     "max residual 0.0020 N\u00b7m; datasheet model F_c 0.04, B 0.5"
+    ],
+    [
+     "wpitch: effective torque constant K = 0.973 (true / reported) from sweeps with the 0.5 kg test mass",
+     true,
+     "\u0394\u03c4 [-0.7635, -0.7748, -0.7818, -0.7827, -0.7887, -0.7838, -0.7851, -0.7813, -0.7689, -0.7641, -0.7671, -0.7735, -0.7819, -0.7875, -0.7885, -0.7847, -0.7835, -0.7816, -0.7729, -0.7578] vs mass torque [-0.744, -0.7524, -0.7586, -0.7628, -0.7649, -0.7649, -0.7628, -0.7586, -0.7523, -0.744, -0.744, -0.7523, -0.7586, -0.7628, -0.7649, -0.7649, -0.7628, -0.7587, -0.7524, -0.744] N\u00b7m (K outside 0.8\u20131.2: wrong KT_NM_PER_A, ratio or sign)"
+    ],
+    [
+     "wpitch: backlash 0.000\u00b0 at 90.0\u00b0 (zero gravity)",
+     true,
+     "7 reversals, |\u03c4| < 0.020 N\u00b7m; > 2\u00b0: a loose stage"
+    ],
+    [
+     "wpitch: command \u2192 response 2.0 ms mean, p95 2.0, max 2.0 ms (chirp 2.0)",
+     true,
+     "30 steps; p95 must stay under the supervisor's stale-feedback bound 20 ms"
+    ]
+   ],
+   "notes": [],
+   "data": {
+    "fits": {
+     "wpitch": {
+      "joint": "wpitch",
+      "kind": "dm_j4310",
+      "serial": 7804993,
+      "date": "2026-11-27",
+      "source": "virtual bench (rehearsal)",
+      "coulomb_nm": 0.03857,
+      "viscous_nms": 0.50129,
+      "kt_scale": 0.9728,
+      "backlash_rad": 0.0,
+      "latency_ms": {
+       "n": 30,
+       "mean": 2.0,
+       "p50": 2.0,
+       "p95": 2.0,
+       "max": 2.0,
+       "chirp": 2.0,
+       "histogram_ms": {
+        "2": 30
+       }
+      },
+      "datasheet": {
+       "coulomb_nm": 0.04,
+       "viscous_nms": 0.5,
+       "backlash_rad": 0.0035
+      },
+      "fit": {
+       "friction_points_v_tau": [
+        [
+         0.12454,
+         0.1054
+        ],
+        [
+         0.25641,
+         0.16981
+        ],
+        [
+         0.44109,
+         0.26691
+        ],
+        [
+         0.75458,
+         0.42892
+        ]
+       ],
+       "friction_resid_nm": 0.00197,
+       "kt": {
+        "dg": [
+         -0.744,
+         -0.7524,
+         -0.7586,
+         -0.7628,
+         -0.7649,
+         -0.7649,
+         -0.7628,
+         -0.7586,
+         -0.7523,
+         -0.744,
+         -0.744,
+         -0.7523,
+         -0.7586,
+         -0.7628,
+         -0.7649,
+         -0.7649,
+         -0.7628,
+         -0.7587,
+         -0.7524,
+         -0.744
+        ],
+        "dtau": [
+         -0.7635,
+         -0.7748,
+         -0.7818,
+         -0.7827,
+         -0.7887,
+         -0.7838,
+         -0.7851,
+         -0.7813,
+         -0.7689,
+         -0.7641,
+         -0.7671,
+         -0.7735,
+         -0.7819,
+         -0.7875,
+         -0.7885,
+         -0.7847,
+         -0.7835,
+         -0.7816,
+         -0.7729,
+         -0.7578
+        ],
+        "resid_nm": 0.006861816978164126
+       },
+       "backlash_samples_rad": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       "backlash_pose_deg": 90.0
+      },
+      "not_randomized": "Once measured these are fixed facts of each drive (per serial), not domain-randomised: Coulomb + viscous friction, effective torque constant, backlash, the command \u2192 response latency distribution (use the measured histogram, not 0\u20139 ms uniform), encoder zero (calibrated), drive torque clamp, link masses (CAD + the gravity step's residual). Re-measured at the start and end of the soak test: if they drift, model the drift (e.g. temperature) instead of widening a randomisation range.",
+      "still_randomized": "Still randomised (actually random from task to task): payload mass / COM, contact friction (object, table, finger pads), object pose and size, lighting and camera pose; sensor noise at the measured \u03c3.",
+      "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-aca877eea92fb1652/sw/out/actuators_virtual/actuators_7804993.yaml"
+     }
+    },
+    "rows": {
+     "wpitch": {
+      "points": [
+       [
+        0.12454,
+        0.1054
+       ],
+       [
+        0.25641,
+        0.16981
+       ],
+       [
+        0.44109,
+        0.26691
+       ],
+       [
+        0.75458,
+        0.42892
+       ]
+      ],
+      "fc_rep": 0.039647889097531225,
+      "b_rep": 0.5153064953246175,
+      "fit_resid": 0.0019655448744902715,
+      "backlash_rad": 0.0,
+      "backlash_samples": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "backlash_pose_deg": 90.0,
+      "backlash_threshold_nm": 0.0198,
+      "latency_ms": {
+       "n": 30,
+       "mean": 2.0,
+       "p50": 2.0,
+       "p95": 2.0,
+       "max": 2.0,
+       "chirp": 2.0,
+       "histogram_ms": {
+        "2": 30
+       }
+      },
+      "latency_truth_ms": {
+       "mean": 2.0,
+       "p95": 2.0,
+       "max": 2.0
+      }
+     }
+    },
+    "kt": {
+     "wpitch": {
+      "kt_scale": 0.9727980396295003,
+      "dg": [
+       -0.744,
+       -0.7524,
+       -0.7586,
+       -0.7628,
+       -0.7649,
+       -0.7649,
+       -0.7628,
+       -0.7586,
+       -0.7523,
+       -0.744,
+       -0.744,
+       -0.7523,
+       -0.7586,
+       -0.7628,
+       -0.7649,
+       -0.7649,
+       -0.7628,
+       -0.7587,
+       -0.7524,
+       -0.744
+      ],
+      "dtau": [
+       -0.7635,
+       -0.7748,
+       -0.7818,
+       -0.7827,
+       -0.7887,
+       -0.7838,
+       -0.7851,
+       -0.7813,
+       -0.7689,
+       -0.7641,
+       -0.7671,
+       -0.7735,
+       -0.7819,
+       -0.7875,
+       -0.7885,
+       -0.7847,
+       -0.7835,
+       -0.7816,
+       -0.7729,
+       -0.7578
+      ],
+      "resid_nm": 0.006861816978164126
+     }
+    },
+    "config": {
+     "joints": [
+      "yaw",
+      "wpitch"
+     ],
+     "speeds_frac": [
+      0.1,
+      0.2,
+      0.35,
+      0.6
+     ],
+     "test_mass_kg": 0.5,
+     "backlash_amp_deg": 2.5,
+     "backlash_speed": 0.1,
+     "latency_steps": 30,
+     "latency_frac": 0.08,
+     "chirp_s": 3.0
+    },
+    "truth_vs_fit": {
+     "wpitch": {
+      "coulomb": {
+       "true": 0.04,
+       "fit": 0.03857,
+       "err_pct": -3.58
+      },
+      "viscous": {
+       "true": 0.5,
+       "fit": 0.50129,
+       "err_pct": 0.26
+      },
+      "kt": {
+       "true": 0.9724584114361717,
+       "fit": 0.9728,
+       "err_pct": 0.04
+      },
+      "backlash": {
+       "true": 0.0,
+       "fit": 0.0,
+       "err_pct": null
+      },
+      "latency": {
+       "true": 2.0,
+       "fit": 2.0,
+       "err_pct": 0.0
+      }
+     }
+    },
+    "wall_s": 18.11
    }
   }
  },
@@ -706,15 +996,304 @@
   "REFRESH",
   "STATUS_ENABLED"
  ],
- "cycles": 27142,
- "wall_s": 11.2,
+ "cycles": 63102,
+ "wall_s": 31.8,
  "heartbeat_gap_max_ms": 26.0,
  "watchdog_ms": 25.0,
+ "determinism": {
+  "start": {
+   "machine": "x86_64",
+   "raspberry_pi": false,
+   "cpu_temp_c": null,
+   "throttled_raw": null,
+   "throttled_flags": [],
+   "cpu_freq": {
+    "cur_mhz": null,
+    "max_mhz": null,
+    "governor": null,
+    "vc_arm_hz": null
+   },
+   "rt": {
+    "kernel": "6.18.44-fc-v880",
+    "version": "#1 SMP PREEMPT_DYNAMIC @0",
+    "preempt_rt": false,
+    "preempt_model": "PREEMPT_DYNAMIC (not RT)",
+    "isolated_cpus": null,
+    "isolcpus_cmdline": false,
+    "sched_policy": "SCHED_OTHER",
+    "sched_priority": 0
+   },
+   "can": {
+    "B1": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    },
+    "B2": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    }
+   },
+   "cpus": 4,
+   "loadavg": [
+    1.69384765625,
+    2.27587890625,
+    2.990234375
+   ]
+  },
+  "end": {
+   "machine": "x86_64",
+   "raspberry_pi": false,
+   "cpu_temp_c": null,
+   "throttled_raw": null,
+   "throttled_flags": [],
+   "cpu_freq": {
+    "cur_mhz": null,
+    "max_mhz": null,
+    "governor": null,
+    "vc_arm_hz": null
+   },
+   "rt": {
+    "kernel": "6.18.44-fc-v880",
+    "version": "#1 SMP PREEMPT_DYNAMIC @0",
+    "preempt_rt": false,
+    "preempt_model": "PREEMPT_DYNAMIC (not RT)",
+    "isolated_cpus": null,
+    "isolcpus_cmdline": false,
+    "sched_policy": "SCHED_OTHER",
+    "sched_priority": 0
+   },
+   "can": {
+    "B1": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    },
+    "B2": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    }
+   },
+   "cpus": 4,
+   "loadavg": [
+    1.9765625,
+    2.2890625,
+    2.96875
+   ]
+  },
+  "loop": {
+   "n": 63101,
+   "period_ms": 2.0,
+   "bins_ms": [
+    "0\u20131",
+    "1\u20131.5",
+    "1.5\u20131.9",
+    "1.9\u20132.1",
+    "2.1\u20132.5",
+    "2.5\u20133",
+    "3\u20134",
+    "4\u20136",
+    "6\u20138",
+    "8\u201312",
+    "12\u201325",
+    "> 25"
+   ],
+   "counts": [
+    62305,
+    610,
+    73,
+    20,
+    29,
+    20,
+    15,
+    19,
+    7,
+    3,
+    0,
+    0
+   ],
+   "interval_ms": {
+    "p50": 0.461,
+    "p99": 1.053,
+    "p999": 2.513,
+    "p9999": 6.515,
+    "max": 11.374
+   },
+   "jitter_ms": {
+    "p99": 1.653,
+    "p999": 1.739,
+    "max": 9.374
+   },
+   "over_ms": {
+    "3": 44,
+    "4": 29,
+    "6": 10,
+    "8": 3,
+    "10": 3,
+    "15": 0,
+    "20": 0,
+    "25": 0
+   }
+  },
+  "verdict": [
+   [
+    "kernel real-time (PREEMPT_RT)",
+    "\u2139\ufe0f",
+    "6.18.44-fc-v880 (PREEMPT_DYNAMIC (not RT)); policy SCHED_OTHER prio 0; isolated CPUs \u2014; governor None \u2014 not the Pi: informational"
+   ],
+   [
+    "CPU throttling / under-voltage (vcgencmd get_throttled)",
+    "\u2139\ufe0f",
+    "not available on this machine (skipped)"
+   ],
+   [
+    "CPU temperature",
+    "\u2139\ufe0f",
+    "no sensor readable (skipped)"
+   ],
+   [
+    "loop period (SW1: p99 |period \u2212 2 ms| < 1 ms)",
+    "\u2139\ufe0f",
+    "p50 0.46, p99.9 2.51, max 11.37 ms; jitter p99 1.65 ms; > 8 ms: 3 \u2014 virtual run: compute time per cycle, not a real-time measurement"
+   ],
+   [
+    "CAN B2 controller health",
+    "\u2705",
+    "state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +0, RX dropped +0"
+   ],
+   [
+    "CAN B1 controller health",
+    "\u2705",
+    "state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +0, RX dropped +0"
+   ]
+  ]
+ },
  "virtual_truth": {
   "wpitch": {
    "offset_joint": -0.6906398587083891,
    "sign": 1,
-   "kt_err": 0.9724584114361717
+   "kt_err": 0.9724584114361717,
+   "coulomb_nm": 0.04,
+   "viscous_nms": 0.5,
+   "backlash_rad": 0.0
+  }
+ },
+ "virtual_bus": {
+  "buses": {
+   "B1": {
+    "tx": {
+     "sent": 0,
+     "delivered": 0,
+     "dropped": 0,
+     "duplicated": 0,
+     "corrupted": 0,
+     "crc_errors": 0,
+     "bus_off_drops": 0,
+     "delay_ms": {
+      "mean": 0.0,
+      "p50": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+     }
+    },
+    "rx": {
+     "sent": 0,
+     "delivered": 0,
+     "dropped": 0,
+     "duplicated": 0,
+     "corrupted": 0,
+     "crc_errors": 0,
+     "bus_off_drops": 0,
+     "delay_ms": {
+      "mean": 0.0,
+      "p50": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+     }
+    },
+    "errors": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    }
+   },
+   "B2": {
+    "tx": {
+     "sent": 63189,
+     "delivered": 63189,
+     "dropped": 0,
+     "duplicated": 0,
+     "corrupted": 0,
+     "crc_errors": 0,
+     "bus_off_drops": 0,
+     "delay_ms": {
+      "mean": 0.0,
+      "p50": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+     }
+    },
+    "rx": {
+     "sent": 63165,
+     "delivered": 63165,
+     "dropped": 0,
+     "duplicated": 0,
+     "corrupted": 0,
+     "crc_errors": 0,
+     "bus_off_drops": 0,
+     "delay_ms": {
+      "mean": 0.0,
+      "p50": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+     }
+    },
+    "errors": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    }
+   }
+  },
+  "round_trip_ms": {
+   "n": 62969,
+   "mean": 2.0,
+   "p50": 2.0,
+   "p95": 2.0,
+   "p99": 2.0,
+   "max": 2.0
   }
  }
 }

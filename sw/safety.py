@@ -43,7 +43,7 @@ from sw.collision import KD_COMPLIANT, KP_COMPLIANT, T_ANCHOR
 
 WATCHDOG_S, FB_MAX_AGE, TEMP_C = 0.050, 0.020, 70.0     # TEMP_C: driver/case sensor (thermal.md: winding ≤ 69 °C on a task day)
 # FB_MAX_AGE 10 → 20 ms (2026-11-27, docs/sw/bus_realism.md): with 0–9 ms of bus delay each way the feedback age reached 16 ms
-# in normal running (p99.9 12 ms) and 10 ms false-tripped; a dead bus is still stopped in 20–28 ms (frames already in flight keep it fresh), next to the drive's own 30 ms timeout
+# in normal running (p99.9 12 ms) and 10 ms false-tripped; a dead bus is still stopped in 22–30 ms (frames already in flight keep it fresh), next to the drive's own 30 ms timeout
 V_FAULT, TRACK_FAULT = 4.0, 0.35                          # rad/s measured, rad tracking error
 KP_MAX, KD_MAX = 60.0, 3.0
 LOAD_KG = 1.0

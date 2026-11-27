@@ -65,22 +65,23 @@ Further bugs, found by instrumenting the failing runs:
 - A torque check in the gate was tried and **reverted**: it rejected 10 good frames on a clean bus (torque legitimately
   jumps at enable and gain switches) and still let small torque corruptions through.
 
-**After the fixes**, all five profiles pass every bring-up step, and 20 s of 0.5 Hz ±20° motion gives **0 supervisor
-stops and 0 collision false trips**. The observer peak / threshold is 0.40 ideal, 0.41 usb, 0.59 pil9, 0.45 lossy, 1.06
-corrupt (above 1 for a single cycle; the trip needs 2).
+**After the fixes**, all five profiles pass every bring-up step (sysid included), and 20 s of 0.5 Hz ±20° motion gives
+**0 supervisor stops**. The observer peak / threshold is 0.40 ideal, 0.41 usb, 0.53 pil9 and 0.43 lossy, with no collision
+false trip. On **corrupt** there is **1 collision false trip** (peak 3.4×), caused by a corrupted torque value: a
+compliant hold, not a drop. In an earlier run of the same code the peak was 1.06× with no trip.
 
 Real faults are still caught:
 
 | Fault | Result |
 |---|---|
 | contact at 2 × the threshold | trips in 14–18 ms |
-| bus silent | supervisor stop in 20–28 ms (frames already in flight keep the feedback fresh for up to 9 ms); the drive's own CAN timeout fires at 32–34 ms |
-| bus-off | stop in 22–24 ms; the adapter reports BUS-OFF and counts the restart |
+| bus silent | supervisor stop in 22–30 ms (frames already in flight keep the feedback fresh for up to 9 ms); the drive's own CAN timeout fires at 32–38 ms |
+| bus-off | stop in 22 ms; the adapter reports BUS-OFF and counts the restart |
 
 **Open: corrupted torque values.** They are not gated. In the corrupt run they raised the suggested collision threshold
 6× (0.30 → 1.82 N·m), because they land in the gravity step's noise σ, and they bring the observer close to a false trip
-(compliant hold, not a drop). They must be fixed at the source (the interface: [can_interface_note.md](can_interface_note.md)),
-and the soak test fails on any implausible frame.
+(compliant hold, not a drop). At 0.2 % corrupted frames that is about one false collision trip per 20 s. They must be fixed at the source (the
+interface: [can_interface_note.md](can_interface_note.md)), and the soak test fails on any implausible frame.
 
 ## 2. Actuator sysid, bring-up step 7 (sw/sysid.py → [sysid_rehearsal.md](sysid_rehearsal.md), [sysid_rehearsal_pil9.md](sysid_rehearsal_pil9.md))
 

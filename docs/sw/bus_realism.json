@@ -14,14 +14,15 @@
   "ideal": {
    "profile": "ideal",
    "seed": 0,
-   "wall_s": 10.2,
+   "wall_s": 25.9,
    "steps": {
     "enumerate": "PASS",
     "limits": "PASS",
     "safety": "PASS",
     "calibrate": "PASS",
     "jog": "PASS",
-    "gravity": "PASS"
+    "gravity": "PASS",
+    "sysid": "PASS"
    },
    "failed": [],
    "bus": {
@@ -70,8 +71,8 @@
      },
      "B2": {
       "tx": {
-       "sent": 21328,
-       "delivered": 21328,
+       "sent": 54100,
+       "delivered": 54100,
        "dropped": 0,
        "duplicated": 0,
        "corrupted": 0,
@@ -85,8 +86,8 @@
        }
       },
       "rx": {
-       "sent": 21305,
-       "delivered": 21305,
+       "sent": 54076,
+       "delivered": 54076,
        "dropped": 0,
        "duplicated": 0,
        "corrupted": 0,
@@ -112,7 +113,7 @@
      }
     },
     "round_trip_ms": {
-     "n": 21117,
+     "n": 53880,
      "mean": 2.0,
      "p50": 2.0,
      "p95": 2.0,
@@ -132,7 +133,7 @@
     "cycles": 10000,
     "supervisor_stops": [],
     "observer_trips": [],
-    "observer_peak_ratio": 0.396,
+    "observer_peak_ratio": 0.399,
     "fb_age_ms": {
      "p50": 0.0,
      "p99": 0.0,
@@ -143,7 +144,7 @@
      "p99": 2.0,
      "max": 2.0
     },
-    "rejected_frames": 10
+    "rejected_frames": 0
    },
    "faults": {
     "contact_trip_ms": 14.0,
@@ -228,8 +229,8 @@
      },
      "B2": {
       "tx": {
-       "sent": 31805,
-       "delivered": 31773,
+       "sent": 64577,
+       "delivered": 64545,
        "dropped": 16,
        "duplicated": 0,
        "corrupted": 0,
@@ -243,8 +244,8 @@
        }
       },
       "rx": {
-       "sent": 31746,
-       "delivered": 31746,
+       "sent": 64517,
+       "delivered": 64517,
        "dropped": 0,
        "duplicated": 0,
        "corrupted": 0,
@@ -270,7 +271,7 @@
      }
     },
     "round_trip_ms": {
-     "n": 31422,
+     "n": 64185,
      "mean": 2.0,
      "p50": 2.0,
      "p95": 2.0,
@@ -282,14 +283,15 @@
   "usb": {
    "profile": "usb",
    "seed": 0,
-   "wall_s": 9.9,
+   "wall_s": 26.8,
    "steps": {
     "enumerate": "PASS",
     "limits": "PASS",
     "safety": "PASS",
     "calibrate": "PASS",
     "jog": "PASS",
-    "gravity": "PASS"
+    "gravity": "PASS",
+    "sysid": "PASS"
    },
    "failed": [],
    "bus": {
@@ -338,33 +340,33 @@
      },
      "B2": {
       "tx": {
-       "sent": 21336,
-       "delivered": 21336,
+       "sent": 54108,
+       "delivered": 54107,
        "dropped": 0,
-       "duplicated": 0,
-       "corrupted": 0,
-       "crc_errors": 0,
-       "bus_off_drops": 0,
-       "delay_ms": {
-        "mean": 0.404,
-        "p50": 0.324,
-        "p99": 1.36,
-        "max": 4.609
-       }
-      },
-      "rx": {
-       "sent": 21271,
-       "delivered": 21269,
-       "dropped": 1,
-       "duplicated": 0,
+       "duplicated": 1,
        "corrupted": 0,
        "crc_errors": 1,
        "bus_off_drops": 0,
        "delay_ms": {
-        "mean": 0.405,
+        "mean": 0.406,
+        "p50": 0.326,
+        "p99": 1.351,
+        "max": 4.609
+       }
+      },
+      "rx": {
+       "sent": 53977,
+       "delivered": 53974,
+       "dropped": 1,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 2,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.407,
         "p50": 0.324,
-        "p99": 1.36,
-        "max": 4.17
+        "p99": 1.374,
+        "max": 4.198
        }
       },
       "errors": {
@@ -373,14 +375,14 @@
        "berr_rx": 0,
        "bus_off": 0,
        "restarts": 0,
-       "bus_errors": 1,
+       "bus_errors": 3,
        "rx_dropped": 1,
        "tx_dropped": 0
       }
      }
     },
     "round_trip_ms": {
-     "n": 21041,
+     "n": 53732,
      "mean": 2.026,
      "p50": 2.0,
      "p95": 2.0,
@@ -400,7 +402,7 @@
     "cycles": 10000,
     "supervisor_stops": [],
     "observer_trips": [],
-    "observer_peak_ratio": 0.41,
+    "observer_peak_ratio": 0.405,
     "fb_age_ms": {
      "p50": 0.0,
      "p99": 2.0,
@@ -411,10 +413,10 @@
      "p99": 4.0,
      "max": 6.0
     },
-    "rejected_frames": 15
+    "rejected_frames": 0
    },
    "faults": {
-    "contact_trip_ms": 14.0,
+    "contact_trip_ms": 16.0,
     "silent": {
      "supervisor_stop_ms": 22.0,
      "reason": [
@@ -427,7 +429,7 @@
       "berr_rx": 0,
       "bus_off": 0,
       "restarts": 0,
-      "bus_errors": 1,
+      "bus_errors": 3,
       "rx_dropped": 1,
       "tx_dropped": 16
      }
@@ -437,14 +439,14 @@
      "reason": [
       "feedback missing, NaN or stale"
      ],
-     "drive_disabled_ms": 32.0,
+     "drive_disabled_ms": 30.0,
      "adapter": {
       "state": "BUS-OFF",
       "berr_tx": 256,
       "berr_rx": 0,
       "bus_off": 1,
       "restarts": 0,
-      "bus_errors": 1,
+      "bus_errors": 3,
       "rx_dropped": 1,
       "tx_dropped": 16
      }
@@ -496,33 +498,33 @@
      },
      "B2": {
       "tx": {
-       "sent": 31813,
-       "delivered": 31747,
+       "sent": 64585,
+       "delivered": 64518,
        "dropped": 16,
        "duplicated": 1,
        "corrupted": 0,
-       "crc_errors": 0,
+       "crc_errors": 1,
        "bus_off_drops": 50,
        "delay_ms": {
         "mean": 0.406,
-        "p50": 0.325,
-        "p99": 1.35,
+        "p50": 0.326,
+        "p99": 1.359,
         "max": 4.609
        }
       },
       "rx": {
-       "sent": 31658,
-       "delivered": 31656,
+       "sent": 64363,
+       "delivered": 64360,
        "dropped": 1,
        "duplicated": 0,
        "corrupted": 0,
-       "crc_errors": 1,
+       "crc_errors": 2,
        "bus_off_drops": 0,
        "delay_ms": {
         "mean": 0.406,
         "p50": 0.324,
-        "p99": 1.364,
-        "max": 4.198
+        "p99": 1.376,
+        "max": 4.351
        }
       },
       "errors": {
@@ -531,15 +533,15 @@
        "berr_rx": 0,
        "bus_off": 1,
        "restarts": 1,
-       "bus_errors": 1,
+       "bus_errors": 3,
        "rx_dropped": 1,
        "tx_dropped": 16
       }
      }
     },
     "round_trip_ms": {
-     "n": 31327,
-     "mean": 2.025,
+     "n": 64016,
+     "mean": 2.026,
      "p50": 2.0,
      "p95": 2.0,
      "p99": 4.0,
@@ -550,277 +552,15 @@
   "pil9": {
    "profile": "pil9",
    "seed": 0,
-   "wall_s": 0.6,
-   "steps": {
-    "enumerate": "PASS",
-    "limits": "PASS",
-    "safety": "PASS",
-    "calibrate": "FAIL",
-    "jog": "REFUSED",
-    "gravity": "REFUSED"
-   },
-   "failed": [
-    "calibrate: step completed \u2014 wpitch: supervisor stop while seeking the stop: ['feedback missing, NaN or stale']"
-   ],
-   "bus": {
-    "buses": {
-     "B1": {
-      "tx": {
-       "sent": 0,
-       "delivered": 0,
-       "dropped": 0,
-       "duplicated": 0,
-       "corrupted": 0,
-       "crc_errors": 0,
-       "bus_off_drops": 0,
-       "delay_ms": {
-        "mean": 0.0,
-        "p50": 0.0,
-        "p99": 0.0,
-        "max": 0.0
-       }
-      },
-      "rx": {
-       "sent": 0,
-       "delivered": 0,
-       "dropped": 0,
-       "duplicated": 0,
-       "corrupted": 0,
-       "crc_errors": 0,
-       "bus_off_drops": 0,
-       "delay_ms": {
-        "mean": 0.0,
-        "p50": 0.0,
-        "p99": 0.0,
-        "max": 0.0
-       }
-      },
-      "errors": {
-       "state": "ERROR-ACTIVE",
-       "berr_tx": 0,
-       "berr_rx": 0,
-       "bus_off": 0,
-       "restarts": 0,
-       "bus_errors": 0,
-       "rx_dropped": 0,
-       "tx_dropped": 0
-      }
-     },
-     "B2": {
-      "tx": {
-       "sent": 1763,
-       "delivered": 1761,
-       "dropped": 1,
-       "duplicated": 1,
-       "corrupted": 0,
-       "crc_errors": 1,
-       "bus_off_drops": 0,
-       "delay_ms": {
-        "mean": 5.362,
-        "p50": 5.424,
-        "p99": 8.926,
-        "max": 8.998
-       }
-      },
-      "rx": {
-       "sent": 922,
-       "delivered": 920,
-       "dropped": 2,
-       "duplicated": 2,
-       "corrupted": 0,
-       "crc_errors": 0,
-       "bus_off_drops": 0,
-       "delay_ms": {
-        "mean": 4.976,
-        "p50": 5.134,
-        "p99": 8.928,
-        "max": 8.995
-       }
-      },
-      "errors": {
-       "state": "ERROR-ACTIVE",
-       "berr_tx": 0,
-       "berr_rx": 0,
-       "bus_off": 0,
-       "restarts": 0,
-       "bus_errors": 1,
-       "rx_dropped": 2,
-       "tx_dropped": 1
-      }
-     }
-    },
-    "round_trip_ms": {
-     "n": 768,
-     "mean": 12.307,
-     "p50": 12.0,
-     "p95": 18.0,
-     "p99": 18.0,
-     "max": 20.0
-    }
-   },
-   "thr": null,
-   "motion": {
-    "cycles": 10000,
-    "supervisor_stops": [],
-    "observer_trips": [],
-    "observer_peak_ratio": 0.503,
-    "fb_age_ms": {
-     "p50": 2.0,
-     "p99": 10.0,
-     "p999": 12.0,
-     "max": 14.0
-    },
-    "fresh_gap_ms": {
-     "p99": 14.0,
-     "max": 16.0
-    },
-    "rejected_frames": 6
-   },
-   "faults": {
-    "contact_trip_ms": 20.0,
-    "silent": {
-     "supervisor_stop_ms": 26.0,
-     "reason": [
-      "feedback missing, NaN or stale"
-     ],
-     "drive_disabled_ms": 38.0,
-     "adapter": {
-      "state": "ERROR-ACTIVE",
-      "berr_tx": 0,
-      "berr_rx": 0,
-      "bus_off": 0,
-      "restarts": 0,
-      "bus_errors": 20,
-      "rx_dropped": 9,
-      "tx_dropped": 37
-     }
-    },
-    "bus_off": {
-     "supervisor_stop_ms": 30.0,
-     "reason": [
-      "feedback missing, NaN or stale"
-     ],
-     "drive_disabled_ms": 26.0,
-     "adapter": {
-      "state": "BUS-OFF",
-      "berr_tx": 256,
-      "berr_rx": 0,
-      "bus_off": 1,
-      "restarts": 0,
-      "bus_errors": 20,
-      "rx_dropped": 9,
-      "tx_dropped": 37
-     }
-    }
-   },
-   "bus_after": {
-    "buses": {
-     "B1": {
-      "tx": {
-       "sent": 0,
-       "delivered": 0,
-       "dropped": 0,
-       "duplicated": 0,
-       "corrupted": 0,
-       "crc_errors": 0,
-       "bus_off_drops": 0,
-       "delay_ms": {
-        "mean": 0.0,
-        "p50": 0.0,
-        "p99": 0.0,
-        "max": 0.0
-       }
-      },
-      "rx": {
-       "sent": 0,
-       "delivered": 0,
-       "dropped": 0,
-       "duplicated": 0,
-       "corrupted": 0,
-       "crc_errors": 0,
-       "bus_off_drops": 0,
-       "delay_ms": {
-        "mean": 0.0,
-        "p50": 0.0,
-        "p99": 0.0,
-        "max": 0.0
-       }
-      },
-      "errors": {
-       "state": "ERROR-ACTIVE",
-       "berr_tx": 0,
-       "berr_rx": 0,
-       "bus_off": 0,
-       "restarts": 0,
-       "bus_errors": 0,
-       "rx_dropped": 0,
-       "tx_dropped": 0
-      }
-     },
-     "B2": {
-      "tx": {
-       "sent": 13677,
-       "delivered": 13574,
-       "dropped": 37,
-       "duplicated": 10,
-       "corrupted": 0,
-       "crc_errors": 15,
-       "bus_off_drops": 51,
-       "delay_ms": {
-        "mean": 5.353,
-        "p50": 5.454,
-        "p99": 8.909,
-        "max": 9.0
-       }
-      },
-      "rx": {
-       "sent": 7022,
-       "delivered": 7007,
-       "dropped": 9,
-       "duplicated": 7,
-       "corrupted": 0,
-       "crc_errors": 5,
-       "bus_off_drops": 1,
-       "delay_ms": {
-        "mean": 4.932,
-        "p50": 5.047,
-        "p99": 8.916,
-        "max": 9.0
-       }
-      },
-      "errors": {
-       "state": "ERROR-ACTIVE",
-       "berr_tx": 0,
-       "berr_rx": 0,
-       "bus_off": 1,
-       "restarts": 1,
-       "bus_errors": 20,
-       "rx_dropped": 9,
-       "tx_dropped": 37
-      }
-     }
-    },
-    "round_trip_ms": {
-     "n": 6815,
-     "mean": 12.259,
-     "p50": 12.0,
-     "p95": 18.0,
-     "p99": 18.0,
-     "max": 20.0
-    }
-   }
-  },
-  "lossy": {
-   "profile": "lossy",
-   "seed": 0,
-   "wall_s": 9.8,
+   "wall_s": 25.3,
    "steps": {
     "enumerate": "PASS",
     "limits": "PASS",
     "safety": "PASS",
     "calibrate": "PASS",
     "jog": "PASS",
-    "gravity": "PASS"
+    "gravity": "PASS",
+    "sysid": "PASS"
    },
    "failed": [],
    "bus": {
@@ -869,33 +609,33 @@
      },
      "B2": {
       "tx": {
-       "sent": 21314,
-       "delivered": 21002,
-       "dropped": 215,
-       "duplicated": 114,
+       "sent": 54373,
+       "delivered": 54247,
+       "dropped": 63,
+       "duplicated": 53,
        "corrupted": 0,
-       "crc_errors": 97,
+       "crc_errors": 63,
        "bus_off_drops": 0,
        "delay_ms": {
-        "mean": 0.754,
-        "p50": 0.563,
-        "p99": 3.372,
-        "max": 7.59
+        "mean": 5.347,
+        "p50": 5.441,
+        "p99": 8.909,
+        "max": 9.0
        }
       },
       "rx": {
-       "sent": 20171,
-       "delivered": 19897,
-       "dropped": 168,
-       "duplicated": 101,
+       "sent": 27914,
+       "delivered": 27860,
+       "dropped": 28,
+       "duplicated": 23,
        "corrupted": 0,
-       "crc_errors": 106,
+       "crc_errors": 26,
        "bus_off_drops": 0,
        "delay_ms": {
-        "mean": 0.753,
-        "p50": 0.564,
-        "p99": 3.386,
-        "max": 7.184
+        "mean": 4.898,
+        "p50": 4.983,
+        "p99": 8.909,
+        "max": 9.0
        }
       },
       "errors": {
@@ -904,19 +644,288 @@
        "berr_rx": 0,
        "bus_off": 0,
        "restarts": 0,
-       "bus_errors": 203,
-       "rx_dropped": 168,
-       "tx_dropped": 215
+       "bus_errors": 89,
+       "rx_dropped": 28,
+       "tx_dropped": 63
       }
      }
     },
     "round_trip_ms": {
-     "n": 19770,
-     "mean": 2.451,
+     "n": 27667,
+     "mean": 12.241,
+     "p50": 12.0,
+     "p95": 18.0,
+     "p99": 18.0,
+     "max": 20.0
+    }
+   },
+   "thr": [
+    null,
+    null,
+    null,
+    null,
+    0.317,
+    null
+   ],
+   "motion": {
+    "cycles": 10000,
+    "supervisor_stops": [],
+    "observer_trips": [],
+    "observer_peak_ratio": 0.533,
+    "fb_age_ms": {
+     "p50": 2.0,
+     "p99": 10.0,
+     "p999": 12.0,
+     "max": 14.0
+    },
+    "fresh_gap_ms": {
+     "p99": 14.0,
+     "max": 16.0
+    },
+    "rejected_frames": 0
+   },
+   "faults": {
+    "contact_trip_ms": 18.0,
+    "silent": {
+     "supervisor_stop_ms": 30.0,
+     "reason": [
+      "feedback missing, NaN or stale"
+     ],
+     "drive_disabled_ms": 38.0,
+     "adapter": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 101,
+      "rx_dropped": 35,
+      "tx_dropped": 93
+     }
+    },
+    "bus_off": {
+     "supervisor_stop_ms": 22.0,
+     "reason": [
+      "feedback missing, NaN or stale"
+     ],
+     "drive_disabled_ms": 28.0,
+     "adapter": {
+      "state": "BUS-OFF",
+      "berr_tx": 256,
+      "berr_rx": 0,
+      "bus_off": 1,
+      "restarts": 0,
+      "bus_errors": 101,
+      "rx_dropped": 35,
+      "tx_dropped": 93
+     }
+    }
+   },
+   "bus_after": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 64852,
+       "delivered": 64638,
+       "dropped": 93,
+       "duplicated": 60,
+       "corrupted": 0,
+       "crc_errors": 71,
+       "bus_off_drops": 50,
+       "delay_ms": {
+        "mean": 5.348,
+        "p50": 5.441,
+        "p99": 8.909,
+        "max": 9.0
+       }
+      },
+      "rx": {
+       "sent": 33258,
+       "delivered": 33192,
+       "dropped": 35,
+       "duplicated": 26,
+       "corrupted": 0,
+       "crc_errors": 30,
+       "bus_off_drops": 1,
+       "delay_ms": {
+        "mean": 4.902,
+        "p50": 4.987,
+        "p99": 8.907,
+        "max": 9.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 1,
+       "restarts": 1,
+       "bus_errors": 101,
+       "rx_dropped": 35,
+       "tx_dropped": 93
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 32959,
+     "mean": 12.246,
+     "p50": 12.0,
+     "p95": 18.0,
+     "p99": 18.0,
+     "max": 20.0
+    }
+   }
+  },
+  "lossy": {
+   "profile": "lossy",
+   "seed": 0,
+   "wall_s": 26.4,
+   "steps": {
+    "enumerate": "PASS",
+    "limits": "PASS",
+    "safety": "PASS",
+    "calibrate": "PASS",
+    "jog": "PASS",
+    "gravity": "PASS",
+    "sysid": "PASS"
+   },
+   "failed": [],
+   "bus": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 54086,
+       "delivered": 53349,
+       "dropped": 492,
+       "duplicated": 273,
+       "corrupted": 0,
+       "crc_errors": 245,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.757,
+        "p50": 0.565,
+        "p99": 3.386,
+        "max": 7.925
+       }
+      },
+      "rx": {
+       "sent": 51175,
+       "delivered": 50441,
+       "dropped": 453,
+       "duplicated": 246,
+       "corrupted": 0,
+       "crc_errors": 281,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.756,
+        "p50": 0.566,
+        "p99": 3.358,
+        "max": 8.046
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 526,
+       "rx_dropped": 453,
+       "tx_dropped": 492
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 50446,
+     "mean": 2.455,
      "p50": 2.0,
      "p95": 4.0,
      "p99": 6.0,
-     "max": 10.0
+     "max": 12.0
     }
    },
    "thr": [
@@ -931,36 +940,36 @@
     "cycles": 10000,
     "supervisor_stops": [],
     "observer_trips": [],
-    "observer_peak_ratio": 0.447,
+    "observer_peak_ratio": 0.431,
     "fb_age_ms": {
      "p50": 0.0,
      "p99": 4.0,
-     "p999": 6.0,
+     "p999": 8.0,
      "max": 8.0
     },
     "fresh_gap_ms": {
      "p99": 6.0,
      "max": 10.0
     },
-    "rejected_frames": 27
+    "rejected_frames": 0
    },
    "faults": {
     "contact_trip_ms": 16.0,
     "silent": {
-     "supervisor_stop_ms": 20.0,
+     "supervisor_stop_ms": 22.0,
      "reason": [
       "feedback missing, NaN or stale"
      ],
-     "drive_disabled_ms": 34.0,
+     "drive_disabled_ms": 32.0,
      "adapter": {
       "state": "ERROR-ACTIVE",
       "berr_tx": 0,
       "berr_rx": 0,
       "bus_off": 0,
       "restarts": 0,
-      "bus_errors": 304,
-      "rx_dropped": 260,
-      "tx_dropped": 326
+      "bus_errors": 622,
+      "rx_dropped": 543,
+      "tx_dropped": 620
      }
     },
     "bus_off": {
@@ -975,9 +984,9 @@
       "berr_rx": 0,
       "bus_off": 1,
       "restarts": 0,
-      "bus_errors": 305,
-      "rx_dropped": 261,
-      "tx_dropped": 326
+      "bus_errors": 622,
+      "rx_dropped": 543,
+      "tx_dropped": 620
      }
     }
    },
@@ -1027,33 +1036,33 @@
      },
      "B2": {
       "tx": {
-       "sent": 31792,
-       "delivered": 31270,
-       "dropped": 326,
-       "duplicated": 167,
+       "sent": 64574,
+       "delivered": 63616,
+       "dropped": 620,
+       "duplicated": 317,
        "corrupted": 0,
-       "crc_errors": 145,
-       "bus_off_drops": 51,
+       "crc_errors": 288,
+       "bus_off_drops": 50,
        "delay_ms": {
-        "mean": 0.756,
-        "p50": 0.563,
-        "p99": 3.415,
-        "max": 7.59
+        "mean": 0.759,
+        "p50": 0.565,
+        "p99": 3.433,
+        "max": 7.925
        }
       },
       "rx": {
-       "sent": 30009,
-       "delivered": 29588,
-       "dropped": 261,
-       "duplicated": 148,
+       "sent": 61003,
+       "delivered": 60125,
+       "dropped": 544,
+       "duplicated": 299,
        "corrupted": 0,
-       "crc_errors": 160,
+       "crc_errors": 334,
        "bus_off_drops": 0,
        "delay_ms": {
-        "mean": 0.753,
+        "mean": 0.756,
         "p50": 0.566,
-        "p99": 3.291,
-        "max": 7.184
+        "p99": 3.353,
+        "max": 8.046
        }
       },
       "errors": {
@@ -1062,33 +1071,34 @@
        "berr_rx": 0,
        "bus_off": 1,
        "restarts": 1,
-       "bus_errors": 305,
-       "rx_dropped": 261,
-       "tx_dropped": 326
+       "bus_errors": 622,
+       "rx_dropped": 544,
+       "tx_dropped": 620
       }
      }
     },
     "round_trip_ms": {
-     "n": 29412,
+     "n": 60071,
      "mean": 2.455,
      "p50": 2.0,
      "p95": 4.0,
      "p99": 6.0,
-     "max": 10.0
+     "max": 12.0
     }
    }
   },
   "corrupt": {
    "profile": "corrupt",
    "seed": 0,
-   "wall_s": 10.0,
+   "wall_s": 27.9,
    "steps": {
     "enumerate": "PASS",
     "limits": "PASS",
     "safety": "PASS",
     "calibrate": "PASS",
     "jog": "PASS",
-    "gravity": "PASS"
+    "gravity": "PASS",
+    "sysid": "PASS"
    },
    "failed": [],
    "bus": {
@@ -1137,33 +1147,33 @@
      },
      "B2": {
       "tx": {
-       "sent": 21343,
-       "delivered": 21343,
+       "sent": 54114,
+       "delivered": 54114,
        "dropped": 0,
        "duplicated": 0,
-       "corrupted": 35,
+       "corrupted": 94,
        "crc_errors": 0,
        "bus_off_drops": 0,
        "delay_ms": {
-        "mean": 0.501,
+        "mean": 0.5,
         "p50": 0.407,
-        "p99": 1.596,
-        "max": 3.276
+        "p99": 1.598,
+        "max": 3.456
        }
       },
       "rx": {
-       "sent": 21254,
-       "delivered": 21254,
+       "sent": 53942,
+       "delivered": 53942,
        "dropped": 0,
        "duplicated": 0,
-       "corrupted": 45,
+       "corrupted": 103,
        "crc_errors": 0,
        "bus_off_drops": 0,
        "delay_ms": {
-        "mean": 0.498,
-        "p50": 0.407,
-        "p99": 1.564,
-        "max": 3.12
+        "mean": 0.499,
+        "p50": 0.406,
+        "p99": 1.578,
+        "max": 3.259
        }
       },
       "errors": {
@@ -1179,8 +1189,8 @@
      }
     },
     "round_trip_ms": {
-     "n": 21024,
-     "mean": 2.06,
+     "n": 53701,
+     "mean": 2.062,
      "p50": 2.0,
      "p95": 2.0,
      "p99": 4.0,
@@ -1192,7 +1202,7 @@
     null,
     null,
     null,
-    0.44,
+    1.823,
     null
    ],
    "motion": {
@@ -1200,11 +1210,11 @@
     "supervisor_stops": [],
     "observer_trips": [
      {
-      "t": 6.94,
+      "t": 11.554,
       "joint": "wpitch"
      }
     ],
-    "observer_peak_ratio": 1.244,
+    "observer_peak_ratio": 3.373,
     "fb_age_ms": {
      "p50": 0.0,
      "p99": 2.0,
@@ -1215,7 +1225,7 @@
      "p99": 4.0,
      "max": 6.0
     },
-    "rejected_frames": 138
+    "rejected_frames": 35
    },
    "faults": {
     "contact_trip_ms": 16.0,
@@ -1300,33 +1310,33 @@
      },
      "B2": {
       "tx": {
-       "sent": 31820,
-       "delivered": 31754,
+       "sent": 64591,
+       "delivered": 64525,
        "dropped": 16,
        "duplicated": 0,
-       "corrupted": 50,
+       "corrupted": 119,
        "crc_errors": 0,
        "bus_off_drops": 50,
        "delay_ms": {
-        "mean": 0.499,
-        "p50": 0.405,
-        "p99": 1.595,
+        "mean": 0.5,
+        "p50": 0.408,
+        "p99": 1.593,
         "max": 3.456
        }
       },
       "rx": {
-       "sent": 31634,
-       "delivered": 31634,
+       "sent": 64327,
+       "delivered": 64327,
        "dropped": 0,
        "duplicated": 0,
-       "corrupted": 64,
+       "corrupted": 123,
        "crc_errors": 0,
        "bus_off_drops": 0,
        "delay_ms": {
-        "mean": 0.498,
-        "p50": 0.405,
-        "p99": 1.565,
-        "max": 3.12
+        "mean": 0.5,
+        "p50": 0.407,
+        "p99": 1.578,
+        "max": 3.476
        }
       },
       "errors": {
@@ -1342,7 +1352,7 @@
      }
     },
     "round_trip_ms": {
-     "n": 31304,
+     "n": 63985,
      "mean": 2.061,
      "p50": 2.0,
      "p95": 2.0,

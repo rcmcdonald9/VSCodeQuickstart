@@ -7,7 +7,7 @@ can_timeout_s: 0.030          # drive-side CAN watchdog: a drive disables itself
 watchdog_s: 0.025             # A5 v2 hardware watchdog (SN74LVC1G123) timeout: was 8 ms; sized on the measured heartbeat jitter of this loop
                               # (python -m sw.loop_jitter; loaded max 7.9 ms) by rnd/electrical.py: ≥ max(3 × p99.99, 2 × max), 5 ms steps
 fb_max_age_s: 0.020          # supervisor: feedback older than this stops the arm (was 10 ms; docs/sw/bus_realism.md: 0–9 ms bus delay each
-                              # way gave ages up to 16 ms in normal running; dead bus still stopped in 20–28 ms; the drive times out itself at 30 ms)
+                              # way gave ages up to 16 ms in normal running; dead bus still stopped in 22–30 ms; the drive times out itself at 30 ms)
 limit: rated                  # drive-side torque limit = joints.json rated_nm (the supervisor's bound without allow_peak)
 cal_speed: 0.30               # rad/s while seeking a hard stop
 cal_frac_max: 0.60            # the calibration torque may not exceed this fraction of rated (else: support the arm)

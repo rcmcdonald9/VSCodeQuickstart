@@ -38,8 +38,8 @@ measurement (`python -m sw.can_latency`).
   max 6 ms).
 - **What matters is corruption and loss, not the mean latency.** Corrupted payloads are why Asimov changed controllers.
   The driver's new plausibility gate turns most of them into lost frames, but a corrupted *torque* value still reaches
-  the collision observer (peak 1.06× the threshold in 20 s), and corrupted frames during the gravity step raised the
-  suggested collision threshold 6× (0.30 → 1.82 N·m). The interface must deliver **zero** implausible frames in the soak
+  the collision observer (one false collision trip in 20 s at 0.2 % corruption, a compliant hold), and corrupted frames
+  during the gravity step raised the suggested collision threshold 6× (0.30 → 1.82 N·m). The interface must deliver **zero** implausible frames in the soak
   test. That is a pass/fail criterion, not something to filter around.
 
 ## Step-1 measurement plan (decides the robot's 5 channels)
