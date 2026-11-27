@@ -192,6 +192,13 @@ def carriage(lift_mm: float) -> Part:
     # pawl box (pawl + 12 V solenoid) on the back, beside the slot; A15: pocket for the steel pawl (1.2 mm round it)
     c += Pos(MAST_X - W / 2 - 20, 23, lift_mm - 30) * Box(14, 22, 40)
     c -= Pos(-108.6, RACK["y"], lift_mm - 30) * Box(15.2, 8.4, 30.0)
+    if D.arm.arm_motors == "d20":
+        # C3 (D24 v2, R14 (d)): the D20 pitch cans' rear ends sit 2.6 mm off the carriage's side faces and must back off
+        # 4.5 mm (Oldham tongue) before they drop out through their side exit, so each side wall is 12 → 8 mm thick over
+        # a slot under the can (x −66 … −15, carriage bottom → 56 mm over the pitch axis). D20 only; ESTIMATE: re-run the
+        # carriage FEA / rnd.stiffness with PIP_ARM_MOTORS=d20 before printing.
+        for sy in (1, -1):
+            c -= Pos(-40.5, sy * (W / 2 + 12.0), zc - h / 2 - 1) * Box(51.0, 6.0, lift_mm + 56 - (zc - h / 2) + 1, align=(Align.CENTER, Align.CENTER, Align.MIN))   # |y| W/2 + 9 … + 15 (the 625 bosses too)
     return c
 
 

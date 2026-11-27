@@ -136,6 +136,9 @@ def upper_bone() -> Part:
     # notches are the driver paths to the 4 ear screws (straight Ø6 along −Y past the sleeve; rnd/assembly_seq.py R14 c/d)
     # (D20: the upper ±140° ears (r 56) reach the housing stiffener in front of plate A, so the cut starts at the flange plane)
     p -= STAGE * cm.can_envelope(MOT, EAR_SITE, 0.6, -0.6 if D20 else Y_E + 30.0, 140.0)
+    if D20:                                                                              # … and plate A's lobes under those ears (r 7.5) sat in it too
+        for a_ in cm.EAR_SITES[EAR_SITE]:
+            p -= STAGE * cm._lobe(cm.ear_r(MOT), a_, 7.5 + 0.6, (CAS_A[1] - CAS_A[0]) + 1.2, -(CAS_A[1] - CAS_A[0]) - 0.6)
     p -= Pos(0, h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20)
     p -= Pos(0, -h["y"] / 2 + 3, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20, align=MIN)   # loop 40: −Y wall opened for the elbow shaft (was blind; the shaft now goes in from −Y)
     # D19: U-slots under both elbow seats: the whole cassette (shaft + 40T + plates + belt + small stage, 61808s on the tube
