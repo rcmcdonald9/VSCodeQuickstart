@@ -51,7 +51,9 @@ ROLL_DRIVES = {
     # roll actuator mass.
     # Seller drawing (2026-11-27): Ø96 × 57 with the driver, 8 × M4 PCD 84, Ø30 output boss → ROLL_Y 70 → 69, yaw_drop 99.3;
     # roll body + 61 g 7075 output adapter + steel clamp ring + cup ring; neck 14.1 mm longer than the belt arm's (+ 10 g).
-    "inline": dict(roll_offset_y=0.069, yaw_drop=0.0993, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.35, yaw_stage_mass=0.67, bone_upper_dm=0.010),   # D24 v2: yaw D50 Oldham, roll.masses yaw 0.552 → 0.579; + C1 6061 flange → 0.65. R2b (2026-11-27): roll link side block + 53 g (roll.masses 0.297 → 0.350), yaw block +X end wall + 26 g (0.641 → 0.667)
+    # Neon review (2026-11-27, findings 3/6): 7075 rear plate + steel sleeves + 2 stop bushes (+50 g), motor stack 3 mm to +X
+    # (rear arm half-width 26 → 28.2, yaw block +X end wall + 3 mm), yaw tie crush sleeves: roll.masses 0.35 → 0.41, yaw 0.67 → 0.69.
+    "inline": dict(roll_offset_y=0.069, yaw_drop=0.0993, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.41, yaw_stage_mass=0.71, bone_upper_dm=0.010),   # + metal yaw Oldham hub (+17 g, Neon #2 F2)   # D24 v2: yaw D50 Oldham, roll.masses yaw 0.552 → 0.579; + C1 6061 flange → 0.65. R2b (2026-11-27): roll link side block + 53 g (roll.masses 0.297 → 0.350), yaw block +X end wall + 26 g (0.641 → 0.667)
 }
 assert ROLL_DRIVE in ROLL_DRIVES, f"PIP_ROLL_DRIVE must be one of {list(ROLL_DRIVES)}"
 _RD = ROLL_DRIVES[ROLL_DRIVE]
@@ -67,13 +69,13 @@ ARM_MOTOR_SETS = {
     # elbow_belt_c (Fable M5, 2026-11-27): the exact centre for the stock belt (rnd/belts.py centre_for: 295-5M → 70.70 mm,
     # 380-5M → 83.89 mm), so the ±1 mm eccentric sits mid-range (at 70.00 the belt used 70 % of it just to fit).
     "gim6010": dict(shoulder_pitch=("GIM6010-8", 3.0), elbow=("GIM6010-8", 2.0), elbow_teeth=40, elbow_belt_c=0.07070,
-                    bone_mass_upper=0.85, pitch_module_mass=0.88),   # merged: + C1/M8 hub tie studs + ring + 608 balancer pulleys (+0.05)    # D24 v2 / Fable M5 (2026-11-27): D50 Oldham (+29 g per stage; arm.masses 1.028 → 1.055, shoulder.masses 0.791 → 0.818) + the elbow AS5048A bracket/board/magnet (+12 g, ESTIMATE): 0.81 → 0.85, 0.80 → 0.83. R2b last mile (2026-11-27): housing 238 → 349 g (arm.STIFF_T 4.3 + SIDE_T 2.8), 0.79 → 0.90, minus the yaw KX74 socket (88 g, now in the roll track's bolted yaw stage) → 0.81; shoulder.masses() 0.729 → 0.791 (balancer crank + fork + spring ring, closed bracket windows), 0.76 → 0.80
+                    bone_mass_upper=0.92, pitch_module_mass=0.95),   # merged: + Neon F3 crush sleeves (+0.05) + metal pitch Oldham hub (+0.017)   # Neon #2 (2026-11-27, cartridge track): + 6061 elbow core tube (51 g, arm.ELBOW_CORE) + metal motor-side Oldham hub (+17 g over the printed one) = 0.85 → 0.92; the pitch hub (+17 g) and the yaw hub (+17 g) are for shoulder.masses() / roll.masses() (they still count it printed)    # merged: + C1/M8 hub tie studs + ring + 608 balancer pulleys (+0.05)    # D24 v2 / Fable M5 (2026-11-27): D50 Oldham (+29 g per stage; arm.masses 1.028 → 1.055, shoulder.masses 0.791 → 0.818) + the elbow AS5048A bracket/board/magnet (+12 g, ESTIMATE): 0.81 → 0.85, 0.80 → 0.83. R2b last mile (2026-11-27): housing 238 → 349 g (arm.STIFF_T 4.3 + SIDE_T 2.8), 0.79 → 0.90, minus the yaw KX74 socket (88 g, now in the roll track's bolted yaw stage) → 0.81; shoulder.masses() 0.729 → 0.791 (balancer crank + fork + spring ring, closed bracket windows), 0.76 → 0.80
     # FROM CAD (2026-11-27, PIP_ARM_MOTORS=d20): elbow housing 98 → 109 wide (the Ø102.6 can), 12 mm taller at the top (belt centre
     # 70 → 84.0 mm, 76T belt: the can has to clear the −Y 61808 boss) and 16 mm deeper (the integral 60T), Ø50 Oldham,
     # Ø84 flange. CAD deltas over the GIM6010 set: arm.masses() 0.995 → 1.138 kg (+0.14: housing + seat caps +40 g, 60T +37 g,
     # Ø50 Oldham + Ø102.6 can +68 g), shoulder.masses() 0.758 → 0.824 kg (+0.07, Ø50 Oldham + can). Motor +8 g via act().
     "d20": dict(shoulder_pitch=("GIM8108-8", 3.0), elbow=("GIM8108-8", 3.0), elbow_teeth=60, elbow_belt_c=0.08389,
-                bone_mass_upper=0.94, pitch_module_mass=0.96),   # merged: + C1/M8 (+0.05)    # D24 v2 / Fable M6: D63 Oldham (+48 g per stage over the D50) + the elbow encoder (+12 g): 0.88 → 0.94, 0.86 → 0.91; incl. the 5.5 mm +Y face (+35 g; no side layer beside the can); yaw KX74 socket dropped (−88 g)
+                bone_mass_upper=1.02, pitch_module_mass=1.03),   # merged: + Neon F3 crush sleeves (+0.05) + metal pitch Oldham hub (+0.017)   # Neon #2: + core tube 51 g + metal D63 motor hub (+26 g) = 0.94 → 1.02    # merged: + C1/M8 (+0.05)    # D24 v2 / Fable M6: D63 Oldham (+48 g per stage over the D50) + the elbow encoder (+12 g): 0.88 → 0.94, 0.86 → 0.91; incl. the 5.5 mm +Y face (+35 g; no side layer beside the can); yaw KX74 socket dropped (−88 g)
 }
 assert ARM_MOTORS in ARM_MOTOR_SETS, f"PIP_ARM_MOTORS must be one of {list(ARM_MOTOR_SETS)}"
 _AM = ARM_MOTOR_SETS[ARM_MOTORS]
@@ -145,6 +147,16 @@ class Base:
     coupling_mass: float = 0.25    # upper/base coupling + cam lever + connector
     battery_mass: float = 1.10     # loop 13: Lumenier NAV-class 6S 10 Ah 21700 pack 975 g + 30 A BMS + printed sleeve (was 1.5 ESTIMATE)
     battery_wh: float = 222.0
+    # A10 v2 (2026-11-27, review finding 4: tip-over; rnd/tip.py). Mass moved / added low in the base:
+    power_board_mass: float = 0.75 # ESTIMATE: the A5 v2 power stage (K1 contactor ≈ 0.32, Al clamp plate 150×100×5 = 0.20 FROM volume, 3 RH-50 + 3 IRFB7530 + driver ≈ 0.10, bulk cap ≈ 0.05, K2 / fuses / 10 AWG ≈ 0.08) was in no mass budget; it now sits on the belly next to the battery (rnd/parts/base.py power_board)
+    caster_r: float = 0.205        # D18b ball contact radius at the 4 diagonals (FROM CAD: the housing clears the skirt and the 45° dock-pad carrier)
+    caster_float: float = 0.022    # D18b free stroke when released: clears a 15 mm threshold + 7 mm of pile (R4)
+    caster_take_up: float = 0.001  # ESTIMATE: travel before a locked caster carries load (rod-lock bite ≈ 0.5 mm + printed guide ≈ 0.5 mm); bench-test
+    caster_mass: float = 0.15      # each, ESTIMATE: D18b lockable caster (2" steel ball transfer ≈ 0.09, printed guide + spring, one-way rod lock + pull solenoid ≈ 0.06)
+    ballast_mass: float = 4.9      # FROM CAD (rnd/parts/base.py ballast(): 2 × 102 × 43 × 71 mm steel, 7.85 g/cm³ = 2 × 2.44 kg): removable, lifts out through two deck hatches; carried as its own pieces (R3)
+    ballast_on: bool = True        # False = the robot without its ballast blocks (tip.py compares both)
+    ballast_xyz: tuple = (-0.100, 0.085, 0.0665)  # FROM CAD (base.BAL_X/Y/Z): centroid of the left block (the right one mirrors y), m from the base centre / floor
+    power_board_xyz: tuple = (0.095, -0.076, 0.0525)  # FROM CAD (base.PB_X/Y/Z): power_board envelope centroid (front-right sector, 315°)
 
 
 @dataclass

@@ -132,8 +132,9 @@ def coupon_motor() -> Part:
 #     43 N·m vs the 11 N·m GIM6010 peak (3.9×); GIM8108-8: × r 56 = 50 N·m vs 22 N·m (2.3×), before bolt shear.
 #     μ 0.3 PETG on PETG is an ESTIMATE (coupon C-series).
 #   - Ear angles per site (EAR_SITES, from the stage +X = the belt direction), each set by the R14 (c) driver probe on
-#     the whole robot: elbow 4 ears (±40°/±140°), pitch 3 (40°, −30°, −70°), yaw 2 (±145°), lift 2 (±140°). With 2 ears
-#     the friction capacity is 2 × 0.3 × 0.75 kN × r 48 = 22 N·m vs 11 N·m (2×); the spigot takes the radial load.
+#     the whole robot. C3 had elbow 4 ears (±40°/±140°), pitch 3 (40°, −30°, −70°), yaw 2 (±145°), lift 2 (±140°); Neon #2
+#     finding 2 (2026-11-27): 4 everywhere with gaps ≤ 120° (yaw ±50/±145, pitch4 ±40/160/−120 with the rear pair
+#     reversed, lift4 ±40/±140), see EAR_SITES and flange_joint() for the tipping / bolt-load calculation.
 #   - **Rear cap v2:** a 4 mm plug in the sleeve bore carries the motor (3 × M3 into the housing pattern, low heads in
 #     counterbores) and has two 3 mm ears that sit flush in notches in the sleeve's rear end (torque dogs) at ±90°. The
 #     notches run into two lugs on the sleeve (r → sleeve + 6.2, 10 long, so at the elbow they stay outside the −Y wall);
@@ -146,37 +147,74 @@ def coupon_motor() -> Part:
 #     the flange and the step) and the cap keeps only its retention role. Read the real faces with coupon_motor().
 #   - Drive: an Oldham coupling (blind axial mate, absorbs the ±1 mm the eccentric bushings move the stage shaft):
 #     aluminium clamp hub with a 4 mm keyway on the Ø12 stage shaft (off the shelf, D50; Fable M5: D40 → D50) → acetal
-#     disc → printed ASA tongue adapter on the motor output (4 × M3, PCD 34). Tongue bearing ≈ 3T/(2·h·R²) ≈ 6.6 MPa at the
-#     11 N·m peak (hand calc; coupon).
-#   - Swap (rnd/assembly_seq.py, R14 (c)/(d)): 4 ear screws from the cartridge side, the cartridge slides out along its
-#     axis off the Oldham disc; belt, pulley, shaft, bearings and the shaft-side Oldham hub stay.
+#     disc → motor-side hub on the motor output (4 × M3, PCD 34). Neon #2 finding 2 (2026-11-27): the motor-side hub was a
+#     printed ASA tongue adapter; it is now METAL (MOTOR_HUB: the motor-side hub of the same bought D50 set, faced to a
+#     4 mm flange behind its tenon and drilled 4 × Ø3.4 + c'bore on PCD 34 at 45° to the tenon, or the same as a 6061-T6
+#     CNC part from drive_adapter). Why not print it (hand calc, ESTIMATE): tenon bearing 3T/(2·h·R²) with h 3.7 = 7.1 MPa
+#     at 11 N·m (D50), 9.0 MPa at 22 N·m (D63), root shear 1.3 / 2.6 MPa across the layers, all well under the ASA
+#     figures at room temperature, BUT the part sits on the motor's output face (≈ 50–60 °C after a hot soak, ESTIMATE),
+#     it slides continuously against the acetal under the ±1 mm eccentric offset (printed-on-POM wear, no data), and its
+#     4 mm printed flange is the clamped member of the 4 × M3: a normal 1 kN M3 preload is 68 MPa on the Ø5.5/Ø3.4 head
+#     annulus, over ASA's ≈ 50 MPa compressive (ESTIMATE), so it can only take ≈ 0.4 kN, and then friction gives 0.3 × 4 ×
+#     0.4 kN × r 17 ≈ 8 N·m < 11 N·m: the peak goes into the screws bearing on printed holes (≈ 22 MPa), in a warm part that
+#     creeps. In 6061 the same flange holds 4 × 1 kN (friction ≈ 20 N·m) and only the acetal disc, the part the catalogue
+#     rates, wears.
+#   - Swap (rnd/assembly_seq.py, R14 (c)/(d)): 4 ear screws (from the cartridge side, or from the pulley side through the
+#     opposite wall for reversed ears), the cartridge slides out along its axis off the Oldham disc; belt, pulley, shaft,
+#     bearings and the shaft-side Oldham hub stay.
 # Stage frame (as small_stage_v3): flange mating plane z = 0 (= the stage wall's cartridge-side face), cartridge +Z.
 # All dimensions not on a datasheet are ESTIMATE.
 OLDHAM = dict(od=50.0, hub_l=15.0, tongue_h=4.0, tongue_w=10.0, disc_t=10.0, slot_d=4.0, gap=0.3)   # D50 clamp-hub Oldham, 12 mm bore + 4 mm keyway (ESTIMATE; od per motor: MOTOR["oldham"])
 ADAPTER_T = 4.0
+# Metal motor-side Oldham hub (Neon #2 finding 2): 6061-T6, Ø = the Oldham OD, ADAPTER_T flange + the set's tenon; 4 ×
+# DIN 7984 M3 × 6 (low head Ø5.5 × 2) in Ø6.0 × 2.2 counterbores (1.8 mm under the head) into the motor output's threads
+# (≥ 4 mm engagement; the output thread depth is not on the drawing, ESTIMATE). Shear per screw at the 11 N·m peak:
+# 11 / (4 × 17 mm) ≈ 160 N (22 N·m D20: 320 N) vs ≈ 2 kN for an M3 8.8 in single shear.
+MOTOR_HUB = dict(material="6061-T6", clr_d=3.4, cb=(6.0, 2.2), screw="DIN 7984 M3 × 6 (8.8), Loctite 243", n=4)
 NOSE_B = dict(r_in=21.5, r_out=24.5, lip=1.5)
 FLANGE_B = dict(od=68.0, t=6.0, bolt_r=29.0, insert_d=5.6, insert_l=5.7, clr_d=4.6, csk_d=8.6)   # D24 v1 (legacy: only roll.flange_screw_access still reads it)
 FLANGE_ANG = (75.0, -75.0, 115.0, -115.0, 155.0, -155.0)                                         # D24 v1 (legacy, as above)
 # D24 v2 ears. Screw ISO 4762 M4 × 12 + ISO 7089 washer (Ø9 × 0.8), nut ISO 4032 M4 (s 7, m 3.2): ISO catalogue sizes.
 EAR = dict(t=6.0, boss_r=5.5, clr_d=4.5, head_d=7.0, head_h=4.0, washer=(9.0, 0.8), nut_af=7.0, nut_m=3.2, pocket=3.4,
-           driver_r=3.0, driver_clear=1.7, screw="ISO 4762 M4 × 12 + ISO 7089 washer, ISO 4032 M4 nut in a hex pocket")
+           driver_r=3.0, driver_clear=1.7, screw="ISO 4762 M4 × 12 + ISO 7089 washer, ISO 4032 M4 nut in a hex pocket",
+           rev_boss_r=6.5, rev_hole_d=10.0, rev_screw="ISO 4762 M4 × 16 + ISO 7089 washer from the pulley side, ISO 4032 M4 nut in a side-fed slot in the ear",
+           slot_skin=1.3)   # side-fed nut slots: 3.4 tall, 1.3 mm skins (the nut bears on the skin toward the clamped joint: compression)
 # Ear angles per site (deg from the stage +X), chosen with rnd/assembly_seq.py's driver probe on the whole robot. A module
 # sets EAR_SITE = "<site>" and passes site=EAR_SITE to bolted_stage / bolted_cartridge / wall_a_cuts; the probe reads it.
+# Neon review #2 finding 2 (2026-11-27): C3 left yaw and lift with 2 ears over a 70–80° arc and pitch with 3 over 110°, so
+# the flange tips about the ear side under the overhung motor and the Oldham side load (flange_joint(), GIM6010-8: yaw /
+# lift open at 8.2 N·m with the full 0.75 kN preload but 2.5 N·m at 30 % retained, vs 3.2 N·m applied → 0.8×, and their
+# 2-ear friction (6 N·m at 30 %) is under the 11 N·m peak). Rule now: ≥ 3 ears with no gap > 120° between neighbours, or
+# ≥ 4 with no gap > 180°. The sites below all have 4 ears with gaps ≤ 120° (≥ 10× tipping at 30 % preload):
+#   - REVERSED ears (EAR_REVERSED) where the cartridge side has no driver path (pitch rear: the lift carriage): head on
+#     wall A's pulley-side face, nut captive in a side-fed slot in the ear (rev_boss_r lobe), driven from the pulley side
+#     through a Ø10 hole in the opposite wall (belt_stage.wall_b_cuts; the screw and washer pass through it);
+#   - SIDE-FED wall-A nut slots (EAR_FEED: slot direction from the stage +X) where a pocket on wall A's pulley face cannot
+#     be used: yaw (the block posts (40, ±38) and side walls y ±42 sit under the plate there, and the pocket faced down,
+#     so the nuts fell into the block on a swap). The slot runs inside the plate to its edge; the nut bears on the 1.3 mm
+#     skin between the slot and the ear, in compression.
+# "pitch4" / "lift4" are the 4-ear patterns for shoulder.py / upper.py: they need geometry in those files (outer-wall
+# holes; wall-A towers + a cover cut, see belt_stage.wall_b_cuts / ear_tower), so the modules switch EAR_SITE when they add
+# it; "pitch" / "lift" stay the C3 patterns until then. Elbow (4 at ±40/±140) already met the rule.
 EAR_SITES = {
     "elbow": (40.0, -40.0, 140.0, -140.0),   # clear of the cassette posts (stage (10, ±35)), the elbow tube, the −Y seat boss, the housing sides
-    "pitch": (40.0, -30.0, -70.0),           # the lift carriage sits 72 mm behind the rear (±140°) pair and the balancer cage over 50–130°; +40° by a ball-end past the AI bay
-    "yaw": (145.0, -145.0),                  # the −X clevis arm's foot covers |a| ≤ 40°, the block posts (stage (40, ±38), (−24, ±38)) and side walls the rest
-    "lift": (140.0, -140.0),                 # the lift can sits 1.2 mm over the deck and its cover wraps it 3 mm off: only the lower diagonals
+    "pitch": (40.0, -30.0, -70.0),           # C3: the lift carriage sits 72 mm behind the rear (±140°) pair and the balancer cage over 50–130°; +40° by a ball-end past the AI bay
+    "pitch4": (40.0, -40.0, 160.0, -120.0),  # ±40 from the cartridge side; 160 / −120 reversed through the outer wall (the carriage blocks the cartridge side behind −80°/+50°)
+    "yaw": (50.0, -50.0, 145.0, -145.0),     # the −X clevis arm's foot covers |y| ≤ 26 for stage x ≥ 34.5 (the ±50 lobes stay at |y| ≥ 31.3); nuts side-fed past the posts
+    "lift": (140.0, -140.0),                 # C3: the lift can sits 1.2 mm over the deck and its cover wraps it 3 mm off: only the lower diagonals
+    "lift4": (40.0, -40.0, 140.0, -140.0),   # + the upper diagonals: wall A needs r 7.5 towers up to z 244 and the cover 1 mm round them (upper.py, belt_stage.ear_tower)
     "roll_belt": (40.0, -40.0),              # belt-roll fallback: the walls end 37 mm over the stage axis on the −Z side (unchecked)
 }
-EAR_SITES["default"] = EAR_SITES["yaw"]      # the fallback for a caller that names no site: 2 ears, clash-free at every stage
+EAR_SITES["default"] = (145.0, -145.0)       # the fallback for a caller that names no site (masses, coupons): the C3 2-ear yaw pattern
+EAR_REVERSED = {"pitch4": (160.0, -120.0)}   # driven from the pulley side (head on wall A's pulley face, nut in the ear)
+EAR_FEED = {"yaw": {50.0: 90.0, -50.0: -90.0, 145.0: 180.0, -145.0: 180.0}}   # side-fed nut slots inside wall A (slot direction, deg)
 # Side exit (R14 (d)): where the cartridge cannot be pulled its own length along its axis (pitch: the lift carriage is
 # 12.6 mm behind the rear; lift: the base rim 13 mm behind), the flange, lip and nose are open on one side (a U-slot as
 # wide as the Oldham disc, up to just under the motor-side adapter). The cartridge then lifts 4.5 mm (adapter tongue out
 # of the disc, lip out of the counterbore) and slides off sideways AWAY from the opening, so the shaft-side hub and the
 # disc (which stays on it) leave through the slot. Opening angle from the stage +X (pitch: +Y = up, the cartridge drops
 # out downward; lift: −X = down, it comes out upward); the ears keep ≥ 40° clear of it.
-EXIT_SITES = {"pitch": 90.0, "lift": 180.0}
+EXIT_SITES = {"pitch": 90.0, "lift": 180.0, "pitch4": 90.0, "lift4": 180.0}
 EXIT_LIFT = 4.5                              # axial travel before the side move: adapter tongue (3.7 in the disc) + 0.8
 STEP_T = 3.0
 CAP_T = FLOOR
@@ -221,15 +259,41 @@ def nose_flange(m: dict | None = None, site: str = "default"):
     """(nose, flange) dicts for motor m: the nose sizes, the flange disc and the v2 ear pattern (bolt_r, ang)."""
     m = m or MOTOR
     return (dict(NOSE_B, r_in=m["nose"][0], r_out=m["nose"][1]),
-            dict(od=m["flange"][0], t=EAR["t"], bolt_r=ear_r(m), ang=EAR_SITES[site], clr_d=EAR["clr_d"]))
+            dict(od=m["flange"][0], t=EAR["t"], bolt_r=ear_r(m), ang=EAR_SITES[site], clr_d=EAR["clr_d"],
+                 rev=EAR_REVERSED.get(site, ()), feed=EAR_FEED.get(site, {})))
+
+
+def ear_boss_r(site: str, a: float) -> float:
+    """Ear lobe radius: rev_boss_r round a reversed ear's side-fed nut slot, boss_r elsewhere."""
+    return EAR["rev_boss_r"] if a in EAR_REVERSED.get(site, ()) else EAR["boss_r"]
 
 
 def ear_fasteners(m: dict | None = None, site: str = "default"):
-    """[(name, head-top point, driver axis)] of the flange ear screws in the stage frame (axis +Z: out on the cartridge side)."""
+    """[(name, head-top point, driver axis)] of the flange ear screws in the stage frame (axis +Z: out on the cartridge side;
+    a reversed ear's head sits on wall A's pulley face, z −6, and is driven along −Z through the opposite wall)."""
     _, f = nose_flange(m, site)
     z = f["t"] + EAR["washer"][1] + EAR["head_h"]
-    return [(f"ear screw {a:+.0f}°", (f["bolt_r"] * math.cos(math.radians(a)), f["bolt_r"] * math.sin(math.radians(a)), z), (0.0, 0.0, 1.0))
-            for a in f["ang"]]
+    zr = -6.0 - EAR["washer"][1] - EAR["head_h"]
+    out = []
+    for a in f["ang"]:
+        x, y = f["bolt_r"] * math.cos(math.radians(a)), f["bolt_r"] * math.sin(math.radians(a))
+        if a in f["rev"]:
+            out.append((f"ear screw {a:+.0f}° (from the pulley side)", (x, y, zr), (0.0, 0.0, -1.0)))
+        else:
+            out.append((f"ear screw {a:+.0f}°", (x, y, z), (0.0, 0.0, 1.0)))
+    return out
+
+
+def ear_gaps(site: str):
+    """Angular gaps (deg) between neighbouring ears, largest first."""
+    a = sorted(x % 360.0 for x in EAR_SITES[site])
+    return sorted(((a[(k + 1) % len(a)] - a[k]) % 360.0 or 360.0 for k in range(len(a))), reverse=True)
+
+
+def ear_rule_ok(site: str) -> bool:
+    """Neon #2 finding 2: ≥ 3 ears with every gap ≤ 120° (spread ≥ 240°), or ≥ 4 with every gap ≤ 180°."""
+    n, g = len(EAR_SITES[site]), ear_gaps(site)[0]
+    return (n >= 3 and g <= 120.0 + 1e-6) or (n >= 4 and g <= 180.0 + 1e-6)
 
 
 def _lobe(r: float, a_deg: float, rb: float, t: float, z0: float = 0.0) -> Part:
@@ -256,13 +320,17 @@ def can_bolted(m: dict | None = None, site: str = "default") -> Part:
     body += Pos(0, 0, f["t"]) * Cylinder(n["r_out"], L["step"][0] - f["t"] + 0.5, align=MIN)   # nose
     fl = Cylinder(f["od"] / 2, f["t"], align=MIN)                                         # flange disc + ears
     for a in f["ang"]:
-        fl += _lobe(f["bolt_r"], a, EAR["boss_r"], f["t"])
+        fl += _lobe(f["bolt_r"], a, ear_boss_r(site, a), f["t"])
     body += fl
     body += Pos(0, 0, -n["lip"]) * Cylinder(n["r_out"], n["lip"], align=MIN)             # centring lip (spigot)
     body -= Pos(0, 0, -5) * Cylinder(n["r_in"], L["motor_face"] + 5, align=MIN)          # coupling bore through flange, nose, step
     for a in f["ang"]:
         t = math.radians(a)
         body -= Pos(f["bolt_r"] * math.cos(t), f["bolt_r"] * math.sin(t), -1) * Cylinder(EAR["clr_d"] / 2, f["t"] + 2, align=MIN)
+        if a in f["rev"]:                                 # reversed ear: side-fed slot for the captive M4 nut, open at the lobe tip
+            sk, h = EAR["slot_skin"], f["t"] - 2 * EAR["slot_skin"]
+            r0, r1 = f["bolt_r"] - EAR["nut_af"] / 2 - 0.05, f["bolt_r"] + ear_boss_r(site, a) + 1.0
+            body -= Rot(0, 0, a) * Pos((r0 + r1) / 2, 0, sk) * Box(r1 - r0, EAR["nut_af"] + 0.1, h, align=(Align.CENTER, Align.CENTER, Align.MIN))
     if site in EXIT_SITES:                                                               # side exit: U-slot through lip, flange, nose
         w = m["oldham"] + 1.2
         body -= Rot(0, 0, EXIT_SITES[site]) * Pos(0, 0, -n["lip"] - 1) * Box(r_out + 20, w, L["adapter"][0] + n["lip"] + 1 + 0.5,
@@ -310,7 +378,7 @@ def can_envelope(m: dict | None = None, site: str = "default", clr: float = 0.6,
     h = z1 - z0
     e = Pos(0, 0, z0) * Cylinder(max(can_r_out(m), f["od"] / 2) + clr, h, align=MIN)
     for a in f["ang"]:
-        e += _lobe(f["bolt_r"], a, EAR["boss_r"] + clr, h, z0)
+        e += _lobe(f["bolt_r"], a, ear_boss_r(site, a) + clr, h, z0)
     return e
 
 
@@ -349,12 +417,14 @@ def oldham_parts(m: dict | None = None):
     ad = Pos(0, 0, a0) * Cylinder(r, a1 - a0, align=MIN)
     ad += Pos(0, 0, a0 - o["tongue_h"] + o["gap"]) * Rot(0, 0, 90) * (Box(2 * r - 2, o["tongue_w"], o["tongue_h"] - o["gap"], align=MIN)
                                                                       & Cylinder(r, o["tongue_h"], align=MIN))
+    h = MOTOR_HUB
     for k in range(0, m["out_holes"], 2):                           # 4 × M3 into the motor output, counterbored from the disc side
-        a = 2 * math.pi * k / m["out_holes"] + math.pi / 8
+        a = 2 * math.pi * k / m["out_holes"] + math.pi / 4          # 45° off the tenon (along 90°): the Ø6 counterbores stay 4 mm clear of it
         x, y = m["out_pcd"] / 2 * math.cos(a), m["out_pcd"] / 2 * math.sin(a)
-        ad -= Pos(x, y, a0) * Cylinder(1.7, 10, align=MIN)
-        ad -= Pos(x, y, a0) * Cylinder(3.0, 1.6, align=MIN)
-    return [("oldham_hub", hub, "steel"), ("oldham_disc", disc, "dark"), ("drive_adapter", ad, "dark")]
+        ad -= Pos(x, y, a0) * Cylinder(h["clr_d"] / 2, 10, align=MIN)
+        ad -= Pos(x, y, a0) * Cylinder(h["cb"][0] / 2, h["cb"][1], align=MIN)
+    # Neon #2 finding 2: the motor-side half is now a metal part (6061-T6, MOTOR_HUB), no longer printed ASA
+    return [("oldham_hub", hub, "steel"), ("oldham_disc", disc, "dark"), ("drive_adapter", ad, "steel")]
 
 
 def motor_adapter_bolted(m: dict | None = None) -> Part:
@@ -368,17 +438,100 @@ def parts_list(m: dict | None = None, site: str = "default"):
     """[(item, spec, qty)] for one bolted cartridge + its small stage, motor m at site."""
     m = m or MOTOR
     d20 = m is MOTOR_8108
-    n_ear = len(EAR_SITES[site])
+    n_rev = len(EAR_REVERSED.get(site, ()))
+    n_ear = len(EAR_SITES[site]) - n_rev
+    D = f"D{m['oldham']:.0f}"
     out = [("actuator", "SteadyWin GIM8108-8 (8:1) with driver; 24 V operation to confirm (D20 gate)" if d20 else "SteadyWin GIM6010-8 with SDC104 driver", 1),
-           ("Oldham coupling", f"D{m['oldham']:.0f} clamp-hub Oldham, shaft hub bore 12 H7 with 4 mm keyway, acetal disc "
-                               "(the motor-side half is the printed ASA tongue adapter)", 1),
+           ("Oldham coupling", f"{D} 3-piece Oldham set (2 aluminium hubs + acetal disc), rated ≥ {'25' if d20 else '14'} N·m; "
+                               "shaft-side hub: clamp type, bore 12 H7 with a 4 mm DIN 6885 keyway", 1),
+           ("Oldham motor-side hub (metal)", f"the set's 2nd hub reworked, or a CNC part from the drive_adapter STEP: {MOTOR_HUB['material']}, "
+                                             f"{D} × {ADAPTER_T:.0f} mm flange behind the tenon, 4 × Ø3.4 + Ø6.0 × 2.2 c'bore on PCD {m['out_pcd']:.0f} "
+                                             "(ESTIMATE until coupon_motor) at 45° to the tenon", 1),
+           ("Oldham hub screws", f"{MOTOR_HUB['screw']}", MOTOR_HUB["n"]),
            ("stage shaft", "Ø12 h6 C45 / 1045 ground steel, 4 × 2.5 DIN 6885 keyway from the pulley seat to the end", 1),
            ("keys", f"DIN 6885 A 4 × 4 × {20 if d20 else 16} (pulley) + 4 × 4 × {16 if d20 else 11} (Oldham hub)", 2),
            ("small pulley", f"HTD 5M 20T for 15 mm belt, {'steel C45' if d20 else 'aluminium'}, bore 12 H7 + 4 mm keyway, set screw on the key", 1),
            ("bearings", "6801-2RS (12 × 21 × 5)", 2),
            ("flange ear screws", f"{EAR['screw']}", n_ear),
            ("rear cap", f"{CAP['screw']} × 2; {CAP['motor_screw']} × {m['rear_holes'] // 2} into the motor", 1)]
+    if n_rev:
+        out.insert(-1, ("flange ear screws (reversed)", EAR["rev_screw"], n_rev))
     if d20:
         out += [("belt", "HTD 5M 15 mm PU steel-cord (Fable M6): 355-5M at the pitch, 380-5M at the elbow", 1),
                 ("firmware", "flash torque limit 18 N·m motor-side (sw/bringup.py limit step): D63 disc 1.3×, 6801 s0 1.6× at that limit", 1)]
     return out
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Flange-joint tipping and bolt loads (Neon review #2 finding 2, 2026-11-27). Hand calc, all inputs ESTIMATE unless noted.
+# Loads on the ear joint (the belt pull never reaches it: it goes from the pulley into the 6801s in the walls):
+#   - torque T = actuator peak (GIM6010-8 11 N·m, GIM8108-8 22 N·m stall; rnd/specs/actuators.yaml), by friction;
+#   - overhung cartridge: motor (388 / 396 g, actuators.yaml) + printed sleeve and cap (≈ 70 / 90 g from the CAD volume,
+#     ASA at 80 %) + metal motor-side hub (≈ 26 / 40 g) at the motor's mid-length (z 45 / 50 mm from the flange plane),
+#     × FLANGE_LOAD["g"] (3 g: carry bumps and set-downs, ESTIMATE), in any direction (the arm turns every cartridge);
+#   - Oldham side load: with the ±1 mm eccentric offset the disc slides in both slots; the friction on the motor-side
+#     tenon is ≈ μ·T / r_c (μ 0.2 acetal on aluminium, r_c = D/3 the contact-force radius; ESTIMATE) at the tenon's
+#     mid-height (z 19.25 mm): 132 N × 19.25 mm = 2.5 N·m on the GIM6010 at its peak.
+# Tipping: the flange (disc + ear lobes) pivots about its edge line in the worst direction θ; the ears resist with their
+# preload × distance from that line, M_open(θ) = F_p · Σ d_i(θ) (the spigot lip is ignored). Bolt load once tipped
+# (rigid flange, all the moment on the ears): F_max = F_p + M · d_max / Σ d². Friction torque μ 0.3 · n · F_p · r_ear.
+# "30 %" = the preload left after printed-joint creep (Neon #2 assumption 1 argues it can go lower; ESTIMATE).
+FLANGE_LOAD = dict(preload=750.0, retained=0.3, g=3.0, mu_face=0.3, mu_oldham=0.2, m_print=(0.070, 0.090), m_hub=(0.026, 0.040),
+                   screw_proof=580.0 * 8.78, nut_area=26.5)   # M4 8.8 proof 580 MPa × As 8.78 mm² (ISO 898-1) = 5.1 kN; ISO 4032 M4 bearing ring mm²
+
+
+def flange_joint(m: dict | None = None, angles=None, site: str = "default", retained: float = 1.0):
+    """Tipping / bolt-load check of one ear pattern for motor m: angles (deg) given, or the site's (with its lobe sizes)."""
+    m = m or MOTOR
+    d20 = m is MOTOR_8108
+    L = FLANGE_LOAD
+    ang = tuple(EAR_SITES[site] if angles is None else angles)
+    r, od = ear_r(m), m["flange"][0]
+    T = 22.0 if d20 else 11.0
+    mass = (0.396 if d20 else 0.388) + L["m_print"][d20] + L["m_hub"][d20]
+    lv = bolted_levels(m)
+    z_cg = lv["motor_face"] + m["h"] / 2
+    z_old = lv["adapter"][0] - (OLDHAM["tongue_h"] - OLDHAM["gap"]) / 2
+    F_r = L["mu_oldham"] * T * 1000 / (m["oldham"] / 3)
+    M_app = (mass * 9.81 * L["g"] * z_cg + F_r * z_old) / 1000                       # N·m
+    Fp = L["preload"] * retained
+    pts = [(r * math.cos(math.radians(a)), r * math.sin(math.radians(a)), ear_boss_r(site, a) if angles is None else EAR["boss_r"]) for a in ang]
+    worst = None
+    for k in range(360):
+        c, s = math.cos(math.radians(k)), math.sin(math.radians(k))
+        h = max([od / 2] + [x * c + y * s + rb for x, y, rb in pts])
+        d = [h - (x * c + y * s) for x, y, _ in pts]
+        if worst is None or sum(d) < sum(worst[1]):
+            worst = (k, d)
+    k, d = worst
+    Mo = Fp * sum(d) / 1000
+    F_max = Fp + M_app * 1000 * max(d) / sum(x * x for x in d)
+    a = sorted(x % 360 for x in ang)
+    gap = max(((a[(i + 1) % len(a)] - a[i]) % 360 or 360) for i in range(len(a)))
+    T_fric = L["mu_face"] * len(ang) * Fp * r / 1000
+    return dict(n=len(ang), angles=ang, gap=gap, rule=(len(ang) >= 3 and gap <= 120.001) or (len(ang) >= 4 and gap <= 180.001),
+                T=T, mass=mass, z_cg=z_cg, F_r=F_r, M_app=M_app, preload=Fp, M_open=Mo, theta=k, sf_tip=Mo / M_app,
+                F_max=F_max, sf_bolt=L["screw_proof"] / F_max, p_nut=F_max / L["nut_area"], T_fric=T_fric, sf_T=T_fric / T)
+
+
+C3_PATTERNS = {"pitch": (40.0, -30.0, -70.0), "yaw": (145.0, -145.0), "lift": (140.0, -140.0), "elbow": (40.0, -40.0, 140.0, -140.0)}
+NEW_SITES = {"pitch": "pitch4", "yaw": "yaw", "lift": "lift4", "elbow": "elbow"}
+
+
+def flange_rows():
+    """(joint, motor, [before full, before 30 %], [after full, after 30 %]) for the report (rnd/belts.py)."""
+    rows = []
+    for j, mot in (("pitch", MOTOR), ("elbow", MOTOR), ("yaw", MOTOR), ("lift", MOTOR), ("pitch", MOTOR_8108), ("elbow", MOTOR_8108)):
+        b = [flange_joint(mot, C3_PATTERNS[j], retained=x) for x in (1.0, FLANGE_LOAD["retained"])]
+        a = [flange_joint(mot, None, NEW_SITES[j], retained=x) for x in (1.0, FLANGE_LOAD["retained"])]
+        rows.append((j, "GIM8108-8 (D20)" if mot is MOTOR_8108 else "GIM6010-8", b, a))
+    return rows
+
+
+if __name__ == "__main__":
+    def _f(r):
+        return (f"{r[0]['n']} ears, gap {r[0]['gap']:.0f}° ({'ok' if r[0]['rule'] else 'FAILS'}): M_app {r[0]['M_app']:.2f} N·m, "
+                f"M_open {r[0]['M_open']:.1f} / {r[1]['M_open']:.1f} (30 %) → {r[0]['sf_tip']:.1f}× / {r[1]['sf_tip']:.1f}×, "
+                f"F_max {r[0]['F_max']:.0f} N, T_fric {r[0]['T_fric']:.0f} / {r[1]['T_fric']:.0f} N·m vs {r[0]['T']:.0f}")
+    for j, mot, b, a in flange_rows():
+        print(f"{j:6s} {mot:16s} before: {_f(b)}\n{'':23s} after:  {_f(a)}")

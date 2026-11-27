@@ -147,11 +147,6 @@ def _confidence_rows():
         a = json.loads(f.read_text())
         rows.append(("R2b hand deflection, full compliance chain (P2 FEA + bearing play + tubes), 1 kg straight out: raw / after gravity model",
                      f"{a['total_mm']:.1f} / {a['after_mm']:.1f} mm", "≤ 6 / ≤ 2 mm", a["total_mm"] <= 6 and a["after_mm"] <= 2))
-    f = DOCS / "tip.json"
-    if f.exists():
-        a = json.loads(f.read_text())
-        rows.append(("A10 tip-over, review cases (2.5 kg two-handed, 45°, braking, 30 N nudge; arms straight out) with D18 casters: worst ZMP margin",
-                     f"{a['worst'] * 1000:.0f} mm ({a['n'] - a['n_fail']}/{a['n']} cases ≥ 30 mm)", "≥ 30 mm, or a planner rule", None))
     f = DOCS / "thermal.json"
     if f.exists():
         a = json.loads(f.read_text())
@@ -171,6 +166,94 @@ def _confidence_rows():
         a = json.loads(f.read_text())
         rows.append(("Load path: cartridge torque pins landing in structure", f"{a['torque_ok']}/{a['torque_n']}", "all", a["torque_ok"] == a["torque_n"]))
         rows.append(("Clashes inside modules (> 50 mm³, fused interfaces excluded)", f"{a['module_clashes']}", "0", a["module_clashes"] == 0))
+    return rows
+
+
+GATE = "HARD GATE"
+
+
+def _gate_rows():
+    """Hard gates (review 2026-11-27 findings 4 and 5): a missing input counts as a fail, not as 'not run'."""
+    import json
+    rows = []
+    f = DOCS / "pinch.json"
+    lbl = f"R17 pinch ({GATE}; rnd/pinch.py): joint-nip fails / exposed drive parts (12 mm probe; every moving gap ≤ 8 mm or ≥ 25 mm over its range)"
+    if f.exists():
+        a = json.loads(f.read_text())
+        rows.append((lbl, f"{a['gap_fails']} / {a['exposed_fails']}{' (quick run)' if a.get('quick') else ''}", "0 / 0", a["gap_fails"] == 0 and a["exposed_fails"] == 0 and not a.get("quick")))
+    else:
+        rows.append((lbl, "not run (`python -m rnd.pinch`)", "0 / 0", False))
+    f = DOCS / "tip.json"
+    lbl = (f"A10 tip-over ({GATE}; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, "
+           "with the rules sw/safety.py enforces")
+    if f.exists() and "n_ok_sw_today" in json.loads(f.read_text()):
+        a = json.loads(f.read_text())
+        pend = ", ".join(a.get("sw_changes", []))
+        rows.append((lbl, f"{a['n_ok_sw_today']}/16 (worst {a['worst_sw_today'] * 1000:.0f} mm); {a['n_ok']}/16 (worst {a['worst'] * 1000:.0f} mm) once {pend} are in the supervisor",
+                     "16/16 ≥ 30 mm", a["n_ok_sw_today"] == 16))
+    else:
+        rows.append((lbl, "not run (`python -m rnd.tip`)", "16/16 ≥ 30 mm", False))
+    return rows
+
+
+def _heavy_carry_rows(d):
+    """R2c / R2d (owner, 2026-11-27) for the **default** config (d.arm.arm_motors), and what D20 (on hold) would give.
+    Finding 7: these used to show only the D20 result, which is not the robot the params build."""
+    import dataclasses
+    import json
+    import math
+    from .arm_sizing import capacity
+    from .params import with_arm_motors
+    from .payload_study import LB20, torques
+    rows = []
+    d20 = d if d.arm.arm_motors == "d20" else with_arm_motors(d, "d20")
+    tag = d.arm.arm_motors
+
+    def hug(dd, la):
+        t = torques(dd, 0.0, math.pi / 2, LB20 / 2, la)
+        return min(capacity(dd, j)[2] / t[j] for j in ("shoulder_pitch", "elbow"))
+    h0, h1 = hug(d, 0.25), hug(d20, 0.25)
+    ok0 = h0 >= 1.5
+    rows.append(("R2c 20 lb two-handed hug, held close (4.54 kg per forearm at ≤ 0.25 m from the elbow): min rated margin, shoulder pitch / elbow (rnd/payload_study.py)",
+                 f"{tag}: {h0:.2f}× (0.20 m: {hug(d, 0.20):.2f}×){'' if ok0 else ' ❌'}; D20 (on hold): {h1:.2f}× → " + ("pass" if ok0 else ("pass with D20 only" if h1 >= 1.5 else "fails with D20 too")),
+                 "≥ 1.5× rated (a hold), default config", ok0))
+    from . import basket
+    try:
+        b_rows, _ = basket.run(dataclasses.replace(d, arm=dataclasses.replace(d.arm, payload=basket.PER_HAND)))
+        sel = [r for r in b_rows if r["x"] <= 0.45 and "washer" not in r["pose"] and "0.80" not in r["pose"]]
+        ok_d = all(r["t"] is not None and r["worst"] >= 1.0 and r["tip_wheel"] >= 0.03 for r in sel)
+        worst = min(r["worst"] for r in sel)
+        f = DOCS / "basket.json"
+        ok20 = json.loads(f.read_text())["ok"] if f.exists() else None
+        rows.append(("R2d 20 lb laundry basket, floor → carry → bed (rnd/basket.py: peak ≥ 1.5× pick / ≥ 2× and ≤ 15 K over a 2-min carry, tip ≥ 30 mm)",
+                     f"{tag}: {'pass' if ok_d else 'FAIL'} (worst {worst:.2f} of the rule); D20 (on hold, basket.json): " +
+                     ("pass" if ok20 else "fail" if ok20 is not None else "not run") + ("" if ok_d else (" → pass with D20 only" if ok20 else "")),
+                     "pass, default config", ok_d))
+    except Exception as e:                                                       # noqa: BLE001 (a scorecard row, not a crash)
+        rows.append(("R2d 20 lb laundry basket (rnd/basket.py)", f"error: {e}", "pass, default config", False))
+    return rows
+
+
+def _stow_rows():
+    from . import stow
+    try:
+        return stow.scorecard_rows()
+    except (OSError, ValueError, KeyError):
+        return []
+
+
+def _tip_extra_rows():
+    import json
+    f = DOCS / "tip.json"
+    if not f.exists():
+        return []
+    a = json.loads(f.read_text())
+    t = a.get("threshold", {})
+    rows = []
+    if "after" in t and "after_slow" in t:
+        rows.append(("R4 15 mm threshold with the A10 v2 mass (rnd/threshold.py roller model re-run by rnd/tip.py, 45°): peak margin at 0.15 m/s (D2b) / 0.12 m/s (SW-T4)",
+                     f"{t['after']['margin']:.2f}× / {t['after_slow']['margin']:.2f}× ({t['after']['mass']:.1f} kg)", "≥ 1.5× at the planner's crossing speed",
+                     t["after"]["margin"] >= 1.5))
     return rows
 
 
@@ -194,16 +277,20 @@ def scorecard(d, res):
     other_bom += 25    # loop 9: CF tubes Ø40 + Ø30 for two arms (ESTIMATE)
     other_bom += 100   # KX v1 hardware (ESTIMATE): ~16 sockets × (2 thin bearings + 6 pins + 3 balls + spring + PTFE washer)
     rows = [
+        *_gate_rows(),
         ("R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°)", f"{cov:.0%}", "≥ 95 %", cov >= 0.95),
         ("R2 two-handed tasks feasible", f"{sum(bi.values())}/{len(bi)}", "all", all(bi.values())),
         ("R12 min tip-over margin, 1 kg at reach", f"{tip*1000:.0f} mm", "≥ 50 mm", tip >= 0.05),
         ("R2 min joint margin at spec load (rated, planar check)", f"{jm:.2f}×", "≥ 1.5×", jm >= 1.5),
+        *_heavy_carry_rows(d),
         ("R3 upper core (arms detached)" if "arm (each, detachable)" in tot else "R3 upper module mass", f"{tot['upper']:.1f} kg", "≤ 10 kg", tot["upper"] <= 10),
         *((("R3 each arm (detaches at the shoulder KX)", f"{tot['arm (each, detachable)']:.1f} kg", "≤ 10 kg", tot['arm (each, detachable)'] <= 10),)
           if "arm (each, detachable)" in tot else ()),
         ("R3 assembled upper (core + arms, for reference)", f"{budget.upper_total(mb):.1f} kg", "info", None),
         ("R3 base module mass", f"{tot['base']:.1f} kg", "≤ 8 kg (piece limit 10)", tot["base"] <= 8),
         ("R3 battery mass", f"{tot['battery']:.1f} kg", "≤ 3 kg", tot["battery"] <= 3),
+        *((("R3 ballast blocks (A10 v2, removable, each its own carry piece)", f"2 × {mb['ballast (2 removable blocks)'][0][1]:.2f} kg", "≤ 10 kg each",
+            max(m for _, m in mb['ballast (2 removable blocks)']) <= 10),) if "ballast (2 removable blocks)" in mb else ()),
         ("R7 runtime (estimated duty cycle)", f"{hours:.1f} h", "≥ 2 h", hours >= 2),
         ("R8 cost, parametric estimate (superseded by the BOM row)", f"${act_cost + other_bom:,.0f} (actuators ${act_cost:,.0f} ×{n_act})", "info", None),
         ("R9 KX interface slip torque / actuator peak (min)", f"{kx_slip:.2f}×", "≥ 1.1×", kx_slip >= 1.1),
@@ -222,10 +309,16 @@ def scorecard(d, res):
         *_assembly_rows(),
         *_sim_rows(),
         *_threshold_rows(),
+        *_tip_extra_rows(),
+        *_stow_rows(),
         *_confidence_rows(),
         ("R11 looks", "engineering render v0 (robot_v0.png); industrial-design pass pending", "owner approval", None),
     ]
+    gates = [r for r in rows if GATE in r[0]]
     L = ["# Scorecard (auto-generated by `python -m rnd.run_all`; numbers from `rnd/params.py`)", "",
+         f"**Default config: arm motors `{d.arm.arm_motors}`, roll drive `{d.arm.roll_drive}`.** "
+         f"**Hard gates: {sum(1 for r in gates if r[3])}/{len(gates)} pass** (" + "; ".join(f"{r[0].split(' (')[0]} {'✅' if r[3] else '❌'}" for r in gates) + "). "
+         "A hard gate failing means the design is not ready to build, whatever the other rows say.", "",
          "| Metric | Now | Target | |", "|---|---|---|---|"]
     L += [f"| {a} | {b} | {c} | {'✅' if ok else ('—' if ok is None else '❌')} |" for a, b, c, ok in rows]
     return "\n".join(L)

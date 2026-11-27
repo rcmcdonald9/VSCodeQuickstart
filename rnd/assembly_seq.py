@@ -383,7 +383,15 @@ def main():
         L.append(f"| {j} | {len(rs)} | {sum(r[3] for r in rs)}/{len(rs)}{f' ({ball} by ball-end)' if ball else ''} {'✅' if not bad else '❌'} | {'; '.join(bad) or '—'} |")
     L += ["", "<details><summary>Every fastener</summary>", "", "| Joint | Fastener | Kind | Result | Blocked by (straight) |", "|---|---|---|---|---|"]
     L += [f"| {j} | {lab} | {k} | {'✅' if ok else '❌'} {how} | {', '.join(b) or '—'} |" for j, lab, k, ok, how, b in tc]
-    L += ["", "</details>", "", "## R14 (d) cartridge swap (belt on, shaft in place)", "",
+    from .parts import cartridge_m as cm
+    er = [(j, site, cm.EAR_SITES[site], cm.ear_gaps(site)[0], cm.ear_rule_ok(site)) for j, _, _, site in ear_sites()]
+    L += ["", "</details>", "", "## Flange-ear distribution (Neon #2 finding 2)", "",
+          "A cartridge flange needs ≥ 3 ears with no gap > 120° between neighbours, or ≥ 4 with no gap > 180° "
+          "(tipping and bolt loads: the cartridge flange table in belts.md, cartridge_m.flange_joint).", "",
+          "| Joint | Site | Ears (deg from the stage +X) | Largest gap | Rule |", "|---|---|---|---|---|"]
+    L += [f"| {j} | {s} | {', '.join(f'{a:+.0f}' + (' (rev)' if a in cm.EAR_REVERSED.get(s, ()) else '') for a in ang)} | {g:.0f}° | {'✅' if ok else '❌'} |"
+          for j, s, ang, g, ok in er]
+    L += ["", "## R14 (d) cartridge swap (belt on, shaft in place)", "",
           "Flange screws out (rows above), then the cartridge (sleeve + rear cap + motor + motor-side Oldham adapter; the disc stays "
           "on the shaft-side hub) moves along its axis in 2.5 mm steps: straight out its own length, or 4.5 mm (adapter tongue and spigot "
           "lip clear) and then 150 mm sideways; pitch and lift have a side-exit slot in the flange (cartridge_m.EXIT_SITES).", "",
@@ -393,7 +401,8 @@ def main():
     per = {j: dict(ok=sum(r[3] for r in tc if r[0] == j), n=sum(1 for r in tc if r[0] == j)) for j in joints}
     (DOCS / "assembly_seq.json").write_text(json.dumps({"ok": n_ok, "n": len(rows),
                                                         "tool_access": per, "tool_ok": all(r[3] for r in tc),
-                                                        "swap": {j: ok for j, ok, _, _ in sw}, "swap_ok": all(ok for _, ok, _, _ in sw)}))
+                                                        "swap": {j: ok for j, ok, _, _ in sw}, "swap_ok": all(ok for _, ok, _, _ in sw),
+                                                        "ear_rule": {j: ok for j, _, _, _, ok in er}, "ear_rule_ok": all(r[4] for r in er)}))
     print("\n".join(L[4:]))
 
 if __name__ == "__main__":

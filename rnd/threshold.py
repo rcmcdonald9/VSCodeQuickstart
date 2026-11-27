@@ -102,7 +102,7 @@ CASES = [("hard floor, no step (cruise)", 0.0, 45, False), ("carpet, no step (cr
          ("hard floor, 20 mm, 45°", 0.020, 45, False), ("carpet, 20 mm, 45°", 0.020, 45, True)]
 
 
-CROSS_SPEED = 0.15   # planner rule (D2b, loop 12): slow to 0.15 m/s for a threshold
+CROSS_SPEED = 0.12   # planner rule: SW-T4 (sw/safety.py threshold_speed(), 2026-11-27; was 0.15 under D2b) — the 31 kg ballasted robot needs it for the 1.5× threshold margin
 
 
 def main():

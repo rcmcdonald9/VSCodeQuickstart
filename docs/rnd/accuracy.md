@@ -21,7 +21,7 @@ calibration) and the unmeasured bending.
 
 **Inline roll (GIM8108-36, Fable review M1):** until 2026-11-27 every joint without a belt was given 0.05° as if it were a DM-J4310 with an output-side encoder, so the inline roll showed 0.5 mm with or without joint encoders. It now carries its 36:1 planetary backlash, 15 arcmin (reseller spec tables; ESTIMATE): without joint encoders the hand error is **4.3 mm** (3.8–4.9 mm for 10–20 arcmin), against 3.4 mm before. With a joint-side encoder on the roll the static error is the encoder's again (0.9 mm), but the loop then has the backlash inside it: expect a limit cycle or a dead band around the arm-down pose where the roll torque crosses zero, and the encoders still have no mount or firmware (Fable M3). Bench step: measure the roll backlash with a dial gauge at 0.3 m before relying on either number.
 
-Plus unmeasured bending: bones 1.8 mm, mast 1.5 mm (worst static, 1 kg).
+Plus unmeasured bending: bones 1.9 mm, mast 1.6 mm (worst static, 1 kg).
 The wrist camera closes the last loop on the object, so those terms matter for blind or fast moves, not for visually-servoed grasps.
 
 **Decision (D9):** fit AS5048A joint-side encoders on the 8 arm belt joints and the lift. That's about $140 including 3 small CAN encoder nodes. Precedent: link-side encoders on Franka and other research arms.

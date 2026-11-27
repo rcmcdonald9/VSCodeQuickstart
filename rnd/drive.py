@@ -8,6 +8,7 @@ from .params import BASELINE, Design, act, G
 
 CRR_CARPET = (0.05, 0.10)   # rolling-resistance coefficient, hard-tread omni on low/medium pile (ESTIMATE, measure!)
 MU_CARPET = 0.6             # TPU roller traction on carpet (ESTIMATE)
+BASE_GROUPS = ("base", "battery", "ballast (2 removable blocks)")   # A10 v2: the removable ballast rides on the wheels too
 
 
 def step_force(w: float, r: float, h: float) -> float:
@@ -18,7 +19,7 @@ def step_force(w: float, r: float, h: float) -> float:
 def robot_mass(d: Design = BASELINE) -> float:
     from .budget import upper_total
     mb = mass_budget(d)
-    return upper_total(mb) + sum(m for k in ("base", "battery") for _, m in mb[k]) + d.arm.payload * 2
+    return upper_total(mb) + sum(m for k in BASE_GROUPS for _, m in mb.get(k, [])) + d.arm.payload * 2
 
 
 def threshold_torque_45(d: Design = BASELINE, h: float = 0.015) -> float:
@@ -32,7 +33,7 @@ def report(d: Design = BASELINE) -> str:
     b = d.base
     mb = mass_budget(d)
     from .budget import upper_total
-    mass = upper_total(mb) + sum(m for k in ('base', 'battery') for _, m in mb[k]) + d.arm.payload * 2
+    mass = upper_total(mb) + sum(m for k in BASE_GROUPS for _, m in mb.get(k, [])) + d.arm.payload * 2
     W = mass * G
     n = 4 if b.layout == "xdrive" else 3
     r = b.wheel_d / 2

@@ -2,11 +2,12 @@
 
 | Module | Mass (kg) | Target (R3) | Status |
 |---|---|---|---|
-| base | 6.31 | ≤ 8 | ✅ |
+| base | 7.66 | ≤ 8 | ✅ |
 | battery | 1.10 | ≤ 3 | ✅ |
-| upper | 8.50 | ≤ 10 | ✅ |
-| arm (each, detachable) | 4.68 | ≤ 10 | ✅ |
-| **total robot** | **25.26** | | |
+| ballast (2 removable blocks) | 4.90 | ≤ 10 | ✅ |
+| upper | 8.64 | ≤ 10 | ✅ |
+| arm (each, detachable) | 4.85 | ≤ 10 | ✅ |
+| **total robot** | **31.99** | | |
 
 **base detail**
 
@@ -15,16 +16,25 @@
 | chassis | 2.000 |
 | omni wheels | 1.800 |
 | wheel cartridges | 1.552 |
+| power board (A5 v2 contactor, pre-charge, clamp plate; A10 v2: in the base) | 0.750 |
+| anti-tip casters D18b (4 × lockable 2" ball) | 0.600 |
 | electronics | 0.350 |
 | shell | 0.330 |
 | lidar | 0.150 |
 | coupling (base half) | 0.125 |
 
+**ballast (2 removable blocks) detail**
+
+| Item | kg |
+|---|---|
+| steel ballast block, rear left | 2.450 |
+| steel ballast block, rear right | 2.450 |
+
 **upper detail**
 
 | Item | kg |
 |---|---|
-| 2× shoulder pitch module (CAD: stage, balancer, V-band) | 1.760 |
+| 2× shoulder pitch module (CAD: stage, balancer, V-band) | 1.900 |
 | lift motor | 1.480 |
 | spine extrusion | 1.325 |
 | head | 0.940 |
@@ -40,12 +50,12 @@
 
 | Item | kg |
 |---|---|
-| arm bones+shells | 1.140 |
+| arm bones+shells | 1.210 |
 | arm shoulder_roll | 1.000 |
-| upper-arm yaw belt stage | 0.670 |
+| upper-arm yaw belt stage | 0.710 |
+| roll stage | 0.410 |
 | arm upper_yaw | 0.388 |
 | arm elbow | 0.388 |
-| roll stage | 0.350 |
 | arm wrist_pitch | 0.300 |
 | gripper mechanism | 0.280 |
 | arm wrist_roll | 0.055 |
