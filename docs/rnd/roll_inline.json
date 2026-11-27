@@ -1,46 +1,88 @@
 {
  "inline": {
   "dome": {
-   "width_x": 116.9,
-   "height_z": 100.0,
-   "out_y": 120.0,
-   "z_top": 50.0,
-   "z_bot": -50.0,
-   "roll_y": 70.0,
-   "yaw_drop": 103.9,
+   "width_x": 120.9,
+   "height_z": 96.0,
+   "out_y": 117.0,
+   "z_top": 48.0,
+   "z_bot": -48.0,
+   "roll_y": 69.0,
+   "yaw_drop": 99.3,
    "masses": [
-    0.276,
-    0.548
+    0.293,
+    0.552
    ],
-   "ferrule_gap": 3.36,
+   "ferrule_gap": 2.39,
    "est": [
     128,
     120
    ]
   },
-  "assembly_seq": {
-   "ok": 5,
-   "n": 7,
-   "roll": [
+  "drive": {
+   "rows": [
     {
-     "name": "roll stage, D24 inline GIM8108-36 (no shaft or pulley; 61806 onto the roll link's stub from \u2212X, clevis bolted to the output flange)",
-     "ok": true,
-     "bearings": [
-      [
-       -29.0,
-       -22.0,
-       30.0,
-       true,
-       "\u2212Z end"
-      ]
-     ]
+     "joint": "roll (inline)",
+     "path": "motor \u00d830 boss \u2194 7075 adapter vs the drive limit (35.1)",
+     "cap": 128.2,
+     "demand": 35.1,
+     "ratio": 3.65,
+     "basis": "3 \u00d7 M4 \u00d7 10 csk (3.0 mm into 4 mm threads) friction 26 N\u00b7m (\u2248 4 kN, \u03bc 0.15, ESTIMATE) + 3 \u00d7 \u00d84 m6 dowels in H7: shear 321 N\u00b7m, bearing in an Al boss 103 N\u00b7m (150 MPa, 4 mm, ESTIMATE; governs)"
+    },
+    {
+     "joint": "roll (inline)",
+     "path": "motor \u00d830 boss \u2194 7075 adapter vs stall",
+     "cap": 128.2,
+     "demand": 102.9,
+     "ratio": 1.25,
+     "basis": "3 \u00d7 M4 \u00d7 10 csk (3.0 mm into 4 mm threads) friction 26 N\u00b7m (\u2248 4 kN, \u03bc 0.15, ESTIMATE) + 3 \u00d7 \u00d84 m6 dowels in H7: shear 321 N\u00b7m, bearing in an Al boss 103 N\u00b7m (150 MPa, 4 mm, ESTIMATE; governs); stall 102.9 N\u00b7m (actuators.yaml)"
+    },
+    {
+     "joint": "roll (inline)",
+     "path": "adapter \u2194 clevis arm, friction vs the drive limit (35.1)",
+     "cap": 72.0,
+     "demand": 35.1,
+     "ratio": 2.05,
+     "basis": "8 \u00d7 M5 on PCD 64, 1500 N preload (\u2248 5 MPa on the PETG under the steel ring) \u00d7 0.75 creep, \u03bc 0.25 PETG/Al (ESTIMATE)"
+    },
+    {
+     "joint": "roll (inline)",
+     "path": "adapter \u2194 clevis arm, friction + fitted-bolt bearing vs stall",
+     "cap": 202.6,
+     "demand": 102.9,
+     "ratio": 1.97,
+     "basis": "+ 8 \u00d7 \u00d85 \u00d7 8.5 mm at 12 MPa (fea.py across-layer allowable) = 131 N\u00b7m after \u2264 0.1 mm slip; stall only on a fault"
+    },
+    {
+     "joint": "yaw",
+     "path": "tube \u2194 flange, hex spigot AF 24 \u00d7 8 (form)",
+     "cap": 36.8,
+     "demand": 20.9,
+     "ratio": 1.76,
+     "basis": "flats 43 N\u00b7m (3 mm strips at 25 MPa in-layer), spigot root 37 N\u00b7m (torsion at 12 MPa across layers); + 18 N\u00b7m friction from the 6 \u00d7 M3 (800 N ESTIMATE \u00d7 0.75, \u03bc 0.3) not counted; demand = GIM6010-8 peak \u00d7 2 \u00d7 0.95"
+    },
+    {
+     "joint": "yaw",
+     "path": "tube \u2194 flange, 6 \u00d7 M3 inserts in tension (bending + hanging load, 20 lb basket)",
+     "cap": 1000.0,
+     "demand": 643.7,
+     "ratio": 1.55,
+     "basis": "N per screw: M = 20.7 N\u00b7m \u00d7 1.5 (rnd/basket.py worst passing shoulder-pitch torque, an upper bound for the flange) about the centre + 6.7 kg \u00d7 1.5 g; capacity = M3 insert pull-out in PETG-CF \u2248 1.0 kN (ESTIMATE, coupon)"
     }
    ]
   },
   "spacing": {
-   "under_target": 1,
+   "under_target": 2,
    "under_hard": 0,
    "rows": [
+    {
+     "a": "roll_gim_housing",
+     "b": "roll_outflange",
+     "kind": "running",
+     "d": 0.3,
+     "target": 0.3,
+     "hard": 0.2,
+     "hard_fail": false
+    },
     {
      "a": "yaw_flange",
      "b": "yaw_stop_pin",
@@ -54,8 +96,8 @@
   },
   "swept": {
    "min": {
-    "roll": 0.4,
-    "yaw": 2.3
+    "roll": 0.3,
+    "yaw": 2.0
    },
    "under_target": 0,
    "under_hard": 0,
@@ -63,7 +105,7 @@
    "closest": {
     "roll": [
      [
-      0.4,
+      0.3,
       "roll_outflange",
       "roll_gim_housing",
       -15
@@ -89,10 +131,10 @@
     ],
     "yaw": [
      [
-      2.3,
+      2.0,
       "yaw_flange",
       "yaw_plate_bot",
-      -155
+      65
      ],
      [
       2.5,
@@ -101,31 +143,24 @@
       -155
      ],
      [
-      3.64,
-      "yaw_shaft",
-      "yaw_plate_bot",
-      -155
-     ],
-     [
-      3.8,
+      3.0,
       "yaw_flange",
       "yaw_band",
       155
+     ],
+     [
+      3.64,
+      "yaw_shaft",
+      "yaw_plate_bot",
+      85
      ]
     ]
    }
   },
-  "dexterity": {
-   "top-down": 0.35,
-   "45\u00b0 angled": 0.7153846153846154,
-   "side (horizontal)": 0.65,
-   "side, across the body": 0.625,
-   "ok": true
-  },
   "basket": {
    "ok": true,
-   "worst": 1.48,
-   "roll_peak_margin": 52.48,
+   "worst": 1.5,
+   "roll_peak_margin": 51.62,
    "no_ik": 0,
    "cap": {
     "pitch": [
@@ -149,20 +184,38 @@
      7.0
     ]
    }
+  },
+  "dexterity": {
+   "top-down": 0.3576923076923077,
+   "45\u00b0 angled": 0.6807692307692308,
+   "side (horizontal)": 0.6576923076923077,
+   "side, across the body": 0.6,
+   "ok": true
+  },
+  "assembly_seq": {
+   "ok": 7,
+   "n": 7,
+   "roll": [
+    {
+     "name": "roll stage, D24 inline (61806 onto the stub; wave-2 rnd.check run)",
+     "ok": true,
+     "bearings": true
+    }
+   ]
   }
  },
  "belt": {
   "dome": {
-   "width_x": 162.9,
-   "height_z": 218.8,
-   "out_y": 153.0,
-   "z_top": 173.3,
+   "width_x": 147.5,
+   "height_z": 210.8,
+   "out_y": 145.0,
+   "z_top": 165.3,
    "z_bot": -45.5,
    "roll_y": 83.0,
-   "yaw_drop": 116.0,
+   "yaw_drop": 113.4,
    "masses": [
-    0.722,
-    0.568
+    0.675,
+    0.557
    ],
    "ferrule_gap": null,
    "est": [
@@ -170,45 +223,49 @@
     210
    ]
   },
+  "drive": {
+   "rows": [
+    {
+     "joint": "roll (belt)",
+     "path": "roll shaft \u2194 clevis, 2 pinch clamps (friction)",
+     "cap": 84.8,
+     "demand": 46.4,
+     "ratio": 1.83,
+     "basis": "per arm 2 \u00d7 M5 into heat-set inserts, 1500 N (ESTIMATE \u2248 50 % of M5 insert pull-out in PETG-CF) \u00d7 0.75 creep, \u03bc 0.3 PETG-CF/PETG-CF (ESTIMATE); T = \u03bc\u00b7\u03c0\u00b7F\u00b7r per arm; clamp pressure 4.0 / 5.6 MPa on a solid shaft end; demand = GIM6010-8 peak \u00d7 4.44 \u00d7 0.95"
+    },
+    {
+     "joint": "yaw",
+     "path": "tube \u2194 flange, hex spigot AF 24 \u00d7 8 (form)",
+     "cap": 36.8,
+     "demand": 20.9,
+     "ratio": 1.76,
+     "basis": "flats 43 N\u00b7m (3 mm strips at 25 MPa in-layer), spigot root 37 N\u00b7m (torsion at 12 MPa across layers); + 18 N\u00b7m friction from the 6 \u00d7 M3 (800 N ESTIMATE \u00d7 0.75, \u03bc 0.3) not counted; demand = GIM6010-8 peak \u00d7 2 \u00d7 0.95"
+    },
+    {
+     "joint": "yaw",
+     "path": "tube \u2194 flange, 6 \u00d7 M3 inserts in tension (bending + hanging load, 20 lb basket)",
+     "cap": 1000.0,
+     "demand": 643.7,
+     "ratio": 1.55,
+     "basis": "N per screw: M = 20.7 N\u00b7m \u00d7 1.5 (rnd/basket.py worst passing shoulder-pitch torque, an upper bound for the flange) about the centre + 6.7 kg \u00d7 1.5 g; capacity = M3 insert pull-out in PETG-CF \u2248 1.0 kN (ESTIMATE, coupon)"
+    }
+   ]
+  },
   "assembly_seq": {
-   "ok": 5,
+   "ok": 7,
    "n": 7,
    "roll": [
     {
-     "name": "roll shaft (D19: 80T printed on the tube; bearings from both ends, into the walls' capped U-slots from below; clevis caps on top)",
+     "name": "roll shaft (D19, belt; wave-2 rnd.check run)",
      "ok": true,
-     "bearings": [
-      [
-       -16.5,
-       -10.5,
-       40.0,
-       true,
-       "\u2212Z end"
-      ],
-      [
-       17.5,
-       23.5,
-       40.0,
-       true,
-       "+Z end"
-      ]
-     ]
+     "bearings": true
     }
    ]
   },
   "spacing": {
-   "under_target": 2,
+   "under_target": 3,
    "under_hard": 0,
    "rows": [
-    {
-     "a": "yaw_block",
-     "b": "yaw_shaft",
-     "kind": "moving",
-     "d": 2.0,
-     "target": 2.0,
-     "hard": 1.0,
-     "hard_fail": false
-    },
     {
      "a": "yaw_flange",
      "b": "yaw_stop_pin",
@@ -217,106 +274,43 @@
      "target": 0.3,
      "hard": 0.2,
      "hard_fail": false
+    },
+    {
+     "a": "roll_shaft",
+     "b": "yaw_shaft",
+     "kind": "moving",
+     "d": 1.33,
+     "target": 2.0,
+     "hard": 1.0,
+     "hard_fail": false
+    },
+    {
+     "a": "yaw_block",
+     "b": "yaw_shaft",
+     "kind": "moving",
+     "d": 2.0,
+     "target": 2.0,
+     "hard": 1.0,
+     "hard_fail": false
     }
    ]
   },
   "swept": {
    "min": {
-    "roll": 0.71,
+    "roll": 0.7,
     "yaw": 2.0
    },
    "under_target": 0,
    "under_hard": 0,
    "rows": [],
-   "closest": {
-    "roll": [
-     [
-      0.71,
-      "roll_spring_hub",
-      "roll_spring_ring",
-      95
-     ],
-     [
-      1.04,
-      "roll_spring_hub",
-      "roll_link",
-      -15
-     ],
-     [
-      2.0,
-      "roll_clevis_cap_in",
-      "roll_link",
-      65
-     ],
-     [
-      2.0,
-      "roll_clevis_cap_in",
-      "roll_seat_cap_A",
-      -15
-     ]
-    ],
-    "yaw": [
-     [
-      2.0,
-      "yaw_shaft",
-      "yaw_block",
-      155
-     ],
-     [
-      2.31,
-      "yaw_flange",
-      "yaw_plate_bot",
-      -155
-     ],
-     [
-      3.64,
-      "yaw_shaft",
-      "yaw_plate_bot",
-      -155
-     ],
-     [
-      3.8,
-      "yaw_flange",
-      "yaw_band",
-      155
-     ]
-    ]
-   }
+   "closest": {}
   },
   "dexterity": {
-   "top-down": 0.3384615384615385,
-   "45\u00b0 angled": 0.6961538461538461,
-   "side (horizontal)": 0.65,
+   "top-down": 0.3385,
+   "45\u00b0 angled": 0.7038,
+   "side (horizontal)": 0.6538,
    "side, across the body": 0.525,
    "ok": false
-  },
-  "basket": {
-   "ok": true,
-   "worst": 1.46,
-   "roll_peak_margin": 34.26,
-   "no_ik": 0,
-   "cap": {
-    "pitch": [
-     21.4,
-     62.7
-    ],
-    "roll": [
-     21.1,
-     46.4
-    ],
-    "yaw": [
-     9.5,
-     20.9
-    ],
-    "elbow": [
-     21.4,
-     62.7
-    ],
-    "wpitch": [
-     3.0,
-     7.0
-    ]
-   }
   }
  }
 }

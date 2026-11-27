@@ -73,14 +73,14 @@ def cases():
                   [(roll.W1[0], roll.W1[1], 40.0), (roll.W2[0], roll.W2[1], 40.0)], None))
     ys = Pos(0, -roll.ROLL_Y, 0) * roll.yaw_shaft()
     C.append(("yaw shaft (D19, loop 44: 40T + spring hub one piece; up into the top plate, bottom plate bolted on, flange last)", ys,
-              [(roll.P1[0], roll.P1[1], 40.0), (roll.P2[0], roll.P2[1], 40.0)], None))
+              [(roll.P1[0], roll.P1[1], 40.0), (roll.YAW_BRG_B[0], roll.YAW_BRG_B[1], 40.0)], None))
     eh = Rot(90, 0, 0) * arm.elbow_pulley_hub()           # z = y (loop 40 used Rot(-90): z = −y, which mirrored the journals)
     C.append(("elbow shaft (D19: 40T one piece; 2 × 61808 in capped U-seats + 2 × 6708; the cassette goes in from below)", eh,
               [(arm.CAS_A[0], arm.CAS_A[1], 40.0), (arm.CAS_B[0], arm.CAS_B[1], 40.0), (-54 - 3.5, -54 + 3.5, 40.0), (54 - 3.5, 54 + 3.5, 40.0)], None))
-    st = dict((n, p) for n, p, _ in bs.small_stage_v2(20))
-    C.append(("D13 small stage (steel Ø12 shaft; pulley, coupling, bearings separate): v2 at roll, yaw; v3 (D24, same shaft stack) at pitch, elbow", st["shaft_12"],
-              [(bs.V2["jA"][0], bs.V2["jA"][1], bs.BRG_6801["d"]), (bs.V2["jB"][0], bs.V2["jB"][1], bs.BRG_6801["d"]),
-               (bs.V2["pulley"][0], bs.V2["pulley"][1], bs.SHAFT_D)], None))
+    st = dict((n, p) for n, p, _ in bs.small_stage_v3(20))
+    C.append(("D13 small stage v3 (D24 bolted cartridge, Oldham hub; steel Ø12 shaft, pulley and bearings separate) at pitch, roll, yaw, elbow", st["shaft_12"],
+              [(bs.V3["jA"][0], bs.V3["jA"][1], bs.BRG_6801["d"]), (bs.V3["jB"][0], bs.V3["jB"][1], bs.BRG_6801["d"]),
+               (bs.V3["pulley"][0], bs.V3["pulley"][1], bs.SHAFT_D)], None))
     from .parts import hand
     sp = dict((n, p) for n, p, _ in hand.wrist_roll_parts())["wr_spindle"]
     zf = hand.wrist_roll_face_z()

@@ -19,11 +19,11 @@ over tilt ±30°, the KX collar twist 0…35°.
 | Module | Part A | Part B | Kind | Gap (mm) | Target / hard | |
 |---|---|---|---|---|---|---|
 | upper | head_shell | head_screen | static | 0.0 | 1.0 / 0.5 | ❌ hard |
+| roll/yaw | roll_gim_housing | roll_outflange | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
 | roll/yaw | yaw_flange | yaw_stop_pin | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
 | upper | handle | pan_sleeve | static | 0.9 | 1.0 / 0.5 | ⚠️ target |
 | base | w90_hub | w90_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
 | base | w180_hub | w180_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
 | base | w270_hub | w270_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
-| roll/yaw | yaw_block | yaw_shaft | moving | 2.0 | 2.0 / 1.0 | ⚠️ target |
 | arm | e_cassette | e_belt | belt | 3.0 | 3.0 / 1.0 | ⚠️ target |
 | upper | lift_belt | lift_mount | belt | 3.0 | 3.0 / 1.0 | ⚠️ target |

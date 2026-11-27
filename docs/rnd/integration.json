@@ -1,1 +1,1 @@
-{"torque_ok": 21, "torque_n": 21, "module_clashes": 2, "module_clash_list": [["arm", "hand_jaw_fixed", "hand_finger_hook", 1040], ["head tilt +30\u00b0", "head_bracket", "head_shell", 1378]]}
+{"torque_ok": 19, "torque_n": 19, "module_clashes": 3, "module_clash_list": [["arm", "hand_jaw_fixed", "hand_finger_hook", 1040], ["roll/yaw", "roll_link", "roll_arm_rear", 271], ["head tilt +30\u00b0", "head_bracket", "head_shell", 1378]]}

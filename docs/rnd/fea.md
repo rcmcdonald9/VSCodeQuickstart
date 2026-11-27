@@ -15,6 +15,6 @@ Each case lists its loads (worst static ×1.5 dynamic, or actuator peak for belt
 | Wheel pod: wheel load 168 N (×2 bumps) + 0.5 g lateral | 72,187 | 0.2 MPa (max 0.4) | 0.03 mm | 53.2× ✅ |
 | Shoulder pitch bracket: arm moment 19 N·m + belt peak 691 N | 82,056 | 1.8 MPa (max 4.0) | 0.40 mm | 6.6× ✅ |
 | Elbow belt cassette plate: 60 % of the belt peak (415 N) | 17,078 | 1.2 MPa (max 1.6) | 0.04 mm | 9.7× ✅ |
-| Roll link: roll belt peak 768 N + arm moment 19 N·m (couple 559 N) | 105,028 | 1.8 MPa (max 4.7) | 0.72 mm | 6.8× ✅ |
-| Clevis + yaw block: yaw belt peak 691 N + arm moment 19 N·m (couple 559 N) | 95,027 | 1.1 MPa (max 4.9) | 0.29 mm | 10.6× ✅ |
+| Roll link (D24 inline): rear 61806 stub + GIM8108-36 floor, arm moment 19 N·m (couple 288 N) + roll torque 35 N·m | 95,712 | 2.1 MPa (max 5.0) | 0.26 mm | 5.6× ✅ |
+| Clevis + yaw block (D24 inline, + rear arm): yaw belt peak 691 N + arm moment 19 N·m (couple 525 N) | 111,098 | 1.1 MPa (max 5.2) | 0.22 mm | 10.8× ✅ |
 | Torque hanger (wheel): GIM peak 11 N·m → 367 N on the fork | 34,101 | 2.1 MPa (max 5.4) | 0.08 mm | 5.7× ✅ |
