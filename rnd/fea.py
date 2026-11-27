@@ -391,7 +391,7 @@ def inline_roll_cases(M=19.0, T=35.1, belt=691.0, weight=28.0):
         y, z = RY + rp * math.cos(a), rp * math.sin(a)
         ft = T / (n * rp / 1000)                                    # tangential (torque about +X): direction (−sin a, cos a) in (y, z)
         fx = Fc * arm_m * (z / 1000) / sum(((rp * math.sin(2 * math.pi * j / n + rl.REAR_ANG0)) / 1000) ** 2 for j in range(n))
-        holes.append((lambda x, y=y, z=z: (np.hypot(x[1] - y, x[2] - z) < 2.6) & (x[0] > rl.X_FLOOR[0] - 0.2) & (x[0] < xf1 + 0.2),
+        holes.append((lambda x, y=y, z=z, rh=(rl.STOP_BUSH["d_thru"] if k in rl.STOP_K else rl.REAR_SCREW["sleeve_od"]) / 2 + 0.5: (np.hypot(x[1] - y, x[2] - z) < rh) & (x[0] > rl.X_FLOOR[0] - 0.2) & (x[0] < xf1 + 0.2),
                       (-fx, -ft * math.sin(a), ft * math.cos(a) - Fc / n)))
     C = [(f"Roll link (D24 inline): rear 61806 stub + GIM8108-36 floor, arm moment {M:.0f} N·m (couple {Fc:.0f} N) + roll torque {T:.0f} N·m", rl.roll_link_inline(), 2.0,
           lambda x: (np.abs(x[1] - 8) < 0.3) & (np.hypot(x[0], x[2]) < 45),

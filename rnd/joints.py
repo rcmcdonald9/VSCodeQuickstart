@@ -585,6 +585,8 @@ def roll_rows(loads=None):
     stall, limit = act("GIM8108-36")["peak"], act("GIM8108-36")["rated"]
     r0 = M["out_pcd"] / 2000
     rows = []
+    lb = loads["roll bearings"] if loads else {}
+    T_bump = max([v["T"] for c, v in lb.items() if c.startswith("bump")] or [0.0])
     # (a) output boss ↔ 7075 adapter: the dowels carry the torque, the 3 × M4 csk friction (metal clamp, no print) helps
     dow_shear = math.pi * 2.0 ** 2 * 450.0                              # ISO 8734 Ø4: min double shear 11.3 kN → 5.65 kN single
     k = huth_k(M["dowel_l"], 70e3, roll.ADAPT["t"], 71e3, M["dowel_d"])
@@ -608,7 +610,8 @@ def roll_rows(loads=None):
                             f"sharing {n * Fa * r0:.0f} N·m. + 3 × M4 × 10 csk at {DOWEL['pre'] / 1e3:.1f} kN, μ {DOWEL['mu']}, metal on metal (no creep): {fr:.0f} N·m "
                             f"(strip of {M['out_tap'] - 1.35:.2f} mm effective M4 in the cast boss ≈ {strip / 1e3:.1f} kN). Dowel shear {n * dow_shear * r0:.0f} N·m (ISO 8734). "
                             f"Criterion: stall is a fault, checked at a yield-level bearing allowable at ≥ 1.0× (as bolts ≤ proof); "
-                            f"the 7075 adapter side is {roll.ADAPT['t']:.0f} mm deep")))
+                            f"the 7075 adapter side is {roll.ADAPT['t']:.0f} mm deep. The 140 N bump puts up to {T_bump:.0f} N·m on the roll output "
+                            f"({T_bump / cap:.2f}× this capacity): below the stall only if the actuator backdrives at its current limit (open: backdrive torque, seller / bench)")))
     # (b) rear mount: metal clamp stack (plate + sleeves + motor), the print is only sandwiched
     rs = roll.REAR_SCREW
     c_b = rs["grip"] / (E_STEEL * 8.78)
@@ -619,7 +622,6 @@ def roll_rows(loads=None):
     L_eng = rs["engage"]
     worst = rs["L_tol"] + rs["plate_tol"] + rs["sleeve_tol"]
     strip_r = thread_strip(4.0, 0.7, L_eng - worst - 0.35, TAU["cast Al (housing)"], TAU["10.9"])
-    lb = loads["roll bearings"] if loads else {}
     x1, x2 = roll_spans()
     x_face = roll.X_MOT[0] / 1000
     R2_max = max([v["R2"] for v in lb.values()] or [300.0])

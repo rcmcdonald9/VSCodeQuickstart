@@ -303,21 +303,23 @@ ROLL_OUT = {"roll_shaft", "roll_pulley72", "roll_spring_hub", "yaw_block", "yaw_
 # ---------------------------------------------------------------------------------------------------------------------
 # D24 INLINE ROLL (PIP_ROLL_DRIVE=inline). Along the roll axis (x), from −X:
 #   yaw cartridge (roll output, x ≤ its CAD max) | roll_arm_rear on a 61806 (30×42×7) on the static stub, with the yaw torque
-#   fork | 2.5 mm | roll-link floor (6 mm, 6 × M4 into the motor's rear face) | GIM8108-36 housing (static) | output flange
+#   fork | 2.5 mm | 7075 rear plate (3 mm, Neon review) + stop bushes | roll-link floor (6 mm; 8 × M4 through plate + sleeves
+#   into the motor's rear face) | GIM8108-36 housing (static) | output flange
 #   | +X clevis arm (fused to the yaw block, 6 × M4 into the flange) | roll clock-spring cassette (hub on the arm, ring on
 #   the roll link's bar, as in the belt stage).
 # Two-point roll support: the motor's output bearing (+X) and the 61806 (−X), 68 mm apart (belt: 2 × 61808, 39 mm apart);
-# the motor's output bearing then carries ≈ 19 N·m / 0.068 ≈ 280 N radial in the 1 kg workspace (rating not published:
-# ESTIMATE, confirm with the seller). Assembly: motor onto the floor (screws from −X) → 61806 into roll_arm_rear, arm onto
-# the stub from −X, end washer + M5 → yaw block (+ yaw cartridge) up from below: its arm slides down the flange face,
+# the motor's output bearing then carries ≈ 19 N·m / 0.068 ≈ 280 N radial in the 1 kg workspace, ≈ 0.6 kN at the
+# basket × 1.5 and 2.3 kN at a stall (rnd/joints.py, from the twin; rating not published: confirm with the seller). Neon
+# review 6c: the 61806 floats axially and is bonded in its seat in situ (SEAT_GAP, ROLL_SUPPORT below). Assembly: motor
+# into the cup pilot, rear plate + sleeves + stop bushes, 8 × M4 from −X → 61806 onto the stub, DIN 471 ring → arm over
+# it from −X (race into the oversize seat, Loctite 660, cured with the arm bolted at mid-travel) → yaw block (+ yaw cartridge) up from below: its arm slides down the flange face,
 # 6 × M4 into the flange from +X, roll_arm_rear's foot 2 × M5 into the top plate (the torque pin rises into the fork
 # slot) → spring hub on the arm, ribbon, spring ring onto the bar. No pulley, belt or D13 stage, so R14 has nothing to
 # block (rnd/assembly_seq.py checks the 61806 slide-on).
-# Roll travel: software −15…100° (twin.JR); hard stops at ≈ −19° / 104°. M1 (Fable review 2026-11-27): the stops were two
-# printed Ø8 lugs (≈ 800 N at the 35 N·m drive limit, ≈ 16 MPa vs the 12 MPa allowable; 2.3 kN at stall). Now two
-# hardened ISO 8734 Ø10 × 28 dowels at r 43, pressed 19.5 mm into the floor + cup ring and standing 8 mm proud on its
-# −X face, meet 20 × 8 × 1.5 stainless wear strips bonded flush into roll_arm_rear's edges (pin on steel; the strip spreads
-# the load on the print). Rows: rnd/joints.py.
+# Roll travel: software −15…100° (twin.JR); hard stops at −16.5° / 104°. M1 (Fable review 2026-11-27): the stops were two
+# printed Ø8 lugs (≈ 800 N at the 35 N·m drive limit, ≈ 16 MPa vs the 12 MPa allowable; 2.3 kN at stall); wave 3's Ø10
+# dowels at r 43 had no seat wall (Neon 6d). Now two steel stop bushes on two of the rear M4 (STOP_BUSH below) meet
+# 20 × 8 × 1.5 stainless wear strips bonded flush into roll_arm_rear's edges. Rows: rnd/joints.py.
 # ---------------------------------------------------------------------------------------------------------------------
 BRG_R = dict(d=30.0, D=42.0, B=7.0)    # 61806, rear roll support
 STUB_RELIEF = 0.5                      # the Ø30 stub's −X end stops this far inside the 61806's −X face (yaw can clearance, rnd.swept)

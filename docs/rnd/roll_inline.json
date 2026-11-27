@@ -22,19 +22,19 @@
    "rows": [
     {
      "joint": "roll (inline)",
-     "path": "motor \u00d830 boss \u2194 7075 adapter vs the drive limit (35.1)",
-     "cap": 128.2,
+     "path": "motor output \u2194 7075 adapter (dowels, load sharing, + 3 \u00d7 M4 friction) vs the drive limit (35.1)",
+     "cap": 106.1,
      "demand": 35.1,
-     "ratio": 3.65,
-     "basis": "3 \u00d7 M4 \u00d7 10 csk (3.0 mm into 4 mm threads) friction 26 N\u00b7m (\u2248 4 kN, \u03bc 0.15, ESTIMATE) + 3 \u00d7 \u00d84 m6 dowels in H7: shear 321 N\u00b7m, bearing in an Al boss 103 N\u00b7m (150 MPa, 4 mm, ESTIMATE; governs)"
+     "ratio": 3.02,
+     "basis": "bearing allowable 150 MPa (reverted from 240: cast A380-class \u03c3_y \u2248 160 MPa with no bearing factor, ESTIMATE until the seller names the boss material; a steel or wrought 6061-T6 boss would justify \u2248 240). 3 \u00d7 \u00d84 \u00d7 4 mm on r 14.25: 2.40 kN each; dowel stiffness 41 kN/mm (Huth, \u00d84 steel in 4 mm Al + 7 mm 7075); the first dowel takes k\u00b7\u03b4 before the others touch: \u03b4 8 \u00b5m (H7/m6 spread, ISO 286) when the dowels are bonded (Loctite 638) into \u00d84.1 adapter holes while seated in the motor (the adapter's hole positions drop out) \u2192 93 N\u00b7m; dry in jig-bored holes \u03b4 \u2248 40 \u00b5m (\u00b1 0.02 true position each side, ESTIMATE) \u2192 56 N\u00b7m (the review's \u2248 55 N\u00b7m); equal sharing 103 N\u00b7m. + 3 \u00d7 M4 \u00d7 10 csk at 2.0 kN, \u03bc 0.15, metal on metal (no creep): 13 N\u00b7m (strip of 2.65 mm effective M4 in the cast boss \u2248 3.9 kN). Dowel shear 242 N\u00b7m (ISO 8734). Criterion: stall is a fault, checked at a yield-level bearing allowable at \u2265 1.0\u00d7 (as bolts \u2264 proof); the 7075 adapter side is 7 mm deep. The 140 N bump puts up to 0 N\u00b7m on the roll output (0.00\u00d7 this capacity): below the stall only if the actuator backdrives at its current limit (open: backdrive torque, seller / bench)"
     },
     {
      "joint": "roll (inline)",
-     "path": "motor \u00d830 boss \u2194 7075 adapter vs stall",
-     "cap": 128.2,
+     "path": "motor output \u2194 7075 adapter (dowels, load sharing, + 3 \u00d7 M4 friction) vs stall",
+     "cap": 106.1,
      "demand": 102.9,
-     "ratio": 1.25,
-     "basis": "3 \u00d7 M4 \u00d7 10 csk (3.0 mm into 4 mm threads) friction 26 N\u00b7m (\u2248 4 kN, \u03bc 0.15, ESTIMATE) + 3 \u00d7 \u00d84 m6 dowels in H7: shear 321 N\u00b7m, bearing in an Al boss 103 N\u00b7m (150 MPa, 4 mm, ESTIMATE; governs); stall 102.9 N\u00b7m (actuators.yaml)"
+     "ratio": 1.03,
+     "basis": "bearing allowable 150 MPa (reverted from 240: cast A380-class \u03c3_y \u2248 160 MPa with no bearing factor, ESTIMATE until the seller names the boss material; a steel or wrought 6061-T6 boss would justify \u2248 240). 3 \u00d7 \u00d84 \u00d7 4 mm on r 14.25: 2.40 kN each; dowel stiffness 41 kN/mm (Huth, \u00d84 steel in 4 mm Al + 7 mm 7075); the first dowel takes k\u00b7\u03b4 before the others touch: \u03b4 8 \u00b5m (H7/m6 spread, ISO 286) when the dowels are bonded (Loctite 638) into \u00d84.1 adapter holes while seated in the motor (the adapter's hole positions drop out) \u2192 93 N\u00b7m; dry in jig-bored holes \u03b4 \u2248 40 \u00b5m (\u00b1 0.02 true position each side, ESTIMATE) \u2192 56 N\u00b7m (the review's \u2248 55 N\u00b7m); equal sharing 103 N\u00b7m. + 3 \u00d7 M4 \u00d7 10 csk at 2.0 kN, \u03bc 0.15, metal on metal (no creep): 13 N\u00b7m (strip of 2.65 mm effective M4 in the cast boss \u2248 3.9 kN). Dowel shear 242 N\u00b7m (ISO 8734). Criterion: stall is a fault, checked at a yield-level bearing allowable at \u2265 1.0\u00d7 (as bolts \u2264 proof); the 7075 adapter side is 7 mm deep. The 140 N bump puts up to 0 N\u00b7m on the roll output (0.00\u00d7 this capacity): below the stall only if the actuator backdrives at its current limit (open: backdrive torque, seller / bench); stall 102.9 N\u00b7m (actuators.yaml)"
     },
     {
      "joint": "roll (inline)",
@@ -58,15 +58,15 @@
      "cap": 36.8,
      "demand": 20.9,
      "ratio": 1.76,
-     "basis": "flats 43 N\u00b7m (3 mm strips at 25 MPa in-layer), spigot root 37 N\u00b7m (torsion at 12 MPa across layers); + 18 N\u00b7m friction from the 6 \u00d7 M3 (800 N ESTIMATE \u00d7 0.75, \u03bc 0.3) not counted; demand = GIM6010-8 peak \u00d7 2 \u00d7 0.95"
+     "basis": "flats 43 N\u00b7m (3 mm strips at 25 MPa in-layer), spigot root 37 N\u00b7m (torsion at 12 MPa across layers); + 21 N\u00b7m clamp friction from the YAW_TIE (\u03bc 0.3) not counted; demand = GIM6010-8 peak \u00d7 2 \u00d7 0.95"
     },
     {
      "joint": "yaw",
-     "path": "tube \u2194 flange, 6 \u00d7 M3 inserts in tension (bending + hanging load, 20 lb basket)",
-     "cap": 1000.0,
-     "demand": 643.7,
-     "ratio": 1.55,
-     "basis": "N per screw: M = 20.7 N\u00b7m \u00d7 1.5 (rnd/basket.py worst passing shoulder-pitch torque, an upper bound for the flange) about the centre + 6.7 kg \u00d7 1.5 g; capacity = M3 insert pull-out in PETG-CF \u2248 1.0 kN (ESTIMATE, coupon)"
+     "path": "tube \u2194 flange, C1 tie (6 \u00d7 M3 12.9 into the 6061 flange): moment before the joint gaps vs the service bending",
+     "cap": 53.6,
+     "demand": 32.6,
+     "ratio": 1.64,
+     "basis": "clamp model (rnd/joints.py): 6 \u00d7 1.05 kN life preload in steel crush sleeves (metal stack, the print sandwiched); demand rnd/joints.py: the twin's worst basket/hug wrench \u00d7 1.5; fault cases (140 N bump, stalls) in docs/rnd/joints.md"
     }
    ]
   },
