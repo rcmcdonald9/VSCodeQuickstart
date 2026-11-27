@@ -1263,3 +1263,7 @@ One long push instead of half-hour runs. In order:
 - Balancer on an aluminium crank inboard of the pitch shaft (cable CAD-checked clear, K 4.49 N·m, 35 % deflection); pitch harness on an outboard clock spring (352° vs 312°). Wrist roll ±120° → harness 6/6.
 - R2b 10.9 → 8.5 mm raw (1.7 mm after the gravity model, ≤ 2 ✅): housing 3.37 → 1.42, bracket 1.62 → 0.99. Remaining: roll link 2.27, yaw block 1.53, CF tubes 1.8. Forearm socket clears by 3 mm over the elbow range.
 - Open: D20 elbow belt peak 2.8× ultimate/3 (steel-cord belt or ≈ 20 N·m torque cap). Fable review (once/day, stamp docs/review/.fable_last) running on the merged tree.
+
+### 2026-11-27 — Cost pass merged: BOM $5,308 landed (+$308 over the $5,000 limit) — owner decision needed
+- The inline roll had been carried as a bare motor: GIM8108-36 with the 24 V SDC303 driver is $240 (SteadyWin store, aifitlab), not $171; belt-roll parts out, 7075 adapter (ESTIMATE $30) + 61806 + dowels in; sensor nodes 3 → 5 (can_map). Savings: DM-J4310 $125 (AIFit), covers inside the PETG bundles.
+- No other sourced saving keeps the approved motors and safety items. Levers: raise the limit, revert to the belt roll (−$368), or defer non-essential sensors. M1 today's plan $1,945.
