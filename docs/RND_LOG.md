@@ -1221,3 +1221,8 @@ One long push instead of half-hour runs. In order:
 - sw/virtual_arm.py MuJoCo plant with hidden zeros/friction/fault injection; 6 injected faults each caught at the right step (sw/test_s2.py, all pass).
 - Fix: DMJ4310 driver treated Damiao status 1 ("enabled") as a motor error — would have stopped the arm on day 1.
 - sw/teleop_sim.py: EEF-delta teleop through the Supervisor → LeRobot v3 (5 episodes reload). Day 1 still fills the GIM6010 table in sw/drivers/gim.py (manual blocked here).
+
+### 2026-11-27 — Wave 1, arm track merged; wave 2 launched
+- D24 bolted cartridges at pitch + elbow (Ø68 flange, 6 × M4 into inserts, nose spigot, Oldham drive); wrist KX56 → bolted M3 flange. Motor bump Ø113 → Ø86.6; stage 63.7 → 40 mm (mount plane → shaft end).
+- D19 one-piece pitch (bolted pitch hub + outer wall) and elbow (bolted seat caps) shafts → R14 6/7 (+ roll from track B). Elbow housing 110 → 98 mm. Forearm double-D pinch clamp; CF bonds ≥ 1 × OD. Balancer pin B moved per track D. P2 hand sag 12.1 → 10.9 mm raw.
+- Wave 2 (3 engineers): roll/yaw onto bolted stages + clevis clamps + inline FEA + belt R16 recovery; D20 motor switch + wrist-roll cable + balancer plane + stiffness; M1 kit buy/hold lists + readiness + measured slim study. Covers/pinch track from wave 1 still running.
