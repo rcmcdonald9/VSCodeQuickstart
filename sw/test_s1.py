@@ -276,6 +276,7 @@ def test_collision():
         for _ in range(250):                            # contact gone: the arm holds compliantly, no stop, no fall
             v = rig.step()
             assert v.compliant and not v.stop, v.reasons
+            assert rig.sup.heartbeat_ok(), "compliant hold must keep the hardware heartbeat (Fable C2)"
         drift = float(np.max(np.abs(np.array([rig.env.d.qpos[a_] for a_ in rig.qadr]) - q_trip)))
         assert drift < 0.3, drift
         assert rig.sup.reset(np.array([rig.env.d.qpos[a_] for a_ in rig.qadr]), 0.002)

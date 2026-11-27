@@ -10,7 +10,7 @@ buses:
     termination: [adapter, shoulder_node]
     devices:
       - {name: pitch, kind: gim6010, id: 0x01, fb_id: 0x11, ratio: 3.0, frames_per_cycle: 2}
-      - {name: roll,  kind: gim6010, id: 0x02, fb_id: 0x12, ratio: 4.444, frames_per_cycle: 2}
+      - {name: roll,  kind: gim6010, id: 0x02, fb_id: 0x12, ratio: 1.0, frames_per_cycle: 2}   # D24 inline GIM8108-36 (SDC303); SteadyWin protocol family ASSUMED same as the GIM6010 table: confirm with the manual
       - {name: yaw,   kind: gim6010, id: 0x03, fb_id: 0x13, ratio: 2.0, frames_per_cycle: 2}
       - {name: shoulder_node, kind: rp2040_node, id: 0x30, frames_per_cycle: 1,
          ports: {can: "MCP2562 transceiver on PIO-CAN (can2040)", spi: "AS5048A × 3 (pitch, roll, yaw joint encoders)"}}

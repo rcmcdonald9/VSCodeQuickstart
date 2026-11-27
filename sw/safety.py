@@ -142,7 +142,9 @@ class Supervisor:
         self.healthy_cycle = False
 
     def heartbeat_ok(self):
-        return self.healthy_cycle and not self.latched
+        # A collision latch is a compliant hold (a controlled state): the hardware heartbeat must keep running, or the
+        # contactor would open and the arm drop (Fable review 2026-11-27, C2). Any other latched fault drops it.
+        return self.healthy_cycle and not [f for f in self.latched if f != "collision"]
 
     def reset(self, q_meas, fb_age):
         """Clear latched faults: only with the button released and fresh, finite, in-limit feedback."""
