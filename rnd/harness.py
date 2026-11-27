@@ -67,16 +67,25 @@ def _roll_yaw():
 
 
 _RS, _YS, CAV_H = _roll_yaw()
+
+
+def _pitch_wrist():
+    from .params import BASELINE
+    from .parts import shoulder
+    return shoulder.PITCH_SPR, round(2 * BASELINE.arm.wrist_roll_range_deg)
+
+
+_PS, WR_RANGE = _pitch_wrist()
 # per joint crossed by the arm bundle: range (deg, from twin JR), free axial length (m) for torsion, spiral cavity
 # (r_in, r_out, mm), spiral length S (m), and where. Roll and yaw cavities are real CAD (rnd/parts/roll.py, loop 40).
 JOINTS = [
     # pitch: bundle from the torso e-tray through the pitch shaft bore (Ø30) to the detach plug on the ferrule
-    ("shoulder pitch", 260, 0.20, (22, 60), 0.60, "inside the torso, around the pitch shaft between the bracket and the torso wall"),
+    ("shoulder pitch", 260, 0.20, _PS, 0.80, "CAD (2026-11-27): clock spring outboard of the outer bracket wall, around the pitch hub (r 25) inside a static ring on the wall; inner end into the hub bore through a side window (the balancer crank closes the tube's inboard end)"),
     ("shoulder roll", 115, 0.10, _RS, 0.25, "CAD: clock-spring cassette on the +X end of the roll shaft, outboard of the clevis arm (roll_spring_hub / static ring on a bar to the roll-link boss)"),
     ("upper-arm yaw", 300, 0.0, _YS, 0.75, "CAD: clock-spring cassette between the 40T yaw pulley's hub and the bottom yaw plate (yaw ±150°, hard stops ±155°)"),
     ("elbow", 150, 0.13, (22, 50), 0.60, "elbow housing, +Y side, between cassette plate B (y 26) and the +Y wall (y 53)"),
     ("wrist pitch", 220, 0.06, (16, 30), 0.40, "wrist can end, around the DM-J4310 (Ø57 can: little room)"),
-    ("wrist roll", 360, 0.03, (14, 24), 0.35, "palm, around the STS3215 wrist-roll servo"),
+    ("wrist roll", WR_RANGE, 0.03, (14, 24), 0.35, "palm, around the STS3215 wrist-roll servo (range ±120° since 2026-11-27: params.wrist_roll_range_deg)"),
 ]
 
 
@@ -150,8 +159,10 @@ def loop47(rows):
           "The D24 inline-roll redesign should keep r_in ≥ 24 mm.",
           f"- **Ribbon width (new):** A14 puts **two** CAN pairs through the shoulder, so the ribbon is {w:.1f} mm wide, not 7.8 mm; the cassettes are {CAV_H} mm high "
           f"(width ≤ {CAV_H - 1:.1f} mm). Fix: cavity height ≥ {w + 1.5:.1f} mm, or 28 AWG CAN pairs (OD 0.8 → {w - 0.8:.1f} mm wide, cavity ≥ {w - 0.8 + 1.5:.1f} mm).",
-          f"- **Wrist roll (new):** the ±180° STS3215 wrist roll needs 432°; the 14–24 mm palm annulus gives {rows[5]['spiral_cap']:.0f}° packed with its 1.3 mm bundle. "
-          "Fix B above, or limit the wrist roll to ±120° in software (288° needed) until the palm is redrawn.",
+          f"- **Wrist roll:** ±180° needed 432°; the 14–24 mm palm annulus gives {rows[5]['spiral_cap']:.0f}° packed with its 1.3 mm bundle. "
+          f"**2026-11-27: wrist roll limited to ±{WR_RANGE // 2}° ({WR_RANGE * 1.2:.0f}° needed)** instead of r_out 24 → 27.5: the palm axis is taken by "
+          "the servo horn, dog and spindle bearings, so a bigger cassette means an Ø74 ring around the bearing skirt or +17 mm of hand length; the "
+          "parallel-jaw gripper is 180°-symmetric, so ±90° already covers every jaw orientation (params.wrist_roll_range_deg).",
           "- C11 (10k reversals) must measure the real packing factor and the capacity at both stops; these are ideal-geometry numbers."]
     return L
 

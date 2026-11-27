@@ -114,9 +114,8 @@ def main():
         cell = lambda j: f"{r['t'][j]:.1f} ({r['rated'][j]:.2f}× / {r['peak'][j]:.2f}×) {'✅' if r['rated'][j] >= 1.5 else ('⚠️ brief only' if r['peak'][j] >= 1.5 else '❌')}"
         L.append(f"| {r['case']} | {cell('shoulder_pitch')} | {cell('elbow')} | {cell('wrist_pitch')} |")
     # D20 candidate: GIM8108-8 at shoulder pitch and elbow, both 3:1 (owner picked scenario B, 2026-11-27)
-    import dataclasses
-    j = dict(BASELINE.arm.joints); j["shoulder_pitch"] = ("GIM8108-8", 3.0); j["elbow"] = ("GIM8108-8", 3.0)
-    d2 = dataclasses.replace(BASELINE, arm=dataclasses.replace(BASELINE.arm, joints=j))
+    from .params import with_arm_motors
+    d2 = with_arm_motors(BASELINE, "d20")         # 2026-11-27: D20 motors + the D20 CAD masses (params.ARM_MOTOR_SETS)
     rows2, cap2 = run(d2)
     L += ["", "## D20 candidate: GIM8108-8 at shoulder pitch and elbow, both 3:1", "",
           "Capacity: " + "; ".join(f"{k} {c[2]:.1f} / {c[3]:.1f} N·m" for k, c in cap2.items()), "",

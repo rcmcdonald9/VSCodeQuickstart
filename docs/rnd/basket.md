@@ -17,22 +17,22 @@ Poses (handle height = support height + 0.25 m):
 - carry: handles at z 0.70–0.85 (basket bottom at hip height), 0.35–0.45 m out
 - set down on a bed (0.55 m) or a washer/counter top (0.90 m)
 
-**The basket task passes** (floor pick, carry with handles at 0.70 m, set on a bed, basket centre ≤ 0.45 m out; D20 actuators). Capacity rated / peak: pitch 21.4 / 62.7 N·m; roll 35.1 / 102.9 N·m; yaw 9.5 / 20.9 N·m; elbow 21.4 / 62.7 N·m; wpitch 3.0 / 7.0 N·m
+**The basket task passes** (floor pick, carry with handles at 0.70 m, set on a bed, basket centre ≤ 0.45 m out; D20 actuators). Capacity rated / peak: pitch 21.4 / 62.7 N·m; roll 21.1 / 46.4 N·m; yaw 9.5 / 20.9 N·m; elbow 21.4 / 62.7 N·m; wpitch 3.0 / 7.0 N·m
 
 | Pose | Basket centre x (m) | Handles z (m) | Rule | Shoulder pitch N·m (peak×, 2-min rise) | Roll | Yaw | Elbow | Wrist pitch | Tip, load toward a wheel |
 |---|---|---|---|---|---|---|---|---|---|
-| floor pick | 0.40 | 0.25 | peak ≥ 1.5× | 17.6 (3.6×, 7 K) | 2.0 (51.6×, 0 K) | 0.8 (26.7×, 0 K) | 7.9 (8.0×, 1 K) | 0.1 (126.8×, 0 K) | 45 mm ✅ |
-| floor pick | 0.45 | 0.25 | peak ≥ 1.5× | 20.1 (3.1×, 10 K) | 1.9 (53.6×, 0 K) | 1.1 (19.6×, 0 K) | 8.9 (7.0×, 2 K) | 0.1 (76.5×, 0 K) | 33 mm ✅ |
-| floor pick | 0.50 | 0.25 | peak ≥ 1.5× | 22.7 (2.8×, 12 K) | 1.8 (57.4×, 0 K) | 1.4 (14.9×, 0 K) | 10.0 (6.3×, 2 K) | 0.1 (47.6×, 0 K) | 22 mm ❌ |
-| carry | 0.35 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 15.3 (4.1×, 6 K) | 1.7 (60.9×, 0 K) | 0.0 (101348.4×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (117283.2×, 0 K) | 58 mm ✅ |
-| carry | 0.40 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 17.9 (3.5×, 8 K) | 1.7 (61.7×, 0 K) | 0.0 (53335.9×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (178381.6×, 0 K) | 46 mm ✅ |
-| carry | 0.45 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 20.5 (3.1×, 10 K) | 1.6 (65.6×, 0 K) | 0.0 (35770.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (125106.4×, 0 K) | 34 mm ✅ |
+| floor pick | 0.40 | 0.25 | peak ≥ 1.5× | 17.8 (3.5×, 8 K) | 1.4 (34.2×, 0 K) | 0.8 (25.5×, 0 K) | 7.7 (8.1×, 1 K) | 0.1 (124.5×, 0 K) | 45 mm ✅ |
+| floor pick | 0.45 | 0.25 | peak ≥ 1.5× | 20.4 (3.1×, 10 K) | 1.3 (34.8×, 0 K) | 1.1 (18.9×, 0 K) | 8.8 (7.1×, 2 K) | 0.1 (76.1×, 0 K) | 33 mm ✅ |
+| floor pick | 0.50 | 0.25 | peak ≥ 1.5× | 23.0 (2.7×, 13 K) | 1.3 (36.6×, 0 K) | 1.4 (14.5×, 0 K) | 9.9 (6.3×, 2 K) | 0.1 (47.9×, 0 K) | 22 mm ❌ |
+| carry | 0.35 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 15.3 (4.1×, 6 K) | 0.9 (50.3×, 0 K) | 0.0 (154014.7×, 0 K) | 13.7 (4.6×, 4 K) | 0.0 (115595.0×, 0 K) | 58 mm ✅ |
+| carry | 0.40 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 18.0 (3.5×, 8 K) | 0.9 (50.1×, 0 K) | 0.0 (66687.6×, 0 K) | 13.9 (4.5×, 5 K) | 0.0 (65256.3×, 0 K) | 46 mm ✅ |
+| carry | 0.45 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 20.7 (3.0×, 10 K) | 0.9 (51.8×, 0 K) | 0.0 (41107.8×, 0 K) | 14.2 (4.4×, 5 K) | 0.0 (72367.7×, 0 K) | 34 mm ✅ |
 | carry, handles at 0.80 | 0.35 | 0.80 | carry | no collision-free IK | | | | | |
-| carry, handles at 0.80 | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 17.9 (3.5×, 8 K) | 1.7 (61.8×, 0 K) | 0.0 (48909.1×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 45 mm ✅ |
-| carry, handles at 0.80 | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.5 (3.1×, 10 K) | 1.6 (65.7×, 0 K) | 0.0 (34914.1×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 33 mm ✅ |
-| set on a bed (0.55 m) | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 17.9 (3.5×, 8 K) | 1.7 (61.8×, 0 K) | 0.0 (51203.9×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 45 mm ✅ |
-| set on a bed (0.55 m) | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.5 (3.1×, 10 K) | 1.6 (65.7×, 0 K) | 0.0 (34919.7×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 33 mm ✅ |
-| set on a bed (0.55 m) | 0.50 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 23.0 (2.7×, 13 K) | 1.4 (74.7×, 0 K) | 0.0 (26616.8×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (71670.5×, 0 K) | 21 mm ❌ |
+| carry, handles at 0.80 | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 18.0 (3.5×, 8 K) | 0.9 (50.4×, 0 K) | 0.0 (52270.3×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.0×, 2 K) | 45 mm ✅ |
+| carry, handles at 0.80 | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.7 (3.0×, 10 K) | 0.9 (53.5×, 0 K) | 0.0 (33850.5×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.3×, 0 K) | 32 mm ✅ |
+| set on a bed (0.55 m) | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 18.0 (3.5×, 8 K) | 0.9 (50.4×, 0 K) | 0.0 (49270.0×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.0×, 2 K) | 45 mm ✅ |
+| set on a bed (0.55 m) | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.7 (3.0×, 10 K) | 0.9 (53.5×, 0 K) | 0.0 (33950.6×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.3×, 0 K) | 32 mm ✅ |
+| set on a bed (0.55 m) | 0.50 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 23.3 (2.7×, 13 K) | 0.8 (60.1×, 0 K) | 0.0 (26207.7×, 0 K) | 13.0 (4.8×, 4 K) | 0.0 (245898.5×, 0 K) | 21 mm ❌ |
 | set on a washer / counter (0.90 m) | 0.40 | 1.15 | carry | no collision-free IK | | | | | |
 | set on a washer / counter (0.90 m) | 0.45 | 1.15 | carry | no collision-free IK | | | | | |
 | set on a washer / counter (0.90 m) | 0.50 | 1.15 | carry | no collision-free IK | | | | | |

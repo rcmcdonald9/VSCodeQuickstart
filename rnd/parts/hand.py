@@ -137,6 +137,10 @@ def wrist_roll_face_z() -> float:
 # only the ≈ 40 mm hub offset (≈ 0.9 N·m dynamic vs ≈ 1.5 N·m lift-off).
 BRG_WR = dict(d=20.0, D=32.0, B=7.0)          # 61804 (reused: the D13 stages freed the arm's 61804s)
 SPINDLE_DROP = 19.3                            # wrist-roll face → gripper base top (was KX44 gap + 12.6 = 13.2)
+# Wrist-roll range (2026-11-27): ±120° (params.Arm.wrist_roll_range_deg; the STS3215 is set to it in firmware, and the
+# palm clock spring r 14–24 gives 302° packed vs 288° needed). Kept the palm instead of growing the spiral to r_out 27.5: the
+# axis inside the palm is taken by the horn, dog and the two 61804s, so a bigger cassette would be an Ø74 ring round the
+# skirt or +≈ 17 mm of hand length (l_hand, wrist torque); the parallel jaw is 180°-symmetric, ±90° covers every grasp.
 
 
 def _zw():

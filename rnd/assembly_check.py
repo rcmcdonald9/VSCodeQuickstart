@@ -32,8 +32,8 @@ def printed_parts():
               "palm": hand.palm(), "fin-ray finger": hand.fin_ray(-125, -162, 21.0, 18, 28, -1), **{f"gripper {n}": p for n, p, c in hand.gripper_parts() if n in ("grip_base", "grip_servo_sleeve", "jaw_moving", "jaw_fixed")},
               "shoulder bracket body": shoulder.bracket_body(), "shoulder bracket outer wall": shoulder.bracket_wall_out(),
               "pitch shaft (integral 60T)": shoulder.pitch_shaft(), "pitch hub (balancer disc + ferrule)": shoulder.pitch_hub(),
-              "cartridge M can (bolted, D24)": cm.can_bolted(), "cartridge M rear cap (D24)": cm.can_cap_bolted(),
-              "cartridge M Oldham adapter (D24)": cm.motor_adapter_bolted(), "elbow cassette plate A": arm.cassette_plate("A"), "ferrule (arm side)": shoulder.ferrule(True),
+              "cartridge M can (bolted, D24)": cm.can_bolted(arm.MOT), "cartridge M rear cap (D24)": cm.can_cap_bolted(arm.MOT),
+              "cartridge M Oldham adapter (D24)": cm.motor_adapter_bolted(arm.MOT), "elbow cassette plate A": arm.cassette_plate("A"), "ferrule (arm side)": shoulder.ferrule(True),
               **roll.printed_parts(),                     # roll link, roll shaft or rear arm (D24 inline), clevis + yaw block, yaw shaft
               "carriage": upper.carriage(750), "ratchet strip": upper.ratchet_strip(),
               **{n: p for n, p, c in upper.torso(750) if n in ("torso_shell", "e_tray")},

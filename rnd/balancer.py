@@ -22,6 +22,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
+from build123d import Align
 
 from .params import BASELINE, Design
 
@@ -30,14 +31,15 @@ B = 0.020                                # m, anchor pin radius (loop 47: 30 →
 R_PULLEY = 0.0055                        # m, pulley A radius: U604ZZ grooved bearing pulley (A9: was an ungrooved Ø12 printed pulley)
 CABLE_BREAK_N = 2000.0                   # 2 mm Dyneema/UHMWPE braid (ESTIMATE; typical 150–250 daN)
 SPRING_SAFE_STROKE = 0.105               # m, cage stroke available (kept for the score signature)
-R_SHAFT = 0.020                          # m, pitch shaft OD/2 (shoulder.py: Ø40 tube through the balancer plane)
+R_SHAFT = 0.020                          # m, pitch shaft OD/2 (the Ø40 tube that used to pass through the balancer plane)
+CABLE_D = 0.002                          # m, cable diameter (2 mm UHMWPE braid)
 # A9 (loop 40, external review finding 10): the loop-7 spring could not exist. Zero free length makes the spring deflect by
 # the whole A–B span at k = 3 N/mm: a Ø25 compression spring that does that without overstress is ≈ 210 mm long. Fix: a 2:1
 # tackle (the cable runs B → A → a moving pulley on the spring plate → anchored), so the spring sees half the travel at four
 # times the rate, and a stock ISO 10243 die spring (rectangular wire, high energy density) fits the cage.
 TACKLE = 2
 CAGE_L = 0.135
-CAGE_ID = 0.0248                         # shoulder.py cage: Cylinder(14) − Cylinder(14 − 1.6) → Ø24.8 bore
+CAGE_ID = 0.026                          # shoulder.py CAGE r_in 13 → Ø26 bore (2026-11-27 inboard cage; was Ø24.8)
 # Exact part (loop 47): ISO 10243 green (light load), hole Ø25, rod Ø12.5, L0 115 mm, R = 18.7 N/mm ± 10 %.
 # Berger Tools part V25-115 (berger-tools.co.uk, "V - Green Die Spring ISO10243 Light Load"); the same ISO size is sold by
 # Accu (TJL25-115), Dayton/Lamina and Raymond. ISO 10243 green: travel 25 % L0 long life, 30 % medium life, 40 % = Fmax.
@@ -70,11 +72,58 @@ def torque(theta: float, k: float, a: float, b: float, rp: float = R_PULLEY) -> 
 
 
 def cad_pin_b():
-    """Pin B in the shoulder-module frame as shoulder.py cuts it (disc local (0, −30, 0), laid along +Y by Rot(−90, 0, 0)).
-    The arm hangs along −Z in that frame (robot.py: the arm sits at −YAW_DROP below the pitch axis at pitch 0)."""
-    from build123d import Pos, Rot
-    p = (Rot(-90, 0, 0) * Pos(0, -30, 0)).position
-    return float(p.X) + 0.0, round(float(p.Y), 6) + 0.0, float(p.Z) + 0.0
+    """Pin B in the shoulder-module frame, read from rnd/parts/shoulder.py (2026-11-27: on the inboard crank). The arm hangs
+    along −Z in that frame (robot.py: the arm sits at −YAW_DROP below the pitch axis at pitch 0)."""
+    from .parts import shoulder
+    return tuple(float(v) + 0.0 for v in shoulder.PIN_B)
+
+
+def cable_sweep(y: float, step: int = 4):
+    """Solid swept by the straight B → A cable (Ø CABLE_D + 0.4 mm) in the plane y (mm, module frame: x forward, z up) over
+    pitch −200…60° and the whole slot (a 40–60 mm): one thin box per pose, from pin B's surface to A's tangent point."""
+    from build123d import Box, Pos, Rot
+    w = CABLE_D * 1000 + 0.4
+    out = None
+    for a in (A_RANGE[0], A_NOM, A_RANGE[1]):
+        for t in range(-200, 61, step):
+            th = math.radians(t)
+            Bp = np.array([B * math.sin(th), -B * math.cos(th)]) * 1000
+            Ap = np.array([0.0, a * 1000])
+            d = Ap - Bp
+            L = float(np.linalg.norm(d))
+            ang = math.atan2(d[1], d[0]) + math.asin(R_PULLEY * 1000 / L) * (1 if Bp[0] >= 0 else -1)
+            u = np.array([math.cos(ang), math.sin(ang)])
+            l_t = math.sqrt(L * L - (R_PULLEY * 1000) ** 2)
+            s0 = Bp + u * 3.2                                   # from the pin's surface (Ø6 pin)
+            s1 = Bp + u * l_t
+            mid, ln = (s0 + s1) / 2, float(np.linalg.norm(s1 - s0))
+            bx = Pos(mid[0], y, mid[1]) * Rot(0, -math.degrees(ang), 0) * Box(ln, w, w)
+            out = bx if out is None else out + bx
+    return out
+
+
+def cad_plane_clear():
+    """CAD check (2026-11-27): which solids the straight A–B cable meets. The swept cable (cable_sweep, pitch −200…60°
+    covers both 0° and 180°, so it crosses the axis) is intersected with every shoulder-module part except pin B (the
+    anchor) and pulley A. Returns (volume mm³ per part that intrudes, cable plane y, crank face → cable plane mm)."""
+    from .parts import shoulder
+    y = shoulder.Y_BAL
+    zone = cable_sweep(y)
+    hits = {}
+    for n, p, _ in shoulder.module():
+        if n == "pulleyA":
+            continue
+        if n == "pitch_hub_crank":
+            from build123d import Cylinder, Pos, Rot
+            p = p - Pos(shoulder.PIN_B[0], y + 10, shoulder.PIN_B[2]) * Rot(90, 0, 0) * Cylinder(3.0, 20, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        bb = p.bounding_box()
+        if bb.max.Y < y - 2 or bb.min.Y > y + 2:
+            continue
+        v = (p & zone).volume
+        if v > 1e-3:
+            hits[n] = v
+    near = min(abs(y - shoulder.Y_TUBE_IN + shoulder.CRANK_T), 99.0)
+    return hits, y, near
 
 
 def shaft_clear(a: float, b: float, r: float = R_SHAFT + 0.001):
@@ -122,6 +171,7 @@ def report(d: Design = BASELINE) -> str:
     sign_ok = pb[2] < 0
     f = lambda x: f"{x:.0%}"
     rng = s["clear"]
+    plane = cad_plane_clear()
     return "\n".join([
         "# Shoulder balancer (auto-generated by `python -m rnd.balancer`)", "",
         f"Zero-free-length cable-spring balancer. Pulley A sits {A_RANGE[0] * 1000:.0f}–{A_RANGE[1] * 1000:.0f} mm above the pitch axis in a slot; pin B sits on the "
@@ -136,9 +186,15 @@ def report(d: Design = BASELINE) -> str:
         f"spring the model assumed is not a catalogue part: the real green Ø25 × 115 is 18.7 N/mm, which makes the old geometry K = {o['K_real']:.1f} N·m instead of {d.arm.spring_k_nm} N·m.",
         f"- **Fix (this file):** keep the spring and the 2:1 tackle, change the geometry for the real rate: b = {B * 1000:.0f} mm, slot a = {A_RANGE[0] * 1000:.0f}–{A_RANGE[1] * 1000:.0f} mm. "
         f"K = {d.arm.spring_k_nm} N·m needs a = {s['a_for_K'] * 1000:.1f} mm.",
-        f"- **Cable vs shaft:** the straight A–B cable passes within the Ø{2 * R_SHAFT * 1000:.0f} shaft for pitch "
-        + (f"0–{rng[1]}° from hanging (both directions) whenever the balancer plane holds the shaft. **The pin must sit beyond the shaft end** (a crank or end disc "
-           "past the tube, the harness leaving the bore through a side window first) or the cable has to wrap the shaft, which breaks the law." if rng else "never ✅."), "",
+        f"- **Cable vs shaft:** a straight A–B cable passes within the Ø{2 * R_SHAFT * 1000:.0f} shaft for pitch "
+        + (f"0–{rng[1]}° from hanging (both directions) whenever the balancer plane holds the shaft (loop 47 finding)." if rng else "never."),
+        (f"- **Fix (2026-11-27, CAD-checked): the balancer plane moved inboard of the shaft's inboard end** (y {plane[1]:.1f} mm in the module frame): "
+         f"an aluminium crank on the tube's inboard end face carries pin B, {plane[2]:.1f} mm past the crank face; pulley A sits in a double-shear fork on the "
+         "inner wall, the spring cage runs back in the same plane. Solids the cable sweep zone meets (pin B and pulley A excluded): "
+         + (", ".join(f"{k} {v:.0f} mm³" for k, v in plane[0].items()) + " ❌" if plane[0] else "**none ✅**")
+         + ". Outboard of the tube end the hub → ferrule load path and the harness would both have to cross the plane on the axis, "
+           "which the cable sweeps at pitch 0° and 180°; so the harness now crosses pitch through a clock spring outboard of the outer wall "
+           "(shoulder.PITCH_SPR) and enters the hub bore through a side window."), "",
         "| Quantity | Value |", "|---|---|",
         f"| Spring (exact part) | {DIE['name']} |",
         f"| Cable-side rate behind the 2:1 tackle, k = R/4 | **{s['k'] / 1000:.2f} N/mm** |",
@@ -167,8 +223,15 @@ def score(d: Design = BASELINE):
     return s["err"] / s["K_here"], s["fits"]
 
 
+def ok(d: Design = BASELINE) -> bool:
+    """All balancer checks: deflection ≤ ISO max at the slot end, cage bore, B clears A, pin B along the arm, cable plane clear."""
+    s = study(d)
+    return bool(s["fits"] and s["cage_ok"] and s["clear_ab"] and cad_pin_b()[2] < 0 and not cad_plane_clear()[0])
+
+
 if __name__ == "__main__":
     from pathlib import Path
     md = report()
     (Path(__file__).resolve().parent.parent / "docs" / "rnd" / "balancer.md").write_text(md + "\n\n![shoulder pitch module](img/shoulder_pitch_v0.png)\n")
     print(md)
+    raise SystemExit(0 if ok() else 1)

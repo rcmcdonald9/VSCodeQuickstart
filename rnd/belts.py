@@ -47,7 +47,8 @@ def stage(joint, ratio, z_small, centre_mm, width_mm, d: Design = BASELINE):
                 tim=tim, centre=centre_mm, length=length, teeth_belt=length / PITCH, outer_big=D + 2 * 3.6)
 
 
-STAGES = [("shoulder_pitch", 3.0, 20, 70, 15), ("shoulder_roll", 80 / 18, 18, 103.3, 15), ("upper_yaw", 2.0, 20, 80, 15), ("elbow", 2.0, 20, 70, 15)]
+STAGES = [("shoulder_pitch", 3.0, 20, 70, 15), ("shoulder_roll", 80 / 18, 18, 103.3, 15), ("upper_yaw", 2.0, 20, 80, 15),
+          ("elbow", BASELINE.arm.elbow_teeth / 20, 20, round(BASELINE.arm.elbow_belt_c * 1000, 1), 15)]   # D20 switch: 20T:40T @ 70 or 20T:60T @ 84
 from .params import ROLL_DRIVE as _RD                     # D24 (owner, 2026-11-27): the inline GIM8108-36 roll has no belt
 if _RD == "inline":
     STAGES = [s for s in STAGES if s[0] != "shoulder_roll"]

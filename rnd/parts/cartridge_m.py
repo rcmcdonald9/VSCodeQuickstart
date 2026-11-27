@@ -16,7 +16,18 @@ from .kx import KX74, male, balls
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 MOTOR = dict(od=80.0, h=40.0,                     # with SDC104 driver (manual: Ø80 × 40)
              out_holes=8, out_pcd=34.0,           # 8×M3 on the output (count from the drawing; PCD ESTIMATE)
-             rear_holes=6, rear_pcd=57.0)         # 6×M3 on the housing (count from the drawing; PCD ESTIMATE)
+             rear_holes=6, rear_pcd=57.0,         # 6×M3 on the housing (count from the drawing; PCD ESTIMATE)
+             oldham=40.0, nose=(21.5, 24.5), flange=(68.0, 29.0))   # D24 bolted can: Oldham OD, nose bore / outer r, flange OD / bolt r
+# D20 (2026-11-27, behind params.ARM_MOTORS = "d20"): GIM8108-8 at shoulder pitch + elbow. No drawing yet (reseller data
+# only): Ø96 frame ESTIMATE (rnd/specs/actuators.yaml; SteadyWin's GIM8108-9 installation drawing lists Ø96 / Ø84 / Ø70 /
+# Ø56 / Ø30 circles), height 50 with the driver ESTIMATE, output 8 × M3 on PCD 30 ESTIMATE, housing 6 × M3 on PCD 70
+# ESTIMATE. The 22 N·m stall (2× the GIM6010's 11) doubles the Oldham tongue load, so a Ø50 Oldham (tongue bearing
+# ≈ 3T/(2·h·R²) ≈ 17 MPa at 22 N·m vs 26 MPa on the Ø40; hand calc, ESTIMATE) in an Ø84 flange (6 × M4 at r 37:
+# 22 / (6 × 37 mm) ≈ 99 N per screw). Only the motor side changes; the stage (Ø12 shaft, 6801s, 20T) is shared.
+MOTOR_8108 = dict(od=96.0, h=50.0, out_holes=8, out_pcd=30.0, rear_holes=6, rear_pcd=70.0,
+                  oldham=50.0, nose=(26.5, 29.5), flange=(84.0, 37.0),
+                  flange_ang=(45.0, -45.0, 105.0, -105.0, 165.0, -165.0))   # at r 37 the D24 angles (±75°) land on the elbow cassette's M5 posts
+MOTORS = {"GIM6010-8": MOTOR, "GIM8108-8": MOTOR_8108}
 WALL, FLOOR = 3.0, 4.0
 NECK, NECK_R = 5.0, 33.0      # spacer under the male flange: room for the collar teeth behind the lugs
 TORQUE_PIN = dict(d=6.0, r=30.0, stick_out=10.0, ang=0.0)
@@ -125,27 +136,41 @@ STEP_T = 3.0
 CAP_T = FLOOR
 
 
-def bolted_levels() -> dict:
-    """Stage-frame z levels of the Oldham drive and the sleeve (flange plane z = 0)."""
+def bolted_levels(m: dict | None = None) -> dict:
+    """Stage-frame z levels of the Oldham drive and the sleeve (flange plane z = 0) for motor m (default the GIM6010-8)."""
+    m = m or MOTOR
     o = OLDHAM
     hub = (-0.5, -0.5 + o["hub_l"])                         # clamp hub, tongue in its top tongue_h
     disc = (hub[1] + o["gap"] - o["tongue_h"], hub[1] + o["gap"] - o["tongue_h"] + o["disc_t"])
     ad = (disc[1] + o["gap"], disc[1] + o["gap"] + ADAPTER_T)  # adapter base; its tongue hangs into the disc's upper slot
     face = ad[1]                                            # motor output face
     return dict(hub=hub, disc=disc, adapter=ad, motor_face=face, step=(face - STEP_T, face), flange=(0.0, FLANGE_B["t"]),
-                rear=face + MOTOR["h"] + CAP_T)
+                rear=face + m["h"] + CAP_T)
 
 
-def stack_height_bolted() -> float:
+def stack_height_bolted(m: dict | None = None) -> float:
     """Can rear face → flange mating plane (the bolted analogue of stack_height())."""
-    return bolted_levels()["rear"]
+    return bolted_levels(m)["rear"]
 
 
-def can_bolted() -> Part:
+def nose_flange(m: dict | None = None):
+    """(NOSE_B, FLANGE_B) for motor m: the motor's own nose and flange sizes (GIM6010: the D24 values)."""
+    m = m or MOTOR
+    return (dict(NOSE_B, r_in=m["nose"][0], r_out=m["nose"][1]),
+            dict(FLANGE_B, od=m["flange"][0], bolt_r=m["flange"][1], ang=m.get("flange_ang", FLANGE_ANG)))
+
+
+def can_r_out(m: dict | None = None) -> float:
+    """Outer radius of the bolted can's motor sleeve."""
+    return (m or MOTOR)["od"] / 2 + WALL + 0.3
+
+
+def can_bolted(m: dict | None = None) -> Part:
     """D24 sleeve in the STAGE frame (flange plane z = 0, motor toward +Z): nose lip, flange, nose, step, motor sleeve."""
-    L = bolted_levels()
-    n, f = NOSE_B, FLANGE_B
-    r_in, r_out = MOTOR["od"] / 2 + 0.3, MOTOR["od"] / 2 + WALL + 0.3
+    m = m or MOTOR
+    L = bolted_levels(m)
+    n, f = nose_flange(m)
+    r_in, r_out = m["od"] / 2 + 0.3, m["od"] / 2 + WALL + 0.3
     z_rear = L["rear"]
     body = Pos(0, 0, L["step"][0]) * Cylinder(r_out, z_rear - L["step"][0], align=MIN)
     body -= Pos(0, 0, L["motor_face"]) * Cylinder(r_in, z_rear, align=MIN)              # motor bore, open at the rear
@@ -154,10 +179,10 @@ def can_bolted() -> Part:
     body += Cylinder(f["od"] / 2, f["t"], align=MIN)                                     # flange
     body += Pos(0, 0, -n["lip"]) * Cylinder(n["r_out"], n["lip"], align=MIN)             # centring lip (spigot)
     body -= Pos(0, 0, -5) * Cylinder(n["r_in"], L["motor_face"] + 5, align=MIN)          # coupling bore through flange, nose, step
-    for a in FLANGE_ANG:
+    for a in f["ang"]:
         t = math.radians(a)
         body -= Pos(f["bolt_r"] * math.cos(t), f["bolt_r"] * math.sin(t), 0) * Cylinder(f["insert_d"] / 2 - 0.1, f["insert_l"] + 0.3, align=MIN)
-    body -= Pos(r_out, 0, (L["motor_face"] + z_rear) / 2) * Box(12, 16, MOTOR["h"] - 8)   # side window: CAN + power pigtail
+    body -= Pos(r_out, 0, (L["motor_face"] + z_rear) / 2) * Box(12, 16, m["h"] - 8)   # side window: CAN + power pigtail
     body -= Pos(0, 0, z_rear - 8) * (Cylinder(r_out + 1, 2) - Cylinder(r_out - 1.2, 2))     # light-ring groove
     for k in range(3):                                                                    # radial M3 for the rear cap
         a = 2 * math.pi * k / 3 + math.pi / 6
@@ -165,27 +190,30 @@ def can_bolted() -> Part:
     return body
 
 
-def can_cap_bolted() -> Part:
-    """Rear cap of the bolted can (stage frame): carries the motor (3 × M3 at PCD 57), held by 3 radial M3."""
-    L = bolted_levels()
+def can_cap_bolted(m: dict | None = None) -> Part:
+    """Rear cap of the bolted can (stage frame): carries the motor (3 × M3 on its rear PCD), held by 3 radial M3."""
+    m = m or MOTOR
+    L = bolted_levels(m)
     z0 = L["rear"] - CAP_T
-    c = Pos(0, 0, z0) * Cylinder(MOTOR["od"] / 2 + 0.2, CAP_T, align=MIN)
-    for k in range(0, MOTOR["rear_holes"], 2):
-        a = 2 * math.pi * k / MOTOR["rear_holes"]
-        c -= Pos(MOTOR["rear_pcd"] / 2 * math.cos(a), MOTOR["rear_pcd"] / 2 * math.sin(a), z0) * Cylinder(1.7, 20)
+    c = Pos(0, 0, z0) * Cylinder(m["od"] / 2 + 0.2, CAP_T, align=MIN)
+    for k in range(0, m["rear_holes"], 2):
+        a = 2 * math.pi * k / m["rear_holes"]
+        c -= Pos(m["rear_pcd"] / 2 * math.cos(a), m["rear_pcd"] / 2 * math.sin(a), z0) * Cylinder(1.7, 20)
     c -= Pos(0, 0, z0) * Cylinder(13, 20)                                                 # rear vent / cable pass-through
     return c
 
 
-def motor_bolted() -> Part:
-    L = bolted_levels()
-    return Pos(0, 0, L["motor_face"]) * Cylinder(MOTOR["od"] / 2, MOTOR["h"], align=MIN)
+def motor_bolted(m: dict | None = None) -> Part:
+    m = m or MOTOR
+    L = bolted_levels(m)
+    return Pos(0, 0, L["motor_face"]) * Cylinder(m["od"] / 2, m["h"], align=MIN)
 
 
-def oldham_parts():
+def oldham_parts(m: dict | None = None):
     """(name, part, colour) of the Oldham drive in the stage frame: clamp hub (on the Ø12 shaft), disc, motor adapter."""
-    o, L = OLDHAM, bolted_levels()
-    r = o["od"] / 2
+    m = m or MOTOR
+    o, L = OLDHAM, bolted_levels(m)
+    r = m["oldham"] / 2
     h0, h1 = L["hub"]
     hub = Pos(0, 0, h0) * Cylinder(r, h1 - h0 - o["tongue_h"], align=MIN)
     hub += Pos(0, 0, h1 - o["tongue_h"]) * (Box(2 * r - 2, o["tongue_w"], o["tongue_h"], align=MIN) & Cylinder(r, o["tongue_h"], align=MIN))
@@ -198,13 +226,13 @@ def oldham_parts():
     ad = Pos(0, 0, a0) * Cylinder(r, a1 - a0, align=MIN)
     ad += Pos(0, 0, a0 - o["tongue_h"] + o["gap"]) * Rot(0, 0, 90) * (Box(2 * r - 2, o["tongue_w"], o["tongue_h"] - o["gap"], align=MIN)
                                                                       & Cylinder(r, o["tongue_h"], align=MIN))
-    for k in range(0, MOTOR["out_holes"], 2):                       # 4 × M3 into the motor output, counterbored from the disc side
-        a = 2 * math.pi * k / MOTOR["out_holes"] + math.pi / 8
-        x, y = MOTOR["out_pcd"] / 2 * math.cos(a), MOTOR["out_pcd"] / 2 * math.sin(a)
+    for k in range(0, m["out_holes"], 2):                           # 4 × M3 into the motor output, counterbored from the disc side
+        a = 2 * math.pi * k / m["out_holes"] + math.pi / 8
+        x, y = m["out_pcd"] / 2 * math.cos(a), m["out_pcd"] / 2 * math.sin(a)
         ad -= Pos(x, y, a0) * Cylinder(1.7, 10, align=MIN)
         ad -= Pos(x, y, a0) * Cylinder(3.0, 1.6, align=MIN)
     return [("oldham_hub", hub, "steel"), ("oldham_disc", disc, "dark"), ("drive_adapter", ad, "dark")]
 
 
-def motor_adapter_bolted() -> Part:
-    return dict((n, p) for n, p, _ in oldham_parts())["drive_adapter"]
+def motor_adapter_bolted(m: dict | None = None) -> Part:
+    return dict((n, p) for n, p, _ in oldham_parts(m))["drive_adapter"]
