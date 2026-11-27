@@ -1,4 +1,8 @@
-"""Build guide v4 (order of operations + hands-on time estimate).  python -m rnd.build_guide"""
+"""Build guide v4 (order of operations + hands-on time estimate).  python -m rnd.build_guide
+
+Wave-1 design (2026-11-27): D24 bolted arm cartridges with an Oldham drive (the D15 socket steps go from the arm; KX sockets
+stay on the lift and the head), D19 one-piece shaft-pulleys in capped seats, sw/bringup.py for bring-up.
+"""
 from __future__ import annotations
 
 import json
@@ -8,20 +12,32 @@ DOCS = Path(__file__).resolve().parent.parent / "docs"
 
 # (step, what, count, minutes each) — ESTIMATEs for a first build by one person with the parts printed
 STEPS = [
-    ("1 Print", "Print the parts in print_plan.md order: cartridges + KX parts first (they let you bench-test motors early)", 1, 0),
-    ("2 Coupons", "Print + test the KX74 coupon set and the GIM bolt-circle coupon; adjust KX fit / bolt circles in rnd/parts before mass printing", 1, 45),
-    ("3 KX sockets", "D15 (loop 40): press 6 dowel pins in radially, 6 coil springs into the step pockets, collar on, retainer (3 × M3 into inserts); snap 3 balls into the male face with retaining compound", 13, 8),
-    ("4 Cartridges", "Motor into its can (3 screws), torque pin, adapter (4 screws, balls embedded at a print pause); label + CAN ID", 21, 6),
-    ("5 Belt stages", "D13 (loop 40): flange coupling onto the KX hub (4 × M4); 6801s into the eccentric bushings; Ø12 shaft through wall A, aluminium pulley on, wall B; split big pulley between the walls, Ø40 tube through; belt on, tension with the bushings", 9, 14),
+    ("1 Print", "Print the parts in print_plan.md order: the bolted cans, rear caps and Oldham adapters first in ASA (they let you bench-test motors early)", 1, 0),
+    ("2 Coupons", "Print + test the bolted-flange coupon (6 × M4 inserts, centring lip, Oldham tongue on the bought disc) and the GIM bolt-circle coupon; "
+     "adjust the flange / tongue / bolt circles in rnd/parts before mass printing", 1, 45),
+    ("3 KX sockets", "D15 screwed socket, lift + head pan + tilt only (D24: the arm has none): 6 dowels, 6 coil springs, collar, retainer (3 × M3 into inserts); "
+     "3 balls into the male face with retaining compound", 3, 8),
+    ("4a Bolted cartridges", "D24: 9 heat-set inserts (6 × M4 in the flange, 3 × M3 in the rim); motor into the sleeve from the rear, rear cap (3 × M3 to the "
+     "motor + 3 radial M3); Oldham tongue adapter on the output (4 × M3); label + CAN ID (pitch, roll, yaw, elbow × 2)", 8, 9),
+    ("4b Wrist cartridges", "D24: DM-J4310 into its can, bolted can flange and output flange (inserts + 6 × M3 each); label + CAN ID", 2, 9),
+    ("4c KX + servo cartridges", "Wheels ×4 + lift: motor into its can (3 screws), torque pin, KX adapter (4 screws); STS3215 sleeves ×6", 11, 6),
+    ("5 Belt stages", "D13 v3 + D19: 6801s into the eccentric bushings, Ø12 shaft through wall A, aluminium pulley, wall B; Oldham clamp hub on the shaft "
+     "end + disc; the one-piece shaft-pulley with its bearings into the capped U-slots, caps on (2 × M4 / M3); belt on, tension with the bushings; "
+     "cartridge nose into the counterbore, 6 × M4 countersunk from the pulley side (the lift keeps its KX74 stage)", 9, 14),
     ("5b Clock springs", "Wind the 6 ribbon cassettes per arm (D14 ribbon) and fit them at pitch, roll, yaw, elbow, wrist pitch, wrist roll", 2, 30),
-    ("6 Arms", "Bond the CF tubes into the sockets (epoxy, cure overnight); upper bone + elbow stage, forearm + wrist can, hand + gripper, roll/yaw module", 2, 90),
-    ("7 Shoulders", "Pitch modules: bracket, shaft, balancer (spring cage, cord, pulley A at the 50 mm slot), V-band flange", 2, 45),
+    ("6 Arms", "Bond the CF tubes into the sockets (epoxy, cure overnight); upper bone + elbow cassette (in from below, seat caps), forearm + clamp "
+     "(2 × M5), wrist + hand + gripper, roll/yaw module", 2, 90),
+    ("7 Shoulders", "Pitch modules: bracket body, one-piece pitch shaft, outer wall (3 × M4), pitch hub, balancer (die spring, cord, pulley A at the "
+     "40–60 mm slot), V-band ferrule", 2, 45),
     ("8 Mast + torso + head", "Ratchet strip segments, lift drive + belt, carriage (8 × 625), torso halves around the carriage, head bracket + pan/tilt + shell", 1, 150),
     ("9 Base", "4 wheel modules (pods, shafts, hubs, wheels), deck quarters, skirt, coupling, battery bay, lidar, electronics", 1, 120),
     ("10 Wiring", "Pre-made daisy-chain harness segments (JST-GH CAN/TTL, VH power) per module; power distribution board; detach plugs", 1, 120),
     ("10b Sensors (D9)", "Joint-side encoder magnets + boards (9), fingertip tactile pads (4), palm ToF (2), cliff ToF (4), 3 RP2040 CAN sensor nodes", 1, 160),
-    ("11 Bring-up", "Per-cartridge test on the bench, joint zeroing (magnet index), balancer K tune, lift pawl test, e-stop + regen clamp + watchdog test", 1, 120),
+    ("11 Bring-up", "sw/bringup.py per arm (enumerate, drive limits to flash, e-stop + watchdog, hard-stop zeroing, 10 % jog, gravity hold); "
+     "balancer K from the fit, lift pawl test, regen clamp test", 1, 120),
 ]
+# The loop-40 steps the wave-1 design replaced (for the before/after line): 13 KX sockets × 8 min, 21 cartridges × 6 min
+OLD = dict(sockets=(13, 8), cartridges=(21, 6), arm=6.05)
 
 
 def hours():
@@ -29,24 +45,37 @@ def hours():
 
 
 def arm_hours():
-    """One arm, parts printed: 7 cartridges + 7 sockets + 4 belt stages + arm + shoulder + its harness + bring-up (ESTIMATE)."""
+    """One arm, parts printed: 4 bolted GIM cartridges + the wrist DM + 2 servo sleeves, 4 belt stages, clock springs, the arm,
+    its shoulder, its harness + bring-up (ESTIMATE). No KX socket on the arm (D24)."""
     m = dict((s.split()[0], mm) for s, _, _, mm in STEPS)
-    return (7 * m["4"] + 5 * m["3"] + 4 * m["5"] + m["5b"] + m["6"] + m["7"] + 30 + 30) / 60
+    return (4 * m["4a"] + m["4b"] + 2 * m["4c"] + 4 * m["5"] + m["5b"] + m["6"] + m["7"] + 30 + 30) / 60
 
 
 def main():
-    h = hours()
+    h, ah = hours(), arm_hours()
     pp = json.loads((DOCS / "rnd" / "print_plan.json").read_text())
+    prev = json.loads((DOCS / "rnd" / "build.json").read_text()) if (DOCS / "rnd" / "build.json").exists() else {}
     L = ["# Pip v4: build guide (generated by `python -m rnd.build_guide`)", "",
          f"**First build:** about **{h:.0f} h hands-on** (ESTIMATE), plus about **{pp['hours_p2s']:.0f} h of unattended P2S printing** "
-         f"({pp['kg']:.1f} kg PETG). Reconfiguring later is fast: a cartridge swap is one collar twist (~1 min), and an arm comes off with one V-band clamp.", "",
-         "Parts: [BOM](rnd/BOM_v4.md) · prints: [print plan](rnd/print_plan.md) · wiring: [electrical](rnd/electrical.md) · checks: [assembly](rnd/assembly.md), [sim](rnd/sim.md)", "",
+         f"({pp['kg']:.1f} kg PETG/ASA). Reconfiguring later: an arm cartridge swap is 6 × M4 screws with the belt on (~3 min); an arm comes off "
+         "with one V-band clamp.",
+         f"**One arm** (the first milestone build): about **{ah:.1f} h** hands-on"
+         + (f" ({prev['arm_hours']:.2f} → {ah:.2f} h, {60 * (ah - prev['arm_hours']):+.0f} min, since the last guide)" if prev.get("arm_hours") else "")
+         + (f", plus ≈ {pp['arm_hours_p2s']:.0f} h of printing." if pp.get("arm_hours_p2s") else "."), "",
+         "Parts: [BOM](rnd/BOM_v4.md) · M1 kit: [M1_BENCH_ARM.md](M1_BENCH_ARM.md) · prints: [print plan](rnd/print_plan.md) · wiring: "
+         "[electrical](rnd/electrical.md) · checks: [assembly](rnd/assembly.md), [sim](rnd/sim.md)", "",
          "| Step | What | Count | Min each | Hours |", "|---|---|---|---|---|"]
     L += [f"| {s} | {w} | {c} | {m} | {c * m / 60:.1f} |" for s, w, c, m in STEPS]
+    so, co = OLD["sockets"], OLD["cartridges"]
+    new_sc = sum(c * m for s, _, c, m in STEPS if s.split()[0] in ("3", "4a", "4b", "4c"))
     L += [f"| | **Total hands-on** | | | **{h:.1f}** |", "",
+          f"**Wave 1 (D24 bolted cartridges, D19):** sockets + cartridges {(so[0] * so[1] + co[0] * co[1]) / 60:.1f} → {new_sc / 60:.1f} h for the robot; "
+          f"one arm {OLD['arm']:.2f} → {ah:.2f} h ({60 * (ah - OLD['arm']):+.0f} min). The 5 D15 sockets per arm go (−40 min); the bolted "
+          "cartridges' 9 heat-set inserts and the Oldham adapter take about half of that back. D19's one-piece shaft-pulleys replace the "
+          "split pulleys (no keyed joint to fit) at about the same time, the seat-cap screws included.", "",
           "**Against R10** (first build ≤ 4 h): **not met.**",
           "- **Loop 10 cut the estimate from 25 h to ~19 h:**",
-          "    - print-in-place KX sockets with pins and spring embedded at print pauses (no retainer, no screws) — *retired in loop 40 (D15): the screwed socket takes ≈ 8 min*",
+          "    - print-in-place KX sockets with pins and spring embedded at print pauses (no retainer, no screws) — *retired in loop 40 (D15): the screwed socket takes ≈ 8 min; D24 then removed the sockets from the arm*",
           "    - 7 instead of 14 screws per cartridge",
           "    - eccentric-bushing belt tensioning",
           "    - pre-made harness segments",
@@ -55,13 +84,14 @@ def main():
           "",
           "## Safety notes",
           "- 24 V Li-ion: use the specified BMS (≥ 30 A), fuse every branch, and charge on a non-flammable surface.",
-          "- The arms can pinch. Torque limits are set in firmware (rated × 1.8). The KX seats also slip at about 1.16× actuator peak as a mechanical backstop.",
-          "- Test the lift pawl and the e-stop before any powered arm motion."]
-    (DOCS / "BUILD_v4.md").write_text("\n".join(L))
-    L.insert(3, f"**One arm** (the first milestone build): about **{arm_hours():.1f} h** hands-on.")
-    (DOCS / "BUILD_v4.md").write_text("\n".join(L))
-    (DOCS / "rnd" / "build.json").write_text(json.dumps({"hours": h, "arm_hours": arm_hours()}))
-    print("\n".join(L[:4]))
+          "- The arms can pinch. Torque limits are set in the drives (bring-up step 2, saved to flash) and bounded again by the safety "
+          "supervisor. The bolted arm cartridges have **no mechanical slip backstop** (the KX seats slipped at ≈ 1.16× peak); only the lift "
+          "and head sockets still do.",
+          "- Test the lift pawl, the e-stop and the watchdog (sw/bringup.py step 3) before any powered arm motion; bench work with the catch "
+          "cradle ≤ 50 mm under the arm."]
+    (DOCS / "BUILD_v4.md").write_text("\n".join(L) + "\n")
+    (DOCS / "rnd" / "build.json").write_text(json.dumps({"hours": h, "arm_hours": ah}))
+    print("\n".join(L[:5]))
 
 
 if __name__ == "__main__":

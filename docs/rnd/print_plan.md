@@ -2,57 +2,74 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 13.9 kg of PETG (≈ $278 at $20/kg); 931 h generic ≈ 326 h on the P2S (≈ 13.6 days of continuous printing).**
+**Total: 13.8 kg of PETG (≈ $276 at $20/kg); 929 h generic ≈ 325 h on the P2S (≈ 13.6 days of continuous printing).**
+
+**One arm ≈** (shoulder pitch module + arm + hand, the M1 print): 3.40 kg, 241 h generic ≈ 84 h on the P2S.
+
+**Since the last plan:** 13.9 → 13.8 kg, 326 → 325 h on the P2S.
+
+**Wave 1 (D24 bolted cartridges, D19 one-piece shafts):** the arm no longer prints KX74/KX56 hubs + collars or the KX cartridge adapters (8 KX74 collars, 2 KX56 sockets, 8 KX cans/adapters retired from the arm), nor split pulleys; it prints 8 bolted cans + rear caps + Oldham tongue adapters, the one-piece pitch/roll/yaw/elbow shaft-pulleys and the D19 seat caps. Inline-roll option (D24, pending): −2 bolted cans/caps/adapters, −2 roll shafts, −4 roll seat caps, −4 clevis caps; + 2 rear roll arms (inline roll link).
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
 | torso_shell | 1 | 1872 | 110.1 | 2 halves |
-| upper bone | 2 | 869 | 59.8 |  |
-| shoulder bracket | 2 | 853 | 56.4 | mirror for the right arm |
-| cartridge M can | 13 | 846 | 55.8 | 8 arm + 4 wheel + 1 lift |
-| small-pulley hub | 9 | 734 | 50.7 | pitch, roll, yaw, elbow ×2 + lift (KX74 hub + 20T/18T pulley + journals) |
-| roll link | 2 | 677 | 45.5 |  |
-| head_shell | 1 | 719 | 43.3 |  |
+| upper bone | 2 | 847 | 57.0 |  |
+| head_shell | 1 | 971 | 55.9 |  |
+| cartridge M can (bolted, D24) | 8 | 849 | 54.8 | pitch, roll, yaw, elbow × 2 arms: Ø86.6 sleeve + Ø68 flange, 6 × M4 heat-set inserts (ASA, A6) |
+| roll link | 2 | 812 | 54.3 |  |
 | skirt quarter | 4 | 602 | 42.4 |  |
 | deck quarter | 4 | 577 | 40.0 |  |
-| clevis + yaw block | 2 | 499 | 36.9 |  |
 | dock_wing_l | 2 | 542 | 34.0 | self-docking charger: left + mirrored right wing |
-| KX74 collar | 13 | 461 | 33.0 | 9 joints + 4 wheels |
-| cartridge M adapter | 13 | 409 | 31.0 | carries the KX74 male face |
-| pitch shaft | 2 | 329 | 22.5 | 60T pulley + balancer lever + female ferrule |
+| shoulder bracket outer wall | 2 | 482 | 33.3 | bolted print (D19: the pitch shaft drops in) |
+| roll shaft + 80T (one piece) | 2 | 416 | 29.9 | D19 |
+| clevis + yaw block | 2 | 373 | 27.7 |  |
+| shoulder bracket body | 2 | 310 | 23.5 | mirror for the right arm |
+| forearm (ends) | 2 | 330 | 22.8 | elbow end + clamp, wrist rim with M3 inserts, CF sockets |
 | carriage | 1 | 383 | 22.4 |  |
 | wheel pod | 4 | 356 | 22.2 |  |
-| roll shaft | 2 | 291 | 18.9 | 72T pulley |
-| elbow cassette plate | 4 | 181 | 18.3 | 2 per arm (A + B) |
-| forearm (ends) | 2 | 290 | 18.3 | elbow end, wrist can, CF socket |
-| elbow pulley hub | 2 | 252 | 17.2 |  |
+| palm | 2 | 333 | 21.6 |  |
+| cartridge M can | 5 | 326 | 21.5 | KX cartridges: 4 wheels + lift |
+| elbow pulley hub | 2 | 277 | 18.7 |  |
+| pitch shaft (integral 60T) | 2 | 232 | 17.0 | D19 one piece: Ø40 tube + 60T |
 | ratchet strip | 1 | 84 | 14.6 | 4 segments |
-| palm | 2 | 198 | 13.1 |  |
-| KX74 hub | 4 | 167 | 11.3 | wheel hubs, print-in-place with the collar (the 9 joint hubs are integral to the small-pulley hubs) |
+| KX74 hub | 4 | 183 | 12.7 | wheel hubs, bolted to the GIM output (D17) |
+| cartridge M adapter | 5 | 159 | 12.2 | KX74 male face (wheels + lift) |
+| pitch hub (balancer disc + ferrule) | 2 | 157 | 11.1 | bolted to the shaft end |
+| elbow cassette plate A | 2 | 101 | 10.1 | the elbow cartridge bolts to it (D24) |
 | dock_tower | 1 | 196 | 9.6 | dock contact tower |
-| yaw shaft | 2 | 119 | 8.0 | 40T pulley + flange |
+| cartridge D can | 2 | 143 | 9.2 | wrist pitch DM-J4310, bolted flange (D24: the KX56 went) |
+| cartridge M rear cap (D24) | 8 | 110 | 8.8 | carries the motor (3 × M3), 3 radial M3 into the sleeve |
+| yaw shaft | 2 | 111 | 7.5 | one-piece tube + 40T |
+| yaw plate bottom | 2 | 100 | 7.4 | separate bolted print (loop 44) |
+| clevis cap + yaw torque fork | 4 | 87 | 7.2 | inner + outer clevis caps, pinch bolt (the inner one stands in for both) |
 | mast coupling | 1 | 130 | 7.2 |  |
-| wheel shaft | 4 | 105 | 6.9 |  |
-| cartridge S sleeve | 4 | 81 | 5.9 |  |
-| KX44 collar | 4 | 81 | 5.9 |  |
+| elbow cassette plate | 2 | 62 | 6.9 | plate B (anti-rotation pin tab) |
+| wheel shaft | 4 | 103 | 6.8 |  |
+| cartridge S sleeve | 4 | 81 | 5.9 | wrist roll × 2, head pan + tilt |
 | torque hanger (wheel) | 4 | 87 | 5.8 | standard torque-reaction part, screws under the deck |
+| visor | 1 | 75 | 5.6 | dark PETG |
 | ferrule (arm side) | 2 | 79 | 5.3 |  |
-| KX44 hub | 4 | 72 | 5.1 | wrist roll ×2, head pan + tilt |
-| cartridge D can | 2 | 67 | 4.6 |  |
-| upper bone cap | 2 | 56 | 4.6 | screw-on bottom cap: the cassette goes in from below |
+| roll spring ring | 2 | 63 | 5.2 |  |
 | yoke | 1 | 68 | 4.5 |  |
-| visor | 1 | 62 | 4.4 | dark PETG |
-| eccentric bushing | 18 | 57 | 4.3 | 2 per small-pulley hub: belt tension |
-| KX56 collar | 2 | 52 | 3.7 |  |
-| KX56 hub | 2 | 53 | 3.6 | wrist pitch |
-| cartridge S horn adapter | 4 | 44 | 3.4 |  |
+| eccentric bushing | 18 | 57 | 4.3 | 2 per D13 stage: 8 arm + lift (belt tension) |
+| upper bone cap | 2 | 51 | 4.1 | screw-on bottom cap: the cassette goes in from below |
+| cartridge M Oldham adapter (D24) | 8 | 56 | 4.0 | tongue adapter on the motor output (4 × M3); the clamp hub and disc are bought |
+| cartridge S horn adapter | 4 | 44 | 3.5 |  |
+| D13 KX74 hub v2 (lift) | 1 | 47 | 3.5 | lift stage: KX74 hub over the flange coupling |
 | head_bracket | 1 | 56 | 3.3 |  |
+| KX44 collar | 2 | 44 | 3.3 |  |
+| yaw flange | 2 | 41 | 3.2 | bolted to the yaw tube (4 × M4) |
+| gripper grip_base | 2 | 48 | 3.2 |  |
 | gripper grip_servo_sleeve | 2 | 38 | 3.1 |  |
-| cartridge D adapter | 2 | 36 | 3.1 |  |
-| gripper grip_base | 2 | 47 | 2.9 |  |
+| KX44 hub | 2 | 41 | 3.1 | head pan + tilt (D16: the wrist roll lost its KX44) |
+| KX74 collar | 1 | 39 | 2.8 | lift only (the wheels have none, D17; the arm bolts, D24) |
+| roll seat cap | 4 | 22 | 2.8 | 2 per arm |
 | gripper jaw_moving | 2 | 28 | 2.7 |  |
 | e_tray | 1 | 33 | 2.3 |  |
+| elbow seat cap B (−Y) | 2 | 13 | 1.6 | D19 bolted seat cap, 2 × M4 |
 | elbow cassette spacer | 4 | 18 | 1.4 |  |
+| cartridge D adapter | 2 | 14 | 1.4 |  |
 | handle | 1 | 21 | 1.3 |  |
-| gripper jaw_fixed | 2 | 8 | 0.6 |  |
+| elbow seat cap A (+Y) | 2 | 10 | 1.3 | D19 bolted seat cap, 2 × M3 into lug inserts |
+| gripper jaw_fixed | 2 | 8 | 0.5 |  |
 | fin-ray finger | 4 | 0 | 0.0 | TPU 95A, 2 per gripper |
