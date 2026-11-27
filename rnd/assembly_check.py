@@ -31,7 +31,7 @@ def printed_parts():
               "upper bone": arm.upper_bone(), "upper bone cap": arm.bone_cap(), "elbow cassette plate": arm.cassette_plate("B"), "elbow cassette spacer": arm.cassette_spacer(), "forearm (ends)": arm.forearm(), "elbow pulley hub": arm.elbow_pulley_hub(),
               "palm": hand.palm(), "fin-ray finger": hand.fin_ray(-125, -162, 21.0, 18, 28, -1), **{f"gripper {n}": p for n, p, c in hand.gripper_parts() if n in ("grip_base", "grip_servo_sleeve", "jaw_moving", "jaw_fixed")},
               "shoulder bracket": shoulder.bracket(), "pitch shaft": shoulder.pitch_shaft(), "ferrule (arm side)": shoulder.ferrule(True),
-              "roll link": roll.roll_link(), "roll shaft": roll.roll_shaft(), "clevis + yaw block": roll.clevis_and_yaw_block(), "yaw shaft": roll.yaw_shaft(),
+              **roll.printed_parts(),                     # roll link, roll shaft or rear arm (D24 inline), clevis + yaw block, yaw shaft
               "carriage": upper.carriage(750), "ratchet strip": upper.ratchet_strip(),
               **{n: p for n, p, c in upper.torso(750) if n in ("torso_shell", "e_tray")},
               **{n: p for n, p, c in upper.head() if n in ("head_bracket", "handle", "yoke", "head_shell", "visor")},

@@ -5,8 +5,9 @@ these values. Change a number here and re-run `python -m rnd.run_all`.
 """
 from __future__ import annotations
 
+import os
 from copy import deepcopy
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field, asdict, replace
 from pathlib import Path
 
 import yaml
@@ -30,6 +31,23 @@ def act(name: str) -> dict:
     }
 
 
+# Shoulder-roll drive (D24, proposed 2026-11-27, awaiting the owner's OK): "belt" = GIM6010-8 cartridge + 18T:80T belt
+# (loops 10–44); "inline" = a GIM8108-36 on the roll axis, its output flange bolted to the clevis (rnd/parts/roll.py).
+# The default stays "belt" until the owner approves. PIP_ROLL_DRIVE=inline selects the other one for a whole run (CAD,
+# twin, checks): `PIP_ROLL_DRIVE=inline python -m rnd.roll_inline`. The numbers are the CAD's: roll.py warns if
+# roll_offset_y / yaw_drop drift from the geometry it derives.
+ROLL_DRIVE = os.environ.get("PIP_ROLL_DRIVE", "belt")
+ROLL_DRIVES = {
+    "belt": dict(roll_offset_y=0.083, yaw_drop=0.1134, shoulder_roll=("GIM6010-8", 80 / 18), roll_stage_mass=0.71, yaw_stage_mass=0.56),
+    # FROM CAD (rnd/parts/roll.py, inline): ROLL_Y = ferrule face 18 + 2 + motor r 50 (Ø100 ESTIMATE); the top yaw plate
+    # clears the motor (r 50) instead of the Ø127 80T pulley; masses = roll.masses(split=True), the motor (1.0 kg) is the
+    # roll actuator mass.
+    "inline": dict(roll_offset_y=0.070, yaw_drop=0.1003, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.27, yaw_stage_mass=0.54),
+}
+assert ROLL_DRIVE in ROLL_DRIVES, f"PIP_ROLL_DRIVE must be one of {list(ROLL_DRIVES)}"
+_RD = ROLL_DRIVES[ROLL_DRIVE]
+
+
 @dataclass
 class Arm:
     l_upper: float = 0.30          # shoulder pitch axis -> elbow axis (reach sweep: 0.25 -> 0.30)
@@ -37,12 +55,13 @@ class Arm:
     l_hand: float = 0.156          # wrist pitch -> grasp point (loop 10 hand CAD: wrist roll + KX44 + gripper servo stack; was 0.13; loop 40 D16 wrist-roll spindle: +6 mm)
     shoulder_y: float = 0.20       # |y| of shoulder pitch axis from robot centre line
     shoulder_x: float = 0.06       # x of shoulder axis relative to spine
-    roll_offset_y: float = 0.083   # roll axis outboard of the pitch body / detach plane (loop 10 roll CAD: 0.05 → 0.075, the 72T pulley; loop 40: 0.083, the 80T pulley)
-    yaw_drop: float = 0.1134       # roll axis → upper-arm yaw interface (loop 10 roll CAD: 0.07 → 0.10; loop 40 D13 yaw stage + 80T roll pulley: 0.113 = roll.YAW_DROP); the upper bone shortens to keep l_upper
+    roll_drive: str = ROLL_DRIVE   # "belt" | "inline" (ROLL_DRIVES above; D24)
+    roll_offset_y: float = _RD["roll_offset_y"]   # roll axis outboard of the pitch body / detach plane (belt: loop 10 roll CAD: 0.05 → 0.075, the 72T pulley; loop 40: 0.083, the 80T pulley; inline 0.070)
+    yaw_drop: float = _RD["yaw_drop"]       # belt: roll axis → upper-arm yaw interface (loop 10 roll CAD: 0.07 → 0.10; loop 40 D13 yaw stage + 80T roll pulley: 0.113 = roll.YAW_DROP); the upper bone shortens to keep l_upper
     # actuator choice per joint and belt/linkage reduction in the bone
     joints: dict = field(default_factory=lambda: {
         "shoulder_pitch": ("GIM6010-8", 3.0),   # loop 10: 2.5 → 3 (20T:60T) after the hand CAD added 0.2 kg at the tip
-        "shoulder_roll":  ("GIM6010-8", 80 / 18),   # loop 40: 4.0 → 4.44 (18T:80T, D13 mass); loop 10: 3.5 → 4 (18T:72T); loop 5: 3 → 3.5
+        "shoulder_roll":  _RD["shoulder_roll"],   # inline: GIM8108-36 direct. Belt: loop 40: 4.0 → 4.44 (18T:80T, D13 mass); loop 10: 3.5 → 4 (18T:72T); loop 5: 3 → 3.5
         "upper_yaw":      ("GIM6010-8", 2.0),   # loop 5: DM-J4310 direct was under-rated over the workspace (p95 4.6 N·m vs 3 rated)
         "elbow":          ("GIM6010-8", 2.0),
         "wrist_pitch":    ("DM-J4310-2EC_V1.1", 1.0),
@@ -64,8 +83,8 @@ class Arm:
     elbow_motor_at: float | None = None
     pitch_module_mass: float = 0.79    # FROM CAD (loop 7; loop 8 lightening 0.81 → 0.76; loop 10 60T pulley 0.79, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
                                        # KX-V ferrule, small hub + KX74 socket, bearings, spring/cable/pulley A, V-band clamp. Torso side.
-    roll_stage_mass: float = 0.71      # FROM CAD (loop 40, rnd/parts/roll.py masses(split=True)): ferrule, roll link + spring ring, roll shaft + split 72T + spring hub, D13 stage + KX74 socket, 2×61808. Loop 10: 0.58
-    yaw_stage_mass: float = 0.56       # FROM CAD (loop 40, incl. the A8 box walls): clevis + yaw block, yaw shaft + flange + split 40T + spring ring, D13 stage + KX74 socket, 2×61808. Loop 10: 0.47
+    roll_stage_mass: float = _RD["roll_stage_mass"]      # inline: ROLL_DRIVES. Belt: FROM CAD (loop 40, rnd/parts/roll.py masses(split=True)): ferrule, roll link + spring ring, roll shaft + split 72T + spring hub, D13 stage + KX74 socket, 2×61808. Loop 10: 0.58
+    yaw_stage_mass: float = _RD["yaw_stage_mass"]       # inline: ROLL_DRIVES. Belt: FROM CAD (loop 40, incl. the A8 box walls): clevis + yaw block, yaw shaft + flange + split 40T + spring ring, D13 stage + KX74 socket, 2×61808. Loop 10: 0.47
     elbow_hub_mass: float = 0.12   # big pulley + hub + 2×61808 + tensioner when the motor is remote (ESTIMATE)
     wrist_pitch_range_deg: float = 120.0   # ±140 folded the hand into the forearm (collision study); ±120 is realistic and reaches more
 
@@ -127,3 +146,13 @@ class Design:
 
 
 BASELINE = Design()
+
+
+def with_roll_drive(d: Design, drive: str) -> Design:
+    """Copy of d with the shoulder-roll drive swapped (offset, yaw drop, actuator, stage masses from ROLL_DRIVES). The CAD
+    (rnd/parts/roll.py, arm.py) follows PIP_ROLL_DRIVE at import, so analyses that read the CAD need the env var too."""
+    v = ROLL_DRIVES[drive]
+    j = dict(d.arm.joints)
+    j["shoulder_roll"] = v["shoulder_roll"]
+    keep = {k: v[k] for k in ("roll_offset_y", "yaw_drop", "roll_stage_mass", "yaw_stage_mass")}
+    return replace(d, arm=replace(d.arm, roll_drive=drive, joints=j, **keep))

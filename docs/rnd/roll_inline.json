@@ -1,0 +1,112 @@
+{
+ "inline": {
+  "dome": {
+   "width_x": 115.1,
+   "height_z": 100.0,
+   "out_y": 120.0,
+   "z_top": 50.0,
+   "z_bot": -50.0,
+   "roll_y": 70.0,
+   "yaw_drop": 100.3,
+   "masses": [
+    0.273,
+    0.542
+   ],
+   "ferrule_gap": 3.43,
+   "est": [
+    128,
+    120
+   ]
+  },
+  "assembly_seq": {
+   "ok": 5,
+   "n": 7,
+   "roll": [
+    {
+     "name": "roll stage, D24 inline GIM8108-36 (no shaft or pulley; 61806 onto the roll link's stub from \u2212X, clevis bolted to the output flange)",
+     "ok": true,
+     "bearings": [
+      [
+       -29.0,
+       -22.0,
+       30.0,
+       true,
+       "\u2212Z end"
+      ]
+     ]
+    },
+    {
+     "name": "D13 small stage v2 (steel \u00d812 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow",
+     "ok": true,
+     "bearings": [
+      [
+       -30.5,
+       -25.5,
+       12.0,
+       true,
+       "\u2212Z end"
+      ],
+      [
+       -63.5,
+       -58.5,
+       12.0,
+       true,
+       "\u2212Z end"
+      ],
+      [
+       -58.0,
+       -31.0,
+       12.0,
+       true,
+       "\u2212Z end"
+      ]
+     ]
+    },
+    {
+     "name": "D16 wrist-roll spindle (loop 43: from above, shoulder on the upper bearing; bearings from below, end cap)",
+     "ok": true,
+     "bearings": [
+      [
+       -91.1,
+       -84.1,
+       20.0,
+       true,
+       "\u2212Z end"
+      ],
+      [
+       -98.1,
+       -91.1,
+       20.0,
+       true,
+       "\u2212Z end"
+      ]
+     ]
+    }
+   ]
+  },
+  "spacing": {
+   "under_target": 2,
+   "under_hard": 0,
+   "rows": [
+    {
+     "a": "roll_gim_housing",
+     "b": "roll_outflange",
+     "kind": "running",
+     "d": 0.3,
+     "target": 0.3,
+     "hard": 0.2,
+     "hard_fail": false
+    },
+    {
+     "a": "yaw_flange",
+     "b": "yaw_stop_pin",
+     "kind": "running",
+     "d": 0.3,
+     "target": 0.3,
+     "hard": 0.2,
+     "hard_fail": false
+    }
+   ]
+  }
+ }
+}
