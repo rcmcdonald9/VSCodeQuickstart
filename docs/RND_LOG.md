@@ -1157,3 +1157,8 @@ One long push instead of half-hour runs. In order:
 - rnd/payload_study.py: planar statics. One hand at reach needs 70 / 42 / 14 N·m (shoulder / elbow / wrist) vs 14 / 9.5 / 3 rated → a different robot.
 - Two-handed hug (10 lb per arm, load 0.2–0.3 m out on the forearms): shoulder 12–16 and elbow 12–16 N·m vs 14 and 9.5 rated → holds need ≈ 2× today's continuous torque at shoulder pitch and elbow; brief lifts (< 10 s) work at 0.2 m on peak torque. Corrects the first estimate given to the owner ("same motors, higher ratios").
 - M1 motor purchase on hold until the owner picks the scenario.
+
+## 2026-11-27: owner accepts scenario B (20 lb two-handed, held close) → R2c, D20 proposed
+
+- GIM8108-8 (reseller data: 7.5 N·m rated, 22 stall, ≈ 396 g, ≈ $85–110) at shoulder pitch + elbow, both 3:1: hug 1.82× rated at 0.2 m (GIM6010: 0.81×); straight-out 1 kg spec 1.76× (was 1.18×); workspace p95 2.4× / 3.4×.
+- Gate: 24 V operation (listings mostly 48 V) and the flange drawing. M1 motor order for those two joints on hold.

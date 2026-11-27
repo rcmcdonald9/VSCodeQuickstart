@@ -22,3 +22,18 @@ Capacity now (rated / peak at the joint): shoulder_pitch GIM6010-8 ×3.00: 14.2 
 | B: 20 lb two-handed hug, 10 lb per arm, load 0.20 m out on the forearms | 11.8 (1.21× / 2.67×) ⚠️ brief only | 11.8 (0.81× / 1.78×) ⚠️ brief only | 0.3 (8.84× / 20.62×) ✅ |
 | B: same, load 0.30 m out | 16.2 (0.88× / 1.93×) ⚠️ brief only | 16.2 (0.59× / 1.29×) ❌ | 0.3 (8.84× / 20.62×) ✅ |
 | C: 20 lb two-handed bag, 10 lb per hand, arm at 45°, elbow straight | 26.6 (0.54× / 1.18×) ❌ | 15.7 (0.60× / 1.33×) ❌ | 5.1 (0.58× / 1.36×) ❌ |
+
+## D20 candidate: GIM8108-8 at shoulder pitch and elbow, both 3:1
+
+Capacity: shoulder_pitch 21.4 / 62.7 N·m; elbow 21.4 / 62.7 N·m; wrist_pitch 3.0 / 7.0 N·m
+
+| Case | Shoulder pitch (rated× / peak×) | Elbow (rated× / peak×) |
+|---|---|---|
+| Today's spec: 1 kg, one hand, arm straight out | 1.76× / 5.18× | 3.00× / 8.79× |
+| A: 20 lb in one hand, arm straight out | 0.30× / 0.89× | 0.51× / 1.51× |
+| A': 20 lb in one hand, elbow at 90° (hand 0.43 m out) | 0.51× / 1.51× | 0.51× / 1.51× |
+| B: 20 lb two-handed hug, 10 lb per arm, load 0.20 m out on the forearms | 1.82× / 5.34× | 1.82× / 5.34× |
+| B: same, load 0.30 m out | 1.32× / 3.87× | 1.32× / 3.87× |
+| C: 20 lb two-handed bag, 10 lb per hand, arm at 45°, elbow straight | 0.80× / 2.36× | 1.36× / 3.98× |
+
+**R2c (owner, 2026-11-27): 20 lb carried two-handed, held close (load on the forearms ≤ 0.25 m from the elbows).** Met on rated torque with the D20 motors (≥ 1.5× at 0.2 m, 1.32× at 0.3 m, with ≈ 3.9× on peak). The GIM6010s only manage it as a brief lift.

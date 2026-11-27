@@ -85,6 +85,18 @@ def main():
     for r in rows:
         cell = lambda j: f"{r['t'][j]:.1f} ({r['rated'][j]:.2f}× / {r['peak'][j]:.2f}×) {'✅' if r['rated'][j] >= 1.5 else ('⚠️ brief only' if r['peak'][j] >= 1.5 else '❌')}"
         L.append(f"| {r['case']} | {cell('shoulder_pitch')} | {cell('elbow')} | {cell('wrist_pitch')} |")
+    # D20 candidate: GIM8108-8 at shoulder pitch and elbow, both 3:1 (owner picked scenario B, 2026-11-27)
+    import dataclasses
+    j = dict(BASELINE.arm.joints); j["shoulder_pitch"] = ("GIM8108-8", 3.0); j["elbow"] = ("GIM8108-8", 3.0)
+    d2 = dataclasses.replace(BASELINE, arm=dataclasses.replace(BASELINE.arm, joints=j))
+    rows2, cap2 = run(d2)
+    L += ["", "## D20 candidate: GIM8108-8 at shoulder pitch and elbow, both 3:1", "",
+          "Capacity: " + "; ".join(f"{k} {c[2]:.1f} / {c[3]:.1f} N·m" for k, c in cap2.items()), "",
+          "| Case | Shoulder pitch (rated× / peak×) | Elbow (rated× / peak×) |", "|---|---|---|"]
+    for r in rows2:
+        L.append(f"| {r['case']} | {r['rated']['shoulder_pitch']:.2f}× / {r['peak']['shoulder_pitch']:.2f}× | {r['rated']['elbow']:.2f}× / {r['peak']['elbow']:.2f}× |")
+    L += ["", "**R2c (owner, 2026-11-27): 20 lb carried two-handed, held close (load on the forearms ≤ 0.25 m from the elbows).** "
+          "Met on rated torque with the D20 motors (≥ 1.5× at 0.2 m, 1.32× at 0.3 m, with ≈ 3.9× on peak). The GIM6010s only manage it as a brief lift."]
     (DOCS / "payload_study.md").write_text("\n".join(L))
     (DOCS / "payload_study.json").write_text(json.dumps(rows, default=float))
     print("\n".join(L[4:]))

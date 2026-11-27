@@ -24,6 +24,24 @@ GIM6010-8:
     - https://openelab.io/products/steadywin-gim6010-8-robot-motor
     - https://www.amazon.com/Planetary-Robotic-Exoskeleton-Control-GIM6010-8/dp/B0DKF9P4TC
 
+GIM8108-8:
+  role: "candidate for shoulder pitch + elbow under the owner's 20 lb two-handed requirement (R2c, 2026-11-27)"
+  maker: SteadyWin
+  gear_ratio: 8
+  voltage_nominal_v: 48      # most listings 48 V (12–56 V or 24–56 V range): CONFIRM 24 V operation and speed with the seller
+  rated_torque_nm: 7.5
+  peak_torque_nm: 22         # listed as stall torque
+  rated_speed_rpm: 60        # ESTIMATE at 24 V (listings give ~120 rpm class at 48 V)
+  mass_g: 396                # with driver (GDZ468); 375 g motor only
+  outer_diameter_mm: 96      # ESTIMATE (8108 stator class); confirm with the drawing
+  price_usd: [85, 110]       # $85 without driver (backordered at one seller); driver version ESTIMATE
+  notes: "Reseller data only, no official datasheet found (2026-11-27). Voltage ranges conflict between listings."
+  sources:
+    - https://openelab.com/products/steadywin-gim8108-8-gearmotor-robotics
+    - https://aifitlab.com/products/steadywin-gim8108-8-planetary-reducer-servo-motor
+    - https://www.roboticscenter.ai/store/product/steadywin-gim8108-8-planetary-reducer-servo-motor/
+    - https://rcdrone.top/products/steadywin-gim8108-8-planetary-reducer-servo-motor
+
 DM-J4310-2EC_V1.1:
   role: cartridge M-light (upper-arm yaw, wrist pitch upgrade)
   maker: Damiao
