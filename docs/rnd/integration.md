@@ -25,20 +25,22 @@ A pin counts as reacted when its tip is in clear space and structure sits on bot
 | torque pin | tilt_sleeve | ✅ | yoke |
 | torque pin | l_sh_can | ✅ | l_sh_bracket |
 | torque pin | l_roll_roll_can | ✅ | l_roll_roll_link |
-| torque pin | l_roll_yaw_can | ✅ | l_roll_yaw_block |
+| torque pin | l_roll_yaw_can | ✅ | l_roll_roll_clevis_cap_in |
 | torque pin | l_arm_e_can | ✅ | l_arm_upper_bone |
 | torque pin | l_arm_wrist_can | ✅ | l_arm_forearm |
 | torque pin | l_arm_hand_wr_sleeve | ✅ | l_arm_hand_palm |
 | torque pin | l_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
 | torque pin | r_sh_can | ✅ | r_sh_bracket |
 | torque pin | r_roll_roll_can | ✅ | r_roll_roll_link |
-| torque pin | r_roll_yaw_can | ✅ | r_roll_yaw_block |
+| torque pin | r_roll_yaw_can | ✅ | r_roll_roll_clevis_cap_in |
 | torque pin | r_arm_e_can | ✅ | r_arm_upper_bone |
 | torque pin | r_arm_wrist_can | ✅ | r_arm_forearm |
 | torque pin | r_arm_hand_wr_sleeve | ✅ | r_arm_hand_palm |
 | torque pin | r_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
 
-## Clashes inside modules: 0
+## Clashes inside modules: 2
 
 | Module | Part A | Part B | Overlap (mm³) |
 |---|---|---|---|
+| arm | hand_jaw_fixed | hand_finger_hook | 1040 |
+| head tilt +30° | head_bracket | head_shell | 1378 |

@@ -14,13 +14,13 @@ joint (all cable data ESTIMATE until the datasheets are in hand):
 The joint ranges come from the twin (rnd/twin.py JR). The free lengths and the cavity sizes are read off the CAD
 (module dimensions; ESTIMATE ± 10 mm).
 
-**Joints the arm bundle can cross: 3/6 with D12** (CSI flat-flex through the wrist + slim Ø2.2 USB from the forearm); 0/6 with the camera's stock Ø3.8 USB cable.
+**Joints the arm bundle can cross: 5/6 with D12** (CSI flat-flex through the wrist + slim Ø2.2 USB from the forearm); 0/6 with the camera's stock Ø3.8 USB cable.
 
 | Joint | Range | Torsion: free length / needed | Spiral cavity r_in–r_out (mm) | Bend r (10×OD) | Ribbon t | Spiral S: turns tight / loose | Capacity: zero-thickness / close-wound / packed 85 % (need) | Ribbon build / width | Method | Stock USB |
 |---|---|---|---|---|---|---|---|---|---|---|
 | shoulder pitch | 260° | 200 / 361 mm ❌ | 22–60 | 22 mm | 2.3 mm | 0.60 m: 3.65 / 1.64 | 990° / 721° / **687°** (312°) | 9.5 mm / 9.8 mm | clock spring ✅ | ❌ 185° |
-| shoulder roll | 115° | 100 / 160 mm ❌ | 22.0–38.0 | 22 mm | 2.3 mm | 0.25 m: 1.66 / 1.08 | 274° / 209° / **199°** (138°) | 4.0 mm / 9.8 mm | ❌ | ❌ 0° |
-| upper-arm yaw | 300° | 0 / 417 mm ❌ | 22.5–40.0 | 22 mm | 2.3 mm | 0.40 m: 2.51 / 1.67 | 446° / 301° / **279°** (360°) | 6.2 mm / 9.8 mm | ❌ | ❌ 0° |
+| shoulder roll | 115° | 100 / 160 mm ❌ | 22.0–38.0 | 22 mm | 2.3 mm | 0.25 m: 1.66 / 1.08 | 274° / 209° / **199°** (138°) | 4.0 mm / 9.8 mm | clock spring ✅ | ❌ 0° |
+| upper-arm yaw | 300° | 0 / 417 mm ❌ | 22.5–42.5 | 22 mm | 2.3 mm | 0.75 m: 4.34 / 3.06 | 899° / 461° / **400°** (360°) | 11.7 mm / 9.8 mm | clock spring ✅ | ❌ 0° |
 | elbow | 150° | 130 / 208 mm ❌ | 22–50 | 22 mm | 2.3 mm | 0.60 m: 3.65 / 2.00 | 875° / 592° / **555°** (180°) | 9.5 mm / 13.4 mm | clock spring ✅ | ❌ 36° |
 | wrist pitch | 220° | 60 / 306 mm ❌ | 16–30 | 12 mm | 1.3 mm | 0.40 m: 3.49 / 2.23 | 668° / 452° / **421°** (264°) | 4.8 mm / — | clock spring ✅ | ❌ 0° |
 | wrist roll | 360° | 30 / 500 mm ❌ | 14–24 | 12 mm | 1.3 mm | 0.35 m: 3.43 / 2.49 | 597° / 340° / **302°** (432°) | 4.8 mm / — | ❌ | ❌ 0° |
@@ -30,12 +30,12 @@ The joint ranges come from the twin (rnd/twin.py JR). The free lengths and the c
 | Cassette | Range × 1.2 | Now (S, packed) | Best S in this annulus | Fix A: longer ribbon only | Fix B: larger r_out (best S) | Fix C: thinner ribbon |
 |---|---|---|---|---|---|---|
 | shoulder roll | 138° | 0.25 m: 199° ✅ | 0.56 m: 279° ✅ (≈ 50 % fill) | S = 0.56 m | r_out 38.0 → **38.0 mm**, S 0.56 m: 279° | t ≤ 2.3 mm (packed, current annulus, best S) |
-| upper-arm yaw | 360° | 0.40 m: 279° ❌ | 0.63 m: 320° ❌ (≈ 50 % fill) | not enough on its own | r_out 40.0 → **42.5 mm**, S 0.75 m: 400° | t ≤ 1.8 mm (packed, current annulus, best S) |
+| upper-arm yaw | 360° | 0.75 m: 400° ✅ | 0.75 m: 400° ✅ (≈ 50 % fill) | S = 0.75 m | r_out 42.5 → **42.5 mm**, S 0.75 m: 400° | t ≤ 2.3 mm (packed, current annulus, best S) |
 | wrist roll | 432° | 0.35 m: 302° ❌ | 0.39 m: 305° ❌ (≈ 50 % fill) | not enough on its own | r_out 24.0 → **27.5 mm**, S 0.58 m: 504° | t ≤ 0.8 mm (packed, current annulus, best S) |
 
 - **Yaw fix (recommended): r_out 40 → 42.5 mm with the ribbon lengthened to the best S** (Fix B); or keep r_out and go to a thinner ribbon (Fix C, needs a flat-flex USB: the 20 AWG pair alone is 1.8 mm). The ribbon length costs 24 V drop: 20 AWG ≈ 0.033 Ω/m per conductor (Astra 16), so each extra 0.4 m of loop is ≈ 0.3 V at 11 A.
 - **Roll** has margin with the current 0.25 m (packed 199° vs 138°), but its r_in 22 mm equals the USB's 10×OD bend radius: zero reserve (Astra 15). The D24 inline-roll redesign should keep r_in ≥ 24 mm.
-- **Ribbon width (new):** A14 puts **two** CAN pairs through the shoulder, so the ribbon is 9.8 mm wide, not 7.8 mm; the cassettes are 9.5 mm high (width ≤ 8.5 mm). Fix: cavity height ≥ 11.3 mm, or 28 AWG CAN pairs (OD 0.8 → 9.0 mm wide, cavity ≥ 10.5 mm).
+- **Ribbon width (new):** A14 puts **two** CAN pairs through the shoulder, so the ribbon is 9.8 mm wide, not 7.8 mm; the cassettes are 11.3 mm high (width ≤ 10.3 mm). Fix: cavity height ≥ 11.3 mm, or 28 AWG CAN pairs (OD 0.8 → 9.0 mm wide, cavity ≥ 10.5 mm).
 - **Wrist roll (new):** the ±180° STS3215 wrist roll needs 432°; the 14–24 mm palm annulus gives 302° packed with its 1.3 mm bundle. Fix B above, or limit the wrist roll to ±120° in software (288° needed) until the palm is redrawn.
 - C11 (10k reversals) must measure the real packing factor and the capacity at both stops; these are ideal-geometry numbers.
 

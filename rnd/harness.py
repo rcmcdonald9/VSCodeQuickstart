@@ -73,7 +73,7 @@ JOINTS = [
     # pitch: bundle from the torso e-tray through the pitch shaft bore (Ø30) to the detach plug on the ferrule
     ("shoulder pitch", 260, 0.20, (22, 60), 0.60, "inside the torso, around the pitch shaft between the bracket and the torso wall"),
     ("shoulder roll", 115, 0.10, _RS, 0.25, "CAD: clock-spring cassette on the +X end of the roll shaft, outboard of the clevis arm (roll_spring_hub / static ring on a bar to the roll-link boss)"),
-    ("upper-arm yaw", 300, 0.0, _YS, 0.40, "CAD: clock-spring cassette between the 40T yaw pulley's hub and the bottom yaw plate (yaw ±150°, hard stops ±155°)"),
+    ("upper-arm yaw", 300, 0.0, _YS, 0.75, "CAD: clock-spring cassette between the 40T yaw pulley's hub and the bottom yaw plate (yaw ±150°, hard stops ±155°)"),
     ("elbow", 150, 0.13, (22, 50), 0.60, "elbow housing, +Y side, between cassette plate B (y 26) and the +Y wall (y 53)"),
     ("wrist pitch", 220, 0.06, (16, 30), 0.40, "wrist can end, around the DM-J4310 (Ø57 can: little room)"),
     ("wrist roll", 360, 0.03, (14, 24), 0.35, "palm, around the STS3215 wrist-roll servo"),
