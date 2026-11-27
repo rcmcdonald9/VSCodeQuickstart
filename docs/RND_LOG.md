@@ -1183,3 +1183,8 @@ One long push instead of half-hour runs. In order:
 
 - finger_hook(): two PETG-CF rails behind the fixed fin-ray (either side of the wrist camera), a 41 × 8 mm foot under the fingertip reaching 9 mm past the jaw face, Ø3 steel pin; ≈ 2.5 N·m at 2× load → ≈ 17 MPa in the print alone.
 - Palm ToF moved y 21 → 26 for the rail. Hand module: 0 clashes, spacing clean; moving jaw clears the hook by ≥ 14 mm over its sweep. +19 g per hand.
+
+## 2026-11-27: owner feedback — bigger face, enclosed/pinch-safe body
+
+- D22: 7" Waveshare ESP32-P4 touch display on CAN ($46.99) replaces the 4.3" board; tablet rejected (battery in the head, no CAN, OS upkeep). Head grows; tilt gets a passive pivot.
+- D23 + R17: no accessible pinch/nip point (covers ≤ 8 mm openings or ≥ 25 mm gaps over the range), all belts/motors enclosed, lift mast cover + 120 mm bottom gap, TPU bumpers, current-based collision detection. rnd/pinch.py first.
