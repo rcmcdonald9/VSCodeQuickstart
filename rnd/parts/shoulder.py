@@ -321,10 +321,50 @@ def spring_ring() -> Part:
     return p
 
 
+# D26: the inner wall's exit U-slot (belt_stage.wall_a_cuts_v4, cartridge_m.WALL_EXIT["pitch4"]: the pulley and stub drop
+# out downward after 8.5 mm along the axis) cost the bracket half its stiffness (P2 rot 1.27 → 2.85 mrad, hand 1.0 → 2.3 mm).
+# A printed key fills the slot below the stage hole and a 3 mm 6061 strap on the wall's inboard face ties it across the
+# slot (2 × M4 into heat-set inserts in the wall either side + 2 into the key); both come off for a pitch swap.
+SLOT_KEY = dict(clr=0.2, strap=(70.0, 14.0, 3.0), z_strap=-58.0, screw_x=(-26.0, -8.0, 8.0, 26.0),
+                screw="ISO 4762 M4 × 10 + ISO 7089 washer into heat-set inserts")
+
+
+def slot_key() -> Part:
+    """D26: printed key in the inner wall's exit slot (0.2 mm a side), from the stage hole to the wall's lower edge."""
+    from .belt_stage import WALL_SLOT_HW, WALL_A_HOLE_R
+    k = SLOT_KEY
+    outline = Pos(_X0, W_IN, 10) * Rot(-90, 0, 0) * fillet(Box(_XS, _ZS, WALL_T).edges().filter_by(Axis.Z), 20)
+    slot = _ST * (Rot(0, 0, 270) * Pos(0, 0, -6.0) * Box(300, 2 * (WALL_SLOT_HW - k["clr"]), 6.0, align=(Align.MIN, Align.CENTER, Align.MIN)))
+    from .belt_stage import wall_a_cuts
+    key = (outline & slot) - _ST * Pos(0, 0, -10) * Cylinder(WALL_A_HOLE_R + k["clr"], 20, align=MIN) - _ST * wall_a_cuts(MOT, EAR_SITE)   # + the lip counterbore
+    for dx in k["screw_x"][1:3]:
+        key -= Pos(-BELT_C + dx, W_IN - WALL_T / 2 - 0.01, k["z_strap"]) * Rot(-90, 0, 0) * Cylinder(2.8, 6.0, align=MIN)   # inserts
+    return key
+
+
+def slot_strap() -> Part:
+    """D26: 3 mm 6061 strap across the exit slot on the inner wall's inboard face, 4 × Ø4.5."""
+    k = SLOT_KEY
+    L, H, t = k["strap"]
+    y0 = W_IN - WALL_T / 2
+    s = Pos(-BELT_C, y0 - t / 2, k["z_strap"]) * Box(L, t, H)
+    for dx in k["screw_x"]:
+        s -= Pos(-BELT_C + dx, y0, k["z_strap"]) * Rot(90, 0, 0) * Cylinder(2.25, 10, align=MIN)
+    return s
+
+
+def slot_key_fasteners():
+    """[(label, head-top point, axis)] of the strap's 4 M4 in the module frame (heads on the strap, driven from inboard)."""
+    k = SLOT_KEY
+    y = W_IN - WALL_T / 2 - k["strap"][2] - 0.8 - 4.0
+    return [(f"exit-slot strap M4 x {dx:+.0f}", (-BELT_C + dx, y, k["z_strap"]), (0.0, -1.0, 0.0)) for dx in k["screw_x"]]
+
+
 def bracket() -> Part:
-    """The assembled bracket (body + bolted outer wall) for the FEA and stiffness cases; the prints are bracket_body() and
-    bracket_wall_out()."""
-    return bracket_body() + bracket_wall_out()
+    """The assembled bracket (body + bolted outer wall + D26 exit-slot key and strap, treated as bonded: ESTIMATE, the
+    real key works through its strap screws and the slot faces in contact) for the FEA and stiffness cases; the prints are
+    bracket_body(), bracket_wall_out() and slot_key()."""
+    return bracket_body() + bracket_wall_out() + slot_key() + slot_strap()
 
 
 def pulley_a() -> Part:
@@ -341,7 +381,8 @@ def module(with_motor: bool = True):
     out = [("bracket", bracket_body(), "white"), ("bracket_wall", bracket_wall_out(), "white"), ("shaft", pitch_shaft(), "orange"),
            ("pitch_hub", pitch_hub(), "orange"), ("pitch_hub_crank", crank() + _enc.pitch_magnet(), "steel"),   # M3: magnet bonded in the crank ("pitch_hub_collar", hub_clamp_ring(), "steel"),   # name: a "collar"/"hub" mate in rnd.spacing
            ("pulleyA", pulley_a(), "steel"),
-           ("bracket_wall_spring_ring", spring_ring(), "dark")]   # screwed to the outer wall (a mate for rnd.spacing)
+           ("bracket_wall_spring_ring", spring_ring(), "dark"),   # screwed to the outer wall (a mate for rnd.spacing)
+           ("bracket_slot_key", slot_key(), "white"), ("bracket_slot_strap", slot_strap(), "steel")]   # D26: exit-slot key + strap
     out += [(n, _ST * pp, c) for n, pp, c in small_stage_v4(20, MOT, idler())]       # D26: direct stage (stub on the motor, 6001 in the outer wall) + idler
     out += _enc.pitch_parts()                                                          # M3: AS5048A strip board ("enc_pcb")
     if with_motor:
@@ -365,6 +406,7 @@ def masses(density=1.27):
          "C1 hub tie: 4 × M4 10.9 studs + nuts + 8 crush sleeves (steel) + 6061 clamp ring": (4 * 8.78 * hub_tie_length() + 4 * 100.0) * 7.85e-6
          + hub_clamp_ring().volume * 2.7e-6 + HUB_TIE["n"] * math.pi / 4 * (HUB_TIE["sleeve"][0] ** 2 - HUB_TIE["sleeve"][1] ** 2) * (Y_TUBE_END - Y_TUBE_IN + hub_print_under_ring()) * 7.85e-6,
          "D26 drive stub (C45) + idler + can nose/flange/cap": (oldham + can_extra) / 1e3,
+         "D26 exit-slot key (printed) + 6061 strap + 4 × M4": slot_key().volume / 1e6 * density * 0.8 + slot_strap().volume * 2.7e-6 + 0.004,
          "bearings 2×61808 + 2×61804 (ESTIMATE)": 0.056,
          "spring + cable + 2 × (608-2Z + POM tyre) + Ø8 axles (ESTIMATE; M8: was U604, 0.09)": 0.11,
          "V-band clamp, stainless 3\" (ESTIMATE)": 0.11,

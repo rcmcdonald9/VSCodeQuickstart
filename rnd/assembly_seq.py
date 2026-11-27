@@ -110,7 +110,7 @@ def cases():
 #     150 mm) from any disengaged position. The belt and the shaft never move.
 SERVICE_POSE = dict(lift=0.75, pitch=0.0, elbow=-90.0, wrist=0.0)   # arm down, forearm level (hand clear of the base)
 REMOVED_ALWAYS = ("cover", "boot", "duct")         # D23 covers / boots / ducts come off first for any drive service
-REMOVED_AT = {"pitch": ("torso_shell",)}           # the pitch cartridges sit inside the torso: its half-shell comes off
+REMOVED_AT = {"pitch": ("torso_shell", "bracket_slot")}   # the pitch cartridges sit inside the torso: its half-shell comes off; D26: + the exit-slot key and strap
 DRIVER = dict(r=3.0, L=80.0, key_r=1.25, tilts=(15.0, 25.0), az=8, tol=0.5)
 
 
@@ -210,6 +210,9 @@ def fasteners(fr=None):
     for j, T, m, site in ear_sites(fr):
         for lab, pt, ax in cm.ear_fasteners(m, site):
             out.append((j, f"flange {lab} (M4, site {site})", T, pt, ax, 0.0, (), "swap"))
+    # D26: the exit-slot strap's 4 × M4 (key and strap come off for a pitch swap)
+    for lab, pt, ax in getattr(shoulder, "slot_key_fasteners", lambda: [])():
+        out.append(("pitch", lab, fr["shoulder"], pt, ax, 0.0, (), "swap"))
     # D26: the pitch idler's M5 axle bolt, head on the outer wall's outboard face (loosened to release the belt for a swap)
     if hasattr(shoulder, "idler"):
         g = shoulder.idler()
