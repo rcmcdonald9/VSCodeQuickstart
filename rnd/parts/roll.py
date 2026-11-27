@@ -1,7 +1,11 @@
-"""Arm-side shoulder: KX-V male ferrule → roll link (roll stage 18T:72T) → clevis → yaw stage (20T:40T) → upper-arm flange.
+"""Arm-side shoulder: KX-V male ferrule → roll link (roll stage 18T:80T, or an inline GIM8108-36) → clevis → yaw stage
+(20T:40T) → upper-arm flange.
 
 Frame = the twin's pitch body for the LEFT arm (outboard +Y): pitch axis = Y through the origin, detach plane at y = 0.
 Roll axis = X through (y = ROLL_Y, z = 0). Yaw axis = Z through (x = 0, y = ROLL_Y), upper-arm flange top at z = -YAW_DROP.
+
+Roll drive (params.arm.roll_drive, D24): "belt" (loops 10–44, default) or "inline" (PIP_ROLL_DRIVE=inline): the GIM8108-36
+sits on the roll axis, its housing bolted to the roll link, its output flange bolted to the clevis (see the INLINE section).
 """
 from __future__ import annotations
 
@@ -12,12 +16,22 @@ from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 from . import cartridge_m as cm
 from .belt_stage import pulley, small_hub
 from .kx import KX74, collar
-from .shoulder import ferrule
+from .shoulder import FERRULE, ferrule
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 from ..params import BASELINE as _D
 from .belt_stage import V2 as _V2, small_stage_v2
+INLINE = _D.arm.roll_drive == "inline"
 ROLL_Y = _D.arm.roll_offset_y * 1000                 # loop 10: 50 → 75 (the Ø114 roll pulley); loop 40: 83 (the 80T pulley clears the ferrule by 2 mm)
+# D24 inline roll: GIM8108-36, 36:1 planetary, 24 V SDC303 (rnd/specs/actuators.yaml). The frame diameter and flanges are
+# not published: Ø100 × 60 overall (56 housing + 4 output flange), 6 × M4 on the housing's rear face, 6 × M4 on the output
+# flange: all ESTIMATE until the seller's drawing (queue 0000).
+MOT36 = dict(od=100.0, h=56.0, fl_d=56.0, fl_h=4.0, rear_n=6, rear_pcd=84.0, out_n=6, out_pcd=44.0, out_brg=8.0)
+R_MOT = MOT36["od"] / 2
+FER_FACE = FERRULE["t"] + 10.0                        # ferrule spigot end (rnd/parts/shoulder.py ferrule): 18 mm off the detach plane
+ROLL_MIN = -15                                        # = twin.JR["roll"][0] (rnd/swept.py checks the whole range)
+if INLINE:
+    ROLL_Y = FER_FACE + 2.0 + R_MOT                   # 70: the motor clears the spigot by 2 mm (the sweep is checked below)
 # loop 40 (D13 migration of roll + yaw; yaw ±150° restored with a clock-spring cassette):
 #  - roll belt centre 90 → 102: the D13 yaw stage is 11 mm taller, so the yaw cartridge (roll output) reaches 48 mm from the
 #    roll axis; the static roll collar/can must sit ≥ 2 mm outside that over the whole roll sweep (rnd/spacing.py swept).
@@ -60,9 +74,9 @@ W1 = (XF - JA[0] - 6.0, XF - JA[0])                    # inner wall (bearing A a
 W2 = (XF - JB[1], XF - JB[1] + 6.0)                    # outer wall (bearing B at x 17.5 … 22.5)
 ROLL_T = Pos(XF, ROLL_Y, ROLL_C) * Rot(0, -90, 0)        # stage +Z → world −X
 HEX_AF = 34.0                                          # shaft hex under the split pulleys (corners Ø39.3: passes the 61808 bore)
-CAV_H = 9.5                                            # clock-spring cavity height (D14 ribbon 7.8 mm + clearance)
+CAV_H = 11.3                                           # clock-spring cavity height: A14's two CAN pairs make the ribbon 9.8 mm wide (rnd/harness.py); was 9.5 for 7.8
 ROLL_SPR = (22.0, 38.0)                                # roll clock spring r_in, r_out
-YAW_SPR = (22.5, 40.0)                                 # yaw clock spring (inner wall = the 40T pulley's hub)
+YAW_SPR = (22.5, 42.5)                                 # yaw clock spring (inner wall = the 40T pulley's hub); r_out 40 → 42.5: 2.3 mm ribbon packs only 279° at r 40 (rnd/harness.py), ≈ 400° with a 0.75 m ribbon
 
 
 def _hex(af, h):
@@ -71,14 +85,33 @@ def _hex(af, h):
 
 
 def roll_link() -> Part:
+    if INLINE:
+        return roll_link_inline()
     p = Pos(0, 8, 0) * Rot(-90, 0, 0) * Cylinder(45, 4, align=MIN)            # boss behind the ferrule (y 8..12)
     for x0, x1 in (W1, W2):
         w = _plate_x(x0, x1, 8, ROLL_Y + 40, -22, ROLL_C + 32, 14)
         w -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(26, 100)                # 61808 seat, roll shaft
+        w -= Pos((x0 + x1) / 2, ROLL_Y, -15) * Box(x1 - x0 + 1, 52, 30)            # D19: U-slot open downward, closed by roll_seat_cap
+        for yy in (ROLL_Y - SEAT_BOLT_Y, ROLL_Y + SEAT_BOLT_Y):
+            w -= Pos((x0 + x1) / 2, yy, -22) * Cylinder(2.8, 8, align=MIN)          # M4 heat-set inserts for the cap
         w -= Pos(0, ROLL_Y, ROLL_C) * Rot(0, 90, 0) * Cylinder(19.1, 100)         # eccentric-bushing seat, D13 stage
         p += w
     p += _plate_x(W1[0], W2[1], 8, 12, 46, ROLL_C + 32, 4)                       # web joining the walls to the boss, above the roll pulley
-    return p + roll_torque_fork() + roll_spring_static()
+    return p + roll_torque_fork() + roll_spring_bar()
+
+
+SEAT_BOLT_Y = 33.0                     # D19 cap bolts (2 × M4 per seat) either side of the roll axis, into the wall bottoms
+
+
+def roll_seat_cap(W) -> Part:
+    """D19 (belt roll): half-ring cap closing a wall's 61808 U-slot from below (2 × M4 up into heat-set inserts). The roll
+    belt pulls the shaft up, into the wall; the hanging arm's weight goes into the cap."""
+    x0, x1 = W
+    c = Pos((x0 + x1) / 2, ROLL_Y, -27) * Box(x1 - x0, 2 * (SEAT_BOLT_Y + 6), 10) + Pos((x0 + x1) / 2, ROLL_Y, -11) * Box(x1 - x0, 51.6, 22)
+    c -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(26, 100)
+    for yy in (ROLL_Y - SEAT_BOLT_Y, ROLL_Y + SEAT_BOLT_Y):
+        c -= Pos((x0 + x1) / 2, yy, -40) * Cylinder(2.2, 30, align=MIN)
+    return c
 
 
 ZC = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]      # KX face → can rear
@@ -101,20 +134,29 @@ def roll_torque_fork() -> Part:
 
 
 def roll_shaft() -> Part:
-    """Loop 40 (R14): Ø40 tube, one piece, no integral pulley: it slides in from −X through the −X clevis arm, wall W1's
-    61808, the 72T pulley (hex AF 34), wall W2's 61808 and the +X clevis arm, and carries the roll clock-spring hub on
-    its +X end."""
+    """D19 (belt roll, after Astra review #2b finding 1): Ø40 tube with the 80T pulley printed on it in one piece (no hex
+    joint), plus the two inner-race shoulders (r 22.5) that replace loop 40's shims. Bearing A slides on from −X, B from +X;
+    the sub-assembly (+ belt) rises into the walls' U-slots and roll_seat_cap closes them; the clevis comes up from below
+    onto the shaft ends and roll_clevis_cap closes its arms. The spring hub slides on the +X end last."""
     x0, x1 = -29.0, ROLL_SPR_X[1] - 0.5
-    s = Cylinder(20, x1 - x0, align=MIN) - Cylinder(14, x1 - x0, align=MIN)
-    s -= Pos(0, 0, -10 - x0) * (Cylinder(21, 20, align=MIN) - _hex(HEX_AF, 20))
+    s = Cylinder(20, x1 - x0, align=MIN)
+    p = pulley(ROLL_TEETH, 16, flange=False)
+    r_rim = ROLL_TEETH * 5.0 / math.pi / 2 - 0.57 - 2.06 - 5.0
+    for z in (0.0, 10.5):                                                    # lightening: 5 mm web between a Ø56 hub and a 5 mm rim
+        p -= Pos(0, 0, z) * (Cylinder(r_rim, 5.5, align=MIN) - Cylinder(28, 5.5, align=MIN))
+    s += Pos(0, 0, -8 - x0) * p
+    s += Pos(0, 0, W1[1] + 0.1 - x0) * Cylinder(22.5, -8 - W1[1] - 0.1, align=MIN)          # shoulder to bearing A's inner race
+    s += Pos(0, 0, 8 - x0) * Cylinder(22.5, W2[0] - 0.1 - 8, align=MIN)                      # shoulder to bearing B's inner race
+    s -= Cylinder(14, x1 - x0, align=MIN)
     return Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * s
 
 
 def roll_pulley() -> Part:
-    """80T HTD 5M, 16 wide, hex bore (AF 34.4), printed PETG; located between the inner races by 2 printed shims."""
+    """Loops 40–44: the split 80T pulley on a hex (could not be fitted: Astra #2b finding 1). Kept for reference only; D19
+    prints it on the roll shaft (roll_shaft)."""
     p = pulley(ROLL_TEETH, 16, flange=False) - _hex(HEX_AF + 0.4, 16)
     r_rim = ROLL_TEETH * 5.0 / math.pi / 2 - 0.57 - 2.06 - 5.0
-    for z in (0.0, 10.5):                                                    # lightening: 5 mm web between a Ø56 hub and a 5 mm rim
+    for z in (0.0, 10.5):
         p -= Pos(0, 0, z) * (Cylinder(r_rim, 5.5, align=MIN) - Cylinder(28, 5.5, align=MIN))
     return Pos(-8, ROLL_Y, 0) * Rot(0, 90, 0) * p
 
@@ -133,6 +175,13 @@ def roll_spring_hub() -> Part:
     return h
 
 
+def roll_spring_bar() -> Part:
+    """Bar from the roll-link boss to the spring ring (D19: the ring is its own part, screwed on last)."""
+    x0, x1 = ROLL_SPR_X
+    r1 = ROLL_SPR[1]
+    return Pos((x0 + 1 + x1 + 1.6) / 2, (12 + ROLL_Y - r1) / 2, 0) * Box(x1 + 1.6 - x0 - 1, ROLL_Y - r1 - 12 + 1, 14)
+
+
 def roll_spring_static() -> Part:
     x0, x1 = ROLL_SPR_X
     r0, r1 = ROLL_SPR
@@ -148,15 +197,209 @@ def roll_spring_static() -> Part:
 # spring sits between the 40T pulley and the bottom plate (cavity 9.5 mm), so the drop added is the D13 stage's length
 # and the 80T roll pulley: yaw_drop 100 → 113.0 mm.
 _R_ROLL = ROLL_TEETH * 5.0 / math.pi / 2 - 0.5715       # roll pulley outer radius
-P1 = (-(_R_ROLL + 3.0) - 6.0, -(_R_ROLL + 3.0))        # top plate z-span (bearing A flush on its underside)
+_R_TOP = R_MOT if INLINE else _R_ROLL                  # inline: the top plate clears the static motor housing (r 50)
+_C_TOP = 4.0 if INLINE else 3.0                        # inline: the yaw shaft's top end (2 mm above the plate) sweeps 2 mm past the housing
+P1 = (-(_R_TOP + _C_TOP) - 6.0, -(_R_TOP + _C_TOP))    # top plate z-span (bearing A flush on its underside)
 ZF = P1[0] - JA[0]                     # KX face of the yaw cartridge (−36.0)
+BAND_CH = 12.0                         # inline: 45° chamfer on the yaw band's inboard top edge (yaw_band)
+
+
+def ferrule_sweep_gap(roll_y, roll_deg=ROLL_MIN):
+    """Inline roll: smallest gap (mm) between the roll output's inboard edge (yaw plates/walls at ±46, the band at ±50 with
+    its BAND_CH chamfer) and the arm-side ferrule (flat Ø91 × 3, 20° taper to y 8, Ø64 spigot to y 18) at full adduction,
+    in the plane x = 0 where the ferrule is widest. The roll link's own boss/frame stay above z −28 (roll_link_inline)."""
+    import numpy as np
+    top_b, z_bot = P1[1] + 1.5, P1[1] - 60.0
+    moving = [(-46.0, z) for z in np.linspace(z_bot, P1[1], 40)] + [(y, P1[1]) for y in np.linspace(-46, 0, 30)]
+    moving += [(-50.0, z) for z in np.linspace(z_bot, top_b - BAND_CH, 40)]
+    moving += [(-50.0 + BAND_CH * t, top_b - BAND_CH * (1 - t)) for t in np.linspace(0, 1, 30)] + [(y, top_b) for y in np.linspace(-50 + BAND_CH, 0, 30)]
+    r8 = FERRULE["od"] / 2 - (FERRULE["t"] - 3.0) * math.tan(math.radians(90 - FERRULE["taper_deg"])) * 0.35
+    prof = [(0.0, 0.0), (0.0, FERRULE["od"] / 2), (3.0, FERRULE["od"] / 2), (8.0, r8), (8.0, 32.0), (FER_FACE, 32.0), (FER_FACE, 0.0)]
+    seg = lambda p, a, b: float(np.hypot(*(p - (a + np.clip(np.dot(p - a, b - a) / max(np.dot(b - a, b - a), 1e-9), 0, 1) * (b - a)))))
+    t = math.radians(roll_deg)
+    gap = 1e9
+    for yr, z in moving:
+        Y, Z = roll_y + yr * math.cos(t) - z * math.sin(t), yr * math.sin(t) + z * math.cos(t)
+        p = np.array([Y, abs(Z)])
+        d = min(seg(p, np.array(a), np.array(b)) for a, b in zip(prof[:-1], prof[1:]))
+        inside = 0 <= Y <= FER_FACE and abs(Z) <= (FERRULE["od"] / 2 if Y <= 3 else r8 + (FERRULE["od"] / 2 - r8) * (8 - Y) / 5 if Y <= 8 else 32.0)
+        gap = min(gap, -d if inside else d)
+        if 8 <= Y <= FER_FACE + 2 and Z > -28 - 2:                                  # roll link boss / frame (z ≥ −28)
+            gap = min(gap, -28 - Z)
+    return gap
+
+
+if INLINE:                             # ROLL_Y derived: the motor clearance (above), raised in 0.5 mm steps until the sweep clears
+    while ferrule_sweep_gap(ROLL_Y) < 2.0:
+        ROLL_Y += 0.5
 YAW_T = Pos(-YAW_C, ROLL_Y, ZF)
-P2 = (ZF + JB[1] - 6.0, ZF + JB[1])    # bottom plate (−99.7 … −93.7), bearing B flush on its top
+_CAV0 = -PUL_C - 8.8 - JB[1]           # yaw cavity height with the bottom plate at the D13 bearing B (9.5 mm)
+DP2 = max(0.0, CAV_H - _CAV0)          # the bottom plate drops this much for CAV_H; a boss under D13 bearing B keeps its seat
+P2 = (ZF + JB[1] - DP2 - 6.0, ZF + JB[1] - DP2)    # bottom plate; yaw bearing B flush on its top
 YAW_BELT = ZF - PUL_C                  # −76.2
 YAW_DROP = round(-(P2[0] - 2.3 - 5.0), 1)   # flange: 5 mm, 2.3 mm under the bottom plate (R15 moving ≥ 2; 113.4 = params.arm.yaw_drop)
 
 
 YAW_WALL_Y = 44.0                      # side-wall centre offset from the yaw axis (plates span ±46)
+X_PL1 = 48.0                           # +X end of the yaw plates (belt)
+# names of the parts on the roll output (rnd/swept.py: they rotate with roll; everything else in module() is static)
+ROLL_OUT = {"roll_shaft", "roll_pulley72", "roll_spring_hub", "yaw_block", "yaw_shaft", "yaw_flange", "yaw_spring_ring", "yaw_plate_bot",
+            "yaw_band", "yaw_stop_pin", "roll_arm_rear", "roll_outflange", "roll_clevis_cap_in", "roll_clevis_cap_out"}
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# D24 INLINE ROLL (PIP_ROLL_DRIVE=inline). Along the roll axis (x), from −X:
+#   yaw cartridge (roll output, x ≤ its CAD max) | roll_arm_rear on a 61806 (30×42×7) on the static stub, with the yaw torque
+#   fork | 2.5 mm | roll-link floor (6 mm, 6 × M4 into the motor's rear face) | GIM8108-36 housing (static) | output flange
+#   | +X clevis arm (fused to the yaw block, 6 × M4 into the flange) | roll clock-spring cassette (hub on the arm, ring on
+#   the roll link's bar, as in the belt stage).
+# Two-point roll support: the motor's output bearing (+X) and the 61806 (−X), 68 mm apart (belt: 2 × 61808, 39 mm apart);
+# the motor's output bearing then carries ≈ 19 N·m / 0.068 ≈ 280 N radial in the 1 kg workspace (rating not published:
+# ESTIMATE, confirm with the seller). Assembly: motor onto the floor (screws from −X) → 61806 into roll_arm_rear, arm onto
+# the stub from −X, end washer + M5 → yaw block (+ yaw cartridge) up from below: its arm slides down the flange face,
+# 6 × M4 into the flange from +X, roll_arm_rear's foot 2 × M5 into the top plate (the torque pin rises into the fork
+# slot) → spring hub on the arm, ribbon, spring ring onto the bar. No pulley, belt or D13 stage, so R14 has nothing to
+# block (rnd/assembly_seq.py checks the 61806 slide-on).
+# Roll travel: software −15…100° (twin.JR); hard stops at ≈ −19° / 104°: two Ø8 lugs on the floor's −X face (r 44) meet
+# roll_arm_rear's edges (≈ 800 N at the 35 N·m rated torque limit set in the drive; fault only).
+# ---------------------------------------------------------------------------------------------------------------------
+BRG_R = dict(d=30.0, D=42.0, B=7.0)    # 61806, rear roll support
+R_ARM = 34.0                           # clevis-arm boss radius about the roll axis (covers the Ø56 output flange)
+STOP_R, STOP_LUG_R = 44.0, 4.0
+STOP_AT = (ROLL_MIN - 4, 100 + 4)      # hard-stop contact angles (deg)
+if INLINE:
+    _ycx = max(p.bounding_box().max.X for _, p, _c in _stage(YAW_T, 20) if p.bounding_box().max.Z > P1[1])
+    X_ARM_R = (math.ceil((_ycx + 1.2) * 2) / 2, math.ceil((_ycx + 1.2) * 2) / 2 + 8.0)   # 1.2 mm past the yaw cartridge (its collar)
+    X_FLOOR = (X_ARM_R[1] + 2.5, X_ARM_R[1] + 2.5 + 6.0)
+    X_MOT = (X_FLOOR[1], X_FLOOR[1] + MOT36["h"])
+    X_ARM_F = (X_MOT[1] + MOT36["fl_h"], X_MOT[1] + MOT36["fl_h"] + 10.0)
+    X_PL1 = X_ARM_F[1]
+    ROLL_SPR_X = (X_ARM_F[1] + 1.5, X_ARM_F[1] + 1.5 + CAV_H)
+    W1 = (X_ARM_R[0] + 0.5, X_ARM_R[0] + 0.5 + BRG_R["B"])          # 61806 (rnd/stiffness.py reads the bearing spans)
+    W2 = (X_MOT[1] - MOT36["out_brg"], X_MOT[1])                    # motor output bearing (ESTIMATE position)
+    ROLL_C = 0.0                                                    # roll actuator axis above the roll axis (covers.py)
+    XF, ROLL_T = None, None
+
+
+def _ang(deg, r):
+    t = math.radians(deg)                                           # roll angle convention: 0 = −Z, + toward +Y
+    return ROLL_Y + r * math.sin(t), -r * math.cos(t)
+
+
+def roll_link_inline() -> Part:
+    """Static roll link: ferrule boss (Ø90 × 4 on the ferrule's back, cut below z −28), a 10 mm frame around the spigot
+    (y 8…18, z −28…40) running from the floor to the spring bar, the floor (Ø100 × 6, 6 × M4 counterbored on PCD 84), the
+    Ø30 support stub with its Ø34 shoulder, two hard-stop lugs and the spring bar."""
+    xf0, xf1 = X_FLOOR
+    zlo, zhi = -28.0, 40.0
+    p = Pos(0, 8, 0) * Rot(-90, 0, 0) * Cylinder(45, 4, align=MIN)
+    p &= Pos(0, 10, (zlo + 60) / 2) * Box(100, 10, 60 - zlo)
+    sx1 = ROLL_SPR_X[1] + 1.6
+    p += _plate_x(xf0, sx1, 8, 18, zlo, zhi, 6) - Pos(0, 13, 0) * Rot(-90, 0, 0) * Cylinder(32.3, 12)            # frame around the spigot
+    p += Pos(xf0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, xf1 - xf0, align=MIN)                            # floor
+    p += _plate_x(xf0, xf1, 8, ROLL_Y, zlo, zhi, 4)                                                             # floor ↔ frame web
+    for k in range(MOT36["rear_n"]):
+        a = 2 * math.pi * k / MOT36["rear_n"] + math.pi / 6
+        y, z = ROLL_Y + MOT36["rear_pcd"] / 2 * math.cos(a), MOT36["rear_pcd"] / 2 * math.sin(a)
+        p -= Pos(0, y, z) * Rot(0, 90, 0) * Cylinder(2.25, 400)
+        p -= Pos(xf0, y, z) * Rot(0, 90, 0) * Cylinder(3.8, 3.2, align=MIN)                                     # low-head counterbore
+    p -= Pos(xf1 - 2.5, (ROLL_Y + 8) / 2, 0) * Box(5, ROLL_Y - 8, 10)                                           # motor-lead groove to the frame
+    x_st = W1[0]
+    p += Pos(x_st, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(BRG_R["d"] / 2, xf0 - x_st, align=MIN) - Cylinder(9, xf0 - x_st, align=MIN))
+    p += Pos(W1[1] + 0.3, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(17, xf0 - W1[1] - 0.3, align=MIN) - Cylinder(9, 20, align=MIN))   # inner-race shoulder
+    for deg in STOP_LUG_ANG:
+        y, z = _ang(deg, STOP_R)
+        p += Pos(X_ARM_R[0] + 2.5, y, z) * Rot(0, 90, 0) * Cylinder(STOP_LUG_R, xf0 - X_ARM_R[0] - 2.5, align=MIN)
+    x0, x1 = ROLL_SPR_X
+    r1 = ROLL_SPR[1]
+    p += Pos((x0 + 1 + x1 + 1.6) / 2, (12 + ROLL_Y - r1) / 2, 0) * Box(x1 + 1.6 - x0 - 1, ROLL_Y - r1 - 12 + 1, 14)   # spring bar
+    return p
+
+
+def _stop_lug_angles():
+    """Lug centre angles: roll_arm_rear's straight edges (±26 from its centre line) touch a lug of radius STOP_LUG_R at
+    radius STOP_R when sin(Δ) = (26 + r_lug) / r."""
+    d = math.degrees(math.asin((26.0 + STOP_LUG_R) / STOP_R))
+    return (STOP_AT[0] - d, STOP_AT[1] + d)
+
+
+STOP_LUG_ANG = _stop_lug_angles()
+
+
+def roll_arm_rear() -> Part:
+    """−X clevis arm (separate print): R 34 boss with the 61806 seat (outer-race lip on the +X side), a ±26 plate down to a
+    foot on the top yaw plate (2 × M5), and the yaw cartridge's torque fork."""
+    x0, x1 = X_ARM_R
+    a = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[1], 0, 10) + Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_ARM + 2, x1 - x0, align=MIN)
+    a += _plate_x(x0 - 10, x1, ROLL_Y - 26, ROLL_Y + 26, P1[1], P1[1] + 5, 4)                                    # foot
+    a -= Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(BRG_R["D"] / 2, W1[1] - x0, align=MIN)                     # 61806 seat
+    a -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(BRG_R["D"] / 2 - 2.0, 400)                                 # lip bore
+    for yy in (ROLL_Y - 16, ROLL_Y + 16):
+        a -= Pos(x0 - 5, yy, P1[1]) * Cylinder(2.75, 12, align=MIN)
+    return a + yaw_torque_fork()
+
+
+def roll_motor_housing() -> Part:
+    """GIM8108-36 housing (static), Ø100 × 56 (ESTIMATE), rear face on the roll-link floor."""
+    return Pos(X_MOT[0], ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, MOT36["h"], align=MIN)
+
+
+def roll_outflange() -> Part:
+    """GIM8108-36 output flange (rotates with the roll output), Ø56 × 4 (ESTIMATE), 0.4 mm proud of the housing face."""
+    return Pos(X_MOT[1] + 0.4, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(MOT36["fl_d"] / 2, MOT36["fl_h"] - 0.4, align=MIN)
+
+
+def roll_spring_ring() -> Part:
+    """Static outer wall + cover of the roll clock spring, screwed to the roll link's bar (inline: separate, it goes on last)."""
+    x0, x1 = ROLL_SPR_X
+    r0, r1 = ROLL_SPR
+    ring = Pos(x0 + 0.5, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(r1 + 2, x1 - x0 + 1.6 - 0.5, align=MIN) - Cylinder(r1, x1 - x0 - 0.5, align=MIN))
+    ring -= Pos(x1 - 1, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(r0 + 0.5, 5, align=MIN)
+    ring -= Pos((x0 + x1) / 2, ROLL_Y, r1 + 1) * Box(CAV_H - 1, 10, 4)                      # ribbon exit (top)
+    return ring - Pos((x0 + 1 + x1 + 1.6) / 2, (12 + ROLL_Y - r1) / 2, 0) * Box(x1 + 1.6 - x0 - 1 + 0.01, ROLL_Y - r1 - 12 + 1 + 0.01, 14.01)
+
+
+def module_inline():
+    out = [("ferrule_m", Rot(-90, 0, 0) * ferrule(male=True), "orange"),
+           ("roll_link", roll_link_inline(), "white"), ("roll_gim_housing", roll_motor_housing(), "dark"),
+           ("roll_outflange", roll_outflange(), "steel"), ("roll_arm_rear", roll_arm_rear(), "white"),
+           ("roll_spring_hub", roll_spring_hub(), "dark"), ("roll_spring_ring", roll_spring_ring(), "dark"),
+           ("yaw_block", clevis_and_yaw_block(), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_flange", yaw_flange(), "orange"),
+           ("yaw_plate_bot", yaw_plate_bot(), "white"), ("yaw_spring_ring", yaw_spring_ring(), "dark"), ("yaw_band", yaw_band(), "white")]
+    out += [(f"yaw_{n}", p, c) for n, p, c in _stage(YAW_T, 20)]
+    out.append(("yaw_stop_pin", yaw_stop_pin(), "steel"))
+    return out
+
+
+def printed_parts():
+    """Printed parts of this stage for rnd/assembly_check.py (bed fit), for the active roll drive."""
+    if INLINE:
+        return {"roll link": roll_link_inline(), "roll arm rear": roll_arm_rear(), "clevis + yaw block": clevis_and_yaw_block(),
+                "yaw shaft": yaw_shaft(), "yaw plate bottom": yaw_plate_bot()}
+    return {"roll link": roll_link(), "roll shaft + 80T (one piece)": roll_shaft(), "roll seat cap": roll_seat_cap(W1),
+            "clevis cap + yaw torque fork": roll_clevis_cap(0), "clevis + yaw block": clevis_and_yaw_block(), "yaw shaft": yaw_shaft()}
+
+
+def dome(mod=None):
+    """Shoulder dome = the static, arm-side roll body (ferrule, roll link, roll actuator, cap, spring ring): extents in mm,
+    fore-aft (x) × height (z) × outboard of the detach plane (y), from the CAD bounding box."""
+    mod = mod or module()
+    st = [p for n, p, _ in mod if n not in ROLL_OUT and not n.startswith("yaw_")]
+    bb = [p.bounding_box() for p in st]
+    x0, x1 = min(b.min.X for b in bb), max(b.max.X for b in bb)
+    z0, z1 = min(b.min.Z for b in bb), max(b.max.Z for b in bb)
+    y1 = max(b.max.Y for b in bb)
+    return dict(width_x=round(x1 - x0, 1), height_z=round(z1 - z0, 1), out_y=round(y1, 1), z_top=round(z1, 1), z_bot=round(z0, 1))
+
+
+def _check_params():
+    import warnings
+    if abs(_D.arm.roll_offset_y * 1000 - ROLL_Y) > 0.25 or abs(_D.arm.yaw_drop * 1000 - YAW_DROP) > 0.25:
+        warnings.warn(f"params.arm roll_offset_y / yaw_drop ({_D.arm.roll_offset_y * 1000:.1f} / {_D.arm.yaw_drop * 1000:.1f}) "
+                      f"≠ the {_D.arm.roll_drive} roll CAD ({ROLL_Y:.1f} / {YAW_DROP:.1f} mm): update params.ROLL_DRIVES")
+
+
+_check_params()
 
 
 def yaw_plate_bot() -> Part:
@@ -164,8 +407,10 @@ def yaw_plate_bot() -> Part:
     side walls. Assembly: one-piece yaw shaft (40T + spring hub) with bearing A on top goes up into the top plate from
     below; the spring ring and ribbon go on; this plate comes up over bearing B; the flange bolts to the tube end last.
     (Loops 10–43 fused it to the top half, so nothing could be assembled; Astra review #2b finding 14.)"""
-    pl = _plate_z(-YAW_C - 48, 48, ROLL_Y - 46, ROLL_Y + 46, P2[0], P2[1], 16)
+    pl = _plate_z(-YAW_C - 48, X_PL1, ROLL_Y - 46, ROLL_Y + 46, P2[0], P2[1], 16)
     pl -= Pos(0, ROLL_Y, 0) * Cylinder(26, 400)
+    if DP2 > 0:                                                                   # boss under the D13 stage's bearing B (CAV_H)
+        pl += Pos(-YAW_C, ROLL_Y, P2[1]) * Cylinder(23.0, DP2, align=MIN)
     pl -= Pos(-YAW_C, ROLL_Y, 0) * Cylinder(19.1, 400)
     for xx, yy in ((-YAW_C / 2, ROLL_Y - 38), (-YAW_C / 2, ROLL_Y + 38), (-YAW_C - 24, ROLL_Y - 38), (-YAW_C - 24, ROLL_Y + 38)):
         pl -= Pos(xx, yy, P2[0]) * Cylinder(2.75, 20, align=MIN)                  # post bolts
@@ -177,7 +422,7 @@ def yaw_plate_bot() -> Part:
 def clevis_and_yaw_block() -> Part:
     p = None
     for z0, z1 in (P1,):                                                           # D19: P2 is yaw_plate_bot()
-        pl = _plate_z(-YAW_C - 48, 48, ROLL_Y - 46, ROLL_Y + 46, z0, z1, 16)
+        pl = _plate_z(-YAW_C - 48, X_PL1, ROLL_Y - 46, ROLL_Y + 46, z0, z1, 16)
         pl -= Pos(0, ROLL_Y, 0) * Cylinder(26, 400)                                # 61808 seat, yaw shaft
         pl -= Pos(-YAW_C, ROLL_Y, 0) * Cylinder(19.1, 400)                        # eccentric-bushing seat, small hub
         p = pl if p is None else p + pl
@@ -190,22 +435,60 @@ def clevis_and_yaw_block() -> Part:
     # the +X end stays open for the ribbon). The walls belong to the top half; the bottom plate still bolts on last.
     for yy in (ROLL_Y + YAW_WALL_Y, ROLL_Y - YAW_WALL_Y):
         p += Pos((-112 + 32) / 2, yy, (P2[1] + P1[0]) / 2) * Box(144, 4, P1[0] - P2[1])
-    p += yaw_torque_fork()
-    for x0, x1 in ((W1[0] - 12, W1[0] - 2), (W2[1] + 2, W2[1] + 12)):            # clevis arms outside the walls
-        arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 26, 10)           # arms end on the top plate (yaw pulley below is clear)
-        arm -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(20.2, 100)           # clamps on the roll shaft ends
+    p -= Pos(0, ROLL_Y, P2[1]) * Cylinder(YAW_SPR[1] + 1.6, CAV_H + 1.0, align=MIN)   # the Ø88 yaw spring ring sits in the walls (2 mm left at x 0)
+    if INLINE:
+        # D24 inline: only the +X clevis arm is fused to the block; it bolts to the motor's output flange (6 × M4). The −X
+        # arm (roll_arm_rear, with the yaw torque fork) is a separate print on the 61806 support bearing.
+        x0, x1 = X_ARM_F
+        arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 0, 10) + Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_ARM, x1 - x0, align=MIN)
+        arm -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(8.0, 400)                 # ribbon / cable pass to the spring cassette
+        for k in range(MOT36["out_n"]):
+            a = 2 * math.pi * k / MOT36["out_n"]
+            arm -= Pos(0, ROLL_Y + MOT36["out_pcd"] / 2 * math.cos(a), MOT36["out_pcd"] / 2 * math.sin(a)) * Rot(0, 90, 0) * Cylinder(2.25, 400)
+        p += arm
+        return p
+    for x0, x1 in CLEVIS_X:                                                       # clevis arms outside the walls
+        arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 0, 10)            # arms end on the top plate (yaw pulley below is clear)
+        arm += Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(CLEVIS_R, x1 - x0, align=MIN)
+        arm += Pos((x0 + x1) / 2, ROLL_Y, -3) * Box(x1 - x0, 2 * CLEVIS_EAR, 6)    # D19: ears at the split line (z 0)
+        arm -= Pos((x0 + x1) / 2, ROLL_Y, 20) * Box(x1 - x0 + 1, 80, 40)          # D19: U-slot open upward; roll_clevis_cap closes it
+        arm -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(20.2, 100)           # lower half-bore on the roll shaft end
+        for yy in (ROLL_Y - CLEVIS_EAR + 6, ROLL_Y + CLEVIS_EAR - 6):
+            arm -= Pos((x0 + x1) / 2, yy, -8) * Cylinder(2.8, 8, align=MIN)        # M4 heat-set inserts for the cap's pinch bolts
         arm -= Pos(0, ROLL_Y, 0) * Cylinder(22.0, 400)                            # loop 31/36: 2 mm clear of the rotating Ø40 yaw shaft (R15)
         p += arm
     return p
 
 
+# D19 (belt roll): the clevis arms' roll-shaft bores are split at z = 0; the clevis comes up from below onto the shaft ends
+# (already in the walls) and a cap per arm closes the bore. The caps' two M4 pinch bolts clamp the shaft (0.3 mm gap at the
+# split line: this is also the clamp the clevis lacked, Astra #2b finding 2). The yaw torque fork moves onto the −X cap.
+CLEVIS_X = ((W1[0] - 12, W1[0] - 2), (W2[1] + 2, W2[1] + 12))
+CLEVIS_R, CLEVIS_EAR = 30.0, 34.0      # arm boss radius about the roll axis; ears ±34 at the split line
+
+
+def roll_clevis_cap(i) -> Part:
+    """Upper half of clevis arm i (0 = −X, with the yaw torque fork; 1 = +X): half-boss r 30 + ears, bore r 20.0 (clamps
+    the Ø40 shaft when the pinch bolts close the 0.3 mm split gap)."""
+    x0, x1 = CLEVIS_X[i]
+    c = Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(CLEVIS_R, x1 - x0, align=MIN) + Pos((x0 + x1) / 2, ROLL_Y, 3) * Box(x1 - x0, 2 * CLEVIS_EAR, 6)
+    c &= Pos((x0 + x1) / 2, ROLL_Y, 20.3) * Box(x1 - x0, 80, 40)
+    c -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(20.0, 100)
+    for yy in (ROLL_Y - CLEVIS_EAR + 6, ROLL_Y + CLEVIS_EAR - 6):
+        c -= Pos((x0 + x1) / 2, yy, 0) * Cylinder(2.2, 20, align=MIN)
+    if i == 0:
+        c += yaw_torque_fork()
+    return c
+
+
 def yaw_torque_fork() -> Part:
     """Loop 22: torque reaction for the yaw cartridge (axis Z at x = −YAW_C). Its pin sits 30 mm toward the yaw axis
     (x = −YAW_C + 30) above the can rear (z = ZF + ZC). A 7 mm fork plate, open toward the cartridge axis (−X), is fused to
-    the inboard clevis arm; the roll-shaft envelope is cut as in the arm. In-plane bending ≈ 2.8 MPa at 367 N."""
+    the inboard clevis arm; the roll-shaft envelope is cut as in the arm. In-plane bending ≈ 2.8 MPa at 367 N.
+    Inline roll: fused to roll_arm_rear (it ends on that arm's −X face)."""
     tp = cm.TORQUE_PIN
     xp, z_rear = -YAW_C + tp["r"], ZF + ZC
-    xe = W1[0] - 7
+    xe = X_ARM_R[0] + 0.5 if INLINE else W1[0] - 7                          # belt (D19): fused to roll_clevis_cap(0)
     f = Pos((xp - 9 + xe) / 2, ROLL_Y, z_rear + 5.5) * Box(xe - (xp - 9), 48, 7)
     f -= Pos(xp - 9 + 7, ROLL_Y, z_rear + 5.5) * Box(14 + 0.01, tp["d"] + 0.4, 8)             # open slot toward −X, closed 5 mm past the pin
     f -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(20.2, 60)                 # roll-shaft envelope, only where the shaft is (x ±30)
@@ -266,7 +549,7 @@ def yaw_spring_ring() -> Part:
     the +X clevis arm and in between the plates)."""
     r1 = YAW_SPR[1]
     top = YAW_BELT - 8 - 0.8
-    g = Pos(0, ROLL_Y, P2[1]) * (Cylinder(r1 + 2, top - P2[1], align=MIN) - Cylinder(r1, top - P2[1], align=MIN))
+    g = Pos(0, ROLL_Y, P2[1]) * (Cylinder(r1 + 1.5, top - P2[1], align=MIN) - Cylinder(r1, top - P2[1], align=MIN))   # 1.5 mm wall (r_out 42.5)
     g -= Pos(r1 + 1, ROLL_Y, P2[1] + 0.5) * Box(4, 10, CAV_H, align=MIN)
     return g
 
@@ -317,17 +600,23 @@ def roll_sweep_envelope(pad=3.0, step=5):
 def yaw_band() -> Part:
     """Rounded band around the yaw-block plates (roll body)."""
     from .soft import soft_box
-    x0, x1 = -YAW_C - 50, 56                  # loop 40: +6 at +X for the ribbon from the roll spring
+    x0, x1 = -YAW_C - 50, X_PL1 + 8           # loop 40: +6 at +X for the ribbon from the roll spring
     zc, hz = (P2[0] + P1[1]) / 2, P1[1] - P2[0] + 3
     b = Pos((x0 + x1) / 2, ROLL_Y, zc) * (soft_box(x1 - x0, 100, hz, 30, 6) - soft_box(x1 - x0 - 4, 96, hz + 2, 28, 0.6))
+    if INLINE:                                # 45° chamfer on the inboard top edge: it passes the ferrule at roll −15°
+        c = BAND_CH
+        b -= Pos(0, ROLL_Y - 50, P1[1] + 1.5) * Rot(45, 0, 0) * Box(400, c * math.sqrt(2), c * math.sqrt(2))
     return b
 
 
 def module():
+    if INLINE:
+        return module_inline()
     out = [("ferrule_m", Rot(-90, 0, 0) * ferrule(male=True), "orange"),
-           ("roll_link", roll_link(), "white"), ("roll_shaft", roll_shaft(), "orange"), ("roll_pulley72", roll_pulley(), "orange"),
-           ("roll_spring_hub", roll_spring_hub(), "dark"),
-           ("yaw_block", clevis_and_yaw_block(), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_flange", yaw_flange(), "orange"),
+           ("roll_link", roll_link(), "white"), ("roll_shaft", roll_shaft(), "orange"),
+           ("roll_seat_cap_A", roll_seat_cap(W1), "white"), ("roll_seat_cap_B", roll_seat_cap(W2), "white"),
+           ("roll_spring_hub", roll_spring_hub(), "dark"), ("roll_spring_ring", roll_spring_ring(), "dark"),
+           ("yaw_block", clevis_and_yaw_block(), "white"), ("roll_clevis_cap_in", roll_clevis_cap(0), "white"), ("roll_clevis_cap_out", roll_clevis_cap(1), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_flange", yaw_flange(), "orange"),
            ("yaw_plate_bot", yaw_plate_bot(), "white"),
            ("yaw_spring_ring", yaw_spring_ring(), "dark")]
     out += [("shoulder_cap", shoulder_cap(), "white"), ("yaw_band", yaw_band(), "white")]
@@ -346,9 +635,18 @@ def masses(density=1.27, split=False):
            + (st["brg_A_6801"].volume + st["brg_B_6801"].volume) * 7.85e-3 * 0.6) / 1e3          # one stage, kg
     sock = (st["kx_hub_v2"].volume + collar(KX74).volume) * 0.7 / 1e6 * density
     pr = lambda v, f: v * f / 1e6 * density
-    roll = {"roll link + spring ring/bar (printed)": pr(roll_link().volume, 0.6), "roll shaft + 72T pulley + spring hub": pr(roll_shaft().volume + roll_pulley().volume, 0.7) + pr(roll_spring_hub().volume, 0.8),
-            "roll D13 stage + KX74 socket": d13 + sock, "2 × 61808 (ESTIMATE)": 0.04, "male ferrule (printed) + dowels + belt + screws + ribbon (ESTIMATE)": pr(67213, 0.7) + 0.05}
-    yaw = {"clevis + yaw block plates + posts (printed)": pr(clevis_and_yaw_block().volume + yaw_plate_bot().volume, 0.6),
+    if INLINE:      # the GIM8108-36 itself (1.0 kg) is the roll actuator mass in params.arm.joints, not counted here
+        roll = {"roll link: ferrule boss, frame, motor floor, support stub, stop lugs, spring bar (printed)": pr(roll_link().volume, 0.6),
+                "roll_arm_rear + yaw torque fork (printed)": pr(roll_arm_rear().volume, 0.6),
+                "roll spring hub + ring (printed)": pr(roll_spring_hub().volume + roll_spring_ring().volume, 0.8),
+                "61806 + 12 × M4 + 2 × M5 + end washer (ESTIMATE)": 0.045,
+                "male ferrule (printed) + dowels + screws + ribbon (ESTIMATE)": pr(67213, 0.7) + 0.04}
+    else:
+        roll = {"roll link + seat caps + spring ring/bar (printed)": pr(roll_link().volume + roll_seat_cap(W1).volume + roll_seat_cap(W2).volume, 0.6) + pr(roll_spring_ring().volume, 0.8),
+                "roll shaft + 80T (one piece, D19) + spring hub": pr(roll_shaft().volume, 0.7) + pr(roll_spring_hub().volume, 0.8),
+                "roll D13 stage + KX74 socket": d13 + sock, "2 × 61808 (ESTIMATE)": 0.04, "male ferrule (printed) + dowels + belt + screws + ribbon (ESTIMATE)": pr(67213, 0.7) + 0.05}
+    caps = 0.0 if INLINE else roll_clevis_cap(0).volume + roll_clevis_cap(1).volume
+    yaw = {"clevis + caps + yaw block plates + posts (printed)": pr(clevis_and_yaw_block().volume + caps + yaw_plate_bot().volume, 0.6),
            "yaw shaft + 40T + spring hub (one piece), flange, spring ring": pr(yaw_shaft().volume + yaw_flange().volume, 0.7) + pr(yaw_spring_ring().volume, 0.8),
            "yaw D13 stage + KX74 socket": d13 + sock, "2 × 61808 + stop pin + belt + screws + ribbon (ESTIMATE)": 0.075}
     if split:

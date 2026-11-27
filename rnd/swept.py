@@ -28,8 +28,7 @@ def _sets():
     mod = roll.module()
     up = [(f"arm_{n}", Pos(0, roll.ROLL_Y, -roll.YAW_DROP) * p) for n, p, _ in arm.assembly()
           if n in ("upper_bone", "bone_cap", "cf_neck")]
-    roll_out = {"roll_shaft", "roll_pulley72", "roll_spring_hub", "yaw_block", "yaw_shaft", "yaw_flange", "yaw_spring_ring", "yaw_plate_bot",
-                "yaw_band", "yaw_stop_pin"}
+    roll_out = roll.ROLL_OUT                       # parts on the roll output (belt or D24 inline roll)
     moving_roll = [(n, p) for n, p, _ in mod if n in roll_out or n.startswith("yaw_")] + up
     static_roll = [(n, p) for n, p, _ in mod if not (n in roll_out or n.startswith("yaw_"))]
     yaw_rot = {"yaw_shaft", "yaw_flange"}

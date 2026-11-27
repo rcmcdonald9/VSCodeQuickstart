@@ -11,13 +11,13 @@ things for every drive shaft:
    through (an integral pulley, flange or ferrule between or beyond two walls of a one-piece link) can't be put in.
    The shaft must be split (bolted pulley / flange), or the link must be split.
 
-**4/7 drive shafts can be assembled as drawn.**
+**5/7 drive shafts can be assembled as drawn.**
 
 | Shaft | Bearings and pulleys that can slide on (Ø = bore) | Insertion | Verdict |
 |---|---|---|---|
 | pitch shaft (60T split on a double-D; balancer disc + ferrule outboard) | z -53.5…-47.5 (Ø40.0): ✅ −Z end; z -19.5…-13.5 (Ø40.0): ✅ −Z end; z -45.0…-29.0 (Ø36.4): ❌ blocked both ways | ✅ | ❌ |
-| roll shaft (80T split on a hex; clock-spring hub on the +X end) | z -16.5…-10.5 (Ø40.0): ✅ −Z end; z 17.5…23.5 (Ø40.0): ✅ −Z end; z -8.0…8.0 (Ø34.4): ❌ blocked both ways | ✅ | ❌ |
-| yaw shaft (D19, loop 44: 40T + spring hub one piece; up into the top plate, bottom plate bolted on, flange last) | z -72.1…-66.1 (Ø40.0): ✅ +Z end; z -106.1…-100.1 (Ø40.0): ✅ −Z end | ✅ | ✅ |
+| roll shaft (D19: 80T printed on the tube; bearings from both ends, into the walls' capped U-slots from below; clevis caps on top) | z -16.5…-10.5 (Ø40.0): ✅ −Z end; z 17.5…23.5 (Ø40.0): ✅ +Z end | ✅ | ✅ |
+| yaw shaft (D19, loop 44: 40T + spring hub one piece; up into the top plate, bottom plate bolted on, flange last) | z -72.1…-66.1 (Ø40.0): ✅ +Z end; z -108.7…-102.7 (Ø40.0): ✅ −Z end | ✅ | ✅ |
 | elbow shaft (40T split on a double-D; 2 × 61808 + 2 × 6708) | z 4.5…10.5 (Ø40.0): ✅ −Z end; z 38.5…43.7 (Ø40.0): ✅ −Z end; z -57.5…-50.5 (Ø40.0): ✅ −Z end; z 50.5…57.5 (Ø40.0): ✅ −Z end; z 13.0…29.0 (Ø36.4): ❌ blocked both ways | ✅ | ❌ |
 | D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow | z -30.5…-25.5 (Ø12.0): ✅ −Z end; z -63.5…-58.5 (Ø12.0): ✅ −Z end; z -58.0…-31.0 (Ø12.0): ✅ −Z end | ✅ | ✅ |
 | D16 wrist-roll spindle (loop 43: from above, shoulder on the upper bearing; bearings from below, end cap) | z -91.1…-84.1 (Ø20.0): ✅ −Z end; z -98.1…-91.1 (Ø20.0): ✅ −Z end | ✅ | ✅ |

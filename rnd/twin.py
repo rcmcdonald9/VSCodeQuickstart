@@ -28,7 +28,7 @@ JR = {  # joint ranges (deg). Conventions: arm hangs straight down at 0.
     "elbow": (-150, 0), "wpitch": (-110, 110), "wroll": (-180, 180)}
 
 
-COLL = Path(__file__).resolve().parent / "out" / "collision"
+COLL = Path(__file__).resolve().parent / "out" / ("collision" if BASELINE.arm.roll_drive == "belt" else f"collision_{BASELINE.arm.roll_drive}")   # D24: one hull set per roll drive
 GEOMETRY = "cad"     # "cad": arm collision from the CAD hulls (rnd/parts/collision.py); "capsule": twin v0 primitives
 
 

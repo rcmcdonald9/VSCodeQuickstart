@@ -61,9 +61,17 @@ def cases():
     C.append(("pitch shaft (60T split on a double-D; balancer disc + ferrule outboard)", ps,
               [(shoulder.W_IN - 3.0, shoulder.W_IN + 3.0, 40.0), (shoulder.W_OUT - 3.0, shoulder.W_OUT + 3.0, 40.0),
                (shoulder.Y_BELT - 8.0, shoulder.Y_BELT + 8.0, bs.DD_AF + 0.4)], None))
-    rs = Rot(0, -90, 0) * Pos(0, -roll.ROLL_Y, 0) * roll.roll_shaft()   # +X → +Z
-    C.append(("roll shaft (80T split on a hex; clock-spring hub on the +X end)", rs,
-              [(roll.W1[0], roll.W1[1], 40.0), (roll.W2[0], roll.W2[1], 40.0), (-8.0, 8.0, roll.HEX_AF + 0.4)], None))
+    if roll.INLINE:
+        # D24 inline roll: no roll shaft or pulley. The 61806 (in roll_arm_rear) slides onto the roll link's Ø30 stub from −X;
+        # only roll-link material inside the bearing's path (r ≤ 25 about the roll axis) can block it.
+        from build123d import Cylinder
+        st = Rot(0, -90, 0) * Pos(0, -roll.ROLL_Y, 0) * (roll.roll_link() & Pos(0, roll.ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(25, 400))
+        C.append(("roll stage, D24 inline GIM8108-36 (no shaft or pulley; 61806 onto the roll link's stub from −X, clevis bolted to the output flange)", st,
+                  [(roll.W1[0], roll.W1[1], roll.BRG_R["d"])], None))
+    else:
+        rs = Rot(0, -90, 0) * Pos(0, -roll.ROLL_Y, 0) * roll.roll_shaft()   # +X → +Z
+        C.append(("roll shaft (D19: 80T printed on the tube; bearings from both ends, into the walls' capped U-slots from below; clevis caps on top)", rs,
+                  [(roll.W1[0], roll.W1[1], 40.0), (roll.W2[0], roll.W2[1], 40.0)], None))
     ys = Pos(0, -roll.ROLL_Y, 0) * roll.yaw_shaft()
     C.append(("yaw shaft (D19, loop 44: 40T + spring hub one piece; up into the top plate, bottom plate bolted on, flange last)", ys,
               [(roll.P1[0], roll.P1[1], 40.0), (roll.P2[0], roll.P2[1], 40.0)], None))
