@@ -338,6 +338,8 @@ def ear_boss(motor: dict | None = None, site: str = "default", r: float = 7.5, t
 #     ear screws, and the cartridge comes out WITH its stub, pulley and 6001 (the bonded bushing stays in wall B).
 # Stage frame as v3 (flange plane z = 0, cartridge +Z, wall A z −6 … 0, wall B pulley face z −34).
 BRG_B = dict(name="6001-2RS", d=12.0, D=28.0, B=8.0, C=5.4e3, C0=2.36e3)    # SKF 6001 (12×28×8): C 5.4 kN, C0 2.36 kN (catalogue)
+BRG_B6 = dict(name="61901-2RS", d=12.0, D=24.0, B=6.0, C=2.91e3, C0=1.46e3)  # SKF 61901 (12×24×6), for a wall B with nothing to spare
+# behind it (the lift: the mast coupling 2 mm past wall B): flush in the 6 mm wall (C0 1.46 kN vs 714 N at the GIM6010 peak, 2.0×)
 STUB = dict(flange_od=42.0, t=4.0, pilot_d=20.0, pilot_h=1.5, n_screw=8, screw="DIN 7984 M3 × 6, Loctite 243 (8.8; D20 10.9)",
             material="C45 / 1045, 4 × 2.5 DIN 6885 keyway under the pulley")
 BUSH_B = dict(od=37.4, seat_d=38.2, t=8.0, adhesive="structural epoxy (EA 9466 / DP420 class), 0.4 mm radial bond line")
@@ -346,10 +348,10 @@ WALL_SLOT_HW = 20 * PITCH / math.pi / 2 - PLD + 1.05   # 16.4: wall-A exit slot 
 MOTOR_BRG_DEPTH = 6.0                                 # motor output bearing centre behind the output face (ESTIMATE: not on any drawing)
 
 
-def _v4_levels(motor: dict | None = None) -> dict:
+def _v4_levels(motor: dict | None = None, brg: dict | None = None) -> dict:
     from . import cartridge_m as cm
     lv = cm.bolted_levels(motor)
-    jb = (V3["jB"][1] - BRG_B["B"], V3["jB"][1])                       # 6001 flush with wall B's pulley face (z −34), 8 wide
+    jb = (V3["jB"][1] - (brg or BRG_B)["B"], V3["jB"][1])               # 6001 flush with wall B's pulley face (z −34), 8 wide
     return dict(face=lv["motor_face"], flange=(lv["motor_face"] - STUB["t"], lv["motor_face"]), jB=jb, end=jb[0],
                 pulley=V3["pulley"], belt_c=V3["belt_c"], motor_brg=lv["motor_face"] + MOTOR_BRG_DEPTH)
 
@@ -430,14 +432,15 @@ def idler_envelope(idler: dict, clr: float = 0.0) -> Part:
     return c
 
 
-def small_stage_v4(teeth: int = 20, motor: dict | None = None, idler: dict | None = None):
+def small_stage_v4(teeth: int = 20, motor: dict | None = None, idler: dict | None = None, brg: dict | None = None):
     """(name, part, colour) list in the stage frame of the D26 direct stage. Names kept for callers: "kx_hub_v2" = the
     stub's flange (moves with the motor), "shaft_12" = the stub's shaft (one turned part with it), "brg_B_6001",
     "brg_B_bushing" (bonded in wall B), "al_pulley", and the idler's parts when given."""
     from . import cartridge_m as cm
     MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
     m = motor or cm.MOTOR
-    v = _v4_levels(m)
+    brg = brg or BRG_B
+    v = _v4_levels(m, brg)
     f0, f1 = v["flange"]
     fl = Pos(0, 0, f0) * Cylinder(STUB["flange_od"] / 2, f1 - f0, align=MINZ)
     for k in range(m["out_holes"]):                                     # all 8 output screws, low heads in counterbores on the −Z face
@@ -447,8 +450,8 @@ def small_stage_v4(teeth: int = 20, motor: dict | None = None, idler: dict | Non
         fl -= Pos(x, y, f0 - 1) * Cylinder(3.0, 1 + 2.2, align=MINZ)
     shaft = Pos(0, 0, v["end"]) * Cylinder(SHAFT_D / 2, f0 - v["end"] + 0.01, align=MINZ)
     j0, _ = v["jB"]
-    brg = Pos(0, 0, j0) * (Cylinder(BRG_B["D"] / 2, BRG_B["B"], align=MINZ) - Cylinder(BRG_B["d"] / 2, BRG_B["B"], align=MINZ))
-    bush = Pos(0, 0, j0) * (Cylinder(BUSH_B["od"] / 2, BUSH_B["t"], align=MINZ) - Cylinder(BRG_B["D"] / 2 + 0.02, BUSH_B["t"], align=MINZ))
+    bush = Pos(0, 0, j0) * (Cylinder(BUSH_B["od"] / 2, brg["B"], align=MINZ) - Cylinder(brg["D"] / 2 + 0.02, brg["B"], align=MINZ))
+    brg = Pos(0, 0, j0) * (Cylinder(brg["D"] / 2, brg["B"], align=MINZ) - Cylinder(brg["d"] / 2, brg["B"], align=MINZ))
     pd_ = teeth * PITCH / math.pi
     p0, p1 = v["pulley"][1], v["pulley"][0]
     pul = Pos(0, 0, p0 - AL_PULLEY["body_l"]) * (Cylinder(pd_ / 2 - PLD, AL_PULLEY["body_l"], align=MINZ))
@@ -475,9 +478,11 @@ def wall_a_cuts_v4(motor: dict | None = None, site: str = "default") -> Part:
     return c
 
 
-def bolted_stage_v4(T, teeth: int = 20, prefix: str = "", motor: dict | None = None, site: str = "default", idler: dict | None = None):
-    """D26: cartridge + direct stage v4 (+ idler) mapped by T, names prefixed. One call per joint."""
-    return [(prefix + n, T * p, c) for n, p, c in bolted_cartridge(motor, site) + small_stage_v4(teeth, motor, idler)]
+def bolted_stage_v4(T, teeth: int = 20, prefix: str = "", motor: dict | None = None, site: str = "default", idler: dict | None = None,
+                    brg: dict | None = None):
+    """D26: cartridge + direct stage v4 (+ idler) mapped by T, names prefixed. One call per joint. brg: the wall-B bearing
+    (BRG_B 6001 by default; BRG_B6 61901 where wall B has nothing behind it to spare, the lift)."""
+    return [(prefix + n, T * p, c) for n, p, c in bolted_cartridge(motor, site) + small_stage_v4(teeth, motor, idler, brg)]
 
 
 def belt_band(circles, z0: float, width: float = 15.0, t: float = 3.6, back: float = 0.97) -> Part:
