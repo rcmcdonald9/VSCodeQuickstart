@@ -27,6 +27,13 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    (inertia + Coriolis + gravity + damping). A residual over the per-joint threshold for N_TRIP cycles latches "collision";
    the verdict is then a **compliant hold** (kp = 0, light damping, the twin's gravity torque as feed-forward) instead of a
    stop, so the arm doesn't fall and can be pushed away. Any other fault still stops. reset() clears it.
+8. **People-near mode (D25 / R17, 2026-11-27):** `set_people_near(True)` while a person is close (PeopleNearTrigger below;
+   docs/SOFTWARE_PLAN.md). Joints with a people-near range in joints.json (`people_near`, from rnd/twin.JR_PEOPLE_NEAR:
+   shoulder roll ≥ +15°, where rnd/pinch.py finds the inboard roll wedge ≥ 25 mm) get that range as their target bound
+   (same margin as the normal limits); targets outside it are clamped like any joint limit. Entering the mode with the arm
+   inside the restricted zone does not stop it: the bound starts at the arm's position and rises at PN_EXIT_SPEED
+   (0.2 rad/s), so the arm is walked out slowly; the faults (position outside limits, tracking) still use the hard
+   limits. Leaving the mode restores the full range at once.
 Every override is counted so a session log shows how often the policy was overruled.
 """
 from __future__ import annotations
@@ -48,6 +55,8 @@ V_FAULT, TRACK_FAULT = 4.0, 0.35                          # rad/s measured, rad 
 KP_MAX, KD_MAX = 60.0, 3.0
 LOAD_KG = 1.0
 LOAD_WS = ((0.10, -0.45, 0.20), (0.45, 0.45, 0.80))               # base frame, m (R2d basket study)                                # N·m/rad, N·m·s/rad at the joint (bench defaults)
+PN_EXIT_SPEED = 0.2               # rad/s: how fast entering people-near mode walks a joint out of its restricted zone (D25)
+PN_RADIUS, PN_RELEASE, PN_HOLD_S, PN_STALE_S = 1.5, 1.8, 2.0, 0.5   # people-near trigger: on within 1.5 m, off beyond 1.8 m for 2 s
 DESC = Path(__file__).resolve().parent / "description" / "joints.json"
 
 
@@ -99,6 +108,12 @@ class Supervisor:
         self._ws_free = (self.ws_lo.copy(), self.ws_hi.copy())
         self.collision = collision
         self._anchor = None
+        # D25 people-near ranges (rad, before the margin; ±inf where a joint has none) and the moving bound while exiting
+        pn = [j.get("people_near") for j in J]
+        self.pn_lo = np.array([p[0] + m if p else -np.inf for p in pn])
+        self.pn_hi = np.array([p[1] - m if p else np.inf for p in pn])
+        self.people_near = False
+        self._pn_lo, self._pn_hi = None, None
         self.fb_max_age = float(fb_max_age)      # bring-up passes bringup.yaml fb_max_age_s (sized on the bus-realism runs)
 
     def set_limits(self, limits):
@@ -122,6 +137,32 @@ class Supervisor:
             self.ws_lo, self.ws_hi = np.maximum(self._ws_free[0], lo), np.minimum(self._ws_free[1], hi)
         else:
             self.ws_lo, self.ws_hi = self._ws_free
+
+    # ---- people-near mode (D25)
+    def set_people_near(self, on):
+        """Restrict the joints that have a people-near range (shoulder roll ≥ +15°) while a person is close. Entering with a
+        joint inside the restricted zone walks it out at PN_EXIT_SPEED (no stop); leaving restores the full range."""
+        on = bool(on)
+        if on and not self.people_near:
+            q = self.last_q if self.last_q is not None else np.clip(np.zeros(self.n), self.lo, self.hi)
+            self._pn_lo = np.minimum(np.maximum(self.lo, self.pn_lo), q)        # start at the arm, never above it
+            self._pn_hi = np.maximum(np.minimum(self.hi, self.pn_hi), q)
+            self._count("people-near on")
+        elif not on:
+            self._pn_lo = self._pn_hi = None
+        self.people_near = on
+
+    def target_bounds(self):
+        """The target bounds in force this cycle (rad): the joint limits, narrowed by the people-near bound when on."""
+        if self._pn_lo is None:
+            return self.lo, self.hi
+        return np.maximum(self.lo, self._pn_lo), np.minimum(self.hi, self._pn_hi)
+
+    def people_near_exiting(self):
+        """True while people-near mode is on and some joint is still being walked out of its restricted zone."""
+        if self._pn_lo is None:
+            return False
+        return bool(np.any(self._pn_lo < np.maximum(self.lo, self.pn_lo) - 1e-12) or np.any(self._pn_hi > np.minimum(self.hi, self.pn_hi) + 1e-12))
 
     def base_accel_limit(self):
         return 0.3 if self.payload > LOAD_KG else 1.0
@@ -221,10 +262,17 @@ class Supervisor:
         if self.latched:
             return Verdict(True, reasons=list(self.latched))
         qm, vm = np.asarray(q_meas, float), np.asarray(v_meas, float)
-        # 3. limits, slew, workspace
-        q = np.clip(np.asarray(q_want, float), self.lo, self.hi)
+        # 3. limits (people-near bound when on), slew, workspace
+        if self._pn_lo is not None:                                    # D25: the bound walks to the people-near range
+            self._pn_lo = np.minimum(np.maximum(self.lo, self.pn_lo), self._pn_lo + PN_EXIT_SPEED * dt)
+            self._pn_hi = np.maximum(np.minimum(self.hi, self.pn_hi), self._pn_hi - PN_EXIT_SPEED * dt)
+        lo, hi = self.target_bounds()
+        qw = np.asarray(q_want, float)
+        q = np.clip(qw, lo, hi)
         if np.any(q != q_want):
             self._count("joint limit clamp")
+            if self._pn_lo is not None and np.any((qw < lo) & (qw >= self.lo) | (qw > hi) & (qw <= self.hi)):
+                self._count("people-near clamp")
         if self.last_q is None:
             self.last_q = qm.copy()
         step = self.v_max * dt
@@ -263,3 +311,33 @@ class Supervisor:
     def drive_torque(v: Verdict, q_meas, v_meas):
         """What an MIT-mode drive will produce for this verdict (for tests and logs)."""
         return v.kp * (v.q - np.asarray(q_meas)) - v.kd * np.asarray(v_meas) + v.t_ff
+
+
+class PeopleNearTrigger:
+    """What switches the supervisor's people-near mode (D25; docs/SOFTWARE_PLAN.md). Input: the distances (m, from the
+    robot's mast axis) of the people perception currently sees, fused from the head RGB-D person detector and the lidar
+    leg tracker; a stub until perception exists (the caller passes the list, or None when perception is down).
+    On as soon as anyone is within PN_RADIUS (1.5 m); off only after nobody has been within PN_RELEASE (1.8 m) for PN_HOLD_S
+    (2 s). Fail-safe: no perception input, or an input older than PN_STALE_S, counts as a person near."""
+
+    def __init__(self, clock=time.monotonic, radius=PN_RADIUS, release=PN_RELEASE, hold_s=PN_HOLD_S, stale_s=PN_STALE_S):
+        self.clock, self.radius, self.release, self.hold_s, self.stale_s = clock, radius, release, hold_s, stale_s
+        self.on, self._clear_since, self._last_input = True, None, None        # starts on until perception reports
+
+    def update(self, distances=None):
+        """distances: iterable of person distances (m) this frame, or None when perception has nothing new."""
+        now = self.clock()
+        if distances is not None:
+            self._last_input = now
+        stale = self._last_input is None or now - self._last_input > self.stale_s
+        d = [float(x) for x in distances] if distances is not None else []
+        if stale or any(x <= self.radius for x in d):
+            self.on, self._clear_since = True, None
+        elif self.on:
+            if any(x <= self.release for x in d):
+                self._clear_since = None
+            elif self._clear_since is None:
+                self._clear_since = now
+            elif now - self._clear_since >= self.hold_s:
+                self.on = False
+        return self.on

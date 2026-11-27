@@ -10,16 +10,16 @@
  <geom name="stand" type="box" pos="0 0.1 0.5449999999999999" size="0.04 0.04 0.5449999999999999" rgba=".2 .2 .22 1"/>  <!-- top 6 cm under the pitch axis, 0.10 m inboard (the bracket clamps the shoulder from the torso side): with the inline roll (offset 69 mm, was 83) a post centred under the pitch axis sat inside the upper arm's sweep, and the twin's upper arm jammed on it -->
  <camera name="exterior" pos="1.15 -0.55 1.35" xyaxes="0.45 0.89 0 -0.42 0.21 0.88" fovy="55"/>
  <body name="sh" gravcomp="1" pos="0 0.0 1.15">
-  <joint name="pitch" axis="0 1 0" range="-200 60" damping="2" armature="0.05"/>
+  <joint name="pitch" axis="0 1 0" range="-200 60" damping="2.0" armature="0.05"/>
   <geom type="sphere" size="0.04" mass="0.1164" rgba=".1 .1 .1 1"/>
   <body name="roll" gravcomp="1" pos="0 -0.069 0">
-   <joint name="roll" axis="-1 0 0" range="-15 100" damping="2" armature="0.05"/>
-   <geom type="sphere" size="0.038" mass="1.29" rgba=".1 .1 .1 1"/>
+   <joint name="roll" axis="-1 0 0" range="-15 100" damping="2.0" armature="0.05"/>
+   <geom type="sphere" size="0.038" mass="1.35" rgba=".1 .1 .1 1"/>
    <body name="upper" gravcomp="1" pos="0 0 -0.0993">
-    <joint name="yaw" axis="0 0 1" range="-150 150" damping="1" armature="0.03"/>
-    <geom type="capsule" fromto="0 0 0 0 0 -0.2007" size="0.032" mass="1.7580000000000002" rgba=".9 .9 .9 1"/>
+    <joint name="yaw" axis="0 0 1" range="-150 150" damping="1.0" armature="0.03"/>
+    <geom type="capsule" fromto="0 0 0 0 0 -0.2007" size="0.032" mass="1.9180000000000001" rgba=".9 .9 .9 1"/>
     <body name="fore" gravcomp="1" pos="0 0 -0.2007">
-     <joint name="elbow" axis="0 1 0" range="-150 0" damping="1" armature="0.03"/>
+     <joint name="elbow" axis="0 1 0" range="-150 0" damping="1.0" armature="0.03"/>
      <geom type="capsule" fromto="0 0 0 0 0 -0.22000000000000003" size="0.026" mass="0.668" rgba=".9 .9 .9 1"/>
      <body name="wrist" gravcomp="1" pos="0 0 -0.28">
       <joint name="wpitch" axis="0 1 0" range="-120.0 120.0" damping="0.5" armature="0.01"/>
