@@ -327,7 +327,12 @@ STUB_RELIEF = 0.5                      # the Ø30 stub's −X end stops this far
 # straight into a print): 8 × M5 low-head (DIN 7984) 10.9 from +X through the arm into the adapter's threads, heads on a
 # Ø80/Ø52 × 2 steel clamp ring in a counterbore (≈ 5 MPa on the PETG at the design preload); fitted Ø5.1 holes give a
 # bearing path behind the friction. Capacities: drive_capacity().
-OUT_CLAMP = dict(arm_t=14.0, ring=(26.0, 40.0, 2.0), head_h=3.5, preload=1500.0, creep=0.75, mu=0.25)
+# Neon review (same physics as findings 3 / 6b): 8.5 mm of PETG under the ring was the clamped member; with the creep
+# model (rnd/joints.py life_preload, φ 2 + embedding) ≈ 12 % of the 1.5 kN is left, so the friction path is gone and the
+# arm would slip onto the fitted holes (backlash). Now each M5 runs in a steel crush sleeve (Ø8 / Ø5.3, 42CrMo4+QT, a
+# light press fit in the print) from the ring to the adapter face: the clamp is ring → sleeve → adapter in metal, and
+# the print takes the torque in bearing on the sleeves (no slip clearance). Capacities: drive_capacity().
+OUT_CLAMP = dict(arm_t=14.0, ring=(26.0, 40.0, 2.0), head_h=3.5, preload=1500.0, creep=0.75, mu=0.25, sleeve=(8.0, 5.3), mu_metal=0.15)
 R_ARM = 42.0                           # clevis-arm boss radius about the roll axis (covers the Ø76 adapter and the ring)
 R_ARM_REAR = 35.5                      # roll_arm_rear boss radius (61806 seat): 1.5 mm inside the stop bushes (r 42 − 5)
 # Hard stops (Neon review 2026-11-27, finding 6d): wave 3's Ø10 pins at r 43 were to be pressed into the floor + the cup
@@ -629,7 +634,7 @@ def clevis_and_yaw_block() -> Part:
         arm -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(8.0, 400)                 # ribbon / cable pass to the spring cassette
         for k in range(ADAPT["n"]):
             a = 2 * math.pi * k / ADAPT["n"] + math.pi / ADAPT["n"]
-            arm -= Pos(0, ROLL_Y + ADAPT["pcd"] / 2 * math.cos(a), ADAPT["pcd"] / 2 * math.sin(a)) * Rot(0, 90, 0) * Cylinder(ADAPT["d"] / 2 + 0.05, 400)   # fitted Ø5.1 (bearing path)
+            arm -= Pos(0, ROLL_Y + ADAPT["pcd"] / 2 * math.cos(a), ADAPT["pcd"] / 2 * math.sin(a)) * Rot(0, 90, 0) * Cylinder(OUT_CLAMP["sleeve"][0] / 2, 400)   # crush sleeve Ø8, press fit (bearing path)
         ri, ro, t = OUT_CLAMP["ring"]                                                 # steel clamp ring under the 6 low heads
         arm -= Pos(x1 - t - OUT_CLAMP["head_h"], ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(ro + 0.2, 20, align=MIN) - Cylinder(ri - 0.2, 20, align=MIN))
         p += arm
@@ -957,15 +962,23 @@ def drive_capacity():
         basis0 = row["basis"]
         rows.append(("roll (inline)", "motor output ↔ 7075 adapter (dowels, load sharing, + 3 × M4 friction) vs the drive limit (35.1)", cap, m["rated"], basis0))
         rows.append(("roll (inline)", "motor output ↔ 7075 adapter (dowels, load sharing, + 3 × M4 friction) vs stall", cap, m["peak"], basis0 + f"; stall {m['peak']:.1f} N·m (actuators.yaml)"))
-        # (b) metal adapter → printed clevis arm
-        F = A["n"] * o["preload"] * o["creep"]
-        t_fr = o["mu"] * F * r1
+        # (b) metal adapter → printed clevis arm (Neon review: crush sleeves, see OUT_CLAMP)
+        from .. import joints as _j
         L = o["arm_t"] - o["ring"][2] - o["head_h"]
-        t_br = A["n"] * A["d"] * L * 12.0 * r1                                           # fitted holes at the 12 MPa across-layer allowable
-        basis = (f"{A['n']} × M5 on PCD {A['pcd']:.0f}, {o['preload']:.0f} N preload (≈ 5 MPa on the PETG under the steel ring) × {o['creep']} creep, μ {o['mu']} PETG/Al (ESTIMATE)")
-        rows.append(("roll (inline)", "adapter ↔ clevis arm, friction vs the drive limit (35.1)", t_fr, m["rated"], basis))
-        rows.append(("roll (inline)", "adapter ↔ clevis arm, friction + fitted-bolt bearing vs stall", t_fr + t_br, m["peak"],
-                     f"+ {A['n']} × Ø5 × {L:.1f} mm at 12 MPa (fea.py across-layer allowable) = {t_br:.0f} N·m after ≤ 0.1 mm slip; stall only on a fault"))
+        A_sl = math.pi / 4 * (o["sleeve"][0] ** 2 - o["sleeve"][1] ** 2)
+        c_b, c_s = (L + o["ring"][2] + 3.0) / (_j.E_STEEL * 14.2), L / (_j.E_STEEL * A_sl)
+        c_p = L / (_j.E_PRINT * math.pi * (o["ring"][1] ** 2 - o["ring"][0] ** 2) / A["n"])
+        F_bare = _j.life_preload(o["preload"], c_b, c_p, L_p=L, n_print_if=2)
+        F_life = _j.life_preload(o["preload"], c_b + c_s, 0.0, n_metal_if=4, phi=0.0)
+        t_fr = o["mu_metal"] * A["n"] * F_life * r1                                     # ring ↔ sleeve ↔ adapter, steel on 7075
+        t_br = A["n"] * o["sleeve"][0] * L * 12.0 * r1                                   # sleeves bearing in the print at the 12 MPa across-layer allowable
+        basis = (f"{A['n']} × M5 on PCD {A['pcd']:.0f} in Ø{o['sleeve'][0]:.0f}/{o['sleeve'][1]} crush sleeves, {o['preload']:.0f} N → {F_life:.0f} N after embedding (metal stack; "
+                 f"wave 3 clamped {L:.1f} mm of PETG: {F_bare:.0f} N left at φ {_j.CREEP['phi']:.0f}, friction {o['mu'] * A['n'] * F_bare * r1:.0f} N·m); friction μ {o['mu_metal']} "
+                 f"steel/7075 (ESTIMATE) adapter → sleeves; the print takes the torque in bearing on the press-fitted sleeves ({t_br:.0f} N·m at 12 MPa, no slip clearance)")
+        basis += f"; the friction ({t_fr:.0f} N·m: a {L:.1f} mm metal stack loses most of its preload to embedding) is not counted"
+        rows.append(("roll (inline)", "adapter ↔ clevis arm: sleeves bearing in the print vs the drive limit (35.1)", t_br, m["rated"], basis))
+        rows.append(("roll (inline)", "adapter ↔ clevis arm: sleeves bearing in the print vs stall", t_br, m["peak"],
+                     f"{A['n']} × Ø{o['sleeve'][0]:.0f} × {L:.1f} mm at 12 MPa (fea.py across-layer allowable) = {t_br:.0f} N·m; stall only on a fault"))
     else:
         p = PINCH
         T_roll = act(a.joints["shoulder_roll"][0])["peak"] * a.joints["shoulder_roll"][1] * 0.95   # 46.4 (rnd/basket.py capacity)

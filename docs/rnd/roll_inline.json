@@ -38,19 +38,19 @@
     },
     {
      "joint": "roll (inline)",
-     "path": "adapter \u2194 clevis arm, friction vs the drive limit (35.1)",
-     "cap": 72.0,
+     "path": "adapter \u2194 clevis arm: sleeves bearing in the print vs the drive limit (35.1)",
+     "cap": 208.9,
      "demand": 35.1,
-     "ratio": 2.05,
-     "basis": "8 \u00d7 M5 on PCD 64, 1500 N preload (\u2248 5 MPa on the PETG under the steel ring) \u00d7 0.75 creep, \u03bc 0.25 PETG/Al (ESTIMATE)"
+     "ratio": 5.95,
+     "basis": "8 \u00d7 M5 on PCD 64 in \u00d88/5.3 crush sleeves, 1500 N \u2192 222 N after embedding (metal stack; wave 3 clamped 8.5 mm of PETG: 42 N left at \u03c6 2, friction 3 N\u00b7m); friction \u03bc 0.15 steel/7075 (ESTIMATE) adapter \u2192 sleeves; the print takes the torque in bearing on the press-fitted sleeves (209 N\u00b7m at 12 MPa, no slip clearance); the friction (9 N\u00b7m: a 8.5 mm metal stack loses most of its preload to embedding) is not counted"
     },
     {
      "joint": "roll (inline)",
-     "path": "adapter \u2194 clevis arm, friction + fitted-bolt bearing vs stall",
-     "cap": 202.6,
+     "path": "adapter \u2194 clevis arm: sleeves bearing in the print vs stall",
+     "cap": 208.9,
      "demand": 102.9,
-     "ratio": 1.97,
-     "basis": "+ 8 \u00d7 \u00d85 \u00d7 8.5 mm at 12 MPa (fea.py across-layer allowable) = 131 N\u00b7m after \u2264 0.1 mm slip; stall only on a fault"
+     "ratio": 2.03,
+     "basis": "8 \u00d7 \u00d88 \u00d7 8.5 mm at 12 MPa (fea.py across-layer allowable) = 209 N\u00b7m; stall only on a fault"
     },
     {
      "joint": "yaw",
