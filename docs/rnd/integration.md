@@ -11,8 +11,11 @@ Clash and printability checks miss parts that *don't touch*. This finds load pat
    glued or meshed (`FUSED`) are excluded.
 
 A pin counts as reacted when its tip is in clear space and structure sits on both tangential sides of it (a slot or fork).
+D24 bolted cans (2026-11-27) have no pin: their flange holes (M4 insert holes Ø5.5 in a cartridge-M flange, M3 clearance
+Ø3.6 in a cartridge-D flange) count as reacted when the screw axis, 4–9 mm past the hole's mid-plane on either side, runs
+into structure within 3.2 mm (an insert or clearance hole in a wall, or a wall not yet drilled), for at least 5 of 6.
 
-**Torque reaction: 21/21 cartridge pins land in structure.**
+**Torque reaction: 21/21 cartridges (torque pins or D24 bolted flanges) land in structure.**
 
 | Check | Part | Result | Detail |
 |---|---|---|---|
@@ -23,22 +26,24 @@ A pin counts as reacted when its tip is in clear space and structure sits on bot
 | torque pin | lift_can | ✅ | lift_mount |
 | torque pin | pan_sleeve | ✅ | head_bracket |
 | torque pin | tilt_sleeve | ✅ | yoke |
-| torque pin | l_sh_can | ✅ | l_sh_bracket |
+| bolted flange (D24) | l_sh_can | ✅ | 6/6 screws (M4 into the flange inserts) land in structure |
 | torque pin | l_roll_roll_can | ✅ | l_roll_roll_link |
 | torque pin | l_roll_yaw_can | ✅ | l_roll_yaw_block |
-| torque pin | l_arm_e_can | ✅ | l_arm_upper_bone |
-| torque pin | l_arm_wrist_can | ✅ | l_arm_forearm |
+| bolted flange (D24) | l_arm_e_can | ✅ | 6/6 screws (M4 into the flange inserts) land in structure |
+| bolted flange (D24) | l_arm_wrist_can | ✅ | 6/6 screws (M3 through the flange) land in structure |
 | torque pin | l_arm_hand_wr_sleeve | ✅ | l_arm_hand_palm |
 | torque pin | l_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
-| torque pin | r_sh_can | ✅ | r_sh_bracket |
+| bolted flange (D24) | r_sh_can | ✅ | 6/6 screws (M4 into the flange inserts) land in structure |
 | torque pin | r_roll_roll_can | ✅ | r_roll_roll_link |
 | torque pin | r_roll_yaw_can | ✅ | r_roll_yaw_block |
-| torque pin | r_arm_e_can | ✅ | r_arm_upper_bone |
-| torque pin | r_arm_wrist_can | ✅ | r_arm_forearm |
+| bolted flange (D24) | r_arm_e_can | ✅ | 6/6 screws (M4 into the flange inserts) land in structure |
+| bolted flange (D24) | r_arm_wrist_can | ✅ | 6/6 screws (M3 through the flange) land in structure |
 | torque pin | r_arm_hand_wr_sleeve | ✅ | r_arm_hand_palm |
 | torque pin | r_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
 
-## Clashes inside modules: 0
+## Clashes inside modules: 2
 
 | Module | Part A | Part B | Overlap (mm³) |
 |---|---|---|---|
+| arm | hand_jaw_fixed | hand_finger_hook | 1040 |
+| head tilt +30° | head_bracket | head_shell | 1378 |
