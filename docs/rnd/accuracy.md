@@ -13,11 +13,13 @@ calibration) and the unmeasured bending.
 | Joint | Without joint encoders: error (°) → at hand (mm) | With joint-side encoders |
 |---|---|---|
 | shoulder_pitch | 0.20° → 2.0 mm | 0.05° → 0.5 mm |
-| shoulder_roll | 0.05° → 0.5 mm | 0.05° → 0.5 mm |
+| shoulder_roll | 0.25° → 2.6 mm | 0.05° → 0.5 mm |
 | upper_yaw | 0.25° → 1.9 mm | 0.05° → 0.4 mm |
 | elbow | 0.25° → 1.9 mm | 0.05° → 0.4 mm |
 | wrist_pitch | 0.05° → 0.1 mm | 0.05° → 0.1 mm |
-| **Joint RSS** | **3.4 mm** | **0.9 mm** |
+| **Joint RSS** | **4.3 mm** | **0.9 mm** |
+
+**Inline roll (GIM8108-36, Fable review M1):** until 2026-11-27 every joint without a belt was given 0.05° as if it were a DM-J4310 with an output-side encoder, so the inline roll showed 0.5 mm with or without joint encoders. It now carries its 36:1 planetary backlash, 15 arcmin (reseller spec tables; ESTIMATE): without joint encoders the hand error is **4.3 mm** (3.8–4.9 mm for 10–20 arcmin), against 3.4 mm before. With a joint-side encoder on the roll the static error is the encoder's again (0.9 mm), but the loop then has the backlash inside it: expect a limit cycle or a dead band around the arm-down pose where the roll torque crosses zero, and the encoders still have no mount or firmware (Fable M3). Bench step: measure the roll backlash with a dial gauge at 0.3 m before relying on either number.
 
 Plus unmeasured bending: bones 1.8 mm, mast 1.5 mm (worst static, 1 kg).
 The wrist camera closes the last loop on the object, so those terms matter for blind or fast moves, not for visually-servoed grasps.

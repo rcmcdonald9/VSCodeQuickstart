@@ -17,22 +17,26 @@ ALPHA = 6.0          # rad/s² joint acceleration for the dynamic check (ESTIMAT
 
 def point_masses(d: Design, reach: float | None = None):
     """(name, mass, x from shoulder pitch axis) for a straight horizontal arm.
-    If reach is given, the arm is shortened proportionally so the grasp point sits at `reach`."""
+    If reach is given, the grasp point sits `reach` out horizontally in the worst pose that reaches it: the upper arm
+    horizontal (every mass as far out as it can be) and the forearm + hand angled down until the grasp is at `reach`.
+    x is the horizontal moment arm. (Until 2026-11-27 the arm was *shortened* proportionally instead, which moved every
+    motor inward with the hand and made the R2 spec-case margin look 2.2×; Fable review M7.)"""
     a = d.arm
     m = {j: act(n)["mass"] for j, (n, _) in a.joints.items()}
-    L = a.l_upper + a.l_fore + a.l_hand
-    s = 1.0 if reach is None else reach / L
-    lu, lf = a.l_upper * s, a.l_fore * s
-    pts = [("roll stage", a.roll_stage_mass, 0.03 * s), ("shoulder_roll", m["shoulder_roll"], a.roll_offset_y * 0.5 * s),
-           ("yaw stage", a.yaw_stage_mass, a.yaw_drop * 0.8 * s), ("upper_yaw", m["upper_yaw"], a.yaw_drop * 0.6 * s),
+    lu, lf, lh = a.l_upper, a.l_fore, a.l_hand
+    l2 = lf + lh
+    c2 = 1.0 if reach is None else max(-1.0, min(1.0, (reach - lu) / l2))     # forearm cosine to the horizontal
+    fx = lambda t: lu + t * c2                                                 # t along the forearm from the elbow
+    pts = [("roll stage", a.roll_stage_mass, 0.03), ("shoulder_roll", m["shoulder_roll"], a.roll_offset_y * 0.5),
+           ("yaw stage", a.yaw_stage_mass, a.yaw_drop * 0.8), ("upper_yaw", m["upper_yaw"], a.yaw_drop * 0.6),
            ("upper bone", a.bone_mass_upper, 0.5 * lu),
            *((("elbow", m["elbow"], lu),) if a.elbow_motor_at is None else
-             (("elbow motor (remote)", m["elbow"], a.elbow_motor_at * s), ("elbow hub", a.elbow_hub_mass, lu))),
-           ("fore bone", a.bone_mass_fore, lu + 0.5 * lf), ("wrist_pitch", m["wrist_pitch"], lu + lf),
-           ("wrist_roll", m["wrist_roll"], lu + lf + 0.04 * s),
-           ("gripper", m["gripper"] + a.gripper_mech_mass + a.wrist_cam_mass, lu + lf + 0.08 * s),
-           ("payload", a.payload, lu + lf + a.l_hand * s)]
-    return pts, {"shoulder_pitch": 0.0, "elbow": lu, "wrist_pitch": lu + lf}
+             (("elbow motor (remote)", m["elbow"], a.elbow_motor_at), ("elbow hub", a.elbow_hub_mass, lu))),
+           ("fore bone", a.bone_mass_fore, fx(0.5 * lf)), ("wrist_pitch", m["wrist_pitch"], fx(lf)),
+           ("wrist_roll", m["wrist_roll"], fx(lf + 0.04)),
+           ("gripper", m["gripper"] + a.gripper_mech_mass + a.wrist_cam_mass, fx(lf + 0.08)),
+           ("payload", a.payload, fx(l2))]
+    return pts, {"shoulder_pitch": 0.0, "elbow": lu, "wrist_pitch": fx(lf)}
 
 
 def joint_loads(d: Design, reach=None):
