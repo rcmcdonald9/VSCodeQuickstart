@@ -2,7 +2,10 @@
 # pitch negative swings the arm forward/up, roll positive abducts, elbow negative bends forward). Angles in degrees.
 # ESTIMATE = not yet measured on the hardware: day 1 measures it (protractor / the bring-up report) and updates this file.
 control_hz: 500
-can_timeout_s: 0.020          # drive-side CAN watchdog: a drive disables itself 20 ms after the last command
+can_timeout_s: 0.030          # drive-side CAN watchdog: a drive disables itself 30 ms after the last command (was 20; > the hardware
+                              # watchdog because the drive also sees the USB-CAN latency; rnd/electrical.py checks it against docs/sw/loop_jitter.json)
+watchdog_s: 0.025             # A5 v2 hardware watchdog (SN74LVC1G123) timeout: was 8 ms; sized on the measured heartbeat jitter of this loop
+                              # (python -m sw.loop_jitter; loaded max 7.9 ms) by rnd/electrical.py: ≥ max(3 × p99.99, 2 × max), 5 ms steps
 limit: rated                  # drive-side torque limit = joints.json rated_nm (the supervisor's bound without allow_peak)
 cal_speed: 0.30               # rad/s while seeking a hard stop
 cal_frac_max: 0.60            # the calibration torque may not exceed this fraction of rated (else: support the arm)

@@ -6,12 +6,12 @@
 6S 10 Ah pack (BMS ≥ 30 A cont.) ─ XT60 ─ MAIN FUSE 40 A ─┬─ LOGIC branch (always on): 5 V 5 A DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters
                                                          └─ E-STOP CONTACTOR (ALEV100, DC-rated; coil: mushroom NC ×2 in series → watchdog MOSFET; aux contact → feedback + discharge)
                                                             └─ PRE-CHARGE branch around it: relay K_PRE (opens on every stop) + 3.3 Ω RH-50 (A5 v2: switched, never permanent)
-                                                              ├─ REGEN CLAMP / BUS DISCHARGE on the motor bus: 26.5 V ± 1 % comparator, 0.4 V hysteresis → 2 × IRFB7530 → 2 × 0.56 Ω RH-50 (A5 v2); forced on while the contactor is open
+                                                              ├─ REGEN CLAMP / BUS DISCHARGE on the motor bus: 26.5 V ± 1 % comparator, 0.4 V hysteresis → 2 × IRFB7530 → 2 × 0.56 Ω RH-50 (A5 v2); forced on by a 100 ms one-shot on the contactor's opening edge (never while K_PRE is closed)
                                                               ├─ 12 V 10 A DC-DC → STS3215 servos (A5: now downstream of the contactor)
                                                               ├─ F 20 A → base: 4 wheel cartridges (CAN bus A)
                                                               ├─ F 10 A → lift cartridge + pawl solenoid (CAN bus A)
-                                                              ├─ F 15 A → left arm via detach plug (CAN bus B, TTL bus 1)
-                                                              └─ F 15 A → right arm via detach plug (CAN bus C, TTL bus 2)
+                                                              ├─ F 20 A → left arm via detach plug (CAN bus B, TTL bus 1)
+                                                              └─ F 20 A → right arm via detach plug (CAN bus C, TTL bus 2)
 LOGIC 24 V ─ F 1 A ─ D11 FACE SCREEN (ESP32-S3-Touch-LCD-4.3B, 7–36 V input; CAN A drop at the head; isolated DI senses the e-stop loop)
 DOCK PADS (skirt, 45°) ─ ideal-diode reverse-polarity guard ─ F 7.5 A ─ BMS charge port   (charger 25.2 V CC/CV, 5 A)
 ```
@@ -24,17 +24,17 @@ DOCK PADS (skirt, 45°) ─ ideal-diode reverse-polarity guard ─ F 7.5 A ─ B
 | Branch | Worst sustained bus current (A), for fuse/wire sizing | Peak (A) | Fuse (A, slow-blow) |
 |---|---|---|---|
 | Base: 4 wheel cartridges | 2.2 | 28.8 | 20 |
-| Left arm: 4 GIM + DM-J4310 | 11.4 | 33.3 | 15 |
-| Right arm: 4 GIM + DM-J4310 | 11.4 | 33.3 | 15 |
+| Left arm: 3 × GIM6010-8 + 1 × GIM8108-36 + DM-J4310 | 13.7 | 38.0 | 20 |
+| Right arm: 3 × GIM6010-8 + 1 × GIM8108-36 + DM-J4310 | 13.7 | 38.0 | 20 |
 | Lift cartridge + pawl solenoid | 2.0 | 9.3 | 10 |
 | 12 V DC-DC → 6 × STS3215 (wrists, grippers, head) | 2.9 | 5.8 | 7.5 |
 | 5 V DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters | 2.0 | 2.6 | 5 |
 | Reserved: 24 → 19 V 3 A DC-DC → Jetson-class AI computer (D10, AI phase) | 0.8 | 1.2 | 3 |
-| **Pack** | **32.6** | **69** (diversity 0.6) | main 40 |
+| **Pack** | **37.3** | **74** (diversity 0.6) | main 40 |
 
 Typical draw is far lower: the duty-cycle power budget averages **55 W ≈ 2.5 A** (runtime 3.4 h on 222 Wh).
 
-**Battery requirement (new finding):** the pack's BMS must allow **≥ 30 A continuous and about 69 A for ~1 s**. Cheap 6S packs often have 10–15 A BMS boards (components.yaml), which would trip on arm or threshold peaks. Buy a scooter or power-tool class pack, or build one around a 40 A BMS.
+**Battery requirement (new finding):** the pack's BMS must allow **≥ 30 A continuous and about 74 A for ~1 s**. Cheap 6S packs often have 10–15 A BMS boards (components.yaml), which would trip on arm or threshold peaks. Buy a scooter or power-tool class pack, or build one around a 40 A BMS.
 
 ## E-stop behaviour (A5, loop 40: external review finding 6)
 - **Two-channel mushrooms (torso back, base rear).** Channel 1 opens the contactor coil loop directly (hardware, no software in the path). Channel 2 tells the Pi and the sensor nodes, which command a controlled stop. Motor power drops; logic stays up to log and report.
@@ -50,48 +50,137 @@ Worst case: **both arms + the lift decelerating at once, at the drives' peak tor
 
 | Joint (each arm) | Motor | I + rotor (kg·m²) | Top speed (rad/s) | Energy (J) | Peak bus power (W) | Stop time (s) |
 |---|---|---|---|---|---|---|
-| shoulder pitch | GIM8108-8 | 2.08 | 5.9 | 36 | 282 | 0.18 |
-| shoulder roll | GIM6010-8 | 2.07 | 6.9 | 49 | 150 | 0.29 |
-| upper-arm yaw | GIM6010-8 | 0.62 | 13.6 | 58 | 113 | 0.38 |
+| shoulder pitch | GIM8108-8 | 2.06 | 5.9 | 35 | 282 | 0.18 |
+| shoulder roll | GIM8108-36 | 2.17 | 6.8 | 50 | 545 | 0.14 |
+| upper-arm yaw | GIM6010-8 | 0.62 | 13.7 | 58 | 114 | 0.38 |
 | elbow | GIM8108-8 | 0.69 | 5.9 | 12 | 282 | 0.06 |
-| lift (moving 17.6 kg; 32.7 kg with the rotor) | GIM6010-8 | – | 0.73 m/s | 12 | 321 | – |
-| **Robot total (2 arms + lift)** | | | | **320 J** | **1975 W** | |
-| M1 bench (one arm, 2 kg in hand, D20 motors) | | | | 136 J | 1022 W | |
+| lift (moving 17.9 kg; 33.1 kg with the rotor) | GIM6010-8 | – | 0.73 m/s | 12 | 321 | – |
+| **Robot total (2 arms + lift)** | | | | **322 J** | **2767 W** | |
+| M1 bench (one arm, 2 kg in hand, D20 motors) | | | | 118 J | 1328 W | |
 
-Continuous regen: lowering the torso at full speed returns 127 W, at the rated 0.20 m/s 34 W. The clamp's continuous rating is 100 W (two RH-50 on their reference heatsink), so **lowering is capped at the rated speed whenever the pack is full or the supply is a bench PSU** (planner rule; the clamp's thermal switch latches a fault if it is ignored).
+Continuous regen: lowering the torso at full speed returns 129 W, at the rated 0.20 m/s 35 W. The clamp's continuous rating is 150 W (3 RH-50 on their reference heatsink), so **lowering is capped at the rated speed whenever the pack is full or the supply is a bench PSU** (planner rule; the clamp's thermal switch latches a fault if it is ignored).
 
-**Part:** 2 × **Vishay Dale RH-50, 0.56 Ω** (aluminium-housed wirewound, 50 W on its heatsink; datasheet short-time overload 5 × rated for 5 s = **1250 J per resistor**) in parallel = 0.28 Ω, switched by 2 × Infineon IRFB7530PbF (60 V, 2.0 mΩ max, 195 A package limit; one per resistor), a comparator with its own reference (threshold 26.5 V ± 1 %, 0.4 V hysteresis), a gate driver, 10 µF film capacitors at the MOSFETs (switching overshoot), and an 85 °C NC thermal switch on the resistor plate. **Mandatory on the M1 bench** (a bench PSU cannot sink current). The 33 V TVS stays only as an edge snubber: a TVS that does not conduct at 25.2 V clamps far above 28 V at current, so it cannot enforce the drive limit (Astra 17). On the bench, an ideal-diode stage stops regen reaching the PSU.
+**Part:** 3 × **Vishay Dale RH-50, 0.56 Ω** (aluminium-housed wirewound, 50 W on its heatsink; datasheet short-time overload 5 × rated for 5 s = **1250 J per resistor**) in parallel = 0.19 Ω, switched by 3 × Infineon IRFB7530PbF (60 V, 2.0 mΩ max, 195 A package limit; one per resistor), a comparator with its own reference (threshold 26.5 V ± 1 %, 0.4 V hysteresis), a gate driver, 10 µF film capacitors at the MOSFETs (switching overshoot), and an 85 °C NC thermal switch on the resistor plate. **Mandatory on the M1 bench** (a bench PSU cannot sink current). The 33 V TVS stays only as an edge snubber: a TVS that does not conduct at 25.2 V clamps far above 28 V at current, so it cannot enforce the drive limit (Astra 17). On the bench, an ideal-diode stage stops regen reaching the PSU.
 
 | Check | Value | Limit | |
 |---|---|---|---|
-| Sink power at the lowest threshold (26.23 V² / 0.28 Ω) | 2458 W | ≥ worst-case peak 1975 W | ✅ |
-| Pulse energy | 320 J | ≤ 25 % of the 5 s overload rating for a < 0.5 s pulse (adiabatic allowance, ESTIMATE): 625 J | ✅ |
+| Sink power at the lowest threshold (26.23 V² / 0.19 Ω) | 3687 W | ≥ worst-case peak 2767 W | ✅ |
+| Pulse energy | 322 J | ≤ 25 % of the 5 s overload rating for a < 0.5 s pulse (adiabatic allowance, ESTIMATE): 938 J | ✅ |
 | Highest bus voltage while clamping (+1 % tol. + hysteresis) | 27.16 V | ≤ 28 V − 0.5 V | ✅ |
 | Clamp off at a full pack (lowest threshold − hysteresis) | 25.84 V | > 25.2 V | ✅ |
-| Peak current (MOSFETs, wiring) | 97 A (49 A per MOSFET) | 195 A package limit each | ✅ |
+| Peak current (MOSFETs, wiring) | 146 A (49 A per MOSFET) | 195 A package limit each | ✅ |
 
 Check on the restrained rig (Astra 17): a dummy capacitive energy source first, then one axis; scope the bus **at the drive** for a simultaneous stop, a PSU trip and a contactor opening. Confirm the RH-50 pulse curve for a 20× / 0.3 s pulse with Vishay; the 5 s rating alone doesn't prove it.
 
-### Pre-charge, switched (not in parallel)
-The loop-40 diagram drew 22 Ω permanently across the contactor: it would keep feeding ≈ 1 A into a stopped bus. Now a relay **K_PRE** (10 A / 30 VDC) in series with a 3.3 Ω RH-50 closes only when both mushrooms are released, the watchdog is healthy and reset is pressed; the main contactor closes when the bus reaches V_pack − 3 V; K_PRE then opens. Every stop opens K_PRE too (it hangs on the same safety chain), and it opens after 1 s if the bus never comes up (latched fault). With 11.8 mF on the robot bus (4.7 mF + 15 drivers × 0.47 mF, ESTIMATE): τ = 39 ms, 95 % in 116 ms, inrush 7.6 A, 3.7 J in the resistor; idle driver draw sags the bus only 2.0 V. A shorted bus for the full timeout puts 192 J in it (rating 1250 J). 22 Ω would have left the bus ≈ 13 V short with the drivers' idle current.
+### Pre-charge, switched (not in parallel), and the forced discharge as a one-shot
+The loop-40 diagram drew 22 Ω permanently across the contactor: it would keep feeding ≈ 1 A into a stopped bus. Now a relay **K_PRE** (10 A / 30 VDC) in series with a 3.3 Ω RH-50 closes only when both mushrooms are released, the watchdog is healthy and reset is pressed; the main contactor closes when the bus reaches V_supply − 3 V; K_PRE then opens. Every stop opens K_PRE too (it hangs on the same safety chain), and it opens after 1 s if the bus never comes up (latched fault). With 11.8 mF on the robot bus (4.7 mF + 15 drivers × 0.47 mF, ESTIMATE): τ = 39 ms, 95 % in 116 ms, inrush 7.6 A, 3.7 J in the resistor; idle driver draw sags the bus only 2.0 V. A shorted bus for the full timeout puts 192 J in it (rating 1250 J). 22 Ω would have left the bus ≈ 13 V short with the drivers' idle current.
+
+**Fable M2 (pre-charge fought the clamp):** the earlier text forced the clamp on *while* the contactor was open, and pre-charge runs *while* it is open, so 3.3 Ω would have fed 0.19 Ω and the bus would sit at 1.3 V until K_PRE timed out. Now the forced discharge is a **100 ms one-shot on the contactor's opening edge** (second SN74LVC1G123, triggered by the aux contact opening), **ANDed with NOT K_PRE**; the overvoltage comparator stays a level (it never fires below 26.2 V, so not during pre-charge). 100 ms is 46 × the 2.2 ms discharge time constant (bus < 0.1 V, 3.7 J into the clamp). Anything that recharges the bus later (a falling arm back-driving its motors) is held under 26.5 V by the comparator and bled by a permanent 1 kΩ resistor (≈ 11 s to 10 V; 25 mA, 0.08 V of pre-charge droop). Sequence and netlist: *Safety board* below.
 
 ### Watchdog timing budget (SW2 < 50 ms)
-The control loop runs at 500 Hz and toggles the heartbeat line only after a complete healthy cycle. The watchdog is an SN74LVC1G123 retriggerable monostable (t_w ≈ R·C, TI SLVA720) on its own 3.3 V LDO, set to 8 ms (four missed cycles, ±20% with a C0G capacitor). Its output gates the MOSFET in series with the contactor coil, which also runs through both mushrooms' NC contacts. **The contactor alone isn't torque-off:** the drives keep running from the bus capacitors. The contactor's aux contact (main open) forces the clamp MOSFETs on, so the bus is discharged through the clamp resistors.
+The control loop runs at 500 Hz and toggles the heartbeat line only after a complete healthy cycle. The watchdog is an SN74LVC1G123 retriggerable monostable (t_w ≈ R·C, TI SLVA720) on its own 3.3 V LDO, set to **25 ms** (±20% with a C0G capacitor; sw/config/bringup.yaml `watchdog_s`, the one value the board, the virtual bench and the bring-up check use). Its output gates the MOSFET in series with the contactor coil, which also runs through both mushrooms' NC contacts. **The contactor alone isn't torque-off:** the drives keep running from the bus capacitors. The contactor's aux contact opening fires the discharge one-shot, so the bus is discharged through the clamp resistors.
+
+**Watchdog sized on a measurement (Fable M2).** `python -m sw.loop_jitter` ran sw/bringup.py's own hardware loop (RealClock, supervisor, codec, python-can, 5 joints enabled) in wall-clock time on this machine (4 shared cores, non-real-time Linux): 29986 heartbeat intervals, p50 1.99 ms, p99.99 4.71 ms, longest **5.46 ms**; with 3 busy processes competing, p99.99 6.72 ms, longest **7.89 ms** (0 gaps over 8 ms). The old 8 ms timeout was at the loaded longest gap: it would have tripped (a category-0 drop) on ordinary jitter. Rule: timeout ≥ max(3 × p99.99, 2 × longest) of the loaded run, in 5 ms steps = **25 ms**; the stop chain must still meet the 50 ms SW2 budget.
+
+| Check | Value | Limit | |
+|---|---|---|---|
+| Watchdog timeout (bringup.yaml `watchdog_s`) | 25 ms | ≥ 25 ms (measured rule) | ✅ |
+| Margin over the longest measured gap (loaded) | 2.5× at −20% tolerance | ≥ 2× | ✅ |
+| Heartbeat lost → no drive torque (robot / M1) | 45.2 / 44.4 ms | ≤ 50 ms | ✅ |
+| Drive CAN timeout (bringup.yaml `can_timeout_s`; also sees the USB-CAN latency) | 30 ms | ≥ the watchdog | ✅ |
+
+Not measured here: the Pi 5 (slower cores) and a real USB-CAN adapter. Re-run `python -m sw.loop_jitter` on the Pi before day 1; the bring-up report also logs the longest heartbeat gap of the real loop (`heartbeat_gap_max_ms`). If either passes half the timeout, raise `watchdog_s` (up to 28 ms the SW2 budget still holds on the robot bus) or run the loop SCHED_FIFO on an isolated core.
 
 | Step (robot, Pi hung) | Time (ms) |
 |---|---|
-| heartbeat lost → watchdog output low (one 2 ms cycle + T_wd 8 ms +20%) | 11.6 |
+| heartbeat lost → watchdog output low (one 2 ms cycle + T_wd 25 ms +20%) | 32.0 |
 | coil MOSFET off → contactor main contacts open (release time, datasheet) | 10.0 |
-| aux contact opens → chopper gate forced on | 0.2 |
-| bus 25.2 → 10 V (driver UVLO, ESTIMATE) through the clamp resistors (0.28 Ω × 11.8 mF) | 3.0 |
+| aux contact opens → discharge one-shot fires, clamp gate on | 0.2 |
+| bus 25.2 → 10 V (driver UVLO, ESTIMATE) through the clamp resistors (0.19 Ω × 11.8 mF) | 2.0 |
 | phase current decays once the drive stops switching (ESTIMATE) | 1.0 |
-| **Total: heartbeat lost → no drive torque** | **25.8** (M1 bench 24.6) |
+| **Total: heartbeat lost → no drive torque** | **45.2** (M1 bench 44.4; SW2 budget 50) ✅ |
 
-Mushroom pressed: 14 ms. Without the forced discharge, the drivers' idle draw alone would take ≈ 298 ms to bring the bus to UVLO: the old design could not meet 50 ms. The software path is faster when the Pi is alive: the supervisor latches, sends DISABLE to every drive the next cycle (≤ 4 ms) and stops the heartbeat. Day-1 checks: the drives' UVLO and CAN-timeout behaviour, the ALEV100 release time with its coil suppression; measure button → contacts → current → motion with a supported dummy load, including a hung Pi.
+Mushroom pressed: 13 ms. Without the forced discharge, the drivers' idle draw alone would take ≈ 298 ms to bring the bus to UVLO: the old design could not meet 50 ms. The software path is faster when the Pi is alive: the supervisor latches, sends DISABLE to every drive the next cycle (≤ 4 ms) and stops the heartbeat. Day-1 checks: the drives' UVLO and CAN-timeout behaviour, the ALEV100 release time with its coil suppression; measure button → contacts → current → motion with a supported dummy load, including a hung Pi.
+
+### Bench supply (Fable M2)
+The kit had an adjustable 0–30 V / 10 A CC/CV bench supply and a 15 A fuse against the arm's own 11.4 A sustained / 33.3 A peak (then with four GIM6010s): in CC mode a peak folds the bus back on 7 mF in milliseconds (a brown-out), and the fuse could never blow. The arm's currents with the real motor set (inline GIM8108-36 roll; the two STS3215 on the elbow node's 12 V buck, which hangs on the arm lead on the bench):
+
+| Case (bus current at the 20 V minimum) | Default arm (3 × GIM6010-8 + GIM8108-36) | D20 (hold A) | Step 1 (one GIM6010-8 + DM-J4310 + 2 × STS3215) |
+|---|---|---|---|
+| Sustained (big joints 50 % of rated run, wrist nominal, servos 30 %) | 14.8 A | 12.7 A | – |
+| Peak, drive limit = **rated** (bring-up default `limit: rated`): every joint at rated torque and speed at once, servos stalled | 31.5 A | 27.3 A | 11.7 A |
+| Peak, drive limit = peak: two joints stalled at peak + the rest at rated run + wrist peak + servos stalled | 41.6 A | 35.4 A | 17.4 A |
+
+**Supply: Mean Well SE-1000-24 (24 V 41.7 A, 1 kW)** ($174.80; Bravo Electro $174.80; Master Electronics $170.13 (2026-11-27 search snapshots)), set to 24.0–25.2 V, overload by constant-current limiting (datasheet: confirm on arrival). The adjustable 0–30 V / 10 A CC/CV bench supply stays for the 1 A current-limited first power-up only (drives disabled).
+
+| Check | Value | Limit | |
+|---|---|---|---|
+| Sustained, default arm | 14.8 A | ≤ 41.7 A / 2 (continuous derating) | ✅ |
+| Peak with the drive limits at rated (how bring-up runs) | 31.5 A | ≤ 41.7 A (1.32×) | ✅ |
+| Peak with the drive limits at peak (strength tests) | 41.6 A | ≤ 41.7 A (1.00×) | ⚠️ no margin: peak-limit tests one joint at a time |
+| Step 1 peak (one GIM at peak, wrist peak, servos stalled) | 17.4 A | ≤ 41.7 A | ✅ |
+| Arm-lead fuse (slow-blow ATO, 14 AWG silicone) | 20 A | ≥ 1.25 × sustained 14.8 A, < the supply's 42 A | ✅ |
+
+Rule for the bench: the drive torque limits stay at **rated** (bring-up's default) except in a strength test, which runs **one joint at a time**. The bulk capacitance (7.1 mF with the drivers') only rides through edges: 10 A over the supply limit drains it 1.4 V per ms, so it is not a substitute for supply current. Regen into the supply is blocked by the ideal-diode stage and dumped by the clamp. On the robot the 6S pack's BMS sets the limit (Pack row above); the bench never needs it.
+
+### Safety board (Fable M2: e-stop, contactor, pre-charge, clamp, watchdog)
+Block diagram and netlist of the mandatory bench board. It is a design to be built and reviewed on perfboard / a 2-layer board, not a certified safety function; part numbers are suggestions with the ratings the checks above need.
+
+```
+PSU+ ─F1 40A─┬─[U1 LM74700 + Q6 IRFB7530: ideal diode]─ VIN ──┬───────────── K1 main (ALEV100) ─────────────┬─ VBUS ─F3 20A─► arm lead
+             │                                               └─ K2 contact ─ R3 3.3Ω RH-50 (pre-charge) ───┤
+             │                                                                                             ├─ C1 4.7mF 35V ┬ C2 10µF film ┬ D3 SMDJ33A (edge snubber)
+             │                                                                                             ├─ R6 1kΩ 3W bleeder (permanent)
+             │                                                                                             ├─ R1–R3 0.56Ω RH-50 ── Q1–Q3 IRFB7530 ── GND (clamp / discharge)
+             │                                                                                             └─ divider ─► U4 comparator: OV (26.5V, 0.4V hyst) and PRE_OK (VBUS ≥ VIN−3V)
+             └─F2 1A─ U2 24→12V buck ─ U3 3.3V LDO (watchdog / logic only)
+
+Coil loop (hardware only):  +24V_L ─ S1a NC ─ S2a NC ─ K1 coil (D1 + Z1 suppression) ─ Q4 drain;  Q4 gate = U8: LATCH ∧ WD_OK ∧ PRE_OK
+K_PRE:                      +24V_L ─ S1a/S2a (same chain) ─ K2 coil ─ Q5;  Q5 gate = LATCH ∧ ¬AUX ∧ ¬PRE_TIMEOUT
+Clamp gate:                 U7 OR( OV , FORCE ) → U9 UCC27524 → Q1–Q3;   FORCE = U6 one-shot(AUX falling edge, 100 ms) ∧ ¬K2_DRIVE
+Watchdog:                   GPIO17 heartbeat ─ U5a 74LVC1G17 ─ U5 SN74LVC1G123 (retriggerable, R4·C3) → WD_OK
+Monitored reset:            SB1 ARM (NO) → U10 SN74LVC1G74 D-FF set only if S1b, S2b closed ∧ WD_OK; cleared by any stop, the thermal switch TH1 or PRE_TIMEOUT (U11, 1 s)
+Feedback to the Pi:         K1 aux (NO) ─ U12 PC817 ─ GPIO27 (AUX_OK);  S1b/S2b ch2 ─ U13 PC817 ─ GPIO22 (ESTOP_SENSE)
+```
+
+| Ref | Part | Nets | Function |
+|---|---|---|---|
+| F1 | 40 A ATO/MIDI fuse | PSU+ → F1_OUT | supply wiring protection (SE-1000-24 limit 41.7 A) |
+| U1, Q6 | LM74700-Q1 ideal-diode controller + IRFB7530 (60 V, 2 mΩ) | F1_OUT → VIN | blocks regen into the PSU (a PSU cannot sink) |
+| K1 | TE Kilovac ALEV100, 24 V coil, 100 A, 1 Form A aux | VIN ↔ VBUS; coil COIL+ / COIL−; aux AUX_A / AUX_B | main contactor (category-0 stop) |
+| D1, Z1 | 1N4007 + 24 V Zener (e.g. 1N5359B) in series across the K1 coil | COIL+ / COIL− | coil suppression that keeps the release time short (diode alone slows it) |
+| Q4 | IRLB8721 logic-level N-MOSFET | COIL− → GND, gate U8_OUT | coil driver: closed only while LATCH ∧ WD_OK ∧ PRE_OK |
+| S1, S2 | 2 × two-channel latching mushroom, 2 NC each | S1a/S2a: +24V_L → COIL+ (series); S1b/S2b: 3V3 → U10 / U13 | ch1 opens the coil loop directly; ch2 tells the logic and the Pi |
+| SB1 | ARM / reset pushbutton, NO | 3V3 → U10 CLK | monitored manual reset (never re-closes on its own) |
+| U10 | SN74LVC1G74 D flip-flop | D = S1b ∧ S2b ∧ WD_OK, CLK = SB1, CLR = STOP | LATCH: armed state |
+| K2, Q5 | 10 A / 30 VDC relay (24 V coil, e.g. Omron G5LE-1) + IRLML6344 | VIN → K2_C → R3 → VBUS; gate = LATCH ∧ ¬AUX ∧ ¬PRE_TIMEOUT | pre-charge, opens as soon as K1's aux closes |
+| R3 | Vishay RH-50 3.3 Ω | K2_C → VBUS | pre-charge resistor (τ 23 ms on the M1 bus) |
+| U11 | RC + comparator (or a third LVC1G123), 1 s | starts on LATCH ↑, output PRE_TIMEOUT clears U10 if AUX is still open | pre-charge timeout (latched fault) |
+| U4 | TLV3702 dual comparator + TL431 reference | VBUS divider → OV (26.5 V, 0.4 V hysteresis) and PRE_OK (VBUS ≥ VIN − 3 V) | clamp threshold; closes K1 only on a charged bus |
+| U6 | SN74LVC1G123 one-shot, R 100 kΩ, C 1 µF | B = AUX_OK falling edge (K1 opened), CLR = K2_DRIVE | FORCE: 100 ms forced discharge on the opening edge only, never during pre-charge |
+| U7, U9 | SN74LVC1G32 OR + UCC27524 gate driver (12 V) | OV ∨ FORCE → Q1–Q3 gates | clamp gate |
+| Q1–Q3 / R1–R3 | 3 × IRFB7530 / 3 × Vishay RH-50 0.56 Ω on an Al plate, 10 AWG leads | VBUS → R → Q → GND | regen clamp + bus discharge (0.19 Ω; a third resistor since the inline roll: robot peak regen 2.8 kW) |
+| TH1 | 85 °C NC thermal switch on the resistor plate | in series with U10 D (opens → STOP) | clamp over-temperature latches a stop |
+| R6 | 1 kΩ 3 W | VBUS → GND | permanent bleeder (bus < 10 V within ≈ 7–11 s after any stop, M1 / robot) |
+| C1, C2, D3 | 4.7 mF 35 V electrolytic + 10 µF film at Q1–Q3 + SMDJ33A TVS | VBUS → GND | bulk, switching overshoot, edge snubber only (not the clamp) |
+| U5 | SN74LVC1G123, R4 250 kΩ 1 %, C3 100 nF C0G | B = heartbeat (GPIO17 via 74LVC1G17), Q = WD_OK | hardware watchdog, 25 ms (bringup.yaml watchdog_s) |
+| U2, U3 | 24 → 12 V 1 A buck + 3.3 V LDO (e.g. MCP1703A-3302) | F2 (1 A) from VIN | logic supply of its own (the watchdog must not share the Pi's rail) |
+| U12, U13 | 2 × PC817 opto | K1 aux → GPIO27 (AUX_OK); S1b/S2b → GPIO22 (ESTOP_SENSE) | sw/bringup.py `--estop gpiod:gpiochip0:17:27`; 22 for the button sense |
+| F3 | 20 A slow-blow ATO | VBUS → arm lead (14 AWG) | arm branch (sustained ≈ 15 A, Bench supply above) |
+
+| State | Condition | Effect |
+|---|---|---|
+| OFF / STOPPED | K1 open, K2 open, LATCH 0 | after any stop: FORCE fires once for 100 ms, then the bleeder holds VBUS near 0 V |
+| ARM pressed | needs both mushrooms released (S1b, S2b), WD_OK (the Pi already toggles the heartbeat), TH1 closed | LATCH ← 1; K2 closes; U11 timer starts |
+| PRE-CHARGE | VBUS rises through 3.3 Ω, τ ≈ 23 ms (M1) | FORCE inhibited (no edge, and ∧ ¬K2); OV never trips below 26.2 V |
+| RUN | PRE_OK → Q4 on → K1 closes; aux closes → K2 drops out | drives powered; the bring-up enables them only after this |
+| STOP (any) | mushroom, WD_OK low, TH1, PRE_TIMEOUT, or the Pi (stops the heartbeat) | Q4 off → K1 opens (≤ 10 ms) → aux opens → FORCE 100 ms → bus < UVLO in ≈ 2 ms |
+
+Bench tests of the board before any motor (bring-up step 0): ARM refused with a mushroom pressed or without a heartbeat; pre-charge reaches VIN − 3 V and K1 closes; a 10 Ω RH-50 dummy load across VBUS holds it under VIN − 3 V and trips PRE_TIMEOUT; heartbeat stopped → K1 opens within 30 ms; FORCE pulse seen on the scope at every opening and never during pre-charge; clamp at 26.5 V from a lab supply through 1 Ω.
 
 ### Category-0 drop protection (bench)
-Category 0 removes torque, so the arm falls (Astra 18). From horizontal, the M1 arm (D20 motors, 1 kg in hand, 5.8 kg outboard of pitch, COM 335 mm) releases **14 J** after the balancer's share; with a 10 lb half-basket it is 24 J. Rules for every powered bench test:
-- **Mechanical catch:** an adjustable padded cradle (EVA foam on a bolted aluminium bar) set ≤ 50 mm under the forearm or hand in every pose under test, or a Dyneema tether from the stand with ≤ 50 mm slack: drop energy ≤ 2.8 J. Rated ≥ 565 N (10 × the arm's weight).
+Category 0 removes torque, so the arm falls (Astra 18). From horizontal, the M1 arm (D20 motors, 1 kg in hand, 6.0 kg outboard of pitch, COM 317 mm) releases **14 J** after the balancer's share; with a 10 lb half-basket it is 23 J. Rules for every powered bench test:
+- **Mechanical catch:** an adjustable padded cradle (EVA foam on a bolted aluminium bar) set ≤ 50 mm under the forearm or hand in every pose under test, or a Dyneema tether from the stand with ≤ 50 mm slack: drop energy ≤ 2.9 J. Rated ≥ 585 N (10 × the arm's weight).
 - Payload tray under the gripper; belt guards on; the stand bolted to the bench; operator outside the whole fall envelope (remote button).
 - On the robot (later): SS1 (controlled stop, then torque off) with a rated delay relay; the lift pawl holds the torso.
 

@@ -188,10 +188,12 @@ class SimMotor:
 class SimSafetyIO:
     """A5 v2 stop circuit: mushroom NC contacts + watchdog monostable in series with the contactor coil; aux contact read
     back. `arm()` is the operator's reset/arm button (monitored manual reset: never closes on its own)."""
-    WD_S = 0.008
+    WD_S = 0.025                    # default; VirtualArm passes bringup.yaml watchdog_s (electrical.md: sized on sw/loop_jitter.py)
 
-    def __init__(self, clock, stuck=False, wd_dead=False):
+    def __init__(self, clock, stuck=False, wd_dead=False, wd_s=None):
         self.clock, self.stuck, self.wd_dead = clock, stuck, wd_dead
+        if wd_s is not None:
+            self.WD_S = float(wd_s)
         self.button = False
         self.closed = False
         self.last_hb = None
@@ -315,7 +317,7 @@ class VirtualArm:
                 mt.bus = bn
                 self.motors.append(mt)
         self.sim_joints = [mt.name for mt in self.motors]
-        self.io = SimSafetyIO(self.clock, stuck="estop_stuck" in self.faults, wd_dead="watchdog_dead" in self.faults)
+        self.io = SimSafetyIO(self.clock, stuck="estop_stuck" in self.faults, wd_dead="watchdog_dead" in self.faults, wd_s=cfg.get("watchdog_s"))
         self.io.listeners.append(lambda on: [mt.power(on, self.clock()) for mt in self.motors])
         for mt in self.motors:
             mt.power(False, 0.0)
