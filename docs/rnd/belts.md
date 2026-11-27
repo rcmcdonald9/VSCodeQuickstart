@@ -4,7 +4,7 @@ HTD 5M, 15 mm, printed pulleys, small pulley on its own bearing hub. **Loop 13 r
 
 | Joint | Teeth | Pitch Ø small / big | Sustained pull vs working | Peak pull vs ultimate/3 | Teeth in mesh | Centre / belt length |
 |---|---|---|---|---|---|---|
-| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 192 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 355 mm |
+| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 194 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 355 mm |
 | upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 173 / 312 N → 1.8× ✅ | 691 N → 5.6× ultimate ✅ | 8.7 ✅ | 80 / 313 mm |
 | elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 202 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.6 ✅ | 70.7 / 295 mm |
 
@@ -33,6 +33,34 @@ Exact pitch length 2C·cos φ + π(D+d)/2 + φ(D−d); the eccentric bushings gi
 | Oldham disc D50 acetal | GIM8108-8 (D20) | 22 N·m | 14.8 N·m | 0.67× ❌ |
 | Oldham disc D63 acetal | GIM8108-8 (D20) | 22 N·m | 23.6 N·m | 1.07× ⚠️ |
 | Oldham disc D63 acetal at the 18 N·m flash torque limit | GIM8108-8 (D20) | 18 N·m | 23.6 N·m | 1.31× ✅ |
+| Oldham motor-side tenon adapter, printed ASA, 4 × M3 at 0.4 kN (D24 v2) | GIM6010-8 | 11 N·m | 8.2 N·m | 0.74× ❌ |
+| Oldham motor-side hub, 6061, 4 × M3 8.8 at 1.0 kN (Neon #2) | GIM6010-8 | 11 N·m | 13.6 N·m | 1.24× ⚠️ |
+| Oldham motor-side hub, 6061, 4 × M3 10.9 at 1.3 kN, at the 18 N·m flash limit | GIM8108-8 (D20) | 18 N·m | 15.6 N·m | 0.87× ❌ |
+
+- D20 motor-side hub under its 18 N·m limit: 4 × M3 friction is short (⚠️/❌ above); its output pattern is still ESTIMATE. If the GIM8108-8 drawing has dowel holes, 2 × ISO 8734 Ø3 dowels go through the hub into them; otherwise the hub face is bonded to the output with Loctite 638 (ESTIMATE ≈ 10 MPa on ≈ 1.7e3 mm², far above the limit; heat to remove).
+- upper_yaw: the centre for the stock 315-5M is 80.93 mm; roll.YAW_C (roll track) is still 80.00, so the eccentric starts 93 % used. No stock 5M length lands at 80.00 (310-5M → 78.38, 315-5M → 80.93); YAW_C has to move.
+
+## Cartridge flange ears: tipping and bolt load (Neon #2 finding 2)
+
+Applied moment at the actuator peak = cartridge mass × 3 g × motor mid-length + Oldham side load (μ 0.2 · T / (D/3)) × the tenon height; tipping when it beats the ears' preload × their distance from the flange's edge line in the worst direction; preload 750 N per M4, and 30% of it after printed-joint creep (ESTIMATE). Friction torque μ 0.3 · n · F_p · r. Rule: ≥ 3 ears with no gap > 120°, or ≥ 4 with no gap > 180°.
+
+| Joint | Motor | Ears (largest gap) | Applied | Tipping at full / 30 % preload | Friction at 30 % vs peak | Max bolt load |
+|---|---|---|---|---|---|---|
+| pitch (C3) | GIM6010-8 | 3 (250°) ❌ | 3.2 N·m | 32.5 / 9.8 N·m → 10.2× / 3.1× | 10 vs 11 N·m → 0.88× | 843 N (6.0× proof) ❌ |
+| pitch (now) | GIM6010-8 | 4 (120°) ✅ | 3.2 N·m | 109.3 / 32.8 N·m → 34.3× / 10.3× | 13 vs 11 N·m → 1.18× | 774 N (6.6× proof) ✅ |
+| elbow (C3) | GIM6010-8 | 4 (100°) ✅ | 3.2 N·m | 109.1 / 32.7 N·m → 34.3× / 10.3× | 13 vs 11 N·m → 1.18× | 774 N (6.6× proof) ✅ |
+| elbow (now) | GIM6010-8 | 4 (100°) ✅ | 3.2 N·m | 109.1 / 32.7 N·m → 34.3× / 10.3× | 13 vs 11 N·m → 1.18× | 774 N (6.6× proof) ✅ |
+| yaw (C3) | GIM6010-8 | 2 (290°) ❌ | 3.2 N·m | 8.2 / 2.5 N·m → 2.6× / 0.8× | 6 vs 11 N·m → 0.59× | 1039 N (4.9× proof) ❌ |
+| yaw (now) | GIM6010-8 | 4 (100°) ✅ | 3.2 N·m | 112.9 / 33.9 N·m → 35.5× / 10.6× | 13 vs 11 N·m → 1.18× | 775 N (6.6× proof) ✅ |
+| lift (C3) | GIM6010-8 | 2 (280°) ❌ | 3.2 N·m | 8.3 / 2.5 N·m → 2.6× / 0.8× | 6 vs 11 N·m → 0.59× | 1039 N (4.9× proof) ❌ |
+| lift (now) | GIM6010-8 | 4 (100°) ✅ | 3.2 N·m | 109.1 / 32.7 N·m → 34.3× / 10.3× | 13 vs 11 N·m → 1.18× | 774 N (6.6× proof) ✅ |
+| pitch (C3) | GIM8108-8 (D20) | 3 (250°) ❌ | 4.8 N·m | 35.9 / 10.8 N·m → 7.5× / 2.2× | 11 vs 22 N·m → 0.52× | 875 N (5.8× proof) ❌ |
+| pitch (now) | GIM8108-8 (D20) | 4 (120°) ✅ | 4.8 N·m | 124.7 / 37.4 N·m → 25.9× / 7.8× | 15 vs 22 N·m → 0.69× | 781 N (6.5× proof) ❌ |
+| elbow (C3) | GIM8108-8 (D20) | 4 (100°) ✅ | 4.8 N·m | 126.0 / 37.8 N·m → 26.2× / 7.9× | 15 vs 22 N·m → 0.69× | 781 N (6.5× proof) ❌ |
+| elbow (now) | GIM8108-8 (D20) | 4 (100°) ✅ | 4.8 N·m | 126.0 / 37.8 N·m → 26.2× / 7.9× | 15 vs 22 N·m → 0.69× | 781 N (6.5× proof) ❌ |
+
+- pitch and lift 'now' are the pitch4 / lift4 patterns (cartridge_m.EAR_SITES); they need shoulder.py / upper.py geometry (outer-wall holes, wall-A bosses + cover cut) before those modules switch EAR_SITE.
+- D20 at 30 % preload: friction 15 N·m < 22 N·m stall, so the ears go into bearing (≈ 98 N per M4, ≈ 4 MPa on the 6 mm ear) after a slip; at the 18 N·m flash limit 0.8×. Full preload: 50 N·m (2.3×).
 
 - Belt lengths round to stock sizes; eccentric bushings set the tension (loop 10).
 - If coupon tests show tooth jump or creep: switch to PU steel-cord HTD 5M (1268 N working, Mädler) at the same geometry, or to 25 mm belts.
