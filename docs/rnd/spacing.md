@@ -20,8 +20,8 @@ ends of its tilt range (upper.TILT_RANGE), since its pivot moves the shell round
 |---|---|---|---|---|---|---|
 | roll/yaw | roll_gim_housing | roll_outflange | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
 | roll/yaw | yaw_flange | yaw_stop_pin | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
-| roll/yaw | roll_arm_rear | yaw_can | static | 0.5 | 1.0 / 0.5 | ⚠️ target |
 | upper | lift_bracket | lift_cover | static | 0.84 | 1.0 / 0.5 | ⚠️ target |
+| roll/yaw | roll_arm_rear | yaw_can | static | 0.93 | 1.0 / 0.5 | ⚠️ target |
 | base | w90_hub | w90_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
 | base | w180_hub | w180_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
 | base | w270_hub | w270_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |

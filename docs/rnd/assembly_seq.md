@@ -20,7 +20,7 @@ things for every drive shaft:
 | Shaft | Bearings and pulleys that can slide on (Ø = bore) | Insertion | Verdict |
 |---|---|---|---|
 | pitch shaft (D19: 60T one piece; pitch hub bolted on the outboard double-D, outer wall bolted on after the shaft) | z -54.3…-48.3 (Ø40.0): ✅ −Z end; z -20.3…-14.3 (Ø40.0): ✅ +Z end | ✅ | ✅ |
-| roll stage, D24 inline GIM8108-36 (no shaft or pulley; 61806 onto the roll link's stub from −X, clevis bolted to the output flange) | z -35.0…-28.0 (Ø30.0): ✅ −Z end | ✅ | ✅ |
+| roll stage, D24 inline GIM8108-36 (no shaft or pulley; 61806 onto the roll link's stub from −X, clevis bolted to the output flange) | z -35.5…-28.5 (Ø30.0): ✅ −Z end | ✅ | ✅ |
 | yaw shaft (D19, loop 44: 40T + spring hub one piece; up into the top plate, bottom plate bolted on, flange last) | z -58.0…-52.0 (Ø40.0): ✅ +Z end; z -95.2…-88.2 (Ø40.0): ✅ −Z end | ✅ | ✅ |
 | elbow shaft (D19: 40T one piece; 2 × 61808 in capped U-seats + 2 × 6708; the cassette goes in from below) | z 3.7…9.7 (Ø40.0): ✅ −Z end; z 37.7…42.9 (Ø40.0): ✅ +Z end; z -57.5…-50.5 (Ø40.0): ✅ −Z end; z 50.5…57.5 (Ø40.0): ✅ +Z end | ✅ | ✅ |
 | D13 small stage v3 (D24 bolted cartridge, Oldham hub; steel Ø12 shaft, pulley and bearings separate) at pitch, roll, yaw, elbow | z -6.0…-1.0 (Ø12.0): ✅ −Z end; z -39.0…-34.0 (Ø12.0): ✅ −Z end; z -33.5…-6.5 (Ø12.0): ✅ −Z end | ✅ | ✅ |
@@ -33,9 +33,9 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 
 | Joint | Fasteners | Pass | Failures (blocked by) |
 |---|---|---|---|
-| pitch | 10 | 10/10 ✅ | — |
+| pitch | 11 | 11/11 ✅ | — |
 | elbow | 12 | 12/12 ✅ | — |
-| yaw | 8 | 8/8 ✅ | — |
+| yaw | 10 | 10/10 ✅ | — |
 | lift | 2 | 2/2 (1 by ball-end) ✅ | — |
 | wrist | 12 | 12/12 ✅ | — |
 | roll (inline) | 16 | 16/16 ✅ | — |
@@ -44,13 +44,16 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 
 | Joint | Fastener | Kind | Result | Blocked by (straight) |
 |---|---|---|---|---|
-| pitch | flange ear screw +40° (M4, site pitch) | swap | ✅ straight Ø6 × 80 | — |
-| pitch | flange ear screw -30° (M4, site pitch) | swap | ✅ straight Ø6 × 80 | — |
-| pitch | flange ear screw -70° (M4, site pitch) | swap | ✅ straight Ø6 × 80 | — |
+| pitch | flange ear screw +40° (M4, site pitch4) | swap | ✅ straight Ø6 × 80 | — |
+| pitch | flange ear screw -40° (M4, site pitch4) | swap | ✅ straight Ø6 × 80 | — |
+| pitch | flange ear screw +160° (from the pulley side) (M4, site pitch4) | swap | ✅ straight Ø6 × 80 | — |
+| pitch | flange ear screw -120° (from the pulley side) (M4, site pitch4) | swap | ✅ straight Ø6 × 80 | — |
 | elbow | flange ear screw +40° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
 | elbow | flange ear screw -40° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
 | elbow | flange ear screw +140° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
 | elbow | flange ear screw -140° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
+| yaw | flange ear screw +50° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
+| yaw | flange ear screw -50° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | yaw | flange ear screw +145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | yaw | flange ear screw -145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | lift | flange ear screw +140° (M4, site lift) | swap | ✅ straight Ø6 × 80 | — |
@@ -106,6 +109,17 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | roll (inline) | clevis M5 338° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
 
 </details>
+
+## Flange-ear distribution (Neon #2 finding 2)
+
+A cartridge flange needs ≥ 3 ears with no gap > 120° between neighbours, or ≥ 4 with no gap > 180° (tipping and bolt loads: the cartridge flange table in belts.md, cartridge_m.flange_joint).
+
+| Joint | Site | Ears (deg from the stage +X) | Largest gap | Rule |
+|---|---|---|---|---|
+| pitch | pitch4 | +40, -40, +160 (rev), -120 (rev) | 120° | ✅ |
+| elbow | elbow | +40, -40, +140, -140 | 100° | ✅ |
+| yaw | yaw | +50, -50, +145, -145 | 100° | ✅ |
+| lift | lift | +140, -140 | 280° | ❌ |
 
 ## R14 (d) cartridge swap (belt on, shaft in place)
 
