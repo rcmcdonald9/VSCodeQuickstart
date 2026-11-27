@@ -342,6 +342,53 @@ def elbow_pulley_hub() -> Part:
     return Pos(0, y1, 0) * Rot(90, 0, 0) * t
 
 
+# Neon review #2 finding 7 (2026-11-27): the D19 elbow shaft (Ø40/Ø30 tube + integral 40T) is printed axis-vertical (the
+# HTD teeth and the Ø40 journals have to be round), so its bending (belt pull between the 6708s) and its torsion (40T →
+# forearm clamp) both load the layer interfaces. elbow_shaft_stress() (hand calc): at the GIM6010-8 peak the printed tube
+# sees ≈ 5 MPa von Mises across the layers, at the D20 stall ≈ 14 MPa, vs 12 MPa isotropic PETG (rnd/fea.py) and 5–7 MPa
+# Z-layer fatigue (review figure, ESTIMATE). Fix: a 6061-T6 drawn tube Ø30 × 1.5 bonded into the Ø30 bore (ELBOW_CORE),
+# from 1 mm past the AS5048A magnet plug (y −58) to the +Y end under the forearm clamp. By stiffness it takes ≈ 85 % of the
+# bending and torsion (E·I, G·J ratio); alone it runs at ≤ 36 MPa shear / 12 MPa bending at the D20 stall (6061-T6 τ_y
+# ≈ 160 MPa, ASM). Load transfer: epoxy bond under the 40T and the clamp (≈ 30 / 24 mm) ≤ 2 MPa at the D20 stall (PETG
+# lap shear ≈ 3–5 MPa, ESTIMATE: coupon), and at the +Y end the forearm's 2 × M5 pinch squeezes the printed double-D onto
+# the metal (≈ 24 N·m friction, ESTIMATE). +51 g.
+ELBOW_CORE = dict(od=30.0, t=1.5, y=(-57.0, 82.5), E=69e3, G=26e3, material="6061-T6 drawn round tube Ø30 × 1.5, cut to 139.5 mm",
+                  bond="structural 2-part epoxy, PETG bore abraded (coupon: lap shear on PETG-CF)")
+
+
+def elbow_core_tube() -> Part:
+    """Finding 7: the aluminium core tube in the elbow shaft's Ø30 bore (elbow frame, as elbow_pulley_hub: axis Y at z 0)."""
+    c = ELBOW_CORE
+    y0, y1 = c["y"]
+    return Pos(0, y0, 0) * Rot(-90, 0, 0) * (Cylinder(c["od"] / 2, y1 - y0, align=MIN) - Cylinder(c["od"] / 2 - c["t"], y1 - y0, align=MIN))
+
+
+def elbow_shaft_stress(motor_peak: float | None = None) -> dict:
+    """Hand calc of the elbow shaft at the motor peak (finding 7). Belt: hub load = the 20T's tight-side pull + 15 % for the
+    slack-side preload (ESTIMATE) at the belt plane, simply supported on the cassette 6708s (CAS_A / CAS_B centres); Kt 1.5
+    at the 40T flange root. Torsion: the joint torque (motor peak × ratio) between the 40T and the forearm clamp."""
+    from . import cartridge_m as cm_
+    T_m = motor_peak if motor_peak is not None else (22.0 if MOT is cm_.MOTOR_8108 else 11.0)
+    ratio = E_TEETH / 20
+    F = 1.15 * T_m * 1000 / (20 * 5.0 / math.pi / 2)
+    ya, yb = sum(CAS_A) / 2, sum(CAS_B) / 2
+    a, b = BELT_Y - ya, yb - BELT_Y
+    M = F * a * b / (a + b)                                                       # N·mm
+    I_p, J_p = math.pi * (40 ** 4 - 30 ** 4) / 64, math.pi * (40 ** 4 - 30 ** 4) / 32
+    sig, tau = 1.5 * M * 20 / I_p, T_m * ratio * 1000 * 20 / J_p
+    c = ELBOW_CORE
+    di = c["od"] - 2 * c["t"]
+    I_a, J_a = math.pi * (c["od"] ** 4 - di ** 4) / 64, math.pi * (c["od"] ** 4 - di ** 4) / 32
+    E_p, G_p = 2.0e3, 0.7e3                                                        # PETG-class print (ESTIMATE)
+    share_b, share_t = c["E"] * I_a / (c["E"] * I_a + E_p * I_p), c["G"] * J_a / (c["G"] * J_a + G_p * J_p)
+    T_j = T_m * ratio * 1000
+    return dict(T_motor=T_m, T_joint=T_m * ratio, F_hub=F, M_belt=M / 1000, sigma_print=sig, tau_print=tau,
+                vm_print=math.sqrt(sig ** 2 + 3 * tau ** 2), share_bend=share_b, share_tors=share_t,
+                vm_print_cored=math.sqrt((sig * (1 - share_b)) ** 2 + 3 * (tau * (1 - share_t)) ** 2),
+                sigma_al=M * (c["od"] / 2) / I_a, tau_al=T_j * (c["od"] / 2) / J_a,
+                bond_pulley=T_j / (2 * math.pi * (c["od"] / 2) ** 2 * 30.0), bond_clamp=T_j / (2 * math.pi * (c["od"] / 2) ** 2 * 24.0))
+
+
 PRINT = {
     "upper_bone": "split at z = -100 (neck/housing) and along the Y centre plane → 3 pieces ≤ 256 mm, bolted + doweled",
     "forearm": "one piece, printed on its side (link plane on the bed), 280 mm diagonal fits the 256 mm bed corner-to-corner",
@@ -366,9 +413,10 @@ def masses(density=1.27):
                "wrist D24 output flange + can flange ring": hd.adapter_d().volume + hd.can_d().volume - hd.can_d_loop10_volume()}
     out = {k: v / 1e6 * density for k, v in shells.items()}
     out.update({k: v / 1e6 * density * 0.7 for k, v in sockets.items()})
-    out["elbow D13 v3 stage (steel Ø12, alu pulley, 6801s) + Oldham (alu hub, acetal disc, ASA adapter)"] = (
+    out["elbow D13 v3 stage (steel Ø12, alu pulley, 6801s) + Oldham (alu hubs both sides since Neon #2, acetal disc)"] = (
         st["shaft_12"].volume * 7.85e-3 + st["al_pulley"].volume * 2.7e-3 + (st["brg_A_6801"].volume + st["brg_B_6801"].volume) * 7.85e-3 * 0.6
-        + st["flange_coupling"].volume * 2.7e-3 * 0.8 + st["oldham_disc"].volume * 1.41e-3 + st["kx_hub_v2"].volume * density * 0.7e-3) / 1e3
+        + st["flange_coupling"].volume * 2.7e-3 * 0.8 + st["oldham_disc"].volume * 1.41e-3 + st["kx_hub_v2"].volume * 2.7e-3) / 1e3
+    out["elbow shaft 6061 core tube Ø30 × 1.5 (Neon #2 finding 7)"] = elbow_core_tube().volume * 2.7e-6
     out["elbow can nose/flange/rear cap over the loop-10 can"] = (cm.can_bolted(MOT).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-6
     out.update(cf)
     out["bearings: 2×61808 + 2×61804 + 4×61805 (ESTIMATE)"] = 0.020 * 2 + 0.008 * 2 + 0.012 * 4
@@ -391,6 +439,7 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     # (the yaw stage above the flange lives in rnd/parts/roll.py)
     fe = Pos(0, 0, -ELBOW_Z) * Rot(0, elbow_deg, 0)
     out.append(("e_shaft40", fe * elbow_pulley_hub(), "steel"))                           # D19: integral 40T, turns with the forearm (its clamp, double-D)
+    out.append(("e_hub_core", fe * elbow_core_tube(), "steel"))                           # Neon #2 finding 7: bonded 6061 core ("hub"/"shaft": a mate in rnd.spacing)
     from .encoder import elbow_parts                                                     # M3 (Fable): AS5048A joint encoder on the tube's −Y end
     st, rot = elbow_parts()
     out += st + rot                                                                      # the magnet parts are axisymmetric about the elbow axis
