@@ -32,7 +32,7 @@ JR = {  # joint ranges (deg). Conventions: arm hangs straight down at 0.
 # ---- actuator model (real2sim, 2026-11-27). Joint-side units: N·m, N·m·s/rad, rad, ms. The datasheet model is the fallback;
 # the bring-up's sysid step (sw/bringup.py step "sysid") fits each drive and writes sw/config/actuators_<serial>.yaml,
 # which `actuator_model()` returns instead once it exists. Once measured these are NOT domain-randomised (they are a fixed,
-# per-serial fact of the robot); payload, contact friction and object properties still are (docs/sw/actuator_sysid.md).
+# per-serial fact of the robot); payload, contact friction and object properties still are (docs/sw/sim2real_bench.md).
 ACTUATOR_DATASHEET = {   # coulomb/viscous/armature: the bench twin's values (sw/bench_env.py) and the virtual plant's; all ESTIMATE
     "pitch":  dict(actuator="GIM6010-8 + 3:1 belt", coulomb_nm=0.25, viscous_nms=2.0, armature=0.05, kt_scale=1.0, backlash_rad=0.0015, latency_ms=None),
     "roll":   dict(actuator="GIM8108-36 inline", coulomb_nm=0.25, viscous_nms=2.0, armature=0.05, kt_scale=1.0, backlash_rad=0.0044, latency_ms=None),
