@@ -162,6 +162,19 @@ def _yaw_hood():
     return _HOOD[0]
 
 
+# Roll nips the D25 people-near limit leaves (R17 neck/shoulder pass, 2026-11-27; rnd/pinch.py on the merged tree):
+# - cover_yaw × roll_link (0.6…14.8 mm) and cover_yaw × roll_gim_housing (1.4…9.4): the hood's front end is cut round
+#   the roll link's rear walls swept over the roll range, so its cells sit 0.6 mm from a wall at one angle and 10–26 mm at
+#   another. No cover-only fix: the static side is not round about the roll axis. Needed in roll.py: the link's rear end
+#   (x −45…−27, round the 61806) as a boss of revolution about the roll axis (r ≤ 45, nothing wider behind x −27); the
+#   hood is then cut with a concentric bore at a constant 3 mm.
+# - yaw_block × roll_link (9.6…13.6) and roll_outflange × roll_gim_housing (8.4…9.5): the clevis boss (R_ARM 42, round)
+#   faces flat link walls. roll.py: bore the link's front walls (x 38…50) concentric at R_ARM + 4 (constant 4 mm).
+# - cover_yaw × ferrule_m (3.5…10.5, left) and the inboard wedge (yaw block / band × ferrule, 2.5 / 2.7 mm at −15°):
+#   arm part against arm part, so no torso or cover change opens them (a static filler only moves the nip: the block
+#   swings 115°). Mechanical fixes: a roll hard stop at ≥ +5° (roll.STOP_AT / ROLL_MIN, the people-near limit made
+#   permanent: R16 across-body 71 → 49 %) or ROLL_Y + 23 mm. upper.TORSO_RECESS (PIP_TORSO_RECESS=1) fixes only the
+#   shoulder–torso rows.
 def roll_frame():
     """Concept: rides on the roll output: a sleeve round the whole yaw block (both plates, the belt, the yaw
     cartridge, its KX collar and torque fork), open at the top (the clevis arms) and the bottom (the yaw flange).
