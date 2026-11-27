@@ -37,7 +37,7 @@ TILT_RANGE = (-10.0, 15.0)      # head tilt (deg), D22 pivot: −10° (up) … +
 # visor × tilt_sleeve depends on it (25.3 mm at +10, 24.9 at +12.5, 24.6 at +15). The neck boot's floor is cut away by the
 # yoke plate's sweep over x −8…+42 already at −10…+10 (+44 at +15, +50 at +30), so less tilt alone does not close the neck:
 # the rim needs ≥ 25 mm round the posts / plate / hub with the TPU boot covering the opening (open, needs a neck CAD pass).
-PAN_RELIEF_TILT = 30.0          # the shell's pan-sleeve relief is still cut over −10…+30° (head(); D25 pinch pan row)
+TILT_RELIEF = (-10.0, 30.0)     # the shell's clearance cuts (yoke, tilt sleeve, pan sleeve) are swept over this, not TILT_RANGE (head())
 PAN_RISER = 20.0                # R17 (2026-11-27): the yoke stands on a Ø40 hub this tall, so the yoke plate and the head clear
                                 # the pan sleeve and the carry handle by ≥ 25 mm at every pan angle (were 10.6 / 15.2 / 17.4)
 
@@ -399,14 +399,14 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     r_pan = max(math.hypot(x, y) for x in (pb.min.X, pb.max.X) for y in (pb.min.Y, pb.max.Y)) + 2
     env_p = Pos(0, 0, pb.min.Z - 2) * Cylinder(r_pan, pb.size.Z + 4, align=(Align.CENTER, Align.CENTER, Align.MIN))
     lo, hi = TILT_RANGE
-    # D25: the pan-sleeve relief keeps the D22 sweep to +30° (PAN_RELIEF_TILT). Cut only to +15° it left the shell rim 7.3 mm
-    # from the pan sleeve's corners at pan 60° (rnd/pinch.py pan row head_shell × pan_sleeve 7.3…26.5 mm); with the old relief
-    # it is ≥ 25 mm at every pan angle. The relief is inside the neck opening, under the boot.
-    inv = lambda td: (Pos(0, 0, 40) * Pos(px, 0, pz) * Rot(0, td, 0) * Pos(-px, 0, -pz)).inverse()
-    for k in range(9):
-        for e in (env_y, env_t):
-            shell -= inv(lo + k * (hi - lo) / 8) * e
-        shell -= inv(lo + k * (max(hi, PAN_RELIEF_TILT) - lo) / 8) * env_p
+    # D25: the clearance cuts are swept over TILT_RELIEF (the old −10…+30°), wider than the travel. Cut only to the +15° stop,
+    # the rim came 7.3 mm from the pan sleeve's corners at pan 60° (rnd/pinch.py pan row head_shell × pan_sleeve 7.3…26.5 mm) and
+    # closed to the 3 mm cut clearance on the yoke at the stop (head_shell × yoke); cut past the stop it stays clear of both.
+    rlo, rhi = min(lo, TILT_RELIEF[0]), max(hi, TILT_RELIEF[1])
+    for td in [rlo + k * (rhi - rlo) / 8 for k in range(9)]:
+        inv = (Pos(0, 0, 40) * Pos(px, 0, pz) * Rot(0, td, 0) * Pos(-px, 0, -pz)).inverse()
+        for e in (env_y, env_t, env_p):
+            shell -= inv * e
     out = [("head_bracket", top, "white"), ("handle", handle, "dark"), ("belt_idler", idler, "steel"),
            ("pan_sleeve", pan, "white"), ("yoke", P * yoke, "dark"), ("tilt_sleeve", P * tilt, "white"),
            ("tilt_bearing", P * brg, "steel"),
