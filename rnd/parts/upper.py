@@ -309,7 +309,8 @@ NECK_BAR = dict(w=30.0, t=24.0)   # neck bar: y width, thickness (in the tilt pl
 NECK_CLEAR = 26.0                 # slot rim ↔ bar at every tilt (R17 ≥ 25)
 NECK_GAP, SADDLE_T = 4.0, 3.0     # saddle ↔ shell inner surface (R17 ≤ 8, constant); saddle wall
 SADDLE_LAP = (4.0, 8.0)           # saddle overlap past the slot rim at the worst tilt: angle (deg), y (mm)
-BOSS_Y = 61.0                     # pivot bosses (8 mm) centred at y ±BOSS_Y (v1: ±71)
+BOSS_Y = 61.0                     # pivot bosses 10 mm thick, y ±(BOSS_Y − 5 … BOSS_Y + 5) (v1: 8 mm at ±71); the 6805 sits in a
+                                  # 7.5 mm blind seat from the −Y boss's outer face (a 2.5 mm floor joins it to the cross-tube)
 BOSS_R, TUBE_R = 22.0, 18.0       # pivot boss (6805 OD 37: 3.5 mm wall; v1 Ø48) and cross-tube radius (Ø28 bore round the Ø25 stub)
 PIVOT_BACK = 6.0                  # tilt axis this far behind the head's COM: the bosses clear the screen board by 4 mm; gravity
                                   # torque 0.6 kg × 9.81 × 6 mm ≈ 0.035 N·m (≈ 1 % of the STS3215's stall, under the 0.3 N·m pivot drag)
@@ -422,9 +423,9 @@ def _yoke(px, pz, g=0.0):
     L = r_end - r0
     f = Pos(0, 0, -60.0 - g) * Cylinder(20 + g, HUB_TOP + 60.0 + g, align=MIN)                     # riser hub
     f += Pos(px + u[0] * (r0 + L / 2), 0, pz + u[1] * (r0 + L / 2)) * Rot(0, -bar_a, 0) * Box(L, NECK_BAR["w"] + 2 * g, NECK_BAR["t"] + 2 * g)
-    f += _cyl_y(px, pz, TUBE_R + g, -BOSS_Y + 4 - g, BOSS_Y - 4 + g)                                                # cross-tube
+    f += _cyl_y(px, pz, TUBE_R + g, -BOSS_Y - g, BOSS_Y + g)                                              # cross-tube
     for s in (1, -1):
-        f += _cyl_y(px, pz, BOSS_R + g, s * BOSS_Y - 4 - g, s * BOSS_Y + 4 + g)                                  # pivot boss
+        f += _cyl_y(px, pz, BOSS_R + g, s * BOSS_Y - 5 - g, s * BOSS_Y + 5 + g)                                  # pivot boss
     ro = HEAD_R - HEAD_T - NECK_GAP
     ys = _slot_y() + SADDLE_LAP[1]
     f += _sector(px, pz, ro - SADDLE_T - g, ro + g, sad[0] - (2 if g else 0), sad[1] + (2 if g else 0), -ys - g, ys + g)   # neck saddle
@@ -452,9 +453,9 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     zp = 40 + pz                                                                       # pivot height above the yoke plate
     Y = Pos(0, 0, 40)                                                                  # head frame (tilt 0) → yoke frame
     yoke = Y * _yoke(px, pz)
-    yoke -= Pos(px, -BOSS_Y, zp) * Rot(90, 0, 0) * Cylinder(BRG_6805["D"] / 2 + 0.05, 20)                   # 6805 seat (−Y boss)
-    tilt = Pos(px, BOSS_Y + 4, zp) * Rot(-90, 0, 0) * Rot(0, 0, 180) * cs.sleeve()                              # body points aft, away from the screen
-    brg = Pos(px, -BOSS_Y, zp) * Rot(90, 0, 0) * (Cylinder(BRG_6805["D"] / 2, BRG_6805["B"]) - Cylinder(BRG_6805["d"] / 2, BRG_6805["B"]))
+    yoke -= Pos(px, -BOSS_Y - 5 + 3.75 - 1, zp) * Rot(90, 0, 0) * Cylinder(BRG_6805["D"] / 2 + 0.05, 7.5 + 2)                   # 6805 seat (−Y boss)
+    tilt = Pos(px, BOSS_Y + 5, zp) * Rot(-90, 0, 0) * Rot(0, 0, 180) * cs.sleeve()                              # body points aft, away from the screen
+    brg = Pos(px, -BOSS_Y - 5 + BRG_6805["B"] / 2, zp) * Rot(90, 0, 0) * (Cylinder(BRG_6805["D"] / 2, BRG_6805["B"]) - Cylinder(BRG_6805["d"] / 2, BRG_6805["B"]))
     # loop 25: slotted torque pads for the pan and tilt cartridges' Ø4 pins (rnd/parts/torque.py)
     from .torque import with_pin_slot
     top = with_pin_slot(pan, top, 1.95, 2.0)
@@ -464,7 +465,7 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     # head-side pivot stubs bonded to the shell's inner side walls (head frame): −Y a Ø25 tube through the 6805 with a
     # flange on the wall; +Y a Ø30 disc onto the tilt cartridge's output face
     yi = HEAD_W / 2 - HEAD_T                                                          # shell inner side wall
-    stub_m = Pos(px, -(BOSS_Y - 4 + yi) / 2, pz) * Rot(90, 0, 0) * (Cylinder(BRG_6805["d"] / 2, yi - BOSS_Y + 4) - Cylinder(8.5, yi))
+    stub_m = Pos(px, -(BOSS_Y + 5 - BRG_6805["B"] + yi) / 2, pz) * Rot(90, 0, 0) * (Cylinder(BRG_6805["d"] / 2, yi - BOSS_Y - 5 + BRG_6805["B"]) - Cylinder(8.5, yi))
     stub_m += Pos(px, -yi + 2, pz) * Rot(90, 0, 0) * Cylinder(22, 4)
     tb = tilt.bounding_box()
     stub_p = Pos(px, (tb.max.Y + 0.8 + yi) / 2, pz) * Rot(90, 0, 0) * Cylinder(15, yi - tb.max.Y - 0.8)
