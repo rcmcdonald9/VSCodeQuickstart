@@ -19,6 +19,40 @@ import numpy as np
 
 SRC = Path("sw/out/pip_bench_pick_place")
 DST = Path("sw/out/pip_bench_pick_place_v3")
+STATE_NAMES = ["pitch", "roll", "yaw", "elbow", "wpitch", "wroll", "gripper", "eef_x", "eef_y", "eef_z", "eef_qw", "eef_qx", "eef_qy", "eef_qz"]
+ACTION_NAMES = ["dx", "dy", "dz", "drx", "dry", "drz", "gripper"]
+
+
+def features(img, state_names=STATE_NAMES, action_names=ACTION_NAMES):
+    """The Pip bench feature set (DROID-style: EEF-delta action, wrist + exterior video), shared by every writer."""
+    vid = {"dtype": "video", "shape": tuple(img), "names": ["height", "width", "channels"]}
+    return {"observation.state": {"dtype": "float32", "shape": (len(state_names),), "names": list(state_names)},
+            "action": {"dtype": "float32", "shape": (len(action_names),), "names": list(action_names)},
+            "observation.images.wrist": dict(vid), "observation.images.exterior": dict(vid)}
+
+
+class V3Writer:
+    """LeRobot's own writer (dataset format v3.0): create / add_frame / save_episode / finalize. Used by this converter
+    and by sw/teleop_sim.py, so synthetic and teleoperated episodes have the same layout."""
+
+    def __init__(self, root, repo_id, fps, img, robot_type="pip_bench_arm", feats=None):
+        from lerobot.datasets.lerobot_dataset import LeRobotDataset
+        root = Path(root)
+        if root.exists():
+            shutil.rmtree(root)
+        self.ds = LeRobotDataset.create(repo_id, fps=fps, features=feats or features(img), root=root, robot_type=robot_type, use_videos=True)
+        self.n_episodes = 0
+
+    def add(self, state, action, wrist, exterior, task):
+        self.ds.add_frame({"observation.state": np.asarray(state, np.float32), "action": np.asarray(action, np.float32),
+                           "observation.images.wrist": wrist, "observation.images.exterior": exterior, "task": task})
+
+    def save_episode(self):
+        self.ds.save_episode()
+        self.n_episodes += 1
+
+    def finalize(self):
+        self.ds.finalize()
 
 
 def main():
@@ -32,16 +66,9 @@ def main():
     tasks = [json.loads(l)["task"] for l in (SRC / "meta" / "tasks.jsonl").read_text().splitlines()]
     n_ep = info["total_episodes"] if a.max is None else min(a.max, info["total_episodes"])
     img = info["features"]["observation.images.wrist"]["shape"]
-    feats = {
-        "observation.state": {"dtype": "float32", "shape": (14,), "names": info["features"]["observation.state"]["names"]},
-        "action": {"dtype": "float32", "shape": (7,), "names": info["features"]["action"]["names"]},
-        "observation.images.wrist": {"dtype": "video", "shape": tuple(img), "names": ["height", "width", "channels"]},
-        "observation.images.exterior": {"dtype": "video", "shape": tuple(img), "names": ["height", "width", "channels"]},
-    }
-    if DST.exists():
-        shutil.rmtree(DST)
+    feats = features(img, info["features"]["observation.state"]["names"], info["features"]["action"]["names"])
     t0 = time.time()
-    ds = LeRobotDataset.create("local/pip_bench_pick_place", fps=info["fps"], features=feats, root=DST, robot_type=info["robot_type"], use_videos=True)
+    w = V3Writer(DST, "local/pip_bench_pick_place", info["fps"], img, robot_type=info["robot_type"], feats=feats)
     actions = []
     for ei in range(n_ep):
         df = pd.read_parquet(SRC / "data" / "chunk-000" / f"episode_{ei:06d}.parquet")
@@ -54,11 +81,10 @@ def main():
         A = np.stack(df["action"].to_numpy()).astype(np.float32)
         T = min(len(A), len(vids["wrist"]), len(vids["exterior"]))
         for t in range(T):
-            ds.add_frame({"observation.state": S[t], "action": A[t], "observation.images.wrist": vids["wrist"][t],
-                          "observation.images.exterior": vids["exterior"][t], "task": tasks[int(df["task_index"].iloc[t])]})
-        ds.save_episode()
+            w.add(S[t], A[t], vids["wrist"][t], vids["exterior"][t], tasks[int(df["task_index"].iloc[t])])
+        w.save_episode()
         actions.append(A[:T])
-    ds.finalize()
+    w.finalize()
     dt = time.time() - t0
     # independent reload with the official loader
     ds2 = LeRobotDataset("local/pip_bench_pick_place", root=DST)
