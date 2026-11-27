@@ -9,7 +9,7 @@
 | head_shell | 184 × 243 × 243 | 300 | ✅ |
 | torso_shell [1] | 195 × 210 × 230 | 314 | ✅ |
 | torso_shell [2] | 195 × 210 × 230 | 314 | ✅ |
-| upper bone | 98 × 112 × 216 | 188 | ✅ |
+| upper bone | 98 × 112 × 216 | 275 | ✅ |
 | ratchet strip [1] | 6 × 14 × 206 | 16 | ✅ |
 | ratchet strip [2] | 6 × 14 × 206 | 16 | ✅ |
 | ratchet strip [3] | 6 × 14 × 206 | 16 | ✅ |
@@ -18,9 +18,9 @@
 | dock_wing_l | 160 × 191 × 198 | 406 | ✅ |
 | clevis + yaw block | 92 × 103 × 176 | 179 | ✅ |
 | visor | 120 × 166 × 166 | 82 | ✅ |
-| shoulder bracket body | 150 × 158 × 161 | 175 | ✅ |
+| shoulder bracket body | 150 × 158 × 161 | 195 | ✅ |
 | carriage | 88 × 101 × 160 | 557 | ✅ |
-| shoulder bracket outer wall | 127 × 149 × 150 | 120 | ✅ |
+| shoulder bracket outer wall | 127 × 149 × 150 | 144 | ✅ |
 | dock_tower | 50 × 59 × 150 | 435 | ✅ |
 | e_tray | 6 × 148 × 148 | 54 | ✅ |
 | yoke | 60 × 148 × 148 | 105 | ✅ |
@@ -87,7 +87,7 @@
 | Piece | kg |
 |---|---|
 | base | 6.31 |
-| upper core | 7.64 |
-| arm (each) | 4.26 |
+| upper core | 7.72 |
+| arm (each) | 4.28 |
 | battery | 1.10 |
-| total robot | 23.58 |
+| total robot | 23.70 |

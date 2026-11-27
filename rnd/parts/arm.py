@@ -336,8 +336,9 @@ def masses(density=1.27):
     shells = {"upper bone shell + D19 bolted seat caps": upper_bone().volume + elbow_seat_cap("-").volume + elbow_seat_cap("+").volume,
               "forearm shell": forearm().volume}
     cf = {"CF tubes (neck Ø40 + forearm Ø30)": (cf_neck().volume + cf_fore().volume) / 1e6 * 1.55}
-    kxv = lambda k: kx_hub(k).volume + kx_collar(k).volume + retainer(k).volume
-    sockets = {"KX74 socket (yaw, roll.py: still KX)": kxv(KX74), f"elbow shaft + integral {E_TEETH}T": elbow_pulley_hub().volume,
+    # (2026-11-27: the yaw KX74 socket is no longer counted here: the roll track put the yaw stage on a bolted cartridge,
+    # counted in params.yaw_stage_mass; −88 g)
+    sockets = {f"elbow shaft + integral {E_TEETH}T": elbow_pulley_hub().volume,
                "wrist D24 output flange + can flange ring": hd.adapter_d().volume + hd.can_d().volume - hd.can_d_loop10_volume()}
     out = {k: v / 1e6 * density for k, v in shells.items()}
     out.update({k: v / 1e6 * density * 0.7 for k, v in sockets.items()})

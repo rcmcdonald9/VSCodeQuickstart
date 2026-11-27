@@ -56,13 +56,13 @@ _RD = ROLL_DRIVES[ROLL_DRIVE]
 ARM_MOTORS = os.environ.get("PIP_ARM_MOTORS", "gim6010")
 ARM_MOTOR_SETS = {
     "gim6010": dict(shoulder_pitch=("GIM6010-8", 3.0), elbow=("GIM6010-8", 2.0), elbow_teeth=40, elbow_belt_c=0.070,
-                    bone_mass_upper=0.90, pitch_module_mass=0.80),   # R2b last mile (2026-11-27): housing 238 → 349 g (arm.STIFF_T 4.3 + SIDE_T 2.8), 0.79 → 0.90; shoulder.masses() 0.729 → 0.791 (balancer crank + fork + spring ring, closed bracket windows), 0.76 → 0.80
+                    bone_mass_upper=0.81, pitch_module_mass=0.80),   # R2b last mile (2026-11-27): housing 238 → 349 g (arm.STIFF_T 4.3 + SIDE_T 2.8), 0.79 → 0.90, minus the yaw KX74 socket (88 g, now in the roll track's bolted yaw stage) → 0.81; shoulder.masses() 0.729 → 0.791 (balancer crank + fork + spring ring, closed bracket windows), 0.76 → 0.80
     # FROM CAD (2026-11-27, PIP_ARM_MOTORS=d20): elbow housing 98 → 109 wide (the Ø102.6 can), 12 mm taller at the top (belt centre
     # 70 → 84.0 mm, 76T belt: the can has to clear the −Y 61808 boss) and 16 mm deeper (the integral 60T), Ø50 Oldham,
     # Ø84 flange. CAD deltas over the GIM6010 set: arm.masses() 0.995 → 1.138 kg (+0.14: housing + seat caps +40 g, 60T +37 g,
     # Ø50 Oldham + Ø102.6 can +68 g), shoulder.masses() 0.758 → 0.824 kg (+0.07, Ø50 Oldham + can). Motor +8 g via act().
     "d20": dict(shoulder_pitch=("GIM8108-8", 3.0), elbow=("GIM8108-8", 3.0), elbow_teeth=60, elbow_belt_c=0.0840,
-                bone_mass_upper=0.97, pitch_module_mass=0.86),   # incl. the 5.5 mm +Y face (+35 g; no side layer beside the can)
+                bone_mass_upper=0.88, pitch_module_mass=0.86),   # incl. the 5.5 mm +Y face (+35 g; no side layer beside the can); yaw KX74 socket dropped (−88 g)
 }
 assert ARM_MOTORS in ARM_MOTOR_SETS, f"PIP_ARM_MOTORS must be one of {list(ARM_MOTOR_SETS)}"
 _AM = ARM_MOTOR_SETS[ARM_MOTORS]
