@@ -37,6 +37,7 @@ def main():
                                                       J("assembly_seq.json"), J("integration.json"), J("spacing.json"), J("harness.json"),
                                                       J("roll_inline.json"), J("slim_study.json"), J("basket.json"))
     bu = _bringup()
+    bom = J("bom.json")
     mr = min(v["m_rated"] for v in wm.values())
     mp = min(v["m_peak"] for v in wm.values())
     belt, inl = ri.get("belt", {}), ri.get("inline", {})
@@ -123,6 +124,9 @@ def main():
           "| Bought-part dimensions differ (pulley bore, Oldham disc, insert length) | a reprint | measure on arrival, set the CAD constants, "
           "then print | no |",
           "| Printed structure softer than the FEA chain (R2b fails today) | hand sag above 2 mm | stiffer shells / PETG-CF / bolted joints | no |",
+          f"| Robot BOM over budget: ${bom.get('total', 0):,.0f} landed now (limit $5,000), ${bom.get('with_d20', 0):,.0f} with D20, "
+          f"${bom.get('with_d20_inline', 0):,.0f} with both holds | the full robot needs a cost decision | the M1 parts are all reused; "
+          "the decision is the owner's (BOM_v4.md: pending decisions) | no |",
           "| Category-0 drop on the bench | a falling arm | catch cradle ≤ 50 mm under the arm, tether, remote mushroom (in Buy now) | no |",
           "", "## Day-1 plan (sw/bringup.py)", "",
           "Rehearse first: `python -m sw.bringup --bus virtual` passes today (MuJoCo bench twin, injected faults caught by sw/test_s2.py).",

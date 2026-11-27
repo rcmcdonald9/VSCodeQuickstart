@@ -14,7 +14,7 @@
 | What you're buying / relying on | Evidence (checks in this repo) | Status | Confidence | Note |
 |---|---|---|---|---|
 | Motors in Buy now: GIM6010-8 (yaw), DM-J4310 (wrist pitch), 2 × STS3215 | whole-workspace margin ≥ 1.55× rated (p95, 1 kg), ≥ 2.61× peak over every joint (spring.py); hottest winding 69 °C on a non-stop task day (thermal.py) | verified (sim / CAD check) | high (90 %) | Unchanged by either hold. Motor data are datasheet / reseller figures; the bench measures torque constant and friction (bring-up step 6). |
-| Hold A: GIM8108-8 at pitch + elbow (D20) | 20 lb hug 1.84× rated (slim_study V1); basket worst duty margin 1.50 (basket.py, D20 motors) | verified (sim / CAD check) / motor data ESTIMATE | medium (60 %) | No official datasheet; listings are 48 V nominal. **Do not buy until the seller confirms 24 V torque and speed.** Params and CAD still carry the GIM6010 (the D20 CAD follows the answer). |
+| Hold A: GIM8108-8 at pitch + elbow (D20) | 20 lb hug 1.84× rated (slim_study V1); basket worst duty margin 1.48 (basket.py, D20 motors) | verified (sim / CAD check) / motor data ESTIMATE | medium (60 %) | No official datasheet; listings are 48 V nominal. **Do not buy until the seller confirms 24 V torque and speed.** Params and CAD still carry the GIM6010 (the D20 CAD follows the answer). |
 | Hold B: inline GIM8108-36 at roll (D24 option) | dome 162.9 × 218.8 (belt) → 116.9 × 100.0 mm (inline), CAD; R14 roll row, R15, swept, basket pass inline (roll_inline.md) | measured in CAD; motor envelope + output bearing ESTIMATE | medium (65 %) | The CAD assumes Ø100 × 60 and 6 × M4 patterns; the output bearing must carry ≈ 280 N radial (rating not published). Owner OK pending. |
 | D24 bolted cartridges (sleeve Ø86.6, Ø68 flange, 6 × M4 into inserts, Oldham drive) | CAD (cartridge_m.can_bolted, belt_stage.small_stage_v3); R14 6/7 shafts assemble; torque paths 21/21 land in structure | measured in CAD | medium-high (75 %) | Flange screws ≈ 63 N each at the 11 N·m peak and the Oldham tongue ≈ 13 MPa are hand calcs (ESTIMATE): the first coupon. Roll / yaw (belt) and the lift still draw KX74 sockets in the CAD (in flight); the kit buys for all-bolted (D24). |
 | D19 one-piece shaft-pulleys + capped seats (pitch, roll, yaw, elbow) | R14 slide-on + insertion (assembly_seq.py); elbow seat caps on lugs: housing stiffness 12.1 → 10.9 mm chain | verified (sim / CAD check) | high (85 %) | Nothing to buy: printed tubes + bolted caps (inserts are in Buy now). |
@@ -42,6 +42,7 @@
 | Wrong variant delivered (48 V GIM, J4310 V1.2, 7.4 V STS3215) | wrong torque / voltage | check the listing and the label on arrival (M1_BENCH_ARM.md checks) | no |
 | Bought-part dimensions differ (pulley bore, Oldham disc, insert length) | a reprint | measure on arrival, set the CAD constants, then print | no |
 | Printed structure softer than the FEA chain (R2b fails today) | hand sag above 2 mm | stiffer shells / PETG-CF / bolted joints | no |
+| Robot BOM over budget: $5,013 landed now (limit $5,000), $5,128 with D20, $5,345 with both holds | the full robot needs a cost decision | the M1 parts are all reused; the decision is the owner's (BOM_v4.md: pending decisions) | no |
 | Category-0 drop on the bench | a falling arm | catch cradle ≤ 50 mm under the arm, tether, remote mushroom (in Buy now) | no |
 
 ## Day-1 plan (sw/bringup.py)

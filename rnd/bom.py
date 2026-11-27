@@ -37,7 +37,7 @@ def items(d=BASELINE):
     A("Wheels & power", "Regen clamp / bus discharge (A5 v2): 2 × Vishay RH-50 0.56 Ω + 2 × IRFB7530 + comparator/reference, gate driver, film caps, 85 °C thermal switch", 1, 58.0,
       "RH-50 ≈ $15 (RS 5-pack); rest ESTIMATE")
     A("Wheels & power", "DC-DC 24→12 V 10 A (head servos), 24→5 V 5 A", 1, 30.0)
-    A("Wheels & power", "D14 elbow-node power: 24→12 V 3 A buck + half-duplex TTL transceiver (one per arm)", 2, 8.0)
+    A("Wheels & power", "D14 elbow-node power: 24→12 V 6 A buck (two stalled STS3215 draw 5.4 A, Astra #16) + half-duplex TTL transceiver (one per arm)", 2, 10.0)
     A("Wheels & power", "Connectors: XT60/XT30, 2 × 6-pin pogo blocks, JST-GH/VH, wire", 1, 50.0)
     A("Compute & sensors", "Raspberry Pi 5 8 GB", 1, 0.0, "owner has one")
     A("Compute & sensors", "USB-CAN adapter, candleLight/gs_usb (FYSETC UCAN, STM32F072): A14's five channels (CAN A base + lift, two per arm); replaces the Waveshare 2-CH HAT + 3 × $35 adapters", 5, 19.0,
@@ -72,11 +72,18 @@ def items(d=BASELINE):
     A("Drive & structure", "Torque hangers: 2 × M4×10 + 2 heat-set inserts each (wheels ×4 so far)", 4, 0.6, "ESTIMATE")
     A("Drive & structure", "Elbow belt cassette: 2 × M5×30 bolts + nylocs per arm; 4 × M3 heat-set inserts + screws for the bone cap", 2, 2.0, "ESTIMATE")
     # loop 40: 13 sockets (the wheels bolt on, D17/A11; the wrist roll lost its KX44, D16); D15 screwed sockets with 6 coil springs
-    A("KX interfaces (13 sockets)", "G25 balls: 27 × Ø10 ($0.32), 6 × Ø8, 6 × Ø6", 1, 11.0, "Intech / Zoro listings")
-    A("KX interfaces (13 sockets)", "Hardened dowel pins: 50 Ø5×14, 50 Ø4×12, 50 Ø3×8 (packs)", 1, 38.0, "Zoro listings")
-    A("KX interfaces (13 sockets)", "D15 preload: 6 coil springs Ø4 × 8 per socket (assortment) + PTFE washer; 3 × M3 retainer screws + inserts", 13, 1.2, "ESTIMATE")
-    A("KX interfaces (13 sockets)", "Torque pins Ø6/Ø5/Ø4 + magnet index", 13, 0.4)
-    A("Drive & structure", "D13 small stages ×8: Ø12 h6 steel rod (2 × 300 mm), aluminium rigid flange couplings 12 mm, aluminium HTD 5M 15 mm pulleys 12 mm bore (6 × 20T, 2 × 18T)", 8, 12.0, "ESTIMATE")
+    # wave 1 (D24): the 8 arm cartridges + 2 wrist DMs bolt in, so only the lift (KX74) and head pan + tilt (KX44) keep a socket
+    A("KX interfaces (3 sockets)", "G25 balls: 3 × Ø10, 6 × Ø6", 1, 3.0, "Intech / Zoro listings, pro rata")
+    A("KX interfaces (3 sockets)", "Hardened dowel pins: 50 Ø5×14, 50 Ø3×8 (packs; also the yaw stop pins and ferrule dowels need Ø6, below)", 1, 25.0, "Zoro listings (2 of the 3 packs)")
+    A("KX interfaces (3 sockets)", "D15 preload: 6 coil springs Ø4 × 8 per socket (assortment) + PTFE washer; 3 × M3 retainer screws + inserts", 3, 1.2, "ESTIMATE")
+    A("KX interfaces (3 sockets)", "Torque pins Ø6/Ø5/Ø4 + magnet index (KX cartridges: 4 wheels, lift, head ×2)", 7, 0.4)
+    A("Drive & structure", "Dowels Ø6 × 10–12: yaw hard-stop pins + KX-V ferrule dowels (3 per arm)", 1, 6.0, "ESTIMATE")
+    A("Drive & structure", "D13 v3 small stages ×8: Ø12 h6 steel rod (2 × 300 mm), aluminium HTD 5M 15 mm pulleys 12 mm bore (6 × 20T, 2 × 18T)", 8, 9.0, "ESTIMATE")
+    A("Drive & structure", "D24 Oldham couplings: D40, 12 mm clamp hub + acetal disc (one per arm GIM stage; the motor-side tongue adapter is printed)", 8, 12.0,
+      "ESTIMATE generic D40; Ruland MOCT41-12-A $55.20 at Motion")
+    A("Drive & structure", "D24/D19 heat-set inserts: 2 × 100 M4 short (≈ 51 per arm: flanges 6 each, seat caps, yaw flange + plate, outer wall, pitch hub) + 100 M3 (≈ 45 per arm: cap rims, forearm rim, palm, bone cap)", 1, 2 * 15.93 + 12.0,
+      "Newark M4 brass $15.93 / 100; M3 ESTIMATE")
+    A("Drive & structure", "D24 flange screws: 70 × M4 × 12 countersunk ISO 10642 (6 per bolted cartridge × 10 + spares)", 1, 10.0, "ESTIMATE")
     A("Drive & structure", "Wheel hubs bolted to the GIM output (D17/A11: no KX on the wheels): 4 × M4 per wheel", 4, 0.8, "ESTIMATE")
     A("Drive & structure", "Chassis ring (A11): 3 mm 6061 laser-cut ring tying the 4 deck quarters", 1, 40.0, "ESTIMATE (SendCutSend class)")
     A("Drive & structure", "Anti-tip casters (D18/A10): spring-loaded ball transfer units at the 4 diagonals", 4, 4.0, "ESTIMATE")
@@ -88,7 +95,7 @@ def items(d=BASELINE):
     A("Drive & structure", '3" quick-release squeeze tri-clamp, 304 SS (arm detach; flange OD 90.9 mm confirmed)', 2, 25.0, "hosewarehouse (Dixon 13MHHM-Q300)")
     A("Drive & structure", "Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards", 1, 35.0, "ESTIMATE")
     A("Drive & structure", "Balancers (A9): ISO 10243 green die spring Ø25/Ø12.5 × 115, 18.7 N/mm (Berger Tools V25-115 / Accu TJL25-115) + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
-    A("Drive & structure", "Fasteners, heat-set inserts, epoxy, grease", 1, 60.0)
+    A("Drive & structure", "Fasteners (other), heat-set inserts (base, torso, head), epoxy, grease", 1, 60.0)
     n10 = math.ceil(pp["kg"] * 1.2 / 10)                       # loop 47: 10 kg bundles instead of $20/kg single spools
     A("Printed parts", f"PETG {pp['kg']:.1f} kg + 20 % spare (print_plan.md): {n10} × Elegoo PETG Pro 10 kg bundle", n10, 109.99,
       "us.elegoo.com PETG Pro 10 kg $109.99 (2026-11; list $140)")
@@ -101,9 +108,26 @@ BEST_PRICE = {"GIM6010-8": (90.0, "aifitlab $90 with SDC104 driver (actuators.ya
               "DM-J4310-2EC_V1.1": (150.0, "Robotics Center $150 in stock (2026-11-27); AIFit $125 backordered")}
 
 CONTINGENCY = 0.15      # A16 (review finding 18): price drift, shipping, tax
+WAVE1_BEFORE = 4898.0   # landed total after the loop-47 cost pass (bom.json before wave 1)
+HOLDS = {}
+
+
+def _sd(x):
+    return f"{'+' if x >= 0 else '−'}${abs(x):,.0f}"
+
+
+def holds():
+    """Robot-wide deltas (with contingency) of the M1 kit's two holds (rnd/m1_kit.py prices), both arms."""
+    from . import m1_kit as k
+    c = 1 + CONTINGENCY
+    a = k.line_sum
+    return dict(d20=2 * (a(k.HOLD_A["yes"]) - a(k.HOLD_A["no"])) * c, d20_hi=2 * k.HOLD_A["hi"]() * c,
+                inline=2 * (a(k.HOLD_B["yes"]) - a(k.HOLD_B["no"])) * c, inline_hi=2 * k.HOLD_B["hi"]() * c)
 
 
 def report(d=BASELINE):
+    HOLDS.update(holds())
+    pp = json.loads((DOCS / "print_plan.json").read_text()) if (DOCS / "print_plan.json").exists() else {"kg": 10.4}
     I = items(d)
     sub = sum(q * u for _, _, q, u, _ in I)
     I.append(("Contingency (A16)", f"{CONTINGENCY:.0%} for price drift, shipping and tax", 1, round(sub * CONTINGENCY, 0), "review finding 18"))
@@ -118,7 +142,19 @@ def report(d=BASELINE):
          "- Savings (−$290 landed): PETG in 10 kg bundles ($333 → $220); five $19 candleLight USB-CAN adapters in place of the CAN HAT + three $35 adapters "
          "($152 → $95); one USB-TTL adapter instead of three (the D14 nodes drive the buses); no separate balance charger (the dock's CC/CV charger + the BMS's active "
          "balancing do the weekly 4.20 V charge, A13); GIM6010-8 at the verified $90, DM-J4310 at $150 in stock, RPLIDAR C1 at $69.",
-         f"- Result: **${tot:,.0f}**, under the $5,000 limit; the $4,000 target would need the motor or sensor choices reopened.", "",
+         "- Result: **$4,898**, under the $5,000 limit; the $4,000 target would need the motor or sensor choices reopened.", "",
+         f"**Wave 1 (D24 bolted cartridges, D19 one-piece shafts; 2026-11-27): ${WAVE1_BEFORE:,.0f} → ${tot:,.0f} landed.** The arm's 10 KX sockets go "
+         "(balls, dowel packs, springs, torque pins: −$35 of lines); in: 8 Oldham couplings ($96; the spare acetal rod is an M1 bench item), heat-set inserts ($44), flange "
+         "screws ($10), Ø6 dowels for the yaw stops and ferrules ($6); the D13 flange couplings go (−$24); D14 buck 3 → 6 A (+$4); PETG from the "
+         f"re-sliced print plan ({pp['kg']:.1f} kg). **{_sd(tot - 5000)} against the $5,000 limit.** The largest new line is the 8 Oldham "
+         "couplings at a $12 ESTIMATE (no sourced generic D40 price yet); each $1 there is $9 landed, so a sourced ≤ $10 coupling brings "
+         "the total back under the limit.", "",
+         "**Pending decisions (not in the total; the M1 kit's holds, robot-wide, with contingency):**",
+         f"- **D20 GIM8108-8 at shoulder pitch + elbow** (waits on the seller's 24 V answer): 4 × GIM6010-8 → 4 × GIM8108-8: "
+         f"**{_sd(HOLDS['d20'])}** (up to {_sd(HOLDS['d20_hi'])} at the dearest listing) → ${tot + HOLDS['d20']:,.0f}.",
+         f"- **D24 inline GIM8108-36 at shoulder roll** (owner OK + drawing): per arm a GIM6010-8 + the belt-roll parts → a GIM8108-36 + 61806: "
+         f"**{_sd(HOLDS['inline'])}** (up to {_sd(HOLDS['inline_hi'])}) → both: ${tot + HOLDS['d20'] + HOLDS['inline']:,.0f}.",
+         "- Prices: [M1_BENCH_ARM.md](../M1_BENCH_ARM.md) (GIM8108-8 ≈ $115, GIM8108-36 ≈ $215: ESTIMATE within the listings' ranges).", "",
          "| Category | Subtotal |", "|---|---|"] + [f"| {c} | ${v:,.0f} |" for c, v in cats.items()] + [
          "", "| Category | Item | Qty | Unit $ | Line $ | Source |", "|---|---|---|---|---|---|"]
     L += [f"| {c} | {n} | {q} | {u:,.2f} | {q * u:,.0f} | {s} |" for c, n, q, u, s in I]
@@ -128,5 +164,5 @@ def report(d=BASELINE):
 if __name__ == "__main__":
     md, tot = report()
     (DOCS / "BOM_v4.md").write_text(md)
-    (DOCS / "bom.json").write_text(json.dumps({"total": tot}))
+    (DOCS / "bom.json").write_text(json.dumps({"total": tot, "with_d20": tot + HOLDS["d20"], "with_d20_inline": tot + HOLDS["d20"] + HOLDS["inline"]}))
     print(md[:1500])
