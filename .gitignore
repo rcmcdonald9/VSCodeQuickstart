@@ -6,3 +6,4 @@ sw/out/
 rnd/out/check_logs/
 .claude/worktrees/
 rnd/out/asm_cmp_*
+docs/review/*/packet.md

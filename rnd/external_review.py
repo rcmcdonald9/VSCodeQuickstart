@@ -12,12 +12,12 @@ if STAMP.exists():
 R = Path(__file__).resolve().parent.parent
 OUT = Path(sys.argv[1])
 docs = ["docs/rnd/SCORECARD.md", "docs/RND_PLAN.md", "docs/rnd/confidence.md", "docs/rnd/BOM_v4.md", "docs/rnd/electrical.md",
-        "docs/rnd/fea.md", "docs/rnd/integration.md", "docs/rnd/harness.md", "docs/rnd/kx.md", "docs/rnd/kx_mc.md", "docs/rnd/mc.md",
-        "docs/rnd/threshold_mc.md", "docs/rnd/dock_sim.md", "docs/rnd/thermal.md", "docs/rnd/belts.md", "docs/rnd/spring.md",
+        "docs/rnd/fea.md", "docs/rnd/integration.md", "docs/rnd/harness.md", "docs/rnd/mc.md",
+        "docs/rnd/thermal.md", "docs/rnd/belts.md", "docs/rnd/spring.md",
         "docs/rnd/twin.md", "docs/rnd/sim.md", "docs/rnd/assembly.md", "docs/BUILD_v4.md", "docs/COUPONS.md",
         "docs/rnd/joints.md", "docs/rnd/stiffness.md", "docs/rnd/pinch.md", "docs/rnd/assembly_seq.md", "docs/rnd/roll_inline.md",
         "docs/M1_BENCH_ARM.md", "docs/M1_READINESS.md", "docs/review/fable_review_2026-11-27.md", "docs/sw/sim2real_bench.md"]
-code = ["rnd/params.py", "sw/safety.py", "sw/collision.py"] + sorted(str(p.relative_to(R)) for p in (R / "rnd/parts").glob("*.py"))
+code = ["rnd/params.py", "sw/safety.py", "sw/collision.py"] + [f"rnd/parts/{n}.py" for n in ("roll", "shoulder", "arm", "cartridge_m", "belt_stage", "hand")]   # arm focus (the M1 buy); the full set made a 622 kB packet → HTTP 502
 packet = ["# Pip v4: design-review packet", "",
           "A general-purpose home utility robot: an omni base, a lift on a mast, two 6-DOF arms with parallel grippers, and a head with a 7\" face screen. "
           "It is 3D-printed (PETG / ASA / PETG-CF) on a Bambu P2S (256 mm bed) around off-the-shelf actuators: SteadyWin GIM6010-8 on belt stages, an inline "
