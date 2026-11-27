@@ -17,55 +17,55 @@ limit are what the safety supervisor allows (sw/safety.py is read, not copied): 
 LOAD_WS and base_accel_limit(); at or under LOAD_KG the arms may be straight out at shoulder height, lift mid (the old
 worst pose). Target: reserve ≥ 30 mm in every case (twin v1 dynamic rule); R12 keeps its own 50 mm static rule.
 
-**Result: worst reserve 35 mm, 16/16 cases ≥ 30 mm with the A10 v2 hardware and the requested supervisor rules (SW-T1/T2 below); 8/16 (worst -34 mm) with the rules sw/safety.py enforces today.** Before: loop 40's reading -85 mm (6/16; the review quoted the older −102 mm); the same hardware read honestly (D18 take-up, all headings, today's rules) -121 mm (6/16).
+**Result: worst reserve 33 mm, 16/16 cases ≥ 30 mm with the A10 v2 hardware and the requested supervisor rules (SW-T1/T2 below); 8/16 (worst -36 mm) with the rules sw/safety.py enforces today.** Before: loop 40's reading -85 mm (6/16; the review quoted the older −102 mm); the same hardware read honestly (D18 take-up, all headings, today's rules) -121 mm (6/16).
 
 ## What changed (A10 v2)
 
-1. **Mass low in the base.** The battery already sat on the belly (z ≈ 33–98 mm). The A5 v2 power stage (contactor, pre-charge, clamp plate, bulk cap: 0.75 kg, ESTIMATE) was in no budget; it now sits on the belly in the front-right sector (`base.power_board`). **Removable steel ballast: 2 × 2.45 kg** (100 × 60 × 52 mm blocks, FROM CAD) in the two rear sectors at z 28–80 mm, lifted out through two deck hatches once the upper core is off (no tools). R3: base module 7.7 kg (≤ 8 target, 10 piece limit), each ballast block 2.45 kg as its own carry piece (≤ 10); robot 24.8 → 31.0 kg (twin). Moving mass *down* barely matters here (the braking term is h·a/g: 0.3 m/s² × 0.05 m = 1.5 mm); what the ballast buys is **mass** (the push term F·H/(M g) falls 124 → 99 mm) and, sitting at the rear, a COM that starts 33 → 11 mm ahead of the centre with the arms parked, so a forward load has more room.
+1. **Mass low in the base.** The battery already sat on the belly (z ≈ 33–98 mm). The A5 v2 power stage (contactor, pre-charge, clamp plate, bulk cap: 0.75 kg, ESTIMATE) was in no budget; it now sits on the belly in the front-right sector (`base.power_board`). **Removable steel ballast: 2 × 2.45 kg** (102 × 43 × 71 mm blocks, FROM CAD: 4.89 kg) in the two rear sectors at z 31–102 mm, sitting in printed cradles, lifted out through two deck hatches once the upper core is off (no tools). R3: base module 7.7 kg (≤ 8 target, 10 piece limit), each ballast block 2.45 kg as its own carry piece (≤ 10); robot 24.8 → 31.0 kg (twin). Moving mass *down* barely matters here (the braking term is h·a/g: 0.3 m/s² × 0.05 m = 1.5 mm); what the ballast buys is **mass** (the push term F·H/(M g) falls 124 → 99 mm) and, sitting at the rear, a COM that starts 33 → 13 mm ahead of the centre with the arms parked, so a forward load has more room.
 2. **Support polygon: not widened.** R5's 70 cm door is set by the arms, not the base: folded, the shoulders and forearms span 0.70–0.78 m (twin CAD hulls, tuck poses; ≥ 0.65 m even at −15° roll), so the door rule is already the arm owner's problem (flagged). A wider base would not change the door fit but would push the base edge into the R1 floor targets (x ≥ 0.30 m from the centre) and the counter approach, and the wheels at r 0.21 m already reach the Ø50 cm shell (wheel faces at r 0.233). The 4 casters are what widens the polygon (diamond → octagon), and only once they carry load.
 3. **Casters D18 → D18b.** D18's ball transfers rode on a 5 N spring with a hard stop after 5 mm: they carry nothing until the base has tilted 4.0° about the wheel edge (COM ≈ 36 mm outward first), and a 5 mm stroke can't clear a 15 mm threshold, and at the D2b 45° heading a caster is the leading point (review finding 4). D18b: a 2" (Ø50.8) steel ball transfer at r 205 mm on a printed guide with **22 mm of float** on a 5 N spring, and a **spring-applied one-way rod lock** (caulk-gun plate on a Ø8 steel rod) released by a 24 V pull solenoid. Locked, it can follow the floor down but not be pushed up, so it is a rigid support after the lock's take-up (1.0 mm, ESTIMATE → 1.0°); released, it floats over a 15 mm threshold (the ball's contact is below its equator for steps < 25 mm; ≈ 2.2 × the 5–10 N spring force to climb). Locked casters carry only their 5 N preload at rest (20 N of ≈ 300 N off the wheels).
 4. **Planner rules last** (below): the 8 push cases need SW-T1, the casters need SW-T2, the ballast's R4 cost needs SW-T4; the rest is enforced today.
 
 | Load | Load COM | Braking | Push 30 N @ 1 m | Pose (rules) | Decel m/s² | COM offset mm | h m | ZMP shift mm | Loop 40 reading | Before, honest | A10 v2, SW today | **A10 v2 + SW-T1/T2** | worst heading |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1.0 kg | 0° |  |  | straight | 0.0 | 84 | 0.43 | 0 | 82 ✅ | 61 ✅ | 107 ✅ | **107 ✅** | 336° |
-| 1.0 kg | 0° | yes |  | straight | 1.0 | 84 | 0.43 | 44 | 57 ✅ | 8 ❌ | 63 ✅ | **63 ✅** | 336° |
-| 1.0 kg | 0° |  | yes | box_person | 0.0 | 44 | 0.41 | 96 | -31 ❌ | -58 ❌ | 11 ❌ | **49 ✅** | 336° |
-| 1.0 kg | 0° | yes | yes | box_person | 0.1 | 44 | 0.41 | 100 | -55 ❌ | -110 ❌ | -32 ❌ | **44 ✅** | 336° |
-| 1.0 kg | 45° |  |  | straight | 0.0 | 84 | 0.43 | 0 | 87 ✅ | 51 ✅ | 105 ✅ | **105 ✅** | 66° |
-| 1.0 kg | 45° | yes |  | straight | 1.0 | 84 | 0.43 | 44 | 63 ✅ | -2 ❌ | 61 ✅ | **61 ✅** | 66° |
-| 1.0 kg | 45° |  | yes | box_person | 0.0 | 44 | 0.41 | 96 | -20 ❌ | -68 ❌ | 10 ❌ | **48 ✅** | 66° |
-| 1.0 kg | 45° | yes | yes | box_person | 0.1 | 44 | 0.41 | 100 | -44 ❌ | -121 ❌ | -34 ❌ | **43 ✅** | 66° |
-| 2.5 kg | 0° |  |  | box | 0.0 | 73 | 0.39 | 0 | 47 ✅ | 78 ✅ | 118 ✅ | **118 ✅** | 336° |
-| 2.5 kg | 0° | yes |  | box | 0.3 | 66 | 0.56 | 17 | 21 ❌ | 58 ✅ | 104 ✅ | **104 ✅** | 336° |
-| 2.5 kg | 0° |  | yes | box_person | 0.0 | 58 | 0.41 | 91 | -59 ❌ | -34 ❌ | 27 ❌ | **40 ✅** | 336° |
-| 2.5 kg | 0° | yes | yes | box_person | 0.1 | 58 | 0.41 | 95 | -85 ❌ | -54 ❌ | 13 ❌ | **36 ✅** | 336° |
-| 2.5 kg | 45° |  |  | box | 0.0 | 73 | 0.39 | 0 | 53 ✅ | 62 ✅ | 117 ✅ | **117 ✅** | 66° |
-| 2.5 kg | 45° | yes |  | box | 0.3 | 66 | 0.56 | 17 | 29 ❌ | 41 ✅ | 103 ✅ | **103 ✅** | 66° |
-| 2.5 kg | 45° |  | yes | box_person | 0.0 | 58 | 0.41 | 91 | -48 ❌ | -50 ❌ | 25 ❌ | **39 ✅** | 66° |
-| 2.5 kg | 45° | yes | yes | box_person | 0.1 | 58 | 0.41 | 95 | -72 ❌ | -71 ❌ | 11 ❌ | **35 ✅** | 66° |
+| 1.0 kg | 0° |  |  | straight | 0.0 | 86 | 0.43 | 0 | 82 ✅ | 61 ✅ | 105 ✅ | **105 ✅** | 336° |
+| 1.0 kg | 0° | yes |  | straight | 1.0 | 86 | 0.43 | 44 | 57 ✅ | 8 ❌ | 61 ✅ | **61 ✅** | 336° |
+| 1.0 kg | 0° |  | yes | box_person | 0.0 | 46 | 0.41 | 96 | -31 ❌ | -58 ❌ | 10 ❌ | **47 ✅** | 336° |
+| 1.0 kg | 0° | yes | yes | box_person | 0.1 | 46 | 0.41 | 100 | -55 ❌ | -110 ❌ | -34 ❌ | **43 ✅** | 336° |
+| 1.0 kg | 45° |  |  | straight | 0.0 | 86 | 0.43 | 0 | 87 ✅ | 51 ✅ | 103 ✅ | **103 ✅** | 66° |
+| 1.0 kg | 45° | yes |  | straight | 1.0 | 86 | 0.43 | 44 | 63 ✅ | -2 ❌ | 59 ✅ | **59 ✅** | 66° |
+| 1.0 kg | 45° |  | yes | box_person | 0.0 | 46 | 0.41 | 96 | -20 ❌ | -68 ❌ | 8 ❌ | **46 ✅** | 66° |
+| 1.0 kg | 45° | yes | yes | box_person | 0.1 | 46 | 0.41 | 100 | -44 ❌ | -121 ❌ | -36 ❌ | **42 ✅** | 66° |
+| 2.5 kg | 0° |  |  | box | 0.0 | 75 | 0.40 | 0 | 47 ✅ | 78 ✅ | 117 ✅ | **117 ✅** | 336° |
+| 2.5 kg | 0° | yes |  | box | 0.3 | 68 | 0.56 | 17 | 21 ❌ | 58 ✅ | 102 ✅ | **102 ✅** | 336° |
+| 2.5 kg | 0° |  | yes | box_person | 0.0 | 60 | 0.41 | 91 | -59 ❌ | -34 ❌ | 25 ❌ | **39 ✅** | 336° |
+| 2.5 kg | 0° | yes | yes | box_person | 0.1 | 60 | 0.41 | 96 | -85 ❌ | -54 ❌ | 11 ❌ | **34 ✅** | 336° |
+| 2.5 kg | 45° |  |  | box | 0.0 | 75 | 0.40 | 0 | 53 ✅ | 62 ✅ | 115 ✅ | **115 ✅** | 66° |
+| 2.5 kg | 45° | yes |  | box | 0.3 | 68 | 0.56 | 17 | 29 ❌ | 41 ✅ | 101 ✅ | **101 ✅** | 66° |
+| 2.5 kg | 45° |  | yes | box_person | 0.0 | 60 | 0.41 | 91 | -48 ❌ | -50 ❌ | 24 ❌ | **37 ✅** | 24° |
+| 2.5 kg | 45° | yes | yes | box_person | 0.1 | 60 | 0.41 | 96 | -72 ❌ | -71 ❌ | 10 ❌ | **33 ✅** | 66° |
 
-Columns: *loop 40 reading* = the old tip.py (rigid D18, both arms straight out, 0.5 m/s², along the load direction only); *before, honest* = the same hardware with D18's 5 mm take-up, every heading and the supervisor's real limits (1 kg: arms straight out allowed, 1.0 m/s²; 2.5 kg: load box, 0.3 m/s²); *A10 v2* = power board + ballast + locked D18b casters. Without the ballast blocks (A10 v2 + rules): worst -7 mm, 6/16.
+Columns: *loop 40 reading* = the old tip.py (rigid D18, both arms straight out, 0.5 m/s², along the load direction only); *before, honest* = the same hardware with D18's 5 mm take-up, every heading and the supervisor's real limits (1 kg: arms straight out allowed, 1.0 m/s²; 2.5 kg: load box, 0.3 m/s²); *A10 v2* = power board + ballast + locked D18b casters. Without the ballast blocks (A10 v2 + rules): worst -10 mm, 6/16.
 
-**Push that tips the robot, arms parked, 1.0 m up, worst heading:** 30 N before (wheels only) → 53 N (A10 v2, casters locked).
+**Push that tips the robot, arms parked, 1.0 m up, worst heading:** 30 N before (wheels only) → 52 N (A10 v2, casters locked).
 
 ## Sensitivity (A10 v2 + rules): worst reserve / cases ≥ 30 mm
 
 | Ballast | lock take-up 0.5 mm | 1.0 mm | 2.0 mm |
 |---|---|---|---|
-| 0.00 kg | -3 mm, 6/16 | -7 mm, 6/16 | -16 mm, 6/16 |
-| 2.45 kg | 19 mm, 10/16 | 15 mm, 8/16 | 8 mm, 8/16 |
-| 4.90 kg | 39 mm, 16/16 | 35 mm, 16/16 | 28 mm, 14/16 |
+| 0.00 kg | -6 mm, 6/16 | -10 mm, 6/16 | -18 mm, 6/16 |
+| 2.45 kg | 17 mm, 9/16 | 13 mm, 8/16 | 6 mm, 8/16 |
+| 4.90 kg | 37 mm, 16/16 | 33 mm, 16/16 | 26 mm, 13/16 |
 
 ## Other modes (A10 v2, requested rules)
 
 | Mode | Mass kg | Reserve | |
 |---|---|---|---|
-| No load, arms parked, transit (casters released, > 0.3 m/s allowed), braking 1.0 m/s², no person within reach | 31.0 | 102 mm at 316° | ✅ |
-| No load, arms parked, person within reach: ≤ 0.1 m/s → casters locked, braking 0.1 m/s² + 30 N push | 31.0 | 72 mm at 336° | ✅ |
-| Threshold crossing (D2b, casters released) with 2.5 kg in the load box, braking 0.3 m/s², no person within reach | 33.5 | 85 mm at 44° | ✅ |
-| R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s², no person within reach | 40.1 | 45 mm at 336° | ✅ |
-| R2d basket 9.07 kg, person within reach: held at x ≤ 0.35 m, z ≤ 0.60 m, braking 0.1 m/s² + 30 N push | 40.1 | 7 mm at 336° | ❌ (rule: not allowed) |
+| No load, arms parked, transit (casters released, > 0.3 m/s allowed), braking 1.0 m/s², no person within reach | 31.0 | 99 mm at 314° | ✅ |
+| No load, arms parked, person within reach: ≤ 0.1 m/s → casters locked, braking 0.1 m/s² + 30 N push | 31.0 | 70 mm at 336° | ✅ |
+| Threshold crossing (D2b, casters released) with 2.5 kg in the load box, braking 0.3 m/s², no person within reach | 33.5 | 83 mm at 314° | ✅ |
+| R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s², no person within reach | 40.1 | 42 mm at 336° | ✅ |
+| R2d basket 9.07 kg, person within reach: held at x ≤ 0.35 m, z ≤ 0.60 m, braking 0.1 m/s² + 30 N push | 40.1 | 5 mm at 336° | ❌ (rule: not allowed) |
 
 ## R4 cost of the mass (rnd/threshold.py's roller model re-run at each mass and COM height, 15 mm, 45°, hard floor + carpet)
 
@@ -77,8 +77,8 @@ Columns: *loop 40 reading* = the old tip.py (rigid D18, both arms straight out, 
 
 ## Supervisor rule changes for the software owner (sw/safety.py is read-only here)
 
-- **SW-T1 person within reach:** When perception reports a person within reach (≈ 1 m), the supervisor caps the base at ≤ 0.1 m/s and ≤ 0.1 m/s² (`base_accel_limit()` → A_PERSON) and rejects hand targets outside LOAD_WS whatever the payload, with x ≤ 0.35 m and z ≤ 0.60 m (the arms come in and the lift goes down first). A push can only come from a person, so the 8 push cases are evaluated under this rule. With the R2d basket (> 2.5 kg) the base stops and the basket is set down before the person is within reach. sw/safety.py has no person input today.
-- **SW-T2 caster lock (D18b):** Casters stay locked (solenoids off, spring-applied, so an e-stop or power loss locks them) except in two planner modes: (a) a threshold or rug crossing (D2b: 45°, ≤ 0.15 m/s), started only with no person within reach; (b) unloaded transit with the arms parked above 0.3 m/s. Release pulse (≈ 100 ms) at every stop and every 0.3 m of locked travel so a lock never ratchets down into a floor dip and lifts a wheel. Needs a caster-lock output and a `casters_locked` state the base planner checks before moving.
+- **SW-T1 person within reach:** `Supervisor.set_person_near(bool)`: when perception reports a person within reach (≈ 1 m), the supervisor caps the base at ≤ 0.1 m/s and ≤ 0.1 m/s² (`base_accel_limit()` → A_PERSON) and rejects hand targets outside LOAD_WS whatever the payload, with x ≤ 0.35 m and z ≤ 0.60 m (the arms come in and the lift goes down first). A push can only come from a person, so the 8 push cases are evaluated under this rule. With the R2d basket (> 2.5 kg) the base stops and the basket is set down before the person is within reach. sw/safety.py has no person input today.
+- **SW-T2 caster lock (D18b):** Casters stay locked (solenoids off, spring-applied, so an e-stop or power loss locks them) except in two planner modes: (a) a threshold or rug crossing (D2b: 45°, ≤ 0.15 m/s), started only with no person within reach; (b) unloaded transit with the arms parked above 0.3 m/s. Release pulse (≈ 100 ms) at every stop and every 0.3 m of locked travel so a lock never ratchets down into a floor dip and lifts a wheel. Needs a caster-lock output and a `Supervisor.casters_locked()` state the base planner checks before moving. rnd/tip.py counts SW-T1/T2 as enforced (scorecard gate) once `set_person_near` and `casters_locked` exist in sw/safety.py.
 - **SW-T4 threshold speed (D2b):** Cross thresholds at ≤ 0.12 m/s (was 0.15): with the ballast the roller model's 15 mm peak rises to the 1.45× margin at 0.15 m/s; 0.12 m/s restores ≥ 1.5× (table above). A planner value, not in sw/safety.py; threshold_mc should be re-run over 0.10–0.14 m/s.
 - **SW-T3 keep:** Keep LOAD_KG 1.0 kg, LOAD_WS x ≤ 0.45 m / z ≤ 0.80 m and the 0.3 m/s² load-mode cap: the cases below rely on them (they are enforced today). `load_heading_ok()` (±20° of a wheel) is not called anywhere and is not needed with D18b (the 45° cases pass).
 

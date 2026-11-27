@@ -5,11 +5,11 @@
 | Piece | Best-fit size (mm) | Volume (cm³) | Fits |
 |---|---|---|---|
 | skirt quarter | 124 × 250 × 250 | 96 | ✅ |
-| deck quarter | 6 × 246 × 246 | 269 | ✅ |
-| cover belly_2 | 2 × 246 × 246 | 81 | ✅ |
-| cover belly_0 | 2 × 246 × 246 | 81 | ✅ |
-| cover belly_1 | 2 × 246 × 246 | 81 | ✅ |
-| cover belly_3 | 2 × 246 × 246 | 81 | ✅ |
+| deck quarter | 6 × 246 × 246 | 259 | ✅ |
+| cover belly_2 | 2 × 246 × 246 | 74 | ✅ |
+| cover belly_0 | 2 × 246 × 246 | 74 | ✅ |
+| cover belly_1 | 2 × 246 × 246 | 74 | ✅ |
+| cover belly_3 | 2 × 246 × 246 | 74 | ✅ |
 | head_shell | 184 × 243 × 243 | 294 | ✅ |
 | upper bone | 98 × 112 × 233 | 280 | ✅ |
 | torso_shell [1] | 180 × 195 × 230 | 293 | ✅ |
@@ -114,8 +114,8 @@
 
 | Piece | kg |
 |---|---|
-| base | 6.31 |
+| base | 7.66 |
 | upper core | 8.50 |
 | arm (each) | 4.68 |
 | battery | 1.10 |
-| total robot | 25.26 |
+| total robot | 26.61 |
