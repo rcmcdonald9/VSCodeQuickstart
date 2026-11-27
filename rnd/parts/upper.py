@@ -87,15 +87,27 @@ def lift_mount(z, zc):
     return m
 
 
+LIFT_COVER_TOP = Z_BASE + 175.0     # D23/R17 lift cover top: the static belt duct (rnd/parts/covers.py) stands on it
+
+
 def lift_cover() -> Part:
-    """Looks pass v2: rounded cover over the lift cartridge, pulley and mount at the mast foot (slot for the belt)."""
-    x0, x1, y0, y1, z0, z1 = -194.0, -91.0, -91.0, 36.0, Z_BASE + 41, Z_BASE + 172      # y0 −88 → −91: clears the torque-pin tip (loop 20)
-    c = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 30, 22, 2.0)
-    c -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 + 2, y1 - y0 + 2, 6)      # open bottom
-    c -= Pos(MAST_X - W / 2 - 34, -2, z1) * Box(26, 22, 10)                           # belt slot
-    c -= Pos(x1, (y0 + y1) / 2, (z0 + z1) / 2) * Box(36, y1 - y0 + 4, z1 - z0 + 4)       # open against the mast / mount face
+    """R17 v3 (was the looks-pass v2, open below and toward the mast): closed PETG enclosure round the lift cartridge,
+    20T pulley, belt end and mount. Down to 3 mm off the deck (notched 3 mm round the mast coupling), a front wall
+    round the mount and ratchet strip (1 mm), a top plate that takes the belt duct. Slides on from behind over the
+    mount, then the duct drops in from above; 4 × M3 into inserts in the deck. ≈ 107 × 139 × 172 mm, one print."""
+    x0, x1, y0, y1, z0, z1 = -198.0, -91.0, -95.0, 44.0, Z_BASE + 3, LIFT_COVER_TOP     # y0: clears the torque-pin tip (loop 20)
+    c = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 30, 6, 2.2)
+    from .base import coupling
+    cb = coupling()[0].bounding_box()
+    c -= Pos(cb.center().X, cb.center().Y, cb.center().Z) * Box(cb.size.X + 6, cb.size.Y + 6, cb.size.Z + 6)   # 3 mm round the coupling
     zl = Z_BASE + 40 + 70
-    c -= lift_mount(zl, cm.stack_height())                                            # loop 31: no overlap with the mount it covers
+    c -= lift_mount(zl, cm.stack_height())                                            # the mount fills the front-wall notch
+    rb = ratchet_strip().bounding_box()
+    c -= Pos(rb.center().X + 4, rb.center().Y, z1) * Box(rb.size.X + 2 + 8, rb.size.Y + 2, 40)   # ratchet strip (open to the front)
+    xb, tb, wb = MAST_X - W / 2 - 50 + 16, 3.6, 15.0
+    c -= Pos(xb, -2, z1) * Box(tb + 8 + 4.4 + 0.4, wb + 8 + 4.4 + 0.4, 6)            # seat for the belt duct
+    for sx, sy in ((x0 + 12, y0 + 12), (x0 + 12, y1 - 12), (x1 - 12, y0 + 12), (x1 - 12, y1 - 12)):
+        c -= Pos(sx, sy, z0) * Cylinder(1.7, 12)
     return c
 
 

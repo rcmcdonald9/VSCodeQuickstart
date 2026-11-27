@@ -54,7 +54,7 @@ def build(lift=None, poses=None, covers=False):
             out.append((f"{side}_roll_{n}", piv * mir(p), c))
         for n, p, c in arm.assembly(elbow_deg=P["elbow"], wrist_deg=P["wrist"]):
             out.append((f"{side}_arm_{n}", piv * mir(Pos(0, roll.ROLL_Y, -roll.YAW_DROP) * p), c))
-        if covers:                                                         # D23 concept covers (render only until rnd/pinch.py checks them)
+        if covers:                                                         # D23 covers (rnd/parts/covers.py; checked by rnd/pinch.py)
             from . import covers as cv
             for n, p, c in cv.roll_frame():
                 out.append((f"{side}_roll_{n}", piv * mir(p), c))
@@ -68,7 +68,7 @@ def build(lift=None, poses=None, covers=False):
                 out.append((f"{side}_arm_{n}", piv * mir(fe * p), c))
     if covers:
         from . import covers as cv
-        out += cv.mast_bellows(lift_mm, upper.Z_BASE + 40 + 172, upper.Z_TOP, upper.MAST_X, upper.W)
+        out += cv.lift_covers(lift_mm) + cv.base_frame()                  # torso collars + spine pod (ride the lift), mast cap, belt duct, belly pan
     return out
 
 

@@ -34,9 +34,11 @@ def printed_parts():
               "roll link": roll.roll_link(), "roll shaft": roll.roll_shaft(), "clevis + yaw block": roll.clevis_and_yaw_block(), "yaw shaft": roll.yaw_shaft(),
               "carriage": upper.carriage(750), "ratchet strip": upper.ratchet_strip(),
               **{n: p for n, p, c in upper.torso(750) if n in ("torso_shell", "e_tray")},
-              **{n: p for n, p, c in upper.head() if n in ("head_bracket", "handle", "yoke", "head_shell", "visor")},
+              **{n: p for n, p, c in upper.head() if n in ("head_bracket", "handle", "yoke", "head_shell", "visor", "head_pivot_stub", "head_drive_stub")},
               "deck quarter": base.deck_quarter(0), "skirt quarter": base.skirt_quarter(0), "wheel pod": base.pod(),
               "wheel shaft": base.wheel_shaft(), **{n: p for n, p, c in __import__("rnd.parts.dock", fromlist=["parts"]).parts() if n in ("dock_wing_l", "dock_tower")}, "torque hanger (wheel)": base.torque_hanger_pose(0), "mast coupling": base.coupling()[0]})
+    from .parts import covers                                          # D23 / R17 printable covers + the lift cover
+    P.update({"lift cover": upper.lift_cover(), **covers.printed()})
     return P
 
 

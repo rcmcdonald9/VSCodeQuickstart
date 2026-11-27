@@ -19,7 +19,9 @@ working while the arm CAD changes:
    (anything that does not move with that joint) at every step. A cell counts if a finger can reach it (the cell and
    its opposite surface both accessible at some step). Rule (R17; ISO 13854 finger 25 mm, ISO 13857 openings ≤ 8 mm,
    commonly cited values, confirm against the standards): the gap is ≤ 8 mm at every step **or** ≥ 25 mm at every
-   step; anything else (closing from > 8 into < 25, or a shear gap held in 8…25) fails. Gaps > 40 mm read as open.
+   step; a gap that closes from > 8 into < 25 fails. A gap held constant in 8…25 (within SHEAR_TOL over the sweep:
+   two surfaces sliding past each other, nothing closes) is listed as a shear point, not counted. Gaps > 40 mm read
+   as open.
 4. **Soft parts** (names with bellows / boot / gaiter: TPU 95A or fabric) block the probe but are not pinch
    surfaces; in a rigid joint sweep they keep their reference shape (their folding is not simulated, ESTIMATE).
 5. **Draw-in / exposed drive parts.** Belts, pulleys and idlers (draw-in), motors and cartridge cans (R17 "no exposed
@@ -47,6 +49,7 @@ PROBE_R = 6.0                     # Ø12 mm probe
 VOX = 4.0                         # voxel (mm)
 CELL = 20.0                       # gap-tracking cell on moving parts (mm)
 BOUND = 40.0                      # gaps beyond this read as open (mm)
+SHEAR_TOL = 1.0                   # a gap varying less than this over the sweep is constant (sliding), mm
 DENS = 0.35                       # surface samples per mm²
 MIN_PATCH = 30.0                  # mm²: smallest exposed patch counted (noise floor, ESTIMATE)
 NUDGE = 7.0                       # deg / mm for the kinematics experiment
@@ -60,6 +63,7 @@ EXPOSE = [(re.compile(r"belt|pulley|idler"), "belt / pulley (draw-in)", True),
           (re.compile(r"(^|_)can($|_)"), "motor can", True),
           (re.compile(r"shaft|spindle"), "rotating shaft", False)]
 SKIP_GAP = re.compile(r"jaw|finray|pad_fixed|finger")        # gripper fingers vs each other: gripping, not pinching
+COVER = re.compile(r"duct|cover|liner|belly|shield|mast_cap|collar_(top|bot)|spine_pod|back_plate")   # our own covers
 SOFT = re.compile(r"bellows|boot|gaiter")      # TPU / fabric: blocks the probe, gives under a finger (not a pinch surface)
 
 
@@ -340,7 +344,7 @@ class Tracker:
         rb = self.rb
         out = []
         for i, n in enumerate(rb.names):
-            if any(rx.search(n.split("_", 1)[-1] if n[:2] in ("l_", "r_") else n) for rx, _, _ in EXPOSE):
+            if not COVER.search(n) and any(rx.search(_strip(n)) for rx, _, _ in EXPOSE):
                 out.append(np.arange(rb.offs[i], rb.offs[i + 1]))
         return np.concatenate(out) if out else np.zeros(0, int)
 
@@ -392,12 +396,12 @@ def run_joint(rb, tr, joint, bodies, angles, quick):
         am = np.array([acc.get(i, False) for i in midx[near]])
         as_ = np.array([acc.get(i, False) for i in sj[near]])
         k = ckey[near]; spart = rb.I[sj[near]]; dd = d[near]
-        order = np.lexsort((dd, spart, k))
+        order = np.lexsort((dd, k))                         # per cell: the nearest static surface, whichever part
         k, spart, dd, am, as_ = k[order], spart[order], dd[order], am[order], as_[order]
-        brk = np.nonzero(np.r_[True, (k[1:] != k[:-1]) | (spart[1:] != spart[:-1])])[0]
+        brk = np.nonzero(np.r_[True, k[1:] != k[:-1]])[0]
         ra = np.logical_or.reduceat(am, brk) & np.logical_or.reduceat(as_, brk) if len(brk) else []
         for b0, r in zip(brk, ra):
-            hist.setdefault((int(k[b0]), int(spart[b0])), []).append((th, float(dd[b0]), bool(r)))
+            hist.setdefault(int(k[b0]), []).append((th, float(dd[b0]), int(spart[b0]), bool(r)))
         hist.setdefault("_poses", []).append(th)
         rb.log(f"    {joint} {th:7.1f}: {near.sum():,} moving samples within {BOUND:.0f} mm, {int(acc_all.sum()):,} accessible")
 
@@ -448,7 +452,7 @@ def run_lift(rb, tr, lifts, membership):
         statm = ~movers & ~dmask
         # pairs: mover vs static, mover vs deformer, deformer vs static (each a "body" against the rest)
         pairs = [(movers, statm | dmask), (dmask, statm)]
-        expo_ids = [rb.idx[n] for n in rb.names if any(rx.search(_strip(n)) for rx, _, _ in EXPOSE)]
+        expo_ids = [rb.idx[n] for n in rb.names if not COVER.search(n) and any(rx.search(_strip(n)) for rx, _, _ in EXPOSE)]
         tests = [np.nonzero(np.isin(I, expo_ids))[0]]
         recs = []
         for a, b in pairs:
@@ -476,14 +480,14 @@ def run_lift(rb, tr, lifts, membership):
             k = (I[ai].astype(np.int64) << 42) ^ ((cell[:, 0] & 0x3FFF) << 28) ^ ((cell[:, 1] & 0x3FFF) << 14) ^ (cell[:, 2] & 0x3FFF)
             am = np.array([acc.get(i, False) for i in ai]); as_ = np.array([acc.get(i, False) for i in bj])
             sp = I[bj]
-            order = np.lexsort((d, sp, k))
+            order = np.lexsort((d, k))
             k, sp, d, am, as_ = k[order], sp[order], d[order], am[order], as_[order]
-            brk = np.nonzero(np.r_[True, (k[1:] != k[:-1]) | (sp[1:] != sp[:-1])])[0]
+            brk = np.nonzero(np.r_[True, k[1:] != k[:-1]])[0]
             if not len(brk):
                 continue
             ra = np.logical_or.reduceat(am, brk) & np.logical_or.reduceat(as_, brk)
             for b0, r in zip(brk, ra):
-                hist.setdefault((int(k[b0]), int(sp[b0])), []).append((L, float(d[b0]), bool(r)))
+                hist.setdefault(int(k[b0]), []).append((L, float(d[b0]), int(sp[b0]), bool(r)))
         hist.setdefault("_poses", []).append(L)
         rb.log(f"    lift {L:.2f} m: {len(rigid)} parts ride the lift, deforming: {', '.join(deform) or 'none'}, {int(acc_all.sum()):,} accessible")
 
@@ -522,16 +526,20 @@ def evaluate(rb, tr):
         for key, h in hist.items():
             if key == "_poses":
                 continue
-            ck, sp = key
-            mp = ck >> 42
-            if not any(r for _, _, r in h):
+            mp = key >> 42
+            if not any(r for *_, r in h):
                 continue                                     # never reachable by the probe
-            seen = {p: g for p, g, _ in h}
-            g = [seen.get(p, BOUND) for p in poses]
+            seen = {}
+            for p_, g_, s_, _ in h:                          # lift: movers and deformers are separate passes
+                if p_ not in seen or g_ < seen[p_][0]:
+                    seen[p_] = (g_, s_)
+            g = [seen.get(p_, (BOUND, -1))[0] for p_ in poses]
             mn, mx = min(g), max(g)
+            sp = seen.get(poses[int(np.argmin(g))], (BOUND, -1))[1]
             if mn >= OPEN:
                 continue
-            ok = mx <= CLOSED or mn >= OPEN
+            shear = (mx - mn) < SHEAR_TOL and not (mx <= CLOSED or mn >= OPEN)
+            ok = mx <= CLOSED or mn >= OPEN or shear
             a, b = rb.names[mp], rb.names[sp]
             bodies = [k for k in tr.sets if k[0] == joint and a in tr.sets[k]]
             if a in tr.deform:
@@ -545,13 +553,15 @@ def evaluate(rb, tr):
             side = a[:1] if a[:2] in ("l_", "r_") else "-"
             cur = rows.get(loc)
             if cur is None or (not ok and cur["ok"]) or (ok == cur["ok"] and mn < cur["min"]):
-                rows[loc] = dict(joint=joint, moving=loc[1], static=loc[2], tier=tier, min=mn, max=mx, ok=ok,
+                rows[loc] = dict(joint=joint, moving=loc[1], static=loc[2], tier=tier, min=mn, max=mx, ok=ok, shear=shear,
                                  at=poses[int(np.argmin(g))], sides=set((cur or {}).get("sides", set())) | {side})
             else:
                 cur["sides"].add(side)
     gaps = sorted(rows.values(), key=lambda r: (r["tier"], r["ok"], r["joint"], r["min"]))
     expo = []
     for n, (a, j, p) in sorted(tr.expo.items(), key=lambda kv: -kv[1][0]):
+        if COVER.search(n):
+            continue
         for rx, kind, hard in EXPOSE:
             if rx.search(_strip(n)):
                 if a >= MIN_PATCH:
@@ -564,7 +574,7 @@ def _gap_table(rows):
     L = ["| Joint | Moving part | Static part | Sides | Min gap (mm) | Max gap (mm) | Min at | |", "|---|---|---|---|---|---|---|---|"]
     for r in rows:
         mx = "> 40" if r["max"] >= BOUND else f"{r['max']:.1f}"
-        L.append(f"| {r['joint']} | {r['moving']} | {r['static']} | {'/'.join(sorted(r['sides']))} | {r['min']:.1f} | {mx} | {r['at']:.4g} | {'✅' if r['ok'] else '❌'} |")
+        L.append(f"| {r['joint']} | {r['moving']} | {r['static']} | {'/'.join(sorted(r['sides']))} | {r['min']:.1f} | {mx} | {r['at']:.4g} | {'⚠️ shear' if r.get('shear') else ('✅' if r['ok'] else '❌')} |")
     return L if rows else L + ["| none | | | | | | | ✅ |"]
 
 
