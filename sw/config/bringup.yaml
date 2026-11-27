@@ -1,0 +1,35 @@
+# M1 bench bring-up settings (sw/bringup.py). Joint frame = the twin's (rnd/twin.py JR: arm hangs straight down at 0;
+# pitch negative swings the arm forward/up, roll positive abducts, elbow negative bends forward). Angles in degrees.
+# ESTIMATE = not yet measured on the hardware: day 1 measures it (protractor / the bring-up report) and updates this file.
+control_hz: 500
+can_timeout_s: 0.020          # drive-side CAN watchdog: a drive disables itself 20 ms after the last command
+limit: rated                  # drive-side torque limit = joints.json rated_nm (the supervisor's bound without allow_peak)
+cal_speed: 0.30               # rad/s while seeking a hard stop
+cal_frac_max: 0.60            # the calibration torque may not exceed this fraction of rated (else: support the arm)
+jog_speed_frac: 0.10          # jog at 10 % of each joint's max speed (joints.json max_speed_rad_s)
+order: [wpitch, elbow, yaw, roll, pitch]     # calibration order: distal first, the proximal joints hang limp
+expected_fw: {}               # e.g. {dm_j4310: [0x...]}: firmware versions accepted (empty = record only)
+# Pose of the arm before power-on and of joints that are not brought up (held in the bench fixture / cradle)
+rest_pose: {pitch: 0, roll: 0, yaw: 0, elbow: 0, wpitch: 0, wroll: 0}
+fixture_pose: {pitch: 0, roll: 0, yaw: 0, elbow: -90, wpitch: 0, wroll: 0}   # GIM joints BLOCKED: forearm clamped level
+balancer: {joint: pitch, k_nm: 4.5}           # A9 shoulder balancer, τ = K·sin(pitch) (rnd/balancer.py); 0 if not fitted
+joints:
+  # stop: the reference hard stop (side +1 = upper, −1 = lower) and its angle; other: the opposite stop (span check)
+  pitch:  {kp: 60, kd: 3.0, stop: [+1, 65],  other: -205, span_check: false, park: 0,   jog: 20}   # ESTIMATE stops: limit + 5°
+  roll:   {kp: 60, kd: 3.0, stop: [-1, -20], other: 105,  span_check: false, park: 10,  jog: 15}
+  yaw:    {kp: 40, kd: 2.0, stop: [+1, 155], other: -155, span_check: true,  park: 0,   jog: 25}   # stop pin ±155° (rnd/harness.py)
+  elbow:  {kp: 40, kd: 2.0, stop: [+1, 5],   other: -155, span_check: true,  park: -20, jog: 15}
+  wpitch: {kp: 15, kd: 0.5, stop: [+1, 125], other: -125, span_check: true,  park: 0,   jog: 25}
+# Gravity hold test: poses (all six joints; offline joints stay at fixture_pose). Each pose is approached from both
+# sides (±approach) so Coulomb friction cancels in the mean and shows in the difference.
+gravity:
+  approach_deg: 3
+  settle_s: 0.6
+  avg_s: 0.3
+  max_residual_frac: 0.20     # |static residual| over this fraction of rated torque fails the step (sign, ratio, mass, balancer)
+  poses:
+    - {pitch: -30, roll: 20, yaw: 0,   elbow: -60,  wpitch: 30,  wroll: 0}
+    - {pitch: -60, roll: 10, yaw: 30,  elbow: -90,  wpitch: -20, wroll: 0}
+    - {pitch: -80, roll: 30, yaw: -30, elbow: -45,  wpitch: 45,  wroll: 0}
+    - {pitch: 15,  roll: 40, yaw: 60,  elbow: -100, wpitch: 0,   wroll: 0}
+    - {pitch: -45, roll: 5,  yaw: 0,   elbow: -20,  wpitch: 80,  wroll: 0}

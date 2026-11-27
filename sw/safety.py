@@ -67,14 +67,23 @@ def _finite(x, n):
 
 class Supervisor:
     def __init__(self, v_max=1.5, margin_deg=3.0, ws_lo=(0.10, -0.45, 0.76), ws_hi=(0.80, 0.45, 1.35), clock=time.monotonic, fk=None,
-                 collision=None):
+                 collision=None, joints=None, limits=None, torque=None):
+        """joints: subset of joint names (default: all of joints.json, in order), e.g. the joints online during bring-up.
+        limits: {name: (lower, upper)} overriding joints.json (rad, before the margin), e.g. the travel bounds used while a
+        joint is not yet calibrated. torque: {name: N·m} overriding the rated/peak bound (e.g. the low calibration torque)."""
         J = json.loads(DESC.read_text())
+        if joints is not None:
+            by = {j["name"]: j for j in J}
+            J = [by[n] for n in joints]
+        self.names = [j["name"] for j in J]
         self.n = len(J)
         m = math.radians(margin_deg)
-        self.lo = np.array([j["lower"] for j in J]) + m
-        self.hi = np.array([j["upper"] for j in J]) - m
-        self.rated = np.array([j["rated_nm"] for j in J])
-        self.peak = np.array([j["peak_nm"] for j in J])
+        lim = limits or {}
+        self.lo = np.array([lim.get(j["name"], (j["lower"], j["upper"]))[0] for j in J]) + m
+        self.hi = np.array([lim.get(j["name"], (j["lower"], j["upper"]))[1] for j in J]) - m
+        tq = torque or {}
+        self.rated = np.array([min(j["rated_nm"], tq.get(j["name"], np.inf)) for j in J])
+        self.peak = np.array([min(j["peak_nm"], tq.get(j["name"], np.inf)) for j in J])
         self.v_max, self.clock, self.fk = v_max, clock, fk
         self.ws_lo, self.ws_hi = np.array(ws_lo), np.array(ws_hi)
         self.last_tick = None
