@@ -54,7 +54,7 @@ from pathlib import Path
 import numpy as np
 
 from sw.collision import KD_COMPLIANT, KP_COMPLIANT, T_ANCHOR
-from sw.power import CurrentModel, PackBudget, REST_A
+from sw.power import BmsReading, CurrentModel, K_MIN, PackBudget, REST_A, derate_factor  # noqa: F401 (BmsReading: callers)
 
 WATCHDOG_S, FB_MAX_AGE, TEMP_C = 0.050, 0.020, 70.0     # TEMP_C: driver/case sensor (thermal.md: winding ≤ 69 °C on a task day)
 # FB_MAX_AGE 10 → 20 ms (2026-11-27, docs/sw/bus_realism.md): with 0–9 ms of bus delay each way the feedback age reached 16 ms
@@ -137,7 +137,7 @@ class Supervisor:
         self._pn_lo, self._pn_hi = None, None
         self.fb_max_age = float(fb_max_age)      # bring-up passes bringup.yaml fb_max_age_s (sized on the bus-realism runs)
         # W8a battery-current budget (sw/power.py)
-        self.current = CurrentModel(J)
+        self.current = CurrentModel(J, self.rated)
         self.power = PackBudget(rest_a) if power else None
         self.i_pred = None                       # predicted pack current (A) of the last verdict: rest + this arm
         self._arm_last = 0.0                     # this arm's model draw last cycle (A), to split a BMS reading
@@ -151,22 +151,48 @@ class Supervisor:
         return r
 
     def _power_record(self, now, dt, arm_a, bms, extra=()):
-        """Log this cycle's predicted pack current into the 30 s window (the larger of model and BMS measurement)."""
-        if self.power is None:
-            return
+        """Log this cycle's pack current into the 30 s windows (drawn: the larger of model and BMS measurement)."""
+        rest = self._rest(bms)
         self._arm_last = arm_a
-        total = self._rest(bms) + arm_a
+        total = rest + arm_a
         self.i_pred = total
         rec = max([total, *extra])
         if bms is not None and bms.current_a is not None and math.isfinite(bms.current_a):
             rec = max(rec, float(bms.current_a))
         self.power.record(now, rec, dt)
 
-    def _arm_current(self, tau, vm, v_bus, tau_meas=None):
-        i = self.current.idle(v_bus) + float(np.sum(self.current.dynamic(tau, vm, v_bus)))
-        if tau_meas is not None and _finite(tau_meas, self.n):
-            i = max(i, self.current.idle(v_bus) + float(np.sum(self.current.dynamic(tau_meas, vm, v_bus))))
-        return i
+    def _power_limit(self, now, dt, q2, qm, vm, tf, kp_, kd_, e, v_bus, bms, tau_meas):
+        """9. Battery budget on a command already inside the torque bound: peak cap (I_PEAK), then the 30 s derate."""
+        P, C = self.power, self.current.at(v_bus)
+        rest = self._rest(bms)
+        base = rest + C.idle
+        ceiling = P.update(base + K_MIN * C.full_rated)
+        tau = kp_ * (q2 - qm) - kd_ * vm + tf
+        dyn = C.dynamic(tau, vm)
+        if base + dyn.sum() > P.i_peak:                                  # peak: scale the motoring joints' bounds
+            self._count("current cap")
+            s = max(P.i_peak - base, 0.0) / dyn.sum()
+            lim_c = np.where(dyn > 0, s * np.abs(tau), np.abs(tf) + kp_ * e + kd_ * np.abs(vm))
+            tf, kp_, kd_ = _trim(lim_c, np.clip(tf, -lim_c, lim_c), kp_, kd_, e, vm)
+            tau = kp_ * (q2 - qm) - kd_ * vm + tf
+            dyn = C.dynamic(tau, vm)
+        P.k = 1.0
+        if ceiling < P.i_peak and base + dyn.sum() > ceiling:            # 30 s mean: common factor k on the torque limits
+            # braking joints give energy back: they keep their limit (unchanged, they stay braking and draw 0)
+            terms = np.abs(tf) + kp_ * e + kd_ * np.abs(vm)
+            mot, tabs = dyn > 0, np.abs(tau)
+            k = derate_factor(ceiling - base, C.a * mot, tabs, self.rated)
+            P.k = k
+            self._count("power derate")
+            lim_d = np.where(mot & (tabs > k * self.rated), k * self.rated, terms)
+            tf, kp_, kd_ = _trim(lim_d, np.clip(tf, -lim_d, lim_d), kp_, kd_, e, vm)
+            tau = kp_ * (q2 - qm) - kd_ * vm + tf
+            dyn = C.dynamic(tau, vm)
+        extra = ()
+        if tau_meas is not None and _finite(tau_meas, self.n):          # what the drives measured last cycle
+            extra = (rest + C.total(tau_meas, vm),)
+        self._power_record(now, dt, C.idle + float(dyn.sum()), bms, extra=extra)
+        return tf, kp_, kd_
 
     def set_limits(self, limits):
         """Replace the bounds of some joints ({name: (lower, upper)}, rad, before the margin). Used by bring-up after a
@@ -315,12 +341,12 @@ class Supervisor:
             if self.power is not None:                                   # logged, not capped: the hold carries only gravity
                 vh = np.asarray(v_meas, float) if _finite(v_meas, self.n) else np.zeros(self.n)
                 tau_h = kp_c * (self._anchor - qm) - KD_COMPLIANT * vh + g
-                self._power_record(now, dt, self._arm_current(tau_h, vh, v_bus), bms)
+                self._power_record(now, dt, self.current.at(v_bus).total(tau_h, vh), bms)
             return Verdict(False, self._anchor.copy(), kp_c, np.full(self.n, KD_COMPLIANT), g, ["collision: compliant hold"], compliant=True)
         self._anchor = None
         if self.latched:
             if self.power is not None:                                   # drives disabled: logic idle only
-                self._power_record(now, dt, self.current.idle(v_bus), bms)
+                self._power_record(now, dt, self.current.at(v_bus).idle, bms)
             return Verdict(True, reasons=list(self.latched))
         qm, vm = np.asarray(q_meas, float), np.asarray(v_meas, float)
         # 3. limits (people-near bound when on), slew, workspace
@@ -346,14 +372,8 @@ class Supervisor:
             if np.any(p < self.ws_lo) or np.any(p > self.ws_hi):
                 self._count("workspace reject")
                 q2, tf = self.last_q.copy(), np.zeros(self.n)
-        # 2. total torque bound (9.: lowered by the battery derate while the 30 s mean is over budget)
+        # 2. total torque bound
         lim = self.peak if allow_peak else self.rated
-        if self.power is not None:
-            rest = self._rest(bms)
-            k = self.power.update_derate(dt, rest, self.current.full(self.rated, v_bus), self.current.idle(v_bus))
-            if self.power.active:
-                lim = np.minimum(lim, k * self.rated)                 # peak allowance dropped first, then k · rated
-                self._count("power derate")
         kp_ = np.clip(np.nan_to_num(np.asarray(kp, float)), 0, KP_MAX)
         kd_ = np.clip(np.nan_to_num(np.asarray(kd, float)), 0, KD_MAX)
         if np.any(kp_ != kp) or np.any(kd_ != kd):
@@ -363,22 +383,8 @@ class Supervisor:
         if np.any(np.abs(tf) + kp_ * e + kd_ * np.abs(vm) - lim > 0):
             self._count("torque bound")
             tf, kp_, kd_ = _trim(lim, tf, kp_, kd_, e, vm)
-        # 9. battery peak: predicted pack current ≤ I_PEAK, by scaling the motoring joints' torque bounds
         if self.power is not None:
-            tau = kp_ * (q2 - qm) - kd_ * vm + tf
-            dyn = self.current.dynamic(tau, vm, v_bus)
-            idle = self.current.idle(v_bus)
-            room = self.power.i_peak - rest - idle
-            if rest + idle + dyn.sum() > self.power.i_peak:
-                self._count("current cap")
-                s = max(room, 0.0) / dyn.sum()
-                motoring = dyn > 0
-                lim_c = np.where(motoring, s * np.abs(tau), np.abs(tf) + kp_ * e + kd_ * np.abs(vm))
-                tf, kp_, kd_ = _trim(lim_c, np.clip(tf, -lim_c, lim_c), kp_, kd_, e, vm)
-                tau = kp_ * (q2 - qm) - kd_ * vm + tf
-            self._power_record(now, dt, self._arm_current(tau, vm, v_bus), bms,
-                               extra=() if tau_meas is None or not _finite(tau_meas, self.n) else
-                               (self._rest(bms) + self._arm_current(tau_meas, vm, v_bus),))
+            tf, kp_, kd_ = self._power_limit(now, dt, q2, qm, vm, tf, kp_, kd_, e, v_bus, bms, tau_meas)
         self.last_q = q2
         self.healthy_cycle = True
         return Verdict(False, q2, kp_, kd_, tf, [])

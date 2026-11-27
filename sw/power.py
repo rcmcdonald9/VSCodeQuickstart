@@ -33,7 +33,6 @@ The window starts full of REST_A (the robot idles before the first command).
 from __future__ import annotations
 
 import math
-from collections import deque
 from dataclasses import dataclass
 
 import numpy as np
@@ -43,8 +42,8 @@ REST_A = 2.2 + 2.0 + 2.9 + 2.0 + 0.8          # A: base + lift + 12 V servos + 5
 V_MIN, BUCK_EFF = 20.0, 0.90                   # 6S cut-off (3.33 V/cell) when no BMS voltage; 24 → 12 V buck efficiency (ESTIMATE, rnd/electrical.py)
 I_IDLE_DRIVE = 0.04                            # A per CAN drive, logic only (ESTIMATE, rnd/electrical.I_IDLE_DRIVER)
 W_REGEN = 0.05                                 # rad/s: below this the sign of the measured speed is noise, so no regen credit
-K_MIN, K_SLEW, K_RECOVER = 0.25, 1.0, 0.05     # derate floor (fraction of rated), fall rate and recovery rate (1/s)
-I_RELEASE = 0.8 * I_AVG                        # A: the derate stays on until the mean is below this
+K_MIN = 0.25                                   # derate floor (fraction of rated torque): the arm keeps holding itself
+BIN, H_BURST, PLAN_MARGIN = 0.1, 1.0, 0.1      # s window bins; s burst horizon of the plan; A kept under I_AVG by the plan
 
 # actuator → (Kt at the actuator output in N·m/A, supply voltage, idle A at that supply). Kt from rnd/specs/actuators.yaml
 # (rated torque / rated current; the lower of rated and peak where both are listed); GIM8108-36 has no current in the yaml:
@@ -71,9 +70,11 @@ class BmsReading:
 
 
 class CurrentModel:
-    """Per-joint bus-current model for one set of joints (rows of joints.json)."""
+    """Per-joint bus-current model for one set of joints (rows of joints.json); `rated` (N·m) for the derate floor.
+    Call at(v_bus) once per cycle (cached): it sets a (A per N·m at the bus, per joint), idle (A) and full_rated (A, the
+    dynamic draw with every joint at its rated torque)."""
 
-    def __init__(self, joints):
+    def __init__(self, joints, rated):
         try:
             a = [ACTUATORS[j["actuator"]] for j in joints]
         except KeyError as ex:
@@ -81,84 +82,135 @@ class CurrentModel:
         self.kt = np.array([x[0] * j["ratio"] for x, j in zip(a, joints)])       # N·m/A at the joint
         self.v_supply = np.array([x[1] for x in a])
         self.idle_supply = np.array([x[2] for x in a])
+        self.rated = np.asarray(rated, float)
+        self._v = object()
+        self.at(None)
 
-    def _to_bus(self, v_bus):
-        v = V_MIN if v_bus is None or not math.isfinite(v_bus) or v_bus <= 0 else float(v_bus)
-        return np.where(self.v_supply < 20.0, self.v_supply / (v * BUCK_EFF), 1.0)   # buck-fed servos referred to the bus
+    def at(self, v_bus):
+        v = V_MIN if v_bus is None or not math.isfinite(v_bus) or v_bus <= 0 else round(float(v_bus), 1)
+        if v != self._v:
+            self._v = v
+            to_bus = np.where(self.v_supply < 20.0, self.v_supply / (v * BUCK_EFF), 1.0)   # buck-fed servos referred to the bus
+            self.a = to_bus / self.kt
+            self.idle = float(np.sum(self.idle_supply * to_bus))
+            self.full_rated = float(np.sum(self.rated * self.a))
+        return self
 
-    def idle(self, v_bus=None):
-        return float(np.sum(self.idle_supply * self._to_bus(v_bus)))
-
-    def dynamic(self, tau, w, v_bus=None):
+    def dynamic(self, tau, w):
         """Per-joint bus current above idle (A) for joint torques tau and measured speeds w; braking joints draw 0."""
-        tau, w = np.asarray(tau, float), np.asarray(w, float)
         braking = (tau * w < 0) & (np.abs(w) > W_REGEN)
-        return np.where(braking, 0.0, np.abs(tau) / self.kt) * self._to_bus(v_bus)
+        return np.where(braking, 0.0, np.abs(tau) * self.a)
 
-    def full(self, lim, v_bus=None):
-        """Dynamic current with every joint at |lim| (the worst case under a torque limit)."""
-        return float(np.sum(np.abs(lim) / self.kt * self._to_bus(v_bus)))
+    def total(self, tau, w):
+        """The set's bus current (A): idle + dynamic."""
+        return self.idle + float(np.sum(self.dynamic(np.asarray(tau, float), np.asarray(w, float))))
 
 
 class PackBudget:
-    """30 s rolling mean of the predicted (or measured) pack current and the derate state."""
+    """The pack's 30 s rolling mean (bins of BIN s, uniform inside a bin) and the derate ceiling.
+
+    Ceiling (A) on the pack current for the coming cycle, the smaller of:
+    - plan: the largest current C such that drawing C for the next H_BURST s and then the deepest-derate draw i_low
+      keeps the 30 s mean ≤ I_AVG − PLAN_MARGIN at every future instant (old samples leaving the window included). As
+      long as the plan is kept the fallback stays possible, so the mean never goes over; bursts up to I_PEAK are allowed
+      while the window has room, and under sustained demand the ceiling settles near I_AVG and the mean converges to it
+      from below.
+    - reactive (above I_AVG): I_AVG · I_AVG / mean, lower the further the measured mean is over (e.g. the BMS reads
+      more than the model, or the K_MIN floor bound).
+    Supervisor.check turns the ceiling into a common factor k on the per-joint torque limits (derate_factor)."""
 
     def __init__(self, rest_a=REST_A, i_peak=I_PEAK, i_avg=I_AVG, t_avg=T_AVG):
         self.rest_a, self.i_peak, self.i_avg, self.t_avg = float(rest_a), float(i_peak), float(i_avg), float(t_avg)
-        self.buf = deque([[self.t_avg, self.rest_a]])          # [duration s, current A]; starts idle
-        self.area = self.t_avg * self.rest_a
-        self.k = 1.0
-        self.derating = False
+        self.n = int(round(self.t_avg / BIN))
+        self.bins = np.full(self.n, self.rest_a * BIN)          # A·s per bin, oldest at self.head; the robot idled before
+        self.head = 0
+        self.bsum = float(self.bins.sum())
+        self.cur_area = self.cur_t = 0.0
+        self._plan = self.i_peak                                # redone once per bin (a plan holds for H_BURST ≥ BIN)
+        self._stale = True
+        self.k = 1.0                                            # last derate factor applied (fraction of rated torque)
+        self.ceiling = self.i_peak
         self.t_last = None
         self.last_total = self.rest_a
         self.peak_mean = self.rest_a
 
+    def _ordered(self):
+        b = np.roll(self.bins, -self.head)
+        w = np.ones(self.n)
+        w[0] = 1.0 - self.cur_t / BIN                           # part of the oldest bin already out of the window
+        return b * w, BIN * w
+
     @property
     def mean(self):
-        return self.area / self.t_avg
+        return (self.bsum - self.bins[self.head] * self.cur_t / BIN + self.cur_area) / self.t_avg
 
-    def add(self, dt, i):
-        if dt <= 0:
-            return
+    def _add(self, dt, i):
         dt = min(dt, self.t_avg)
-        self.buf.append([dt, i])
-        self.area += dt * i
-        excess = dt                                             # the window was full: drop `dt` from the oldest end
-        while excess > 1e-12:
-            d0, i0 = self.buf[0]
-            if d0 <= excess:
-                self.buf.popleft(); self.area -= d0 * i0; excess -= d0
-            else:
-                self.buf[0][0] = d0 - excess; self.area -= excess * i0; excess = 0.0
-        if len(self.buf) == 1 or (len(self.buf) & 0x3FFF) == 0:   # refresh the running sum now and then (rounding)
-            self.area = math.fsum(d * c for d, c in self.buf)
-        self.peak_mean = max(self.peak_mean, self.mean)
+        while dt > 1e-12:
+            take = min(dt, BIN - self.cur_t)
+            self.cur_area += i * take
+            self.cur_t += take
+            dt -= take
+            if self.cur_t >= BIN - 1e-12:
+                self.bsum += self.cur_area - self.bins[self.head]
+                self.bins[self.head] = self.cur_area
+                self.head = (self.head + 1) % self.n
+                self.cur_area = self.cur_t = 0.0
+                self._stale = True
+                if self.head == 0:
+                    self.bsum = float(self.bins.sum())          # refresh the running sum once per window (rounding)
 
-    def record(self, now, total, fallback_dt):
-        """Close the interval since the last record at the current total (A)."""
+    def record(self, now, drawn, fallback_dt):
+        """Log this cycle's pack current (A) over the interval since the last record."""
         dt = fallback_dt if self.t_last is None else now - self.t_last
         if not math.isfinite(dt) or dt < 0:
             dt = fallback_dt
-        self.add(dt, float(total))
+        self._add(dt, float(drawn))
         self.t_last = now
-        self.last_total = float(total)
+        self.last_total = float(drawn)
+        self.peak_mean = max(self.peak_mean, self.mean)
 
-    def update_derate(self, dt, rest, i_full, idle):
-        """Derate factor k for this cycle (fraction of the rated torque), from the mean so far."""
+    def update(self, i_low):
+        """Ceiling (A) on the pack current for this cycle (I_PEAK when the budget has room). i_low: the least the robot is
+        sure to draw at the deepest derate (rest of the robot + idle + the arm at K_MIN · rated)."""
         m = self.mean
-        if m > self.i_avg:
-            self.derating = True
-        elif m < I_RELEASE:
-            self.derating = False
-        if self.derating:
-            ceiling = self.i_avg * min(1.0, self.i_avg / max(m, 1e-9))
-            target = (ceiling - rest - idle) / max(i_full, 1e-9)
-            target = min(max(target, K_MIN), 1.0)
-            self.k = max(target, self.k - K_SLEW * dt) if target < self.k else target     # down slewed, up at once
-        else:
-            self.k = min(1.0, self.k + K_RECOVER * dt)
-        return self.k
+        c_react = self.i_avg * self.i_avg / m if m > self.i_avg else self.i_peak
+        if self._stale:
+            self._plan = self._make_plan(i_low)
+            self._stale = False
+        self.ceiling = min(self.i_peak, self._plan, c_react)
+        return self.ceiling
 
-    @property
-    def active(self):
-        return self.derating or self.k < 1.0
+    def _make_plan(self, i_low):
+        b, d = self._ordered()
+        L = np.cumsum(b)                                        # A·s leaving by future time h (oldest first)
+        h = np.cumsum(d)
+        area = float(L[-1]) + self.cur_area
+        ia = self.i_avg - PLAN_MARGIN
+        S = ia * self.t_avg - area                              # A·s of room in the window now
+        pre = h <= H_BURST
+        lo = min(float(i_low), ia)
+        c = np.where(pre, (S + L) / np.maximum(h, 1e-9), (S + L - lo * (h - H_BURST)) / H_BURST)
+        return float(np.min(c[h > 1e-9])) if np.any(h > 1e-9) else self.i_peak
+
+
+def derate_factor(budget, a, terms, rated):
+    """Largest k (≤ 1) with Σ a_j · min(terms_j, k · rated_j) ≤ budget: a common per-joint torque-limit factor that
+    keeps the arm's draw under `budget` A whatever the command does under the limit (a_j: A per N·m at the bus, terms_j:
+    |τ_ff| + kp·e + kd·|ė| already allowed, rated_j: N·m). Never below K_MIN (the arm keeps holding itself)."""
+    a, t, r = (np.asarray(x, float) for x in (a, terms, rated))
+    b = np.where(r > 0, t / np.maximum(r, 1e-12), np.inf)         # breakpoints: joint j saturates at k = b_j
+    if np.sum(a * np.minimum(t, r)) <= budget:
+        return 1.0
+    k = 0.0
+    for kb in np.sort(np.unique(np.concatenate([[0.0], b[np.isfinite(b)]]))):
+        if kb >= 1.0 or np.sum(a * np.minimum(t, kb * r)) > budget:
+            break
+        k = kb
+    # f is linear on [k, next breakpoint]: f(x) = fixed + x · slope
+    sat = b <= k
+    fixed = float(np.sum((a * t)[sat]))
+    slope = float(np.sum((a * r)[~sat]))
+    if slope > 0:
+        k = max(k, (budget - fixed) / slope)
+    return float(min(max(k, K_MIN), 1.0))
