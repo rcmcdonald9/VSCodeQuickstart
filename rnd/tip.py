@@ -46,7 +46,9 @@ def sw_rules():
     """What sw/safety.py enforces today (read from the module, so this follows the software)."""
     from sw import safety as s
     return SimpleNamespace(load_kg=s.LOAD_KG, box=s.LOAD_WS,
-                           accel=lambda kg: s.Supervisor.base_accel_limit(SimpleNamespace(payload=kg)))
+                           accel=lambda kg: s.Supervisor.base_accel_limit(SimpleNamespace(payload=kg)),
+                           # SW-T1 / SW-T2 count as enforced once the supervisor has these (names proposed below)
+                           person=hasattr(s.Supervisor, "set_person_near"), casters=hasattr(s.Supervisor, "casters_locked"))
 
 
 # ------------------------------------------------------------------------------------------------ designs and polygons
@@ -252,14 +254,15 @@ def extras(d, body, P, rules, cas):
 
 
 SW_CHANGES = [
-    ("SW-T1 person within reach", "When perception reports a person within reach (≈ 1 m), the supervisor caps the base at ≤ 0.1 m/s and ≤ 0.1 m/s² "
+    ("SW-T1 person within reach", "`Supervisor.set_person_near(bool)`: when perception reports a person within reach (≈ 1 m), the supervisor caps the base at ≤ 0.1 m/s and ≤ 0.1 m/s² "
      f"(`base_accel_limit()` → A_PERSON) and rejects hand targets outside LOAD_WS whatever the payload, with x ≤ {PERSON_X:.2f} m and z ≤ {PERSON_Z:.2f} m (the arms come in and the lift goes down first). "
      "A push can only come from a person, so the 8 push cases are evaluated under this rule. With the R2d basket (> 2.5 kg) the base stops and the basket "
      "is set down before the person is within reach. sw/safety.py has no person input today."),
     ("SW-T2 caster lock (D18b)", "Casters stay locked (solenoids off, spring-applied, so an e-stop or power loss locks them) except in two planner modes: "
      "(a) a threshold or rug crossing (D2b: 45°, ≤ 0.15 m/s), started only with no person within reach; (b) unloaded transit with the arms parked above 0.3 m/s. "
      "Release pulse (≈ 100 ms) at every stop and every 0.3 m of locked travel so a lock never ratchets down into a floor dip and lifts a wheel. "
-     "Needs a caster-lock output and a `casters_locked` state the base planner checks before moving."),
+     "Needs a caster-lock output and a `Supervisor.casters_locked()` state the base planner checks before moving. "
+     "rnd/tip.py counts SW-T1/T2 as enforced (scorecard gate) once `set_person_near` and `casters_locked` exist in sw/safety.py."),
     ("SW-T4 threshold speed (D2b)", f"Cross thresholds at ≤ {CROSS_SLOW:.2f} m/s (was 0.15): with the ballast the roller model's 15 mm peak rises to the "
      "1.45× margin at 0.15 m/s; 0.12 m/s restores ≥ 1.5× (table above). A planner value, not in sw/safety.py; threshold_mc should be re-run over 0.10–0.14 m/s."),
     ("SW-T3 keep", "Keep LOAD_KG 1.0 kg, LOAD_WS x ≤ 0.45 m / z ≤ 0.80 m and the 0.3 m/s² load-mode cap: the cases below rely on them (they are enforced today). "
@@ -280,7 +283,7 @@ def main():
     c18, c18b = casters(d0, "D18"), casters(d1, "D18b")
     loop40 = run_cases(d0, b0, P, c18, today, rules, a_fixed=A_LOOP40, pose_fixed="straight", collinear=True)
     before = run_cases(d0, b0, P, c18, today, rules)
-    after_today = run_cases(d1, b1, P, c18b, today, rules)
+    after_today = run_cases(d1, b1, P, c18b, requested if (rules.person and rules.casters) else today, rules)
     after = run_cases(d1, b1, P, c18b, requested, rules)
     no_ballast = run_cases(design_after(0.0), Body(design_after(0.0)), P, c18b, requested, rules)
     sens = []
