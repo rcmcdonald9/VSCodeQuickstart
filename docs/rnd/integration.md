@@ -39,9 +39,7 @@ into structure within 3.2 mm (an insert or clearance hole in a wall, or a wall n
 | torque pin | r_arm_hand_wr_sleeve | ✅ | r_arm_hand_palm |
 | torque pin | r_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
 
-## Clashes inside modules: 2
+## Clashes inside modules: 0
 
 | Module | Part A | Part B | Overlap (mm³) |
 |---|---|---|---|
-| head tilt -10° | yoke | neck_boot | 2437 |
-| head tilt +30° | yoke | neck_boot | 1478 |
