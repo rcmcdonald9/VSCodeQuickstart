@@ -29,11 +29,11 @@ things for every drive shaft:
 
 ## R14 (c) tool access
 
-Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elbow -90, wrist 0; covers, boots and ducts off; at pitch: torso_shell off. A fastener passes with a Ø6 driver straight along its axis for 80 mm from the head (the Ø2.5 key inside a counterbore), or a Ø6 ball-end tilted 15 / 25° at 8 azimuths. 'swap' = undone for a cartridge swap.
+Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elbow -90, wrist 0; covers, boots and ducts off; at pitch: torso_shell, bracket_slot off. A fastener passes with a Ø6 driver straight along its axis for 80 mm from the head (the Ø2.5 key inside a counterbore), or a Ø6 ball-end tilted 15 / 25° at 8 azimuths. 'swap' = undone for a cartridge swap.
 
 | Joint | Fasteners | Pass | Failures (blocked by) |
 |---|---|---|---|
-| pitch | 12 | 12/12 ✅ | — |
+| pitch | 16 | 16/16 (2 by ball-end) ✅ | — |
 | elbow | 12 | 12/12 ✅ | — |
 | yaw | 10 | 10/10 ✅ | — |
 | lift | 2 | 2/2 (1 by ball-end) ✅ | — |
@@ -58,6 +58,10 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | yaw | flange ear screw -145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | lift | flange ear screw +140° (M4, site lift) | swap | ✅ straight Ø6 × 80 | — |
 | lift | flange ear screw -140° (M4, site lift) | swap | ✅ ball-end 15° (az 225°) | rim |
+| pitch | exit-slot strap M4 x -26 | swap | ✅ ball-end 15° (az 90°) | carriage |
+| pitch | exit-slot strap M4 x -8 | swap | ✅ ball-end 15° (az 90°) | carriage |
+| pitch | exit-slot strap M4 x +8 | swap | ✅ straight Ø6 × 80 | — |
+| pitch | exit-slot strap M4 x +26 | swap | ✅ straight Ø6 × 80 | — |
 | pitch | idler axle M5 (head on the outer wall) | swap | ✅ straight Ø6 × 80 | — |
 | pitch | pitch hub tie nut M4 45° (arm detached) | service | ✅ straight Ø6 × 80 | — |
 | pitch | pitch hub tie nut M4 135° (arm detached) | service | ✅ straight Ø6 × 80 | — |
