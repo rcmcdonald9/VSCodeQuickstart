@@ -5,16 +5,16 @@
 | Metric | Now | Target | |
 |---|---|---|---|
 | R17 pinch (HARD GATE; rnd/pinch.py): joint-nip fails / exposed drive parts (12 mm probe; every moving gap ≤ 8 mm or ≥ 25 mm over its range) | 21 / 16 | 0 / 0 | ❌ |
-| A10 tip-over (HARD GATE; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, with the rules sw/safety.py enforces | 16/16 (worst 33 mm); 16/16 (worst 33 mm) once SW-T1 person within reach, SW-T2 caster lock (D18b), SW-T4 threshold speed (D2b) are in the supervisor | 16/16 ≥ 30 mm | ✅ |
+| A10 tip-over (HARD GATE; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, with the rules sw/safety.py enforces | 16/16 (worst 34 mm); 16/16 (worst 34 mm) once SW-T1 person within reach, SW-T2 caster lock (D18b), SW-T4 threshold speed (D2b) are in the supervisor | 16/16 ≥ 30 mm | ✅ |
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 100 mm | ≥ 50 mm | ✅ |
-| R2 min joint margin at spec load (rated, planar check) | 1.91× | ≥ 1.5× | ✅ |
+| R2 min joint margin at spec load (rated, planar check) | 1.90× | ≥ 1.5× | ✅ |
 | R2c 20 lb two-handed hug, held close (4.54 kg per forearm at ≤ 0.25 m from the elbow): min rated margin, shoulder pitch / elbow (rnd/payload_study.py) | gim6010: 0.69× (0.20 m: 0.82×) ❌; D20 (on hold): 1.54× → pass with D20 only | ≥ 1.5× rated (a hold), default config | ❌ |
 | R2d 20 lb laundry basket, floor → carry → bed (rnd/basket.py: peak ≥ 1.5× pick / ≥ 2× and ≤ 15 K over a 2-min carry, tip ≥ 30 mm) | gim6010: FAIL (worst 0.66 of the rule); D20 (on hold, basket.json): pass → pass with D20 only | pass, default config | ❌ |
-| R3 upper core (arms detached) | 8.5 kg | ≤ 10 kg | ✅ |
-| R3 each arm (detaches at the shoulder KX) | 4.7 kg | ≤ 10 kg | ✅ |
-| R3 assembled upper (core + arms, for reference) | 17.9 kg | info | — |
+| R3 upper core (arms detached) | 8.6 kg | ≤ 10 kg | ✅ |
+| R3 each arm (detaches at the shoulder KX) | 4.8 kg | ≤ 10 kg | ✅ |
+| R3 assembled upper (core + arms, for reference) | 18.1 kg | info | — |
 | R3 base module mass | 7.7 kg | ≤ 8 kg (piece limit 10) | ✅ |
 | R3 battery mass | 1.1 kg | ≤ 3 kg | ✅ |
 | R3 ballast blocks (A10 v2, removable, each its own carry piece) | 2 × 2.45 kg | ≤ 10 kg each | ✅ |
@@ -29,7 +29,7 @@
 | R12 socket bearing static safety (min) | 3.9 | ≥ 2 | ✅ |
 | R2 hand positioning error, joint chain RSS at 0.6 m (with joint-side encoders; without) | 0.9 mm (4.3) | ≤ 2 mm | ✅ |
 | R2 torso sway from mast bending (worst static) | 1.5 mm | ≤ 2 mm | ✅ |
-| R5 lift: torque margin / full-travel time | 1.82× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
+| R5 lift: torque margin / full-travel time | 1.79× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 1.7× (6.6 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md): tracked, no hard target (owner 2026-11-26); lower is a priority | 23 h | minimise | — |
@@ -42,10 +42,10 @@
 | Twin v1: min dynamic tip margin (ZMP) | 75 mm | ≥ 30 mm | ✅ |
 | R4 sim: 15 mm threshold on hard floor + carpet (45°, ≤ 0.15 m/s), peak margin | crossed, 1.7× | cross, ≥ 1.5× | ✅ |
 | R4 sim: carpet cruise wheel torque (RMS / rated) | 2.2 / 5 N·m | ≤ 70 % | ✅ |
-| R4 15 mm threshold with the A10 v2 mass (rnd/threshold.py roller model re-run by rnd/tip.py, 45°): peak margin at 0.15 m/s (D2b) / 0.12 m/s (SW-T4) | 1.45× / 1.71× (33.0 kg) | ≥ 1.5× at the planner's crossing speed | ❌ |
+| R4 15 mm threshold with the A10 v2 mass (rnd/threshold.py roller model re-run by rnd/tip.py, 45°): peak margin at 0.15 m/s (D2b) / 0.12 m/s (SW-T4) | 1.71× / 1.71× (33.3 kg) | ≥ 1.5× at the planner's crossing speed | ✅ |
 | R5 door stow (rnd/stow.py): whole-robot width across a 45° threshold crossing (D2b), both arms stowed, collision-free, cross-body gaps ≥ 25 mm, valid with people near (roll ≥ +8°) | 567 mm (clear 650 − 2 × 40), tip ≥ 82 mm | ≤ 570 mm, tip ≥ 30 mm | ✅ |
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 66 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
-| FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.1× (13 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
+| FEA critical printed parts: min margin vs 12 MPa (across layers) | 2.5× (13 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip) | 100/100 (95 % LB 96%), worst pad error 19 mm | LB ≥ 90 %, within ±25 mm | ✅ |
 | R15 spacing: pairs under the hard limit / under target (static 1, running 0.3, moving 2, belt 3 mm) | 0 / 8 | 0 under hard | ✅ |
 | R14 assembly sequence: drive shafts whose bearings slide on and whose shaft can be inserted (rnd/assembly_seq.py) | 7/7 | all | ✅ |

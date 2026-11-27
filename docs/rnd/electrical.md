@@ -69,11 +69,11 @@ Worst case: **both arms + the lift decelerating at once, at the drives' peak tor
 | shoulder roll | GIM8108-36 | 2.17 | 6.8 | 50 | 545 | 0.14 |
 | upper-arm yaw | GIM6010-8 | 0.62 | 13.7 | 58 | 114 | 0.38 |
 | elbow | GIM8108-8 | 0.69 | 5.9 | 12 | 282 | 0.06 |
-| lift (moving 18.5 kg; 33.7 kg with the rotor) | GIM6010-8 | – | 0.73 m/s | 12 | 321 | – |
+| lift (moving 18.8 kg; 34.0 kg with the rotor) | GIM6010-8 | – | 0.73 m/s | 13 | 321 | – |
 | **Robot total (2 arms + lift)** | | | | **323 J** | **2767 W** | |
 | M1 bench (one arm, 2 kg in hand, D20 motors) | | | | 119 J | 1328 W | |
 
-Continuous regen: lowering the torso at full speed returns 134 W, at the rated 0.20 m/s 36 W. The clamp's continuous rating is 150 W (3 NH-50 on their reference heatsink), so **lowering is capped at the rated speed whenever the pack is full or the supply is a bench PSU** (planner rule; the clamp's thermal switch latches a fault if it is ignored).
+Continuous regen: lowering the torso at full speed returns 136 W, at the rated 0.20 m/s 37 W. The clamp's continuous rating is 150 W (3 NH-50 on their reference heatsink), so **lowering is capped at the rated speed whenever the pack is full or the supply is a bench PSU** (planner rule; the clamp's thermal switch latches a fault if it is ignored).
 
 **Part (Neon review #2 finding 1):** 3 × **Vishay Dale NH-50, 0.56 Ω** (the RH-50's housing with a non-inductive Ayrton-Perry winding: Vishay gives the NH the same ratings as the RH, 50 W on its heatsink, short-time overload 5 × rated for 5 s = **1250 J per resistor**) in parallel = 0.19 Ω, switched by 3 × Infineon IRFB7530PbF (60 V, 2.0 mΩ max, 195 A package limit; one per resistor), **each resistor with a Vishay VS-40CPQ060-N3 (60 V, 2 × 20 A common-cathode Schottky, TO-247AC, both legs in parallel) across it** (freewheel path), a TI TLV3202 dual push-pull comparator (40 ns typ, 55 ns max) with a TL431B reference (threshold 26.4 V ± 1 %, 0.6 V hysteresis), a UCC27524 gate driver with gate resistors that set ≈ 0.3 µs switching edges, 10 µF film capacitors at the MOSFETs, and an 85 °C NC thermal switch on the resistor plate. **Mandatory on the M1 bench** (a bench PSU cannot sink current). The 33 V TVS stays only as an edge snubber: a TVS that does not conduct at 25.2 V clamps far above 28 V at current, so it cannot enforce the drive limit (Astra 17). On the bench, an ideal-diode stage stops regen reaching the PSU.
 
@@ -215,8 +215,8 @@ Feedback to the Pi:         K1 aux (NO) ─ U12 PC817 ─ AUX (logic, high = clo
 Bench tests of the board before any motor (bring-up step 0): ARM refused with a mushroom pressed or without a heartbeat; pre-charge reaches VIN − 3 V and K1 closes; a 10 Ω RH-50 dummy load across VBUS holds it under VIN − 3 V and trips PRE_TIMEOUT; heartbeat stopped → K1 opens within 30 ms; FORCE pulse seen on the scope at every opening and never during pre-charge; **K1 coil interrupted by hand while armed → LATCH clears and K2 stays open** (no self re-arm); supply switched off and on → board comes up disarmed; clamp at 26.4 V from a lab supply through 1 Ω with the drain voltage on the scope (≤ 48 V).
 
 ### Category-0 drop protection (bench)
-Category 0 removes torque, so the arm falls (Astra 18). From horizontal, the M1 arm (D20 motors, 1 kg in hand, 6.2 kg outboard of pitch, COM 309 mm) releases **14 J** after the balancer's share; with a 10 lb half-basket it is 23 J. Rules for every powered bench test:
-- **Mechanical catch:** an adjustable padded cradle (EVA foam on a bolted aluminium bar) set ≤ 50 mm under the forearm or hand in every pose under test, or a Dyneema tether from the stand with ≤ 50 mm slack: drop energy ≤ 3.0 J. Rated ≥ 607 N (10 × the arm's weight).
+Category 0 removes torque, so the arm falls (Astra 18). From horizontal, the M1 arm (D20 motors, 1 kg in hand, 6.3 kg outboard of pitch, COM 306 mm) releases **14 J** after the balancer's share; with a 10 lb half-basket it is 23 J. Rules for every powered bench test:
+- **Mechanical catch:** an adjustable padded cradle (EVA foam on a bolted aluminium bar) set ≤ 50 mm under the forearm or hand in every pose under test, or a Dyneema tether from the stand with ≤ 50 mm slack: drop energy ≤ 3.1 J. Rated ≥ 614 N (10 × the arm's weight).
 - Payload tray under the gripper; belt guards on; the stand bolted to the bench; operator outside the whole fall envelope (remote button).
 - On the robot (later): SS1 (controlled stop, then torque off) with a rated delay relay; the lift pawl holds the torso.
 
