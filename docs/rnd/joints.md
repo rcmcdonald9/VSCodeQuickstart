@@ -28,7 +28,7 @@ printed joints, ESTIMATE until the coupon).
 ## Hardware
 
 - **Pitch hub ↔ pitch tube** (rnd/parts/shoulder.py HUB_TIE): 4 × M4 class 10.9 studs (DIN 976-1, cut to 78.8 mm) on r 15.5 at 45° + k·90°, Loctite 270 into the 7075-T6 balancer crank (tapped through 4 mm, stud end flush with its inboard face), Ø4.5 holes through the tube wall (now r 11–20) and the hub, M4 nuts (ISO 4032 class 8, Loctite 243) on a 6061 clamp ring r 11–21 × 2 in a 5.7 mm recess of the detach face; 1.5 kN each (≈ 1.3 N·m, ESTIMATE). Assembly: tube into the inner wall → crank + studs from the inboard side → belt → outer wall → hub over the double-D and the studs → ring, nuts.
-- **Yaw flange ↔ yaw tube** (rnd/parts/roll.py YAW_TIE): the flange is now 6061-T6 (machined, ESTIMATE $25; its hex spigot stays the torque path). 6 × M3 × 45 ISO 4762 class 12.9 go down from the tube's top end, heads on a steel clamp ring r 8.5–16.8 × 2 in a Ø34 × 5.5 counterbore (heads 0.5 mm under the top, which runs 2 mm under the roll motor), through Ø3.4 holes in the wall (bore Ø16 for the ribbon) into M3 threads tapped at the hex corners (r 11) of the flange's spigot + plate (10.8 mm engaged, tips 0.8 mm inside its underside, Loctite 243); 1.0 kN each (≈ 0.5 N·m). Tightened from above on the bench, before the yaw block goes onto the roll output.
+- **Yaw flange ↔ yaw tube** (rnd/parts/roll.py YAW_TIE): the flange is now 6061-T6 (machined, ESTIMATE $25; its hex spigot stays the torque path). 6 × M3 × 40 ISO 4762 class 12.9 go down from the tube's top end, heads on a steel clamp ring r 8.5–16.8 × 2 in a Ø34 × 5.5 counterbore (heads 0.5 mm under the top, 0.5 mm under the top plate, under the yaw AS5048A board), through Ø3.4 holes in the wall (bore Ø16 for the ribbon) into M3 threads tapped at the hex corners (r 11) of the flange's spigot + plate (8.3 mm engaged, tips 3.3 mm inside its underside, Loctite 243); 1.0 kN each (≈ 0.5 N·m). Tightened from above on the bench, before the yaw block goes onto the roll output.
 - Not drawn (rnd/parts/arm.py, arm track): the upper bone ↔ yaw flange screws. With the flange in aluminium they should be M4 into tapped holes in the flange, heads on washers on the bone flange, not inserts.
 
 ## C1: capacity per load case
@@ -37,17 +37,17 @@ Before = the wave-2 joint (6 × M3 into heat-set inserts, ≈ 1.0 kN pull-out ES
 
 | Joint | Case | Pull-off (N) | Bending (N·m) | Worst pose | Before: inserts | After | Margin | |
 |---|---|---|---|---|---|---|---|---|
-| pitch hub ↔ tube | basket × 1.5 | 0 | 16.5 | floor pick, x 0.50 | 2.81× | no gap up to 84 N·m; bolt 1.57 kN; contact 7.9 MPa (≤ 12) | 1.52× | ✅ |
-| pitch hub ↔ tube | hug × 1.5 | 0 | 29.6 | yaw 45°, elbow 90° | 1.57× | no gap up to 84 N·m; bolt 1.92 kN; contact 8.9 MPa (≤ 12) | 1.34× | ✅ |
-| pitch hub ↔ tube | bump 140 N | 140 | 130.0 | abducted 90°, -Z | 0.35× | gaps; bolt 4.65 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (2.5× the bolt, need 1.5×); contact 16.9 MPa (≤ 40) | 1.57× | ✅ |
-| pitch hub ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 343 | 183.9 | roll stall, elbow 90° | 0.25× | gaps; bolt 6.14 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (1.9× the bolt, need 1.5×); contact 21.6 MPa (≤ 40) | 1.19× | ✅ |
-| yaw flange ↔ tube | basket × 1.5 | 100 | 32.5 | floor pick, x 0.50 | 1.48× | no gap up to 70 N·m; bolt 1.44 kN; contact 10.4 MPa (≤ 12) | 1.16× | ✅ |
-| yaw flange ↔ tube | hug × 1.5 | 101 | 24.1 | yaw -45°, elbow -90° | 1.99× | no gap up to 70 N·m; bolt 1.26 kN; contact 9.5 MPa (≤ 12) | 1.26× | ✅ |
-| yaw flange ↔ tube | bump 140 N | 163 | 96.1 | abducted 90°, -Z | 0.51× | gaps; bolt 2.77 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (10.8 mm tapped) 14.7 kN (5.3× the bolt, need 1.5×); contact 16.9 MPa (≤ 40) | 1.76× | ✅ |
-| yaw flange ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 166 | 98.5 | elbow stall, forward | 0.50× | gaps; bolt 2.82 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (10.8 mm tapped) 14.7 kN (5.2× the bolt, need 1.5×); contact 17.2 MPa (≤ 40) | 1.73× | ✅ |
+| pitch hub ↔ tube | basket × 1.5 | 0 | 16.8 | floor pick, x 0.50 | 2.77× | no gap up to 84 N·m; bolt 1.58 kN; contact 7.9 MPa (≤ 12) | 1.52× | ✅ |
+| pitch hub ↔ tube | hug × 1.5 | 0 | 29.9 | yaw -45°, elbow -90° | 1.56× | no gap up to 84 N·m; bolt 1.93 kN; contact 8.9 MPa (≤ 12) | 1.34× | ✅ |
+| pitch hub ↔ tube | bump 140 N | 140 | 130.4 | abducted 90°, -Z | 0.35× | gaps; bolt 4.66 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (2.5× the bolt, need 1.5×); contact 17.0 MPa (≤ 40) | 1.56× | ✅ |
+| pitch hub ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 343 | 184.0 | roll stall, elbow 90° | 0.25× | gaps; bolt 6.14 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (1.9× the bolt, need 1.5×); contact 21.6 MPa (≤ 40) | 1.19× | ✅ |
+| yaw flange ↔ tube | basket × 1.5 | 101 | 32.6 | floor pick, x 0.50 | 1.48× | no gap up to 71 N·m; bolt 1.45 kN; contact 10.3 MPa (≤ 12) | 1.16× | ✅ |
+| yaw flange ↔ tube | hug × 1.5 | 102 | 24.1 | yaw -45°, elbow -90° | 1.99× | no gap up to 71 N·m; bolt 1.27 kN; contact 9.5 MPa (≤ 12) | 1.27× | ✅ |
+| yaw flange ↔ tube | bump 140 N | 163 | 96.1 | abducted 90°, -Z | 0.51× | gaps; bolt 2.79 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (8.3 mm tapped) 11.3 kN (4.1× the bolt, need 1.5×); contact 16.7 MPa (≤ 40) | 1.75× | ✅ |
+| yaw flange ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 167 | 98.6 | elbow stall, forward | 0.50× | gaps; bolt 2.84 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (8.3 mm tapped) 11.3 kN (4.0× the bolt, need 1.5×); contact 17.0 MPa (≤ 40) | 1.72× | ✅ |
 
 - pitch hub ↔ tube, preload: 4 × M4 10.9 at 1.5 kN = 6.0 kN → 8.8 MPa on the printed contact annulus r 12.0–19.0 (× 0.75 after creep); M_gap at N = 0: 84 N·m
-- yaw flange ↔ tube, preload: 6 × M3 12.9 at 1.0 kN = 6.0 kN → 9.5 MPa on the printed contact annulus r 14.1–20.0 (× 0.75 after creep); M_gap at N = 0: 71 N·m
+- yaw flange ↔ tube, preload: 6 × M3 12.9 at 1.0 kN = 6.0 kN → 9.5 MPa on the printed contact annulus r 14.1–20.0 (× 0.75 after creep); M_gap at N = 0: 72 N·m
 
 ## M1: inline GIM8108-36
 
