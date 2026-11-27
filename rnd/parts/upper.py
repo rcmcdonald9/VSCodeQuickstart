@@ -147,8 +147,9 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     T = Pos(0, 0, 40) * Rot(0, tilt_deg, 0)
     # D11 (loop 28): face screen. The shell grows 16 mm upward (120 → 136) so the 4.3" display board sits behind a flat
     # dark bezel with the depth camera below it.
-    shell = Pos(70, 0, 13) * soft_shell(160, 244, 136, 55, 38, 2.4)                 # pill-shaped head
-    shell -= Pos(150, 0, 16) * Box(20, 200, 86)                                      # bezel opening
+    # D22 (owner, 2026-11-27): 7" Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (1024 × 600, CAN). Head 244 × 136 → 252 × 184 mm.
+    shell = Pos(70, 0, 28) * soft_shell(160, 252, 184, 58, 40, 2.4)                 # pill-shaped head
+    shell -= Pos(150, 0, 40) * Box(20, 236, 124)                                     # bezel opening
     shell -= Pos(135, 0, -36) * Box(40, 96, 29)                                       # depth-camera window (Gemini 2)
     shell -= Pos(-20, 0, -20) * Box(110, 180, 90)                                    # neck opening at the back/bottom (yoke + pan servo)
     # bezel (dark PETG) with the screen window; Waveshare ESP32-S3-Touch-LCD-4.3B (112.4 × 75.1 mm board, 4.3" 800×480
@@ -164,9 +165,9 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
         inv = (Pos(0, 0, 40) * Rot(0, td, 0)).inverse()
         shell -= inv * env_t
         shell -= inv * env_p
-    visor = Pos(146, 0, 16) * soft_box(6, 196, 86, 2.8, 1.5) - Pos(146, 0, 16) * Box(10, 97, 56)
-    screen = Pos(138, 0, 16) * Box(9, 112.4, 75.1)
-    eyes = [Pos(142.8, s * 22, 18) * Rot(0, 90, 0) * Cylinder(9, 0.6) for s in (1, -1)]       # drawn on the screen (render only)
+    visor = Pos(146, 0, 40) * soft_box(6, 232, 120, 2.8, 1.5) - Pos(146, 0, 40) * Box(10, 156, 90)   # 7" active area ≈ 154 × 86
+    screen = Pos(138, 0, 40) * Box(9, 182, 112)                                       # board outline ESTIMATE (confirm with the drawing)
+    eyes = [Pos(142.8, s * 34, 46) * Rot(0, 90, 0) * Cylinder(14, 0.6) for s in (1, -1)]      # drawn on the screen (render only)
     cam = Pos(128, 0, -36) * Box(30, 90, 25)                                         # Gemini 2, below the bezel
     out = [("head_bracket", top, "white"), ("handle", handle, "dark"), ("belt_idler", idler, "steel"),
            ("pan_sleeve", pan, "white"), ("yoke", P * yoke, "dark"), ("tilt_sleeve", P * tilt, "white"),

@@ -1188,3 +1188,8 @@ One long push instead of half-hour runs. In order:
 
 - D22: 7" Waveshare ESP32-P4 touch display on CAN ($46.99) replaces the 4.3" board; tablet rejected (battery in the head, no CAN, OS upkeep). Head grows; tilt gets a passive pivot.
 - D23 + R17: no accessible pinch/nip point (covers ≤ 8 mm openings or ≥ 25 mm gaps over the range), all belts/motors enclosed, lift mast cover + 120 mm bottom gap, TPU bumpers, current-based collision detection. rnd/pinch.py first.
+
+## 2026-11-27: D22 head + D23 concept covers rendered (robot_v8_covers_concept.png)
+
+- Head 252 × 184 mm with the 7" ESP32-P4 board behind a 232 × 120 bezel (156 × 90 window); level and −30° tilt clean, **+30° tilt hits the mast top bracket (1.4 cm³)** → fix with the queued passive tilt pivot.
+- rnd/parts/covers.py (render-only, robot.build(covers=True)): shoulder domes, yaw-block sleeves, elbow bay domes + collar-window doors, forearm sleeves, wrist boots, mast bellows. Not yet checked for sweeps/pinch (rnd/pinch.py next).

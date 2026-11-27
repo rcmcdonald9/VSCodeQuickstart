@@ -31,7 +31,7 @@ def omni_wheel():
     return Rot(90, 0, 0) * w
 
 
-def build(lift=None, poses=None):
+def build(lift=None, poses=None, covers=False):
     d = BASELINE
     b, u, a = d.base, d.upper, d.arm
     lift_mm = (lift if lift is not None else 0.75) * 1000
@@ -53,6 +53,21 @@ def build(lift=None, poses=None):
             out.append((f"{side}_roll_{n}", piv * mir(p), c))
         for n, p, c in arm.assembly(elbow_deg=P["elbow"], wrist_deg=P["wrist"]):
             out.append((f"{side}_arm_{n}", piv * mir(Pos(0, roll.ROLL_Y, -roll.YAW_DROP) * p), c))
+        if covers:                                                         # D23 concept covers (render only until rnd/pinch.py checks them)
+            from . import covers as cv
+            for n, p, c in cv.roll_frame():
+                out.append((f"{side}_roll_{n}", piv * mir(p), c))
+            for n, p, c in cv.pitch_frame():
+                out.append((f"{side}_roll_{n}", piv * mir(p), c))
+            up = Pos(0, roll.ROLL_Y, -roll.YAW_DROP)
+            for n, p, c in cv.arm_frame():
+                out.append((f"{side}_arm_{n}", piv * mir(up * p), c))
+            fe = up * Pos(0, 0, -arm.ELBOW_Z) * Rot(0, P["elbow"], 0)
+            for n, p, c in cv.forearm_frame():
+                out.append((f"{side}_arm_{n}", piv * mir(fe * p), c))
+    if covers:
+        from . import covers as cv
+        out += cv.mast_bellows(lift_mm, upper.Z_BASE + 40 + 172, upper.Z_TOP, upper.MAST_X, upper.W)
     return out
 
 
