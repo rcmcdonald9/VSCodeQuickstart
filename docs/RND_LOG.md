@@ -1354,3 +1354,8 @@ One long push instead of half-hour runs. In order:
 - M1: Step 1 $1,512, Step 2 $1,860, kit $3,373. Cheapest alternatives found (Huco Oldham, Misumi collars, 1½" balls, saw-cut ballast) → $6,898, still $1,398 over $5,500. Flag: catalogue "9.5 N·m" on Oldham hubs is the clamp-screw torque, not a disc rating — the D50 ≥ 14 N·m is unverified.
 - Owner decision needed (limit vs design cost-down; lead proposes eliminating the Oldham couplings by moving belt tension to an idler so motors bolt straight to their pulleys).
 - Bring-up calibration fixed (pitch calibrated with the elbow folded to −140° via a per-joint cal_pose: 9.02 → 4.79 N·m vs 9.0 limit; test_s1/s2 pass). **D26 (owner): cost-down redesign first**, $5,500 stays the target → wave 11.
+
+### 2026-11-27 — W9a merged: neck v2, torso recess study, lift4
+- Neck v2 (R17): the head's back is a half-cylinder (R 88) round the tilt axis, one yoke bar through a ≥ 26 mm slot closed by a concentric 4 mm saddle; TPU neck boot retired. Tilt nips 4 → 0; head 252 × 176 × 130 mm, 602 g (−67 g), shell prints in two halves. Pinch 21/16 → 17/16 (people near 14/16).
+- Torso shoulder recess (PIP_TORSO_RECESS=1, default off; torso 390 → 345 mm across the shoulders): closes the shoulder–torso rows but **not the inboard wedge** — that's arm part vs arm part (yaw block/band vs the arm-side ferrule, 2.5 mm at −15°), so no torso/cover change opens it. Mechanical options: a hard roll stop at ≥ +5° (R16 across-body 71 → 49 % always) or ROLL_Y + 23 mm. → owner.
+- Remaining roll nips need roll.py concentric link walls (rear boss r ≤ 45, front bore R_ARM + 4) — after the cost-down track releases roll.py. Lift4 ear site applied.
