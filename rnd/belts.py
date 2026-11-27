@@ -26,6 +26,125 @@ def pitch_length(z_small, z_big, centre):
     return 2 * centre * math.cos(phi) + math.pi * (D + d) / 2 + phi * (D - d)
 
 
+def loop_path(circles):
+    """Pitch-line path of a closed belt round circles [(x, y, r_pitch, σ)] in loop order, travelling CCW (σ +1: the belt
+    wraps the circle with its teeth, the circle is inside the loop; σ −1: a back-side idler outside the loop). Returns
+    (length mm, [wrap deg per circle], [(tangent point out, tangent point in of the next circle)])."""
+    n = len(circles)
+    th = []
+    for i in range(n):
+        xi, yi, ri, si = circles[i]
+        xj, yj, rj, sj = circles[(i + 1) % n]
+        D, a, k = math.hypot(xj - xi, yj - yi), math.atan2(yj - yi, xj - xi), sj * rj - si * ri
+        t = a - math.asin(k / D)
+        L_ = (-math.sin(t), math.cos(t))
+        ti = (xi - si * ri * L_[0], yi - si * ri * L_[1])
+        tj = (xj - sj * rj * L_[0], yj - sj * rj * L_[1])
+        th.append((t, math.sqrt(D * D - k * k), ti, tj))
+    length, wraps = sum(s for _, s, _, _ in th), []
+    for i in range(n):
+        w = (circles[i][3] * (th[i][0] - th[i - 1][0])) % (2 * math.pi)
+        wraps.append(math.degrees(w))
+        length += circles[i][2] * w
+    return length, wraps, [(ti, tj) for _, _, ti, tj in th]
+
+
+BACK = 0.97                         # HTD 5M: pitch line → belt back (3.6 thick, 2.06 tooth, pitch line 0.57 above the land)
+# D26 (2026-11-27): slotted-idler take-up. Fixed centres (the motor is fixed), so the idler covers installation slack,
+# preload stretch and the tolerances (all ESTIMATE until a belt is measured):
+#   - preload per strand T0 = 0.25 × the peak effective pull (rnd/lift.py PRELOAD), stretch T0·L / EA, EA ≈ 50 kN for a
+#     15 mm glass-cord HTD 5M (ESTIMATE; a stiffer belt only shortens the travel needed);
+#   - belt length ± 0.46 mm (Gates PowerGrip / HTD centre-distance tolerance class ± 0.009 in for 10–15 in belts, ×2),
+#     printed centre distance ± 0.2 mm (× 2 in length), 0.2 mm stretch-in;
+#   - installation: no slack is needed. The small pulley keeps only its motor-side flange (the hub-side flange is turned
+#     off), so with the idler retracted the belt slides axially, in mesh, off the pulley's teeth onto the hub toward wall B
+#     (and back on): Gates' rule for fixed-centre drives (one pulley flangeless on the installation side). The big pulleys
+#     (pitch 60T, yaw 40T flangeless; elbow 40T flanged both sides) and the idler's flanges keep the belt tracking.
+IDLER_TAKEUP = dict(preload=0.25, EA=50e3, tol_belt=0.46, tol_centre=0.4, stretch_in=0.2)
+INSTALL_SLACK = 0.0
+# Idlers: 2 × 625-2RS (5 × 16 × 5, SKF 625: C 1.72 kN, C0 0.68 kN, catalogue) on the plain shank of an ISO 4762 M5 × 50
+# axle bolt (aluminium Ø8 round spacers to the walls), clamped across both walls through slots; an M4 jack screw in the
+# slot's end boss holds the position (the clamp alone creeps, Neon #2 F3). Kinds:
+#   back   — printed PETG-CF flat roller Ø26 (r 13), 1.5 mm flanges r + 2.5, on the belt's back outside the loop (adds
+#            wrap on the small pulley);
+#   inside — printed HTD 5M 18T idler (pitch Ø28.6, root Ø23.4 over the Ø16 bearings), flanges, inside the loop.
+# side: +1 = the stage +Y strand, −1 = −Y; f: the idler's foot along the strand from the small pulley (0 … 1).
+IDLERS = {"shoulder_pitch": dict(kind="back", side=1, f=0.42), "elbow": dict(kind="inside", side=1, f=0.62),
+          "upper_yaw": dict(kind="inside", side=-1, f=0.55), "elbow_d20": dict(kind="inside", side=1, f=0.6),
+          "lift": dict(kind="back", side=1, f=0.5)}
+IDLER_HW = dict(back=dict(r_roll=13.0, flange=2.5, width=16.0), inside=dict(teeth=18, flange=2.0, width=16.0))
+
+
+def _strand(z_small, z_big, centre, side):
+    """Tangent points (small, big) of the straight open-belt strand on side ±1 (stage frame: small at 0, big at +X)."""
+    r1, r2 = pd(z_small) / 2, pd(z_big) / 2
+    s = (r2 - r1) / centre
+    c = math.sqrt(1 - s * s)
+    return (-r1 * s, side * r1 * c), (centre - r2 * s, side * r2 * c)
+
+
+def idler_circles(z_small, z_big, centre, idler, delta):
+    """Loop circles (CCW, belts.loop_path) with the idler pushed delta mm off the straight strand (inward for a back-side
+    roller, outward for an inside idler), plus the idler centre."""
+    p1, p2 = _strand(z_small, z_big, centre, idler["side"])
+    l = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+    ux, uy = (p2[0] - p1[0]) / l, (p2[1] - p1[1]) / l
+    nx, ny = -uy, ux
+    if ny * idler["side"] < 0:
+        nx, ny = -nx, -ny                                       # outward normal of the strand
+    bx, by = p1[0] + idler["f"] * l * ux, p1[1] + idler["f"] * l * uy
+    hw = IDLER_HW[idler["kind"]]
+    if idler["kind"] == "back":
+        r = hw["r_roll"] + BACK
+        c = (bx + (r - delta) * nx, by + (r - delta) * ny, r, -1)
+    else:
+        r = pd(hw["teeth"]) / 2
+        c = (bx - (r - delta) * nx, by - (r - delta) * ny, r, 1)
+    small, big = (0.0, 0.0, pd(z_small) / 2, 1), (centre, 0.0, pd(z_big) / 2, 1)
+    return ([small, big, c] if idler["side"] > 0 else [small, c, big]), (c[0], c[1]), (nx, ny)
+
+
+def _solve_delta(z_small, z_big, centre, idler, target):
+    lo, hi = 0.0, 30.0
+    for _ in range(60):
+        m = (lo + hi) / 2
+        try:
+            L = loop_path(idler_circles(z_small, z_big, centre, idler, m)[0])[0]
+        except ValueError:                                  # the idler would overlap a pulley: past any useful travel
+            L = 1e9
+        lo, hi = (m, hi) if L < target else (lo, m)
+    return (lo + hi) / 2
+
+
+def idler_geom(joint, z_small, z_big, centre, belt_teeth, peak_pull, spec=None):
+    """Slotted idler for one stage: nominal / slot-end positions (stage frame), travel, teeth in mesh, loads. The slot runs
+    from the installation position (≥ INSTALL_SLACK of slack, or the strand just touched) to the long-belt end."""
+    sp = dict(spec or IDLERS[joint])
+    hw = IDLER_HW[sp["kind"]]
+    tk = IDLER_TAKEUP
+    L_belt = belt_teeth * PITCH
+    T0 = tk["preload"] * peak_pull
+    pre = T0 * L_belt / tk["EA"]
+    L2 = pitch_length(z_small, z_big, centre)
+    d_lo = _solve_delta(z_small, z_big, centre, sp, L_belt - INSTALL_SLACK) if L2 < L_belt - INSTALL_SLACK else 0.0
+    d_nom = _solve_delta(z_small, z_big, centre, sp, L_belt + pre)
+    d_hi = _solve_delta(z_small, z_big, centre, sp, L_belt + pre + tk["tol_belt"] + tk["tol_centre"] + tk["stretch_in"])
+    d_short = _solve_delta(z_small, z_big, centre, sp, L_belt + pre - tk["tol_belt"] - tk["tol_centre"])
+    circ, cen, n = idler_circles(z_small, z_big, centre, sp, d_nom)
+    _, w, _ = loop_path(circ)
+    i_id = 2 if sp["side"] > 0 else 1
+    pos = lambda d: idler_circles(z_small, z_big, centre, sp, d)[1]
+    tims = [z_small * loop_path(idler_circles(z_small, z_big, centre, sp, d)[0])[1][0] / 360 for d in (d_short, d_nom, d_hi)]
+    T1 = peak_pull + T0                                       # tight strand at the peak (conservative: slack side keeps T0)
+    F_id = 2 * T1 * math.sin(math.radians(w[i_id]) / 2)      # idler load if its strand is the tight one
+    r_out = (hw["r_roll"] if sp["kind"] == "back" else pd(hw["teeth"]) / 2 - 0.5715) + hw["flange"]
+    out = dict(sp, **hw, joint=joint, belt=L_belt, L2=L2, slack0=L_belt - L2, pre=pre, T0=T0, d_lo=d_lo, d_nom=d_nom, d_hi=d_hi,
+               d_short=d_short, centre=cen, normal=n, slot=(pos(d_lo), pos(d_hi)), travel=d_hi - d_lo, circles=circ,
+               wrap_small=w[0], wrap_idler=w[i_id], tim=tims[1], tim_min=min(tims), F_idler=F_id, T1=T1, r_out=r_out,
+               install_ok=L2 < L_belt - INSTALL_SLACK + 1e-6)
+    return out
+
+
 def centre_for(z_small, z_big, belt_teeth):
     """Centre distance (mm) at which a stock belt of belt_teeth × 5 mm pitch length fits with zero slack (bisection on
     pitch_length). Fable review M5 (2026-11-27): the CAD centres are set to this, so the ±1 mm eccentric sits mid-range."""
