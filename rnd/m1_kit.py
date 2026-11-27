@@ -2,9 +2,12 @@
 python -m rnd.m1_kit
 
 - **Step 1: prove the GIM protocol and the safety chain on ONE joint.** One GIM6010-8 (the yaw motor later), the DM-J4310,
-  the two STS3215, the CAN adapters, the bench supply and the whole safety board, the cheap drive parts of one D13 stage on
-  a test lever, thermistors and one aluminium rear cap, inserts and screws for the coupons, filament. Nothing in it waits
-  on a seller answer or a CAD fix, and every part is reused in the arm (except the bench tools).
+  the CAN adapters, the bench supply and the whole safety board, a test lever bolted straight to the GIM output, one keyed
+  D50 Oldham for the tongue coupon, thermistors, inserts and screws for the coupons, filament. Nothing in it waits on a
+  seller answer or a CAD fix, and every part is reused in the arm (except the bench tools). Neon review #2 finding 15
+  (2026-11-27): the D40 Oldham / plain Ø12 / set-screw pulley / 315 belt stage (belts.md: 0.86× / 0.65× at the motor peak,
+  yaw centre 93 % of its adjuster), the unverified CNC rear cap (seller question 6) and the two STS3215 (no 12 V rail
+  before the elbow node's buck) left Step 1; the stage is bought keyed (D50) in Step 2.
 - **Step 2: the rest of the arm**, bought only when Step 1's exit criteria are met (docs/M1_READINESS.md): the common arm
   parts, plus two holds that each list what they buy if the answer is yes and what they buy instead if no:
   - **Hold A (D20)**: GIM8108-8 at shoulder pitch + elbow, waiting on the seller's 24 V confirmation; **not motors only**
@@ -33,7 +36,10 @@ GIM8108_36 = (240.0, "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) dri
 GIM8108_36_HI = 306.99
 BELT = (9.0, "Bestorq 400-5M-15 $7.67 at MROSupply (loop 14); Gates ≈ $20–28")
 AL_PULLEY = (7.0, E)
-OLDHAM = (12.0, "ESTIMATE generic D40 3-piece; Ruland MOCT41-12-A (Ø41.3, fits the Ø43 nose bore) $55.20 at Motion")
+OLDHAM = (20.0, "ESTIMATE generic D50 clamp-hub Oldham, 12 H7 + 4 mm keyway (cartridge_m.parts_list; the D40 failed belts.md 0.86×); Ruland MOCT41-12-A was $55.20 at Motion")
+KEYED_SHAFT = (15.0, "ESTIMATE: Ø12 h6 C45 ground rod 300 mm with a 4 × 2.5 DIN 6885 keyway (cartridge_m.parts_list)")
+KEYS = (5.0, "ESTIMATE: DIN 6885 A 4 × 4 key assortment (16 + 11 mm per stage)")
+KEYED_PULLEY = (12.0, "ESTIMATE: aluminium HTD 5M 20T, 15 mm belt, 12 H7 bore + 4 mm keyway, set screw on the key (belts.md 1.41×)")
 B61808 = (2.02, "AliExpress MOCHU 10-pack snapshot (loop 14)")
 B6801 = (0.90, E)
 PSU = (174.80, "Bravo Electro $174.80; Master Electronics $170.13 (2026-11-27 search snapshots)")
@@ -48,56 +54,49 @@ def step1():
         ("Actuators", "SteadyWin GIM6010-8 **24 V, SDC104 driver version** (ONE)", 1, *GIM6010[:1],
          "the Step-1 joint (protocol discovery, limits, CAN timeout, e-stop on a real GIM); later the upper-arm yaw (20T:40T)", GIM6010[1]),
         ("Actuators", "Damiao DM-J4310-2EC **V1.1**", 1, *j[:1], "wrist pitch; its MIT protocol is known: the second motor on the Step-1 bus", j[1]),
-        ("Actuators", "Feetech STS3215-C018 **12 V** (30 kg·cm)", 2, *s[:1], "wrist roll (D16 spindle), gripper", s[1]),
         ("Electronics (A14)", "USB-CAN adapter, candleLight / gs_usb (FYSETC UCAN, STM32F072), onboard 120 Ω (jumper)", 2, 19.0,
          "can_map.yaml buses B1 + B2 = SocketCAN can0 / can1", "MatterHackers $19 (2026-11)"),
         ("Electronics (A14)", "Waveshare 2-CH CAN FD HAT (2 × MCP2518FD, isolated, SKU 17075): SPI-CAN alternative, measured "
          "against the two gs_usb adapters on the Step-1 bus (docs/sw/can_interface_note.md)", 1, 46.99,
          "decides the robot's 5 CAN channels (A14): latency, jitter, loss, bus-off on the Pi 5; check its INT GPIOs vs 17/27",
          "waveshare.com $46.99 (2026-11-27)"),
-        ("Electronics", "USB TTL bus-servo adapter (STS3215 ID setup; drives the servos in Step 1)", 1, 8.0, "servo IDs 1 / 2", E),
         ("Electronics", "Raspberry Pi 5 Active Cooler (official; heatsink + PWM fan)", 1, 5.0, "no thermal throttling under the 500 Hz loop (Menlo sim2real lesson: throttling quietly degraded actuator response)", "raspberrypi.com list price $5 (ESTIMATE until a retailer snapshot)"),
         ("Power (M2)", "**Mean Well SE-1000-24** (24 V 41.7 A, 1 kW), set 24.0–25.2 V", 1, *PSU[:1],
-         "arm 14.8 A sustained / 31.5 A peak at the rated drive limit (electrical.md *Bench supply*); the old 10 A supply was a third of the peak", PSU[1]),
+         "arm 14.8 A sustained / 31.5 A peak at the rated drive limit; overload is a latched shutdown at 43.8–52 A, not current limiting (electrical.md *Bench supply*)", PSU[1]),
         ("Power (A5)", "Adjustable 0–30 V / 10 A CC/CV bench supply", 1, 65.71, "the 1 A current-limited first power-up only (drives disabled)",
          "Newegg generic 30 V 10 A CC/CV $65.71 (2026-11-27)"),
-        ("Power (M2)", "4,700 µF 35 V bus capacitor + 40 A (main) and 20 A slow-blow (arm lead) ATO fuses with holders + 10 / 14 AWG silicone wire, XT60 / XT30",
-         1, 22.0, "electrical.md safety-board netlist F1, F3, C1", E),
-        ("Power (A5 v2)", "Regen clamp / bus discharge: **3** × Vishay RH-50 0.56 Ω + 3 × IRFB7530 + gate driver, film caps, 85 °C thermal switch, heatsink plate",
-         1, 76.0, "mandatory on a bench supply; 3rd resistor since the inline roll (robot peak regen 2.8 kW; electrical.md)", "RH-50 ≈ $15 (RS 5-pack); rest ESTIMATE"),
+        ("Power (M2)", "4,700 µF 35 V bus capacitor + **60 A MIDI** main fuse (F1, sized for the robot pack) and 20 A ATO arm-lead fuse with holders + 10 / 14 AWG silicone wire, XT60",
+         1, 30.0, "electrical.md safety-board netlist F1, F3, C1 (Neon #2 F1: a 40 A ATO never clears on the 41.7 A supply)", E),
+        ("Power (A5 v2)", "Regen clamp / bus discharge: 3 × **Vishay NH-50 0.56 Ω (non-inductive)** + 3 × **VS-40CPQ060-N3 freewheel Schottky** + 3 × IRFB7530 + gate driver + gate resistors, film caps, 85 °C thermal switch, heatsink plate",
+         1, 127.0, "mandatory on a bench supply; Neon #2 F1: the wirewound RH-50 with no freewheel path avalanched the MOSFETs (electrical.md)",
+         "ESTIMATE: NH-50 $30 each (IBS NH05050R00FE02 $15.01, Future NH05025R00FE02 $42.30); VS-40CPQ060-N3 RS £37 / 25; rest as before"),
         ("Power (A5 v2)", "E-stop: 2 two-channel latching mushrooms + TE ALEV100 DC contactor (24 V coil, aux contact) + K_PRE relay + 3.3 Ω RH-50 pre-charge "
          "+ SN74LVC1G123 watchdog on its own LDO", 1, 150.0, "category-0 stop; watchdog 25 ms (sized on sw/loop_jitter.py)",
          "LEV100A5ANG $92 (Master Electronics); rest ESTIMATE"),
-        ("Power (M2)", "Safety-board logic (netlist in electrical.md): LM74700-Q1 + IRFB7530 ideal diode, 2nd LVC1G123 (discharge one-shot), LVC1G74 latch, "
-         "TLV3702 + TL431, LVC1G32 + UCC27524, 12 V buck + 3.3 V LDO, 1 kΩ 3 W bleeder, 10 Ω RH-50 dummy load, 2 × PC817, 2-layer PCB or perfboard", 1, 40.0,
-         "pre-charge / clamp interlock (one-shot on the contactor's opening edge), board tests before any motor", E),
+        ("Power (M2)", "Safety-board logic (netlist v3 in electrical.md): LM74700-Q1 + IRFB7530 ideal diode, 2nd LVC1G123 (discharge one-shot on Ā), LVC1G74 latch + power-on reset, "
+         "**TLV3202** + TL431B, LVC1G11 + LVC1G32 (K1 hold on AUX), LVC1G04, UCC27524, 12 V buck + 3.3 V LDO, 1 kΩ 3 W bleeder, 10 Ω RH-50 dummy load, 2 × PC817, 2-layer PCB", 1, 45.0,
+         "**order after the KiCad schematic + LTspice clamp simulation are reviewed** (M1_READINESS Step 1 gate); board tests before any motor", E),
         ("Bring-up IO (S1)", "sw/bringup.py `--estop gpiod:gpiochip0:17:27`: reset/ARM pushbutton, coil MOSFET + suppression, opto "
          "(aux contact → GPIO27), heartbeat lead GPIO17 → watchdog, 3 m 4-core cable for the remote mushroom, terminal blocks", 1, 20.0,
          "safety step (e-stop, watchdog, reset refused while pressed); operator outside the fall envelope", E),
         ("Commissioning (A5 v2)", "Category-0 catch: adjustable padded cradle (Al bar + EVA foam) + Dyneema tether ≥ 600 N + payload tray", 1, 25.0,
          "drop energy ≤ 3 J with ≤ 50 mm gap (electrical.md)", E),
         ("Bench", "Bench stand: 2 × 40×40 aluminium extrusion 400 mm + corner brackets + 2 bench clamps", 1, 30.0,
-         "carries the Step-1 stage now, the shoulder later (Fable minor: no stand in the kit)", E),
-        ("Step-1 rig (D13 v3)", "Steel rod Ø12 h6, 300 mm (stage shafts, cut 4 × 50 mm)", 1, 9.0, "the Step-1 yaw stage; the other cuts for pitch / roll / elbow", E),
-        ("Step-1 rig (D13 v3)", "Aluminium HTD 5M pulley, 20T, 15 mm belt, **12 mm bore**, 2 set screws", 1, *AL_PULLEY[:1], "yaw small pulley", AL_PULLEY[1]),
-        ("Step-1 rig (D24)", "Oldham coupling, D40, **12 mm clamp hub**, acetal (POM) disc", 1, *OLDHAM[:1], "yaw stage", OLDHAM[1]),
-        ("Step-1 rig (D24)", "Acetal (POM) rod Ø40 × 100 mm", 1, 12.0, "spare Oldham discs, cut to fit the printed tongue", E),
-        ("Step-1 rig", "HTD 5M-15 closed belt 315 mm (yaw, 20T:40T)", 1, *BELT[:1], "nearest stock to 313 (rnd/belts.py)", BELT[1]),
-        ("Step-1 rig", "61808 (40×52×7) × 2 + 6801 (12×21×5) 10-pack", 1, 2 * B61808[0] + 10 * B6801[0], "yaw one-piece shaft (D19) + every D13 stage",
-         "61808: AliExpress MOCHU 10-pack snapshot (loop 14); 6801 ESTIMATE"),
-        ("Step-1 rig", "Test lever: 20 × 20 aluminium bar 300 mm + 1 kg and 2 kg weights + luggage scale", 1, 20.0,
-         "torque constant, the drive's torque limit, the catch, the collision trip on one joint", E),
-        ("Thermal (M7)", "10 × 10 k NTC thermistors (epoxy bead) + Kapton tape", 1, 6.0, "sleeve and rear-cap temperatures from day 1 (thermal.md)", E),
-        ("Thermal (M7)", "Aluminium finned rear cap for the Step-1 GIM6010 cartridge", 1, *AL_CAP[:1],
-         "measures the sleeve vs cap difference (thermal.md: closed sleeve 0.65 × rated continuous)", AL_CAP[1]),
+         "carries the Step-1 lever now, the shoulder later (Fable minor: no stand in the kit)", E),
+        ("Step-1 rig", "Test lever: 6061 flat bar 40 × 6 × 300 mm, drilled on arrival to the GIM6010-8's measured output pattern and bolted straight to it "
+         "+ 1 kg and 2 kg weights + luggage scale", 1, 25.0,
+         "protocol, torque constant, friction, the drive's torque limit, the catch, the collision trip on one joint: no belt stage needed (Neon #2 F15)", E),
+        ("Coupons (D24)", "Oldham coupling **D50**, 12 H7 clamp hub + 4 mm keyway, acetal disc (the yaw stage's, reused in Step 2)", 1, *OLDHAM[:1],
+         "the printed ASA tongue adapter's torque coupon against a real disc (COUPONS.md); D40 dropped (belts.md 0.86×)", OLDHAM[1]),
+        ("Thermal (M7)", "10 × 10 k NTC thermistors (epoxy bead) + Kapton tape", 1, 6.0, "motor case and winding-side temperatures from day 1 (thermal.md)", E),
         ("Fasteners (coupons)", "M4 brass heat-set inserts, **short** (Ø5.6 hole × 5.7 mm), 100-pack", 1, 15.93,
          "coupons first (insert pull-out, Fable C1/C3), then the arm", "Newark $15.93 / 100 (M4 × 8.1 Heat-Sert class; short variant ESTIMATE)"),
         ("Fasteners (coupons)", "M3 brass heat-set inserts (Ø4.0–4.1 hole), 100-pack", 1, 12.0, "coupons, then the arm", E),
         ("Fasteners (coupons)", "Stainless screw kit: M4 × 12 countersunk + button heads (Fable minor), M4 / M3 SHCS assortment, M5 × 30 + nylocs",
          1, 25.0, "Step-1 rig, coupons, later the cartridge flanges", E),
         ("Consumables", "Epoxy (CF bonds), grease, thread locker 243 / 270, PTFE washers", 1, 15.0, "", E),
-        ("Filament (A6)", "PETG 3 kg + ASA 1 kg (cans, rear caps, Oldham tongue adapters) + TPU 95A 0.25 kg", 1, 90.0,
-         "coupons + the Step-1 rig now, the arm in Step 2 (print_plan.md)", E),
+        ("Filament (A6)", "PETG 3 kg + ASA 1 kg (coupons, Oldham tongue adapters, a sleeve coupon) + TPU 95A 0.25 kg", 1, 90.0,
+         "coupons now, the arm in Step 2 (print_plan.md)", E),
     ]
 
 
@@ -120,6 +119,18 @@ def step2_common():
          "2:1 tackle balancer, pin B b 20 mm, a 40–60 mm (balancer.md)", E),
         ("Sensors (M3)", "4 × AS5048A joint encoders + 2 RP2040 CAN nodes (shoulder + elbow) + 2 tactile pads + palm ToF", 1, 96.0,
          "joint-side encoders; **no mount or node firmware yet** (Fable M3): buy with the arm, or drop the ≤ 1 mm accuracy claim for M1", E),
+        ("Actuators (from Step 1)", "Feetech STS3215-C018 **12 V** (30 kg·cm)", 2, 19.5, "wrist roll (D16 spindle), gripper: on the elbow node's 12 V 6 A buck (below), "
+         "which Step 1 did not have (Neon #2 F15: the 1 A logic buck must never feed them)", "loop 14 retailer snapshot"),
+        ("Electronics (from Step 1)", "USB TTL bus-servo adapter (STS3215 ID setup only)", 1, 8.0, "servo IDs 1 / 2", E),
+        ("Yaw stage (D24 v2, from Step 1)", "Keyed Ø12 h6 shaft 300 mm (cut 4 × 50 mm: yaw now, the rest for pitch / elbow / spares)", 1, *KEYED_SHAFT[:1], "cartridge_m.parts_list", KEYED_SHAFT[1]),
+        ("Yaw stage (D24 v2, from Step 1)", "Aluminium HTD 5M 20T, 12 H7 + 4 mm keyway", 1, *KEYED_PULLEY[:1], "yaw small pulley", KEYED_PULLEY[1]),
+        ("Yaw stage (D24 v2, from Step 1)", "DIN 6885 4 × 4 keys (16 + 11 mm)", 1, *KEYS[:1], "pulley + Oldham hub", KEYS[1]),
+        ("Yaw stage (D24 v2, from Step 1)", "HTD 5M-15 closed belt 315 mm (yaw, 20T:40T) at the **80.93 mm** exact centre", 1, *BELT[:1],
+         "belts.md: the CAD's 80.00 mm uses 93 % of the ±1 mm adjuster; the CAD track moves it before printing", BELT[1]),
+        ("Yaw stage (D24 v2, from Step 1)", "61808 (40×52×7) × 2 + 6801 (12×21×5) 10-pack", 1, 2 * B61808[0] + 10 * B6801[0], "yaw one-piece shaft (D19) + every D13 stage",
+         "61808: AliExpress MOCHU 10-pack snapshot (loop 14); 6801 ESTIMATE"),
+        ("Thermal (M7, from Step 1)", "Aluminium finned rear cap for the yaw GIM6010 cartridge, **after seller question 6** confirms the mounting face", 1, *AL_CAP[:1],
+         "sleeve vs cap difference (thermal.md: closed sleeve 0.65 × rated continuous)", AL_CAP[1]),
         ("Sensors (D14)", "Elbow node power + bus: 24→12 V **6 A** buck (two stalled STS3215 draw 5.4 A) + half-duplex TTL transceiver + 2 × MCP2562", 1, 14.0,
          "D14: 12 V and TTL made in the arm (sw/config/can_map.yaml)", E),
         ("Sensors", "Global-shutter wrist camera (OV9281 MIPI-CSI) + CSI→USB UVC bridge + slim high-flex USB cable", 1, 70.0, "D12 wrist camera", E),
@@ -145,8 +156,8 @@ HOLD_A = dict(
           "1382 N peak pull at 22 N·m is 2.8× a 15 mm belt's ultimate/3 (belts.py D20)", E_D20),
          ("Thermal (M7)", "Aluminium finned rear caps, Ø96 class", 2, 18.0, "pitch + elbow GIM8108-8 cartridges", E)],
     no=[("Actuators", "SteadyWin GIM6010-8 24 V SDC104", 2, GIM6010[0], "pitch + elbow as today (bench-valid at 1 kg; 0.6–0.8× on the 20 lb hug)", GIM6010[1]),
-        ("Drive (D24)", "Oldham coupling, D40, 12 mm clamp hub, POM disc", 2, OLDHAM[0], "pitch + elbow", OLDHAM[1]),
-        ("Drive (D13 v3)", "Aluminium HTD 5M pulley, 20T, 15 mm belt, 12 mm bore", 2, AL_PULLEY[0], "pitch + elbow small pulleys", AL_PULLEY[1]),
+        ("Drive (D24 v2)", "Oldham coupling D50, 12 H7 clamp hub + 4 mm keyway, acetal disc", 2, OLDHAM[0], "pitch + elbow (belts.md 1.35×; the D40 was 0.86×)", OLDHAM[1]),
+        ("Drive (D24 v2)", "Aluminium HTD 5M 20T, 15 mm belt, 12 H7 + 4 mm keyway (+ keys; shafts from the common keyed rod)", 2, KEYED_PULLEY[0] + 2.5, "pitch + elbow small pulleys", KEYED_PULLEY[1]),
         ("Drive", "HTD 5M-15 closed belts 355 (pitch, 20T:60T) + 295 (elbow, 20T:40T) mm", 2, BELT[0], "pitch + elbow", BELT[1]),
         ("Thermal (M7)", "Aluminium finned rear caps, Ø86 class", 2, AL_CAP[0], "pitch + elbow GIM6010 cartridges", AL_CAP[1])],
     note="Fable M6: the D20 swap is a drive redesign, not a motor swap. With 22 N·m at the 20T pulley the repo's own check gives 1382 N "
@@ -172,8 +183,8 @@ HOLD_B = dict(
          ("Drive (D24 inline, M1)", "Rear mount: 8 × M4 studs (Loctite 270) + nuts instead of M4 × 18 into 3.5 mm threads; 2 × hardened Ø10 × 28 stop pins + stainless wear strips",
           1, 8.0, "Fable M1: printed Ø8 stops saw 16 MPa at the limit, 2.3 kN at stall; no stripped $240 motor", E)],
     no=[("Actuators", "SteadyWin GIM6010-8 24 V SDC104", 1, GIM6010[0], "shoulder roll on the 18T:80T belt (4.44:1)", GIM6010[1]),
-        ("Drive (D13 v3)", "Aluminium HTD 5M pulley, 18T, 15 mm, 12 mm bore", 1, AL_PULLEY[0], "roll small pulley", AL_PULLEY[1]),
-        ("Drive (D24)", "Oldham coupling D40, 12 mm clamp hub, POM disc", 1, OLDHAM[0], "roll stage", OLDHAM[1]),
+        ("Drive (D24 v2)", "Aluminium HTD 5M 18T, 15 mm, 12 H7 + 4 mm keyway (+ keys)", 1, KEYED_PULLEY[0] + 2.5, "roll small pulley", KEYED_PULLEY[1]),
+        ("Drive (D24 v2)", "Oldham coupling D50, 12 H7 clamp hub + 4 mm keyway, acetal disc", 1, OLDHAM[0], "roll stage", OLDHAM[1]),
         ("Drive", "HTD 5M-15 closed belt 475 mm", 1, BELT[0], "roll (80T)", BELT[1]),
         ("Bearings", "61808 (40×52×7)", 2, B61808[0], "roll one-piece shaft (D19)", B61808[1]),
         ("Thermal (M7)", "Aluminium finned rear cap, Ø86 class", 1, AL_CAP[0], "roll GIM6010 cartridge", AL_CAP[1])],
@@ -221,8 +232,13 @@ def items():
 
 
 CHANGES = [
+    "**Neon review #2 finding 15 (2026-11-27):** Step 1 no longer buys the D40 Oldham, plain Ø12 rod, set-screw pulley, 315 belt and stage bearings "
+    "(belts.md: D40 disc 0.86×, plain clamp hub 0.65× at the 11 N·m peak; the yaw centre uses 93 % of its adjuster) nor the CNC rear cap (seller question 6 "
+    "is open) nor the two STS3215 + USB-TTL (the only 12 V in Step 1 would have been the safety board's 1 A logic buck): the GIM is tested on a lever bolted "
+    "to its output, one keyed D50 Oldham stays for the tongue coupon, and the keyed yaw stage, the cap and the servos are Step 2 lines. The safety board "
+    "follows netlist v3 (Neon #2 F1: NH-50 + freewheel diodes, TLV3202, K1 hold on AUX, 60 A main fuse) and is ordered after its schematic review.",
     "**Two steps (Fable verdict):** Step 1 is one GIM6010-8, the DM-J4310, the two STS3215, the CAN adapters, the bench supply, the whole "
-    "safety board, one D13 stage on a test lever, thermistors + one aluminium cap, inserts / screws for the coupons and filament. Everything "
+    "safety board, one D13 stage on a test lever, thermistors + one aluminium cap, inserts / screws for the coupons and filament (trimmed by Neon #2 F15, first item). Everything "
     "else waits for Step 1's exit criteria. The \"zero-regret 3 extra GIM6010s\" advice is gone.",
     "**Bench supply (M2):** Mean Well SE-1000-24 (41.7 A) for the arm's 14.8 A sustained / 31.5 A peak; the 10 A CC supply stays for the 1 A "
     "first power-up; fuses 40 A main, 20 A arm lead.",
@@ -241,9 +257,10 @@ CHECKS = [
     "GIM6010-8: the **24 V SDC104** version; DM-J4310-2EC: **V1.1** (ask for the output bearing's radial / moment rating: the wrist "
     "pitch sees ≈ 0.9 N·m bending, more with the basket hook); STS3215: the **12 V C018**.",
     "SE-1000-24: the 24 V model (not -12 / -48); check the overload mode on its datasheet (constant-current limiting) and set 24.0–25.2 V.",
-    "Aluminium HTD 5M pulleys: 15 mm belt, **12 mm bore** (many default to 8 mm), two set screws.",
-    "Oldham couplings: **12 mm clamp-style** hub, OD ≤ Ø42 (the cartridge nose bore is Ø43); measure the disc (thickness, slot width and "
+    "Aluminium HTD 5M pulleys (Step 2): 15 mm belt, **12 H7 bore with a 4 mm keyway**, set screw on the key.",
+    "Oldham coupling: **D50, 12 mm clamp-style hub with a 4 mm keyway**, OD ≤ the D50 nose bore (cartridge_m MOTOR['nose']); measure the disc (thickness, slot width and "
     "depth) and set `OLDHAM` in rnd/parts/cartridge_m.py before printing the tongue adapters.",
+    "Vishay NH-50 (not RH-50) for the three clamp resistors: the part number starts NH050; the pre-charge and dummy-load resistors stay RH-50.",
     "Heat-set inserts: the short M4 (5.7 mm) the flange calls for; the long 8.1 mm ones don't fit the 6 mm flange.",
 ]
 
@@ -295,8 +312,8 @@ def main():
          "Step 2 is bought when its exit criteria are met ([M1_READINESS.md](M1_READINESS.md)). **No extra GIM6010s in Step 1.**", "",
          "**What Step 1 proves on hardware:** the SDC104's CAN protocol (`python -m sw.gim_discover`: MIT / impedance mode or not), enable, zero-gain "
          "and impedance control, the drive's torque limit in flash and its CAN timeout; the safety board (pre-charge, one-shot discharge, clamp, "
-         "contactor, watchdog at 25 ms, e-stop → no torque ≤ 50 ms) with a real drive; torque constant and friction on a lever; the collision "
-         "trip on one joint; the sleeve vs aluminium-cap temperature; insert pull-out and the bolted-flange coupons.", "",
+         "contactor, watchdog at 25 ms, e-stop → no torque ≤ 50 ms) with a real drive; torque constant and friction on a lever bolted to the output; the collision "
+         "trip on one joint; the motor case temperature rise at rated torque on the lever; insert pull-out, the bolted-flange and the D50 Oldham-tongue coupons.", "",
          '**Step-1 exit criterion added 2026-11-27 (software track: determinism, the Asimov sim2real lessons): soak test.** `python -m sw.soak --joints yaw,wpitch --hours 2` on the Step-1 rig. A sysid fit at the start (bring-up step `sysid`, sw/sysid.py: Coulomb + viscous friction, effective torque constant, backlash, command → response latency → sw/config/actuators_<serial>.yaml), then 2 h of 0.25 Hz cyclic motion at ≈ 50 % rated torque (2 kg at the 0.3 m lever end on the yaw stage, 0.5 kg at the wrist), then the sysid fit again with the drives hot. **Pass:** Coulomb drift ≤ 20 %, viscous ≤ 25 %, torque constant ≤ 5 %, backlash growth ≤ 0.1°, latency mean ≤ +0.5 ms and p95 ≤ +2 ms; no supervisor stop, no CAN bus-off, no new Pi throttle / under-voltage flag (`vcgencmd get_throttled`), zero implausible (corrupted) CAN frames, loop jitter p99 < 1 ms, CPU < 80 °C (rehearsed on the virtual bench: a stable drive passes, a drive whose friction drifts with temperature fails; docs/sw/sim2real_bench.md). The lever measurements of the torque constant and friction above are this step. **Proposed Step-1 line (lead to add in rnd/m1_kit.py):** one Waveshare 2-CH CAN FD HAT ($46.99) to measure SPI-CAN (MCP2518FD) against the two gs_usb adapters on the same bus ([can_interface_note.md](sw/can_interface_note.md)).', "",
          "**What Step 2 proves:** the whole arm: belts and the D13 v3 stages, the bolted cartridges, the balancer (A9), the inline roll, hand "
          "sag (R2b) and, if the encoder mounts and node firmware exist by then (Fable M3), hand accuracy; the fin-ray grasp; CAN timing (SW1).", "",
