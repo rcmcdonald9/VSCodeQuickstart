@@ -166,6 +166,7 @@ def cases():
     C.append(("Elbow belt cassette plate: 60 % of the belt peak (415 N)", cp, 2.0,
               lambda x: np.hypot(x[0], x[2] - zE) < 25.3,
               [(lambda x: np.hypot(x[0], x[2] - zS) < 19.4, (0, 0, -0.6 * 691.0))]))
+    C += c1_tie_cases()
     # 6. Roll link: bolted to the arm-side ferrule; roll belt peak 768 N between the seats (half per wall) + the arm moment
     #    19 N·m as a couple on the two 61808 seats (walls 25.4 mm apart)
     from .parts import roll as rl
@@ -200,6 +201,63 @@ def case_torque_hanger():
     return ("Torque hanger (wheel): GIM peak 11 N·m → 367 N on the fork", cm.torque_hanger(reach, slot_in=4.0), 1.5,
             lambda x, r=reach: np.abs(x[0] - r) < 0.3,
             [(lambda x: (np.abs(x[1] - 3.2) < 0.3) & (x[0] < 10) & (x[2] > 2) & (x[2] < 9), (0, 367.0, 0))])
+
+
+def _half_annulus_centroid(r0, r1):
+    return 4 * (r1 ** 3 - r0 ** 3) / (3 * math.pi * (r1 ** 2 - r0 ** 2))
+
+
+def c1_tie_cases():
+    """C1 (Fable review 2026-11-27): the printed parts of the two tie-rod joints (rnd/joints.py), held at their bearing seats.
+    The tie preload (× 0.75 creep) is a pair of opposite face loads (ring seat ↔ crank / flange face); the joint wrench is
+    a couple on the two halves of the loaded face + the pull-off. Service = the worst basket/hug × 1.5 (no gap, so the
+    clamped interface is taken as bonded). Fault = the worst 140 N bump / stall, applied × 0.5 together with the preload:
+    linear, so its margin vs 12 MPa equals the full fault vs 24 MPa (≈ the across-layer ultimate, ESTIMATE); the joint
+    gaps at that load, so the bonded interface over-states the stress at the tension edge."""
+    from .joints import DOCS as JD, SERVICE
+    from .parts import roll as rl, shoulder as sh
+    try:
+        rows = json.loads((JD / "joints.json").read_text())["joints"]
+    except (OSError, ValueError, KeyError):
+        rows = []
+
+    def worst(joint, service, default):
+        m = [(r["M"], r["N"]) for r in rows if r["joint"] == joint and "M" in r and (r["case"] in SERVICE) == service]
+        return max(m) if m else default
+    C = []
+    # pitch tube + hub (module frame, axis Y): ring seat in the hub's detach-face recess, crank on the tube's inboard end,
+    # moment on the ferrule face (r 21–45.5 at y = 20), bearings A and B on the tube (r 20)
+    h = sh.HUB_TIE
+    Fp = h["n"] * h["preload"] * h["creep"]
+    y_face, y_seat, y_in = sh.Y_FER + 18, sh.Y_FER + 18 - h["recess"], sh.Y_TUBE_IN
+    zc = _half_annulus_centroid(21.2, 45.5)
+    rho = lambda x: np.hypot(x[0], x[2])
+    part = sh.pitch_shaft() + sh.pitch_hub()
+    fixed = lambda x: (np.abs(rho(x) - 20.0) < 0.35) & (((x[1] > sh.W_IN - 3.5) & (x[1] < sh.W_IN + 3.5)) | ((x[1] > sh.W_OUT - 3.5) & (x[1] < sh.W_OUT + 3.5)))
+    for tag, (M, N), k in (("service (basket/hug × 1.5)", worst("pitch hub ↔ tube", True, (29.6, 0.0)), 1.0),
+                           ("fault (bump/stall) × 0.5", worst("pitch hub ↔ tube", False, (184.0, 343.0)), 0.5)):
+        F = M * 1000 / (2 * zc)
+        C.append((f"Pitch tube + hub (C1 tie, {h['n']} × M4 at {Fp / 1e3:.1f} kN): {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", part, 3.0, fixed,
+                  [(lambda x: (np.abs(x[1] - y_seat) < 0.3) & (rho(x) > 11.0) & (rho(x) < 21.0), (0, -Fp * k, 0)),
+                   (lambda x: (np.abs(x[1] - y_in) < 0.3) & (rho(x) > 10.5), (0, Fp * k, 0)),
+                   (lambda x: (np.abs(x[1] - y_face) < 0.3) & (rho(x) > 21.2) & (x[2] > 0), (0, (F + N / 2) * k, 0)),
+                   (lambda x: (np.abs(x[1] - y_face) < 0.3) & (rho(x) > 21.2) & (x[2] < 0), (0, (-F + N / 2) * k, 0))]))
+    # yaw tube (roll frame, axis Z at y = ROLL_Y): ring seat in the top counterbore, the 6061 flange on the end face,
+    # bearings A (top plate) and B (bottom plate)
+    y = rl.YAW_TIE
+    Fp = y["n"] * y["preload"] * y["creep"]
+    z_seat, z_end = rl.yaw_tie_levels()["seat"], rl.FL_TOP - rl.FL_REC
+    zc = _half_annulus_centroid(14.1, 20.0)
+    rh = lambda x: np.hypot(x[0], x[1] - rl.ROLL_Y)
+    fixed = lambda x: (np.abs(rh(x) - 20.0) < 0.35) & (((x[2] > rl.P1[0]) & (x[2] < rl.P1[1])) | ((x[2] > rl.YAW_BRG_B[0]) & (x[2] < rl.YAW_BRG_B[1])))
+    for tag, (M, N), k in (("service (basket/hug × 1.5)", worst("yaw flange ↔ tube", True, (32.5, 100.0)), 1.0),
+                           ("fault (bump/stall) × 0.5", worst("yaw flange ↔ tube", False, (98.5, 166.0)), 0.5)):
+        F = M * 1000 / (2 * zc)
+        C.append((f"Yaw tube (C1 tie, {y['n']} × M3 at {Fp / 1e3:.1f} kN): {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", rl.yaw_shaft(), 3.0, fixed,
+                  [(lambda x: (np.abs(x[2] - z_seat) < 0.3) & (rh(x) > 8.2) & (rh(x) < 17.0), (0, 0, -Fp * k)),
+                   (lambda x: (np.abs(x[2] - z_end) < 0.3) & (rh(x) > 12.0) & (x[0] > 0), (0, 0, (Fp / 2 + F - N / 2) * k)),
+                   (lambda x: (np.abs(x[2] - z_end) < 0.3) & (rh(x) > 12.0) & (x[0] < 0), (0, 0, (Fp / 2 - F - N / 2) * k))]))
+    return C
 
 
 def inline_roll_cases():

@@ -28,7 +28,15 @@ from .params import BASELINE, Design
 
 A_NOM, A_RANGE = 0.048, (0.040, 0.060)   # m, pulley A height above O (slot). |a-b| ≥ 15 mm so pin B clears pulley A at pitch 180°
 B = 0.020                                # m, anchor pin radius (loop 47: 30 → 20 for the real 18.7 N/mm spring; loop 7: 40 → 30)
-R_PULLEY = 0.0055                        # m, pulley A radius: U604ZZ grooved bearing pulley (A9: was an ungrooved Ø12 printed pulley)
+R_PULLEY = 0.012                         # m, cable-centre radius on pulley A. M8 (Fable review 2026-11-27): 608-2Z in a Ø28 POM U-groove tyre
+                                         # (was a U604ZZ, r 5.5; A9 before that: an ungrooved Ø12 printed pulley)
+# M8: pulley bearings vs the cable load. The moving tackle pulley carries 2 T (180° wrap) and pulley A up to 2 T, with
+# T = spring force / 2: 634 N nominal, 748 N at the slot end. Static ratings C0 (kN, SKF catalogue, deep-groove -2Z):
+# 604 0.28, 625 0.68, 626 0.95, 608 1.37; U604ZZ grooved listings ≈ 0.3–0.4 (seller data). Requirement s0 = C0/P0 ≥ 1.5
+# (SKF guideline 1–2 for slowly oscillating bearings, ESTIMATE). Pin-and-bushing (iglidur G, 80 MPa static) was the other
+# option: rating fine, but bushing friction (μ ≈ 0.15 on r 3 / r 5.5) is ≈ ±16 % of T per pulley, a hysteresis band in K.
+PULLEY_BRG = {"U604ZZ (wave 2)": (0.28, 4, 13, 4), "625-2Z": (0.68, 5, 16, 5), "626-2Z": (0.95, 6, 19, 6), "608-2Z (M8 choice)": (1.37, 8, 22, 7)}
+PULLEY_CHOICE, S0_MIN = "608-2Z (M8 choice)", 1.5
 CABLE_BREAK_N = 2000.0                   # 2 mm Dyneema/UHMWPE braid (ESTIMATE; typical 150–250 daN)
 SPRING_SAFE_STROKE = 0.105               # m, cage stroke available (kept for the score signature)
 R_SHAFT = 0.020                          # m, pitch shaft OD/2 (the Ø40 tube that used to pass through the balancer plane)
@@ -211,7 +219,14 @@ def report(d: Design = BASELINE) -> str:
         f"| Cable safety (2 mm UHMWPE, ESTIMATE {CABLE_BREAK_N:.0f} N) | {s['cable_sf']:.0f}× |", "",
         "Life: ISO 10243 green allows 25 % of L0 for long life, 30 % for medium life and 40 % at Fmax. The spring works between |a − b|/2 (arm up) and (a + b)/2 "
         "(arm hanging); most cycles are pitch 0 ↔ 90°, i.e. (a + b)/2 ↔ √(a² + b²)/2. Coupon C-bal: 10⁵ cycles at the slot end before the bulk buy.",
-        "Cable: B → U604 pulley A → U604 moving pulley on the spring plate → anchor screw on the cage.",
+        "Cable: B → pulley A (608-2Z in a Ø28 POM U-groove tyre, Ø8 axle in the fork) → moving tackle pulley (608-2Z in a 1 mm POM tyre, Ø24, in the Ø26 cage) "
+        "→ anchor screw on the cage. D/d at the cable ≈ 12 (was 5.5 on the U604).", "",
+        "**M8 (Fable review 2026-11-27): pulley bearings.** The tackle pulley carries 2 T (180° wrap), pulley A up to 2 T; T = half the spring force. "
+        f"Worst load P0 = {pulley_load():.0f} N (slot end). Static ratings: SKF catalogue C0 (deep-groove -2Z); s0 = C0 / P0, need ≥ {S0_MIN} (SKF guideline 1–2 for slowly oscillating bearings, ESTIMATE).", "",
+        "| Bearing (d × D × B mm) | C0 (kN) | s0 at the slot end | |", "|---|---|---|---|"]
+        + [f"| {n} ({d} × {D} × {B}) | {c0:.2f} | {c0 * 1000 / pulley_load():.2f} | {'✅' if c0 * 1000 / pulley_load() >= S0_MIN else '❌'} |" for n, (c0, d, D, B) in PULLEY_BRG.items()]
+        + ["", "Pin-and-bushing pulleys (iglidur G on a Ø6 pin, 80 MPa static) would carry it too, but the bushing friction (μ ≈ 0.15 on r 3 vs the r 5.5 sheave) "
+           "is ≈ ±16 % of the cable tension per pulley, a hysteresis band in the balancer law; the 608s keep it near zero.",
         "**Detach hazard (A9):** with the arm off, the spring torque K·sin(pitch) is unopposed. Detach and attach only with the arm hanging (pitch 0, "
         "where the torque is zero), with the **park pin** in: a Ø6 pin through the bracket wall into a hole in the balancer disc at pitch 0. The pitch motor holds the "
         "shaft as well while powered.",
@@ -226,7 +241,13 @@ def score(d: Design = BASELINE):
 def ok(d: Design = BASELINE) -> bool:
     """All balancer checks: deflection ≤ ISO max at the slot end, cage bore, B clears A, pin B along the arm, cable plane clear."""
     s = study(d)
-    return bool(s["fits"] and s["cage_ok"] and s["clear_ab"] and cad_pin_b()[2] < 0 and not cad_plane_clear()[0])
+    s0 = PULLEY_BRG[PULLEY_CHOICE][0] * 1000 / pulley_load(d)
+    return bool(s["fits"] and s["cage_ok"] and s["clear_ab"] and cad_pin_b()[2] < 0 and not cad_plane_clear()[0] and s0 >= S0_MIN)
+
+
+def pulley_load(d: Design = BASELINE) -> float:
+    """M8: worst bearing load on a balancer pulley (N): the tackle pulley's 2 T = the spring force at the slot end."""
+    return study(d)["Fs_max"]
 
 
 if __name__ == "__main__":
