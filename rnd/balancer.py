@@ -88,18 +88,22 @@ def cad_pin_b():
 
 def cable_sweep(y: float, step: int = 4):
     """Solid swept by the straight B → A cable (Ø CABLE_D + 0.4 mm) in the plane y (mm, module frame: x forward, z up) over
-    pitch −200…60° and the whole slot (a 40–60 mm): one thin box per pose, from pin B's surface to A's tangent point."""
+    pitch −200…60° and the whole slot (a 40–60 mm): one thin box per pose, from pin B's surface to A's tangent point.
+    Wave 5: the pitch sign is robot.build's (the arm turns by Rot(0, pitch, 0), so pin B is at x = −b·sin(pitch): forward
+    for the negative pitches, twin.JR); this sweep had x = +b·sin(pitch), the mirror image. The cable leaves A over its
+    top toward the cage (−X), so it always wraps A counter-clockwise in this view: it arrives on A's +X side (tangent
+    with A on its left), wherever B is; the old rule switched sides with the sign of B's x."""
     from build123d import Box, Pos, Rot
     w = CABLE_D * 1000 + 0.4
     out = None
     for a in (A_RANGE[0], A_NOM, A_RANGE[1]):
         for t in range(-200, 61, step):
             th = math.radians(t)
-            Bp = np.array([B * math.sin(th), -B * math.cos(th)]) * 1000
+            Bp = np.array([-B * math.sin(th), -B * math.cos(th)]) * 1000
             Ap = np.array([0.0, a * 1000])
             d = Ap - Bp
             L = float(np.linalg.norm(d))
-            ang = math.atan2(d[1], d[0]) + math.asin(R_PULLEY * 1000 / L) * (1 if Bp[0] >= 0 else -1)
+            ang = math.atan2(d[1], d[0]) - math.asin(R_PULLEY * 1000 / L)
             u = np.array([math.cos(ang), math.sin(ang)])
             l_t = math.sqrt(L * L - (R_PULLEY * 1000) ** 2)
             s0 = Bp + u * 3.2                                   # from the pin's surface (Ø6 pin)
