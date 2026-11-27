@@ -12,7 +12,7 @@ pair is classified, and the first matching rule wins:
 - **static:** everything else. Target ≥ 1 mm (hard 0.5 mm).
 
 Swept checks over the joint ranges are separate (rnd/swept.py, rnd/pinch.py); the head is also checked here at both
-ends of its tilt range (upper.TILT_RANGE; D25: −10…+15°), since its pivot moves the shell round the yoke.
+ends of its tilt range (upper.TILT_RANGE), since its pivot moves the shell round the yoke.
 """
 from __future__ import annotations
 

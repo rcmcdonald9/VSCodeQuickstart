@@ -29,7 +29,14 @@ Z_TOP = Z_BASE + D.upper.spine_len * 1000
 HEAD_Z = Z_TOP + 10.0
 WALL = 2.0
 PAN_RANGE = (-90.0, 90.0)       # head pan (deg): software limit for the neck cable loop (ESTIMATE)
-TILT_RANGE = (-10.0, 30.0)      # head tilt (deg), D22: −10° (up) … +30° (down to the table), on the passive pivot
+TILT_RANGE = (-10.0, 15.0)      # head tilt (deg), D22 pivot: −10° (up) … +15° (down to the table). D25 (owner, 2026-11-27): was +30°.
+# Wave 7 check (rnd/pinch.py tilt rows, 2.5° steps, the head CAD re-cut for each range): the tier-1 tilt fails are 4 at +15, +20
+# and +30 alike; they are not set by the upper limit. head_shell × yoke closes to the 3 mm clearance cut at whichever end of
+# the range (the shell's neck-opening rim against the yoke plate / riser hub, and the opening's side edges 15 mm from the
+# posts); head_drive_stub × tilt_sleeve 6.6…8.1 and head_shell × tilt_sleeve are near-constant gaps over any range; only
+# visor × tilt_sleeve depends on it (25.3 mm at +10, 24.9 at +12.5, 24.6 at +15). The neck boot's floor is cut away by the
+# yoke plate's sweep over x −8…+42 already at −10…+10 (+44 at +15, +50 at +30), so less tilt alone does not close the neck:
+# the rim needs ≥ 25 mm round the posts / plate / hub with the TPU boot covering the opening (open, needs a neck CAD pass).
 PAN_RISER = 20.0                # R17 (2026-11-27): the yoke stands on a Ø40 hub this tall, so the yoke plate and the head clear
                                 # the pan sleeve and the carry handle by ≥ 25 mm at every pan angle (were 10.6 / 15.2 / 17.4)
 
@@ -360,7 +367,7 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     # D22 (owner, 2026-11-27): the 7" head (+≈ 120 g, 252 × 184 mm) clashed with the mast bracket at +30° tilt and loaded
     # the tilt servo (75 % before the bigger screen). The tilt axis moves from the neck (40 mm above the yoke) to the
     # head's centre of mass: a passive 6805 pivot on the −Y arm (wave spring + PTFE washer for drag), the tilt cartridge
-    # coaxial on the +Y arm. Range TILT_RANGE (−10° up … +30° down).
+    # coaxial on the +Y arm. Range TILT_RANGE (−10° up … +15° down; D25, was +30°).
     px, pz, _ = head_pivot()
     zp = 40 + pz                                                                       # pivot height above the yoke plate
     yoke = _yoke(px, zp)
