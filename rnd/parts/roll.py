@@ -23,6 +23,7 @@ MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 from ..params import BASELINE as _D
 from .belt_stage import V3 as _V3, bolted_stage, wall_a_cuts
 INLINE = _D.arm.roll_drive == "inline"
+EAR_SITE = "yaw"            # D24 v2 flange-ear pattern (cartridge_m.EAR_SITES) of the yaw stage (and the belt-roll fallback), read by rnd/assembly_seq.py
 ROLL_Y = _D.arm.roll_offset_y * 1000                 # loop 10: 50 → 75 (the Ø114 roll pulley); loop 40: 83 (the 80T pulley clears the ferrule by 2 mm)
 # D24 inline roll (owner-approved 2026-11-27): GIM8108-36, 36:1 planetary, 24 V SDC303 (rnd/specs/actuators.yaml). Seller
 # installation drawing (owner, 2026-11-27, docs/rnd/specs/gim8108-36_installation.png), ≈ 57 mm overall with the driver:
@@ -65,8 +66,8 @@ if INLINE:
 #    margin (rated / p95, 1 kg, yaw ±150°) fell to 1.49×; 80T restores ≈ 1.6× with no motor change.
 ROLL_TEETH = 80
 ROLL_C, YAW_C = 103.3, 80.0          # 80T:18T roll on a stock 475 mm belt
-# D24 (2026-11-27): both stages are belt_stage.small_stage_v3 with the bolted cartridge (6 × M4 countersunk from the pulley
-# side into the can flange's inserts, centring lip in the wall's counterbore, Oldham drive). Stage frame: z = 0 is the
+# D24 (2026-11-27): both stages are belt_stage.small_stage_v3 with the bolted cartridge (D24 v2, Fable C3: M4 ear bolts from
+# the cartridge side into nuts on wall A's pulley face, site EAR_SITE; centring lip in the wall's counterbore, Oldham drive). Stage frame: z = 0 is the
 # flange plane = the cartridge-side face of wall A; the bearings, pulley and belt plane sit where the KX74 V2 stack had them.
 JA, JB = _V3["jA"], _V3["jB"]                          # D13 bearing spans (stage frame, below the flange plane: negative z)
 PUL_C = -_V3["belt_c"]                                 # 16.5: small-pulley belt centre below the flange plane
@@ -76,7 +77,7 @@ R_CAN = cm.MOTOR["od"] / 2 + cm.WALL + 0.3               # bolted can sleeve rad
 
 def _stage(T, teeth=20):
     """D24 bolted cartridge + Oldham + D13 small stage v3 (belt_stage.bolted_stage), stage frame mapped by T."""
-    return bolted_stage(T, teeth)
+    return bolted_stage(T, teeth, site=EAR_SITE)
 
 
 def _fl(b, r, dims):
@@ -121,7 +122,7 @@ def roll_link() -> Part:
         for yy in (ROLL_Y - SEAT_BOLT_Y, ROLL_Y + SEAT_BOLT_Y):
             w -= Pos((x0 + x1) / 2, yy, -22) * Cylinder(2.8, 8, align=MIN)          # M4 heat-set inserts for the cap
         if (x0, x1) == W1:
-            w -= ROLL_T * wall_a_cuts()                                           # D24: eccentric seat, spigot counterbore, 6 × M4 countersunk
+            w -= ROLL_T * wall_a_cuts(None, EAR_SITE)                             # D24 v2: eccentric seat, spigot counterbore, ear bolts + nut pockets
         else:
             w -= Pos(0, ROLL_Y, ROLL_C) * Rot(0, 90, 0) * Cylinder(19.1, 100)     # eccentric-bushing seat, D13 bearing B
             w -= ROLL_T * flange_screw_access(W2[1] - XF + 1)                     # D24: driver holes to the 6 flange screws (swap with the belt on)
@@ -499,7 +500,7 @@ def clevis_and_yaw_block() -> Part:
     for z0, z1 in (P1,):                                                           # D19: P2 is yaw_plate_bot()
         pl = _plate_z(-YAW_C - 48, X_PL1, ROLL_Y - 46, ROLL_Y + 46, z0, z1, 16)
         pl -= Pos(0, ROLL_Y, 0) * Cylinder(26, 400)                                # 61808 seat, yaw shaft
-        pl -= YAW_T * wall_a_cuts()                                               # D24: eccentric seat, spigot counterbore, 6 × M4 countersunk
+        pl -= YAW_T * wall_a_cuts(None, EAR_SITE)                                 # D24 v2: eccentric seat, spigot counterbore, 2 ear bolts + nut pockets
         p = pl if p is None else p + pl
     # confidence campaign (FEA): the bottom plate was a free solid. Four Ø14 posts outside the belt loop tie it to the top plate
     # (M5 through-bolts; the belt and both pulleys go in before the bottom plate)

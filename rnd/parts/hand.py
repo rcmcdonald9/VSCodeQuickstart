@@ -28,7 +28,7 @@ L_HAND = _D.arm.l_hand * 1000   # wrist-pitch axis → grasp point (params; loop
 WRIST_HUB_Y = 33.0          # loop-10 KX56 hub face (palm +Y side); kept as the datum that places the cartridge (arm.assembly)
 ADAPTER_T = 4.0             # D24 output flange on the motor output
 PALM_FACE_Y = WRIST_HUB_Y + KX56.gap + NECK + KX56.face_t - ADAPTER_T   # 39.65: palm boss face = output flange face
-CAN_FL = dict(r_out=40.0, t=4.0, bolt_r=36.0, clr_d=3.6)                 # can flange: 6 × M3 into inserts in the forearm rim
+CAN_FL = dict(r_out=40.0, t=4.0, bolt_r=36.0, clr_d=3.6)                 # can flange: 6 × M3 × 12 through the forearm rim into nuts (D24 v2, arm.WRIST_NUT)
 PALM_SCREW_R = 19.0         # 6 × M3 × 60 from the palm's −Y face through the boss into the output flange's inserts
 
 
@@ -56,7 +56,7 @@ def can_d_loop10_volume() -> float:
 
 def can_d() -> Part:
     """D24: the can runs 4.65 mm past the motor face into a Ø80 × 4 front flange; 6 × M3 from the palm side through the
-    flange into heat-set inserts in the forearm's wrist rim, the can's Ø62.4 OD is the spigot in the rim bore (0.3 mm a
+    flange and the forearm's wrist rim into nuts in hex pockets on its back face (D24 v2, arm.WRIST_NUT), the can's Ø62.4 OD is the spigot in the rim bore (0.3 mm a
     side). No torque pin (the flange carries the 7 N·m peak: ≈ 32 N per screw); the hand's bending goes motor bearings →
     can → flange → forearm, with no lift-off interface in between."""
     od = J4310["od"] + 2 * WALL + 0.6

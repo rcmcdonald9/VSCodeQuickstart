@@ -202,15 +202,13 @@ def fasteners(fr=None):
     for j, T, m, site in ear_sites(fr):
         for lab, pt, ax in cm.ear_fasteners(m, site):
             out.append((j, f"flange {lab} (M4, site {site})", T, pt, ax, 0.0, (), "swap"))
-    # pitch: hub (6 × M3 × 30 from the detach face, arm off), crank (6 × M3, inboard), outer wall (3 × M4 into the web)
-    for k in range(6):
-        a = _m.pi / 3 * k + _m.pi / 6
-        x, z = shoulder.HUB_SCREW_R * _m.cos(a), shoulder.HUB_SCREW_R * _m.sin(a)
-        out.append(("pitch", f"pitch hub M3 {_m.degrees(a):.0f}° (arm detached)", fr["shoulder"], (x, shoulder.Y_FER + 18 - 4.0, z), (0, 1, 0), 4.0, ("l_roll_", "l_arm_"), "service"))
-    for k in range(6):
-        a = _m.pi / 3 * k
-        x, z = shoulder.HUB_SCREW_R * _m.cos(a), shoulder.HUB_SCREW_R * _m.sin(a)
-        out.append(("pitch", f"balancer crank M3 {_m.degrees(a):.0f}°", fr["shoulder"], (x, shoulder.Y_TUBE_IN - shoulder.CRANK_T + 1.8, z), (0, -1, 0), 1.8, (), "service"))
+    # pitch (C1): the 4 HUB_TIE nuts on the clamp ring in the detach-face recess (arm detached; the studs are Loctited into
+    # the crank, nothing to undo inboard), outer wall (3 × M4 into the web)
+    ht = shoulder.HUB_TIE
+    for a in shoulder._tie_angles():
+        x, z = ht["r"] * _m.cos(a), ht["r"] * _m.sin(a)
+        out.append(("pitch", f"pitch hub tie nut M4 {_m.degrees(a):.0f}° (arm detached)", fr["shoulder"], (x, shoulder.Y_FER + 18 - ht["face_gap"], z), (0, 1, 0),
+                    0.0, ("l_roll_", "l_arm_"), "service"))
     for z in shoulder.WEB_INSERTS_Z:
         out.append(("pitch", f"outer wall M4 z {z:.0f}", fr["shoulder"], (shoulder.WEB_X, shoulder.W_OUT + shoulder.WALL_T / 2 + 4.0, z), (0, 1, 0), 0.0, (), "service"))
     # elbow: bolted seat caps from below (bone cap off), forearm pinch clamp (2 × M5, head on either side)
@@ -224,11 +222,13 @@ def fasteners(fr=None):
         xs = _m.sqrt(40.0 ** 2 - 29.0 ** 2)
         out.append(("elbow", f"forearm pinch M5 y {yy:.1f}", fr["forearm"], (xs + 5.0, yy, 29.0), (1, 0, 0), 0.0, (), "service"))
         out.append(("elbow", f"forearm pinch M5 y {yy:.1f} (head −X)", fr["forearm"], (-xs - 5.0, yy, 29.0), (-1, 0, 0), 0.0, (), "service"))
-    # yaw: flange → tube (6 × M3 countersunk from below, upper arm off)
-    for k in range(roll.YF["n"]):
-        a = _m.radians(60 * k)
-        out.append(("yaw", f"yaw flange M3 {60 * k}° (upper arm off)", fr["roll"], (roll.YF["bolt_r"] * _m.cos(a), roll.ROLL_Y + roll.YF["bolt_r"] * _m.sin(a), -roll.YAW_DROP),
-                    (0, 0, -1), 0.0, ("l_arm_",), "service"))
+    # yaw (C1): flange → tube tie, 6 × M3 from the tube's top end (heads on the clamp ring in the counterbore). Tightened on
+    # the bench before the yaw block goes onto the roll output (roll.py YAW_TIE), so probed on the yaw block alone ("only:").
+    lv = roll.yaw_tie_levels()
+    for a in roll._yaw_tie_angles():
+        r = roll.YAW_TIE["r"]
+        out.append(("yaw", f"yaw tie M3 {_m.degrees(a):.0f}° (bench: yaw block off the roll output)", fr["roll"],
+                    (r * _m.cos(a), roll.ROLL_Y + r * _m.sin(a), lv["head"] + roll.YAW_TIE["head_h"]), (0, 0, 1), 0.0, ("only:l_roll_yaw_",), "service"))
     # wrist: hand off (6 × M3 palm screws from the palm's −Y face), then the can flange (6 × M3 from the hand side)
     for k in range(6):
         a = _m.pi / 3 * k
@@ -244,11 +244,13 @@ def fasteners(fr=None):
         for k in range(m36["rear_n"]):
             a = 2 * _m.pi * k / m36["rear_n"] + roll.REAR_ANG0
             y, z = roll.ROLL_Y + m36["rear_pcd"] / 2 * _m.cos(a), m36["rear_pcd"] / 2 * _m.sin(a)
-            out.append(("roll (inline)", f"motor M4 × 18 {_m.degrees(a):.0f}°", fr["roll"], (roll.X_FLOOR[0] + 3.5 - 4.0, y, z), (-1, 0, 0), 0.0, (), "service"))
+            out.append(("roll (inline)", f"motor M4 × 18 {_m.degrees(a):.0f}° (yaw block + rear arm off)", fr["roll"], (roll.X_FLOOR[0], y, z), (-1, 0, 0), 0.0,
+                        ("l_roll_yaw_", "l_roll_roll_arm_rear", "l_arm_"), "service"))      # M1: head flush in its counterbore
         for k in range(roll.ADAPT["n"]):
             a = 2 * _m.pi * k / roll.ADAPT["n"] + _m.pi / roll.ADAPT["n"]
             y, z = roll.ROLL_Y + roll.ADAPT["pcd"] / 2 * _m.cos(a), roll.ADAPT["pcd"] / 2 * _m.sin(a)
-            out.append(("roll (inline)", f"clevis M5 {_m.degrees(a):.0f}°", fr["roll"], (roll.X_ARM_F[1], y, z), (1, 0, 0), 0.0, (), "service"))
+            out.append(("roll (inline)", f"clevis M5 {_m.degrees(a):.0f}° (spring ring + hub off)", fr["roll"], (roll.X_ARM_F[1], y, z), (1, 0, 0), 0.0,
+                        ("l_roll_roll_spring_",), "service"))
     return out
 
 
@@ -257,8 +259,9 @@ def tool_access(parts=None, fr=None):
     parts = parts if parts is not None else _robot()
     rows = []
     for j, lab, T, pt, ax, cb, removed, kind in fasteners(fr):
-        removed = tuple(removed) + REMOVED_ALWAYS + REMOVED_AT.get(j, ())
-        P = [q for q in parts if not any(k in q[0] for k in removed)]
+        only = [k[5:] for k in removed if k.startswith("only:")]        # bench step: probe on that sub-assembly alone
+        removed = tuple(k for k in removed if not k.startswith("only:")) + REMOVED_ALWAYS + REMOVED_AT.get(j, ())
+        P = [q for q in parts if not any(k in q[0] for k in removed) and (not only or any(q[0].startswith(k) for k in only))]
         hit = _hits(_driver(T, pt, ax, cb), P)
         if not hit:
             rows.append((j, lab, kind, True, "straight Ø6 × 80", []))
