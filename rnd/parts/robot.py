@@ -39,7 +39,8 @@ def build(lift=None, poses=None, covers=False):
     # ---- base (CAD: rnd/parts/base.py) ----
     out += base.module()
     # ---- mast, lift, carriage, torso, head (CAD: rnd/parts/upper.py) ----
-    out += upper.module(lift_mm / 1000)
+    hp = (poses or {}).get("head", {})                                # head pan/tilt (D22 pivot; swept by rnd/pinch.py)
+    out += upper.module(lift_mm / 1000, hp.get("pan", 0.0), hp.get("tilt", 0.0))
     # ---- arms: shoulder pitch module (CAD) + roll stage (placeholder) + CAD arm ----
     poses = poses or {"l": dict(pitch=-15, elbow=-70, wrist=-20), "r": dict(pitch=-70, elbow=-45, wrist=-25)}
     for side, s in (("l", 1), ("r", -1)):

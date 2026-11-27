@@ -26,7 +26,7 @@ MATE = [("can", "motor"), ("collar", "hub"), ("hub", "shaft"), ("shaft", "wheel"
         ("deck", "deck"), ("deck", "rim"), ("deck", "coupling"), ("skirt", "skirt"), ("skirt", "bumper"), ("coupling", "plug"),
         ("mast", "ratchet"), ("mast", "lift_mount"), ("mast", "carriage"), ("mast", "head_bracket"), ("lift_pulley", "lift_belt"),
         ("lift_mount", "lift_cover"), ("torso_shell", "estop"), ("torso_shell", "chest_light"), ("torso_shell", "ai_bay"),
-        ("e_tray", "e_"), ("head_bracket", "handle"), ("head_bracket", "pan_sleeve"), ("yoke", "tilt_sleeve"), ("head_shell", "visor"),
+        ("e_tray", "e_"), ("head_bracket", "handle"), ("head_bracket", "pan_sleeve"), ("yoke", "tilt_sleeve"), ("yoke", "tilt_bearing"), ("head_shell", "head_pivot_stub"), ("head_shell", "head_drive_stub"), ("tilt_bearing", "head_pivot_stub"), ("head_shell", "visor"),
         ("visor", "head_screen"), ("visor", "head_cam"), ("head_screen", "eye"), ("upper_bone", "bone_cap"), ("upper_bone", "cf_neck"),
         ("forearm", "cf_fore"), ("wrist_can", "wrist_motor"), ("wrist_motor", "wrist_adapter"), ("wrist_adapter", "wp_hub"),
         ("wrist_adapter", "wp_collar"), ("wp_hub", "palm"), ("palm", "wr_sleeve"), ("gr_hub", "grip_base"), ("grip_base", "grip_servo"),
@@ -39,7 +39,7 @@ MATE = [("can", "motor"), ("collar", "hub"), ("hub", "shaft"), ("shaft", "wheel"
         ("yaw_block", "yaw_spring_ring"), ("roll_shaft", "roll_spring_hub"), ("yaw_pulley40", "brg_"), ("roll_pulley72", "brg_"),
         ("wr_spindle", "wr_brg"), ("palm", "wr_brg"), ("wr_brg_U", "wr_brg_L"), ("wr_spindle", "grip_base"), ("wr_dog", "wr_sleeve"), ("palm", "wr_dog"), ("palm", "wr_cap"), ("wr_cap", "wr_brg"),
         ("wr_dog", "wr_spindle"), ("wr_brg", "grip_base"), ("finger_hook", "jaw_fixed"), ("finger_hook", "finray_fixed")]   # dog: 0.1 mm a side by design (lash); the base boss clamps the lower inner race   # bearing inner races, shims and the pulley rotate together on the shaft
-RUNNING = [("yaw_plate_bot", "yaw_shaft"), ("yaw_flange", "yaw_stop_pin"), ("bracket", "kx_hub_v2"), ("bracket", "al_pulley"), ("bracket", "flange_coupling"), ("e_cassette", "e_al_pulley"), ("e_cassette", "e_kx_hub_v2"), ("e_cassette", "e_flange_coupling"), ("e_cassette", "e_hub"), ("roll_link", "roll_smallhub"), ("yaw_block", "yaw_smallhub"), ("bracket", "smallhub"),
+RUNNING = [("head_drive_stub", "tilt_sleeve"), ("yoke", "head_pivot_stub"), ("yaw_plate_bot", "yaw_shaft"), ("yaw_flange", "yaw_stop_pin"), ("bracket", "kx_hub_v2"), ("bracket", "al_pulley"), ("bracket", "flange_coupling"), ("e_cassette", "e_al_pulley"), ("e_cassette", "e_kx_hub_v2"), ("e_cassette", "e_flange_coupling"), ("e_cassette", "e_hub"), ("roll_link", "roll_smallhub"), ("yaw_block", "yaw_smallhub"), ("bracket", "smallhub"),
            ("yaw_shaft", "yaw_stop_pin"), ("bracket", "pulleyA"), ("roll_link", "al_pulley"), ("yaw_block", "al_pulley"),
            ("roll_link", "roll_spring_hub"), ("yaw_spring_ring", "yaw_shaft"), ("yaw_plate_bot", "al_pulley"), ("roll_link", "roll_pulley72"), ("yaw_block", "yaw_pulley40"),
            ("palm", "wr_spindle"), ("palm", "grip_base"), ("wr_brg", "wr_dog"), ("wr_cap", "grip_base"), ("wr_cap", "wr_spindle")]

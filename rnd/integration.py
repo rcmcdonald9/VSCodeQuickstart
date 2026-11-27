@@ -34,7 +34,8 @@ def module_clashes():
     out = []
     for mn, f in (("arm", arm.assembly), ("roll/yaw", roll.module), ("shoulder", shoulder.module), ("base", base.module),
                   ("upper (mast, lift, torso, head)", lambda: upper.module(0.75)),
-                  ("head tilt −30°", lambda: upper.head(0, -30)), ("head tilt +30°", lambda: upper.head(0, 30))):
+                  (f"head tilt {upper.TILT_RANGE[0]:+.0f}°", lambda: upper.head(0, upper.TILT_RANGE[0])),
+                  (f"head tilt {upper.TILT_RANGE[1]:+.0f}°", lambda: upper.head(0, upper.TILT_RANGE[1]))):
         for (a, pa, _), (b, pb, _) in itertools.combinations(f(), 2):
             if (a, b) in FUSED or (b, a) in FUSED:
                 continue
