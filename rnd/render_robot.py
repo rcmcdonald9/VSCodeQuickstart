@@ -50,6 +50,5 @@ co.location = tgt + Vector((dist * math.cos(AZ), dist * math.sin(AZ), ELEV))
 co.rotation_euler = (tgt - co.location).to_track_quat("-Z", "Y").to_euler()
 scn.camera = co; scn.render.engine = "CYCLES"; scn.cycles.samples = SAMPLES; scn.cycles.use_denoising = False
 scn.render.resolution_x, scn.render.resolution_y = (tuple(int(v) for v in argv[7].split("x")) if len(argv) > 7 else (1100, 1400))
-scn.cycles.use_denoising = True
 scn.view_settings.view_transform = "AgX"; scn.render.filepath = OUT
 bpy.ops.render.render(write_still=True)
