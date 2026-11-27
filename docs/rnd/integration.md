@@ -23,17 +23,17 @@ into structure within 3.2 mm (an insert or clearance hole in a wall, or a wall n
 | torque pin | w90_can | ✅ | w90_torque_hanger |
 | torque pin | w180_can | ✅ | w180_torque_hanger |
 | torque pin | w270_can | ✅ | w270_torque_hanger |
-| bolted flange (D24) | lift_can | ✅ | 2/2 screws (M4 through the flange ears into nuts in wall A) land in structure |
+| bolted flange (D24) | lift_can | ✅ | 4/4 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | torque pin | pan_sleeve | ✅ | head_bracket |
 | torque pin | tilt_sleeve | ✅ | yoke |
-| bolted flange (D24) | l_sh_can | ✅ | 3/3 screws (M4 through the flange ears into nuts in wall A) land in structure |
-| bolted flange (D24) | l_roll_yaw_can | ✅ | 2/2 screws (M4 through the flange ears into nuts in wall A) land in structure |
+| bolted flange (D24) | l_sh_can | ✅ | 6/6 screws (M4 through the flange ears into nuts in wall A) land in structure |
+| bolted flange (D24) | l_roll_yaw_can | ✅ | 4/4 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | bolted flange (D24) | l_arm_e_can | ✅ | 4/4 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | bolted flange (D24) | l_arm_wrist_can | ✅ | 6/6 screws (M3 through the flange) land in structure |
 | torque pin | l_arm_hand_wr_sleeve | ✅ | l_arm_hand_palm |
 | torque pin | l_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
-| bolted flange (D24) | r_sh_can | ✅ | 3/3 screws (M4 through the flange ears into nuts in wall A) land in structure |
-| bolted flange (D24) | r_roll_yaw_can | ✅ | 2/2 screws (M4 through the flange ears into nuts in wall A) land in structure |
+| bolted flange (D24) | r_sh_can | ✅ | 6/6 screws (M4 through the flange ears into nuts in wall A) land in structure |
+| bolted flange (D24) | r_roll_yaw_can | ✅ | 4/4 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | bolted flange (D24) | r_arm_e_can | ✅ | 4/4 screws (M4 through the flange ears into nuts in wall A) land in structure |
 | bolted flange (D24) | r_arm_wrist_can | ✅ | 6/6 screws (M3 through the flange) land in structure |
 | torque pin | r_arm_hand_wr_sleeve | ✅ | r_arm_hand_palm |

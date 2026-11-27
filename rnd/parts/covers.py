@@ -21,6 +21,9 @@ and the probe reached the can's pigtail window and the motor through the hood's 
 are judged by rnd/pinch.py's rule (compliant() below): the shoulder's inboard wedge (yaw block vs ferrule, ≈ 2 mm at
 roll −15°, ≈ 135 mm at 100°) cannot be closed by any boot within ±40 % and the D22 neck boot's floor would have to
 follow the riser hub ≈ 84 mm; both need a geometry or range decision (see compliant()).
+
+Neck CAD pass (R17, 2026-11-27): the head's back is now round the tilt axis and the neck slot is closed by a rigid saddle
+on the neck bar at a constant 4 mm (upper.py, neck v2), so the neck boot and its two compliant() rows are gone.
 """
 from __future__ import annotations
 
@@ -159,6 +162,19 @@ def _yaw_hood():
     return _HOOD[0]
 
 
+# Roll nips the D25 people-near limit leaves (R17 neck/shoulder pass, 2026-11-27; rnd/pinch.py on the merged tree):
+# - cover_yaw × roll_link (0.6…14.8 mm) and cover_yaw × roll_gim_housing (1.4…9.4): the hood's front end is cut round
+#   the roll link's rear walls swept over the roll range, so its cells sit 0.6 mm from a wall at one angle and 10–26 mm at
+#   another. No cover-only fix: the static side is not round about the roll axis. Needed in roll.py: the link's rear end
+#   (x −45…−27, round the 61806) as a boss of revolution about the roll axis (r ≤ 45, nothing wider behind x −27); the
+#   hood is then cut with a concentric bore at a constant 3 mm.
+# - yaw_block × roll_link (9.6…13.6) and roll_outflange × roll_gim_housing (8.4…9.5): the clevis boss (R_ARM 42, round)
+#   faces flat link walls. roll.py: bore the link's front walls (x 38…50) concentric at R_ARM + 4 (constant 4 mm).
+# - cover_yaw × ferrule_m (3.5…10.5, left) and the inboard wedge (yaw block / band × ferrule, 2.5 / 2.7 mm at −15°):
+#   arm part against arm part, so no torso or cover change opens them (a static filler only moves the nip: the block
+#   swings 115°). Mechanical fixes: a roll hard stop at ≥ +5° (roll.STOP_AT / ROLL_MIN, the people-near limit made
+#   permanent: R16 across-body 71 → 49 %) or ROLL_Y + 23 mm. upper.TORSO_RECESS (PIP_TORSO_RECESS=1) fixes only the
+#   shoulder–torso rows.
 def roll_frame():
     """Concept: rides on the roll output: a sleeve round the whole yaw block (both plates, the belt, the yaw
     cartridge, its KX collar and torque fork), open at the top (the clevis arms) and the bottom (the yaw flange).
@@ -412,17 +428,10 @@ def _roll_inboard_spans():
 def compliant():
     """Compliant (TPU 95A) covers for rnd/pinch.py's rule: [{name, part (robot part-name suffix; None = design study),
     joint, wall (mm), spans: [(name, free length mm, length(joint deg) mm)], note}]."""
-    from . import upper
     return [dict(name="shoulder roll inboard fan bellows", part=None, joint="roll", wall=1.6, spans=_roll_inboard_spans(),
                  note="not buildable: needs the wedge ≥ 25 mm at −15° (or ROLL_Y ≈ +23 mm); closed instead by the D25 people-near "
                       "roll soft limit (twin.JR_PEOPLE_NEAR, sw/safety.py): ≥ 25 mm from ≈ +1°, limit +5°; "
-                      "the outer sector is closed by the yaw hood (rigid)"),
-            dict(name="neck boot (upper.neck_boot)", part="neck_boot", joint="tilt", wall=upper.NECK_BOOT_T, spans=[],
-                 note=f"rides the head, cut 1.5 mm clear of the yoke over {upper.TILT_RANGE[0]:+.0f}…{upper.TILT_RANGE[1]:+.0f}°: "
-                      "no deflection (integration clash gone); the yoke plate's and hub's sweep leaves a slot in its floor"),
-            dict(name="neck boot floor bonded to the riser hub", part=None, joint="tilt", wall=upper.NECK_BOOT_T,
-                 spans=upper.neck_boot_spans(),
-                 note="not buildable: the D22 pivot (head COM, 67 mm above the yoke plate) moves the hub ≈ 84 mm under the head")]
+                      "the outer sector is closed by the yaw hood (rigid)")]
 
 
 # ---------------------------------------------------------------------------------------------- printable list

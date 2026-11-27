@@ -30,14 +30,11 @@ HEAD_Z = Z_TOP + 10.0
 WALL = 2.0
 PAN_RANGE = (-90.0, 90.0)       # head pan (deg): software limit for the neck cable loop (ESTIMATE)
 TILT_RANGE = (-10.0, 15.0)      # head tilt (deg), D22 pivot: −10° (up) … +15° (down to the table). D25 (owner, 2026-11-27): was +30°.
-# Wave 7 check (rnd/pinch.py tilt rows, 2.5° steps, the head CAD re-cut for each range): the tier-1 tilt fails are 4 at +15, +20
-# and +30 alike; they are not set by the upper limit. head_shell × yoke closes to the 3 mm clearance cut at whichever end of
-# the range (the shell's neck-opening rim against the yoke plate / riser hub, and the opening's side edges 15 mm from the
-# posts); head_drive_stub × tilt_sleeve 6.6…8.1 and head_shell × tilt_sleeve are near-constant gaps over any range; only
-# visor × tilt_sleeve depends on it (25.3 mm at +10, 24.9 at +12.5, 24.6 at +15). The neck boot's floor is cut away by the
-# yoke plate's sweep over x −8…+42 already at −10…+10 (+44 at +15, +50 at +30), so less tilt alone does not close the neck:
-# the rim needs ≥ 25 mm round the posts / plate / hub with the TPU boot covering the opening (open, needs a neck CAD pass).
-TILT_RELIEF = (-10.0, 30.0)     # the shell's clearance cuts (yoke, tilt sleeve, pan sleeve) are swept over this, not TILT_RANGE (head())
+# Wave 7 check: the 4 tier-1 tilt fails (head_shell × yoke 3 mm at the neck-opening rim, and 3 rows against the tilt sleeve
+# inside the head, reached through the opening) did not depend on the upper limit. Neck v2 (below, R17 neck CAD pass)
+# closes them: the rim is a surface of revolution about the tilt axis over a concentric saddle (constant 4 mm) and the
+# head's interior is out of reach.
+TILT_RELIEF = (TILT_RANGE[0] - 2.5, TILT_RANGE[1] + 2.5)   # the shell's clearance cuts (yoke, tilt sleeve, pan sleeve) are swept over this (head())
 PAN_RISER = 20.0                # R17 (2026-11-27): the yoke stands on a Ø40 hub this tall, so the yoke plate and the head clear
                                 # the pan sleeve and the carry handle by ≥ 25 mm at every pan angle (were 10.6 / 15.2 / 17.4)
 
@@ -71,7 +68,7 @@ def mast() -> Part:
 # At lift_min (0.35 m) everything that rides the lift stays ≥ 25 mm above the static lift parts (R17 finger rule) with
 # the torso bottom at lift − 75 (it was lift − 105): D23 (3) asked for ≥ 120 mm under the torso, 155 → 275 mm = 120.
 LIFT_PD = 20 * 5.0 / math.pi                 # 20T HTD 5M pitch diameter (31.83 mm)
-EAR_SITE = "lift"                            # D24 v2 flange-ear pattern (cartridge_m.EAR_SITES), read by rnd/assembly_seq.py
+EAR_SITE = "lift4"                           # D24 v2 flange-ear pattern (cartridge_m.EAR_SITES), read by rnd/assembly_seq.py; W8b (Neon #2 finding 2): 4 ears, ±40° + ±140°
 LIFT_XF = -151.0                             # cartridge flange plane = wall A's cartridge-side face (stage z = 0)
 LIFT_Y = -2.0 - LIFT_PD / 2                  # stage axis y: the belt's rising strand leaves the pulley at y = −2
 LIFT_Z = 199.5                               # stage axis height: can bottom 1.2 mm over the deck (Z_BASE 155)
@@ -120,7 +117,7 @@ def lift_mount(*_):
     """One printed bracket (PETG-CF, ≈ 74 × 99 × 71 mm) on the deck behind the mast coupling: wall A (cartridge flange,
     2 × M4 ear bolts + nut pockets, eccentric seat for 6801 A: belt_stage.wall_a_cuts), wall B (eccentric seat for 6801 B), a web on
     the −Y side between them (clear of both strands) and a deck foot under the can's nose, 4 × M4 into deck inserts."""
-    from .belt_stage import V3, wall_a_cuts
+    from .belt_stage import V3, ear_tower, wall_a_cuts
     T = lift_stage_T()
     xa0, xa1 = LIFT_XF, LIFT_XF + 6.0                                          # wall A (stage z −6 … 0)
     xb0, xb1 = LIFT_XF - V3["end"] - 6.0, LIFT_XF - V3["end"]                   # wall B (stage z −40 … −34)
@@ -131,7 +128,8 @@ def lift_mount(*_):
     web = Pos((xa1 + xb0) / 2, yb0 + 2.5, Z_BASE) * Box(xb0 - xa1, 5, LIFT_WALL_TOP - Z_BASE, align=MIN)
     foot = Pos((xa0 + xb1) / 2, (ya0 + ya1) / 2, Z_BASE) * Box(xb1 - xa0, ya1 - ya0, 5, align=MIN)           # in front of the can (its belly is 1.2 mm off the deck)
     m = wa + wb + web + foot
-    m -= T * wall_a_cuts(None, EAR_SITE)                                         # D24 v2: 2 ears at ±140° (cartridge_m.EAR_SITES["lift"])
+    m += T * ear_tower(None, EAR_SITE, (40.0, -40.0))                           # W8b lift4: the ±40° ears stand 18 mm over LIFT_WALL_TOP
+    m -= T * wall_a_cuts(None, EAR_SITE)                                         # D24 v2 (W8b lift4): 4 ears at ±40° / ±140° (cartridge_m.EAR_SITES)
     m -= Pos(xb0 - 1, LIFT_Y, LIFT_Z) * Rot(0, 90, 0) * Cylinder(19.1, 8, align=MIN)          # wall B eccentric seat (Ø38.2)
     for x in (xa1 + 4, xb0 - 4):                                                # 4 × M4 inserts, screws from under the deck
         for y in (ya0 + 6, ya1 - 6):
@@ -185,6 +183,8 @@ def lift_cover() -> Part:
     cb = coupling()[0].bounding_box()
     c -= Pos(cb.center().X, cb.center().Y, cb.center().Z) * Box(cb.size.X + 6, cb.size.Y + 6, cb.size.Z + 6)   # 3 mm round the coupling
     c -= Pos(LIFT_XF + 3.0, LIFT_Y, Z_BASE) * Box(8.0, 84.0, LIFT_WALL_TOP - Z_BASE + 1.0, align=MIN)    # wall A + 1 mm (the riser stands on it)
+    from .belt_stage import ear_tower
+    c -= lift_stage_T() * ear_tower(None, EAR_SITE, (40.0, -40.0), grow=1.0)                      # W8b lift4: 1 mm round the ±40° ear towers
     sols = c.solids()
     return max(sols, key=lambda q: q.volume) if len(sols) > 1 else c
 
@@ -211,6 +211,31 @@ def carriage(lift_mm: float) -> Part:
 
 
 TORSO_Z = (-75.0, 105.0)       # torso shell bottom / top relative to the lift height (mm)
+# R17 study (2026-11-27, Neon review #2 finding 5; owner decision pending): a conical shoulder recess in each torso side,
+# revolved about the pitch axis so pitching never changes it. PIP_TORSO_RECESS=1 builds it (default off). Sized from the
+# arm's swept envelope (roll −15…100°, any pitch; rnd/parts/roll.py + covers.roll_frame + the upper bone): the yaw band's
+# lower inboard corner reaches 2 mm outboard of the side wall's plane (pitch frame y −3, 77 mm from the pitch axis) at
+# roll −15°, so ≥ 25 mm needs the wall at y ≤ −27.7 (pitch frame; the side wall is at −5) out to ≈ 130 mm from the axis.
+# The recess: a flat floor TORSO_RECESS["depth"] in from the side wall out to r_floor, a 45° cone out to the wall, 2 mm walls; the
+# shoulder bracket's outer wall (shoulder.bracket_wall, pitch frame y −34.3) stays 4.6 mm inside the recess floor.
+# It moves only the torso side: the inboard wedge proper (yaw block / band × the arm-side ferrule, 2.5 mm at −15°) is
+# between two arm parts and does not change (rnd/pinch.py).
+import os as _os
+TORSO_RECESS_ON = _os.environ.get("PIP_TORSO_RECESS", "0") == "1"
+TORSO_RECESS = dict(depth=22.7, r_floor=130.0, wall=2.0)
+
+
+def _torso_recess_cut(lift_mm, s, grow=0.0):
+    """Revolved recess region about the s-side pitch axis (robot frame): floor at |y| = 195 − depth − grow out to
+    r_floor + grow, then a 45° cone to the side wall's plane."""
+    from build123d import Cone
+    d, rf = TORSO_RECESS["depth"], TORSO_RECESS["r_floor"]
+    yf = 195.0 - d - grow                                                        # floor (|y|)
+    h = 30.0                                                                     # past the side wall
+    r_top = rf + grow + (195.0 + h - yf)                                         # 45° cone: radius grows 1:1 with |y|
+    c = Cone(rf + grow, r_top, 195.0 + h - yf, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    c = Pos(D.arm.shoulder_x * 1000, s * yf, lift_mm) * Rot(-90 * s, 0, 0) * c
+    return c
 
 
 def torso(lift_mm: float):
@@ -219,11 +244,21 @@ def torso(lift_mm: float):
     x0 = 15.0
     # lift v2: bottom at lift − 75 (was − 105; the pitch brackets reach − 65): ≥ 120 mm under the torso at lift_min
     # (D23 (3)) and room for the lift stage behind the mast coupling
-    shell = Pos(x0, 0, lift_mm + TORSO_Z[0] + (TORSO_Z[1] - TORSO_Z[0]) / 2) * soft_shell(230, 390, TORSO_Z[1] - TORSO_Z[0], 70, 30, 2.0)   # edge r 40 → 30: the shorter shell's bottom edge would cut the pitch brackets' lower corners (+0.12 cm³)
+    zc = lift_mm + TORSO_Z[0] + (TORSO_Z[1] - TORSO_Z[0]) / 2
+    if TORSO_RECESS_ON:
+        t = TORSO_RECESS["wall"]
+        outer = Pos(x0, 0, zc) * soft_box(230, 390, TORSO_Z[1] - TORSO_Z[0], 70, 30)
+        inner = Pos(x0, 0, zc) * soft_box(230 - 2 * t, 390 - 2 * t, TORSO_Z[1] - TORSO_Z[0] - 2 * t, 70 - t, 30 - t)
+        for s in (1, -1):
+            outer -= _torso_recess_cut(lift_mm, s)
+            inner -= _torso_recess_cut(lift_mm, s, t)
+        shell = outer - inner
+    else:
+        shell = Pos(x0, 0, zc) * soft_shell(230, 390, TORSO_Z[1] - TORSO_Z[0], 70, 30, 2.0)   # edge r 40 → 30: the shorter shell's bottom edge would cut the pitch brackets' lower corners (+0.12 cm³)
     shell -= Pos(x0, 0, lift_mm) * Box(400, 1.0, 400)                                 # split line
     shell -= Pos(MAST_X, 0, lift_mm) * Box(W + 30, W + 30, 400)                       # mast + carriage passage
     for s in (1, -1):                                                                  # shoulder ports (pitch shaft + V-band)
-        shell -= Pos(D.arm.shoulder_x * 1000, s * 195, lift_mm) * Rot(90, 0, 0) * Cylinder(50, 40)
+        shell -= Pos(D.arm.shoulder_x * 1000, s * 195, lift_mm) * Rot(90, 0, 0) * Cylinder(50, 2 * (TORSO_RECESS["depth"] + TORSO_RECESS["wall"] + 10) if TORSO_RECESS_ON else 40)
     # electronics in front of the pitch cartridges (they reach into the torso at x −53 … 33)
     tray = Pos(75, 0, lift_mm - 40) * Box(60, 150, 6)
     pi = Pos(75, -20, lift_mm - 25.5) * Box(56, 85, 22)
@@ -241,18 +276,108 @@ HEAD_MASS_G = {"screen": 150.0, "cam": 99.0}      # 7" board ESTIMATE (confirm o
 BRG_6805 = dict(d=25.0, D=37.0, B=7.0)            # passive tilt pivot bearing (BOM: 6805-2RS, 25 × 37 × 7)
 TILT_FRICTION_NM = 0.3                            # wave-spring + PTFE washer drag at the pivot, ESTIMATE (holds the head with the servo limp)
 
+# ---------------------------------------------------------------------------------------------------------------------
+# Neck v2 (R17 neck CAD pass, 2026-11-27). The D22 pivot sits at the head's centre of mass, 103 mm in front of the pan axis,
+# so any yoke part that crosses the shell near the pan axis moves 45–60 mm relative to the rim over −10…+15° (the v1 yoke
+# plate, posts and riser hub came in through a 110 × 90 back/bottom opening and the rim closed to the 3 mm cut clearance;
+# a TPU floor bonded to the hub would have to stretch 12 → 46 mm, +281 %). v2 makes the head's back a surface of
+# revolution about the tilt axis, so tilting never moves it relative to anything:
+# - **D-profile head**: flat front (screen, unchanged), the back a half-cylinder of HEAD_R about the tilt axis from the
+#   top to the bottom (the head is HEAD_R above and below the axis), its side edges rounded HEAD_RE (a torus about the
+#   same axis). 252 × 176 × 130 mm, 602 g (v1: 252 × 184 × 160, 669 g). HEAD_R = 88 keeps the round back ≥ 25 mm from
+#   the pan sleeve's corners at every pan × tilt (nearest corner 112 mm from the axis, inside the slot there: the saddle
+#   is 30 mm from it). The axis sits PIVOT_BACK behind the COM (the lighter back moved the COM 10 mm forward).
+# - **Neck bar**: one 30 × 24 mm bar from the riser hub on the pan output straight to the tilt axis (radial, so it only
+#   swings about the axis), a Ø36 cross-tube on the axis inside the head carrying the two Ø44 pivot bosses at y ±BOSS_Y
+#   (−Y: the 6805, +Y: the tilt cartridge, as in v1 but 10 mm further in, clear of the shell's front corner blend). The
+#   neck cable runs in the bar and the cross-tube and enters the head through the hollow −Y pivot stub (on the axis: it
+#   only twists ±12.5°).
+# - **Neck slot**: the bar enters through a slot in the round back that keeps ≥ NECK_CLEAR (26 mm) between its rim and
+#   the bar at every tilt (≈ 72° × 82 mm).
+# - **Neck saddle**: a 3 mm PETG cylindrical sector on the bar, concentric with the round back and NECK_GAP (4 mm) inside
+#   it, wide enough to stay under the whole slot rim over the tilt range (+ 4° and 8 mm of overlap): the slot is closed
+#   to the probe (constant 4 mm gap) and the head's interior (tilt cartridge, stubs, camera, screen) is out of reach.
+# The v1 TPU neck boot is retired (nothing to bond it to: no opening is left). The head shell prints as two halves split
+# at y = 0 (each ≤ 126 mm wide), closed round the yoke with M3 at the seam; the −Y half's stub goes into the 6805, the +Y
+# half's drive stub onto the tilt cartridge output (both along y).
+HEAD_R = 88.0                     # round back radius about the tilt axis (mm)
+HEAD_W = 252.0                    # head width (y)
+HEAD_FRONT = 150.0                # front face (head frame x)
+HEAD_RV, HEAD_RE = 58.0, 40.0     # front vertical-edge radius; top/bottom/side-edge radius (also the round back's end edges)
+HEAD_T = 2.4                      # shell wall
+NECK_BAR = dict(w=30.0, t=24.0)   # neck bar: y width, thickness (in the tilt plane)
+NECK_CLEAR = 26.0                 # slot rim ↔ bar at every tilt (R17 ≥ 25)
+NECK_GAP, SADDLE_T = 4.0, 3.0     # saddle ↔ shell inner surface (R17 ≤ 8, constant); saddle wall
+SADDLE_LAP = (4.0, 8.0)           # saddle overlap past the slot rim at the worst tilt: angle (deg), y (mm)
+BOSS_Y = 61.0                     # pivot bosses 10 mm thick, y ±(BOSS_Y − 5 … BOSS_Y + 5) (v1: 8 mm at ±71); the 6805 sits in a
+                                  # 7.5 mm blind seat from the −Y boss's outer face (a 2.5 mm floor joins it to the cross-tube)
+BOSS_R, TUBE_R = 22.0, 18.0       # pivot boss (6805 OD 37: 3.5 mm wall; v1 Ø48) and cross-tube radius (Ø28 bore round the Ø25 stub)
+PIVOT_BACK = 6.0                  # tilt axis this far behind the head's COM: the bosses clear the screen board by 4 mm; gravity
+                                  # torque 0.6 kg × 9.81 × 6 mm ≈ 0.035 N·m (≈ 1 % of the STS3215's stall, under the 0.3 N·m pivot drag)
+HUB_TOP = -40.0                   # riser hub top (head frame z): the yoke plate's old level (yoke z 0)
 
-def _head_body():
-    """Head pieces in the head frame (x forward, origin = the v0 tilt axis 40 mm above the yoke plate), before the
-    clearance cuts. D22: 7" Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (1024 × 600, CAN). Head 252 × 184 mm."""
-    shell = Pos(70, 0, 28) * soft_shell(160, 252, 184, 58, 40, 2.4)                 # pill-shaped head
+
+def _cyl_y(px, pz, r, y0, y1):
+    """Cylinder about the tilt axis (head frame: along Y through (px, pz)) from y0 to y1."""
+    return Pos(px, (y0 + y1) / 2, pz) * Rot(90, 0, 0) * Cylinder(r, y1 - y0)
+
+
+def _sector(px, pz, r0, r1, a0, a1, y0, y1):
+    """Annular sector about the tilt axis: radii r0…r1, polar angles a0…a1 (deg; 0 = +X, 90 = +Z, head frame), y0…y1."""
+    from build123d import BuildPart, BuildSketch, Plane, Polygon, extrude
+    n = max(8, int(abs(a1 - a0) / 3) + 2)
+    step = (a1 - a0) / (n - 1)
+    L = (r1 + 2.0) / math.cos(math.radians(abs(step) / 2))
+    pts = [(px, pz)] + [(px + L * math.cos(math.radians(a0 + step * k)), pz + L * math.sin(math.radians(a0 + step * k))) for k in range(n)]
+    with BuildPart() as bp:
+        with BuildSketch(Plane.XZ):
+            Polygon(*pts, align=None)
+        extrude(amount=(y1 - y0) / 2, both=True)
+    wedge = Pos(0, (y0 + y1) / 2, 0) * bp.part
+    ring = _cyl_y(px, pz, r1, y0, y1) - (_cyl_y(px, pz, r0, y0 - 1, y1 + 1) if r0 > 0 else Box(0.01, 0.01, 0.01))
+    return wedge & ring
+
+
+def _d_solid(px, pz, R, front, W, rv, re):
+    """D-profile head solid (head frame): half-cylinder R about the tilt axis behind it (end edges rounded re), a block
+    from the axis to the front face (vertical front edges rv, top/bottom/side edges re), R above and below the axis."""
+    cyl = fillet(_cyl_y(px, pz, R, -W / 2, W / 2).edges(), re)
+    cyl &= Pos(px - R / 2, 0, pz) * Box(R, W + 2, 2 * R + 2)                      # the back half only
+    L = (front - px) + 60.0
+    blk = Pos(front - L, 0, pz) * soft_box(2 * L, W, 2 * R, rv, re)
+    blk &= Pos((px + front) / 2, 0, pz) * Box(front - px, W + 2, 2 * R + 2)
+    return cyl + blk
+
+
+def _neck_angles(px, pz):
+    """Polar angles (deg, about the tilt axis, head frame at tilt 0) of the neck bar, the slot (lo, hi) and the saddle
+    (lo, hi). A yoke point at angle φ shows at φ + tilt in the head frame."""
+    bar = math.degrees(math.atan2(HUB_TOP - pz, 0.0 - px)) % 360.0
+    lo, hi = TILT_RANGE
+    w = math.degrees((NECK_BAR["t"] / 2 + NECK_CLEAR) / (HEAD_R - HEAD_T))
+    slot = (bar + lo - w, bar + hi + w)
+    sad = (slot[0] - hi - SADDLE_LAP[0], slot[1] - lo + SADDLE_LAP[0])
+    return bar, slot, sad
+
+
+def _slot_y():
+    return NECK_BAR["w"] / 2 + NECK_CLEAR
+
+
+def _head_body(px, pz):
+    """Head pieces in the head frame (x forward, origin = the v0 tilt axis 40 mm above the yoke plate), for a tilt axis
+    at (px, pz). D22: 7" Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (1024 × 600, CAN). Neck v2: D-profile shell (see above)."""
+    R, t = HEAD_R, HEAD_T
+    shell = _d_solid(px, pz, R, HEAD_FRONT, HEAD_W, HEAD_RV, HEAD_RE) - _d_solid(px, pz, R - t, HEAD_FRONT - t, HEAD_W - 2 * t, HEAD_RV - t, HEAD_RE - t)
     shell -= Pos(150, 0, 40) * Box(20, 236, 124)                                     # bezel opening
     # R15 (2026-11-27): the 182 × 112 board's top corners sat in the shell's corner blend (vertical r 58 meets the top
     # r 40, 0.0 mm). A screen bay 2 mm round the board, from behind it to the bezel opening, clears it; the notch it
     # leaves in the blend is behind the visor (232 × 120), so it doesn't show.
     shell -= Pos(141, 0, 40) * Box(19, 186, 116)
     shell -= Pos(135, 0, -36) * Box(40, 96, 29)                                       # depth-camera window (Gemini 2)
-    shell -= Pos(-20, 0, -20) * Box(110, 180, 90)                                    # neck opening at the back/bottom (yoke + pan servo)
+    _, slot, _ = _neck_angles(px, pz)
+    ys = _slot_y()
+    shell -= _sector(px, pz, R - t - 1.0, R + 1.0, slot[0], slot[1], -ys, ys)        # neck slot (≥ NECK_CLEAR round the bar)
     visor = Pos(146, 0, 40) * soft_box(6, 232, 120, 2.8, 1.5) - Pos(146, 0, 40) * Box(10, 156, 90)   # 7" active area ≈ 154 × 86
     screen = Pos(138, 0, 40) * Box(9, 182, 112)                                       # board outline ESTIMATE (confirm with the drawing)
     eyes = [Pos(142.8, s * 34, 46) * Rot(0, 90, 0) * Cylinder(14, 0.6) for s in (1, -1)]      # drawn on the screen (render only)
@@ -266,92 +391,47 @@ _PIVOT = []
 def head_pivot():
     """D22 passive pivot: the tilt axis through the head's centre of mass (head frame x, z), so gravity puts ≈ no torque
     on the tilt servo at any angle. Masses: printed shell at 80 % of solid PETG, visor solid PETG, board and camera
-    from HEAD_MASS_G."""
+    from HEAD_MASS_G. Neck v2: the D-profile shell is built round the axis, so the axis is iterated to a fixed point
+    (≤ 0.2 mm, from the v1 value), PIVOT_BACK behind the COM."""
     if not _PIVOT:
         from build123d import CenterOf
-        shell, visor, screen, _, cam = _head_body()
-        items = [(shell, shell.volume / 1000 * 1.27 * 0.8), (visor, visor.volume / 1000 * 1.27),
-                 (screen, HEAD_MASS_G["screen"]), (cam, HEAD_MASS_G["cam"])]
-        m = sum(w for _, w in items)
-        cx = sum(p.center(CenterOf.MASS).X * w for p, w in items) / m
-        cz = sum(p.center(CenterOf.MASS).Z * w for p, w in items) / m
-        _PIVOT.append((round(cx, 1), round(cz, 1), m))
+        px, pz = 103.0, 26.9
+        for _ in range(6):
+            shell, visor, screen, _, cam = _head_body(px, pz)
+            items = [(shell, shell.volume / 1000 * 1.27 * 0.8), (visor, visor.volume / 1000 * 1.27),
+                     (screen, HEAD_MASS_G["screen"]), (cam, HEAD_MASS_G["cam"])]
+            m = sum(w for _, w in items)
+            cx = sum(p.center(CenterOf.MASS).X * w for p, w in items) / m - PIVOT_BACK
+            cz = sum(p.center(CenterOf.MASS).Z * w for p, w in items) / m
+            done = math.hypot(cx - px, cz - pz) <= 0.2
+            px, pz = round(cx, 1), round(cz, 1)
+            if done:
+                break
+        _PIVOT.append((px, pz, m))
     return _PIVOT[0]
 
 
-def neck_boot(shell, px, pz):
-    """R17 (2026-11-27): TPU 95A boot (2 mm) closing the head's neck opening (the cut at the shell's back and bottom where
-    the yoke comes in, plus the slots the yoke's tilt sweep cuts in its bottom and back), head frame (it rides the head;
-    bonded to the opening's rim). A box behind the opening round the yoke's posts and beams (6 mm behind the yoke, up to
-    z 100), a floor 3.5 mm under the yoke plate with a Ø44 hole for the riser hub, out to x 80, and a front lip + side
-    walls from the floor down to the shell's bottom, cut 1.5 mm clear of the yoke over the whole tilt range (wave 5;
-    it does not deflect). One print, ≈ 116 × 188 × 164 mm."""
-    t = NECK_BOOT_T
-    zf = -40.0 - 1.5 - 2.0                                                           # floor top (the yoke plate is at z −40 at tilt 0)
-    y1 = 94.0
-    zt = 100.0                                                                       # up over the yoke-beam slots in the shell's back wall
-    rear = Pos((-36.0 - 6.0) / 2, 0, (zf - t + zt) / 2) * soft_shell(30.0, 2 * y1, zt - zf + t, 12, 6, t)
-    rear -= Pos(0, 0, 0) * Pos(20.0, 0, 0) * Box(60.0, 400, 400)                     # keep x < −10 (the shell's back plane)
-    xl = 80.0                                                                        # past the yoke's swept slots in the shell bottom (x ≤ 75)
-    floor = Pos((-10.0 + xl) / 2, 0, zf - t / 2) * Box(xl + 10.0, 2 * y1, t)
-    lip = Pos(xl - t / 2, 0, (-64.0 + zf) / 2) * Box(t, 2 * y1, zf - (-64.0))
-    sides = [Pos((-10.0 + xl) / 2, s * (y1 - t / 2), (-64.0 + zf) / 2) * Box(xl + 10.0, t, zf - (-64.0)) for s in (1, -1)]
-    b = rear + floor + lip + sides[0] + sides[1]
-    b -= Pos(0, 0, zf - 10) * Cylinder(22.0, 20)                                     # riser hub (Ø40) + 2 mm
-    b -= shell
-    # wave 5 (integration: yoke × neck_boot 2.4 cm³ at −10°, 1.5 cm³ at +30°): the boot was cut round the yoke at tilt 0
-    # only and assumed to fold with the tilt, but its floor would have to follow the riser hub ≈ 84 mm (rnd/pinch.py's
-    # compliant-cover rule: +590 %). It is now cut 1.5 mm clear of the yoke over the whole tilt range (2° steps), so it
-    # never deflects; the hub's sweep leaves a slot in the floor (the neck stays open to the probe there: open issue).
-    lo, hi = TILT_RANGE
-    yk = _yoke(px, 40.0 + pz, 1.5)
-    for k in range(int(round((hi - lo) / 2)) + 1):
-        td = lo + 2.0 * k
-        b -= (Pos(0, 0, 40) * Pos(px, 0, pz) * Rot(0, td, 0) * Pos(-px, 0, -pz)).inverse() * yk
-    sols = b.solids()
-    return max(sols, key=lambda q: q.volume) if len(sols) > 1 else b
-
-
-NECK_BOOT_T = 2.0                 # neck boot wall (TPU 95A)
-
-
-def neck_boot_spans():
-    """rnd/pinch.py compliant-cover rule (R17, wave 5): the neck boot is bonded to the head (rear wall foot at x −34, front
-    lip at x 78, side walls at y ±92, head frame) and its floor has to follow the yoke's riser hub (Ø44 collar, yoke frame),
-    which turns about the D22 pivot (head COM, 67 mm above the yoke plate) by −tilt relative to the head. Free spans of
-    the floor between the collar and those bonded edges, as (name, free length, length(tilt)): the hub travels ≈ 84 mm
-    over −10…+30°, so no span stays within ±40 % (rear 12 → 83 mm)."""
-    px, pz, _ = head_pivot()
-    zf = -40.0 - 1.5 - 2.0
-
-    def at(p, tilt):
-        x, z = p[0] - px, p[1] - pz
-        t = math.radians(-tilt)
-        return x * math.cos(t) + z * math.sin(t) + px, -x * math.sin(t) + z * math.cos(t) + pz
-
-    def span(hub, edge, dy=0.0):
-        f = lambda tilt: math.dist((*at(hub, tilt), dy), (*edge, 0.0))
-        return f(0.0), f
-
-    out = []
-    for name, hub, edge, dy in (("floor, collar → rear wall", (-22.0, zf), (-34.0, zf), 0.0),
-                                ("floor, collar → front lip", (22.0, zf), (78.0, zf), 0.0),
-                                ("floor, collar → side wall", (0.0, zf), (0.0, zf), 70.0)):
-        L0, f = span(hub, edge, dy)
-        out.append((name, L0, f))
-    return out
-
-
-def _yoke(px, zp, g=0.0):
-    """Fork on the pan output (yoke frame, z = 0 on the pan stack): base plate + two 8 mm arms that rise through the
-    head's neck opening and run forward inside the head to the pivot bosses (Ø48). The −Y boss holds the 6805 pivot
-    bearing; the tilt cartridge bolts to the +Y boss, coaxial. `g` grows it for the clearance cut."""
-    f = Pos(0, 0, -g) * Box(60 + 2 * g, 150 + 2 * g, 8 + 2 * g, align=MIN)
-    f += Pos(0, 0, -PAN_RISER - g) * Cylinder(20 + g, PAN_RISER + g, align=MIN)      # R17: riser hub on the pan output
+def _yoke(px, pz, g=0.0):
+    """Neck v2 yoke in the head frame at tilt 0 (head(): + 40 mm to the yoke frame, z = 0 at the old yoke plate): riser
+    hub on the pan output (Ø40, z −60 … HUB_TOP), the neck bar from the hub to the tilt axis, the cross-tube on the axis
+    (TUBE_R, Ø28 bore: the −Y pivot stub and the neck cable), the two pivot bosses (BOSS_R) at y ±BOSS_Y and the neck saddle.
+    `g` grows it for the clearance cut."""
+    bar_a, _, sad = _neck_angles(px, pz)
+    u = (math.cos(math.radians(bar_a)), math.sin(math.radians(bar_a)))
+    r_end = math.hypot(px, HUB_TOP - pz) + 8.0
+    r0 = 12.0
+    L = r_end - r0
+    f = Pos(0, 0, -60.0 - g) * Cylinder(20 + g, HUB_TOP + 60.0 + g, align=MIN)                     # riser hub
+    f += Pos(px + u[0] * (r0 + L / 2), 0, pz + u[1] * (r0 + L / 2)) * Rot(0, -bar_a, 0) * Box(L, NECK_BAR["w"] + 2 * g, NECK_BAR["t"] + 2 * g)
+    f += _cyl_y(px, pz, TUBE_R + g, -BOSS_Y - g, BOSS_Y + g)                                              # cross-tube
     for s in (1, -1):
-        f += Pos(0, s * 71, -g) * Box(40 + 2 * g, 8 + 2 * g, zp + g, align=MIN)                     # post
-        f += Pos((px - 20) / 2, s * 71, zp) * Box(px + 20 + 2 * g, 8 + 2 * g, 28 + 2 * g)            # beam to the pivot
-        f += Pos(px, s * 71, zp) * Rot(90, 0, 0) * Cylinder(24 + g, 8 + 2 * g)                    # pivot boss
+        f += _cyl_y(px, pz, BOSS_R + g, s * BOSS_Y - 5 - g, s * BOSS_Y + 5 + g)                                  # pivot boss
+    ro = HEAD_R - HEAD_T - NECK_GAP
+    ys = _slot_y() + SADDLE_LAP[1]
+    f += _sector(px, pz, ro - SADDLE_T - g, ro + g, sad[0] - (2 if g else 0), sad[1] + (2 if g else 0), -ys - g, ys + g)   # neck saddle
+    if g == 0:
+        f -= _cyl_y(px, pz, TUBE_R - 4.0, -80, 80)                                                       # bore
+    f &= Pos(0, 0, -60.0 - g) * Box(800, 800, 400, align=MIN)                                       # nothing below the pan output face
     return f
 
 
@@ -365,53 +445,52 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     pan = Pos(MAST_X, 0, Z_TOP + 24) * Rot(0, 0, 90) * cs.sleeve()
     yz = Z_TOP + 24 + cs.stack_height() + PAN_RISER
     P = Pos(MAST_X, 0, yz) * Rot(0, 0, pan_deg)
-    # D22 (owner, 2026-11-27): the 7" head (+≈ 120 g, 252 × 184 mm) clashed with the mast bracket at +30° tilt and loaded
-    # the tilt servo (75 % before the bigger screen). The tilt axis moves from the neck (40 mm above the yoke) to the
-    # head's centre of mass: a passive 6805 pivot on the −Y arm (wave spring + PTFE washer for drag), the tilt cartridge
-    # coaxial on the +Y arm. Range TILT_RANGE (−10° up … +15° down; D25, was +30°).
+    # D22 (owner, 2026-11-27): the 7" head (+≈ 120 g) clashed with the mast bracket at +30° tilt and loaded the tilt servo
+    # (75 % before the bigger screen). The tilt axis moves from the neck (40 mm above the yoke) to the head's centre of
+    # mass: a passive 6805 pivot on the −Y boss (wave spring + PTFE washer for drag), the tilt cartridge coaxial on the
+    # +Y boss. Range TILT_RANGE (−10° up … +15° down; D25, was +30°). Neck v2 (R17): see the section above.
     px, pz, _ = head_pivot()
     zp = 40 + pz                                                                       # pivot height above the yoke plate
-    yoke = _yoke(px, zp)
-    yoke -= Pos(px, -71, zp) * Rot(90, 0, 0) * Cylinder(BRG_6805["D"] / 2 + 0.05, 20)                   # 6805 seat (−Y boss)
-    tilt = Pos(px, 75, zp) * Rot(-90, 0, 0) * Rot(0, 0, 180) * cs.sleeve()                              # body points aft, away from the screen
-    brg = Pos(px, -71, zp) * Rot(90, 0, 0) * (Cylinder(BRG_6805["D"] / 2, BRG_6805["B"]) - Cylinder(BRG_6805["d"] / 2, BRG_6805["B"]))
+    Y = Pos(0, 0, 40)                                                                  # head frame (tilt 0) → yoke frame
+    yoke = Y * _yoke(px, pz)
+    yoke -= Pos(px, -BOSS_Y - 5 + 3.75 - 1, zp) * Rot(90, 0, 0) * Cylinder(BRG_6805["D"] / 2 + 0.05, 7.5 + 2)                   # 6805 seat (−Y boss)
+    tilt = Pos(px, BOSS_Y + 5, zp) * Rot(-90, 0, 0) * Rot(0, 0, 180) * cs.sleeve()                              # body points aft, away from the screen
+    brg = Pos(px, -BOSS_Y - 5 + BRG_6805["B"] / 2, zp) * Rot(90, 0, 0) * (Cylinder(BRG_6805["D"] / 2, BRG_6805["B"]) - Cylinder(BRG_6805["d"] / 2, BRG_6805["B"]))
     # loop 25: slotted torque pads for the pan and tilt cartridges' Ø4 pins (rnd/parts/torque.py)
     from .torque import with_pin_slot
     top = with_pin_slot(pan, top, 1.95, 2.0)
     yoke = with_pin_slot(tilt, yoke, 1.95, 2.0)
     T = Pos(0, 0, 40) * Pos(px, 0, pz) * Rot(0, tilt_deg, 0) * Pos(-px, 0, -pz)        # head frame → yoke frame
-    shell, visor, screen, eyes, cam = _head_body()
+    shell, visor, screen, eyes, cam = _head_body(px, pz)
     # head-side pivot stubs bonded to the shell's inner side walls (head frame): −Y a Ø25 tube through the 6805 with a
     # flange on the wall; +Y a Ø30 disc onto the tilt cartridge's output face
-    yi = 124.0 - 2.4                                                                  # shell inner side wall
-    stub_m = Pos(px, -(67 + yi) / 2, pz) * Rot(90, 0, 0) * (Cylinder(BRG_6805["d"] / 2, yi - 67) - Cylinder(8.5, yi))
+    yi = HEAD_W / 2 - HEAD_T                                                          # shell inner side wall
+    stub_m = Pos(px, -(BOSS_Y + 5 - BRG_6805["B"] + yi) / 2, pz) * Rot(90, 0, 0) * (Cylinder(BRG_6805["d"] / 2, yi - BOSS_Y - 5 + BRG_6805["B"]) - Cylinder(8.5, yi))
     stub_m += Pos(px, -yi + 2, pz) * Rot(90, 0, 0) * Cylinder(22, 4)
     tb = tilt.bounding_box()
     stub_p = Pos(px, (tb.max.Y + 0.8 + yi) / 2, pz) * Rot(90, 0, 0) * Cylinder(15, yi - tb.max.Y - 0.8)
     stub_p += Pos(px, yi - 2, pz) * Rot(90, 0, 0) * Cylinder(22, 4)
-    inner = Pos(70, 0, 28) * soft_box(160 - 4.8, 252 - 4.8, 184 - 4.8, 58 - 2.4, 40 - 2.4)       # R17: the stub flanges stood out
-    stub_m, stub_p = stub_m & inner, stub_p & inner                                              # of the shell's corner blend
+    inner = _d_solid(px, pz, HEAD_R - HEAD_T, HEAD_FRONT - HEAD_T, HEAD_W - 2 * HEAD_T, HEAD_RV - HEAD_T, HEAD_RE - HEAD_T)   # R17: the stub
+    stub_m, stub_p = stub_m & inner, stub_p & inner                                              # flanges stay inside the shell
     # clearance cuts over the tilt range (and any pan, for the pan sleeve): the yoke grown 3 mm, the tilt sleeve's box,
-    # the pan sleeve's cylinder
-    env_y = _yoke(px, zp, 3.0)
+    # the pan sleeve's cylinder (neck v2: by design they cut nothing; kept as a guard against later edits)
+    env_y = Y * _yoke(px, pz, 3.0)
     env_t = Pos(tb.center().X, tb.center().Y, tb.center().Z) * Box(tb.size.X + 4, tb.size.Y + 4, tb.size.Z + 4)
     pb = (Pos(-MAST_X, 0, -yz) * pan).bounding_box()                                 # pan sleeve in the yoke (P) frame
     r_pan = max(math.hypot(x, y) for x in (pb.min.X, pb.max.X) for y in (pb.min.Y, pb.max.Y)) + 2
     env_p = Pos(0, 0, pb.min.Z - 2) * Cylinder(r_pan, pb.size.Z + 4, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    lo, hi = TILT_RANGE
-    # D25: the clearance cuts are swept over TILT_RELIEF (the old −10…+30°), wider than the travel. Cut only to the +15° stop,
-    # the rim came 7.3 mm from the pan sleeve's corners at pan 60° (rnd/pinch.py pan row head_shell × pan_sleeve 7.3…26.5 mm) and
-    # closed to the 3 mm cut clearance on the yoke at the stop (head_shell × yoke); cut past the stop it stays clear of both.
-    rlo, rhi = min(lo, TILT_RELIEF[0]), max(hi, TILT_RELIEF[1])
+    rlo, rhi = TILT_RELIEF
     for td in [rlo + k * (rhi - rlo) / 8 for k in range(9)]:
         inv = (Pos(0, 0, 40) * Pos(px, 0, pz) * Rot(0, td, 0) * Pos(-px, 0, -pz)).inverse()
         for e in (env_y, env_t, env_p):
             shell -= inv * e
+    sols = shell.solids()
+    shell = max(sols, key=lambda q: q.volume) if len(sols) > 1 else shell
     out = [("head_bracket", top, "white"), ("handle", handle, "dark"), ("belt_idler", idler, "steel"),
            ("pan_sleeve", pan, "white"), ("yoke", P * yoke, "dark"), ("tilt_sleeve", P * tilt, "white"),
            ("tilt_bearing", P * brg, "steel"),
            ("head_shell", P * T * shell, "white"), ("head_pivot_stub", P * T * stub_m, "dark"), ("head_drive_stub", P * T * stub_p, "dark"),
-           ("visor", P * T * visor, "dark"), ("head_screen", P * T * screen, "black"), ("neck_boot", P * T * neck_boot(shell, px, pz), "dark"),
+           ("visor", P * T * visor, "dark"), ("head_screen", P * T * screen, "black"),
            ("eye_l", P * T * eyes[0], "orange"), ("eye_r", P * T * eyes[1], "orange"), ("head_cam", P * T * cam, "dark")]
     return out
 
