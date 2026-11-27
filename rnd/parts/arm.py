@@ -16,6 +16,7 @@ from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 
 from . import cartridge_m as cm
 from .soft import soft_shell
+EAR_SITE = "elbow"          # D24 v2 flange-ear pattern (cartridge_m.EAR_SITES), read by rnd/assembly_seq.py
 from .kx import KX56, KX74, hub as kx_hub, collar as kx_collar   # (masses: what D24 removed)
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
@@ -131,6 +132,9 @@ def upper_bone() -> Part:
         p -= Pos(0, -52, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(MOT["od"] / 2 + 4.5, 24)
     else:
         p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(MOT["od"] / 2 + 4.5, 20)   # loop 36 (R15): 1.2 mm around the can
+    # D24 v2 (Fable C3): the cartridge's flange ears (r 48; D20 r 56) pass the −Y wall on the way in and out, and the same
+    # notches are the driver paths to the 4 ear screws (straight Ø6 along −Y past the sleeve; rnd/assembly_seq.py R14 c/d)
+    p -= STAGE * cm.can_envelope(MOT, EAR_SITE, 0.6, Y_E + 30.0, 140.0)
     p -= Pos(0, h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20)
     p -= Pos(0, -h["y"] / 2 + 3, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20, align=MIN)   # loop 40: −Y wall opened for the elbow shaft (was blind; the shaft now goes in from −Y)
     # D19: U-slots under both elbow seats: the whole cassette (shaft + 40T + plates + belt + small stage, 61808s on the tube
@@ -140,6 +144,8 @@ def upper_bone() -> Part:
         sc = SEAT_SCREW[side]
         for x in (-sc["x"], sc["x"]):
             p -= Pos(x, sc["y"], -ELBOW_Z - SEAT_LUG_H) * Cylinder(sc["insert_d"] / 2, sc["depth"], align=MIN)
+    from .encoder import elbow_insert_cuts                                             # M3 (Fable): AS5048A bracket inserts in the −Y boss
+    p -= elbow_insert_cuts()
     # bottom cap is a separate print (bone_cap()): the cassette goes in from below
     return p - Pos(0, 0, CAP_Z) * Box(200, 200, 100, align=(Align.CENTER, Align.CENTER, Align.MAX))
 
@@ -212,14 +218,18 @@ def cassette_plate(side: str = "B") -> Part:
     """Elbow belt cassette (confidence campaign): one of two 7 mm plates that carry the small-pulley hub (61804 in an
     eccentric bushing, Ø38.2 seat) and ride on the elbow pulley hub on their own thin 6708 (40×50×6, Ø50 seat;
     ~11 g vs 26 g for a 61808, which keeps the shoulder-roll workspace margin ≥ 1.5×; C0 ≈ 2.4 kN vs 0.7 kN belt peak). The belt loop closes
-    inside the cassette. Plate B has the anti-rotation pin tab. Housing frame. D24: the elbow cartridge bolts to plate A
-    (6 × M4 from the pulley side into the flange inserts), so its torque closes through the M5 posts and plate B's pin."""
+    inside the cassette. Plate B has the anti-rotation pin tab. Housing frame. D24 v2 (Fable C3): the elbow cartridge bolts
+    to plate A with 4 × M4 from the cartridge side through its flange ears into nuts in hex pockets on plate A's pulley
+    face (ears at ±40°/±140°, clear of the M5 posts), so its torque closes through the M5 posts and plate B's pin."""
     from build123d import Sketch, Circle, Rectangle, make_hull, extrude, Plane, Locations
     y0, y1 = CAS_A if side == "A" else CAS_B
     zE, zS = -ELBOW_Z, -ELBOW_Z + BELT_C
     t = y1 - y0
     disc = lambda x, z, r: Pos(x, y0, z) * Rot(-90, 0, 0) * Cylinder(r, t, align=MIN)
     p = disc(0, zE, 31) + disc(0, zS, ((MOT["flange"][0] / 2 + 2) if side == "A" else 27))   # D24: plate A carries the cartridge flange (Ø68 → r 36; D20 Ø84 → r 44)
+    if side == "A":                                                       # D24 v2: a lobe under each flange ear (nut pocket + ≥ 3 mm)
+        for a in cm.EAR_SITES[EAR_SITE]:
+            p += STAGE * cm._lobe(cm.ear_r(MOT), a, 7.5, t, -t)
     # web between the seats (hull approximated by a tapered box)
     p += Pos(0, y0 + t / 2, (zE + zS) / 2) * Box(54, t, BELT_C)
     for x in (-CAS_POST_X, CAS_POST_X):
@@ -231,7 +241,7 @@ def cassette_plate(side: str = "B") -> Part:
     p -= disc(0, zE, 25)                                                  # 6708 (40×50×6) seat
     if side == "A":
         from .belt_stage import wall_a_cuts
-        p -= STAGE * wall_a_cuts(MOT)                                     # D24: eccentric seat, spigot counterbore, 6 × M4 countersunk
+        p -= STAGE * wall_a_cuts(MOT, EAR_SITE)                           # D24 v2: eccentric seat, spigot counterbore, ear bolts + nut pockets
     else:
         p -= disc(0, zS, 19.1)                                            # eccentric-bushing seat
     return p
@@ -360,13 +370,16 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     out = [("upper_bone", upper_bone(), "white"), ("bone_cap", bone_cap(), "white"), ("e_cassette", cassette(), "dark")]
     # elbow stage, built in the stage frame (cartridge +Z, big pulley at +X), then mapped: +Z→-Y, +X→-Z (STAGE)
     from .belt_stage import bolted_stage, V3
-    out += bolted_stage(STAGE, 20, "e_", MOT)                                            # D24: bolted cartridge + Oldham + D13 stage
+    out += bolted_stage(STAGE, 20, "e_", MOT, EAR_SITE)                                  # D24: bolted cartridge + Oldham + D13 stage
     bc = V3["belt_c"]
     out += [("e_belt", STAGE * Pos(0, 0, bc - 7.5) * belt_loop(31.8, E_TEETH * 5.0 / math.pi, BELT_C, width=15.0, exact=True), "dark"),
             ("e_seat_cap_m", elbow_seat_cap("-"), "white"), ("e_seat_cap_p", elbow_seat_cap("+"), "white")]
     # (the yaw stage above the flange lives in rnd/parts/roll.py)
     fe = Pos(0, 0, -ELBOW_Z) * Rot(0, elbow_deg, 0)
     out.append(("e_shaft40", fe * elbow_pulley_hub(), "steel"))                           # D19: integral 40T, turns with the forearm (its clamp, double-D)
+    from .encoder import elbow_parts                                                     # M3 (Fable): AS5048A joint encoder on the tube's −Y end
+    st, rot = elbow_parts()
+    out += st + rot                                                                      # the magnet parts are axisymmetric about the elbow axis
     out += [("forearm", fe * forearm(), "white"), ("cf_fore", fe * cf_fore(), "dark"), ("cf_neck", cf_neck(), "dark")]
     # wrist cartridge (DM-J4310 + KX56) + hand (rnd/parts/hand.py), hand centre plane on the arm's centre plane (y = 0)
     from . import hand as hd

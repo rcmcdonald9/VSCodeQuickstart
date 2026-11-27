@@ -63,6 +63,7 @@ def mast() -> Part:
 # At lift_min (0.35 m) everything that rides the lift stays ≥ 25 mm above the static lift parts (R17 finger rule) with
 # the torso bottom at lift − 75 (it was lift − 105): D23 (3) asked for ≥ 120 mm under the torso, 155 → 275 mm = 120.
 LIFT_PD = 20 * 5.0 / math.pi                 # 20T HTD 5M pitch diameter (31.83 mm)
+EAR_SITE = "lift"                            # D24 v2 flange-ear pattern (cartridge_m.EAR_SITES), read by rnd/assembly_seq.py
 LIFT_XF = -151.0                             # cartridge flange plane = wall A's cartridge-side face (stage z = 0)
 LIFT_Y = -2.0 - LIFT_PD / 2                  # stage axis y: the belt's rising strand leaves the pulley at y = −2
 LIFT_Z = 199.5                               # stage axis height: can bottom 1.2 mm over the deck (Z_BASE 155)
@@ -72,7 +73,7 @@ BELT_T, BELT_W = 3.6, 15.0                   # HTD 5M, 15 mm wide
 
 
 def lift_stage_T():
-    """Stage frame (belt_stage.small_stage_v3: flange plane z = 0, cartridge +Z, bolts at ±75/115/155° from +X) → world:
+    """Stage frame (belt_stage.small_stage_v3: flange plane z = 0, cartridge +Z; D24 v2 ears at ±140° from +X) → world:
     stage +Z → world −X (cartridge points back), stage +X → world +Z (the belt pull is up, between the ±75° bolts)."""
     return Pos(LIFT_XF, LIFT_Y, LIFT_Z) * Rot(0, -90, 0)
 
@@ -109,20 +110,20 @@ def lift_pawl(lift_mm: float) -> Part:
 
 def lift_mount(*_):
     """One printed bracket (PETG-CF, ≈ 74 × 99 × 71 mm) on the deck behind the mast coupling: wall A (cartridge flange,
-    6 × M4 countersunk, eccentric seat for 6801 A: belt_stage.wall_a_cuts), wall B (eccentric seat for 6801 B), a web on
+    2 × M4 ear bolts + nut pockets, eccentric seat for 6801 A: belt_stage.wall_a_cuts), wall B (eccentric seat for 6801 B), a web on
     the −Y side between them (clear of both strands) and a deck foot under the can's nose, 4 × M4 into deck inserts."""
     from .belt_stage import V3, wall_a_cuts
     T = lift_stage_T()
     xa0, xa1 = LIFT_XF, LIFT_XF + 6.0                                          # wall A (stage z −6 … 0)
     xb0, xb1 = LIFT_XF - V3["end"] - 6.0, LIFT_XF - V3["end"]                   # wall B (stage z −40 … −34)
-    ya0, ya1 = LIFT_Y - 35.0, LIFT_Y + 35.0                                     # round the Ø68 flange's bolt circle
+    ya0, ya1 = LIFT_Y - 41.0, LIFT_Y + 41.0                                     # D24 v2: round the ±140° flange ears' nut pockets (r 48, y ±30.9 + 7.5)
     yb0, yb1 = LIFT_Y - 30.0, LIFT_Y + 24.0
     wa = Pos((xa0 + xa1) / 2, (ya0 + ya1) / 2, Z_BASE) * Box(6, ya1 - ya0, LIFT_WALL_TOP - Z_BASE, align=MIN)
     wb = Pos((xb0 + xb1) / 2, (yb0 + yb1) / 2, Z_BASE) * Box(6, yb1 - yb0, LIFT_WALL_TOP - Z_BASE, align=MIN)
     web = Pos((xa1 + xb0) / 2, yb0 + 2.5, Z_BASE) * Box(xb0 - xa1, 5, LIFT_WALL_TOP - Z_BASE, align=MIN)
     foot = Pos((xa0 + xb1) / 2, (ya0 + ya1) / 2, Z_BASE) * Box(xb1 - xa0, ya1 - ya0, 5, align=MIN)           # in front of the can (its belly is 1.2 mm off the deck)
     m = wa + wb + web + foot
-    m -= T * wall_a_cuts()
+    m -= T * wall_a_cuts(None, EAR_SITE)                                         # D24 v2: 2 ears at ±140° (cartridge_m.EAR_SITES["lift"])
     m -= Pos(xb0 - 1, LIFT_Y, LIFT_Z) * Rot(0, 90, 0) * Cylinder(19.1, 8, align=MIN)          # wall B eccentric seat (Ø38.2)
     for x in (xa1 + 4, xb0 - 4):                                                # 4 × M4 inserts, screws from under the deck
         for y in (ya0 + 6, ya1 - 6):
@@ -133,7 +134,7 @@ def lift_mount(*_):
 def lift_drive():
     from .belt_stage import bolted_stage
     xb, yb, wx, ty = lift_belt_xy()
-    out = bolted_stage(lift_stage_T(), 20, "lift_")
+    out = bolted_stage(lift_stage_T(), 20, "lift_", site=EAR_SITE)
     out += [("lift_belt", Pos(xb, yb, LIFT_Z) * Box(wx, ty, Z_TOP - 10 - LIFT_Z, align=MIN), "dark"),
             ("lift_bracket", lift_mount(), "white")]
     return out
@@ -167,7 +168,7 @@ def lift_cover() -> Part:
     c -= Pos(xb, yb, LIFT_Z) * Box(wx + 6.4, ty + 6.4, 200, align=MIN)                                   # belt passage (≥ 3 mm round the belt)
     cb = coupling()[0].bounding_box()
     c -= Pos(cb.center().X, cb.center().Y, cb.center().Z) * Box(cb.size.X + 6, cb.size.Y + 6, cb.size.Z + 6)   # 3 mm round the coupling
-    c -= Pos(LIFT_XF + 3.0, LIFT_Y, Z_BASE) * Box(8.0, 72.0, LIFT_WALL_TOP - Z_BASE + 1.0, align=MIN)    # wall A + 1 mm (the riser stands on it)
+    c -= Pos(LIFT_XF + 3.0, LIFT_Y, Z_BASE) * Box(8.0, 84.0, LIFT_WALL_TOP - Z_BASE + 1.0, align=MIN)    # wall A + 1 mm (the riser stands on it)
     sols = c.solids()
     return max(sols, key=lambda q: q.volume) if len(sols) > 1 else c
 
