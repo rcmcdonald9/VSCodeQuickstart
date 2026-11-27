@@ -17,7 +17,7 @@
 | cover forearm_r | 18 × 32 × 214 | 18 | ✅ |
 | cover forearm_f | 18 × 32 × 214 | 18 | ✅ |
 | dock_wing_l | 160 × 191 × 198 | 406 | ✅ |
-| clevis + yaw block | 92 × 130 × 188 | 193 | ✅ |
+| clevis + yaw block | 92 × 130 × 188 | 227 | ✅ |
 | cover belt_duct [3/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [1/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [2/5] | 16 × 27 × 188 | 29 | ✅ |
@@ -44,7 +44,7 @@
 | elbow cassette plate | 5 × 81 × 129 | 19 | ✅ |
 | wheel pod | 26 × 80 × 124 | 114 | ✅ |
 | palm | 58 × 75 × 122 | 193 | ✅ |
-| roll link | 96 × 112 × 120 | 138 | ✅ |
+| roll link | 108 × 112 × 120 | 208 | ✅ |
 | lift cover | 89 × 109 × 118 | 96 | ✅ |
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
 | cover collar_bot | 2 × 110 × 110 | 15 | ✅ |
@@ -115,6 +115,6 @@
 |---|---|
 | base | 6.31 |
 | upper core | 8.50 |
-| arm (each) | 4.60 |
+| arm (each) | 4.68 |
 | battery | 1.10 |
-| total robot | 25.10 |
+| total robot | 25.26 |
