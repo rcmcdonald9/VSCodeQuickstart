@@ -1215,3 +1215,9 @@ One long push instead of half-hour runs. In order:
 - D24 inline GIM8108-36 roll behind `ROLL_DRIVE` (default belt; `PIP_ROLL_DRIVE=inline`): measured dome 117 × 100 mm vs 163 × 219 belt; R14/R15/basket pass; R16 across-body 62 % inline vs 52 % belt (target 54 %; the 2.6 mm cassette drop cost belt 2 points). Awaiting owner OK.
 - D19 belt roll: one-piece 80T shaft, capped seats, clevis pinch caps → R14 roll row passes. Cassettes 11.3 mm (two CAN pairs), yaw r_out 42.5 + 0.75 m ribbon → yaw 400° vs 360° ✅.
 - Scorecard 39 ✅ / 7 ❌. Open fails are all in flight: R14 pitch + elbow (arm track), R15 head_shell × head_screen 0 mm (pinch/head track), harness wrist roll 302° vs 432° (next wave), R16 belt across-body, R8 cost $4,898, R2b stiffness.
+
+### 2026-11-27 — Wave 1, software bring-up track merged
+- sw/bringup.py: M1 day-1 bring-up on python-can (virtual now, socketcan day 1): enumerate → drive torque limit + CAN timeout to flash → e-stop/watchdog tests → hard-stop zeroing → 10 % jog → gravity hold (sets collision thresholds); each step gated; report docs/sw/bringup_<date>.md.
+- sw/virtual_arm.py MuJoCo plant with hidden zeros/friction/fault injection; 6 injected faults each caught at the right step (sw/test_s2.py, all pass).
+- Fix: DMJ4310 driver treated Damiao status 1 ("enabled") as a motor error — would have stopped the arm on day 1.
+- sw/teleop_sim.py: EEF-delta teleop through the Supervisor → LeRobot v3 (5 episodes reload). Day 1 still fills the GIM6010 table in sw/drivers/gim.py (manual blocked here).
