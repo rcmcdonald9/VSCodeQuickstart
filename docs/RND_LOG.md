@@ -1162,3 +1162,9 @@ One long push instead of half-hour runs. In order:
 
 - GIM8108-8 (reseller data: 7.5 N·m rated, 22 stall, ≈ 396 g, ≈ $85–110) at shoulder pitch + elbow, both 3:1: hug 1.82× rated at 0.2 m (GIM6010: 0.81×); straight-out 1 kg spec 1.76× (was 1.18×); workspace p95 2.4× / 3.4×.
 - Gate: 24 V operation (listings mostly 48 V) and the flange drawing. M1 motor order for those two joints on hold.
+
+## Loop 45 (2026-11-27, hardware): R2c ripple — lift, base, tip with 20 lb aboard
+
+- Lift (GIM6010, 20T): 20 lb moves at 0.3 m/s² need 1.41× rated / 3.1× peak; the pawl holds at 0 W → OK for short moves, no lift motor change.
+- Base: 15 mm threshold margin 2.19× → 1.72× (rule 1.5×) ✅. Static tip with the hug load at 45°: ≈ 55 mm, ≈ 32 mm while braking at 0.3 m/s² ✅ (planner rules stay).
+- So R2c only changes shoulder pitch + elbow (D20), pending the GIM8108-8 24 V answer.

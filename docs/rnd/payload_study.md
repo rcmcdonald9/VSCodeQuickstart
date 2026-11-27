@@ -37,3 +37,14 @@ Capacity: shoulder_pitch 21.4 / 62.7 N·m; elbow 21.4 / 62.7 N·m; wrist_pitch 3
 | C: 20 lb two-handed bag, 10 lb per hand, arm at 45°, elbow straight | 0.80× / 2.36× | 1.36× / 3.98× |
 
 **R2c (owner, 2026-11-27): 20 lb carried two-handed, held close (load on the forearms ≤ 0.25 m from the elbows).** Met on rated torque with the D20 motors (≥ 1.5× at 0.2 m, 1.32× at 0.3 m, with ≈ 3.9× on peak). The GIM6010s only manage it as a brief lift.
+
+## The rest of the robot with 20 lb aboard (R2c ripple check, loop 45)
+
+| Check | Today (2 kg) | With 20 lb | Rule | |
+|---|---|---|---|---|
+| Lift GIM6010: rated / peak margin (20 lb moves at 0.3 m/s²; the pawl holds it at 0 W) | 1.94× / 4.3× | 1.41× / 3.1× | peak ≥ 1.5× for moves < 5 s | ✅ |
+| Base: 15 mm threshold, wheel peak margin | 2.19× | 1.72× | ≥ 1.5× | ✅ |
+| Static tip, hug load between wheels (45°): COM shift 86 mm vs 148 mm edge | — | 62 mm | ≥ 50 mm | ✅ |
+| Same + braking 0.3 m/s² | — | 40 mm | ≥ 30 mm | ✅ |
+
+Planner rules with a load over 1 kg (A10) still apply: carry it pointing at a wheel, brake ≤ 0.3 m/s², crawl near people.
