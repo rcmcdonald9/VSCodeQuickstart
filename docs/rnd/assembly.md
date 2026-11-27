@@ -17,7 +17,7 @@
 | cover forearm_r | 18 × 32 × 214 | 18 | ✅ |
 | cover forearm_f | 18 × 32 × 214 | 18 | ✅ |
 | dock_wing_l | 160 × 191 × 198 | 406 | ✅ |
-| clevis + yaw block | 92 × 130 × 188 | 227 | ✅ |
+| clevis + yaw block | 92 × 130 × 188 | 226 | ✅ |
 | cover belt_duct [3/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [1/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [2/5] | 16 × 27 × 188 | 29 | ✅ |
@@ -116,6 +116,6 @@
 |---|---|
 | base | 6.31 |
 | upper core | 8.50 |
-| arm (each) | 4.68 |
+| arm (each) | 4.75 |
 | battery | 1.10 |
-| total robot | 25.26 |
+| total robot | 25.40 |
