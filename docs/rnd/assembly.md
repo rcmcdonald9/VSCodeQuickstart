@@ -5,46 +5,46 @@
 | Piece | Best-fit size (mm) | Volume (cm³) | Fits |
 |---|---|---|---|
 | skirt quarter | 124 × 250 × 250 | 96 | ✅ |
-| deck quarter | 6 × 246 × 246 | 249 | ✅ |
+| deck quarter | 6 × 246 × 246 | 269 | ✅ |
 | cover belly_2 | 2 × 246 × 246 | 81 | ✅ |
 | cover belly_0 | 2 × 246 × 246 | 81 | ✅ |
 | cover belly_1 | 2 × 246 × 246 | 81 | ✅ |
 | cover belly_3 | 2 × 246 × 246 | 81 | ✅ |
 | head_shell | 184 × 243 × 243 | 294 | ✅ |
-| upper bone | 98 × 112 × 233 | 194 | ✅ |
+| upper bone | 98 × 112 × 233 | 280 | ✅ |
 | torso_shell [1] | 180 × 195 × 230 | 293 | ✅ |
 | torso_shell [2] | 180 × 195 × 230 | 293 | ✅ |
-| cover forearm_r | 18 × 34 × 214 | 18 | ✅ |
-| cover forearm_f | 18 × 34 × 214 | 18 | ✅ |
+| cover forearm_r | 18 × 32 × 214 | 18 | ✅ |
+| cover forearm_f | 18 × 32 × 214 | 18 | ✅ |
 | dock_wing_l | 160 × 191 × 198 | 406 | ✅ |
-| clevis + yaw block | 92 × 130 × 189 | 194 | ✅ |
+| clevis + yaw block | 92 × 130 × 188 | 193 | ✅ |
 | cover belt_duct [3/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [1/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [2/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [4/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [5/5] | 16 × 27 × 188 | 29 | ✅ |
+| neck_boot | 116 × 164 × 188 | 124 | ✅ |
 | yaw plate bottom | 8 × 185 × 185 | 72 | ✅ |
-| neck_boot | 93 × 180 × 180 | 73 | ✅ |
 | cover spine_pod | 55 × 110 × 167 | 89 | ✅ |
 | visor | 120 × 166 × 166 | 82 | ✅ |
+| shoulder bracket body | 150 × 158 × 161 | 195 | ✅ |
 | carriage | 88 × 101 × 160 | 554 | ✅ |
 | cover liner_w90 | 124 × 158 × 158 | 66 | ✅ |
 | cover liner_w270 | 124 × 158 × 158 | 66 | ✅ |
 | cover liner_w180 | 124 × 158 × 158 | 66 | ✅ |
 | cover liner_w0 | 124 × 158 × 158 | 66 | ✅ |
 | yoke | 111 × 150 × 157 | 191 | ✅ |
-| shoulder bracket outer wall | 150 × 153 × 155 | 142 | ✅ |
-| shoulder bracket body | 148 × 149 × 150 | 152 | ✅ |
+| shoulder bracket outer wall | 127 × 149 × 150 | 144 | ✅ |
 | dock_tower | 50 × 59 × 150 | 435 | ✅ |
 | e_tray | 6 × 148 × 148 | 54 | ✅ |
 | cover collar_top | 2 × 110 × 148 | 23 | ✅ |
-| elbow cassette plate | 5 × 81 × 143 | 20 | ✅ |
-| elbow cassette plate A | 6 × 84 × 137 | 26 | ✅ |
+| elbow cassette plate A | 6 × 84 × 146 | 31 | ✅ |
 | cover mast_cap | 54 × 84 × 135 | 69 | ✅ |
 | elbow pulley hub | 67 × 132 × 132 | 112 | ✅ |
+| elbow cassette plate | 5 × 81 × 129 | 19 | ✅ |
 | wheel pod | 26 × 80 × 124 | 114 | ✅ |
 | palm | 60 × 75 × 122 | 197 | ✅ |
-| roll link | 96 × 112 × 120 | 139 | ✅ |
+| roll link | 96 × 112 × 120 | 138 | ✅ |
 | lift cover | 89 × 99 × 118 | 94 | ✅ |
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
 | cover collar_bot | 2 × 110 × 110 | 15 | ✅ |
@@ -54,18 +54,19 @@
 | upper bone cap [1] | 10 × 97 × 102 | 12 | ✅ |
 | mast coupling | 40 × 100 × 100 | 253 | ✅ |
 | cover collar_door [1] | 3 × 27 × 98 | 7 | ✅ |
-| pitch shaft (integral 60T) | 50 × 94 × 94 | 88 | ✅ |
+| cartridge M can (bolted, D24) | 71 × 94 × 95 | 64 | ✅ |
+| pitch shaft (integral 60T) | 50 × 94 × 94 | 98 | ✅ |
 | pulley 60T | 16 × 94 × 94 | 107 | ✅ |
 | upper bone cap [2] | 5 × 83 × 93 | 2 | ✅ |
 | gripper grip_base | 12 × 91 × 91 | 43 | ✅ |
-| pitch hub (balancer disc + ferrule) | 34 × 91 × 91 | 86 | ✅ |
+| pitch hub (balancer disc + ferrule) | 34 × 91 × 91 | 81 | ✅ |
 | ferrule (arm side) | 18 × 91 × 91 | 67 | ✅ |
 | KX74 hub | 13 × 90 × 90 | 67 | ✅ |
 | small-pulley hub | 46 × 90 × 90 | 82 | ✅ |
 | roll arm rear | 18 × 72 × 88 | 32 | ✅ |
 | cartridge M can | 44 × 87 × 87 | 50 | ✅ |
-| cartridge M can (bolted, D24) | 71 × 87 × 87 | 65 | ✅ |
 | KX56 collar | 19 × 78 × 85 | 28 | ✅ |
+| lift bracket (D13 stage walls) | 40 × 71 × 82 | 63 | ✅ |
 | KX74 male | 8 × 80 × 80 | 29 | ✅ |
 | cartridge M adapter | 12 × 80 × 80 | 45 | ✅ |
 | cartridge M rear cap (D24) | 4 × 80 × 80 | 18 | ✅ |
@@ -76,26 +77,25 @@
 | forearm (ends) [2] | 64 × 78 × 80 | 80 | ✅ |
 | head_bracket | 24 × 76 × 76 | 102 | ✅ |
 | KX44 collar | 18 × 64 × 72 | 22 | ✅ |
-| lift bracket (D13 stage walls) | 40 × 70 × 71 | 56 | ✅ |
 | KX56 hub | 13 × 70 × 70 | 39 | ✅ |
-| cover back_plate | 15 × 68 × 68 | 2 | ✅ |
 | pulley 40T | 18 × 67 × 67 | 54 | ✅ |
 | handle | 34 × 65 × 65 | 22 | ✅ |
 | yaw shaft | 46 × 62 × 62 | 69 | ✅ |
 | KX56 male | 6 × 61 × 61 | 14 | ✅ |
 | wheel shaft | 35 × 60 × 60 | 34 | ✅ |
 | KX44 hub | 13 × 56 × 56 | 24 | ✅ |
-| head_pivot_stub | 44 × 44 × 55 | 19 | ✅ |
+| head_pivot_stub | 36 × 44 × 55 | 18 | ✅ |
 | gripper jaw_moving | 33 × 40 × 51 | 9 | ✅ |
 | cartridge S sleeve | 30 × 38 × 51 | 16 | ✅ |
 | cartridge D adapter | 6 × 50 × 50 | 7 | ✅ |
+| cartridge M Oldham adapter (D24) | 8 × 50 × 50 | 9 | ✅ |
 | torque hanger (wheel) | 26 × 48 × 50 | 21 | ✅ |
 | gripper grip_servo_sleeve | 29 × 40 × 49 | 16 | ✅ |
 | KX44 male | 5 × 48 × 48 | 7 | ✅ |
 | cartridge S horn adapter | 9 × 48 × 48 | 11 | ✅ |
-| head_drive_stub | 7 × 44 × 44 | 8 | ✅ |
+| head_drive_stub | 7 × 37 × 44 | 7 | ✅ |
+| cover back_plate | 15 × 44 × 44 | 1 | ✅ |
 | eccentric bushing | 7 × 41 × 41 | 2 | ✅ |
-| cartridge M Oldham adapter (D24) | 8 × 40 × 40 | 6 | ✅ |
 | fin-ray finger | 18 × 28 × 37 | 4 | ✅ |
 | forearm (ends) [3] | 30 × 36 × 36 | 9 | ✅ |
 | elbow cassette spacer | 14 × 14 × 28 | 4 | ✅ |
@@ -114,7 +114,7 @@
 | Piece | kg |
 |---|---|
 | base | 6.31 |
-| upper core | 8.23 |
-| arm (each) | 4.44 |
+| upper core | 8.50 |
+| arm (each) | 4.60 |
 | battery | 1.10 |
-| total robot | 24.51 |
+| total robot | 25.10 |

@@ -4,9 +4,35 @@ HTD 5M, 15 mm, printed pulleys, small pulley on its own bearing hub. **Loop 13 r
 
 | Joint | Teeth | Pitch Ø small / big | Sustained pull vs working | Peak pull vs ultimate/3 | Teeth in mesh | Centre / belt length |
 |---|---|---|---|---|---|---|
-| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 190 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 354 mm |
+| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 192 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 355 mm |
 | upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 173 / 312 N → 1.8× ✅ | 691 N → 5.6× ultimate ✅ | 8.7 ✅ | 80 / 313 mm |
-| elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 202 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.5 ✅ | 70.0 / 294 mm |
+| elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 202 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.6 ✅ | 70.7 / 295 mm |
+
+## Centre distances vs the stock belts (Fable M5)
+
+Exact pitch length 2C·cos φ + π(D+d)/2 + φ(D−d); the eccentric bushings give ±1.0 mm. 'Used' = the share of that range the CAD centre needs just to fit the belt (0 % = mid-range, the whole range left for tension and tolerances).
+
+| Joint | Stock belt | Exact centre | CAD centre | Adjuster used |
+|---|---|---|---|---|
+| shoulder_pitch | 355-5M | 70.15 | 70.00 | 15% ✅ |
+| upper_yaw | 315-5M | 80.93 | 80.00 | 93% ❌ |
+| elbow | 295-5M | 70.70 | 70.70 | 0% ✅ |
+
+## Shaft joints at the motor peak (Fable M5/M6)
+
+| Joint | Motor | Torque | Capacity | Margin |
+|---|---|---|---|---|
+| 20T pulley, 2 set screws on a flat (D13 v1) | GIM6010-8 | 11 N·m | 12.0 N·m | 1.09× ⚠️ |
+| 20T aluminium pulley, 4 × 4 key L 16 + set screw on the key | GIM6010-8 | 11 N·m | 15.6 N·m | 1.41× ✅ |
+| Oldham clamp hub, plain Ø12 (D24 v1) | GIM6010-8 | 11 N·m | 7.2 N·m | 0.65× ❌ |
+| Oldham clamp hub + 4 × 4 key L 11 | GIM6010-8 | 11 N·m | 17.9 N·m | 1.63× ✅ |
+| Oldham disc D40 acetal (D24 v1) | GIM6010-8 | 11 N·m | 9.5 N·m | 0.86× ❌ |
+| Oldham disc D50 acetal | GIM6010-8 | 11 N·m | 14.8 N·m | 1.35× ✅ |
+| 20T steel pulley, 4 × 4 key L 20 | GIM8108-8 (D20) | 22 N·m | 32.4 N·m | 1.47× ✅ |
+| Oldham D63 clamp hub (M5) + 4 × 4 key L 16 | GIM8108-8 (D20) | 22 N·m | 27.3 N·m | 1.24× ⚠️ |
+| Oldham disc D50 acetal | GIM8108-8 (D20) | 22 N·m | 14.8 N·m | 0.67× ❌ |
+| Oldham disc D63 acetal | GIM8108-8 (D20) | 22 N·m | 23.6 N·m | 1.07× ⚠️ |
+| Oldham disc D63 acetal at the 18 N·m flash torque limit | GIM8108-8 (D20) | 18 N·m | 23.6 N·m | 1.31× ✅ |
 
 - Belt lengths round to stock sizes; eccentric bushings set the tension (loop 10).
 - If coupon tests show tooth jump or creep: switch to PU steel-cord HTD 5M (1268 N working, Mädler) at the same geometry, or to 25 mm belts.

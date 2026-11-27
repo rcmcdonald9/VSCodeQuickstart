@@ -12,7 +12,8 @@ Sweeps:
 
 Target: moving ≥ 2 mm (hard 1 mm), as in R15; pairs R15 classes as running (bearing-set gaps) use ≥ 0.3 mm.
 
-**Minimum gap over the sweep: roll 0.3 mm, yaw 2.0 mm. Pairs under target: 0; under the hard limit: 0.**
+**Minimum gap over the sweep: roll 0.3 mm, yaw 2.0 mm. Pairs under target: 1; under the hard limit: 0.**
 
 | Joint | Moving part | Static part | Kind | Min gap (mm) | Target / hard | at angle | |
 |---|---|---|---|---|---|---|---|
+| roll | yaw_can | roll_link | static | 1.70 | 2.0 / 1.0 | -15° | ⚠️ target |
