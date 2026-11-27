@@ -134,7 +134,7 @@ def step2_common():
         ("Sensors (D14)", "Elbow node power + bus: 24→12 V **6 A** buck (two stalled STS3215 draw 5.4 A) + half-duplex TTL transceiver + 2 × MCP2562", 1, 14.0,
          "D14: 12 V and TTL made in the arm (sw/config/can_map.yaml)", E),
         ("Sensors", "Global-shutter wrist camera (OV9281 MIPI-CSI) + CSI→USB UVC bridge + slim high-flex USB cable", 1, 70.0, "D12 wrist camera", E),
-        ("Harness", "Clock-spring ribbon stock: 20 AWG silicone pair, 26 AWG twisted pairs, Kapton/PET carrier tape; JST-GH/VH kit", 1, 18.0,
+        ("Harness", "Clock-spring ribbon stock: 16 AWG high-flex ETFE/FEP pair (Neon #2 F10; was 20 AWG silicone), 26 AWG twisted pairs, shielded slim USB, Kapton/PET carrier + PTFE tape; JST-GH/VH kit", 1, 24.0,
          "joint crossings (rnd/harness.py)", E),
         ("Filament (A6)", "PETG 2 kg more (the arm itself after the coupons)", 1, 40.0, "one arm ≈ 3 kg (print_plan.md)", E),
     ]
@@ -197,7 +197,7 @@ HOLD_B = dict(
 
 # Exact questions for the seller (SteadyWin reseller: aifitlab / Robotics Center / openelab), one message.
 SELLER_QUESTIONS = [
-    "**GIM8108-8, 24 V:** we run a 24 V bus (6S Li-ion, 25.2 V full; our regen clamp holds it ≤ 26.5 V, absolute max 28 V). Which driver "
+    "**GIM8108-8, 24 V:** we run a 24 V bus (6S Li-ion, 25.2 V full; our regen clamp switches on at 26.4 V and holds it ≤ 27.3 V, absolute max 28 V). Which driver "
     "version of the GIM8108-8 (SDC104, GDZ468, GDS68?) do you ship, and is it specified for 24 V? Please give rated torque, rated speed, "
     "no-load speed and continuous current at 24 V (listings quote 48 V). Price and lead time for 2 now (4 later).",
     "**GIM8108-8 drawing:** installation drawing with frame diameter and height, output-flange bolt pattern (hole count, PCD, thread, depth) "
