@@ -35,7 +35,7 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 |---|---|---|---|
 | pitch | 10 | 10/10 ✅ | — |
 | elbow | 12 | 12/12 ✅ | — |
-| yaw | 8 | 8/8 ✅ | — |
+| yaw | 10 | 10/10 ✅ | — |
 | lift | 2 | 2/2 (1 by ball-end) ✅ | — |
 | wrist | 12 | 12/12 ✅ | — |
 | roll (inline) | 16 | 16/16 ✅ | — |
@@ -51,6 +51,8 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | elbow | flange ear screw -40° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
 | elbow | flange ear screw +140° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
 | elbow | flange ear screw -140° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
+| yaw | flange ear screw +50° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
+| yaw | flange ear screw -50° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | yaw | flange ear screw +145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | yaw | flange ear screw -145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | lift | flange ear screw +140° (M4, site lift) | swap | ✅ straight Ø6 × 80 | — |
@@ -106,6 +108,17 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | roll (inline) | clevis M5 338° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
 
 </details>
+
+## Flange-ear distribution (Neon #2 finding 2)
+
+A cartridge flange needs ≥ 3 ears with no gap > 120° between neighbours, or ≥ 4 with no gap > 180° (tipping and bolt loads: the cartridge flange table in belts.md, cartridge_m.flange_joint).
+
+| Joint | Site | Ears (deg from the stage +X) | Largest gap | Rule |
+|---|---|---|---|---|
+| pitch | pitch | +40, -30, -70 | 250° | ❌ |
+| elbow | elbow | +40, -40, +140, -140 | 100° | ✅ |
+| yaw | yaw | +50, -50, +145, -145 | 100° | ✅ |
+| lift | lift | +140, -140 | 280° | ❌ |
 
 ## R14 (d) cartridge swap (belt on, shaft in place)
 

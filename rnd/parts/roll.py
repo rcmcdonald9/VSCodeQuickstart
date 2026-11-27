@@ -69,7 +69,7 @@ if INLINE:
 #  - roll 72T → 80T (ratio 4.0 → 4.44): the D13 stages put 0.16 kg more on the shoulder, and the whole-workspace roll
 #    margin (rated / p95, 1 kg, yaw ±150°) fell to 1.49×; 80T restores ≈ 1.6× with no motor change.
 ROLL_TEETH = 80
-ROLL_C, YAW_C = 103.3, 80.0          # 80T:18T roll on a stock 475 mm belt
+ROLL_C, YAW_C = 103.3, 80.93         # 80T:18T roll on a stock 475 mm belt; yaw 80.93 = exact centre for a stock 315-5M belt (Neon #2 F7: at 80.00 it used 93 % of the ±1 mm adjuster)
 # D24 (2026-11-27): both stages are belt_stage.small_stage_v3 with the bolted cartridge (D24 v2, Fable C3: M4 ear bolts from
 # the cartridge side into nuts on wall A's pulley face, site EAR_SITE; centring lip in the wall's counterbore, Oldham drive). Stage frame: z = 0 is the
 # flange plane = the cartridge-side face of wall A; the bearings, pulley and belt plane sit where the KX74 V2 stack had them.

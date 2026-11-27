@@ -31,7 +31,7 @@ from .belt_stage import pulley
 from ..params import BASELINE as _D
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
-EAR_SITE = "pitch"          # D24 v2 flange-ear pattern + side exit (cartridge_m.EAR_SITES / EXIT_SITES), read by rnd/assembly_seq.py
+EAR_SITE = "pitch4"         # D24 v2 flange-ear pattern + side exit (cartridge_m.EAR_SITES / EXIT_SITES), read by rnd/assembly_seq.py
 MOT = cm.MOTORS[_D.arm.joints["shoulder_pitch"][0]]   # D20 switch (params.ARM_MOTORS): GIM6010-8, or the GIM8108-8 (Ø96 ESTIMATE, Ø50 Oldham, Ø84 flange)
 WALL = 1.6
 BELT_C = 70.0
@@ -220,6 +220,8 @@ def _wall(y: float, inner: bool) -> Part:
         w -= _ST * wall_a_cuts(MOT, EAR_SITE)   # D24 v2: eccentric seat, spigot counterbore, 3 ear bolts + nut pockets (pulley side)
     else:
         w -= Pos(-BELT_C, y, 0) * Rot(-90, 0, 0) * Cylinder(19.1, WALL_T + 1)       # eccentric-bushing seat (Ø38) for bearing B
+        from .belt_stage import wall_b_cuts
+        w -= _ST * wall_b_cuts(MOT, EAR_SITE)   # Neon #2 F2: the pitch4 rear ear pair is screwed from the pulley side through the outer wall (Ø10 driver holes)
     # lightening (loop 8 diet): keep ≥ 10 mm of material around both bearing seats and along the back web
     for cx, cz, lx, lz in (LIGHTEN if inner else LIGHTEN_OUT):
         w -= Pos(cx, y, cz) * Rot(-90, 0, 0) * fillet(Box(lx, lz, WALL_T + 1).edges().filter_by(Axis.Z), 5)
@@ -331,7 +333,7 @@ def masses(density=1.27):
     (nose, flange, rear cap); the motor is the actuator mass."""
     from .belt_stage import small_stage_v3
     st = dict((n, p) for n, p, _ in small_stage_v3(20, MOT))
-    oldham = st["flange_coupling"].volume * 2.7e-3 * 0.8 + st["oldham_disc"].volume * 1.41e-3 + st["kx_hub_v2"].volume * density * 0.7e-3
+    oldham = st["flange_coupling"].volume * 2.7e-3 * 0.8 + st["oldham_disc"].volume * 1.41e-3 + st["kx_hub_v2"].volume * 2.7e-3   # metal (6061) motor-side Oldham hub, Neon #2 F2
     can_extra = (cm.can_bolted(MOT, EAR_SITE).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-3
     m = {"bracket body + bolted outer wall (walls, web, cage)": bracket().volume / 1e6 * density * 0.6,
          "pitch shaft + integral 60T + pitch hub (ferrule) + clock-spring ring": (pitch_shaft().volume + pitch_hub().volume + spring_ring().volume) / 1e6 * density * 0.7,

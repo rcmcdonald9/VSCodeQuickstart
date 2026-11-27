@@ -124,6 +124,30 @@ def report(d: Design = BASELINE):
     for r in shaft_joints():
         f = "✅" if r[4] >= 1.25 else ("⚠️" if r[4] >= 1.0 else "❌")
         L.append(f"| {r[0]} | {r[1]} | {r[2]:.0f} N·m | {r[3]:.1f} N·m | {r[4]:.2f}× {f} |")
+    L += ["", "- D20 motor-side hub under its 18 N·m limit: 4 × M3 friction is short (⚠️/❌ above); its output pattern is still ESTIMATE. "
+          "If the GIM8108-8 drawing has dowel holes, 2 × ISO 8734 Ø3 dowels go through the hub into them; otherwise the hub face is "
+          "bonded to the output with Loctite 638 (ESTIMATE ≈ 10 MPa on ≈ 1.7e3 mm², far above the limit; heat to remove).",
+          f"- upper_yaw: the centre for the stock 315-5M is {centre_for(20, 40, 63):.2f} mm; roll.YAW_C (roll track) is still 80.00, "
+          "so the eccentric starts 93 % used. No stock 5M length lands at 80.00 (310-5M → 78.38, 315-5M → 80.93); YAW_C has to move."]
+    from .parts.cartridge_m import FLANGE_LOAD, flange_rows
+    fl = FLANGE_LOAD
+    L += ["", "## Cartridge flange ears: tipping and bolt load (Neon #2 finding 2)", "",
+          f"Applied moment at the actuator peak = cartridge mass × {fl['g']:.0f} g × motor mid-length + Oldham side load "
+          f"(μ {fl['mu_oldham']} · T / (D/3)) × the tenon height; tipping when it beats the ears' preload × their distance from the "
+          f"flange's edge line in the worst direction; preload {fl['preload']:.0f} N per M4, and {fl['retained']:.0%} of it after "
+          "printed-joint creep (ESTIMATE). Friction torque μ 0.3 · n · F_p · r. Rule: ≥ 3 ears with no gap > 120°, or ≥ 4 with no gap > 180°.", "",
+          "| Joint | Motor | Ears (largest gap) | Applied | Tipping at full / 30 % preload | Friction at 30 % vs peak | Max bolt load |",
+          "|---|---|---|---|---|---|---|"]
+    for j, mot, b, a in flange_rows():
+        for tag, r in (("C3", b), ("now", a)):
+            ok = r[0]["rule"] and r[1]["sf_tip"] >= 2 and r[1]["sf_T"] >= 1
+            L.append(f"| {j} ({tag}) | {mot} | {r[0]['n']} ({r[0]['gap']:.0f}°) {'✅' if r[0]['rule'] else '❌'} | {r[0]['M_app']:.1f} N·m | "
+                     f"{r[0]['M_open']:.1f} / {r[1]['M_open']:.1f} N·m → {r[0]['sf_tip']:.1f}× / {r[1]['sf_tip']:.1f}× | "
+                     f"{r[1]['T_fric']:.0f} vs {r[0]['T']:.0f} N·m → {r[1]['sf_T']:.2f}× | {r[0]['F_max']:.0f} N ({r[0]['sf_bolt']:.1f}× proof) {'✅' if ok else '❌'} |")
+    L += ["", "- pitch and lift 'now' are the pitch4 / lift4 patterns (cartridge_m.EAR_SITES); they need shoulder.py / upper.py geometry "
+          "(outer-wall holes, wall-A bosses + cover cut) before those modules switch EAR_SITE.",
+          "- D20 at 30 % preload: friction 15 N·m < 22 N·m stall, so the ears go into bearing (≈ 98 N per M4, ≈ 4 MPa on the 6 mm ear) "
+          "after a slip; at the 18 N·m flash limit 0.8×. Full preload: 50 N·m (2.3×)."]
     L += ["", "- Belt lengths round to stock sizes; eccentric bushings set the tension (loop 10).",
           "- If coupon tests show tooth jump or creep: switch to PU steel-cord HTD 5M (1268 N working, Mädler) at the same geometry, or to 25 mm belts.",
           "- **Rejected (loop 3):** remote elbow motor on a long belt."]
@@ -157,7 +181,13 @@ def shaft_joints():
             ("Oldham D63 clamp hub (M5) + 4 × 4 key L 16", "GIM8108-8 (D20)", 22.0, clamp(6500) + _key_cap(16, KEY["p_al"])),
             ("Oldham disc D50 acetal", "GIM8108-8 (D20)", 22.0, disc(50)),
             ("Oldham disc D63 acetal", "GIM8108-8 (D20)", 22.0, disc(63)),
-            ("Oldham disc D63 acetal at the 18 N·m flash torque limit", "GIM8108-8 (D20)", 18.0, disc(63))]
+            ("Oldham disc D63 acetal at the 18 N·m flash torque limit", "GIM8108-8 (D20)", 18.0, disc(63)),
+            # Neon #2 finding 2 (2026-11-27): the motor-side half, 4 × M3 into the motor output (PCD 34 / 30, ESTIMATE), friction only
+            # (the screws in Ø3.4 holes are the shear backup, but a slip is backlash). Printed ASA: the Ø5.5 head annulus takes ≈ 0.4 kN
+            # (≈ 27 MPa), μ 0.3; 6061 (cartridge_m.MOTOR_HUB): 1.0 kN (8.8) / 1.3 kN (10.9), μ 0.2 metal on metal (ESTIMATE).
+            ("Oldham motor-side tenon adapter, printed ASA, 4 × M3 at 0.4 kN (D24 v2)", "GIM6010-8", 11.0, 0.3 * 4 * 0.4 * 17.0),
+            ("Oldham motor-side hub, 6061, 4 × M3 8.8 at 1.0 kN (Neon #2)", "GIM6010-8", 11.0, 0.2 * 4 * 1.0 * 17.0),
+            ("Oldham motor-side hub, 6061, 4 × M3 10.9 at 1.3 kN, at the 18 N·m flash limit", "GIM8108-8 (D20)", 18.0, 0.2 * 4 * 1.3 * 15.0)]
     return [(j, m, t, c, c / t) for j, m, t, c in rows]
 
 
