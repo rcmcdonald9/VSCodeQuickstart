@@ -243,7 +243,12 @@ def wall_a_cuts(motor: dict | None = None, site: str = "default") -> Part:
     """What to subtract from wall A (stage frame, wall z −6 … 0): the eccentric-bushing seat (Ø38.2), the counterbore for the
     cartridge's centring lip and, per flange ear (D24 v2, cartridge_m.EAR), an M4 clearance hole through the wall plus a
     hex pocket for the ISO 4032 nut on the pulley-side face (z −6 … −2.6: the screw comes from the cartridge side, so the
-    nut and the wall are in compression)."""
+    nut and the wall are in compression).
+    Neon #2 finding 2 (2026-11-27), per ear (cartridge_m.EAR_REVERSED / EAR_FEED):
+      - reversed ear: the clearance hole only (head + washer on the pulley-side face, the nut is in the ear);
+      - side-fed ear: instead of the pocket, a slot inside the wall (z −4.7 … −1.3, nut AF + 0.1 wide) from the screw
+        axis to the wall's edge along the feed direction; the nut slides in from the edge and bears on the 1.3 mm skin
+        between the slot and the ear (compression), so it is captive whichever way the wall faces."""
     from build123d import RegularPolygon, extrude
     from . import cartridge_m as cm
     MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
@@ -255,9 +260,32 @@ def wall_a_cuts(motor: dict | None = None, site: str = "default") -> Part:
     for a in f["ang"]:
         t = math.radians(a)
         at = Pos(f["bolt_r"] * math.cos(t), f["bolt_r"] * math.sin(t), 0)
-        c += at * Pos(0, 0, -10) * Cylinder(e["clr_d"] / 2, 20, align=MINZ)
-        c += at * Pos(0, 0, -6.01) * Rot(0, 0, a) * hexp
+        if a in f["rev"]:
+            c += at * Pos(0, 0, -6.5) * Cylinder(e["clr_d"] / 2, 7.0, align=MINZ)
+        elif a in f["feed"]:
+            c += at * Pos(0, 0, -6.5) * Cylinder(e["clr_d"] / 2, 7.0, align=MINZ)
+            L0, L1 = e["nut_af"] / 2 + 0.05, 60.0
+            c += at * Rot(0, 0, f["feed"][a]) * Pos((L1 - L0) / 2, 0, -6.0 + e["slot_skin"]) * Box(L1 + L0, e["nut_af"] + 0.1, 6.0 - 2 * e["slot_skin"], align=MINZ)
+        else:
+            c += at * Pos(0, 0, -10) * Cylinder(e["clr_d"] / 2, 20, align=MINZ)
+            c += at * Pos(0, 0, -6.01) * Rot(0, 0, a) * hexp
     return c
+
+
+def wall_b_cuts(motor: dict | None = None, site: str = "default", z_far: float = -80.0, r: float | None = None) -> Part:
+    """Neon #2 finding 2: what to subtract from the stage's OPPOSITE wall (stage frame; anything between z_far and wall A's
+    pulley face, z −6.5) for each reversed flange ear (cartridge_m.EAR_REVERSED): a Ø10 hole on the screw axis, so the
+    M4 × 16 + washer (Ø9) go in and out through it and a Ø6 driver reaches the head on wall A's pulley face. Callers:
+    shoulder.py outer wall (pitch4: 160° / −120°): `w -= _ST * wall_b_cuts(MOT, EAR_SITE)` in _wall(..., inner=False)."""
+    from . import cartridge_m as cm
+    _, f = cm.nose_flange(motor, site)
+    rr = (r or cm.EAR["rev_hole_d"] / 2)
+    out = None
+    for a in f["rev"]:
+        t = math.radians(a)
+        h = Pos(f["bolt_r"] * math.cos(t), f["bolt_r"] * math.sin(t), z_far) * Cylinder(rr, -6.5 - z_far, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        out = h if out is None else out + h
+    return out
 
 
 def ear_boss(motor: dict | None = None, site: str = "default", r: float = 7.5, t: float = 6.0) -> Part:
