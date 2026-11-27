@@ -153,6 +153,10 @@ def _head_body():
     clearance cuts. D22: 7" Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (1024 × 600, CAN). Head 252 × 184 mm."""
     shell = Pos(70, 0, 28) * soft_shell(160, 252, 184, 58, 40, 2.4)                 # pill-shaped head
     shell -= Pos(150, 0, 40) * Box(20, 236, 124)                                     # bezel opening
+    # R15 (2026-11-27): the 182 × 112 board's top corners sat in the shell's corner blend (vertical r 58 meets the top
+    # r 40, 0.0 mm). A screen bay 2 mm round the board, from behind it to the bezel opening, clears it; the notch it
+    # leaves in the blend is behind the visor (232 × 120), so it doesn't show.
+    shell -= Pos(141, 0, 40) * Box(19, 186, 116)
     shell -= Pos(135, 0, -36) * Box(40, 96, 29)                                       # depth-camera window (Gemini 2)
     shell -= Pos(-20, 0, -20) * Box(110, 180, 90)                                    # neck opening at the back/bottom (yoke + pan servo)
     visor = Pos(146, 0, 40) * soft_box(6, 232, 120, 2.8, 1.5) - Pos(146, 0, 40) * Box(10, 156, 90)   # 7" active area ≈ 154 × 86
@@ -196,7 +200,7 @@ def _yoke(px, zp, g=0.0):
 def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     top = Pos(MAST_X, 0, Z_TOP) * Box(W + 16, W + 16, 24, align=MIN)                  # top bracket on the mast
     top -= Pos(MAST_X, 0, Z_TOP) * Box(W + 0.4, W + 0.4, 10, align=MIN)
-    handle = Pos(MAST_X - 50, 0, Z_TOP + 24) * Rot(90, 0, 0) * (Cylinder(34, 24) - Cylinder(24, 25) - Pos(0, -40, 0) * Box(80, 80, 30))
+    handle = Pos(MAST_X - 50.5, 0, Z_TOP + 24) * Rot(90, 0, 0) * (Cylinder(34, 24) - Cylinder(24, 25) - Pos(0, -40, 0) * Box(80, 80, 30))   # R15: x −50 → −50.5 (0.9 → 1.4 mm to the pan sleeve)
     idler = Pos(MAST_X - W / 2 - 34, 0, Z_TOP + 8) * Rot(90, 0, 0) * Cylinder(14, 18)
     # pan cartridge S, shaft up, on the top bracket; yoke + head ride on it
     pan = Pos(MAST_X, 0, Z_TOP + 24) * Rot(0, 0, 90) * cs.sleeve()
