@@ -84,7 +84,7 @@ def items(d=BASELINE):
     A("Drive & structure", "Carbon tubes Ø40×38 (0.5 m) + Ø30×28 (1 m), roll-wrapped", 1, 70.0, "eBay / Carbonwebshop listings")
     A("Drive & structure", '3" quick-release squeeze tri-clamp, 304 SS (arm detach; flange OD 90.9 mm confirmed)', 2, 25.0, "hosewarehouse (Dixon 13MHHM-Q300)")
     A("Drive & structure", "Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards", 1, 35.0, "ESTIMATE")
-    A("Drive & structure", "Balancers (A9): 2 × ISO 10243 light die spring Ø25 × 115 + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
+    A("Drive & structure", "Balancers (A9): ISO 10243 green die spring Ø25/Ø12.5 × 115, 18.7 N/mm (Berger Tools V25-115 / Accu TJL25-115) + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
     A("Drive & structure", "Fasteners, heat-set inserts, epoxy, grease", 1, 60.0)
     A("Printed parts", f"PETG {pp['kg']:.1f} kg + 20 % spare (print_plan.md)", 1, round(pp["kg"] * 1.2 * 20, 0))
     A("Printed parts", "ASA 2 kg (A6: motor cans, KX hubs/collars and D13 hubs near motors)", 1, 40.0)

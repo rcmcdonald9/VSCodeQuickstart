@@ -34,7 +34,7 @@ def items(d=BASELINE):
         ("Couplings", "Torque pins (Ø6 / Ø5 / Ø4 dowels) + yaw stop pin", 1, 6.0, "cartridge torque reaction (21/21), yaw hard stops ±155°", "ESTIMATE"),
         ("Structure", "Carbon tubes Ø40×1 + Ø30×1 (one arm)", 1, 40.0, "upper-arm neck, forearm link", "ESTIMATE"),
         ("Structure", '3" quick-release tri-clamp (arm detach)', 1, 25.0, "KX-V ferrule at the shoulder", "ESTIMATE"),
-        ("Balancer (A9)", "ISO 10243 light-load die spring, Ø25 hole, L0 ≈ 115 mm, rate ≈ 12 N/mm + 2 mm UHMWPE cord", 1, 14.0, "2:1 tackle balancer, K 4.5 N·m", "ESTIMATE"),
+        ("Balancer (A9)", "ISO 10243 green die spring Ø25 hole / Ø12.5 rod × L0 115, 18.7 N/mm (Berger Tools V25-115 or Accu TJL25-115) + 2 mm UHMWPE cord", 1, 14.0, "2:1 tackle balancer, b 20 mm, a 40–60 mm, K 4.5 N·m (balancer.md)", "ESTIMATE"),
         ("Sensors", "4 × AS5048A joint encoders + 2 RP2040 CAN nodes (shoulder + elbow) + 2 tactile pads + palm ToF", 1, 4 * 12 + 20 + 2 * 10 + 8, "joint-side encoders (accuracy 0.9 mm)", "ESTIMATE"),
         ("Sensors (D14)", "Elbow node power + bus: 24→12 V **6 A** buck (two stalled STS3215 draw 5.4 A; Astra #16) + half-duplex TTL transceiver + 2 × MCP2562 CAN transceivers", 1, 14.0, "D14: 12 V and TTL made in the arm; CAN map sw/config/can_map.yaml", "ESTIMATE"),
         ("Sensors", "Global-shutter wrist camera (OV9281 MIPI-CSI) + CSI→USB UVC bridge + slim high-flex USB cable", 1, 70.0, "D12 wrist camera", "ESTIMATE"),
