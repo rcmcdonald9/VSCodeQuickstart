@@ -1257,3 +1257,9 @@ One long push instead of half-hour runs. In order:
 ### 2026-11-27 — Merged-tree checks after the inline default (9 checks, 9.5 min) + check fixes
 - Fixed check bugs: belts.py still rated a roll belt for the inline drive (peak pull 7.2 kN "0.5× ultimate" — there is no belt); integration.py now treats the D21 hook-in-jaw and D22 tilt stubs-in-shell as designed interfaces (module clashes 7 → 0).
 - Real open fails: R1 reach 94 % (floor pickup 100 → 94 % with inline geometry), R13 lift_cover × carriage at lift 0.40 (both → lift track), R15 head_screen × shell (lift/head track), harness wrist roll (arm track), R2b 11.0 mm raw, **R8 BOM $5,199** (inline roll on both arms +$186 → $199 over the $5,000 limit; needs a cost pass).
+
+### 2026-11-27 — Wave 2 arm track merged; Fable review #1 started
+- D20 behind PIP_ARM_MOTORS=d20 (GIM8108-8 ESTIMATE Ø96, Ø50 Oldham, elbow 20T:60T at C 84 in a 109 mm housing; default gim6010). Both sets pass R14/R15/integration/assembly/swept; basket passes on D20 CAD masses (arm 4.36 kg).
+- Balancer on an aluminium crank inboard of the pitch shaft (cable CAD-checked clear, K 4.49 N·m, 35 % deflection); pitch harness on an outboard clock spring (352° vs 312°). Wrist roll ±120° → harness 6/6.
+- R2b 10.9 → 8.5 mm raw (1.7 mm after the gravity model, ≤ 2 ✅): housing 3.37 → 1.42, bracket 1.62 → 0.99. Remaining: roll link 2.27, yaw block 1.53, CF tubes 1.8. Forearm socket clears by 3 mm over the elbow range.
+- Open: D20 elbow belt peak 2.8× ultimate/3 (steel-cord belt or ≈ 20 N·m torque cap). Fable review (once/day, stamp docs/review/.fable_last) running on the merged tree.
