@@ -404,7 +404,7 @@ def inline_roll_cases(M=19.0, T=35.1, belt=691.0, weight=28.0):
     xa = rl.X_ARM_F
     na, pa = rl.ADAPT["n"], rl.ADAPT["pcd"] / 2
     out_holes = [(RY + pa * math.cos(2 * math.pi * k / na + math.pi / na), pa * math.sin(2 * math.pi * k / na + math.pi / na)) for k in range(na)]
-    fixed = lambda x: (((x[0] > xa[0] - 0.2) & (x[0] < xa[1] + 0.2) & np.any([np.hypot(x[1] - y, x[2] - z) < 2.8 for y, z in out_holes], axis=0))
+    fixed = lambda x: (((x[0] > xa[0] - 0.2) & (x[0] < xa[1] + 0.2) & np.any([np.hypot(x[1] - y, x[2] - z) < rl.OUT_CLAMP["sleeve"][0] / 2 + 0.3 for y, z in out_holes], axis=0))
                        | ((np.hypot(x[1] - RY, x[2]) < rl.BRG_R["D"] / 2 + 0.3) & (x[0] > W1[0] - 0.2) & (x[0] < W1[1] + 0.2)))
     C.append((f"Clevis + yaw block (D24 inline, + rear arm): yaw belt {'peak ' if belt == 691.0 else ''}{belt:.0f} N + arm moment {M:.0f} N·m (couple {Fy:.0f} N)",
               rl.clevis_and_yaw_block() + rl.yaw_plate_bot() + rl.roll_arm_rear(), 2.5, fixed,
