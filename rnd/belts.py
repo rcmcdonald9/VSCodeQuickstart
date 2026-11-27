@@ -196,7 +196,8 @@ def adjuster(d: Design = BASELINE):
 FIXED_CENTRE = {"elbow": 0.25, "upper_yaw": 0.25, "elbow_d20": 0.25}
 PRINT_CENTRE_TOL = 0.1               # mm, two bearing seats in one FDM print (ESTIMATE; ream in a drill jig if the coupon misses it)
 GIM6010_OUT_BRG_N = 800.0            # GIM6010-8 output: "max radial load 800 N, max axial 200 N" (OpenELAB reseller listing, found
-                                     # 2026-11-27; load point not stated, no SteadyWin datasheet: ESTIMATE until the seller confirms)
+                                     # 2026-11-27, https://openelab.io/a/s/products/steadywin-gim6010-8-robot-motor; load point not stated,
+                                     # no SteadyWin datasheet reached from this session: ESTIMATE until the seller confirms)
 GIM8108_OUT_BRG_N = None             # GIM8108-8: not published (seller question, as the GIM8108-36's)
 
 
