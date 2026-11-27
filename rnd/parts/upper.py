@@ -205,7 +205,7 @@ def torso(lift_mm: float):
     tray = Pos(75, 0, lift_mm - 40) * Box(60, 150, 6)
     pi = Pos(75, -20, lift_mm - 25.5) * Box(56, 85, 22)
     dcdc = Pos(75, 50, lift_mm - 23.5) * Box(50, 46, 26)
-    ai_bay = Pos(75, 0, lift_mm + 25) * (Box(105, 95, 40) - Box(101, 91, 40))          # D10: reserved Jetson-class AI computer bay
+    ai_bay = Pos(75, 0, lift_mm + 25) * (Box(105, 90, 40) - Box(101, 86, 40))          # D10: reserved Jetson-class AI computer bay (C3: 95 → 90 wide, the D20 pitch can's rear sat 0.9 mm inside it)
     estop = Pos(-30, 80, lift_mm + 105) * Cylinder(15, 14, align=MIN)
     light = Pos(x0 + 116.5, 0, lift_mm - 30) * soft_box(3, 160, 8, 1.2, 0.6)
     return [("torso_shell", shell, "white"), ("ai_bay", ai_bay, "dark"), ("e_tray", tray, "dark"), ("e_pi5", pi, "dark"), ("e_dcdc", dcdc, "dark"),

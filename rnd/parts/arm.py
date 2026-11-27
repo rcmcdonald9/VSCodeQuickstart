@@ -134,7 +134,8 @@ def upper_bone() -> Part:
         p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(MOT["od"] / 2 + 4.5, 20)   # loop 36 (R15): 1.2 mm around the can
     # D24 v2 (Fable C3): the cartridge's flange ears (r 48; D20 r 56) pass the −Y wall on the way in and out, and the same
     # notches are the driver paths to the 4 ear screws (straight Ø6 along −Y past the sleeve; rnd/assembly_seq.py R14 c/d)
-    p -= STAGE * cm.can_envelope(MOT, EAR_SITE, 0.6, Y_E + 30.0, 140.0)
+    # (D20: the upper ±140° ears (r 56) reach the housing stiffener in front of plate A, so the cut starts at the flange plane)
+    p -= STAGE * cm.can_envelope(MOT, EAR_SITE, 0.6, -0.6 if D20 else Y_E + 30.0, 140.0)
     p -= Pos(0, h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20)
     p -= Pos(0, -h["y"] / 2 + 3, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20, align=MIN)   # loop 40: −Y wall opened for the elbow shaft (was blind; the shaft now goes in from −Y)
     # D19: U-slots under both elbow seats: the whole cassette (shaft + 40T + plates + belt + small stage, 61808s on the tube
