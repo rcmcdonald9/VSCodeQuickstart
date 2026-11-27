@@ -59,7 +59,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 | R5 | Footprint | Base ≤ 50 cm; fits 70 cm doors with arms folded | ≤ 60 cm |
 | R6 | Speed | 0.8 m/s, smooth holonomic motion | 0.5 m/s |
 | R7 | Runtime | 2 h light duty | 1 h |
-| R8 | Cost (excluding Pi) | ≤ $4,000 (was $3,300; raised for the D9 sensor pack, owner 2026-11-25) | $5,000 |
+| R8 | Cost (excluding Pi) | ≤ $4,000 aim (was $3,300; raised for the D9 sensor pack, owner 2026-11-25) | **$5,500** (owner, 2026-11-27: raised from $5,000 to keep the inline roll and the review fixes) |
 | R9 | Reusable actuators | All motors in joint cartridges | – |
 | R10 | Assembly | **No hard target (owner, 2026-11-26), but reducing it is a priority.** Track first-build hands-on hours every run; reconfiguration ≤ 1 h | – |
 | R11 | Looks and motion | Reads as a robot: clean shells, expressed joints, light rings, expressive head, smooth motion | – |

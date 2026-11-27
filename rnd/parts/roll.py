@@ -326,7 +326,7 @@ R_ARM = 42.0                           # clevis-arm boss radius about the roll a
 R_ARM_REAR = 36.0                      # roll_arm_rear boss radius (61806 seat): inside the hard-stop pins (r 43 − 5)
 STOP_R, STOP_LUG_R = 43.0, 5.0          # M1: steel Ø10 stop pins (were printed Ø8 lugs at r 44)
 STOP_PIN = dict(d=10.0, seat=6.0 + CUP_H - 0.5, proud=8.0, strip=(20.0, 8.0, 1.5))
-STOP_AT = (ROLL_MIN - 4, 100 + 4)      # hard-stop contact angles (deg)
+STOP_AT = (ROLL_MIN - 1.5, 100 + 4)    # hard-stop contact angles (deg). −16.5°: at −19° the yaw band ran 2.5 mm into the arm-side ferrule (contact from ≈ −17°, ferrule_sweep_gap)
 if INLINE:
     _ycx = max(p.bounding_box().max.X for _, p, _c in _stage(YAW_T, 20) if p.bounding_box().max.Z > P1[1])
     X_ARM_R = (math.ceil((_ycx + 1.2) * 2) / 2, math.ceil((_ycx + 1.2) * 2) / 2 + 8.0)   # 1.2 mm past the yaw cartridge (its can, D24)

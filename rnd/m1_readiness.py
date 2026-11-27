@@ -124,7 +124,7 @@ def main():
           "| Safety board mis-built | no stop, or a pre-charge that never completes | netlist + board tests before any motor | Step 1 exit |",
           "| Motors run hot in the closed sleeves | derating to ≈ 0.65 × rated | aluminium finned caps (in the kit), cover vents, the drive's thermal limit | no |",
           "| GIM8108-8 is 48 V-only or slow at 24 V; D20 drive needs a redesign | D20 fails; 20 lb hug not met | hold A; GIM6010-8 fallback | hold A |",
-          f"| Robot BOM over budget: ${bom.get('total', 0):,.0f} landed (limit $5,000), ${bom.get('with_d20', 0):,.0f} with D20 | the full robot needs a "
+          f"| Robot BOM over budget: ${bom.get('total', 0):,.0f} landed (limit $5,500, owner 2026-11-27), ${bom.get('with_d20', 0):,.0f} with D20 | the full robot needs a "
           "cost decision | the M1 parts are reused; the decision is the owner's (BOM_v4.md) | no |",
           "| Category-0 drop on the bench | a falling arm | catch cradle ≤ 50 mm under the arm, tether, remote mushroom (Step 1) | no |",
           "", "## Day-1 plan (Step 1)", "",

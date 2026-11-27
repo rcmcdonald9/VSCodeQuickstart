@@ -21,6 +21,9 @@ def arm_sh_x():
     return BASELINE.arm.shoulder_x * 1000
 
 
+TORSO_HALF_W = 390 / 2                 # rnd/parts/upper.py torso soft_shell width 390 mm
+
+
 def arm_sh_y():
     from ..params import BASELINE
     return BASELINE.arm.shoulder_y * 1000
@@ -84,7 +87,7 @@ def pieces():
         },
         # torso body: the torso-side pitch modules (module frame shifted so the detach plane is at the pitch body's y = 0)
         "torso": {
-            "pitchmod": Pos(arm_sh_x() - 45, arm_sh_y() - 67.5, 10) * Box(190, 135, 150),
+            "pitchmod": Pos(arm_sh_x() - 45, min(arm_sh_y(), TORSO_HALF_W) - 67.5, 10) * Box(190, 135, 150),   # outboard face at the torso shell side (y 195), not the detach plane (y 200): the inline yaw block sits 19 mm off the plane
         },
         "hand": {
             "gripbase": Pos(5, 0, 40 - 98) * Box(104, 52, 30),

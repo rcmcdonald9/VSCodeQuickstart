@@ -1283,3 +1283,9 @@ One long push instead of half-hour runs. In order:
 - Every bolted cartridge (pitch, elbow, yaw, lift) on its v2 ear pattern with nuts in compression; wrist can flange through-bolted. **R14 (c) tool access and (d) cartridge swap pass at every joint for both motor sets.** AS5048A mounts at pitch/yaw/inline roll (air gaps 1.0–1.3 mm vs 0.5–2.5 datasheet). D20: AI bay +39 mm, elbow housing cuts, carriage slot (needs FEA). assembly_seq crash on the C1 yaw data fixed.
 - All 3 Fable criticals now addressed in CAD/code (C1 FEA still to run). R16 dexterity regressed today (45° 69 → 50 %, across-body 60 → 50 %) — cause unknown.
 - Wave 5: (1) dexterity/R1 regression root cause, (2) pinch leftovers (inline shoulder TPU boot, tilt slot), (3) run C1 + D20 carriage FEA, palm through-bolts, swept 1.7 mm lug, balancer sign + spring cage.
+
+### 2026-11-27 — Owner: budget limit $5,500; wave 5 merged; hull + roll stop fixes
+- **Owner raised the R8 limit $5,000 → $5,500** (keeps the inline roll and the review fixes; $4,000 stays the aim). BOM $5,480 landed passes.
+- R16/R1 regressions traced: R16 = wrist roll ±120 (the metric now treats the parallel jaws as 180°-symmetric with the fixed-jaw grasp centre: 78/78/71 %); R1 = the torso pitch-module hull ended at the detach plane (y 200) while the shell side is at y 195 — fixed in collision.py (TORSO_HALF_W) on top of the twin's roll ≥ −12.5° re-solve: R1 94 → 98 %.
+- Roll hard stop −19° → −16.5°: verified, at −19° the yaw band runs 2.52 mm into the arm-side ferrule (ferrule_sweep_gap), +0.38 mm at −16.5°.
+- C1 FEA first run: pitch tube + hub 4.7× service / 3.1× fault, yaw tube 5.7× / 6.3× (vs 12 MPa); D20 carriage 8 mm walls 20.2×. Palm → wrist flange through-bolted into captive nuts (no inserts left on the hand path). Swept yaw can ↔ roll stub 1.7 → 2.2 mm. Balancer sweep sign fixed (bracket gap 2.1 → 3.3 mm), spring-cage window closed.
