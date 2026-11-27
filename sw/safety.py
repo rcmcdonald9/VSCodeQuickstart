@@ -37,9 +37,10 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
 9. **Battery-current budget (W8a, electrical.md *Pack and BMS*; sw/power.py):** every cycle the drives' bus current is
    predicted from the torque the verdict will produce (I ≈ |τ| / (ratio · Kt) + idle per joint, braking joints count 0)
    plus REST_A (9.9 A) for the rest of the robot. Over **70 A** the motoring joints' torque bounds are scaled down (τ_ff
-   first, then kp, then kd, as in 2.); a **30 s rolling mean** over **28 A** derates the per-joint torque limit to
-   k · rated (k lower the further the mean is over; floor K_MIN, hysteresis). Neither ever stops the arm or drops the
-   heartbeat; counted as "current cap" / "power derate". A BMS over-current or under-voltage flag (`bms=BmsReading(...)`,
+   first, then kp, then kd, as in 2.). The **30 s rolling mean** is held at ≤ **28 A**: a ceiling that falls from 70 A
+   towards 28 A as the window's room is used up (and below 28 A in proportion if the mean is ever over) derates the
+   per-joint torque limits to k · rated, one k for the motoring joints, floor K_MIN. Neither ever stops the arm or drops
+   the heartbeat; counted as "current cap" / "power derate". A BMS over-current or under-voltage flag (`bms=BmsReading(...)`,
    stub of the CAN A telemetry) latches a fault. `power=False` turns the budget off (tests only).
 Every override is counted so a session log shows how often the policy was overruled.
 """

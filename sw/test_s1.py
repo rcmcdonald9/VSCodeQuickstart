@@ -11,6 +11,10 @@
    with hysteresis.
 5. Collision detection (D23 / R17, sw/collision.py): the bench twin as the plant with the 20 lb payload in hand and model
    errors; no false trips over random motion, every injected contact trips within 20 ms, then a compliant hold.
+6. Battery-current budget (W8a, sw/power.py): the model's constants match the electrical track; a random high-torque
+   policy (peak torque allowed) never predicts more than 70 A; under sustained full demand the 30 s mean stays ≤ 28 A
+   and settles just under it, then recovers when the demand stops; normal motion on the bench twin gets exactly the same
+   commands as with the budget off; nothing stops the arm; BMS over-current / under-voltage flags latch a fault.
 """
 from __future__ import annotations
 
@@ -300,6 +304,7 @@ class CollisionRig:
         self.tau_meas = None
         q0 = np.array([d.qpos[a] for a in self.qadr])
         assert self.sup.reset(q0, 0.002)
+        self.shadow, self.shadow_v = None, None        # optional second supervisor fed the same inputs (test_power)
 
     def ref(self, t):
         w = 2 * np.pi * self.freq
@@ -322,6 +327,9 @@ class CollisionRig:
         q, qd, qdd = self.ref(self.t)
         tff = self.twin.inverse(q, qd, qdd) + self.KD * qd
         v = self.sup.check(q, self.KP, self.KD, tff, qm, vm, 0.002, allow_peak=True, tau_meas=self.tau_meas)
+        if self.shadow is not None:
+            self.shadow.tick()
+            self.shadow_v = self.shadow.check(q, self.KP, self.KD, tff, qm, vm, 0.002, allow_peak=True)
         if v.stop:
             tau = np.zeros(6)
         else:
@@ -389,8 +397,169 @@ def test_collision():
             f"compliantly (no stop, drift < 0.3 rad over 0.5 s) until reset ✅")
 
 
+def _kin_run(sup, n, dt, t, policy, rng, qm, allow_peak, shadow=None, bms=None, each=None):
+    """Drive a supervisor for n cycles on a kinematic plant (the arm follows the verdict with 2 mrad noise)."""
+    from sw.safety import Supervisor
+    for _ in range(n):
+        t[0] += dt
+        sup.tick()
+        qw, kp, kd, tf, vm = policy(qm)
+        v = sup.check(qw, kp, kd, tf, qm, vm, dt, allow_peak=allow_peak, bms=bms)
+        assert not v.stop and sup.heartbeat_ok(), v.reasons
+        vs = None
+        if shadow is not None:
+            shadow.tick()
+            vs = shadow.check(qw, kp, kd, tf, qm, vm, dt, allow_peak=allow_peak)
+        if each is not None:
+            each(v, vs, qm, vm, Supervisor.drive_torque(v, qm, vm))
+        qm = v.q + rng.normal(0, 0.002, sup.n)
+    return qm
+
+
+def test_power():
+    """W8a: battery-current cap (70 A peak, 28 A over 30 s) in the supervisor (sw/power.py)."""
+    import json
+    from pathlib import Path
+    import yaml
+    from rnd.electrical import MOTOR_CU, SW_PACK, branches
+    from sw.power import ACTUATORS, I_AVG, I_PEAK, REST_A, T_AVG, BmsReading, CurrentModel
+    from sw.safety import DESC, Supervisor
+    # 0. constants: the electrical track's caps, the non-arm branches, the actuators' torque constants
+    assert (I_PEAK, I_AVG, T_AVG) == (SW_PACK["i_peak"], SW_PACK["i_avg"], SW_PACK["t_avg"])
+    rest_rnd = sum(r[1] for r in branches() if " arm" not in r[0])
+    assert abs(REST_A - rest_rnd) < 0.15, (REST_A, rest_rnd)
+    Y = yaml.safe_load((Path(__file__).resolve().parents[1] / "rnd" / "specs" / "actuators.yaml").read_text())
+    g, dm, st = Y["GIM6010-8"], Y["DM-J4310-2EC_V1.1"], Y["STS3215-C018"]
+    kt_yaml = {"GIM6010-8": g["rated_torque_nm"] / g["continuous_current_a"],
+               "DM-J4310-2EC_V1.1": min(dm["rated_torque_nm"] / dm["current_a"]["nominal"], dm["peak_torque_nm"] / dm["current_a"]["peak"]),
+               "STS3215-C018": st["stall_torque_nm"] / st["stall_current_a"], "GIM8108-36": MOTOR_CU["GIM8108-36"][0]}
+    for name, kt in kt_yaml.items():
+        assert abs(ACTUATORS[name][0] - kt) < 1e-9, (name, ACTUATORS[name][0], kt)
+    assert abs(ACTUATORS["STS3215-C018"][2] - st["idle_current_a"]) < 1e-9
+
+    t = [0.0]
+    dt = 0.002
+    rng = np.random.default_rng(11)
+
+    def fresh(**kw):
+        s = Supervisor(clock=lambda: t[0], **kw)
+        q0 = 0.5 * (s.lo + s.hi)
+        assert s.reset(q0, 0.002)
+        return s, q0
+
+    # 1. random high-torque policy with peak torque allowed: never more than 70 A predicted
+    sup, q0 = fresh()
+    ref, _ = fresh(power=False)                          # the same commands without the budget: what the policy asks for
+    model = CurrentModel(json.loads(DESC.read_text()), sup.rated).at(None)
+
+    def wild(qm):
+        return q0 + rng.normal(0, 3.0, 6), rng.uniform(0, 200, 6), rng.uniform(0, 10, 6), rng.normal(0, 40, 6), rng.normal(0, 0.5, 6)
+
+    st1 = dict(i=0.0, ask=0.0, over=0, tq=0)
+
+    def each1(v, vs, qm, vm, tau):
+        i = REST_A + model.total(tau, vm)
+        st1["i"] = max(st1["i"], i)
+        st1["ask"] = max(st1["ask"], REST_A + model.total(Supervisor.drive_torque(vs, qm, vm), vm))
+        st1["over"] += i > I_PEAK + 1e-6
+        st1["tq"] += bool(np.any(np.abs(tau) > sup.peak + 1e-6))
+        assert abs(sup.i_pred - i) < 1e-6, (sup.i_pred, i)
+
+    n1 = 4000
+    _kin_run(sup, n1, dt, t, wild, rng, q0.copy(), True, shadow=ref, each=each1)
+    assert st1["over"] == 0 and st1["tq"] == 0 and sup.counts.get("current cap", 0) > 0, (st1, sup.counts)
+    assert st1["ask"] > 90.0, st1                     # the policy really asks for more than the pack's burst rating
+    caps1 = sup.counts["current cap"]
+
+    # 2. sustained full demand (every joint pushed along its motion at twice its peak torque): 30 s mean ≤ 28 A throughout,
+    #    settling just under it; then the demand stops and the budget recovers (ceiling back at 70 A)
+    sup, q0 = fresh()
+    dt2 = 0.004
+
+    def push(qm):
+        vm = rng.normal(0, 0.5, 6)
+        return q0 + rng.normal(0, 3.0, 6), np.full(6, 200.0), np.zeros(6), 2.0 * sup.peak * np.sign(vm), vm
+
+    means, inst, ks, ceil = [], [], [], []
+
+    def each2(v, vs, qm, vm, tau):
+        means.append(sup.power.mean); inst.append(sup.i_pred); ks.append(sup.power.k); ceil.append(sup.power.ceiling)
+
+    qm = _kin_run(sup, int(100.0 / dt2), dt2, t, push, rng, q0.copy(), True, each=each2)
+    means, inst, ks = np.array(means), np.array(inst), np.array(ks)
+    t_settle = 2 * T_AVG
+    late = means[int(t_settle / dt2):]
+    assert means.max() <= I_AVG + 1e-6, means.max()
+    assert late.min() >= I_AVG - 1.0, late.min()                # converges to the budget, not far under it
+    assert inst.max() <= I_PEAK + 1e-6 and sup.counts.get("power derate", 0) > 0
+    t_burst = float(np.argmax(np.array(ceil) < I_PEAK - 1.0) * dt2)   # how long the 70 A ceiling lasted before the derate
+    assert t_burst > 1.0 and inst[: int(t_burst / dt2)].max() > I_PEAK - 1.0, t_burst   # the burst was really used
+    k_late = float(np.median(ks[int(t_settle / dt2):]))
+
+    def light(qm):
+        return qm.copy(), np.full(6, 20.0), np.ones(6), np.zeros(6), np.zeros(6)
+
+    _kin_run(sup, int(40.0 / dt2), dt2, t, light, rng, qm, True)
+    mean_after = sup.power.mean
+    assert sup.power.ceiling == I_PEAK and mean_after < 0.6 * I_AVG, (sup.power.ceiling, mean_after)
+
+    # 3. normal motion (bench twin, carry pose, no payload): exactly the commands it gets with the budget off
+    rig = CollisionRig(payload=0.0, seed=3)
+    rig.shadow = Supervisor(clock=lambda: rig.t, power=False)
+    assert rig.shadow.reset(np.array([rig.env.d.qpos[a] for a in rig.qadr]), 0.002)
+    diff, i_norm = 0, []
+    n3 = int(32.0 / rig.DT)
+    for _ in range(n3):
+        v = rig.step()
+        assert not v.stop and rig.sup.heartbeat_ok(), v.reasons
+        w = rig.shadow_v
+        same = all(np.array_equal(getattr(v, f), getattr(w, f)) for f in ("q", "kp", "kd", "t_ff"))
+        diff += int(not same)
+        i_norm.append(rig.sup.i_pred)
+    assert diff == 0 and not {"current cap", "power derate"} & set(rig.sup.counts), (diff, rig.sup.counts)
+    i_norm = np.array(i_norm)
+    mean_norm = rig.sup.power.mean
+    # the 20 lb (4.54 kg) one-hand carry of the collision test, for the record (the phase-current model is conservative at hold)
+    rig = CollisionRig(payload=4.536, seed=3)
+    i_carry = []
+    for _ in range(2500):
+        rig.step()
+        i_carry.append(rig.sup.i_pred)
+    i_carry = float(np.mean(i_carry))
+    t_derate = T_AVG * (I_AVG - REST_A) / max(i_carry - REST_A, 1e-9)
+
+    # 4. BMS: over-current / under-voltage latch a fault (stop, heartbeat dropped) until reset; a high measured pack
+    #    current (the base climbing) leaves the arm less room, and an unmeetable budget still never stops the arm
+    sup, q0 = fresh()
+    for flag in ("overcurrent", "undervoltage"):
+        t[0] += dt; sup.tick()
+        v = sup.check(q0, np.full(6, 20.0), np.ones(6), None, q0, np.zeros(6), dt, bms=BmsReading(current_a=12.0, voltage_v=22.0, **{flag: True}))
+        assert v.stop and "BMS over-current or under-voltage" in v.reasons and not sup.heartbeat_ok()
+        t[0] += dt; sup.tick()
+        assert sup.check(q0, np.full(6, 20.0), np.ones(6), None, q0, np.zeros(6), dt, bms=BmsReading(current_a=12.0)).stop   # latched
+        assert sup.reset(q0, 0.002)
+    st4 = dict(i=0.0)
+
+    def each4(v, vs, qm, vm, tau):
+        st4["i"] = max(st4["i"], sup.i_pred)
+
+    _kin_run(sup, 2000, dt, t, wild, rng, q0.copy(), True, bms=BmsReading(current_a=45.0, voltage_v=19.5), each=each4)
+    assert st4["i"] <= I_PEAK + 1e-6, st4
+    counts = {a: b for a, b in sup.counts.items() if a in ("current cap", "power derate", "BMS over-current or under-voltage")}
+    return (f"Battery budget (W8a; model I = |τ|/(ratio·Kt) + idle per joint, braking = 0, + {REST_A:.1f} A for the rest of the robot): "
+            f"a random high-torque policy with peak torque allowed asks for up to {st1['ask']:.0f} A; **0 of {n1} cycles predict over {I_PEAK:.0f} A** "
+            f"(max {st1['i']:.1f} A, capped in {caps1} cycles, feed-forward then gains). Sustained full demand for 100 s: 70 A allowed for the first {t_burst:.1f} s (burst), "
+            f"then **the 30 s mean never exceeds {I_AVG:.0f} A** (max {means.max():.2f} A; {late.min():.1f}–{late.max():.1f} A after {t_settle:.0f} s, "
+            f"torque-limit factor k ≈ {k_late:.2f}); demand stopped: back to {mean_after:.1f} A and the full 70 A ceiling in 40 s. "
+            f"Normal motion on the bench twin ({n3 * rig.DT:.0f} s, carry pose, no payload): {i_norm.mean():.1f} A mean / {i_norm.max():.1f} A max, "
+            f"30 s mean {mean_norm:.1f} A, **commands identical to the budget off** (0 caps, 0 derates). No stop and the heartbeat kept in every run; "
+            f"BMS over-current and under-voltage latch a fault; with the BMS reading 45 A the arm still never predicts over 70 A and keeps running. "
+            f"For the record: the 4.54 kg one-hand carry predicts {i_carry:.1f} A, so it would be derated after ≈ {t_derate:.0f} s of holding "
+            f"(phase-current model, conservative at hold) ✅ (overrides: {counts})")
+
+
 def main():
-    out = [test_mit(), test_driver(), test_supervisor(), test_people_near(), test_collision()]
+    out = [test_mit(), test_driver(), test_supervisor(), test_people_near(), test_collision(), test_power()]
     from pathlib import Path
     Path("docs/sw").mkdir(parents=True, exist_ok=True)
     Path("docs/sw/s1_tests.md").write_text("# S1 software tests (generated by `python -m sw.test_s1`)\n\n" + __doc__.split("\n\n", 1)[1].strip()

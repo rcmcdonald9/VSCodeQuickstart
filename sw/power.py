@@ -8,8 +8,8 @@ Current model, per joint: I = |τ_joint| / (ratio · Kt) + idle, where τ_joint 
 (kp·e − kd·ė + τ_ff at the measured state), ratio the belt/stage ratio outside the actuator (joints.json) and Kt the
 actuator's torque constant at its output (actuators.yaml: rated torque / rated current, the lower of rated and peak where
 both exist). This is the *phase* current; with the drive's output voltage below the bus voltage the bus current is at most
-that (P_elec = I_ph · V_ph ≤ I_ph · V_bus), so the model is an upper bound (≈ 3× high when holding still, where only the
-copper loss is drawn). A joint whose torque opposes its measured motion (τ·ω < 0, |ω| > W_REGEN) is braking: regen counts
+that (P_elec = I_ph · V_ph ≤ I_ph · V_bus), so the model is an upper bound (several times high when holding still, where
+only the copper loss is drawn). A joint whose torque opposes its measured motion (τ·ω < 0, |ω| > W_REGEN) is braking: regen counts
 as zero draw (not as a credit for the other joints). The STS3215 wrist roll runs from the elbow node's 12 V buck: its
 12 V current is referred to the bus by 12 / (V_bus · η). Every drive also draws its logic idle current.
 To this the supervisor adds a fixed allowance for the rest of the robot, REST_A: the sustained column of every non-arm
@@ -17,17 +17,17 @@ branch in electrical.md (base wheels 2.2 + lift 2.0 + 12 V servos 2.9 + 5 V comp
 With a BMS reading, the rest of the robot is max(REST_A, measured pack current − this arm's model draw), so the base and
 the lift keep priority when they really draw more, and the rolling mean uses the larger of model and measurement.
 
-Two limits (sw/safety.py Supervisor.check):
+Two limits (sw/safety.py Supervisor.check, after the per-joint torque bound):
 1. **Peak (70 A):** if the predicted total exceeds I_PEAK, every motoring joint's torque bound is lowered to s·|τ| (the
    same s for all, so the arm's draw fits exactly) and the command is trimmed the way the per-joint torque bound trims it:
    feed-forward first, then kp, then kd. Counted as "current cap".
-2. **Mean (28 A over 30 s), thermal-style derate:** above I_AVG the per-joint torque limit becomes k · rated (the peak
-   allowance is dropped first), with k chosen so that the arm at its full derated limits plus the rest of the robot draws
-   at most I_AVG · min(1, I_AVG / mean): the further the mean is over, the lower the limit (proportional). While derating,
-   nothing above I_AVG enters the window, so the mean is back under I_AVG within one window and stays there under
-   sustained demand. k falls at K_SLEW/s (no torque step), never below K_MIN (the arm keeps holding itself), and the
-   derate releases only once the mean is under I_RELEASE (hysteresis), after which k recovers at K_RECOVER/s.
-   Counted as "power derate" (cycles).
+2. **Mean (28 A over 30 s), thermal-style derate:** PackBudget gives a ceiling on the pack current for the cycle (I_PEAK
+   while the window has room; it falls towards I_AVG as the room is used up, and to I_AVG · I_AVG / mean if the mean is
+   ever over, i.e. lower the further it is over). Over the ceiling, the per-joint torque limits become k · rated, the
+   same k for every motoring joint (derate_factor: the largest k that fits), trimmed in the same order; braking joints
+   keep theirs. k ≥ K_MIN so the arm keeps holding itself. Counted as "power derate" (cycles).
+Neither stops the arm or drops the heartbeat: it is a power budget, not a fault. A BMS over-current or under-voltage flag
+(BmsReading) is a fault: Supervisor.check latches it.
 The window starts full of REST_A (the robot idles before the first command).
 """
 from __future__ import annotations
