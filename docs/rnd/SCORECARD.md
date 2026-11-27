@@ -52,5 +52,5 @@
 | SW6 synthetic demos: expert success / rate (sw/gen_demos.py, LeRobot format) | 98% / 887 per h | ≥ 95 % / ≥ 500 per h | ✅ |
 | S0.4a pipeline dry run: BC policy from scratch, closed-loop success in the twin (info) | 10% (200 demos, CPU) | runs end to end | — |
 | Load path: cartridge torque pins landing in structure | 19/19 | all | ✅ |
-| Clashes inside modules (> 50 mm³, fused interfaces excluded) | 2 | 0 | ❌ |
+| Clashes inside modules (> 50 mm³, fused interfaces excluded) | 0 | 0 | ✅ |
 | R11 looks | engineering render v0 (robot_v0.png); industrial-design pass pending | owner approval | — |
