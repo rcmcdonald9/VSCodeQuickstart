@@ -103,9 +103,8 @@ def upper_bone() -> Part:
     p += housing_stiffener()                                                             # loop 40 (A8): P2 FEA found the 1.2 mm shell far too soft
     # bearing bosses through the ±Y walls: elbow axis (61808, OD 52). The small-pulley hub runs in the elbow belt
     # cassette (confidence campaign: FEA showed the shell can't carry belt tension; the journals never reached the walls)
-    for side in ("-", "+"):                                                              # 61808 bosses (loop 23 positions)
-        y0, t = SEAT_Y[side]
-        p += Pos(0, y0 + t / 2, -ELBOW_Z) * Rot(90, 0, 0) * _ring(52.0 + 10, 52.0, t)
+    for side in ("-", "+"):                                                              # D19: 61808 bosses with lugs for the seat caps
+        p += _seat_boss(side)
     # (D24: loop 23's elbow torque arm and the KX collar-tab window are gone; the bolted flange reacts the torque in plate A)
     # anti-rotation slot block for the cassette pin (slot radial to the elbow axis, so belt tension never reaches the shell)
     p += Pos(0, (CAS_B[1] + 2 + h["y"] / 2 - WALL) / 2, -92) * (Box(16, h["y"] / 2 - WALL - CAS_B[1] - 2, 16)
@@ -115,34 +114,66 @@ def upper_bone() -> Part:
     p -= Pos(0, h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20)
     p -= Pos(0, -h["y"] / 2 + 3, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20, align=MIN)   # loop 40: −Y wall opened for the elbow shaft (was blind; the shaft now goes in from −Y)
     # D19: U-slots under both elbow seats: the whole cassette (shaft + 40T + plates + belt + small stage, 61808s on the tube
-    # ends) goes in from below, and the bone cap's two seat towers (elbow_seat_cap) close the slots
+    # ends) goes in from below; bolted seat caps (elbow_seat_cap) close them and restore the boss ring
     for side in ("-", "+"):
-        p -= _seat_slot(side, 0.2)
+        p -= _seat_cap_envelope(side, 0.2)
+        sc = SEAT_SCREW[side]
+        for x in (-sc["x"], sc["x"]):
+            p -= Pos(x, sc["y"], -ELBOW_Z - SEAT_LUG_H) * Cylinder(sc["insert_d"] / 2, sc["depth"], align=MIN)
     # bottom cap is a separate print (bone_cap()): the cassette goes in from below
     return p - Pos(0, 0, CAP_Z) * Box(200, 200, 100, align=(Align.CENTER, Align.CENTER, Align.MAX))
 
 
 SEAT_Y = {"-": (-HOUSING["y"] / 2 - 4.0, 8.0), "+": (HOUSING["y"] / 2 - 7.0, 7.0)}   # (y0, thickness) of the ±Y 61808 bosses
+SEAT_LUG_R, SEAT_LUG_H = 35.0, 20.0
+# cap screws: −Y 2 × M4 (the boss stands 4 mm proud of the −Y face); +Y 2 × M3 placed inside the housing's rounded +Y
+# corners (the forearm socket sweeps 3 mm outside them)
+SEAT_SCREW = {"-": dict(x=30.5, y=-HOUSING["y"] / 2, insert_d=5.6, clr_d=4.5, head_d=7.5, depth=8.0, head_z=0.0),
+              "+": dict(x=29.5, y=HOUSING["y"] / 2 - 4.5, insert_d=4.0, clr_d=3.4, head_d=6.0, depth=6.0, head_z=6.0)}
 
 
-def _seat_slot(side: str, pad: float = 0.0) -> Part:
-    """52 mm wide slot under an elbow seat, from the cap split up to the elbow axis."""
+def _seat_boss(side: str) -> Part:
+    y0, t = SEAT_Y[side]
+    b = Pos(0, y0 + t / 2, -ELBOW_Z) * Rot(90, 0, 0) * _ring(2 * SEAT_LUG_R, 52.0, t)
+    b += Pos(0, y0 + t / 2, -ELBOW_Z - SEAT_LUG_H / 2) * Box(2 * SEAT_LUG_R, t, SEAT_LUG_H)
+    return b & _housing_solid(0.0) if side == "+" else b
+
+
+def _seat_cap_envelope(side: str, pad: float = 0.0) -> Part:
+    """T-shaped space under an elbow seat: 52 wide from the axis down to the lugs, 70 wide from the lugs to the cap split."""
     y0, t = SEAT_Y[side]
     zE = -ELBOW_Z
-    return Pos(0, y0 + t / 2, (zE + CAP_Z - 1) / 2) * Box(52.0 + 2 * pad, t + 2 * pad, zE - CAP_Z + 1)
+    e = Pos(0, y0 + t / 2, zE - SEAT_LUG_H / 2) * Box(52.0 + 2 * pad, t + 2 * pad, SEAT_LUG_H + 0.01)
+    zl = zE - SEAT_LUG_H
+    e += Pos(0, y0 + t / 2, (zl + CAP_Z - 1) / 2) * Box(2 * SEAT_LUG_R + 2 * pad, t + 2 * pad, zl - CAP_Z + 1 + pad)
+    return e
 
 
 def elbow_seat_cap(side: str) -> Part:
-    """D19: the lower half of an elbow 61808 seat, a tower on the bone cap (same print) that fills the U-slot. The belt
-    pull (≈ 0.7 kN peak, toward the cartridge) presses the bearing into the housing, not the cap; the rare downward load
-    goes through the bone cap's 4 × M3 + spigot. The +Y tower is trimmed to the housing's rounded corners (the forearm
-    socket sweeps 3 mm outside them)."""
+    """D19: bolted lower half of an elbow 61808 seat (printed), 2 screws from below into heat-set inserts in the boss lugs
+    (heads counterbored), so the boss ring is closed again. The belt pull (≈ 0.7 kN peak, toward the cartridge) presses
+    the bearing into the housing half, not the cap."""
     y0, t = SEAT_Y[side]
-    c = _seat_slot(side, 0.0) & Pos(0, 0, CAP_Z - 1.0) * Box(200, 200, 400, align=MIN)
-    c -= Pos(0, y0 + t / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26.0, t + 2)
+    sc = SEAT_SCREW[side]
+    c = _seat_cap_envelope(side, 0.0) & Pos(0, 0, CAP_Z + 0.2) * Box(200, 200, 400, align=MIN)
     if side == "+":
         c &= _housing_solid(0.0)
+    c -= Pos(0, y0 + t / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26.0, t + 2)
+    for x in (-sc["x"], sc["x"]):
+        c -= Pos(x, sc["y"], CAP_Z - 5) * Cylinder(sc["clr_d"] / 2, 60, align=MIN)
+        c -= Pos(x, sc["y"], CAP_Z - 5) * Cylinder(sc["head_d"] / 2, 5 + 4.5 + sc["head_z"], align=MIN)
     return c
+
+
+def upper_bone_with_caps() -> Part:
+    """Upper bone + both bolted seat caps as one solid (bolted joints taken as bonded, as shoulder.bracket()) for the FEA."""
+    p = upper_bone()
+    for side in ("-", "+"):                       # the caps fill their slots exactly (screw holes ignored)
+        y0, t = SEAT_Y[side]
+        c = _seat_cap_envelope(side, 0.25) & Pos(0, 0, CAP_Z) * Box(200, 200, 400, align=MIN)
+        c = c & _housing_solid(0.0) if side == "+" else c
+        p += c - Pos(0, y0 + t / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26.0, t + 2)
+    return p
 
 
 def bone_cap() -> Part:
@@ -154,7 +185,7 @@ def bone_cap() -> Part:
     cap = full & Pos(0, 0, CAP_Z) * Box(200, 200, 100, align=(Align.CENTER, Align.CENTER, Align.MAX))
     lx, ly = h["x"] - 2 * WALL - 12.6, h["y"] - 2 * WALL - 12.6                           # clears the soft bottom edge (r 26)
     lip = _rbox(lx, ly, 5, 26.5) - _rbox(lx - 3.2, ly - 3.2, 5, 24.9)                     # open 1.6 mm ring
-    return cap + Pos(0, 0, CAP_Z + 2.5) * lip + elbow_seat_cap("-") + elbow_seat_cap("+")   # D19: seat towers on the cap
+    return cap + Pos(0, 0, CAP_Z + 2.5) * lip
 
 
 def cassette_plate(side: str = "B") -> Part:
@@ -273,7 +304,7 @@ def masses(density=1.27):
     from .belt_stage import small_stage_v3
     from .kx import retainer
     st = dict((n, p) for n, p, _ in small_stage_v3(20))
-    shells = {"upper bone shell + D19 seat towers (on the bone cap)": upper_bone().volume + elbow_seat_cap("-").volume + elbow_seat_cap("+").volume,
+    shells = {"upper bone shell + D19 bolted seat caps": upper_bone().volume + elbow_seat_cap("-").volume + elbow_seat_cap("+").volume,
               "forearm shell": forearm().volume}
     cf = {"CF tubes (neck Ø40 + forearm Ø30)": (cf_neck().volume + cf_fore().volume) / 1e6 * 1.55}
     kxv = lambda k: kx_hub(k).volume + kx_collar(k).volume + retainer(k).volume
@@ -302,7 +333,7 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     out += bolted_stage(STAGE, 20, "e_")                                                 # D24: bolted cartridge + Oldham + D13 stage
     bc = V3["belt_c"]
     out += [("e_belt", STAGE * Pos(0, 0, bc - 7.5) * belt_loop(31.8, 63.7, BELT_C, width=15.0), "dark"),
-            ]
+            ("e_seat_cap_m", elbow_seat_cap("-"), "white"), ("e_seat_cap_p", elbow_seat_cap("+"), "white")]
     # (the yaw stage above the flange lives in rnd/parts/roll.py)
     fe = Pos(0, 0, -ELBOW_Z) * Rot(0, elbow_deg, 0)
     out.append(("e_shaft40", fe * elbow_pulley_hub(), "steel"))                           # D19: integral 40T, turns with the forearm (its clamp, double-D)

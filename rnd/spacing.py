@@ -42,7 +42,7 @@ MATE = [("can", "motor"), ("collar", "hub"), ("hub", "shaft"), ("shaft", "wheel"
         # D24 bolted cartridge + Oldham drive; D19 bolted walls/hubs (2026-11-27)
         ("can", "can_cap"), ("motor", "kx_hub_v2"), ("oldham_disc", "kx_hub_v2"), ("oldham_disc", "flange_coupling"),
         ("bracket", "can"), ("e_cassette", "e_can"), ("bracket", "bracket_wall"), ("shaft", "pitch_hub"), ("brg_", "pitch_hub"),
-        ("e_shaft40", "e_belt"), ("e_shaft40", "forearm"), ("forearm", "wrist_can"), ("wrist_adapter", "palm")]   # dog: 0.1 mm a side by design (lash); the base boss clamps the lower inner race   # bearing inner races, shims and the pulley rotate together on the shaft
+        ("e_shaft40", "e_belt"), ("e_shaft40", "forearm"), ("upper_bone", "e_seat_cap"), ("bone_cap", "e_seat_cap"), ("forearm", "wrist_can"), ("wrist_adapter", "palm")]   # dog: 0.1 mm a side by design (lash); the base boss clamps the lower inner race   # bearing inner races, shims and the pulley rotate together on the shaft
 RUNNING = [("bracket", "pitch_hub"), ("yaw_plate_bot", "yaw_shaft"), ("yaw_flange", "yaw_stop_pin"), ("bracket", "kx_hub_v2"), ("bracket", "al_pulley"), ("bracket", "flange_coupling"), ("e_cassette", "e_al_pulley"), ("e_cassette", "e_kx_hub_v2"), ("e_cassette", "e_flange_coupling"), ("e_cassette", "e_hub"), ("roll_link", "roll_smallhub"), ("yaw_block", "yaw_smallhub"), ("bracket", "smallhub"),
            ("yaw_shaft", "yaw_stop_pin"), ("bracket", "pulleyA"), ("roll_link", "al_pulley"), ("yaw_block", "al_pulley"),
            ("roll_link", "roll_spring_hub"), ("yaw_spring_ring", "yaw_shaft"), ("yaw_plate_bot", "al_pulley"), ("roll_link", "roll_pulley72"), ("yaw_block", "yaw_pulley40"),
