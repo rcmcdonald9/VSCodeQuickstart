@@ -1343,3 +1343,8 @@ One long push instead of half-hour runs. In order:
 ### 2026-11-27 — W9d merged: tip-over rules in the supervisor → A10 gate passes
 - One people-near mode (set_people_near / set_person_near): D25 roll ≥ +5° + SW-T1 (hands in LOAD_WS ∩ x ≤ 0.35, z ≤ 0.60; base ≤ 0.1 m/s and 0.1 m/s²; base held with > 2.5 kg in hand); fixed a roll catch-up at 1.5 rad/s (now ≤ 0.2). SW-T2 caster lock (locked by default, threshold/transit release refused with a person near or load, 100 ms re-seat pulse, 0.3 m/s locked / 0.5 m/s² released). SW-T4 threshold_speed 0.12 m/s; rnd/threshold.py CROSS_SPEED 0.15 → 0.12.
 - **A10 hard gate: 16/16 ≥ 30 mm (worst 33 mm) with today's software ✅.** Scorecard: 50 ✅; hard gates 1/2 (R17 pinch 21/16 ❌). Other ❌: R2c/R2d with the default GIM6010 (pass with D20 only — waits on the seller's 24 V answer), R8 BOM $5,845 vs $5,500.
+
+### 2026-11-27 — W8b merged (Neon #2 F2/F7) + its shoulder/roll edits applied
+- 4 flange ears at every cartridge site (was yaw 2/70°, lift 2/80°, pitch 3/110°): yaw side-fed nuts, pitch4 rear pair screwed from the pulley side through the outer wall (wall_b_cuts), lift4 wall towers (upper.py edit pending the neck track). Tipping ≥ 10× at 30 % preload (was 0.8×). D20 ears slip into bearing at stall (≈ 4 MPa).
+- Printed ASA Oldham motor tongue rejected (0.74× friction at peak) → 6061 motor-side hub; D50 sets on every GIM6010 stage, D63 for D20. Elbow D19 shaft: bonded 6061 Ø30 × 1.5 core takes ≈ 85 % (print 5.0/14 → 0.7/2.0 MPa). Yaw centre 80.93 mm for a stock 315-5M belt (was 93 % of the adjuster).
+- BOM/kit/print plan/build guide consolidation running (W10); then one budget picture for the owner.
