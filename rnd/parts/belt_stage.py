@@ -288,6 +288,21 @@ def wall_b_cuts(motor: dict | None = None, site: str = "default", z_far: float =
     return out
 
 
+def ear_tower(motor: dict | None = None, site: str = "default", angles=None, r: float = 7.5, t: float = 6.0, grow: float = 0.0) -> Part:
+    """Neon #2 finding 2: wall-A material for ears beyond a wall's edge (stage frame, z −t … 0): per ear angle (default all
+    of the site's) a radial bar + disc of radius r (cartridge_m._lobe), so the boss joins the wall body. grow > 0 gives the
+    clearance envelope for a cover. Caller: upper.py lift_mount (lift4: the ±40° ears stand 18 mm over LIFT_WALL_TOP):
+    `m += T * ear_tower(None, EAR_SITE, (40.0, -40.0))` before the wall_a_cuts line, and lift_cover:
+    `c -= T * ear_tower(None, EAR_SITE, (40.0, -40.0), grow=1.0)` before `sols = c.solids()`."""
+    from . import cartridge_m as cm
+    _, f = cm.nose_flange(motor, site)
+    out = None
+    for a in (f["ang"] if angles is None else angles):
+        lb = cm._lobe(f["bolt_r"], a, r + grow, t + 2 * grow, -t - grow)
+        out = lb if out is None else out + lb
+    return out
+
+
 def ear_boss(motor: dict | None = None, site: str = "default", r: float = 7.5, t: float = 6.0) -> Part:
     """Wall-A material each ear needs (stage frame, z −t … 0): a disc of radius r round each ear screw (nut pocket 4.0 across
     corners + ≥ 3 mm), for walls that do not already reach r 55 (elbow cassette plate A)."""

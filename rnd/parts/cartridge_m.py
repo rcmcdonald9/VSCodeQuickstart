@@ -194,7 +194,7 @@ EAR = dict(t=6.0, boss_r=5.5, clr_d=4.5, head_d=7.0, head_h=4.0, washer=(9.0, 0.
 #     so the nuts fell into the block on a swap). The slot runs inside the plate to its edge; the nut bears on the 1.3 mm
 #     skin between the slot and the ear, in compression.
 # "pitch4" / "lift4" are the 4-ear patterns for shoulder.py / upper.py: they need geometry in those files (outer-wall
-# holes; wall-A bosses + a cover cut, see belt_stage.wall_b_cuts / ear_boss), so the modules switch EAR_SITE when they add
+# holes; wall-A towers + a cover cut, see belt_stage.wall_b_cuts / ear_tower), so the modules switch EAR_SITE when they add
 # it; "pitch" / "lift" stay the C3 patterns until then. Elbow (4 at ±40/±140) already met the rule.
 EAR_SITES = {
     "elbow": (40.0, -40.0, 140.0, -140.0),   # clear of the cassette posts (stage (10, ±35)), the elbow tube, the −Y seat boss, the housing sides
@@ -202,7 +202,7 @@ EAR_SITES = {
     "pitch4": (40.0, -40.0, 160.0, -120.0),  # ±40 from the cartridge side; 160 / −120 reversed through the outer wall (the carriage blocks the cartridge side behind −80°/+50°)
     "yaw": (50.0, -50.0, 145.0, -145.0),     # the −X clevis arm's foot covers |y| ≤ 26 for stage x ≥ 34.5 (the ±50 lobes stay at |y| ≥ 31.3); nuts side-fed past the posts
     "lift": (140.0, -140.0),                 # C3: the lift can sits 1.2 mm over the deck and its cover wraps it 3 mm off: only the lower diagonals
-    "lift4": (40.0, -40.0, 140.0, -140.0),   # + the upper diagonals: wall A needs r 7.5 bosses up to z 244 and the cover 1 mm round them (upper.py)
+    "lift4": (40.0, -40.0, 140.0, -140.0),   # + the upper diagonals: wall A needs r 7.5 towers up to z 244 and the cover 1 mm round them (upper.py, belt_stage.ear_tower)
     "roll_belt": (40.0, -40.0),              # belt-roll fallback: the walls end 37 mm over the stage axis on the −Z side (unchecked)
 }
 EAR_SITES["default"] = (145.0, -145.0)       # the fallback for a caller that names no site (masses, coupons): the C3 2-ear yaw pattern
