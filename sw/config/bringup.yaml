@@ -6,6 +6,8 @@ can_timeout_s: 0.030          # drive-side CAN watchdog: a drive disables itself
                               # watchdog because the drive also sees the USB-CAN latency; rnd/electrical.py checks it against docs/sw/loop_jitter.json)
 watchdog_s: 0.025             # A5 v2 hardware watchdog (SN74LVC1G123) timeout: was 8 ms; sized on the measured heartbeat jitter of this loop
                               # (python -m sw.loop_jitter; loaded max 7.9 ms) by rnd/electrical.py: ≥ max(3 × p99.99, 2 × max), 5 ms steps
+fb_max_age_s: 0.020          # supervisor: feedback older than this stops the arm (was 10 ms; docs/sw/bus_realism.md: 0–9 ms bus delay each
+                              # way gave ages up to 16 ms in normal running; dead bus still stopped in 22–30 ms; the drive times out itself at 30 ms)
 limit: rated                  # drive-side torque limit = joints.json rated_nm (the supervisor's bound without allow_peak)
 cal_speed: 0.30               # rad/s while seeking a hard stop
 cal_frac_max: 0.60            # the calibration torque may not exceed this fraction of rated (else: support the arm)
@@ -23,6 +25,10 @@ joints:
   yaw:    {kp: 40, kd: 2.0, stop: [+1, 155], other: -155, span_check: true,  park: 0,   jog: 25}   # stop pin ±155° (rnd/harness.py)
   elbow:  {kp: 40, kd: 2.0, stop: [+1, 5],   other: -155, span_check: true,  park: -20, jog: 15}
   wpitch: {kp: 15, kd: 0.5, stop: [+1, 125], other: -125, span_check: true,  park: 0,   jog: 25}
+# Actuator sysid (sw/sysid.py, step "sysid" after gravity): the Step-1 joints. test_mass_kg: the known weight the operator
+# hangs at the grasp point / lever end (its torque comes from the kinematics only); speeds: fractions of the jog speed.
+sysid: {joints: [yaw, wpitch], test_mass_kg: 0.5, speeds_frac: [0.1, 0.2, 0.35, 0.6], backlash_amp_deg: 2.5, backlash_speed: 0.1,
+        latency_steps: 30, latency_frac: 0.08}
 # Gravity hold test: poses (all six joints; offline joints stay at fixture_pose). Each pose is approached from both
 # sides (±approach) so Coulomb friction cancels in the mean and shows in the difference.
 gravity:

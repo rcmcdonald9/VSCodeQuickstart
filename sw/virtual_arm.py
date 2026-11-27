@@ -17,7 +17,19 @@ the bench fixture at `fixture_pose`.
 
 Faults for the tests (`faults=`): factory_id:<joint> (drive answers at its factory ID), estop_stuck (contactor welded),
 watchdog_dead (the monostable never times out), no_clamp (drive ignores its torque limit), reversed:<joint> (motor
-mounted the other way round), no_timeout (drive CAN timeout ignored).
+mounted the other way round), no_timeout (drive CAN timeout ignored), drift (Coulomb friction +25 %/K of motor temperature
+rise: a synthetic degrading drive for the soak test, sw/soak.py).
+
+Bus realism (`bus=`, sw/bus_sim.py): each CAN bus can delay (0–9 ms, FIFO, so frames bunch), drop, duplicate, CRC-reject
+(error counters, bus-off) or corrupt frames, in both directions; `bus="ideal"` (default) is the plain virtual bus.
+
+Actuator truth (`act=`): per joint Coulomb friction, viscous friction, torque-constant scale (true joint torque /
+drive-reported torque) and backlash (a quasi-static gap between the motor and the joint: the drive's encoder is on the
+motor side, so the gap is invisible except as lost motion at torque reversals). `act=None` loads the fitted model
+(sw/config/actuators_<serial>.yaml, written by the bring-up's sysid step) when present, else the defaults below;
+`act={}` forces the defaults; `act={joint: {...}}` sets hidden values (the sysid rehearsal). `ext_tau` is an external
+joint torque (a contact) for the collision tests; `add_test_mass(kg)` hangs a known weight at the grasp site (the lever
+weights of the Step-1 rig).
 
 `SIM_GIM` is a **placeholder** GIM protocol table (the DM-J4310 layout with wider ranges) so the GIM code path can be
 exercised end to end here. It is not the SteadyWin protocol.
@@ -49,7 +61,8 @@ class SimClock:
 
 
 class SimMotor:
-    def __init__(self, name, kind, cmd_id, fb_id, ratio, table, rng, rated_joint, sign_true=1, factory=False, clamp=True, timeout=True):
+    def __init__(self, name, kind, cmd_id, fb_id, ratio, table, rng, rated_joint, sign_true=1, factory=False, clamp=True, timeout=True,
+                 act=None):
         self.name, self.kind, self.ratio, self.table, self.rng = name, kind, ratio, table, rng
         self.sign_true, self.clamp, self.timeout_on = sign_true, clamp, timeout
         cid, fid = (table["DEFAULT_ID"] if factory else (cmd_id, fb_id))
@@ -60,6 +73,12 @@ class SimMotor:
         self.flash = dict(self.regs)
         self.offset_m = float(rng.uniform(-1.5, 1.5))
         self.kt_err = 1 + float(rng.uniform(-0.03, 0.03))
+        act = act or {}
+        if act.get("kt_scale") is not None:
+            self.kt_err = float(act["kt_scale"])
+        self.backlash = float(act.get("backlash_rad") or 0.0)     # joint side, total gap
+        self.delta = 0.0                                          # motor − joint position inside the gap (joint side, rad)
+        self.pending_t = None                                     # host send time of the oldest command not yet answered
         self.noise = 0.005 * rated_joint / ratio
         self.powered, self.enabled, self.status = True, False, table["STATUS_DISABLED"]
         self.cmd = (0.0, 0.0, 0.0, 0.0, 0.0)
@@ -92,7 +111,7 @@ class SimMotor:
 
     # motor-side state from the joint's physical state
     def motor_pos(self, q):
-        return self.sign_true * self.ratio * q + self.offset_m
+        return self.sign_true * self.ratio * (q + self.delta) + self.offset_m
 
     def motor_vel(self, qd):
         return self.sign_true * self.ratio * qd
@@ -161,9 +180,25 @@ class SimMotor:
         if not (self.powered and self.enabled):
             self.tau_cmd = 0.0
             return 0.0
-        p, v = self.motor_pos(q), self.motor_vel(qd)
         pd, vd, kp, kd, tff = self.cmd
-        tau = kp * (pd - p) + kd * (vd - v) + tff
+        if self.backlash > 0:
+            # quasi-static gap: a massless rotor sits where the MIT law gives zero torque if that is inside the gap, else on
+            # the flank (δ = ±b/2) and the torque goes through. τ_m(δ) = τ_m(0) − kp·s·r·δ
+            s_, r = self.sign_true, self.ratio
+            old, self.delta = self.delta, 0.0
+            tau0 = kp * (pd - self.motor_pos(q)) + kd * (vd - self.motor_vel(qd)) + tff
+            h = self.backlash / 2
+            if kp > 1e-9:
+                d0 = tau0 / (kp * s_ * r)
+                self.delta = float(np.clip(d0, -h, h))
+            else:
+                self.delta = h * float(np.sign(s_ * tau0)) if abs(tau0) > 1e-12 else old
+            tau = tau0 - kp * s_ * r * self.delta
+            if abs(tau) < 1e-12:
+                tau = 0.0
+        else:
+            p, v = self.motor_pos(q), self.motor_vel(qd)
+            tau = kp * (pd - p) + kd * (vd - v) + tff
         lim = min(self.regs["t_max"], MOTOR_PEAK[self.kind]) if self.clamp else MOTOR_PEAK[self.kind]
         tau = float(np.clip(tau, -lim, lim))
         self.tau_cmd = tau
@@ -260,12 +295,26 @@ class SimOperator:
         """+1 if the joint moved in its positive direction (the arrow on the part) since watch_start, −1 otherwise."""
         return 1 if self.arm.q_phys(joint) - self._w > 0 else -1
 
+    def hang_test_mass(self, kg):
+        self.arm.add_test_mass(kg)
+
+    def test_mass_ready(self):
+        return True
+
+
+DEFAULT_COULOMB = {"pitch": 0.25, "roll": 0.25, "yaw": 0.25, "elbow": 0.25, "wpitch": 0.04}   # N·m at the joint (plant default)
+
 
 class VirtualArm:
     _n = 0
 
-    def __init__(self, can_map, cfg, tables, seed=0, faults=(), hand_extra_kg=0.05):
+    def __init__(self, can_map, cfg, tables, seed=0, faults=(), hand_extra_kg=0.05, bus="ideal", act=None, joints=None,
+                 actuator_dir=None):
+        """bus: a sw/bus_sim.py profile name / spec dict (every bus), or {bus name: profile}. act: None = fitted model when
+        present (sw/config/actuators_*.yaml or `actuator_dir`), {} = defaults, {joint: {coulomb_nm, viscous_nms, kt_scale,
+        backlash_rad}} = hidden truth. joints: only these joints are simulated motors (the others held in the fixture)."""
         import can
+        from sw import bus_sim
         VirtualArm._n += 1
         self._prefix = f"pip{os.getpid()}_{VirtualArm._n}"           # python-can virtual channels are process-global
         import mujoco
@@ -289,12 +338,28 @@ class VirtualArm:
         for j, c in cfg["joints"].items():                    # the physical hard stops
             a, b = sorted((math.radians(c["stop"][1]), math.radians(c["other"])))
             m.jnt_range[self.jid[j]] = (a, b)
-        hand = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "hand")
+        self.hand = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "hand")
         if hand_extra_kg:
             from sw.collision import add_point_mass
-            add_point_mass(m, hand, hand_extra_kg, m.site_pos[env.site].copy())
+            add_point_mass(m, self.hand, hand_extra_kg, m.site_pos[env.site].copy())
+        self._hand0 = (float(m.body_mass[self.hand]), m.body_ipos[self.hand].copy(), m.body_inertia[self.hand].copy())
+        self.test_mass = 0.0
+        # actuator truth: joint friction in the plant (Coulomb = MuJoCo frictionloss, viscous = dof damping)
+        if act is None:
+            from rnd.twin import measured_actuators
+            act = measured_actuators(actuator_dir)
+            self.act_source = "fitted (actuators_*.yaml)" if act else "defaults"
+        else:
+            self.act_source = "given" if act else "defaults"
+        self.act = {}
         for k, j in enumerate(ARM[:5]):
-            m.dof_frictionloss[self.dadr[k]] = 0.25 if j != "wpitch" else 0.04
+            a = dict((act or {}).get(j) or {})
+            fc = a.get("coulomb_nm", DEFAULT_COULOMB[j])
+            b = a.get("viscous_nms", float(m.dof_damping[self.dadr[k]]))
+            m.dof_frictionloss[self.dadr[k]] = fc
+            m.dof_damping[self.dadr[k]] = b
+            self.act[j] = dict(coulomb_nm=fc, viscous_nms=b, kt_scale=a.get("kt_scale"), backlash_rad=a.get("backlash_rad", 0.0))
+        self.ext_tau = np.zeros(6)                            # external joint torque (a contact), N·m
         self.bal = cfg.get("balancer") or {}
         self.bal_k_true = float(self.bal.get("k_nm", 0.0)) * 1.05
         self.bal_sign = balancer_sign(m, self.qadr, self.dadr)
@@ -302,20 +367,30 @@ class VirtualArm:
         self.buses = {}
         self.motors = []
         self.can = can
+        bus_rng = np.random.default_rng(seed + 7919)          # own stream: an ideal bus leaves the plant's draws unchanged
+        self.imp, self.to_drive, self.to_host = {}, {}, {}
+        self.rt_log = []                                      # true command → host-visible reply times (s), control frames
         for bn, b in can_map["buses"].items():
             self.buses[bn] = can.Bus(interface="virtual", channel=f"{self._prefix}_{bn}")
+            spec = bus.get(bn, "ideal") if isinstance(bus, dict) and not set(bus) & set(_SPEC_KEYS) else bus
+            self.imp[bn] = bus_sim.make(spec, bus_rng, bn)
+            self.to_drive[bn], self.to_host[bn] = bus_sim.DelayLine(), bus_sim.DelayLine()
             for dv in b["devices"]:
                 if dv["kind"] not in tables:
                     continue
+                if joints is not None and dv["name"] not in joints:
+                    continue                                    # not on this rig: held in the fixture
                 tbl = tables[dv["kind"]]
                 if P.missing(tbl):
                     continue                                    # protocol unknown: not simulated (joint held in the fixture)
                 mt = SimMotor(dv["name"], dv["kind"], dv["id"], dv["fb_id"], dv["ratio"], tbl, self.rng, J[dv["name"]]["rated_nm"],
                               sign_true=-1 if f"reversed:{dv['name']}" in self.faults else 1,
                               factory=f"factory_id:{dv['name']}" in self.faults, clamp="no_clamp" not in self.faults,
-                              timeout="no_timeout" not in self.faults)
+                              timeout="no_timeout" not in self.faults, act=self.act.get(dv["name"]))
                 mt.bus = bn
+                mt.ctrl_arb = P.arb(tbl["CONTROL"], mt.id, mt.fb)
                 self.motors.append(mt)
+                self.act[dv["name"]]["kt_scale"] = mt.kt_err
         self.sim_joints = [mt.name for mt in self.motors]
         self.io = SimSafetyIO(self.clock, stuck="estop_stuck" in self.faults, wd_dead="watchdog_dead" in self.faults, wd_s=cfg.get("watchdog_s"))
         self.io.listeners.append(lambda on: [mt.power(on, self.clock()) for mt in self.motors])
@@ -354,19 +429,54 @@ class VirtualArm:
     def q_phys(self, joint):
         return float(self.env.d.qpos[self.qadr[ARM.index(joint)]])
 
-    def _send(self, bn):
-        bus = self.buses[bn]
-        return lambda a, data: bus.send(self.can.Message(arbitration_id=a, data=data, is_extended_id=False))
+    def add_test_mass(self, kg):
+        """Hang a known weight at the grasp site (0 removes it): the operator's lever weight."""
+        from sw.collision import add_point_mass
+        m = self.env.m
+        m.body_mass[self.hand], m.body_ipos[self.hand], m.body_inertia[self.hand] = self._hand0[0], self._hand0[1].copy(), self._hand0[2].copy()
+        if kg > 0:
+            add_point_mass(m, self.hand, kg, m.site_pos[self.env.site].copy())
+        self.test_mass = float(kg)
 
-    def handle_frames(self):
+    # ---- the wire: python-can virtual bus + impairments (sw/bus_sim.py)
+    def _send(self, bn, meta=None, base=None):
+        """A drive's transmit: the frame leaves at `base` (when the drive answered: the arrival of the request it answers)
+        and reaches the host after the bus's RX delay."""
+        imp, line = self.imp[bn], self.to_host[bn]
+
+        def send(a, data):
+            t0 = self.clock() if base is None else base
+            line.push([(t, (a, d)) for t, d in imp.pass_frame("rx", t0, bytes(data))], meta)
+            self._flush_host(bn)
+        return send
+
+    def _flush_host(self, bn):
+        now = self.clock()
+        for t, (a, d), meta in self.to_host[bn].due(now):
+            if meta is not None:
+                self.rt_log.append(now - meta)
+            self.buses[bn].send(self.can.Message(arbitration_id=a, data=d, is_extended_id=False))
+
+    def handle_frames(self, lookahead=0.0):
+        """Deliver the host's frames that have reached the drives. Inside step() `lookahead` = the step: a frame that
+        arrives during the 2 ms physics step acts from its start (≤ 1 step early) and is answered from its arrival time,
+        so a sub-cycle bus delay costs no extra cycle (a drive answers within ≈ 0.1 ms)."""
         now = self.clock()
         for bn, bus in self.buses.items():
+            self._flush_host(bn)
+            imp, line = self.imp[bn], self.to_drive[bn]
             while True:
                 msg = bus.recv(0.0)
                 if msg is None:
                     break
+                line.push([(t, (msg.arbitration_id, d)) for t, d in imp.pass_frame("tx", now, bytes(msg.data))], now)
+            for t, (a, d), t_sent in line.due(now + lookahead):
+                t_arr = max(t, now)
                 for mt in self.motors:
-                    if mt.bus == bn and mt.handle(msg.arbitration_id, bytes(msg.data), now, self._send(bn)):
+                    if mt.bus == bn and mt.handle(a, d, t_arr, self._send(bn, base=t_arr)):
+                        mt.t_arr = t_arr
+                        if a == mt.ctrl_arb and mt.pending_t is None:
+                            mt.pending_t = t_sent
                         break
 
     def _physics(self, tau_motor_joint):
@@ -375,7 +485,7 @@ class VirtualArm:
         q = np.array([d.qpos[a] for a in self.qadr])
         qd = np.array([d.qvel[a] for a in self.dadr])
         for k in range(6):
-            d.qfrc_applied[self.dadr[k]] = tau_motor_joint[k]
+            d.qfrc_applied[self.dadr[k]] = tau_motor_joint[k] + self.ext_tau[k]
             if k in self.hold:                                    # bench fixture
                 kf, df = self.fix_gain[k]
                 d.qfrc_applied[self.dadr[k]] += kf * (self.hold[k] - q[k]) - df * qd[k] + d.qfrc_bias[self.dadr[k]]
@@ -387,7 +497,8 @@ class VirtualArm:
 
     def step(self, dt):
         """One control period: apply what the drives were told, integrate, then the drives answer with the new state."""
-        self.handle_frames()
+        t_step = self.clock()
+        self.handle_frames(lookahead=dt - 1e-9)
         n = max(1, int(round(dt / self.env.m.opt.timestep)))
         for _ in range(n):
             q = np.array([self.env.d.qpos[a] for a in self.qadr])
@@ -400,21 +511,38 @@ class VirtualArm:
             self._physics(tau)
             self.clock.t += self.env.m.opt.timestep
         self.io.update()
+        if "drift" in self.faults:                            # synthetic degradation: Coulomb +25 %/K of motor temperature rise
+            for mt in self.motors:
+                k = ARM.index(mt.name)
+                self.env.m.dof_frictionloss[self.dadr[k]] = self.act[mt.name]["coulomb_nm"] * (1 + 0.25 * max(mt.temp - 32.0, 0.0))
         q = np.array([self.env.d.qpos[a] for a in self.qadr])
         qd = np.array([self.env.d.qvel[a] for a in self.dadr])
         for mt in self.motors:
             k = ARM.index(mt.name)
             mt._last_p = mt.motor_pos(q[k])
-            mt.feedback(q[k], qd[k], self._send(mt.bus))
+            meta = mt.pending_t if mt.want_reply else None
+            mt.feedback(q[k], qd[k], self._send(mt.bus, meta, base=max(getattr(mt, "t_arr", t_step), t_step)))
+            if meta is not None:
+                mt.pending_t = None
+        for bn in self.buses:
+            self._flush_host(bn)
 
     def idle(self, seconds):
         """Time passes with the host silent (a hung control loop)."""
         for _ in range(int(round(seconds / 0.002))):
             self.step(0.002)
 
+    def bus_stats(self):
+        rt = np.array(self.rt_log) * 1000 if self.rt_log else np.zeros(1)
+        return dict(buses={bn: imp.stats() for bn, imp in self.imp.items()},
+                    round_trip_ms=dict(n=len(self.rt_log), mean=round(float(rt.mean()), 3), p50=round(float(np.percentile(rt, 50)), 3),
+                                       p95=round(float(np.percentile(rt, 95)), 3), p99=round(float(np.percentile(rt, 99)), 3),
+                                       max=round(float(rt.max()), 3)))
+
     def truth(self):
-        """Hidden values for the tests: the true zero of every motor in the joint frame."""
-        return {mt.name: dict(offset_joint=mt.sign_true * mt.offset_m / mt.ratio, sign=mt.sign_true, kt_err=mt.kt_err) for mt in self.motors}
+        """Hidden values for the tests: the true zero of every motor in the joint frame, and its actuator model."""
+        return {mt.name: dict(offset_joint=mt.sign_true * mt.offset_m / mt.ratio, sign=mt.sign_true, kt_err=mt.kt_err,
+                              **{k: v for k, v in self.act[mt.name].items() if k != "kt_scale"}) for mt in self.motors}
 
     def close(self):
         for b in self.buses.values():
@@ -422,6 +550,9 @@ class VirtualArm:
                 b.shutdown()
             except Exception:
                 pass
+
+
+_SPEC_KEYS = ("fixed_ms", "jitter", "tail", "max_ms", "p_drop", "p_dup", "p_crc", "p_corrupt", "bus_off_at", "bus_off_ms")
 
 
 def _joints():

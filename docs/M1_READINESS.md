@@ -16,6 +16,7 @@
 4. The real loop's longest heartbeat gap (bring-up report) is under half the 25 ms watchdog, on the Pi.
 5. Torque constant and friction measured on the lever; sleeve and aluminium-cap temperatures logged for 30 min at rated torque.
 6. Coupons: insert pull-out (C1) and the bolted flange + Oldham tongue.
+7. **Soak test** (determinism; Asimov sim2real lesson 1, hour 20 = hour 1): `python -m sw.soak --joints yaw,wpitch --hours 2` passes. That is a sysid fit (friction, torque constant, backlash, latency) before and after 2 h of cyclic motion at ≈ 50 % rated, with drift ≤ 20 % Coulomb, ≤ 25 % viscous, ≤ 5 % torque constant, ≤ +0.1° backlash, ≤ +0.5 ms mean / +2 ms p95 latency; no supervisor stop, no bus-off, no new throttle flag, zero corrupted CAN frames, loop jitter p99 < 1 ms on the Pi (PREEMPT_RT reported). The bring-up report's determinism section is clean (docs/sw/sim2real_bench.md).
 
 ### Step 2: the rest of the arm — **NO-GO today**; GO when
 - Step 1's exit criteria are met (if the SDC104 has no impedance mode: stop and redesign the GIM joints' safety argument first);

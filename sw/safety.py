@@ -5,7 +5,7 @@ v1 clamped only the feed-forward torque, so an MIT-mode command (kp·e + kd·ė 
 it also accepted NaN or stale feedback and released most faults on the next cycle. v2:
 
 1. **Feedback first.** Every cycle needs measured position and speed for all joints: finite, the right shape, and no older
-   than FB_MAX_AGE (10 ms). Missing/NaN/stale feedback → STOP.
+   than FB_MAX_AGE (20 ms; was 10, bus-realism runs). Missing/NaN/stale feedback → STOP.
 2. **Total torque bound.** The torque the drive will produce, |kp·(q_cmd − q_meas)| + |kd·v_meas| + |τ_ff|, must stay under
    the joint's rated torque (peak only with `allow_peak`). The supervisor first trims τ_ff, then lowers kp and kd for that
    cycle until the bound holds; gains are also capped at KP_MAX / KD_MAX. The same limit must be set in the drive as a
@@ -41,7 +41,9 @@ import numpy as np
 
 from sw.collision import KD_COMPLIANT, KP_COMPLIANT, T_ANCHOR
 
-WATCHDOG_S, FB_MAX_AGE, TEMP_C = 0.050, 0.010, 70.0     # TEMP_C: driver/case sensor (thermal.md: winding ≤ 69 °C on a task day)
+WATCHDOG_S, FB_MAX_AGE, TEMP_C = 0.050, 0.020, 70.0     # TEMP_C: driver/case sensor (thermal.md: winding ≤ 69 °C on a task day)
+# FB_MAX_AGE 10 → 20 ms (2026-11-27, docs/sw/bus_realism.md): with 0–9 ms of bus delay each way the feedback age reached 16 ms
+# in normal running (p99.9 12 ms) and 10 ms false-tripped; a dead bus is still stopped in 22–30 ms (frames already in flight keep it fresh), next to the drive's own 30 ms timeout
 V_FAULT, TRACK_FAULT = 4.0, 0.35                          # rad/s measured, rad tracking error
 KP_MAX, KD_MAX = 60.0, 3.0
 LOAD_KG = 1.0
@@ -67,7 +69,7 @@ def _finite(x, n):
 
 class Supervisor:
     def __init__(self, v_max=1.5, margin_deg=3.0, ws_lo=(0.10, -0.45, 0.76), ws_hi=(0.80, 0.45, 1.35), clock=time.monotonic, fk=None,
-                 collision=None, joints=None, limits=None, torque=None):
+                 collision=None, joints=None, limits=None, torque=None, fb_max_age=FB_MAX_AGE):
         """joints: subset of joint names (default: all of joints.json, in order), e.g. the joints online during bring-up.
         limits: {name: (lower, upper)} overriding joints.json (rad, before the margin), e.g. the travel bounds used while a
         joint is not yet calibrated. torque: {name: N·m} overriding the rated/peak bound (e.g. the low calibration torque)."""
@@ -97,6 +99,7 @@ class Supervisor:
         self._ws_free = (self.ws_lo.copy(), self.ws_hi.copy())
         self.collision = collision
         self._anchor = None
+        self.fb_max_age = float(fb_max_age)      # bring-up passes bringup.yaml fb_max_age_s (sized on the bus-realism runs)
 
     def set_limits(self, limits):
         """Replace the bounds of some joints ({name: (lower, upper)}, rad, before the margin). Used by bring-up after a
@@ -159,7 +162,7 @@ class Supervisor:
         """Clear latched faults: only with the button released and fresh, finite, in-limit feedback."""
         if self.estop_pressed:
             return False
-        if not _finite(q_meas, self.n) or fb_age is None or fb_age > FB_MAX_AGE:
+        if not _finite(q_meas, self.n) or fb_age is None or fb_age > self.fb_max_age:
             return False
         q = np.asarray(q_meas, float)
         if np.any(q < self.lo - math.radians(8)) or np.any(q > self.hi + math.radians(8)):
@@ -178,7 +181,7 @@ class Supervisor:
         now = self.clock()
         if self.last_tick is None or now - self.last_tick > WATCHDOG_S:
             self._latch("watchdog")
-        if not (_finite(q_meas, self.n) and _finite(v_meas, self.n)) or fb_age is None or not math.isfinite(fb_age) or fb_age > FB_MAX_AGE:
+        if not (_finite(q_meas, self.n) and _finite(v_meas, self.n)) or fb_age is None or not math.isfinite(fb_age) or fb_age > self.fb_max_age:
             self._latch("feedback missing, NaN or stale")
         else:
             qm, vm = np.asarray(q_meas, float), np.asarray(v_meas, float)

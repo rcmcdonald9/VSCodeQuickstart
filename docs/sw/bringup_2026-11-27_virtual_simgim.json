@@ -256,7 +256,7 @@
      }
     ],
     "kind": "rated",
-    "wall_s": 0.0
+    "wall_s": 0.01
    }
   },
   "safety": {
@@ -318,7 +318,7 @@
    "data": {
     "estop_ms": 2.0,
     "watchdog_ms": 26.0,
-    "wall_s": 0.19
+    "wall_s": 0.14
    }
   },
   "calibrate": {
@@ -353,7 +353,7 @@
     [
      "elbow: drive torque report consistent with its limit at the stop",
      true,
-     "5.41 N\u00b7m reported vs limit 5.42 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
+     "5.40 N\u00b7m reported vs limit 5.42 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
     ],
     [
      "elbow: span stop-to-stop 160.2\u00b0 vs 160.0\u00b0 expected",
@@ -363,17 +363,17 @@
     [
      "elbow: zeroed against the upper stop (5\u00b0), parked at -20\u00b0",
      true,
-     "offset -0.2736 rad, calibration torque 5.42 N\u00b7m (gravity max 3.16)"
+     "offset -0.0348 rad, calibration torque 5.42 N\u00b7m (gravity max 3.16)"
     ],
     [
      "yaw: stall at the reference stop is a stiff hard stop",
      true,
-     "\u0394q 0.00\u00b0 between 1.2\u00d7 and 0.6\u00d7 push (limit 1.1\u00b0)"
+     "\u0394q 0.02\u00b0 between 1.2\u00d7 and 0.6\u00d7 push (limit 1.1\u00b0)"
     ],
     [
      "yaw: drive torque report consistent with its limit at the stop",
      true,
-     "1.49 N\u00b7m reported vs limit 1.50 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
+     "1.48 N\u00b7m reported vs limit 1.50 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
     ],
     [
      "yaw: span stop-to-stop 310.1\u00b0 vs 310.0\u00b0 expected",
@@ -383,7 +383,7 @@
     [
      "yaw: zeroed against the upper stop (155\u00b0), parked at 0\u00b0",
      true,
-     "offset -0.4681 rad, calibration torque 1.50 N\u00b7m (gravity max 0.00)"
+     "offset +0.4230 rad, calibration torque 1.50 N\u00b7m (gravity max 0.00)"
     ],
     [
      "roll: stall at the reference stop is a stiff hard stop",
@@ -393,12 +393,12 @@
     [
      "roll: drive torque report consistent with its limit at the stop",
      true,
-     "-8.50 N\u00b7m reported vs limit 8.57 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
+     "-8.63 N\u00b7m reported vs limit 8.70 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
     ],
     [
      "roll: zeroed against the lower stop (-20\u00b0), parked at 10\u00b0",
      true,
-     "offset +0.8683 rad, calibration torque 8.57 N\u00b7m (gravity max 3.61)"
+     "offset -1.2863 rad, calibration torque 8.70 N\u00b7m (gravity max 3.71)"
     ],
     [
      "pitch: stall at the reference stop is a stiff hard stop",
@@ -408,12 +408,12 @@
     [
      "pitch: drive torque report consistent with its limit at the stop",
      true,
-     "8.31 N\u00b7m reported vs limit 8.35 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
+     "8.66 N\u00b7m reported vs limit 8.69 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
     ],
     [
      "pitch: zeroed against the upper stop (65\u00b0), parked at 0\u00b0",
      true,
-     "offset +0.1022 rad, calibration torque 8.35 N\u00b7m (gravity max 4.89)"
+     "offset +0.4709 rad, calibration torque 8.69 N\u00b7m (gravity max 5.14)"
     ],
     [
      "all online joints calibrated",
@@ -440,11 +440,11 @@
       "joint": "elbow",
       "g_max_nm": 3.159,
       "t_cal_nm": 5.422,
-      "stop_raw_rad": -0.18635,
+      "stop_raw_rad": 0.05245,
       "stop_deg": 5,
-      "stiffness_dq_deg": 0.028,
+      "stiffness_dq_deg": 0.029,
       "tau_at_stop_nm": 5.405,
-      "offset_rad": -0.273617,
+      "offset_rad": -0.034814,
       "span_measured_deg": 160.17,
       "span_expected_deg": 160.0
      },
@@ -452,60 +452,60 @@
       "joint": "yaw",
       "g_max_nm": 0.0,
       "t_cal_nm": 1.5,
-      "stop_raw_rad": 2.23716,
+      "stop_raw_rad": 3.12829,
       "stop_deg": 155,
-      "stiffness_dq_deg": 0.0,
-      "tau_at_stop_nm": 1.486,
-      "offset_rad": -0.468097,
+      "stiffness_dq_deg": 0.022,
+      "tau_at_stop_nm": 1.485,
+      "offset_rad": 0.42303,
       "span_measured_deg": 310.11,
       "span_expected_deg": 310.0
      },
      {
       "joint": "roll",
-      "g_max_nm": 3.612,
-      "t_cal_nm": 8.567,
-      "stop_raw_rad": 0.51919,
+      "g_max_nm": 3.707,
+      "t_cal_nm": 8.699,
+      "stop_raw_rad": -1.63539,
       "stop_deg": -20,
       "stiffness_dq_deg": 0.0,
-      "tau_at_stop_nm": -8.504,
-      "offset_rad": 0.868254
+      "tau_at_stop_nm": -8.634,
+      "offset_rad": -1.28632
      },
      {
       "joint": "pitch",
-      "g_max_nm": 4.891,
-      "t_cal_nm": 8.348,
-      "stop_raw_rad": 1.23662,
+      "g_max_nm": 5.137,
+      "t_cal_nm": 8.692,
+      "stop_raw_rad": 1.60538,
       "stop_deg": 65,
-      "stiffness_dq_deg": 0.01,
-      "tau_at_stop_nm": 8.315,
-      "offset_rad": 0.102153
+      "stiffness_dq_deg": 0.008,
+      "tau_at_stop_nm": 8.664,
+      "offset_rad": 0.470912
      }
     ],
     "offsets": {
-     "yaw": -0.4680969927618053,
-     "elbow": -0.2736172675131209,
-     "pitch": 0.10215255241512411,
-     "roll": 0.8682540704339599,
-     "wpitch": -1.491000086393689
+     "wpitch": -1.491000086393689,
+     "pitch": 0.470912248251955,
+     "yaw": 0.4230298860052639,
+     "roll": -1.286319821379574,
+     "elbow": -0.03481357482982271
     },
     "signs": {
-     "yaw": 1,
-     "elbow": 1,
+     "wpitch": 1,
      "pitch": 1,
+     "yaw": 1,
      "roll": 1,
-     "wpitch": 1
+     "elbow": 1
     },
-    "wall_s": 46.08
+    "wall_s": 56.02
    }
   },
   "jog": {
    "status": "PASS",
-   "summary": "pitch max err 0.38\u00b0 peak 1.402 rad/s; roll max err 0.28\u00b0 peak 0.492 rad/s; yaw max err 1.29\u00b0 peak 2.008 rad/s; elbow max err 1.99\u00b0 peak 2.04 rad/s; wpitch max err 0.31\u00b0 peak 1.194 rad/s",
+   "summary": "pitch max err 0.37\u00b0 peak 1.402 rad/s; roll max err 0.29\u00b0 peak 0.492 rad/s; yaw max err 1.29\u00b0 peak 2.008 rad/s; elbow max err 1.99\u00b0 peak 2.04 rad/s; wpitch max err 0.31\u00b0 peak 1.194 rad/s",
    "checks": [
     [
      "pitch: jog [20.0, -20.0, 0.0]\u00b0 at \u2264 1.47 rad/s",
      true,
-     "peak 1.40 rad/s, tracking max 0.38\u00b0 rms 0.22\u00b0, ends reached within 0.2\u00b0"
+     "peak 1.40 rad/s, tracking max 0.37\u00b0 rms 0.22\u00b0, ends reached within 0.2\u00b0"
     ],
     [
      "pitch: moved + first as commanded (operator)",
@@ -515,7 +515,7 @@
     [
      "roll: jog [25.0, -5.0, 10.0]\u00b0 at \u2264 0.50 rad/s",
      true,
-     "peak 0.49 rad/s, tracking max 0.28\u00b0 rms 0.17\u00b0, ends reached within 0.2\u00b0"
+     "peak 0.49 rad/s, tracking max 0.29\u00b0 rms 0.17\u00b0, ends reached within 0.2\u00b0"
     ],
     [
      "roll: moved + first as commanded (operator)",
@@ -565,10 +565,10 @@
       ],
       "speed_limit": 1.466,
       "peak_speed": 1.402,
-      "max_track_err_deg": 0.38,
+      "max_track_err_deg": 0.37,
       "rms_track_err_deg": 0.22,
-      "peak_torque_nm": 7.073,
-      "observer_peak_nm": 0.755,
+      "peak_torque_nm": 7.081,
+      "observer_peak_nm": 0.783,
       "direction": 1,
       "corr": 0.9999,
       "overrides": {
@@ -584,10 +584,10 @@
       ],
       "speed_limit": 0.503,
       "peak_speed": 0.492,
-      "max_track_err_deg": 0.28,
+      "max_track_err_deg": 0.29,
       "rms_track_err_deg": 0.17,
-      "peak_torque_nm": 5.203,
-      "observer_peak_nm": 1.06,
+      "peak_torque_nm": 5.323,
+      "observer_peak_nm": 1.13,
       "direction": 1,
       "corr": 0.9999,
       "overrides": {
@@ -605,13 +605,13 @@
       "peak_speed": 2.008,
       "max_track_err_deg": 1.29,
       "rms_track_err_deg": 0.4,
-      "peak_torque_nm": 2.586,
-      "observer_peak_nm": 0.35,
+      "peak_torque_nm": 2.513,
+      "observer_peak_nm": 0.349,
       "direction": 1,
       "corr": 0.9998,
       "overrides": {
        "velocity clamp": 1,
-       "torque bound": 170
+       "torque bound": 171
       }
      },
      {
@@ -625,13 +625,13 @@
       "peak_speed": 2.04,
       "max_track_err_deg": 1.99,
       "rms_track_err_deg": 0.6,
-      "peak_torque_nm": 5.243,
-      "observer_peak_nm": 0.474,
+      "peak_torque_nm": 5.258,
+      "observer_peak_nm": 0.451,
       "direction": 1,
       "corr": 0.999,
       "overrides": {
        "velocity clamp": 1,
-       "torque bound": 274
+       "torque bound": 275
       }
      },
      {
@@ -645,46 +645,46 @@
       "peak_speed": 1.194,
       "max_track_err_deg": 0.31,
       "rms_track_err_deg": 0.14,
-      "peak_torque_nm": 0.818,
-      "observer_peak_nm": 0.087,
+      "peak_torque_nm": 0.814,
+      "observer_peak_nm": 0.093,
       "direction": 1,
       "corr": 1.0,
       "overrides": {
        "velocity clamp": 1,
-       "torque bound": 274
+       "torque bound": 275
       }
      }
     ],
     "supervisor_overrides": {
      "velocity clamp": 1,
-     "torque bound": 274
+     "torque bound": 275
     },
-    "wall_s": 6.02
+    "wall_s": 8.56
    }
   },
   "gravity": {
    "status": "PASS",
-   "summary": "residual max pitch 0.27 N\u00b7m, roll 0.09 N\u00b7m, yaw 0.08 N\u00b7m, elbow 0.11 N\u00b7m, wpitch 0.06 N\u00b7m; effective balancer K 4.315 N\u00b7m (nominal 4.5: set it in bringup.yaml)",
+   "summary": "residual max pitch 0.28 N\u00b7m, roll 0.09 N\u00b7m, yaw 0.08 N\u00b7m, elbow 0.11 N\u00b7m, wpitch 0.06 N\u00b7m; effective balancer K 4.309 N\u00b7m (nominal 4.5: set it in bringup.yaml)",
    "checks": [
     [
      "pitch: gravity residual |measured \u2212 twin| \u2264 20% of rated",
      true,
-     "max 0.274 N\u00b7m (1.8%), mean -0.166, friction \u2264 0.220, noise \u03c3 0.081"
+     "max 0.276 N\u00b7m (1.8%), mean -0.169, friction \u2264 0.217, noise \u03c3 0.082"
     ],
     [
      "roll: gravity residual |measured \u2212 twin| \u2264 20% of rated",
      true,
-     "max 0.090 N\u00b7m (0.3%), mean -0.001, friction \u2264 0.202, noise \u03c3 0.204"
+     "max 0.091 N\u00b7m (0.3%), mean -0.005, friction \u2264 0.208, noise \u03c3 0.202"
     ],
     [
      "yaw: gravity residual |measured \u2212 twin| \u2264 20% of rated",
      true,
-     "max 0.081 N\u00b7m (0.8%), mean -0.021, friction \u2264 0.089, noise \u03c3 0.056"
+     "max 0.082 N\u00b7m (0.8%), mean -0.022, friction \u2264 0.091, noise \u03c3 0.055"
     ],
     [
      "elbow: gravity residual |measured \u2212 twin| \u2264 20% of rated",
      true,
-     "max 0.111 N\u00b7m (1.1%), mean -0.077, friction \u2264 0.142, noise \u03c3 0.057"
+     "max 0.111 N\u00b7m (1.1%), mean -0.079, friction \u2264 0.141, noise \u03c3 0.056"
     ],
     [
      "wpitch: gravity residual |measured \u2212 twin| \u2264 20% of rated",
@@ -692,19 +692,24 @@
      "max 0.060 N\u00b7m (2.0%), mean -0.033, friction \u2264 0.012, noise \u03c3 0.015"
     ],
     [
-     "pitch: drive enforces its torque limit (limit 2.29 < gravity 4.59 N\u00b7m \u2192 sags)",
+     "pitch: drive enforces its torque limit (limit 2.39 < gravity 4.78 N\u00b7m \u2192 sags)",
      true,
-     "moved 3.00\u00b0 in 0.17 s"
+     "moved 3.05\u00b0 in 0.17 s"
+    ],
+    [
+     "roll: drive enforces its torque limit (limit 1.43 < gravity 2.86 N\u00b7m \u2192 sags)",
+     true,
+     "moved 3.02\u00b0 in 0.23 s"
     ],
     [
      "yaw: drive enforces its torque limit (limit 0.80 < gravity 1.60 N\u00b7m \u2192 sags)",
      true,
-     "moved 3.06\u00b0 in 0.17 s"
+     "moved 3.02\u00b0 in 0.17 s"
     ],
     [
      "elbow: drive enforces its torque limit (limit 1.49 < gravity 2.97 N\u00b7m \u2192 sags)",
      true,
-     "moved 3.10\u00b0 in 0.10 s"
+     "moved 3.08\u00b0 in 0.10 s"
     ],
     [
      "wpitch: drive enforces its torque limit (limit 0.17 < gravity 0.34 N\u00b7m \u2192 sags)",
@@ -731,39 +736,39 @@
        0.5273
       ],
       "twin": [
-       -4.3732,
-       2.7749,
+       -4.5011,
+       2.8564,
        -0.7717,
        -2.9701,
        -0.3159
       ],
       "measured": [
-       -4.6469,
-       2.8154,
-       -0.8039,
-       -3.0792,
-       -0.369
+       -4.7767,
+       2.8947,
+       -0.8033,
+       -3.0813,
+       -0.3692
       ],
       "residual": [
-       -0.2736,
-       0.0405,
-       -0.0322,
-       -0.1091,
-       -0.053
+       -0.2757,
+       0.0384,
+       -0.0316,
+       -0.1112,
+       -0.0532
       ],
       "friction": [
-       0.2049,
-       0.1867,
-       0.074,
-       0.1356,
-       0.0078
+       0.2006,
+       0.1879,
+       0.0743,
+       0.135,
+       0.007
       ],
       "noise": [
-       0.0771,
-       0.2036,
-       0.0507,
-       0.0514,
-       0.015
+       0.0757,
+       0.2017,
+       0.0487,
+       0.0511,
+       0.0151
       ]
      },
      {
@@ -775,46 +780,46 @@
        "wpitch": -20.0
       },
       "q": [
-       -1.045,
+       -1.0449,
        0.1758,
        0.5263,
        -1.5688,
        -0.3477
       ],
       "twin": [
-       -4.0891,
-       -0.1207,
+       -4.3227,
+       -0.0967,
        -1.6012,
-       -1.4638,
+       -1.464,
        -0.0858
       ],
       "measured": [
-       -4.2067,
-       -0.1685,
-       -1.682,
-       -1.509,
-       -0.1008
+       -4.4447,
+       -0.1458,
+       -1.683,
+       -1.5139,
+       -0.1022
       ],
       "residual": [
-       -0.1176,
-       -0.0478,
-       -0.0807,
-       -0.0452,
-       -0.015
+       -0.1221,
+       -0.0492,
+       -0.0818,
+       -0.0499,
+       -0.0164
       ],
       "friction": [
-       0.2082,
-       0.1827,
-       0.0895,
-       0.142,
-       0.0119
+       0.2134,
+       0.1747,
+       0.0915,
+       0.1413,
+       0.012
       ],
       "noise": [
-       0.0765,
-       0.1854,
-       0.0563,
-       0.0548,
-       0.0153
+       0.0777,
+       0.1839,
+       0.0546,
+       0.0501,
+       0.0151
       ]
      },
      {
@@ -826,45 +831,45 @@
        "wpitch": 45.0
       },
       "q": [
-       -1.3934,
+       -1.3932,
        0.5238,
-       -0.5235,
+       -0.5234,
        -0.782,
        0.7897
       ],
       "twin": [
-       -3.8845,
-       1.0293,
-       0.8133,
-       -2.4076,
-       -0.3391
+       -4.1184,
+       1.0546,
+       0.813,
+       -2.408,
+       -0.3392
       ],
       "measured": [
-       -4.0383,
-       1.0915,
-       0.8291,
-       -2.5182,
-       -0.3995
+       -4.274,
+       1.1038,
+       0.828,
+       -2.5178,
+       -0.3993
       ],
       "residual": [
-       -0.1538,
-       0.0622,
-       0.0158,
-       -0.1105,
-       -0.0603
+       -0.1556,
+       0.0492,
+       0.0149,
+       -0.1098,
+       -0.0601
       ],
       "friction": [
-       0.2102,
-       0.1786,
-       0.0793,
-       0.134,
-       0.0103
+       0.2147,
+       0.1826,
+       0.0806,
+       0.1311,
+       0.0102
       ],
       "noise": [
-       0.0813,
-       0.1872,
-       0.0474,
-       0.0571,
+       0.082,
+       0.1809,
+       0.0489,
+       0.0542,
        0.0154
       ]
      },
@@ -877,46 +882,46 @@
        "wpitch": 0.0
       },
       "q": [
-       0.2642,
-       0.7005,
+       0.2641,
+       0.7008,
        1.0478,
        -1.7429,
        0.0037
       ],
       "twin": [
-       -0.8094,
-       2.4131,
-       -0.2633,
-       -2.6588,
+       -0.7552,
+       2.5854,
+       -0.2639,
+       -2.6584,
        -0.318
       ],
       "measured": [
-       -0.9352,
-       2.323,
-       -0.2671,
-       -2.75,
-       -0.3728
+       -0.8776,
+       2.4947,
+       -0.2687,
+       -2.7502,
+       -0.3722
       ],
       "residual": [
-       -0.1257,
-       -0.09,
-       -0.0038,
-       -0.0913,
-       -0.0547
+       -0.1225,
+       -0.0907,
+       -0.0048,
+       -0.0917,
+       -0.0542
       ],
       "friction": [
-       0.2118,
-       0.1933,
-       0.0895,
-       0.1307,
+       0.2149,
+       0.1983,
+       0.0915,
+       0.1301,
        0.0066
       ],
       "noise": [
-       0.0768,
-       0.1714,
-       0.0502,
-       0.0544,
-       0.0154
+       0.0782,
+       0.176,
+       0.0519,
+       0.056,
+       0.0151
       ]
      },
      {
@@ -928,46 +933,46 @@
        "wpitch": 80.0
       },
       "q": [
-       -0.7825,
-       0.0877,
+       -0.7824,
+       0.0879,
        0.0004,
        -0.3481,
        1.3951
       ],
       "twin": [
-       -4.5859,
-       0.6468,
-       -0.0387,
-       -2.415,
-       0.0981
+       -4.7778,
+       0.6656,
+       -0.0388,
+       -2.4148,
+       0.0982
       ],
       "measured": [
-       -4.7458,
-       0.6779,
-       -0.0424,
-       -2.4447,
-       0.1181
+       -4.9462,
+       0.6913,
+       -0.044,
+       -2.4454,
+       0.1187
       ],
       "residual": [
-       -0.16,
-       0.0312,
-       -0.0037,
-       -0.0297,
-       0.02
+       -0.1684,
+       0.0256,
+       -0.0052,
+       -0.0306,
+       0.0205
       ],
       "friction": [
-       0.2202,
-       0.2017,
-       0.0754,
-       0.1278,
-       0.0059
+       0.2169,
+       0.208,
+       0.0765,
+       0.1294,
+       0.0055
       ],
       "noise": [
-       0.0768,
-       0.1802,
-       0.0526,
-       0.0494,
-       0.015
+       0.0775,
+       0.1901,
+       0.0513,
+       0.0492,
+       0.0146
       ]
      }
     ],
@@ -979,68 +984,72 @@
      "wpitch"
     ],
     "residual_max": [
-     0.2736,
-     0.09,
-     0.0807,
-     0.1105,
-     0.0603
+     0.2757,
+     0.0907,
+     0.0818,
+     0.1112,
+     0.0601
     ],
     "residual_mean": [
-     -0.1662,
-     -0.0008,
-     -0.0209,
-     -0.0771,
-     -0.0326
+     -0.1688,
+     -0.0053,
+     -0.0217,
+     -0.0786,
+     -0.0327
     ],
     "friction_max": [
-     0.2202,
-     0.2017,
-     0.0895,
-     0.142,
-     0.0119
+     0.2169,
+     0.208,
+     0.0915,
+     0.1413,
+     0.012
     ],
     "noise_max": [
-     0.0813,
-     0.2036,
-     0.0563,
-     0.0571,
+     0.082,
+     0.2017,
+     0.0546,
+     0.056,
      0.0154
     ],
-    "balancer_k_effective": 4.315,
+    "balancer_k_effective": 4.309,
     "balancer_k_nominal": 4.5,
     "sag_test": {
      "pitch": {
       "tested": true,
-      "limit_nm": 2.292928301541904,
-      "gravity_nm": 4.585856603083808,
-      "moved_deg": 3.0016862693458752,
-      "secs": 0.16800000000080217,
+      "limit_nm": 2.388885874528326,
+      "gravity_nm": 4.777771749056652,
+      "moved_deg": 3.045400147054796,
+      "secs": 0.16600000000079262,
       "sagged": "True"
      },
      "roll": {
-      "tested": false,
-      "why": "gravity load \u2264 2.77 N\u00b7m at every pose: not testable"
+      "tested": true,
+      "limit_nm": 1.4281769133204931,
+      "gravity_nm": 2.8563538266409862,
+      "moved_deg": 3.0162575619155154,
+      "secs": 0.22800000000108867,
+      "sagged": "True"
      },
      "yaw": {
       "tested": true,
-      "limit_nm": 0.8006050356617553,
-      "gravity_nm": 1.6012100713235107,
-      "moved_deg": 3.059971439624436,
+      "limit_nm": 0.8005986277432959,
+      "gravity_nm": 1.6011972554865919,
+      "moved_deg": 3.0162575619155154,
       "secs": 0.16600000000079262,
       "sagged": "True"
      },
      "elbow": {
       "tested": true,
-      "limit_nm": 1.4850624000941721,
-      "gravity_nm": 2.9701248001883442,
-      "moved_deg": 3.1036853173333627,
+      "limit_nm": 1.4850615019947897,
+      "gravity_nm": 2.9701230039895794,
+      "moved_deg": 3.0818283784789027,
       "secs": 0.10000000000047748,
       "sagged": "True"
      },
      "wpitch": {
       "tested": true,
-      "limit_nm": 0.1695717550490572,
-      "gravity_nm": 0.3391435100981144,
+      "limit_nm": 0.16957625338837562,
+      "gravity_nm": 0.33915250677675124,
       "moved_deg": 3.0162575619155154,
       "secs": 0.15800000000075443,
       "sagged": "True"
@@ -1048,10 +1057,10 @@
     },
     "collision_thresholds": {
      "thr": [
-      1.228,
-      1.659,
-      0.593,
-      0.721,
+      1.231,
+      1.695,
+      0.588,
+      0.714,
       0.3,
       null
      ],
@@ -1066,39 +1075,583 @@
      ],
      "basis": {
       "pitch": {
-       "observer_peak": 0.755,
-       "static": 0.8188
+       "observer_peak": 0.783,
+       "static": 0.8207
       },
       "roll": {
-       "observer_peak": 1.06,
-       "static": 1.1063
+       "observer_peak": 1.13,
+       "static": 1.1054
       },
       "yaw": {
-       "observer_peak": 0.35,
-       "static": 0.3955
+       "observer_peak": 0.349,
+       "static": 0.3919
       },
       "elbow": {
-       "observer_peak": 0.474,
-       "static": 0.4809
+       "observer_peak": 0.451,
+       "static": 0.4763
       },
       "wpitch": {
-       "observer_peak": 0.087,
-       "static": 0.134
+       "observer_peak": 0.093,
+       "static": 0.1336
       }
      },
      "rule": "thr = max(0.3, 1.5 \u00d7 max(jog observer peak, |static residual| + friction + 4\u03c3)) N\u00b7m; rel 10 % of |\u03c4|"
     },
-    "wall_s": 10.81
+    "wall_s": 14.07
+   }
+  },
+  "sysid": {
+   "status": "PASS",
+   "summary": "yaw F_c 0.255 B 0.969 K \u2014 backlash 0.00\u00b0 latency 2.0 ms \u2192 actuators_6195325.yaml; wpitch F_c 0.041 B 0.504 K 1.03383 backlash 0.00\u00b0 latency 2.0 ms \u2192 actuators_3218776.yaml",
+   "checks": [
+    [
+     "yaw: friction F_c 0.255 N\u00b7m, B 0.969 N\u00b7m\u00b7s/rad (4 speeds, line fit)",
+     true,
+     "max residual 0.0012 N\u00b7m; datasheet model F_c 0.25, B 1.0"
+    ],
+    [
+     "yaw: backlash 0.000\u00b0 at 90.0\u00b0 (zero gravity)",
+     true,
+     "7 reversals, |\u03c4| < 0.128 N\u00b7m; > 2\u00b0: a loose stage"
+    ],
+    [
+     "yaw: command \u2192 response 2.0 ms mean, p95 2.0, max 2.0 ms (chirp 2.0)",
+     true,
+     "30 steps; p95 must stay under the supervisor's stale-feedback bound 20 ms"
+    ],
+    [
+     "wpitch: friction F_c 0.041 N\u00b7m, B 0.504 N\u00b7m\u00b7s/rad (4 speeds, line fit)",
+     true,
+     "max residual 0.0030 N\u00b7m; datasheet model F_c 0.04, B 0.5"
+    ],
+    [
+     "wpitch: effective torque constant K = 1.034 (true / reported) from sweeps with the 0.5 kg test mass",
+     true,
+     "\u0394\u03c4 [-0.7155, -0.7013, -0.69, -0.674, -0.6542, -0.6429, -0.6216, -0.5981, -0.5698, -0.5466, -0.7087, -0.696, -0.6846, -0.6668, -0.6533, -0.6347, -0.6142, -0.5878, -0.5663, -0.5382] vs mass torque [-0.7314, -0.7205, -0.7076, -0.6927, -0.6761, -0.6576, -0.6373, -0.6155, -0.5919, -0.5667, -0.731, -0.7204, -0.7077, -0.6932, -0.6768, -0.6586, -0.6386, -0.6169, -0.5935, -0.5684] N\u00b7m (K outside 0.8\u20131.2: wrong KT_NM_PER_A, ratio or sign)"
+    ],
+    [
+     "wpitch: backlash 0.000\u00b0 at 20.0\u00b0 (zero gravity)",
+     true,
+     "7 reversals, |\u03c4| < 0.020 N\u00b7m; > 2\u00b0: a loose stage"
+    ],
+    [
+     "wpitch: command \u2192 response 2.0 ms mean, p95 2.0, max 2.0 ms (chirp 2.0)",
+     true,
+     "30 steps; p95 must stay under the supervisor's stale-feedback bound 20 ms"
+    ]
+   ],
+   "notes": [
+    "\u2139\ufe0f pitch: not identified in this run (bringup.yaml sysid.joints = ['yaw', 'wpitch']: the Step-1 joints); datasheet model kept",
+    "\u2139\ufe0f roll: not identified in this run (bringup.yaml sysid.joints = ['yaw', 'wpitch']: the Step-1 joints); datasheet model kept",
+    "\u2139\ufe0f elbow: not identified in this run (bringup.yaml sysid.joints = ['yaw', 'wpitch']: the Step-1 joints); datasheet model kept",
+    "\u2139\ufe0f yaw: torque constant test mass makes \u2264 0.12 N\u00b7m here (< 5 % of rated): not observable; K = 1 kept (datasheet)"
+   ],
+   "data": {
+    "fits": {
+     "yaw": {
+      "joint": "yaw",
+      "kind": "gim6010",
+      "serial": 6195325,
+      "date": "2026-11-27",
+      "source": "virtual bench (rehearsal)",
+      "coulomb_nm": 0.25519,
+      "viscous_nms": 0.96888,
+      "kt_scale": null,
+      "backlash_rad": 0.0,
+      "latency_ms": {
+       "n": 30,
+       "mean": 2.0,
+       "p50": 2.0,
+       "p95": 2.0,
+       "max": 2.0,
+       "chirp": 2.0,
+       "histogram_ms": {
+        "2": 30
+       }
+      },
+      "datasheet": {
+       "coulomb_nm": 0.25,
+       "viscous_nms": 1.0,
+       "backlash_rad": 0.0022
+      },
+      "fit": {
+       "friction_points_v_tau": [
+        [
+         0.21429,
+         0.46341
+        ],
+        [
+         0.43651,
+         0.67694
+        ],
+        [
+         0.76984,
+         1.00176
+        ],
+        [
+         1.32924,
+         1.54297
+        ]
+       ],
+       "friction_resid_nm": 0.00118,
+       "kt": {
+        "why": "test mass makes \u2264 0.12 N\u00b7m here (< 5 % of rated): not observable",
+        "dg": [
+         -0.1128,
+         -0.1137,
+         -0.1141,
+         -0.1144,
+         -0.1143,
+         -0.114,
+         -0.1134,
+         -0.1124,
+         -0.1111,
+         -0.1096,
+         -0.1134,
+         -0.1144,
+         -0.115,
+         -0.1154,
+         -0.1153,
+         -0.1149,
+         -0.1143,
+         -0.1133,
+         -0.1119,
+         -0.1103
+        ],
+        "dtau": [
+         -0.0888,
+         -0.0788,
+         -0.0871,
+         -0.0916,
+         -0.1021,
+         -0.0736,
+         -0.0969,
+         -0.0898,
+         -0.0848,
+         -0.0982,
+         -0.1068,
+         -0.0855,
+         -0.104,
+         -0.0991,
+         -0.1214,
+         -0.0988,
+         -0.1036,
+         -0.1044,
+         -0.0947,
+         -0.1029
+        ]
+       },
+       "backlash_samples_rad": [
+        0.00038,
+        0.00038,
+        0.0,
+        0.0,
+        0.0,
+        0.00038,
+        0.0
+       ],
+       "backlash_pose_deg": 90.0
+      },
+      "not_randomized": "Once measured these are fixed facts of each drive (per serial), not domain-randomised: Coulomb + viscous friction, effective torque constant, backlash, the command \u2192 response latency distribution (use the measured histogram, not 0\u20139 ms uniform), encoder zero (calibrated), drive torque clamp, link masses (CAD + the gravity step's residual). Re-measured at the start and end of the soak test: if they drift, model the drift (e.g. temperature) instead of widening a randomisation range.",
+      "still_randomized": "Still randomised (actually random from task to task): payload mass / COM, contact friction (object, table, finger pads), object pose and size, lighting and camera pose; sensor noise at the measured \u03c3.",
+      "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-aca877eea92fb1652/sw/out/actuators_virtual/actuators_6195325.yaml"
+     },
+     "wpitch": {
+      "joint": "wpitch",
+      "kind": "dm_j4310",
+      "serial": 3218776,
+      "date": "2026-11-27",
+      "source": "virtual bench (rehearsal)",
+      "coulomb_nm": 0.04107,
+      "viscous_nms": 0.50413,
+      "kt_scale": 1.03383,
+      "backlash_rad": 0.0,
+      "latency_ms": {
+       "n": 30,
+       "mean": 2.0,
+       "p50": 2.0,
+       "p95": 2.0,
+       "max": 2.0,
+       "chirp": 2.0,
+       "histogram_ms": {
+        "2": 30
+       }
+      },
+      "datasheet": {
+       "coulomb_nm": 0.04,
+       "viscous_nms": 0.5,
+       "backlash_rad": 0.0035
+      },
+      "fit": {
+       "friction_points_v_tau": [
+        [
+         0.12454,
+         0.10114
+        ],
+        [
+         0.25641,
+         0.16192
+        ],
+        [
+         0.43271,
+         0.25377
+        ],
+        [
+         0.75458,
+         0.40678
+        ]
+       ],
+       "friction_resid_nm": 0.00304,
+       "kt": {
+        "dg": [
+         -0.7314,
+         -0.7205,
+         -0.7076,
+         -0.6927,
+         -0.6761,
+         -0.6576,
+         -0.6373,
+         -0.6155,
+         -0.5919,
+         -0.5667,
+         -0.731,
+         -0.7204,
+         -0.7077,
+         -0.6932,
+         -0.6768,
+         -0.6586,
+         -0.6386,
+         -0.6169,
+         -0.5935,
+         -0.5684
+        ],
+        "dtau": [
+         -0.7155,
+         -0.7013,
+         -0.69,
+         -0.674,
+         -0.6542,
+         -0.6429,
+         -0.6216,
+         -0.5981,
+         -0.5698,
+         -0.5466,
+         -0.7087,
+         -0.696,
+         -0.6846,
+         -0.6668,
+         -0.6533,
+         -0.6347,
+         -0.6142,
+         -0.5878,
+         -0.5663,
+         -0.5382
+        ],
+        "resid_nm": 0.011990947125826601
+       },
+       "backlash_samples_rad": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ],
+       "backlash_pose_deg": 20.0
+      },
+      "not_randomized": "Once measured these are fixed facts of each drive (per serial), not domain-randomised: Coulomb + viscous friction, effective torque constant, backlash, the command \u2192 response latency distribution (use the measured histogram, not 0\u20139 ms uniform), encoder zero (calibrated), drive torque clamp, link masses (CAD + the gravity step's residual). Re-measured at the start and end of the soak test: if they drift, model the drift (e.g. temperature) instead of widening a randomisation range.",
+      "still_randomized": "Still randomised (actually random from task to task): payload mass / COM, contact friction (object, table, finger pads), object pose and size, lighting and camera pose; sensor noise at the measured \u03c3.",
+      "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-aca877eea92fb1652/sw/out/actuators_virtual/actuators_3218776.yaml"
+     }
+    },
+    "rows": {
+     "yaw": {
+      "points": [
+       [
+        0.21429,
+        0.46341
+       ],
+       [
+        0.43651,
+        0.67694
+       ],
+       [
+        0.76984,
+        1.00176
+       ],
+       [
+        1.32924,
+        1.54297
+       ]
+      ],
+      "fc_rep": 0.2551947813857129,
+      "b_rep": 0.9688849656097783,
+      "fit_resid": 0.001176848612334358,
+      "backlash_rad": 0.0,
+      "backlash_samples": [
+       0.00038,
+       0.00038,
+       0.0,
+       0.0,
+       0.0,
+       0.00038,
+       0.0
+      ],
+      "backlash_pose_deg": 90.0,
+      "backlash_threshold_nm": 0.1276,
+      "latency_ms": {
+       "n": 30,
+       "mean": 2.0,
+       "p50": 2.0,
+       "p95": 2.0,
+       "max": 2.0,
+       "chirp": 2.0,
+       "histogram_ms": {
+        "2": 30
+       }
+      },
+      "latency_truth_ms": {
+       "mean": 2.0,
+       "p95": 2.0,
+       "max": 2.0
+      }
+     },
+     "wpitch": {
+      "points": [
+       [
+        0.12454,
+        0.10114
+       ],
+       [
+        0.25641,
+        0.16192
+       ],
+       [
+        0.43271,
+        0.25377
+       ],
+       [
+        0.75458,
+        0.40678
+       ]
+      ],
+      "fc_rep": 0.03972221472693161,
+      "b_rep": 0.4876324298551521,
+      "fit_resid": 0.003042882514498524,
+      "backlash_rad": 0.0,
+      "backlash_samples": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "backlash_pose_deg": 20.0,
+      "backlash_threshold_nm": 0.0199,
+      "latency_ms": {
+       "n": 30,
+       "mean": 2.0,
+       "p50": 2.0,
+       "p95": 2.0,
+       "max": 2.0,
+       "chirp": 2.0,
+       "histogram_ms": {
+        "2": 30
+       }
+      },
+      "latency_truth_ms": {
+       "mean": 2.0,
+       "p95": 2.0,
+       "max": 2.0
+      }
+     }
+    },
+    "kt": {
+     "yaw": {
+      "kt_scale": null,
+      "why": "test mass makes \u2264 0.12 N\u00b7m here (< 5 % of rated): not observable",
+      "dg": [
+       -0.1128,
+       -0.1137,
+       -0.1141,
+       -0.1144,
+       -0.1143,
+       -0.114,
+       -0.1134,
+       -0.1124,
+       -0.1111,
+       -0.1096,
+       -0.1134,
+       -0.1144,
+       -0.115,
+       -0.1154,
+       -0.1153,
+       -0.1149,
+       -0.1143,
+       -0.1133,
+       -0.1119,
+       -0.1103
+      ],
+      "dtau": [
+       -0.0888,
+       -0.0788,
+       -0.0871,
+       -0.0916,
+       -0.1021,
+       -0.0736,
+       -0.0969,
+       -0.0898,
+       -0.0848,
+       -0.0982,
+       -0.1068,
+       -0.0855,
+       -0.104,
+       -0.0991,
+       -0.1214,
+       -0.0988,
+       -0.1036,
+       -0.1044,
+       -0.0947,
+       -0.1029
+      ]
+     },
+     "wpitch": {
+      "kt_scale": 1.0338261433108373,
+      "dg": [
+       -0.7314,
+       -0.7205,
+       -0.7076,
+       -0.6927,
+       -0.6761,
+       -0.6576,
+       -0.6373,
+       -0.6155,
+       -0.5919,
+       -0.5667,
+       -0.731,
+       -0.7204,
+       -0.7077,
+       -0.6932,
+       -0.6768,
+       -0.6586,
+       -0.6386,
+       -0.6169,
+       -0.5935,
+       -0.5684
+      ],
+      "dtau": [
+       -0.7155,
+       -0.7013,
+       -0.69,
+       -0.674,
+       -0.6542,
+       -0.6429,
+       -0.6216,
+       -0.5981,
+       -0.5698,
+       -0.5466,
+       -0.7087,
+       -0.696,
+       -0.6846,
+       -0.6668,
+       -0.6533,
+       -0.6347,
+       -0.6142,
+       -0.5878,
+       -0.5663,
+       -0.5382
+      ],
+      "resid_nm": 0.011990947125826601
+     }
+    },
+    "config": {
+     "joints": [
+      "yaw",
+      "wpitch"
+     ],
+     "speeds_frac": [
+      0.1,
+      0.2,
+      0.35,
+      0.6
+     ],
+     "test_mass_kg": 0.5,
+     "backlash_amp_deg": 2.5,
+     "backlash_speed": 0.1,
+     "latency_steps": 30,
+     "latency_frac": 0.08,
+     "chirp_s": 3.0
+    },
+    "truth_vs_fit": {
+     "yaw": {
+      "coulomb": {
+       "true": 0.25,
+       "fit": 0.25519,
+       "err_pct": 2.08
+      },
+      "viscous": {
+       "true": 1.0,
+       "fit": 0.96888,
+       "err_pct": -3.11
+      },
+      "kt": {
+       "true": 1.01376979365904,
+       "fit": null,
+       "err_pct": null
+      },
+      "backlash": {
+       "true": 0.0,
+       "fit": 0.0,
+       "err_pct": null
+      },
+      "latency": {
+       "true": 2.0,
+       "fit": 2.0,
+       "err_pct": 0.0
+      }
+     },
+     "wpitch": {
+      "coulomb": {
+       "true": 0.04,
+       "fit": 0.04107,
+       "err_pct": 2.68
+      },
+      "viscous": {
+       "true": 0.5,
+       "fit": 0.50413,
+       "err_pct": 0.83
+      },
+      "kt": {
+       "true": 1.0214442565952542,
+       "fit": 1.03383,
+       "err_pct": 1.21
+      },
+      "backlash": {
+       "true": 0.0,
+       "fit": 0.0,
+       "err_pct": null
+      },
+      "latency": {
+       "true": 2.0,
+       "fit": 2.0,
+       "err_pct": 0.0
+      }
+     }
+    },
+    "wall_s": 59.22
    }
   }
  },
  "calibration": {
   "offsets": {
-   "elbow": -0.2736172675131209,
-   "pitch": 0.10215255241512411,
-   "roll": 0.8682540704339599,
+   "elbow": -0.03481357482982271,
+   "pitch": 0.470912248251955,
+   "roll": -1.286319821379574,
    "wpitch": -1.491000086393689,
-   "yaw": -0.4680969927618053
+   "yaw": 0.4230298860052639
   },
   "signs": {
    "elbow": 1,
@@ -1109,35 +1662,336 @@
   }
  },
  "gim_todo": [],
- "cycles": 79490,
- "wall_s": 63.1,
+ "cycles": 140607,
+ "wall_s": 138.0,
  "heartbeat_gap_max_ms": 26.0,
  "watchdog_ms": 25.0,
+ "determinism": {
+  "start": {
+   "machine": "x86_64",
+   "raspberry_pi": false,
+   "cpu_temp_c": null,
+   "throttled_raw": null,
+   "throttled_flags": [],
+   "cpu_freq": {
+    "cur_mhz": null,
+    "max_mhz": null,
+    "governor": null,
+    "vc_arm_hz": null
+   },
+   "rt": {
+    "kernel": "6.18.44-fc-v880",
+    "version": "#1 SMP PREEMPT_DYNAMIC @0",
+    "preempt_rt": false,
+    "preempt_model": "PREEMPT_DYNAMIC (not RT)",
+    "isolated_cpus": null,
+    "isolcpus_cmdline": false,
+    "sched_policy": "SCHED_OTHER",
+    "sched_priority": 0
+   },
+   "can": {
+    "B1": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    },
+    "B2": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    }
+   },
+   "cpus": 4,
+   "loadavg": [
+    1.82568359375,
+    2.24609375,
+    2.947265625
+   ]
+  },
+  "end": {
+   "machine": "x86_64",
+   "raspberry_pi": false,
+   "cpu_temp_c": null,
+   "throttled_raw": null,
+   "throttled_flags": [],
+   "cpu_freq": {
+    "cur_mhz": null,
+    "max_mhz": null,
+    "governor": null,
+    "vc_arm_hz": null
+   },
+   "rt": {
+    "kernel": "6.18.44-fc-v880",
+    "version": "#1 SMP PREEMPT_DYNAMIC @0",
+    "preempt_rt": false,
+    "preempt_model": "PREEMPT_DYNAMIC (not RT)",
+    "isolated_cpus": null,
+    "isolcpus_cmdline": false,
+    "sched_policy": "SCHED_OTHER",
+    "sched_priority": 0
+   },
+   "can": {
+    "B1": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    },
+    "B2": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    }
+   },
+   "cpus": 4,
+   "loadavg": [
+    1.7109375,
+    2.0947265625,
+    2.79150390625
+   ]
+  },
+  "loop": {
+   "n": 140606,
+   "period_ms": 2.0,
+   "bins_ms": [
+    "0\u20131",
+    "1\u20131.5",
+    "1.5\u20131.9",
+    "1.9\u20132.1",
+    "2.1\u20132.5",
+    "2.5\u20133",
+    "3\u20134",
+    "4\u20136",
+    "6\u20138",
+    "8\u201312",
+    "12\u201325",
+    "> 25"
+   ],
+   "counts": [
+    106676,
+    26206,
+    6555,
+    433,
+    318,
+    150,
+    136,
+    89,
+    23,
+    13,
+    5,
+    2
+   ],
+   "interval_ms": {
+    "p50": 0.894,
+    "p99": 1.838,
+    "p999": 3.897,
+    "p9999": 8.398,
+    "max": 49.205
+   },
+   "jitter_ms": {
+    "p99": 1.245,
+    "p999": 1.897,
+    "max": 47.205
+   },
+   "over_ms": {
+    "3": 268,
+    "4": 132,
+    "6": 43,
+    "8": 20,
+    "10": 10,
+    "15": 4,
+    "20": 2,
+    "25": 2
+   }
+  },
+  "verdict": [
+   [
+    "kernel real-time (PREEMPT_RT)",
+    "\u2139\ufe0f",
+    "6.18.44-fc-v880 (PREEMPT_DYNAMIC (not RT)); policy SCHED_OTHER prio 0; isolated CPUs \u2014; governor None \u2014 not the Pi: informational"
+   ],
+   [
+    "CPU throttling / under-voltage (vcgencmd get_throttled)",
+    "\u2139\ufe0f",
+    "not available on this machine (skipped)"
+   ],
+   [
+    "CPU temperature",
+    "\u2139\ufe0f",
+    "no sensor readable (skipped)"
+   ],
+   [
+    "loop period (SW1: p99 |period \u2212 2 ms| < 1 ms)",
+    "\u2139\ufe0f",
+    "p50 0.89, p99.9 3.90, max 49.20 ms; jitter p99 1.25 ms; > 8 ms: 20 \u2014 virtual run: compute time per cycle, not a real-time measurement"
+   ],
+   [
+    "CAN B2 controller health",
+    "\u2705",
+    "state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +0, RX dropped +0"
+   ],
+   [
+    "CAN B1 controller health",
+    "\u2705",
+    "state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +0, RX dropped +0"
+   ]
+  ]
+ },
  "virtual_truth": {
   "pitch": {
-   "offset_joint": 0.10166410423225598,
+   "offset_joint": 0.47044940674850705,
    "sign": 1,
-   "kt_err": 0.9724584114361717
+   "kt_err": 0.9724584114361717,
+   "coulomb_nm": 0.25,
+   "viscous_nms": 2.0,
+   "backlash_rad": 0.0
   },
   "roll": {
-   "offset_joint": 0.8686339408751458,
+   "offset_joint": -1.2857742088395516,
    "sign": 1,
-   "kt_err": 1.0187962143520164
+   "kt_err": 1.0187962143520164,
+   "coulomb_nm": 0.25,
+   "viscous_nms": 2.0,
+   "backlash_rad": 0.0
   },
   "yaw": {
-   "offset_joint": -0.4688950906063184,
+   "offset_joint": 0.4219578978424521,
    "sign": 1,
-   "kt_err": 1.01376979365904
+   "kt_err": 1.01376979365904,
+   "coulomb_nm": 0.25,
+   "viscous_nms": 1.0,
+   "backlash_rad": 0.0
   },
   "elbow": {
-   "offset_joint": -0.27566719848529986,
+   "offset_joint": -0.03686256961840684,
    "sign": 1,
-   "kt_err": 1.026104345427266
+   "kt_err": 1.026104345427266,
+   "coulomb_nm": 0.25,
+   "viscous_nms": 1.0,
+   "backlash_rad": 0.0
   },
   "wpitch": {
    "offset_joint": -1.4917844994895557,
    "sign": 1,
-   "kt_err": 1.0214442565952542
+   "kt_err": 1.0214442565952542,
+   "coulomb_nm": 0.04,
+   "viscous_nms": 0.5,
+   "backlash_rad": 0.0
+  }
+ },
+ "virtual_bus": {
+  "buses": {
+   "B1": {
+    "tx": {
+     "sent": 422160,
+     "delivered": 422160,
+     "dropped": 0,
+     "duplicated": 0,
+     "corrupted": 0,
+     "crc_errors": 0,
+     "bus_off_drops": 0,
+     "delay_ms": {
+      "mean": 0.0,
+      "p50": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+     }
+    },
+    "rx": {
+     "sent": 422028,
+     "delivered": 422028,
+     "dropped": 0,
+     "duplicated": 0,
+     "corrupted": 0,
+     "crc_errors": 0,
+     "bus_off_drops": 0,
+     "delay_ms": {
+      "mean": 0.0,
+      "p50": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+     }
+    },
+    "errors": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    }
+   },
+   "B2": {
+    "tx": {
+     "sent": 281440,
+     "delivered": 281440,
+     "dropped": 0,
+     "duplicated": 0,
+     "corrupted": 0,
+     "crc_errors": 0,
+     "bus_off_drops": 0,
+     "delay_ms": {
+      "mean": 0.0,
+      "p50": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+     }
+    },
+    "rx": {
+     "sent": 281352,
+     "delivered": 281352,
+     "dropped": 0,
+     "duplicated": 0,
+     "corrupted": 0,
+     "crc_errors": 0,
+     "bus_off_drops": 0,
+     "delay_ms": {
+      "mean": 0.0,
+      "p50": 0.0,
+      "p99": 0.0,
+      "max": 0.0
+     }
+    },
+    "errors": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    }
+   }
+  },
+  "round_trip_ms": {
+   "n": 702370,
+   "mean": 2.0,
+   "p50": 2.0,
+   "p95": 2.0,
+   "p99": 2.0,
+   "max": 2.0
   }
  }
 }

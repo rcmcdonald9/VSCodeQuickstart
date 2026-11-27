@@ -155,11 +155,25 @@ def measure(seconds=30.0, log=print):
                interval_ms=dict(p50=round(pct(50), 3), p99=round(pct(99), 3), p999=round(pct(99.9), 3), p9999=round(pct(99.99), 3),
                                 max=round(float(e.max()), 3), mean=round(float(e.mean()), 3)),
                over_ms={str(k): int(np.sum(e > k)) for k in (3, 4, 6, 8, 10, 15, 20, 25)},
+               histogram=_hist(e, dt * 1000), platform=_platform(),
                machine=dict(cpus=os.cpu_count(), kernel=platform.release(), python=platform.python_version(),
                             loadavg_before=None, loadavg_after=list(os.getloadavg())),
                note="wall-clock run of BringUp.cycle (supervisor + codec + python-can virtual bus, responder thread in-process); "
                     "no USB-CAN adapter, not the Pi 5, not SCHED_FIFO")
     return res
+
+
+def _hist(e, period_ms):
+    from sw.determinism import histogram
+    return histogram(e, period_ms)
+
+
+def _platform():
+    """RT kernel, CPU temperature and throttle flags at the end of the run (sw/determinism.py; skipped off the Pi)."""
+    from sw.determinism import snapshot
+    s = snapshot()
+    return dict(machine=s["machine"], raspberry_pi=s["raspberry_pi"], preempt_rt=s["rt"]["preempt_rt"], preempt_model=s["rt"]["preempt_model"],
+                cpu_temp_c=s["cpu_temp_c"], throttled=s["throttled_flags"], governor=s["cpu_freq"]["governor"])
 
 
 def write(res):
@@ -174,6 +188,15 @@ def write(res):
          "| Interval between heartbeat edges | ms |", "|---|---|"]
     L += [f"| {k} | {v:.2f} |" for k, v in iv.items()]
     L += ["", "| Intervals longer than | count |", "|---|---|"] + [f"| {k} ms | {v} |" for k, v in res["over_ms"].items()]
+    h = res.get("histogram")
+    if h:
+        L += ["", "| Period histogram (ms) | " + " | ".join(h["bins_ms"]) + " |", "|---|" + "---|" * len(h["bins_ms"]),
+              "| cycles | " + " | ".join(str(c) for c in h["counts"]) + " |", "",
+              f"Jitter |period − {h['period_ms']:.0f} ms|: p99 {h['jitter_ms']['p99']:.2f}, p99.9 {h['jitter_ms']['p999']:.2f}, max {h['jitter_ms']['max']:.2f} ms (SW1: p99 < 1 ms)."]
+    pf = res.get("platform")
+    if pf:
+        L += ["", f"Platform: {pf['machine']}, PREEMPT_RT {'yes' if pf['preempt_rt'] else 'no'} ({pf['preempt_model']}), CPU {pf['cpu_temp_c'] or '—'} °C, "
+              f"throttle flags {', '.join(pf['throttled']) or 'none / not available'}, governor {pf['governor'] or '—'}."]
     if "loaded" in res:
         ld = res["loaded"]
         L += ["", f"**Loaded pass:** the same loop for {ld['seconds']:.0f} s ({ld['cycles']} intervals) with {ld['busy_processes']} busy-loop processes "
