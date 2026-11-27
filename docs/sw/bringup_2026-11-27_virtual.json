@@ -1,0 +1,718 @@
+{
+ "date": "2026-11-27",
+ "bus": "virtual bus",
+ "virtual": true,
+ "joints_online": [
+  "wpitch"
+ ],
+ "blocked": {
+  "pitch": [
+   "CONTROL",
+   "FEEDBACK",
+   "PARAM_READ",
+   "PARAM_REPLY",
+   "REG.fw_version",
+   "REG.esc_id",
+   "REG.mst_id",
+   "STATUS_OK",
+   "PARAM_WRITE",
+   "PARAM_SAVE",
+   "TORQUE_LIMIT_REG",
+   "TORQUE_LIMIT_UNIT",
+   "REG.can_timeout",
+   "CAN_TIMEOUT_UNIT_S",
+   "CODEC",
+   "RANGES",
+   "ENABLE",
+   "DISABLE",
+   "CLEAR_ERROR",
+   "REFRESH",
+   "STATUS_ENABLED"
+  ],
+  "roll": [
+   "CONTROL",
+   "FEEDBACK",
+   "PARAM_READ",
+   "PARAM_REPLY",
+   "REG.fw_version",
+   "REG.esc_id",
+   "REG.mst_id",
+   "STATUS_OK",
+   "PARAM_WRITE",
+   "PARAM_SAVE",
+   "TORQUE_LIMIT_REG",
+   "TORQUE_LIMIT_UNIT",
+   "REG.can_timeout",
+   "CAN_TIMEOUT_UNIT_S",
+   "CODEC",
+   "RANGES",
+   "ENABLE",
+   "DISABLE",
+   "CLEAR_ERROR",
+   "REFRESH",
+   "STATUS_ENABLED"
+  ],
+  "yaw": [
+   "CONTROL",
+   "FEEDBACK",
+   "PARAM_READ",
+   "PARAM_REPLY",
+   "REG.fw_version",
+   "REG.esc_id",
+   "REG.mst_id",
+   "STATUS_OK",
+   "PARAM_WRITE",
+   "PARAM_SAVE",
+   "TORQUE_LIMIT_REG",
+   "TORQUE_LIMIT_UNIT",
+   "REG.can_timeout",
+   "CAN_TIMEOUT_UNIT_S",
+   "CODEC",
+   "RANGES",
+   "ENABLE",
+   "DISABLE",
+   "CLEAR_ERROR",
+   "REFRESH",
+   "STATUS_ENABLED"
+  ],
+  "elbow": [
+   "CONTROL",
+   "FEEDBACK",
+   "PARAM_READ",
+   "PARAM_REPLY",
+   "REG.fw_version",
+   "REG.esc_id",
+   "REG.mst_id",
+   "STATUS_OK",
+   "PARAM_WRITE",
+   "PARAM_SAVE",
+   "TORQUE_LIMIT_REG",
+   "TORQUE_LIMIT_UNIT",
+   "REG.can_timeout",
+   "CAN_TIMEOUT_UNIT_S",
+   "CODEC",
+   "RANGES",
+   "ENABLE",
+   "DISABLE",
+   "CLEAR_ERROR",
+   "REFRESH",
+   "STATUS_ENABLED"
+  ]
+ },
+ "steps": {
+  "enumerate": {
+   "status": "PASS",
+   "summary": "online: wpitch; blocked: pitch, roll, yaw, elbow",
+   "checks": [
+    [
+     "CAN map valid (IDs, terminations, ratios, bus load \u2264 50 %)",
+     true,
+     "B1 46%, B2 46%"
+    ],
+    [
+     "contactor closed (drives powered, all disabled)",
+     true,
+     ""
+    ],
+    [
+     "wpitch (dm_j4310, B2 0x05/0x15)",
+     true,
+     "PASS (fw 0x0105, hw 0x0101, serial 7804993)"
+    ],
+    [
+     "at least one joint online",
+     true,
+     "wpitch"
+    ]
+   ],
+   "notes": [
+    "\u26d4 pitch (gim6010, B1 0x01/0x11) BLOCKED (left out, held in the fixture): protocol table TODO: CONTROL, FEEDBACK, PARAM_READ, PARAM_REPLY, REG.fw_version, REG.esc_id, REG.mst_id, STATUS_OK, PARAM_WRITE, PARAM_SAVE, TORQUE_LIMIT_REG, TORQUE_LIMIT_UNIT, REG.can_timeout, CAN_TIMEOUT_UNIT_S, CODEC, RANGES, ENABLE, DISABLE, CLEAR_ERROR, REFRESH, STATUS_ENABLED",
+    "\u26d4 roll (gim6010, B1 0x02/0x12) BLOCKED (left out, held in the fixture): protocol table TODO: CONTROL, FEEDBACK, PARAM_READ, PARAM_REPLY, REG.fw_version, REG.esc_id, REG.mst_id, STATUS_OK, PARAM_WRITE, PARAM_SAVE, TORQUE_LIMIT_REG, TORQUE_LIMIT_UNIT, REG.can_timeout, CAN_TIMEOUT_UNIT_S, CODEC, RANGES, ENABLE, DISABLE, CLEAR_ERROR, REFRESH, STATUS_ENABLED",
+    "\u26d4 yaw (gim6010, B1 0x03/0x13) BLOCKED (left out, held in the fixture): protocol table TODO: CONTROL, FEEDBACK, PARAM_READ, PARAM_REPLY, REG.fw_version, REG.esc_id, REG.mst_id, STATUS_OK, PARAM_WRITE, PARAM_SAVE, TORQUE_LIMIT_REG, TORQUE_LIMIT_UNIT, REG.can_timeout, CAN_TIMEOUT_UNIT_S, CODEC, RANGES, ENABLE, DISABLE, CLEAR_ERROR, REFRESH, STATUS_ENABLED",
+    "\u26d4 elbow (gim6010, B2 0x04/0x14) BLOCKED (left out, held in the fixture): protocol table TODO: CONTROL, FEEDBACK, PARAM_READ, PARAM_REPLY, REG.fw_version, REG.esc_id, REG.mst_id, STATUS_OK, PARAM_WRITE, PARAM_SAVE, TORQUE_LIMIT_REG, TORQUE_LIMIT_UNIT, REG.can_timeout, CAN_TIMEOUT_UNIT_S, CODEC, RANGES, ENABLE, DISABLE, CLEAR_ERROR, REFRESH, STATUS_ENABLED",
+    "\u2139\ufe0f shoulder_node (rp2040_node): not handled by this tool (no protocol yet)",
+    "\u2139\ufe0f elbow_node (rp2040_node): not handled by this tool (no protocol yet)"
+   ],
+   "data": {
+    "devices": [
+     {
+      "joint": "pitch",
+      "kind": "gim6010",
+      "bus": "B1",
+      "id": 1,
+      "fb_id": 17,
+      "ratio": 3.0,
+      "status": "BLOCKED",
+      "why": "protocol table TODO: CONTROL, FEEDBACK, PARAM_READ, PARAM_REPLY, REG.fw_version, REG.esc_id, REG.mst_id, STATUS_OK, PARAM_WRITE, PARAM_SAVE, TORQUE_LIMIT_REG, TORQUE_LIMIT_UNIT, REG.can_timeout, CAN_TIMEOUT_UNIT_S, CODEC, RANGES, ENABLE, DISABLE, CLEAR_ERROR, REFRESH, STATUS_ENABLED"
+     },
+     {
+      "joint": "roll",
+      "kind": "gim6010",
+      "bus": "B1",
+      "id": 2,
+      "fb_id": 18,
+      "ratio": 4.444,
+      "status": "BLOCKED",
+      "why": "protocol table TODO: CONTROL, FEEDBACK, PARAM_READ, PARAM_REPLY, REG.fw_version, REG.esc_id, REG.mst_id, STATUS_OK, PARAM_WRITE, PARAM_SAVE, TORQUE_LIMIT_REG, TORQUE_LIMIT_UNIT, REG.can_timeout, CAN_TIMEOUT_UNIT_S, CODEC, RANGES, ENABLE, DISABLE, CLEAR_ERROR, REFRESH, STATUS_ENABLED"
+     },
+     {
+      "joint": "yaw",
+      "kind": "gim6010",
+      "bus": "B1",
+      "id": 3,
+      "fb_id": 19,
+      "ratio": 2.0,
+      "status": "BLOCKED",
+      "why": "protocol table TODO: CONTROL, FEEDBACK, PARAM_READ, PARAM_REPLY, REG.fw_version, REG.esc_id, REG.mst_id, STATUS_OK, PARAM_WRITE, PARAM_SAVE, TORQUE_LIMIT_REG, TORQUE_LIMIT_UNIT, REG.can_timeout, CAN_TIMEOUT_UNIT_S, CODEC, RANGES, ENABLE, DISABLE, CLEAR_ERROR, REFRESH, STATUS_ENABLED"
+     },
+     {
+      "joint": "elbow",
+      "kind": "gim6010",
+      "bus": "B2",
+      "id": 4,
+      "fb_id": 20,
+      "ratio": 2.0,
+      "status": "BLOCKED",
+      "why": "protocol table TODO: CONTROL, FEEDBACK, PARAM_READ, PARAM_REPLY, REG.fw_version, REG.esc_id, REG.mst_id, STATUS_OK, PARAM_WRITE, PARAM_SAVE, TORQUE_LIMIT_REG, TORQUE_LIMIT_UNIT, REG.can_timeout, CAN_TIMEOUT_UNIT_S, CODEC, RANGES, ENABLE, DISABLE, CLEAR_ERROR, REFRESH, STATUS_ENABLED"
+     },
+     {
+      "joint": "wpitch",
+      "kind": "dm_j4310",
+      "bus": "B2",
+      "id": 5,
+      "fb_id": 21,
+      "ratio": 1.0,
+      "status": "PASS",
+      "why": "",
+      "fw": 261,
+      "hw": 257,
+      "serial": 7804993,
+      "ranges": {
+       "p_max": 12.5,
+       "v_max": 30.0,
+       "t_max": 10.0
+      },
+      "status_code": 0,
+      "temp": 34
+     }
+    ],
+    "not_handled": [
+     "shoulder_node (rp2040_node): not handled by this tool (no protocol yet)",
+     "elbow_node (rp2040_node): not handled by this tool (no protocol yet)"
+    ],
+    "blocked": {
+     "pitch": [
+      "CONTROL",
+      "FEEDBACK",
+      "PARAM_READ",
+      "PARAM_REPLY",
+      "REG.fw_version",
+      "REG.esc_id",
+      "REG.mst_id",
+      "STATUS_OK",
+      "PARAM_WRITE",
+      "PARAM_SAVE",
+      "TORQUE_LIMIT_REG",
+      "TORQUE_LIMIT_UNIT",
+      "REG.can_timeout",
+      "CAN_TIMEOUT_UNIT_S",
+      "CODEC",
+      "RANGES",
+      "ENABLE",
+      "DISABLE",
+      "CLEAR_ERROR",
+      "REFRESH",
+      "STATUS_ENABLED"
+     ],
+     "roll": [
+      "CONTROL",
+      "FEEDBACK",
+      "PARAM_READ",
+      "PARAM_REPLY",
+      "REG.fw_version",
+      "REG.esc_id",
+      "REG.mst_id",
+      "STATUS_OK",
+      "PARAM_WRITE",
+      "PARAM_SAVE",
+      "TORQUE_LIMIT_REG",
+      "TORQUE_LIMIT_UNIT",
+      "REG.can_timeout",
+      "CAN_TIMEOUT_UNIT_S",
+      "CODEC",
+      "RANGES",
+      "ENABLE",
+      "DISABLE",
+      "CLEAR_ERROR",
+      "REFRESH",
+      "STATUS_ENABLED"
+     ],
+     "yaw": [
+      "CONTROL",
+      "FEEDBACK",
+      "PARAM_READ",
+      "PARAM_REPLY",
+      "REG.fw_version",
+      "REG.esc_id",
+      "REG.mst_id",
+      "STATUS_OK",
+      "PARAM_WRITE",
+      "PARAM_SAVE",
+      "TORQUE_LIMIT_REG",
+      "TORQUE_LIMIT_UNIT",
+      "REG.can_timeout",
+      "CAN_TIMEOUT_UNIT_S",
+      "CODEC",
+      "RANGES",
+      "ENABLE",
+      "DISABLE",
+      "CLEAR_ERROR",
+      "REFRESH",
+      "STATUS_ENABLED"
+     ],
+     "elbow": [
+      "CONTROL",
+      "FEEDBACK",
+      "PARAM_READ",
+      "PARAM_REPLY",
+      "REG.fw_version",
+      "REG.esc_id",
+      "REG.mst_id",
+      "STATUS_OK",
+      "PARAM_WRITE",
+      "PARAM_SAVE",
+      "TORQUE_LIMIT_REG",
+      "TORQUE_LIMIT_UNIT",
+      "REG.can_timeout",
+      "CAN_TIMEOUT_UNIT_S",
+      "CODEC",
+      "RANGES",
+      "ENABLE",
+      "DISABLE",
+      "CLEAR_ERROR",
+      "REFRESH",
+      "STATUS_ENABLED"
+     ]
+    },
+    "wall_s": 0.01
+   }
+  },
+  "limits": {
+   "status": "PASS",
+   "summary": "1 drive(s): rated torque limit + 20 ms CAN timeout, saved and read back",
+   "checks": [
+    [
+     "wpitch: torque limit 3.00 N\u00b7m at the joint = 3.000 Nm in the drive, CAN timeout 20 ms",
+     true,
+     "read back 3.0, 400"
+    ]
+   ],
+   "notes": [],
+   "data": {
+    "limits": [
+     {
+      "joint": "wpitch",
+      "limit_joint_nm": 3.0,
+      "drive_reg": "t_max",
+      "written": 3.0,
+      "readback": 3.0,
+      "can_timeout_counts": 400,
+      "can_timeout_readback": 400,
+      "feedback_t_max": 3.0
+     }
+    ],
+    "kind": "rated",
+    "wall_s": 0.0
+   }
+  },
+  "safety": {
+   "status": "PASS",
+   "summary": "e-stop \u2192 contactor 2.0 ms, watchdog 8.0 ms, drive CAN timeout OK, limits kept over a power cycle",
+   "checks": [
+    [
+     "healthy idle: 100 cycles, heartbeat every cycle, contactor closed",
+     true,
+     "100/100"
+    ],
+    [
+     "e-stop: contactor opens (aux contact)",
+     true,
+     "2 ms after the press"
+    ],
+    [
+     "e-stop: supervisor latched, no heartbeat",
+     true,
+     "['e-stop', 'feedback missing, NaN or stale']"
+    ],
+    [
+     "e-stop: drives unpowered (no CAN replies)",
+     true,
+     "0 ms after the aux contact"
+    ],
+    [
+     "e-stop \u2192 contactor open within the SW2 budget (50 ms)",
+     true,
+     "2 ms"
+    ],
+    [
+     "reset refused while the button is pressed",
+     true,
+     ""
+    ],
+    [
+     "drive limits survive the power cycle (saved to flash)",
+     true,
+     "{'wpitch': (3.0, 400)}"
+    ],
+    [
+     "hung loop (no heartbeat 30 ms) \u2192 watchdog opens the contactor",
+     true,
+     "8.0 ms"
+    ],
+    [
+     "watchdog: contactor open \u2264 9.6 ms after the last heartbeat (8 ms monostable + 20 %)",
+     true,
+     "8.0 ms"
+    ],
+    [
+     "drive CAN timeout: drives disable themselves 20 ms after the last command",
+     true,
+     "{'wpitch': 13}"
+    ]
+   ],
+   "notes": [],
+   "data": {
+    "estop_ms": 2.0,
+    "watchdog_ms": 8.0,
+    "wall_s": 0.05
+   }
+  },
+  "calibrate": {
+   "status": "PASS",
+   "summary": "1/1 joints zeroed against their hard stops",
+   "checks": [
+    [
+     "wpitch: stall at the reference stop is a stiff hard stop",
+     true,
+     "\u0394q 0.02\u00b0 between 1.2\u00d7 and 0.6\u00d7 push (limit 1.1\u00b0)"
+    ],
+    [
+     "wpitch: drive torque report consistent with its limit at the stop",
+     true,
+     "0.85 N\u00b7m reported vs limit 0.85 (the report is mapped to \u00b1T_MAX: the sag test in 'gravity' proves the clamp)"
+    ],
+    [
+     "wpitch: span stop-to-stop 250.2\u00b0 vs 250.0\u00b0 expected",
+     true,
+     "+0.1% (belt ratio or stop angles wrong if > 2 %)"
+    ],
+    [
+     "wpitch: zeroed against the upper stop (125\u00b0), parked at 0\u00b0",
+     true,
+     "offset -0.6895 rad, calibration torque 0.85 N\u00b7m (gravity max 0.39)"
+    ],
+    [
+     "all online joints calibrated",
+     true,
+     "wpitch"
+    ]
+   ],
+   "notes": [],
+   "data": {
+    "joints": [
+     {
+      "joint": "wpitch",
+      "g_max_nm": 0.393,
+      "t_cal_nm": 0.851,
+      "stop_raw_rad": 1.49214,
+      "stop_deg": 125,
+      "stiffness_dq_deg": 0.022,
+      "tau_at_stop_nm": 0.845,
+      "offset_rad": -0.68952,
+      "span_measured_deg": 250.17,
+      "span_expected_deg": 250.0
+     }
+    ],
+    "offsets": {
+     "wpitch": -0.6895199612697112
+    },
+    "signs": {
+     "wpitch": 1
+    },
+    "wall_s": 6.04
+   }
+  },
+  "jog": {
+   "status": "PASS",
+   "summary": "wpitch max err 0.49\u00b0 peak 1.194 rad/s",
+   "checks": [
+    [
+     "wpitch: jog [25.0, -25.0, 0.0]\u00b0 at \u2264 1.26 rad/s",
+     true,
+     "peak 1.19 rad/s, tracking max 0.49\u00b0 rms 0.35\u00b0, ends reached within 0.4\u00b0"
+    ],
+    [
+     "wpitch: moved + first as commanded (operator)",
+     true,
+     "operator saw 1, corr 1.000"
+    ]
+   ],
+   "notes": [],
+   "data": {
+    "joints": [
+     {
+      "joint": "wpitch",
+      "ends_deg": [
+       25.0,
+       -25.0,
+       0.0
+      ],
+      "speed_limit": 1.257,
+      "peak_speed": 1.194,
+      "max_track_err_deg": 0.49,
+      "rms_track_err_deg": 0.35,
+      "peak_torque_nm": 1.171,
+      "observer_peak_nm": 0.166,
+      "direction": 1,
+      "corr": 1.0,
+      "overrides": {
+       "velocity clamp": 1
+      }
+     }
+    ],
+    "supervisor_overrides": {
+     "velocity clamp": 1
+    },
+    "wall_s": 0.84
+   }
+  },
+  "gravity": {
+   "status": "PASS",
+   "summary": "residual max wpitch 0.09 N\u00b7m",
+   "checks": [
+    [
+     "wpitch: gravity residual |measured \u2212 twin| \u2264 20% of rated",
+     true,
+     "max 0.092 N\u00b7m (3.1%), mean -0.067, friction \u2264 0.011, noise \u03c3 0.017"
+    ],
+    [
+     "wpitch: drive enforces its torque limit (limit 0.20 < gravity 0.39 N\u00b7m \u2192 sags)",
+     true,
+     "moved 3.02\u00b0 in 0.13 s"
+    ]
+   ],
+   "notes": [],
+   "data": {
+    "poses": [
+     {
+      "pose": {
+       "wpitch": 30.0
+      },
+      "q": [
+       0.529
+      ],
+      "twin": [
+       -0.3397
+      ],
+      "measured": [
+       -0.4145
+      ],
+      "residual": [
+       -0.0748
+      ],
+      "friction": [
+       0.0074
+      ],
+      "noise": [
+       0.0152
+      ]
+     },
+     {
+      "pose": {
+       "wpitch": -20.0
+      },
+      "q": [
+       -0.3429
+      ],
+      "twin": [
+       -0.3706
+      ],
+      "measured": [
+       -0.4598
+      ],
+      "residual": [
+       -0.0892
+      ],
+      "friction": [
+       0.0112
+      ],
+      "noise": [
+       0.0158
+      ]
+     },
+     {
+      "pose": {
+       "wpitch": 45.0
+      },
+      "q": [
+       0.7898
+      ],
+      "twin": [
+       -0.277
+      ],
+      "measured": [
+       -0.3388
+      ],
+      "residual": [
+       -0.0618
+      ],
+      "friction": [
+       0.0072
+      ],
+      "noise": [
+       0.0172
+      ]
+     },
+     {
+      "pose": {
+       "wpitch": 0.0
+      },
+      "q": [
+       0.0064
+      ],
+      "twin": [
+       -0.3935
+      ],
+      "measured": [
+       -0.4854
+      ],
+      "residual": [
+       -0.0919
+      ],
+      "friction": [
+       0.0107
+      ],
+      "noise": [
+       0.0149
+      ]
+     },
+     {
+      "pose": {
+       "wpitch": 80.0
+      },
+      "q": [
+       1.3974
+      ],
+      "twin": [
+       -0.0679
+      ],
+      "measured": [
+       -0.084
+      ],
+      "residual": [
+       -0.0161
+      ],
+      "friction": [
+       0.0061
+      ],
+      "noise": [
+       0.0144
+      ]
+     }
+    ],
+    "joints": [
+     "wpitch"
+    ],
+    "residual_max": [
+     0.0919
+    ],
+    "residual_mean": [
+     -0.0667
+    ],
+    "friction_max": [
+     0.0112
+    ],
+    "noise_max": [
+     0.0172
+    ],
+    "sag_test": {
+     "wpitch": {
+      "tested": true,
+      "limit_nm": 0.19673545441412152,
+      "gravity_nm": 0.39347090882824304,
+      "moved_deg": 3.0162575619155154,
+      "secs": 0.13400000000016377,
+      "sagged": "True"
+     }
+    },
+    "collision_thresholds": {
+     "thr": [
+      null,
+      null,
+      null,
+      null,
+      0.3,
+      null
+     ],
+     "rel": 0.1,
+     "joints": [
+      "pitch",
+      "roll",
+      "yaw",
+      "elbow",
+      "wpitch",
+      "wroll"
+     ],
+     "basis": {
+      "wpitch": {
+       "observer_peak": 0.166,
+       "static": 0.1719
+      }
+     },
+     "rule": "thr = max(0.3, 1.5 \u00d7 max(jog observer peak, |static residual| + friction + 4\u03c3)) N\u00b7m; rel 10 % of |\u03c4|"
+    },
+    "wall_s": 4.07
+   }
+  }
+ },
+ "calibration": {
+  "offsets": {
+   "wpitch": -0.6895199612697112
+  },
+  "signs": {
+   "wpitch": 1
+  }
+ },
+ "gim_todo": [
+  "CONTROL",
+  "FEEDBACK",
+  "PARAM_READ",
+  "PARAM_REPLY",
+  "REG.fw_version",
+  "REG.esc_id",
+  "REG.mst_id",
+  "STATUS_OK",
+  "PARAM_WRITE",
+  "PARAM_SAVE",
+  "TORQUE_LIMIT_REG",
+  "TORQUE_LIMIT_UNIT",
+  "REG.can_timeout",
+  "CAN_TIMEOUT_UNIT_S",
+  "CODEC",
+  "RANGES",
+  "ENABLE",
+  "DISABLE",
+  "CLEAR_ERROR",
+  "REFRESH",
+  "STATUS_ENABLED"
+ ],
+ "cycles": 27141,
+ "wall_s": 11.0,
+ "virtual_truth": {
+  "wpitch": {
+   "offset_joint": -0.6906398587083891,
+   "sign": 1,
+   "kt_err": 0.9724584114361717
+  }
+ }
+}
