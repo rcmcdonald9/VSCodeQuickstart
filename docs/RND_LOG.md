@@ -1204,3 +1204,9 @@ One long push instead of half-hour runs. In order:
 - Wave 1 launched (4 engineers): arm CAD (D24 bolted cartridges, D19 pitch + elbow, narrower elbow), shoulder roll (D24 inline GIM8108-36 behind a params switch, D19 belt roll), R17 pinch.py + printable covers + head tilt pivot, non-CAD Astra criticals (A5 v2, balancer sign, clock-spring capacity) + software collision detection + BOM cost pass.
 - New `python -m rnd.check`: maps changed files → checks, runs light ones 3-wide, heavy ones serially, logs to rnd/out/check_logs/.
 - Fable review pass added (owner): once per day, after a significant merged wave.
+
+### 2026-11-27 — Wave 1, track D merged (non-CAD Astra criticals, software, cost)
+- A5 v2: clamp sized for 320 J / 2 kW (2 × RH-50 0.56 Ω + 2 × IRFB7530 at 26.5 V), switched pre-charge, forced bus discharge → torque off in 26 ms, bench catch ≤ 50 mm. M1 kit $1,491 → $1,706.
+- Balancer: pin B is opposite the arm in shoulder.py (spring adds to gravity); real ISO 10243 spring is 18.7 N/mm → b 20, a 40–60, 35 % max. shoulder.py change queued for the arm track (exact edit in queue item 0); cable must clear the Ø40 shaft.
+- Clock springs with ribbon thickness: yaw 279° vs 360° → r_out 42.5 mm or ribbon ≤ 1.8 mm; two CAN pairs need an 11.3 mm cavity; wrist roll 302° vs 432°. harness 6/6 → 3/6 (now honest).
+- sw/collision.py momentum observer: 0 false trips over 9,000 cycles with 20 lb, trips ≤ 18 ms → compliant hold. BOM $5,030 → $4,898 landed.
