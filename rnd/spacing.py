@@ -58,7 +58,7 @@ RUNNING = [("bracket", "idler_roller"), ("head_drive_stub", "tilt_sleeve"), ("yo
            ("roll_gim_housing", "roll_outflange"), ("roll_link", "roll_arm_rear"), ("roll_gim_housing", "roll_arm_rear"),   # Neon 6d: the hard-stop bushes are bolted to the housing (were printed lugs on the roll link): 1.5° of over-travel at the software limit
            ("roll_spring_ring", "roll_spring_hub"),
            ("enc_pcb", "pitch_hub_crank"), ("enc_pcb", "yaw_shaft"), ("enc_pcb", "roll_spring_hub"), ("enc_pcb", "enc_magnet")]   # M3: AS5048A air gaps (board ↔ magnet side, one bearing set)   # D24 inline roll: motor bearing, 61806 set
-MOVING = [("yaw_plate_bot", "yaw_flange"), ("e_cassette", "e_bigpulley"), ("roll_shaft", "yaw_shaft"), ("yaw_block", "yaw_shaft"), ("upper_bone", "forearm")]
+MOVING = [("shaft", "idler_roller"), ("al_pulley", "idler_roller"), ("yaw_plate_bot", "yaw_flange"), ("e_cassette", "e_bigpulley"), ("roll_shaft", "yaw_shaft"), ("yaw_block", "yaw_shaft"), ("upper_bone", "forearm")]
 
 
 def _match(a, b, table):

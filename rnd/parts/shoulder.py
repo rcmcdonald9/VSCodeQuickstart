@@ -211,8 +211,11 @@ def idler():
     0.45 of the way to the 60T; the lower side is the cartridge's exit path through wall A's U-slot). Stage frame."""
     from .. import belts as _b
     from .belt_stage import PITCH as _P
-    g = _b.idler_geom("shoulder_pitch", 20, 60, BELT_C, _b.STOCK_TEETH["shoulder_pitch"], MOT_PEAK * 1000 / (20 * _P / math.pi / 2))
-    g["wall_b_out"], g["axle_top"] = -40.0, -1.0          # M5 × 40 + washer: tip 1 mm under wall A's face (the can flange sits there)
+    sp = dict(_b.IDLERS["shoulder_pitch"])
+    if MOT is cm.MOTOR_8108:                               # D20: PU steel-cord belt (cartridge_m.parts_list), EA ≈ 150 kN (ESTIMATE)
+        sp["EA"] = 150e3
+    g = _b.idler_geom("shoulder_pitch", 20, 60, BELT_C, _b.STOCK_TEETH["shoulder_pitch"], MOT_PEAK * 1000 / (20 * _P / math.pi / 2), sp)
+    g["wall_b_out"], g["axle_top"] = -40.0, -2.0          # M5 × 40 cut to 38: tip 0.3 mm short of wall A's blind-slot bottom (z −1.7)
     return g
 
 
@@ -234,12 +237,12 @@ def _wall(y: float, inner: bool) -> Part:
     if inner:
         from .belt_stage import wall_a_cuts_v4
         w -= _ST * wall_a_cuts_v4(MOT, EAR_SITE)   # D26: Ø40.6 pulley hole + U-slot exit downward, spigot counterbore, ear bolts + nut pockets
-        w -= _ST * (idler_cuts(g, -6.5, 0.5) + idler_nut_pocket(g))   # D26: idler axle slot + captive M5 nut pocket (under the cartridge flange's edge)
+        w -= _ST * idler_cuts(g, -6.5, -1.7)   # D26: blind slot for the idler axle's tip (pulley side; the cartridge face stays whole)
     else:
         w -= Pos(-BELT_C, y, 0) * Rot(-90, 0, 0) * Cylinder(19.1, WALL_T + 1)       # Ø38.2 seat: the bonded 6001 bushing (D26)
         from .belt_stage import wall_b_cuts
         w -= _ST * wall_b_cuts(MOT, EAR_SITE)   # Neon #2 F2: the pitch4 rear ear pair is screwed from the pulley side through the outer wall (Ø10 driver holes)
-        w -= _ST * idler_cuts(g, -40.5, -33.5)  # D26: idler axle slot (head + jack screw on the outboard face)
+        w -= _ST * (idler_cuts(g, -40.5, -33.5) + idler_nut_pocket(g))  # D26: idler axle slot (head + jack screw outboard) + captive nut pocket (pulley side)
     # lightening (loop 8 diet): keep ≥ 10 mm of material around both bearing seats and along the back web
     for cx, cz, lx, lz in (LIGHTEN if inner else LIGHTEN_OUT):
         w -= Pos(cx, y, cz) * Rot(-90, 0, 0) * fillet(Box(lx, lz, WALL_T + 1).edges().filter_by(Axis.Z), 5)

@@ -28,7 +28,10 @@ MOTOR = dict(od=80.0, h=40.0,                     # with SDC104 driver (manual: 
 # D63 Oldham (nose r 32.5 / 35.5), ears at r 56 outside the Ø102.6 sleeve (22 / (4 × 56 mm) ≈ 98 N per screw), the shared
 # Ø12 stage with a steel keyed 20T (belt_stage.AL_PULLEY note) and an 18 N·m flash torque limit; parts_list(MOTOR_8108).
 MOTOR_8108 = dict(od=96.0, h=50.0, out_holes=8, out_pcd=30.0, rear_holes=6, rear_pcd=70.0,
-                  oldham=63.0, nose=(32.5, 35.5), flange=(84.0, 37.0))   # D63: the 22 N·m stall (D50 ≈ 14.8 N·m would be 0.67×)
+                  oldham=63.0, nose=(29.0, 32.0), flange=(84.0, 37.0))   # D63: the 22 N·m stall (D50 ≈ 14.8 N·m would be 0.67×)
+# D26 (2026-11-27): no D63 Oldham in the nose any more, so the D20 nose bore shrinks 32.5 → 29.0 (the stub's Ø42 flange and
+# the output's Ø56 circle on SteadyWin's GIM8108-9 drawing, ESTIMATE as the output boss, both pass) and the centring lip
+# r 35.5 → 32.0: the pitch idler's blind slot in wall A then clears the lip's counterbore.
 MOTORS = {"GIM6010-8": MOTOR, "GIM8108-8": MOTOR_8108}
 WALL, FLOOR = 3.0, 4.0
 NECK, NECK_R = 5.0, 33.0      # spacer under the male flange: room for the collar teeth behind the lugs
@@ -466,7 +469,7 @@ def parts_list_direct(m: dict | None = None, site: str = "elbow", idler: bool = 
         out.insert(-1, ("flange ear screws (reversed)", EAR["rev_screw"], n_rev))
     if idler:
         out += [("idler bearings", "625-2RS (5 × 16 × 5)", 2),
-                ("idler axle", "ISO 4762 M5 × 40 8.8 (plain shank under the bearings) + ISO 4032 M5 nut (captive in wall A) + 2 aluminium Ø8 × 5.3 round spacers", 1),
+                ("idler axle", "ISO 4762 M5 × 40 8.8 cut to 38 (plain shank under the bearings) + ISO 4032 M5 nut (captive in wall B) + 2 aluminium Ø8 × 5.3 round spacers", 1),
                 ("idler jack screw", "ISO 4762 M4 × 20 + M4 nut in the wall-B lug (pushes the axle along its slot)", 1),
                 ("idler roller", "printed PETG-CF flat roller Ø25 × 16 with 1.5 mm flanges (print plan)", 1)]
     if d20:

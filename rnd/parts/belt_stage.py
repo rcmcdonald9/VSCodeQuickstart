@@ -332,7 +332,8 @@ def ear_boss(motor: dict | None = None, site: str = "default", r: float = 7.5, t
 #     floats axially in its bushing). Wall A's bearing, both eccentric bushings, the Oldham set, its 6061 motor hub, the
 #     11 mm key and the separate Ø12 rod go.
 #   - The belt is tensioned by a slotted idler (rnd/belts.py IDLERS / idler_geom): a back-side flat roller or an inside
-#     toothed idler on 2 × 625-2RS round an M5 axle bolt that clamps both walls through slots, held by an M4 jack screw.
+#     toothed idler on 2 × 625-2RS round an M5 axle bolt clamped to wall B (captive nut in a slot pocket), its tip in a
+#     blind slot in wall A, held by an M4 jack screw.
 #   - Swap (R14 d): release the idler, lift the belt off the small pulley (it stays on the big pulley and the idler), 4
 #     ear screws, and the cartridge comes out WITH its stub, pulley and 6001 (the bonded bushing stays in wall B).
 # Stage frame as v3 (flange plane z = 0, cartridge +Z, wall A z −6 … 0, wall B pulley face z −34).
@@ -380,7 +381,7 @@ def idler_parts(idler: dict):
     for z in (zc - w / 2 - 1.5, zc + w / 2):
         roll += Pos(x, y, z) * Cylinder(r + idler["flange"], 1.5, align=MINZ)
     roll -= Pos(x, y, -200) * Cylinder(2.6, 400, align=MINZ)
-    z0, z1 = idler.get("wall_b_out", -40.0) - 5.0, idler.get("axle_top", -0.5)    # M5 × 40 ISO 4762: head (5) on wall B, tip flush in the captive nut in wall A
+    z0, z1 = idler.get("wall_b_out", -40.0) - 5.0, idler.get("axle_top", -2.0)    # ISO 4762 M5 × 40 cut to 38: head (5) on wall B, tip in wall A's blind slot
     axle = Pos(x, y, z0) * Cylinder(2.5, z1 - z0, align=MINZ)
     return [("idler_roller", roll, "dark"), ("idler_axle", axle, "steel")]
 
@@ -397,16 +398,17 @@ def idler_cuts(idler: dict, z0: float, z1: float, grow: float = 0.0) -> Part:
     return c
 
 
-def idler_nut_pocket(idler: dict, depth: float = 4.1) -> Part:
-    """Captive ISO 4032 M5 nut (s 8, m 4) on wall A's cartridge-side face (stage z −depth … 0): a slot pocket 8.1 wide along
-    the idler's travel, so the nut slides with the axle but cannot turn (the bolt is turned from its head on wall B's outer
-    face). It sits partly under the cartridge flange's rim; the 1.9 mm floor is in compression between the nut and the
-    axle's spacer."""
+def idler_nut_pocket(idler: dict, z_face: float = -34.0, depth: float = 4.1) -> Part:
+    """Captive ISO 4032 M5 nut (s 8, m 4) in a slot pocket (8.1 wide, along the idler's travel) in wall B's PULLEY-side face
+    (stage z z_face − depth … z_face): it slides with the axle but cannot turn, so the bolt is set from its head on wall B's
+    outer face. Head + nut clamp wall B alone (its 1.9 mm floor in compression); the axle's tip runs in a blind slot in wall
+    A's pulley side (idler_cuts to z −1.7), so nothing of the idler reaches wall A's cartridge face, where the cartridge's
+    flange and centring lip sit (both motor sets)."""
     MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
     (xa, ya), (xb, yb) = idler["slot"]
     L = math.hypot(xb - xa, yb - ya)
     ang = math.degrees(math.atan2(yb - ya, xb - xa)) if L > 1e-6 else 0.0
-    return Pos((xa + xb) / 2, (ya + yb) / 2, -depth) * Rot(0, 0, ang) * Box(L + 9.3, 8.1, depth + 0.01, align=MINZ)
+    return Pos((xa + xb) / 2, (ya + yb) / 2, z_face - depth) * Rot(0, 0, ang) * Box(L + 9.3, 8.1, depth + 0.01, align=MINZ)
 
 
 def idler_boss(idler: dict, z0: float, z1: float, r: float = 7.0) -> Part:
