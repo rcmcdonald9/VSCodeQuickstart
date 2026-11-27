@@ -1348,3 +1348,8 @@ One long push instead of half-hour runs. In order:
 - 4 flange ears at every cartridge site (was yaw 2/70°, lift 2/80°, pitch 3/110°): yaw side-fed nuts, pitch4 rear pair screwed from the pulley side through the outer wall (wall_b_cuts), lift4 wall towers (upper.py edit pending the neck track). Tipping ≥ 10× at 30 % preload (was 0.8×). D20 ears slip into bearing at stall (≈ 4 MPa).
 - Printed ASA Oldham motor tongue rejected (0.74× friction at peak) → 6061 motor-side hub; D50 sets on every GIM6010 stage, D63 for D20. Elbow D19 shaft: bonded 6061 Ø30 × 1.5 core takes ≈ 85 % (print 5.0/14 → 0.7/2.0 MPa). Yaw centre 80.93 mm for a stock 315-5M belt (was 93 % of the adjuster).
 - BOM/kit/print plan/build guide consolidation running (W10); then one budget picture for the owner.
+
+### 2026-11-27 — W10 merged: wave-8 hardware priced honestly → BOM $7,949 landed
+- Was $5,845. Drivers: sourced D50 Oldhams + 6061 motor hubs on all 7 GIM6010 stages +$912 (the old $20 D50 was an unsourced guess; the lift's set was missing), turned 42CrMo4 sleeves + stop bushes +$497, D18b casters + solenoids +$292 (≈ $80 was the estimate), C1 joint hardware that was only ever in the M1 kit +$131, ballast +$115.
+- M1: Step 1 $1,512, Step 2 $1,860, kit $3,373. Cheapest alternatives found (Huco Oldham, Misumi collars, 1½" balls, saw-cut ballast) → $6,898, still $1,398 over $5,500. Flag: catalogue "9.5 N·m" on Oldham hubs is the clamp-screw torque, not a disc rating — the D50 ≥ 14 N·m is unverified.
+- Owner decision needed (limit vs design cost-down; lead proposes eliminating the Oldham couplings by moving belt tension to an idler so motors bolt straight to their pulleys).
