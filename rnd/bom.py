@@ -50,6 +50,7 @@ def items(d=BASELINE):
     A("Compute & sensors", "USB-CAN adapter, candleLight/gs_usb (FYSETC UCAN, STM32F072): A14's five channels (CAN A base + lift, two per arm); replaces the Waveshare 2-CH HAT + 3 × $35 adapters", 5, 19.0,
       "MatterHackers FYSETC UCAN V1.0 $19 (2026-11)")
     A("Compute & sensors", "Bus-servo USB-TTL adapter (half-duplex, ID programming only: D14 elbow nodes and the torso node drive the TTL buses)", 1, 8.0)
+    A("Compute & sensors", "Raspberry Pi 5 Active Cooler (official heatsink + PWM fan): keeps the control loop out of thermal throttling (Menlo sim2real lesson)", 1, 5.0)
     A("Compute & sensors", "Powered USB3 hub", 1, 25.0)
     A("Compute & sensors", "Head RGB-D camera (Orbbec Gemini 2: 0.15–10 m, global-shutter IR, 98 g)", 1, 234.0, "store.orbbec.com (loop 14); Gemini 336 was $310")
     A("Compute & sensors", "Wrist camera (D12): global-shutter OV9281-class MIPI-CSI module + FFC through the wrist + CSI→USB (UVC) bridge on the forearm + slim 4-core high-flex USB (OD ≤ 2.2 mm)", 2, 55.0, "T01: USB versions $60–155; CSI module + bridge ESTIMATE")

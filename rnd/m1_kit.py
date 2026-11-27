@@ -52,6 +52,7 @@ def step1():
         ("Electronics (A14)", "USB-CAN adapter, candleLight / gs_usb (FYSETC UCAN, STM32F072), onboard 120 Ω (jumper)", 2, 19.0,
          "can_map.yaml buses B1 + B2 = SocketCAN can0 / can1", "MatterHackers $19 (2026-11)"),
         ("Electronics", "USB TTL bus-servo adapter (STS3215 ID setup; drives the servos in Step 1)", 1, 8.0, "servo IDs 1 / 2", E),
+        ("Electronics", "Raspberry Pi 5 Active Cooler (official; heatsink + PWM fan)", 1, 5.0, "no thermal throttling under the 500 Hz loop (Menlo sim2real lesson: throttling quietly degraded actuator response)", "raspberrypi.com list price $5 (ESTIMATE until a retailer snapshot)"),
         ("Power (M2)", "**Mean Well SE-1000-24** (24 V 41.7 A, 1 kW), set 24.0–25.2 V", 1, *PSU[:1],
          "arm 14.8 A sustained / 31.5 A peak at the rated drive limit (electrical.md *Bench supply*); the old 10 A supply was a third of the peak", PSU[1]),
         ("Power (A5)", "Adjustable 0–30 V / 10 A CC/CV bench supply", 1, 65.71, "the 1 A current-limited first power-up only (drives disabled)",
