@@ -37,14 +37,14 @@ Before = the wave-2 joint (6 × M3 into heat-set inserts, ≈ 1.0 kN pull-out ES
 
 | Joint | Case | Pull-off (N) | Bending (N·m) | Worst pose | Before: inserts | After | Margin | |
 |---|---|---|---|---|---|---|---|---|
-| pitch hub ↔ tube | basket × 1.5 | 0 | 16.5 | floor pick, x 0.50 | 2.81× | no gap up to 84 N·m; bolt 1.57 kN; contact 7.9 MPa (≤ 12) | 1.52× | ✅ |
-| pitch hub ↔ tube | hug × 1.5 | 0 | 29.6 | yaw 45°, elbow 90° | 1.57× | no gap up to 84 N·m; bolt 1.92 kN; contact 8.9 MPa (≤ 12) | 1.34× | ✅ |
-| pitch hub ↔ tube | bump 140 N | 140 | 130.0 | abducted 90°, -Z | 0.35× | gaps; bolt 4.65 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (2.5× the bolt, need 1.5×); contact 16.9 MPa (≤ 40) | 1.57× | ✅ |
-| pitch hub ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 343 | 183.9 | roll stall, elbow 90° | 0.25× | gaps; bolt 6.14 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (1.9× the bolt, need 1.5×); contact 21.6 MPa (≤ 40) | 1.19× | ✅ |
-| yaw flange ↔ tube | basket × 1.5 | 100 | 32.5 | floor pick, x 0.50 | 1.48× | no gap up to 70 N·m; bolt 1.44 kN; contact 10.4 MPa (≤ 12) | 1.16× | ✅ |
-| yaw flange ↔ tube | hug × 1.5 | 101 | 24.1 | yaw -45°, elbow -90° | 1.99× | no gap up to 70 N·m; bolt 1.26 kN; contact 9.5 MPa (≤ 12) | 1.26× | ✅ |
+| pitch hub ↔ tube | basket × 1.5 | 0 | 16.8 | floor pick, x 0.50 | 2.77× | no gap up to 84 N·m; bolt 1.58 kN; contact 7.9 MPa (≤ 12) | 1.52× | ✅ |
+| pitch hub ↔ tube | hug × 1.5 | 0 | 29.9 | yaw -45°, elbow -90° | 1.56× | no gap up to 84 N·m; bolt 1.93 kN; contact 8.9 MPa (≤ 12) | 1.34× | ✅ |
+| pitch hub ↔ tube | bump 140 N | 140 | 130.4 | abducted 90°, -Z | 0.35× | gaps; bolt 4.66 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (2.5× the bolt, need 1.5×); contact 17.0 MPa (≤ 40) | 1.56× | ✅ |
+| pitch hub ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 343 | 184.0 | roll stall, elbow 90° | 0.25× | gaps; bolt 6.14 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (1.9× the bolt, need 1.5×); contact 21.6 MPa (≤ 40) | 1.19× | ✅ |
+| yaw flange ↔ tube | basket × 1.5 | 101 | 32.6 | floor pick, x 0.50 | 1.48× | no gap up to 70 N·m; bolt 1.44 kN; contact 10.4 MPa (≤ 12) | 1.16× | ✅ |
+| yaw flange ↔ tube | hug × 1.5 | 102 | 24.1 | yaw -45°, elbow -90° | 1.99× | no gap up to 70 N·m; bolt 1.26 kN; contact 9.5 MPa (≤ 12) | 1.26× | ✅ |
 | yaw flange ↔ tube | bump 140 N | 163 | 96.1 | abducted 90°, -Z | 0.51× | gaps; bolt 2.77 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (10.8 mm tapped) 14.7 kN (5.3× the bolt, need 1.5×); contact 16.9 MPa (≤ 40) | 1.76× | ✅ |
-| yaw flange ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 166 | 98.5 | elbow stall, forward | 0.50× | gaps; bolt 2.82 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (10.8 mm tapped) 14.7 kN (5.2× the bolt, need 1.5×); contact 17.2 MPa (≤ 40) | 1.73× | ✅ |
+| yaw flange ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 167 | 98.6 | elbow stall, forward | 0.50× | gaps; bolt 2.82 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (10.8 mm tapped) 14.7 kN (5.2× the bolt, need 1.5×); contact 17.2 MPa (≤ 40) | 1.73× | ✅ |
 
 - pitch hub ↔ tube, preload: 4 × M4 10.9 at 1.5 kN = 6.0 kN → 8.8 MPa on the printed contact annulus r 12.0–19.0 (× 0.75 after creep); M_gap at N = 0: 84 N·m
 - yaw flange ↔ tube, preload: 6 × M3 12.9 at 1.0 kN = 6.0 kN → 9.5 MPa on the printed contact annulus r 14.1–20.0 (× 0.75 after creep); M_gap at N = 0: 71 N·m
