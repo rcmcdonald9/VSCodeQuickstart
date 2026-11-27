@@ -17,16 +17,18 @@ MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 MOTOR = dict(od=80.0, h=40.0,                     # with SDC104 driver (manual: Ø80 × 40)
              out_holes=8, out_pcd=34.0,           # 8×M3 on the output (count from the drawing; PCD ESTIMATE)
              rear_holes=6, rear_pcd=57.0,         # 6×M3 on the housing (count from the drawing; PCD ESTIMATE)
-             oldham=40.0, nose=(21.5, 24.5), flange=(68.0, 29.0))   # D24 bolted can: Oldham OD, nose bore / outer r, flange OD / bolt r
+             oldham=50.0, nose=(26.5, 29.5), flange=(68.0, 29.0))   # D24 bolted can: Oldham OD, nose bore / outer r, flange disc OD / v1 bolt r (v2 ears: ear_r())
+# Fable M5 (2026-11-27): the D40 acetal Oldham disc is catalogued at ≈ 9–10 N·m, under the GIM6010's 11 N·m peak; D50
+# (≈ 14.8 N·m scaled by R², ESTIMATE) → 1.35× (rnd/belts.py shaft_joints). D20 uses the D63 below.
 # D20 (2026-11-27, behind params.ARM_MOTORS = "d20"): GIM8108-8 at shoulder pitch + elbow. No drawing yet (reseller data
 # only): Ø96 frame ESTIMATE (rnd/specs/actuators.yaml; SteadyWin's GIM8108-9 installation drawing lists Ø96 / Ø84 / Ø70 /
 # Ø56 / Ø30 circles), height 50 with the driver ESTIMATE, output 8 × M3 on PCD 30 ESTIMATE, housing 6 × M3 on PCD 70
 # ESTIMATE. The 22 N·m stall (2× the GIM6010's 11) doubles the Oldham tongue load, so a Ø50 Oldham (tongue bearing
-# ≈ 3T/(2·h·R²) ≈ 17 MPa at 22 N·m vs 26 MPa on the Ø40; hand calc, ESTIMATE) in an Ø84 flange (6 × M4 at r 37:
-# 22 / (6 × 37 mm) ≈ 99 N per screw). Only the motor side changes; the stage (Ø12 shaft, 6801s, 20T) is shared.
+# ≈ 3T/(2·h·R²) ≈ 17 MPa at 22 N·m vs 26 MPa on the Ø40; hand calc, ESTIMATE) in an Ø84 flange disc; D24 v2 (Fable M6):
+# D63 Oldham (nose r 32.5 / 35.5), ears at r 56 outside the Ø102.6 sleeve (22 / (4 × 56 mm) ≈ 98 N per screw), the shared
+# Ø12 stage with a steel keyed 20T (belt_stage.AL_PULLEY note) and an 18 N·m flash torque limit; parts list D20_PARTS.
 MOTOR_8108 = dict(od=96.0, h=50.0, out_holes=8, out_pcd=30.0, rear_holes=6, rear_pcd=70.0,
-                  oldham=50.0, nose=(26.5, 29.5), flange=(84.0, 37.0),
-                  flange_ang=(45.0, -45.0, 105.0, -105.0, 165.0, -165.0))   # at r 37 the D24 angles (±75°) land on the elbow cassette's M5 posts
+                  oldham=63.0, nose=(32.5, 35.5), flange=(84.0, 37.0))   # D63: the 22 N·m stall (D50 ≈ 14.8 N·m would be 0.67×)
 MOTORS = {"GIM6010-8": MOTOR, "GIM8108-8": MOTOR_8108}
 WALL, FLOOR = 3.0, 4.0
 NECK, NECK_R = 5.0, 33.0      # spacer under the male flange: room for the collar teeth behind the lugs
@@ -111,29 +113,76 @@ def coupon_motor() -> Part:
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-# D24 (owner, 2026-11-27): bolted cartridge M, no KX socket. Used by the arm belt stages (shoulder pitch, elbow) through
-# belt_stage.small_stage_v3; the lift (upper.py), wheels (base.py) and roll/yaw (roll.py) still use can() + KX74 until
-# their owners switch.
-#   - Sleeve: Ø86.6 around the motor (as before), a front step, a Ø49 nose around the Oldham coupling and a Ø68 flange
-#     with 6 × M4 heat-set inserts (r 29). The nose lip (Ø49 × 1.5) is the centring spigot in the stage wall's counterbore.
-#     The motor goes in from the rear (the step holds its front face); a separate rear cap bolts to the motor's housing
-#     holes (3 × M3, PCD 57) and is held in the sleeve by 3 radial M3 into inserts in its rim.
-#   - 6 × M4 countersunk screws come from the pulley side of the stage wall (flush heads, no belt or pulley clearance
-#     needed) into the flange inserts. Torque only: GIM peak 11 N·m / (6 × 29 mm) ≈ 63 N per screw; the belt pull stays
-#     in the stage bearings. The bolt angles (FLANGE_ANG, from the belt direction) keep the key path clear of the belt
-#     strands and the big pulley, so a swap is 6 screws with the belt on.
+# D24 (owner, 2026-11-27): bolted cartridge M, no KX socket. Used by every GIM6010 belt stage (shoulder pitch, elbow, yaw,
+# belt roll, lift) through belt_stage.bolted_stage / small_stage_v3 / wall_a_cuts.
+# D24 v2 (2026-11-27, Fable review C3). v1 (6 × M4 countersunk from the pulley side into inserts in a Ø68 flange, a plain
+# 4 mm rear cap "held by 3 radial M3") could not react the motor torque as drawn and could not be swapped:
+#   - the cap had no holes and a 4 mm rim cannot hold an M3 insert, so the motor reaction had no path to the sleeve;
+#   - the flange inserts could only go in from the mating face, so the screws pulled them out of their bosses;
+#   - a Ø6 driver on the screw axes was blocked by the far wall at pitch and elbow (and the ±75° pair sat under the
+#     elbow cassette's M5 spacers).
+# v2:
+#   - **Flange ears outside the sleeve, screws from the cartridge side.** 2–4 ears at radius ear_r() = sleeve r + 3 (a Ø6
+#     driver shank) + 1.7 clearance (GIM6010: r 48; GIM8108-8: r 56), so a straight driver runs past the motor sleeve with
+#     the belt, pulley and far wall untouched. Each ear takes an ISO 4762 M4 × 12 with an ISO 7089 washer under the head,
+#     through the ear (6 mm) and wall A (6 mm) into an ISO 4032 M4 nut in a hex pocket on wall A's pulley-side face: a
+#     through-bolt, every printed layer in compression (no insert in pull-out anywhere). Nut pocket 3.4 deep → 2.6 mm floor.
+#   - Preload 0.75 kN at 0.6 N·m (F = T / (K·d), K 0.2, ESTIMATE): 16 MPa under the washer, 28 MPa under the nut
+#     (26.5 mm² hex bearing) vs ≈ 50 MPa PETG-CF compressive (ESTIMATE). Friction capacity μ 0.3 × 4 × 0.75 kN × r 48 =
+#     43 N·m vs the 11 N·m GIM6010 peak (3.9×); GIM8108-8: × r 56 = 50 N·m vs 22 N·m (2.3×), before bolt shear.
+#     μ 0.3 PETG on PETG is an ESTIMATE (coupon C-series).
+#   - Ear angles per site (EAR_SITES, from the stage +X = the belt direction), each set by the R14 (c) driver probe on
+#     the whole robot: elbow 4 ears (±40°/±140°), pitch 3 (40°, −30°, −70°), yaw 2 (±145°), lift 2 (±140°). With 2 ears
+#     the friction capacity is 2 × 0.3 × 0.75 kN × r 48 = 22 N·m vs 11 N·m (2×); the spigot takes the radial load.
+#   - **Rear cap v2:** a 4 mm plug in the sleeve bore carries the motor (3 × M3 into the housing pattern, low heads in
+#     counterbores) and has two 3 mm ears that sit flush in notches in the sleeve's rear end (torque dogs) at ±90°. The
+#     notches run into two lugs on the sleeve (r → sleeve + 6.2, 10 long, so at the elbow they stay outside the −Y wall);
+#     an M3 × 10 goes through each cap ear into a short heat-set insert (Ø4.0 × 4.0, ESTIMATE size) pressed into the lug
+#     from its FRONT face, so the screw pushes the insert into its boss (3 mm of lug between the insert and the notch).
+#     The cap screws clamp the motor's front face onto the sleeve step: friction μ 0.3 × ≈ 1 kN × r 31 ≈ 9 N·m plus the two
+#     dogs (11 N·m / (2 × 46 mm) ≈ 120 N on 3 × 3 mm flanks ≈ 13 MPa at the GIM6010 peak; ESTIMATE).
+#     Assumed: the GIM6010-8's 6 × M3 housing holes are on the driver (rear) face (manual ESTIMATE, Fable C3 (S)). If the
+#     seller's drawing puts them on the output face, the 3 mm step takes them instead (screws from the 16 mm gap between
+#     the flange and the step) and the cap keeps only its retention role. Read the real faces with coupon_motor().
 #   - Drive: an Oldham coupling (blind axial mate, absorbs the ±1 mm the eccentric bushings move the stage shaft):
-#     aluminium clamp hub on the Ø12 stage shaft (off the shelf, Ø40) → acetal disc → printed ASA tongue adapter on the
-#     motor output (4 × M3, PCD 34). Tongue bearing ≈ 3T/(2·h·R²) ≈ 13 MPa at the 11 N·m peak (hand calc; coupon).
+#     aluminium clamp hub with a 4 mm keyway on the Ø12 stage shaft (off the shelf, D50; Fable M5: D40 → D50) → acetal
+#     disc → printed ASA tongue adapter on the motor output (4 × M3, PCD 34). Tongue bearing ≈ 3T/(2·h·R²) ≈ 6.6 MPa at the
+#     11 N·m peak (hand calc; coupon).
+#   - Swap (rnd/assembly_seq.py, R14 (c)/(d)): 4 ear screws from the cartridge side, the cartridge slides out along its
+#     axis off the Oldham disc; belt, pulley, shaft, bearings and the shaft-side Oldham hub stay.
 # Stage frame (as small_stage_v3): flange mating plane z = 0 (= the stage wall's cartridge-side face), cartridge +Z.
 # All dimensions not on a datasheet are ESTIMATE.
-OLDHAM = dict(od=40.0, hub_l=15.0, tongue_h=4.0, tongue_w=10.0, disc_t=10.0, slot_d=4.0, gap=0.3)   # Ø40 clamp-hub Oldham, 12 mm bore (ESTIMATE)
+OLDHAM = dict(od=50.0, hub_l=15.0, tongue_h=4.0, tongue_w=10.0, disc_t=10.0, slot_d=4.0, gap=0.3)   # D50 clamp-hub Oldham, 12 mm bore + 4 mm keyway (ESTIMATE; od per motor: MOTOR["oldham"])
 ADAPTER_T = 4.0
 NOSE_B = dict(r_in=21.5, r_out=24.5, lip=1.5)
-FLANGE_B = dict(od=68.0, t=6.0, bolt_r=29.0, insert_d=5.6, insert_l=5.7, clr_d=4.6, csk_d=8.6)
-FLANGE_ANG = (75.0, -75.0, 115.0, -115.0, 155.0, -155.0)   # deg from the stage +X (toward the big pulley)
+FLANGE_B = dict(od=68.0, t=6.0, bolt_r=29.0, insert_d=5.6, insert_l=5.7, clr_d=4.6, csk_d=8.6)   # D24 v1 (legacy: only roll.flange_screw_access still reads it)
+FLANGE_ANG = (75.0, -75.0, 115.0, -115.0, 155.0, -155.0)                                         # D24 v1 (legacy, as above)
+# D24 v2 ears. Screw ISO 4762 M4 × 12 + ISO 7089 washer (Ø9 × 0.8), nut ISO 4032 M4 (s 7, m 3.2): ISO catalogue sizes.
+EAR = dict(t=6.0, boss_r=5.5, clr_d=4.5, head_d=7.0, head_h=4.0, washer=(9.0, 0.8), nut_af=7.0, nut_m=3.2, pocket=3.4,
+           driver_r=3.0, driver_clear=1.7, screw="ISO 4762 M4 × 12 + ISO 7089 washer, ISO 4032 M4 nut in a hex pocket")
+# Ear angles per site (deg from the stage +X), chosen with rnd/assembly_seq.py's driver probe on the whole robot. A module
+# sets EAR_SITE = "<site>" and passes site=EAR_SITE to bolted_stage / bolted_cartridge / wall_a_cuts; the probe reads it.
+EAR_SITES = {
+    "elbow": (40.0, -40.0, 140.0, -140.0),   # clear of the cassette posts (stage (10, ±35)), the elbow tube, the −Y seat boss, the housing sides
+    "pitch": (40.0, -30.0, -70.0),           # the lift carriage sits 72 mm behind the rear (±140°) pair and the balancer cage over 50–130°; +40° by a ball-end past the AI bay
+    "yaw": (145.0, -145.0),                  # the −X clevis arm's foot covers |a| ≤ 40°, the block posts (stage (40, ±38), (−24, ±38)) and side walls the rest
+    "lift": (140.0, -140.0),                 # the lift can sits 1.2 mm over the deck and its cover wraps it 3 mm off: only the lower diagonals
+    "roll_belt": (40.0, -40.0),              # belt-roll fallback: the walls end 37 mm over the stage axis on the −Z side (unchecked)
+}
+EAR_SITES["default"] = EAR_SITES["yaw"]      # the fallback for a caller that names no site: 2 ears, clash-free at every stage
+# Side exit (R14 (d)): where the cartridge cannot be pulled its own length along its axis (pitch: the lift carriage is
+# 12.6 mm behind the rear; lift: the base rim 13 mm behind), the flange, lip and nose are open on one side (a U-slot as
+# wide as the Oldham disc, up to just under the motor-side adapter). The cartridge then lifts 4.5 mm (adapter tongue out
+# of the disc, lip out of the counterbore) and slides off sideways AWAY from the opening, so the shaft-side hub and the
+# disc (which stays on it) leave through the slot. Opening angle from the stage +X (pitch: +Y = up, the cartridge drops
+# out downward; lift: −X = down, it comes out upward); the ears keep ≥ 40° clear of it.
+EXIT_SITES = {"pitch": 90.0, "lift": 180.0}
+EXIT_LIFT = 4.5                              # axial travel before the side move: adapter tongue (3.7 in the disc) + 0.8
 STEP_T = 3.0
 CAP_T = FLOOR
+# rear cap v2: ears/lugs at ±90° (clear of the pigtail window at 0°, of the deck under the lift can, and 50° from the ears)
+CAP = dict(ear_t=3.0, ear_w=10.0, lug_h=10.0, lug_out=6.2, ins_d=4.0, ins_l=4.0, clr_d=3.4, ang=(90.0, -90.0),
+           screw="ISO 7380 M3 × 10 into a short M3 heat-set insert (Ø4.0 hole × 4.0)", motor_screw="DIN 7984 M3 × 8 (low head)", cb=(6.2, 2.0))
 
 
 def bolted_levels(m: dict | None = None) -> dict:
@@ -144,7 +193,7 @@ def bolted_levels(m: dict | None = None) -> dict:
     disc = (hub[1] + o["gap"] - o["tongue_h"], hub[1] + o["gap"] - o["tongue_h"] + o["disc_t"])
     ad = (disc[1] + o["gap"], disc[1] + o["gap"] + ADAPTER_T)  # adapter base; its tongue hangs into the disc's upper slot
     face = ad[1]                                            # motor output face
-    return dict(hub=hub, disc=disc, adapter=ad, motor_face=face, step=(face - STEP_T, face), flange=(0.0, FLANGE_B["t"]),
+    return dict(hub=hub, disc=disc, adapter=ad, motor_face=face, step=(face - STEP_T, face), flange=(0.0, EAR["t"]),
                 rear=face + m["h"] + CAP_T)
 
 
@@ -153,55 +202,124 @@ def stack_height_bolted(m: dict | None = None) -> float:
     return bolted_levels(m)["rear"]
 
 
-def nose_flange(m: dict | None = None):
-    """(NOSE_B, FLANGE_B) for motor m: the motor's own nose and flange sizes (GIM6010: the D24 values)."""
-    m = m or MOTOR
-    return (dict(NOSE_B, r_in=m["nose"][0], r_out=m["nose"][1]),
-            dict(FLANGE_B, od=m["flange"][0], bolt_r=m["flange"][1], ang=m.get("flange_ang", FLANGE_ANG)))
-
-
 def can_r_out(m: dict | None = None) -> float:
     """Outer radius of the bolted can's motor sleeve."""
     return (m or MOTOR)["od"] / 2 + WALL + 0.3
 
 
-def can_bolted(m: dict | None = None) -> Part:
-    """D24 sleeve in the STAGE frame (flange plane z = 0, motor toward +Z): nose lip, flange, nose, step, motor sleeve."""
+def ear_r(m: dict | None = None) -> float:
+    """Ear bolt radius: a Ø6 driver shank runs past the sleeve with driver_clear to spare (GIM6010 48.0, GIM8108-8 56.0)."""
+    return can_r_out(m) + EAR["driver_r"] + EAR["driver_clear"]
+
+
+def nose_flange(m: dict | None = None, site: str = "default"):
+    """(nose, flange) dicts for motor m: the nose sizes, the flange disc and the v2 ear pattern (bolt_r, ang)."""
+    m = m or MOTOR
+    return (dict(NOSE_B, r_in=m["nose"][0], r_out=m["nose"][1]),
+            dict(od=m["flange"][0], t=EAR["t"], bolt_r=ear_r(m), ang=EAR_SITES[site], clr_d=EAR["clr_d"]))
+
+
+def ear_fasteners(m: dict | None = None, site: str = "default"):
+    """[(name, head-top point, driver axis)] of the flange ear screws in the stage frame (axis +Z: out on the cartridge side)."""
+    _, f = nose_flange(m, site)
+    z = f["t"] + EAR["washer"][1] + EAR["head_h"]
+    return [(f"ear screw {a:+.0f}°", (f["bolt_r"] * math.cos(math.radians(a)), f["bolt_r"] * math.sin(math.radians(a)), z), (0.0, 0.0, 1.0))
+            for a in f["ang"]]
+
+
+def _lobe(r: float, a_deg: float, rb: float, t: float, z0: float = 0.0) -> Part:
+    """Ear lobe in z0 … z0 + t: a radial bar (2·rb wide) from the axis to r plus a disc of radius rb at r, at angle a."""
+    a = math.radians(a_deg)
+    bar = Pos(r / 2 * math.cos(a), r / 2 * math.sin(a), z0) * Rot(0, 0, a_deg) * Box(r, 2 * rb, t, align=MIN)
+    return bar + Pos(r * math.cos(a), r * math.sin(a), z0) * Cylinder(rb, t, align=MIN)
+
+
+def can_bolted(m: dict | None = None, site: str = "default") -> Part:
+    """D24 v2 sleeve in the STAGE frame (flange plane z = 0, motor toward +Z): nose lip, flange disc + ears, nose, step,
+    motor sleeve with the rear-cap lugs and dog notches."""
     m = m or MOTOR
     L = bolted_levels(m)
-    n, f = nose_flange(m)
-    r_in, r_out = m["od"] / 2 + 0.3, m["od"] / 2 + WALL + 0.3
+    n, f = nose_flange(m, site)
+    c = CAP
+    r_in, r_out = m["od"] / 2 + 0.3, can_r_out(m)
     z_rear = L["rear"]
     body = Pos(0, 0, L["step"][0]) * Cylinder(r_out, z_rear - L["step"][0], align=MIN)
-    body -= Pos(0, 0, L["motor_face"]) * Cylinder(r_in, z_rear, align=MIN)              # motor bore, open at the rear
     body = fillet(body.edges().group_by(Axis.Z)[0].sort_by(SortBy.RADIUS)[-1], 2.0)
+    for a in c["ang"]:                                                                    # rear-cap lugs
+        body += _lobe(r_out + c["lug_out"] - 5.0, a, 5.0, c["lug_h"], z_rear - c["lug_h"])
+    body -= Pos(0, 0, L["motor_face"]) * Cylinder(r_in, z_rear, align=MIN)              # motor bore, open at the rear
     body += Pos(0, 0, f["t"]) * Cylinder(n["r_out"], L["step"][0] - f["t"] + 0.5, align=MIN)   # nose
-    body += Cylinder(f["od"] / 2, f["t"], align=MIN)                                     # flange
+    fl = Cylinder(f["od"] / 2, f["t"], align=MIN)                                         # flange disc + ears
+    for a in f["ang"]:
+        fl += _lobe(f["bolt_r"], a, EAR["boss_r"], f["t"])
+    body += fl
     body += Pos(0, 0, -n["lip"]) * Cylinder(n["r_out"], n["lip"], align=MIN)             # centring lip (spigot)
     body -= Pos(0, 0, -5) * Cylinder(n["r_in"], L["motor_face"] + 5, align=MIN)          # coupling bore through flange, nose, step
     for a in f["ang"]:
         t = math.radians(a)
-        body -= Pos(f["bolt_r"] * math.cos(t), f["bolt_r"] * math.sin(t), 0) * Cylinder(f["insert_d"] / 2 - 0.1, f["insert_l"] + 0.3, align=MIN)
+        body -= Pos(f["bolt_r"] * math.cos(t), f["bolt_r"] * math.sin(t), -1) * Cylinder(EAR["clr_d"] / 2, f["t"] + 2, align=MIN)
+    if site in EXIT_SITES:                                                               # side exit: U-slot through lip, flange, nose
+        w = m["oldham"] + 1.2
+        body -= Rot(0, 0, EXIT_SITES[site]) * Pos(0, 0, -n["lip"] - 1) * Box(r_out + 20, w, L["adapter"][0] + n["lip"] + 1 + 0.5,
+                                                                                 align=(Align.MIN, Align.CENTER, Align.MIN))
     body -= Pos(r_out, 0, (L["motor_face"] + z_rear) / 2) * Box(12, 16, m["h"] - 8)   # side window: CAN + power pigtail
-    body -= Pos(0, 0, z_rear - 8) * (Cylinder(r_out + 1, 2) - Cylinder(r_out - 1.2, 2))     # light-ring groove
-    for k in range(3):                                                                    # radial M3 for the rear cap
-        a = 2 * math.pi * k / 3 + math.pi / 6
-        body -= Pos(r_out * math.cos(a), r_out * math.sin(a), z_rear - CAP_T / 2) * Rot(0, 90, math.degrees(a)) * Cylinder(1.7, 8)
+    body -= Pos(0, 0, z_rear - c["lug_h"] - 4) * (Cylinder(r_out + 1, 2) - Cylinder(r_out - 1.2, 2))   # light-ring groove (in front of the lugs)
+    r_s = r_out + c["lug_out"] / 2
+    for a in c["ang"]:
+        t = math.radians(a)
+        body -= Pos(0, 0, z_rear - c["ear_t"]) * Rot(0, 0, a) * Pos((r_in + r_out + c["lug_out"]) / 2, 0, 0) * Box(r_out + c["lug_out"] - r_in + 2, c["ear_w"] + 0.4, c["ear_t"] + 1, align=MIN)   # notch = torque dog
+        at = Pos(r_s * math.cos(t), r_s * math.sin(t), 0)
+        body -= at * Pos(0, 0, z_rear - c["lug_h"] - 0.01) * Cylinder(c["ins_d"] / 2 - 0.1, c["ins_l"], align=MIN)   # insert, pressed in from the lug's front face
+        body -= at * Pos(0, 0, z_rear - c["lug_h"]) * Cylinder(c["clr_d"] / 2, c["lug_h"] + 1, align=MIN)
     return body
 
 
 def can_cap_bolted(m: dict | None = None) -> Part:
-    """Rear cap of the bolted can (stage frame): carries the motor (3 × M3 on its rear PCD), held by 3 radial M3."""
+    """D24 v2 rear cap (stage frame): 4 mm plug in the sleeve bore carrying the motor (3 × M3 on its rear PCD, low heads
+    counterbored), two 3 mm ears in the sleeve's rear notches (torque dogs), screwed through into the lugs' inserts."""
     m = m or MOTOR
     L = bolted_levels(m)
     z0 = L["rear"] - CAP_T
-    c = Pos(0, 0, z0) * Cylinder(m["od"] / 2 + 0.2, CAP_T, align=MIN)
+    c = CAP
+    r_out = can_r_out(m)
+    r_s = r_out + c["lug_out"] / 2
+    cap = Pos(0, 0, z0) * Cylinder(m["od"] / 2 + 0.2, CAP_T, align=MIN)
+    for a in c["ang"]:
+        t = math.radians(a)
+        cap += Pos(0, 0, L["rear"] - c["ear_t"]) * Rot(0, 0, a) * Pos((r_out + c["lug_out"]) / 2, 0, 0) * Box(r_out + c["lug_out"], c["ear_w"], c["ear_t"], align=MIN)
+        cap -= Pos(r_s * math.cos(t), r_s * math.sin(t), z0 - 1) * Cylinder(c["clr_d"] / 2, 10, align=MIN)
     for k in range(0, m["rear_holes"], 2):
         a = 2 * math.pi * k / m["rear_holes"]
-        c -= Pos(m["rear_pcd"] / 2 * math.cos(a), m["rear_pcd"] / 2 * math.sin(a), z0) * Cylinder(1.7, 20)
-    c -= Pos(0, 0, z0) * Cylinder(13, 20)                                                 # rear vent / cable pass-through
-    return c
+        x, y = m["rear_pcd"] / 2 * math.cos(a), m["rear_pcd"] / 2 * math.sin(a)
+        cap -= Pos(x, y, z0 - 1) * Cylinder(1.7, 20, align=MIN)
+        cap -= Pos(x, y, L["rear"] - c["cb"][1]) * Cylinder(c["cb"][0] / 2, 5, align=MIN)
+    cap -= Pos(0, 0, z0 - 1) * Cylinder(13, 20, align=MIN)                               # rear vent / cable pass-through
+    return cap
 
+
+def can_envelope(m: dict | None = None, site: str = "default", clr: float = 0.6, z0: float = 0.0, z1: float = 120.0) -> Part:
+    """What the cartridge (without its rear lugs) sweeps when it slides out along +Z: sleeve, flange disc and ears grown by
+    clr, extruded z0 … z1 (stage frame). Housings cut it where the cartridge has to pass a wall (the elbow's −Y wall)."""
+    m = m or MOTOR
+    _, f = nose_flange(m, site)
+    h = z1 - z0
+    e = Pos(0, 0, z0) * Cylinder(max(can_r_out(m), f["od"] / 2) + clr, h, align=MIN)
+    for a in f["ang"]:
+        e += _lobe(f["bolt_r"], a, EAR["boss_r"] + clr, h, z0)
+    return e
+
+
+def cap_fasteners(m: dict | None = None):
+    """Rear-cap screws (bench: they stay in when the cartridge is swapped): (name, head-top point, axis) in the stage frame."""
+    m = m or MOTOR
+    L = bolted_levels(m)
+    r_s = can_r_out(m) + CAP["lug_out"] / 2
+    out = [(f"cap screw {a:+.0f}°", (r_s * math.cos(math.radians(a)), r_s * math.sin(math.radians(a)), L["rear"] + 1.65), (0.0, 0.0, 1.0))
+           for a in CAP["ang"]]
+    for k in range(0, m["rear_holes"], 2):
+        a = 2 * math.pi * k / m["rear_holes"]
+        out.append((f"motor screw {math.degrees(a):.0f}°", (m["rear_pcd"] / 2 * math.cos(a), m["rear_pcd"] / 2 * math.sin(a), L["rear"]), (0.0, 0.0, 1.0)))
+    return out
 
 def motor_bolted(m: dict | None = None) -> Part:
     m = m or MOTOR

@@ -43,13 +43,13 @@ ROLL_DRIVES = {
     # 2.2 mm pocket in the bottom yaw plate and the spring-ring gap is 0.4 (cavity still 11.3 mm). bone_upper_dm: the upper
     # bone's neck (CF tube + printed sleeve, ≈ 0.69 g/mm, rnd/parts/arm.py) is l_upper − yaw_drop long, so the inline roll's
     # shorter yaw drop makes it longer by the difference (belt = the 0.79 kg reference).
-    "belt": dict(roll_offset_y=0.083, yaw_drop=0.1134, shoulder_roll=("GIM6010-8", 80 / 18), roll_stage_mass=0.68, yaw_stage_mass=0.56, bone_upper_dm=0.0),
+    "belt": dict(roll_offset_y=0.083, yaw_drop=0.1134, shoulder_roll=("GIM6010-8", 80 / 18), roll_stage_mass=0.71, yaw_stage_mass=0.59, bone_upper_dm=0.0),   # D24 v2: D50 Oldham +0.03 per stage
     # FROM CAD (rnd/parts/roll.py, inline): ROLL_Y = ferrule face 18 + 2 + motor r 50 (Ø100 ESTIMATE); the top yaw plate
     # clears the motor (r 50 + 4) instead of the Ø127 80T pulley (yaw_drop 116.0 → 103.9; wave 2: 101.3, the flange pocket); masses = roll.masses(split=True), the motor (1.0 kg) is the
     # roll actuator mass.
     # Seller drawing (2026-11-27): Ø96 × 57 with the driver, 8 × M4 PCD 84, Ø30 output boss → ROLL_Y 70 → 69, yaw_drop 99.3;
     # roll body + 61 g 7075 output adapter + steel clamp ring + cup ring; neck 14.1 mm longer than the belt arm's (+ 10 g).
-    "inline": dict(roll_offset_y=0.069, yaw_drop=0.0993, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.29, yaw_stage_mass=0.55, bone_upper_dm=0.010),
+    "inline": dict(roll_offset_y=0.069, yaw_drop=0.0993, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.29, yaw_stage_mass=0.58, bone_upper_dm=0.010),   # D24 v2: yaw D50 Oldham, roll.masses yaw 0.552 → 0.579
 }
 assert ROLL_DRIVE in ROLL_DRIVES, f"PIP_ROLL_DRIVE must be one of {list(ROLL_DRIVES)}"
 _RD = ROLL_DRIVES[ROLL_DRIVE]
@@ -62,14 +62,16 @@ _RD = ROLL_DRIVES[ROLL_DRIVE]
 # shoulder.masses()) for that motor set.
 ARM_MOTORS = os.environ.get("PIP_ARM_MOTORS", "gim6010")
 ARM_MOTOR_SETS = {
-    "gim6010": dict(shoulder_pitch=("GIM6010-8", 3.0), elbow=("GIM6010-8", 2.0), elbow_teeth=40, elbow_belt_c=0.070,
-                    bone_mass_upper=0.81, pitch_module_mass=0.80),   # R2b last mile (2026-11-27): housing 238 → 349 g (arm.STIFF_T 4.3 + SIDE_T 2.8), 0.79 → 0.90, minus the yaw KX74 socket (88 g, now in the roll track's bolted yaw stage) → 0.81; shoulder.masses() 0.729 → 0.791 (balancer crank + fork + spring ring, closed bracket windows), 0.76 → 0.80
+    # elbow_belt_c (Fable M5, 2026-11-27): the exact centre for the stock belt (rnd/belts.py centre_for: 295-5M → 70.70 mm,
+    # 380-5M → 83.89 mm), so the ±1 mm eccentric sits mid-range (at 70.00 the belt used 70 % of it just to fit).
+    "gim6010": dict(shoulder_pitch=("GIM6010-8", 3.0), elbow=("GIM6010-8", 2.0), elbow_teeth=40, elbow_belt_c=0.07070,
+                    bone_mass_upper=0.85, pitch_module_mass=0.83),   # D24 v2 / Fable M5 (2026-11-27): D50 Oldham (+29 g per stage; arm.masses 1.028 → 1.055, shoulder.masses 0.791 → 0.818) + the elbow AS5048A bracket/board/magnet (+12 g, ESTIMATE): 0.81 → 0.85, 0.80 → 0.83. R2b last mile (2026-11-27): housing 238 → 349 g (arm.STIFF_T 4.3 + SIDE_T 2.8), 0.79 → 0.90, minus the yaw KX74 socket (88 g, now in the roll track's bolted yaw stage) → 0.81; shoulder.masses() 0.729 → 0.791 (balancer crank + fork + spring ring, closed bracket windows), 0.76 → 0.80
     # FROM CAD (2026-11-27, PIP_ARM_MOTORS=d20): elbow housing 98 → 109 wide (the Ø102.6 can), 12 mm taller at the top (belt centre
     # 70 → 84.0 mm, 76T belt: the can has to clear the −Y 61808 boss) and 16 mm deeper (the integral 60T), Ø50 Oldham,
     # Ø84 flange. CAD deltas over the GIM6010 set: arm.masses() 0.995 → 1.138 kg (+0.14: housing + seat caps +40 g, 60T +37 g,
     # Ø50 Oldham + Ø102.6 can +68 g), shoulder.masses() 0.758 → 0.824 kg (+0.07, Ø50 Oldham + can). Motor +8 g via act().
-    "d20": dict(shoulder_pitch=("GIM8108-8", 3.0), elbow=("GIM8108-8", 3.0), elbow_teeth=60, elbow_belt_c=0.0840,
-                bone_mass_upper=0.88, pitch_module_mass=0.86),   # incl. the 5.5 mm +Y face (+35 g; no side layer beside the can); yaw KX74 socket dropped (−88 g)
+    "d20": dict(shoulder_pitch=("GIM8108-8", 3.0), elbow=("GIM8108-8", 3.0), elbow_teeth=60, elbow_belt_c=0.08389,
+                bone_mass_upper=0.94, pitch_module_mass=0.91),   # D24 v2 / Fable M6: D63 Oldham (+48 g per stage over the D50) + the elbow encoder (+12 g): 0.88 → 0.94, 0.86 → 0.91; incl. the 5.5 mm +Y face (+35 g; no side layer beside the can); yaw KX74 socket dropped (−88 g)
 }
 assert ARM_MOTORS in ARM_MOTOR_SETS, f"PIP_ARM_MOTORS must be one of {list(ARM_MOTOR_SETS)}"
 _AM = ARM_MOTOR_SETS[ARM_MOTORS]
@@ -150,7 +152,7 @@ class Upper:
     lift_max: float = 1.05         # reach sweep: 0.95 -> 1.05
     spine_len: float = 1.06        # extrusion length
     spine_mass_per_m: float = 1.25 # loop 10 (rnd/mast.py): 60×60×2 Al square tube, torso sway 1.4 mm (2040 swayed 5.5 mm)
-    lift_motor_mass: float = 1.45  # lift v2 (2026-11-27, upper.masses): GIM6010-8 0.39 + printed bracket, cover, bolted can/cap 0.24 + D13 stage metal, belt 2.4 m, idler 0.20 (ESTIMATE) + A15 steel rack m1 10 × 10 × 800 mm 0.63 (FROM CAD volume × 7.85). Was 0.81 (KX cartridge, printed ratchet strip)
+    lift_motor_mass: float = 1.48  # D24 v2 (2026-11-27): D50 Oldham +0.03. Lift v2 (2026-11-27, upper.masses): GIM6010-8 0.39 + printed bracket, cover, bolted can/cap 0.24 + D13 stage metal, belt 2.4 m, idler 0.20 (ESTIMATE) + A15 steel rack m1 10 × 10 × 800 mm 0.63 (FROM CAD volume × 7.85). Was 0.81 (KX cartridge, printed ratchet strip)
     lift_motor: str = "GIM6010-8"
     carriage_mass: float = 0.58    # FROM CAD: printed sleeve + 8×625 bearings + pawl + solenoid
     torso_struct_mass: float = 0.813 # FROM CAD (upper.masses, lift v2: bottom at lift − 75, edge r 30; was 0.867): rounded two-piece body enclosing the pitch modules + electronics tray

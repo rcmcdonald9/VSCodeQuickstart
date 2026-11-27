@@ -105,6 +105,10 @@ SHAFT_D = 12.0
 BRG_6801 = dict(d=12.0, D=21.0, B=5.0)            # C0 ≈ 1.0 kN (ESTIMATE); 2 per stage straddle the pulley: ≈ 0.35 kN each at the 691 N peak
 FLANGE = dict(od=32.0, t=6.0, bolt_r=12.0, clamp_od=22.0, clamp_l=12.0)   # rigid flange coupling, 12 mm bore (ESTIMATE)
 AL_PULLEY = dict(flange_od=38.0, body_l=20.0, hub_d=24.0, hub_l=7.0)      # HTD 5M, 15 mm belt, 20T/18T (ESTIMATE)
+# Fable M5 (2026-11-27): set screws on a flat carry ≈ 12 N·m vs the 11 N·m GIM6010 peak (rnd/belts.py shaft_joints), so
+# the pulley and the shaft-side Oldham hub are keyed: 12 H7 bore + DIN 6885 A 4 × 4 keyway, one milled 4 × 2.5 keyway in
+# the Ø12 shaft from the pulley seat to the end, set screw over the key for axial location (not modelled: no clearance
+# changes). D20 (GIM8108-8, 22 N·m): steel 20T (C45) instead of aluminium, key L 20.
 ECC_V2 = dict(od=38.0, e=1.0, t=5.0)
 
 
@@ -223,29 +227,47 @@ def small_stage_v3(teeth: int = 20, motor: dict | None = None):
             ("brg_A_6801", brg(v["jA"]), "steel"), ("brg_B_6801", brg(v["jB"]), "steel"), ("al_pulley", pul, "steel")]
 
 
-def bolted_cartridge(motor: dict | None = None):
-    """(name, part, colour) of the bolted cartridge M in the stage frame: sleeve, rear cap, motor."""
+def bolted_cartridge(motor: dict | None = None, site: str = "default"):
+    """(name, part, colour) of the bolted cartridge M in the stage frame: sleeve, rear cap, motor. site: the ear pattern
+    (cartridge_m.EAR_SITES; "lift" on the lift, "default" elsewhere)."""
     from . import cartridge_m as cm
-    return [("can", cm.can_bolted(motor), "white"), ("can_cap", cm.can_cap_bolted(motor), "white"), ("motor", cm.motor_bolted(motor), "dark")]
+    return [("can", cm.can_bolted(motor, site), "white"), ("can_cap", cm.can_cap_bolted(motor), "white"), ("motor", cm.motor_bolted(motor), "dark")]
 
 
-def bolted_stage(T, teeth: int = 20, prefix: str = "", motor: dict | None = None):
+def bolted_stage(T, teeth: int = 20, prefix: str = "", motor: dict | None = None, site: str = "default"):
     """Cartridge + stage v3 mapped by T (stage frame → module frame), names prefixed. One call per joint."""
-    return [(prefix + n, T * p, c) for n, p, c in bolted_cartridge(motor) + small_stage_v3(teeth, motor)]
+    return [(prefix + n, T * p, c) for n, p, c in bolted_cartridge(motor, site) + small_stage_v3(teeth, motor)]
 
 
-def wall_a_cuts(motor: dict | None = None) -> Part:
-    """What to subtract from wall A (stage frame, wall z −6 … 0): the eccentric-bushing seat (Ø38.2), the Ø49.2 × 1.6
-    counterbore for the cartridge's centring lip and 6 countersunk M4 clearance holes (heads flush on the pulley side)."""
-    from build123d import Cone
+def wall_a_cuts(motor: dict | None = None, site: str = "default") -> Part:
+    """What to subtract from wall A (stage frame, wall z −6 … 0): the eccentric-bushing seat (Ø38.2), the counterbore for the
+    cartridge's centring lip and, per flange ear (D24 v2, cartridge_m.EAR), an M4 clearance hole through the wall plus a
+    hex pocket for the ISO 4032 nut on the pulley-side face (z −6 … −2.6: the screw comes from the cartridge side, so the
+    nut and the wall are in compression)."""
+    from build123d import RegularPolygon, extrude
     from . import cartridge_m as cm
     MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
-    n, f = cm.nose_flange(motor)
+    n, f = cm.nose_flange(motor, site)
+    e = cm.EAR
     c = Pos(0, 0, -20) * Cylinder(ECC_V2["od"] / 2 + 0.1, 40, align=MINZ)
     c += Pos(0, 0, -n["lip"] - 0.1) * Cylinder(n["r_out"] + 0.1, 5, align=MINZ)
+    hexp = extrude(RegularPolygon((e["nut_af"] + 0.1) / math.sqrt(3), 6), e["pocket"] + 0.01)
     for a in f["ang"]:
         t = math.radians(a)
         at = Pos(f["bolt_r"] * math.cos(t), f["bolt_r"] * math.sin(t), 0)
-        c += at * Pos(0, 0, -10) * Cylinder(f["clr_d"] / 2, 20, align=MINZ)
-        c += at * Pos(0, 0, -6.01) * Cone(f["csk_d"] / 2, f["clr_d"] / 2, (f["csk_d"] - f["clr_d"]) / 2, align=MINZ)
+        c += at * Pos(0, 0, -10) * Cylinder(e["clr_d"] / 2, 20, align=MINZ)
+        c += at * Pos(0, 0, -6.01) * Rot(0, 0, a) * hexp
     return c
+
+
+def ear_boss(motor: dict | None = None, site: str = "default", r: float = 7.5, t: float = 6.0) -> Part:
+    """Wall-A material each ear needs (stage frame, z −t … 0): a disc of radius r round each ear screw (nut pocket 4.0 across
+    corners + ≥ 3 mm), for walls that do not already reach r 55 (elbow cassette plate A)."""
+    from . import cartridge_m as cm
+    _, f = cm.nose_flange(motor, site)
+    out = None
+    for a in f["ang"]:
+        t_ = math.radians(a)
+        d = Pos(f["bolt_r"] * math.cos(t_), f["bolt_r"] * math.sin(t_), -t) * Cylinder(r, t, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        out = d if out is None else out + d
+    return out

@@ -99,7 +99,7 @@ def _fork(tip, tang, solids, own, r_pin=3.0):
 
 def _bolted(p, n, struct, r_hole):
     holes = _cyl_faces(p, r_hole, tol=0.02)
-    if len(holes) < 3:
+    if len(holes) < 2:                      # D24 v2: 2–4 flange ears
         return None
     hits = 0
     near = [(m, s) for m, s in struct if m != n]
@@ -135,7 +135,7 @@ def run(lift=0.75):
             r_pin = 3.0
             seats = _cyl_faces(p, cm.TORQUE_PIN["d"] / 2 - 0.05)
             if not seats:
-                for r_hole, kind in ((cm.FLANGE_B["insert_d"] / 2 - 0.1, "M4 into the flange inserts"), (1.8, "M3 through the flange")):
+                for r_hole, kind in ((cm.EAR["clr_d"] / 2, "M4 through the flange ears into nuts in wall A"), (1.8, "M3 through the flange")):
                     b = _bolted(p, n, struct, r_hole)
                     if b:
                         rows.append(("bolted flange (D24)", n, b[0] >= min(5, b[1]), f"{b[0]}/{b[1]} screws ({kind}) land in structure"))
