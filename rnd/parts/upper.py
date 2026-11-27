@@ -30,6 +30,8 @@ HEAD_Z = Z_TOP + 10.0
 WALL = 2.0
 PAN_RANGE = (-90.0, 90.0)       # head pan (deg): software limit for the neck cable loop (ESTIMATE)
 TILT_RANGE = (-10.0, 30.0)      # head tilt (deg), D22: −10° (up) … +30° (down to the table), on the passive pivot
+PAN_RISER = 20.0                # R17 (2026-11-27): the yoke stands on a Ø40 hub this tall, so the yoke plate and the head clear
+                                # the pan sleeve and the carry handle by ≥ 25 mm at every pan angle (were 10.6 / 15.2 / 17.4)
 
 
 def _rbox(x, y, z, r):
@@ -248,11 +250,34 @@ def head_pivot():
     return _PIVOT[0]
 
 
+def neck_boot(shell, px, pz):
+    """R17 (2026-11-27): TPU 95A boot (2 mm) closing the head's neck opening (the cut at the shell's back and bottom where
+    the yoke comes in), head frame (it rides the head; bonded to the opening's rim). A box behind the opening round the
+    yoke's posts and beams (6 mm behind the yoke), a floor 3.5 mm under the yoke plate with a Ø44 hole for the riser
+    hub, and a front lip + side walls from the floor down to the shell's bottom edge. Lip seals 1.5 mm round the yoke
+    beams: the boot flexes there with the tilt (−10…+30°; folding not modelled, ESTIMATE). One print, ≈ 73 × 188 × 93 mm."""
+    t = 2.0
+    zf = -40.0 - 1.5 - 2.0                                                           # floor top (the yoke plate is at z −40 at tilt 0)
+    y1 = 94.0
+    rear = Pos((-36.0 - 6.0) / 2, 0, (zf - t + 29.0) / 2) * soft_shell(30.0, 2 * y1, 29.0 - zf + t, 12, 6, t)
+    rear -= Pos(0, 0, 0) * Pos(20.0, 0, 0) * Box(60.0, 400, 400)                     # keep x < −10 (the shell's back plane)
+    floor = Pos((-10.0 + 37.0) / 2, 0, zf - t / 2) * Box(47.0, 2 * y1, t)
+    lip = Pos(36.0, 0, (-64.0 + zf) / 2) * Box(t, 2 * y1, zf - (-64.0))
+    sides = [Pos((-10.0 + 37.0) / 2, s * (y1 - t / 2), (-64.0 + zf) / 2) * Box(47.0, t, zf - (-64.0)) for s in (1, -1)]
+    b = rear + floor + lip + sides[0] + sides[1]
+    b -= Pos(0, 0, zf - 10) * Cylinder(22.0, 20)                                     # riser hub (Ø40) + 2 mm
+    b -= shell
+    b -= Pos(0, 0, -40.0) * _yoke(px, 40.0 + pz, 1.5)                               # 1.5 mm round the yoke at tilt 0
+    sols = b.solids()
+    return max(sols, key=lambda q: q.volume) if len(sols) > 1 else b
+
+
 def _yoke(px, zp, g=0.0):
     """Fork on the pan output (yoke frame, z = 0 on the pan stack): base plate + two 8 mm arms that rise through the
     head's neck opening and run forward inside the head to the pivot bosses (Ø48). The −Y boss holds the 6805 pivot
     bearing; the tilt cartridge bolts to the +Y boss, coaxial. `g` grows it for the clearance cut."""
     f = Pos(0, 0, -g) * Box(60 + 2 * g, 150 + 2 * g, 8 + 2 * g, align=MIN)
+    f += Pos(0, 0, -PAN_RISER - g) * Cylinder(20 + g, PAN_RISER + g, align=MIN)      # R17: riser hub on the pan output
     for s in (1, -1):
         f += Pos(0, s * 71, -g) * Box(40 + 2 * g, 8 + 2 * g, zp + g, align=MIN)                     # post
         f += Pos((px - 20) / 2, s * 71, zp) * Box(px + 20 + 2 * g, 8 + 2 * g, 28 + 2 * g)            # beam to the pivot
@@ -268,7 +293,7 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     idler = Pos(xb, yb - 14 - ty / 2, Z_TOP + 8) * Rot(0, 90, 0) * Cylinder(14, wx + 3)
     # pan cartridge S, shaft up, on the top bracket; yoke + head ride on it
     pan = Pos(MAST_X, 0, Z_TOP + 24) * Rot(0, 0, 90) * cs.sleeve()
-    yz = Z_TOP + 24 + cs.stack_height()
+    yz = Z_TOP + 24 + cs.stack_height() + PAN_RISER
     P = Pos(MAST_X, 0, yz) * Rot(0, 0, pan_deg)
     # D22 (owner, 2026-11-27): the 7" head (+≈ 120 g, 252 × 184 mm) clashed with the mast bracket at +30° tilt and loaded
     # the tilt servo (75 % before the bigger screen). The tilt axis moves from the neck (40 mm above the yoke) to the
@@ -310,7 +335,7 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
            ("pan_sleeve", pan, "white"), ("yoke", P * yoke, "dark"), ("tilt_sleeve", P * tilt, "white"),
            ("tilt_bearing", P * brg, "steel"),
            ("head_shell", P * T * shell, "white"), ("head_pivot_stub", P * T * stub_m, "dark"), ("head_drive_stub", P * T * stub_p, "dark"),
-           ("visor", P * T * visor, "dark"), ("head_screen", P * T * screen, "black"),
+           ("visor", P * T * visor, "dark"), ("head_screen", P * T * screen, "black"), ("neck_boot", P * T * neck_boot(shell, px, pz), "dark"),
            ("eye_l", P * T * eyes[0], "orange"), ("eye_r", P * T * eyes[1], "orange"), ("head_cam", P * T * cam, "dark")]
     return out
 

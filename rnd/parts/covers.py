@@ -264,7 +264,7 @@ def mast_cap():
     z0, z1 = upper.Z_TOP - 30, upper.Z_TOP + 24
     c = Pos((x0 + x1) / 2, 0, (z0 + z1) / 2) * soft_shell(x1 - x0 + 2 * WALL, y1 - y0 + 2 * WALL, z1 - z0, 8, 1, WALL)
     c -= Pos(upper.MAST_X, 0, z0) * Box(upper.W + 2, upper.W + 2, 2 * WALL + 1)        # mast (1 mm, static)
-    c -= Pos(upper.MAST_X - upper.W / 2 - 3, 23, z0) * Box(8, 16, 2 * WALL + 1)        # ratchet strip
+    # (lift v2: the steel rack ends at z 1095, below the cap, so its floor is closed there)
     c -= Pos(xb, yb, z0) * Box(tb + 8 + 2 * WALL + 1, wb + 8 + 2 * WALL + 1, 2 * WALL + 1)   # duct
     c -= Pos(upper.MAST_X, 0, z1) * Box(upper.W + 16.8, upper.W + 16.8, 2 * WALL + 1)  # bracket top stays bare (pan sleeve)
     hd = {n: p for n, p, _ in upper.head()}
