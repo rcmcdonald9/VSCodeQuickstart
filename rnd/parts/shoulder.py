@@ -212,7 +212,7 @@ def idler():
     from .. import belts as _b
     from .belt_stage import PITCH as _P
     g = _b.idler_geom("shoulder_pitch", 20, 60, BELT_C, _b.STOCK_TEETH["shoulder_pitch"], MOT_PEAK * 1000 / (20 * _P / math.pi / 2))
-    g["wall_b_out"] = -40.0
+    g["wall_b_out"], g["axle_top"] = -40.0, -1.0          # M5 × 40 + washer: tip 1 mm under wall A's face (the can flange sits there)
     return g
 
 

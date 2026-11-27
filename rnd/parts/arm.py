@@ -129,6 +129,10 @@ def upper_bone() -> Part:
     # anti-rotation slot block for the cassette pin (slot radial to the elbow axis, so belt tension never reaches the shell)
     p += Pos(0, (CAS_B[1] + 2 + h["y"] / 2 - WALL) / 2, SLOT_Z) * (Box(16, h["y"] / 2 - WALL - CAS_B[1] - 2, 16)
                                                                 - Box(5.4, 40, 12))
+    # D26: the 6001 and its bonded bushing (r 18.7) stand 2.8 mm proud of plate B toward +Y: a 1 mm clearance scallop in
+    # the slot block's foot (stage z −43 … −39.2)
+    from .belt_stage import BUSH_B
+    p -= STAGE * Pos(0, 0, -43.0) * Cylinder(BUSH_B["od"] / 2 + 1.0, 43.0 - 39.2 + 0.01, align=MIN)
     # openings: cartridge bay on -Y (the cartridge drops in from the side), elbow hub exit on +Y
     if D20:                                                                              # the rounded top edge dips over the can: bay runs to y −40
         p -= Pos(0, -52, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(MOT["od"] / 2 + 4.5, 24)

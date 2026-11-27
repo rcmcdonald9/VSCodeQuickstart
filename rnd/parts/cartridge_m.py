@@ -217,12 +217,12 @@ EAR_FEED = {"yaw": {50.0: 90.0, -50.0: -90.0, 145.0: 180.0, -145.0: 180.0}}   # 
 EXIT_SITES = {"pitch": 90.0, "lift": 180.0, "lift4": 180.0}
 # D26 (owner, 2026-11-27): the arm sites drive their pulley straight from the motor output (belt_stage.small_stage_v4: a
 # turned stub on the output flange, a 6001 in wall B, a slotted idler); the lift sites keep the Oldham (v3) until
-# upper.py moves (lift_d26 is the direct pattern for it). With the pulley on the motor nothing static passes through the
+# upper.py moves (the edit is in the D26 report). With the pulley on the motor nothing static passes through the
 # flange, so the flange is whole again; where the cartridge cannot be pulled its stub's length (pitch: the lift carriage
 # 12.6 mm behind), wall A gets a U-slot instead (WALL_EXIT: the direction the pulley and stub leave, from the stage +X,
 # after 8.5 mm along the axis frees the 6001 from wall B).
-DIRECT_SITES = {"pitch4", "elbow", "yaw", "roll_belt", "lift_d26"}
-WALL_EXIT = {"pitch4": 270.0, "lift_d26": 0.0}
+DIRECT_SITES = {"pitch4", "elbow", "yaw", "roll_belt"}   # + "lift" / "lift4" once upper.py moves the lift to the direct stage
+WALL_EXIT = {"pitch4": 270.0, "lift": 0.0, "lift4": 0.0}   # lift: up (stage +X), once its open belt is unclamped at the carriage and lifted off the 20T
 DIRECT_LIFT = 8.5                            # axial travel that frees the 6001 (8 wide, flush with wall B's pulley face) + 0.5
 EXIT_LIFT = 4.5                              # axial travel before the side move: adapter tongue (3.7 in the disc) + 0.8
 STEP_T = 3.0

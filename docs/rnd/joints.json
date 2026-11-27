@@ -8,7 +8,7 @@
    "margin": 1.85,
    "F0": 1500.0,
    "F_life": 1326,
-   "F_req": 718,
+   "F_req": 717,
    "F_bare": 455,
    "F_req_bare": 402,
    "disc": {
@@ -21,19 +21,19 @@
    "joint": "pitch hub \u2194 tube",
    "case": "basket \u00d7 1.5",
    "N": 0.0,
-   "M": 17.01,
-   "T": 39.44,
+   "M": 16.99,
+   "T": 39.42,
    "pose": "floor pick, x 0.50",
-   "margin": 2.94,
+   "margin": 2.95,
    "verdict": true,
    "text": "no gap up to 56 N\u00b7m at the life preload; bolt 1.63 kN; print contact 4.1 MPa (\u2264 12)",
-   "before": 2.73
+   "before": 2.74
   },
   {
    "joint": "pitch hub \u2194 tube",
    "case": "hug \u00d7 1.5",
    "N": 0.0,
-   "M": 30.07,
+   "M": 30.06,
    "T": 24.05,
    "pose": "yaw -45\u00b0, elbow -90\u00b0",
    "margin": 1.85,
@@ -45,12 +45,12 @@
    "joint": "pitch hub \u2194 tube",
    "case": "bump 140 N",
    "N": 140.0,
-   "M": 130.55,
-   "T": 112.81,
+   "M": 130.52,
+   "T": 112.79,
    "pose": "abducted 90\u00b0, -Z",
    "margin": 1.58,
    "verdict": true,
-   "text": "gaps; bolt 3.23 kN vs proof 7.29 kN; thread strip (the weaker of the 7075-T6 crank (4 mm tapped through, 2.95 effective) and the 10.9 stud) 7.6 kN (2.36\u00d7 the bolt, need 1.5\u00d7); sleeve 212 MPa (\u2264 750); print contact 8.1 MPa (\u2264 40)",
+   "text": "gaps; bolt 3.23 kN vs proof 7.29 kN; thread strip (the weaker of the 7075-T6 crank (4 mm tapped through, 2.95 effective) and the 10.9 stud) 7.6 kN (2.36\u00d7 the bolt, need 1.5\u00d7); sleeve 211 MPa (\u2264 750); print contact 8.1 MPa (\u2264 40)",
    "before": 0.35
   },
   {
@@ -58,7 +58,7 @@
    "case": "stall (pitch 63 / roll 103 / elbow 63 N\u00b7m)",
    "N": 343.0,
    "M": 184.12,
-   "T": 115.61,
+   "T": 115.6,
    "pose": "roll stall, elbow 90\u00b0",
    "margin": 1.18,
    "verdict": true,
@@ -74,7 +74,7 @@
    "F_life": 1049,
    "F_req": 650,
    "F_bare": 296,
-   "F_req_bare": 345,
+   "F_req_bare": 344,
    "disc": {
     "F_life": 682,
     "F_req": 692
@@ -84,8 +84,8 @@
   {
    "joint": "yaw flange \u2194 tube",
    "case": "basket \u00d7 1.5",
-   "N": 100.9,
-   "M": 32.59,
+   "N": 100.8,
+   "M": 32.58,
    "T": 2.1,
    "pose": "floor pick, x 0.50",
    "margin": 1.63,
@@ -96,7 +96,7 @@
   {
    "joint": "yaw flange \u2194 tube",
    "case": "hug \u00d7 1.5",
-   "N": 101.6,
+   "N": 101.4,
    "M": 24.05,
    "T": 0.0,
    "pose": "yaw -45\u00b0, elbow -90\u00b0",
@@ -108,8 +108,8 @@
   {
    "joint": "yaw flange \u2194 tube",
    "case": "bump 140 N",
-   "N": 163.2,
-   "M": 96.14,
+   "N": 163.1,
+   "M": 96.13,
    "T": 61.04,
    "pose": "abducted 90\u00b0, -Z",
    "margin": 2.11,
@@ -120,8 +120,8 @@
   {
    "joint": "yaw flange \u2194 tube",
    "case": "stall (pitch 63 / roll 103 / elbow 63 N\u00b7m)",
-   "N": 167.0,
-   "M": 98.58,
+   "N": 166.9,
+   "M": 98.57,
    "T": 149.55,
    "pose": "elbow stall, forward",
    "margin": 2.05,
@@ -145,15 +145,15 @@
    "after": "metal clamp: M4 \u00d7 25 ISO 10642 10.9 (6) / ISO 4762 12.9 in the stop bushes (2) through a 3 mm 7075 rear plate and \u00d86/4.3 steel sleeves onto the motor at 1.6 kN \u2192 1.11 kN after embedding (no print in the stack); friction 56 N\u00b7m = 1.59\u00d7 the drive limit; engagement 3.0 \u00b1 0.49 (never bottoms in 3.5)",
    "ok": true,
    "margin": 1.5908621712977558,
-   "basis": "stack per screw: bolt 13 + sleeve 7 + plate 1 \u00b5m/kN, 5 metal interfaces \u00d7 2 \u00b5m embedding (VDI 2230, ESTIMATE) \u2192 69 % left, no creep term (the printed floor + cup ring are sandwiched between the plate and the motor face, sleeves -0.05 mm vs the print: located, not clamped). Friction \u03bc 0.15 steel/Al (ESTIMATE). Engagement 25 \u2212 22 = 3.0 mm, worst \u00b1 0.49 (screw length js15 \u00b1 0.42, ISO 4759-1; plate \u00b1 0.05, sleeve \u00b1 0.02): 2.51\u20133.49 in 3.5 mm, so no shim picking; strip at the shortest (2.16 mm effective) 3.2 kN vs the worst bolt 1.81 kN (1.8\u00d7; motor bearing 2325 N \u00d7 40 mm \u2192 94 N\u00b7m on the bolt circle, under the 302 N\u00b7m that opens it, load factor 0.38). Stall reaction through the sleeves into the print: 2.7 MPa bearing (\u00d86 \u00d7 19 mm, 8 sleeves)"
+   "basis": "stack per screw: bolt 13 + sleeve 7 + plate 1 \u00b5m/kN, 5 metal interfaces \u00d7 2 \u00b5m embedding (VDI 2230, ESTIMATE) \u2192 69 % left, no creep term (the printed floor + cup ring are sandwiched between the plate and the motor face, sleeves -0.05 mm vs the print: located, not clamped). Friction \u03bc 0.15 steel/Al (ESTIMATE). Engagement 25 \u2212 22 = 3.0 mm, worst \u00b1 0.49 (screw length js15 \u00b1 0.42, ISO 4759-1; plate \u00b1 0.05, sleeve \u00b1 0.02): 2.51\u20133.49 in 3.5 mm, so no shim picking; strip at the shortest (2.16 mm effective) 3.2 kN vs the worst bolt 1.82 kN (1.8\u00d7; motor bearing 2330 N \u00d7 40 mm \u2192 94 N\u00b7m on the bolt circle, under the 302 N\u00b7m that opens it, load factor 0.38). Stall reaction through the sleeves into the print: 2.7 MPa bearing (\u00d86 \u00d7 19 mm, 8 sleeves)"
   },
   {
    "item": "M1 roll support: 61806 (rear) + the motor's output bearing",
    "before": "61806 on a printed stub, located axially, 68 mm from the motor bearing: hyperstatic (review: binds or idles)",
-   "after": "61806 floats axially (\u00b1 0.3 mm on the stub) and is bonded into an oversize seat in situ; the misalignment preload is bounded by the printed support's radial stiffness: \u2264 800 N (worst) / 240 N (RSS). 61806 s0 2.2 service / 1.0 fault (need 1.5 / 1.0); the motor bearing needs \u2265 1412 N radial in service, 3125 N at a fault",
+   "after": "61806 floats axially (\u00b1 0.3 mm on the stub) and is bonded into an oversize seat in situ; the misalignment preload is bounded by the printed support's radial stiffness: \u2264 800 N (worst) / 240 N (RSS). 61806 s0 2.2 service / 1.0 fault (need 1.5 / 1.0); the motor bearing needs \u2265 1413 N radial in service, 3130 N at a fault",
    "ok": true,
-   "margin": 1.0427528675703859,
-   "basis": "reactions from the twin wrench of the roll output (the static roll stage taken off) on supports -31.5 / 37.5 mm (69 mm apart): service (basket, hug \u00d7 1.5) 61806 527 N, motor 612 N; fault (bump, stall) 1981 / 2325 N. Misalignment: the stub and the cup's driver pilot are one print (\u00d875.2 pilot on the \u00d875 driver, 0.1 radial) \u2192 static offset \u2264 0.25 worst / 0.15 RSS mm (pilot fit + print coaxiality 0.1 + motor 0.05, ESTIMATE); the rotating seat's own error (the clevis/arm print loop) is taken out by bonding the outer race (Loctite 660, 0.3 mm radial gap) with the arm bolted at mid-travel. Radial stiffness of the printed rear support 1.6\u20133.2 kN/mm (fea.md: stub 288 N \u2192 0.13 mm, rear arm 525 N \u2192 0.09 mm, in series; \u00d7 2 upper bound, ESTIMATE). The extra 61806 friction at 800 N is 18 mN\u00b7m (SKF \u03bc 0.0015): it does not bind or blind the collision observer. **Deleting the 61806** (the review's option) needs the motor's output bearing to carry 118 N radial + 36.3 N\u00b7m tilting in service and 345 N + 137 N\u00b7m at a fault (about its own centre): only a crossed-roller or a preloaded pair with M0 \u2265 137 N\u00b7m qualifies. Seller question still open (output bearing type, C0, M0) \u2014 until then the 61806 stays"
+   "margin": 1.0409188801148601,
+   "basis": "reactions from the twin wrench of the roll output (the static roll stage taken off) on supports -32.5 / 36.5 mm (69 mm apart): service (basket, hug \u00d7 1.5) 61806 528 N, motor 613 N; fault (bump, stall) 1986 / 2330 N. Misalignment: the stub and the cup's driver pilot are one print (\u00d875.2 pilot on the \u00d875 driver, 0.1 radial) \u2192 static offset \u2264 0.25 worst / 0.15 RSS mm (pilot fit + print coaxiality 0.1 + motor 0.05, ESTIMATE); the rotating seat's own error (the clevis/arm print loop) is taken out by bonding the outer race (Loctite 660, 0.3 mm radial gap) with the arm bolted at mid-travel. Radial stiffness of the printed rear support 1.6\u20133.2 kN/mm (fea.md: stub 288 N \u2192 0.13 mm, rear arm 525 N \u2192 0.09 mm, in series; \u00d7 2 upper bound, ESTIMATE). The extra 61806 friction at 800 N is 18 mN\u00b7m (SKF \u03bc 0.0015): it does not bind or blind the collision observer. **Deleting the 61806** (the review's option) needs the motor's output bearing to carry 117 N radial + 36.4 N\u00b7m tilting in service and 345 N + 137 N\u00b7m at a fault (about its own centre): only a crossed-roller or a preloaded pair with M0 \u2265 137 N\u00b7m qualifies. Seller question still open (output bearing type, C0, M0) \u2014 until then the 61806 stays"
   },
   {
    "item": "M1 roll hard stops (both ends)",
@@ -166,34 +166,34 @@
  ],
  "roll_bearings": {
   "basket \u00d7 1.5": {
-   "R1": 526.6,
-   "R2": 612.4,
-   "F": 116.7,
-   "Mm": 36.3,
+   "R1": 527.5,
+   "R2": 613.4,
+   "F": 116.6,
+   "Mm": 36.4,
    "T": 3.0,
    "note": "set on a bed (0.55 m), x 0.50"
   },
   "hug \u00d7 1.5": {
-   "R1": 412.4,
-   "R2": 402.2,
-   "F": 117.5,
-   "Mm": 28.5,
+   "R1": 410.6,
+   "R2": 403.8,
+   "F": 117.3,
+   "Mm": 28.3,
    "T": 17.0,
    "note": "yaw 0\u00b0, elbow -90\u00b0"
   },
   "bump 140 N": {
-   "R1": 1635.0,
-   "R2": 1635.0,
-   "F": 173.8,
+   "R1": 1634.7,
+   "R2": 1634.7,
+   "F": 173.7,
    "Mm": 112.8,
    "T": 112.8,
    "note": "forward, -Z"
   },
   "stall (pitch 63 / roll 103 / elbow 63 N\u00b7m)": {
-   "R1": 1981.1,
-   "R2": 2324.6,
+   "R1": 1986.0,
+   "R2": 2329.6,
    "F": 344.7,
-   "Mm": 136.7,
+   "Mm": 137.0,
    "T": 112.7,
    "note": "roll stall, elbow 90\u00b0"
   }
