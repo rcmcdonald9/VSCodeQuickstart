@@ -5,18 +5,28 @@ the harder question a manipulation policy needs: over a table grid in front of t
 can the hand reach **with a given grasp orientation**, from any approach heading about vertical?
 
 - grid: x 0.25…0.70 m, y −0.40…+0.20 m (5 cm), two heights (5 and 25 cm above the table): 240 points
-- grasps: top-down, 45° tilted, side (horizontal); headings 0/90/180/270° about vertical
+- grasps: top-down, 45° tilted, side (horizontal); headings 0/90/180/270° about vertical. The parallel gripper closes
+  on the object the same way with either jaw on either side, so each heading counts at wrist roll θ or θ + 180°
+  (with the wrist roll at ±120°, ±90° covers every jaw orientation). The jaws are not symmetric about the roll axis
+  (rnd/parts/hand.py: fixed jaw face at x = +21 mm, the moving jaw swings onto it), so the grasp centre is the object
+  centre, fixed-jaw face − w/2 along the jaw axis, for the bench cube (w 44 mm, sw/bench_env.py). Flipping the jaws
+  moves that centre to the other side of the roll axis, and the IK puts it, not the roll axis, on the target.
 - IK: the bench env's damped least squares, 8 seeds; success = 5 mm and ≈ 6° orientation error, inside the joint limits
   (sw/bench_env.py builds the arm from rnd/params.py and the twin's joint ranges, so a range change shows up here)
 - "across the body" = the points with y > 0 (the other arm's side of the bench)
 
 Targets (set from the loop-32 arm with yaw ±150°: 36 / 69 / 68 / 60 %): no grasp class may drop more than 6 points.
+Before 2026-11-27 each heading was tried with one jaw orientation, and the wrist was ±180°. Cutting the wrist to ±120°
+made that version lose every heading that needed more than 120° of wrist roll: 69 → 50 % at 45°. It also under-counted
+at ±180°. Its orientation error (½ Σ axis × target axis) goes to zero at a 180° roll error, so a seed whose wrist was
+half a turn from the target stalled. The jaw-flip version scores the same at ±120° and ±180° (45° / side / across
+the body: 78 / 78 / 71 against 78 / 77 / 68 %). The history columns are from the old version.
 
-**Joint ranges:** yaw -150…150°, roll -15…100°, pitch -200…60°, elbow -150…0°. **Below target ❌**
+**Joint ranges:** yaw -150…150°, roll -15…100°, pitch -200…60°, elbow -150…0°, wrist roll -120…120°. **All grasp classes on target ✅**
 
-| Grasp | Reachable (now) | Target | Loop 32 (yaw ±150°) | Loop 33–39 (yaw ±70°) | |
+| Grasp | Reachable (now) | Target | Loop 32 (yaw ±150°, old version) | Loop 33–39 (yaw ±70°, old version) | |
 |---|---|---|---|---|---|
 | top-down | 35% | ≥ 30% | 36% | 34% | ✅ |
-| 45° angled | 50% | ≥ 63% | 69% | 57% | ❌ |
-| side (horizontal) | 47% | ≥ 62% | 68% | 40% | ❌ |
-| side, across the body | 50% | ≥ 54% | 60% | 2% | ❌ |
+| 45° angled | 78% | ≥ 63% | 69% | 57% | ✅ |
+| side (horizontal) | 78% | ≥ 62% | 68% | 40% | ✅ |
+| side, across the body | 71% | ≥ 54% | 60% | 2% | ✅ |
