@@ -200,6 +200,9 @@ def roll_spring_hub() -> Part:
     x0, x1 = ROLL_SPR_X
     h = Pos(x0 - 1.5, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(ROLL_SPR[1] - 0.8, 1.5, align=MIN) - Cylinder(20.1, 1.5, align=MIN))
     h += Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(ROLL_SPR[0], x1 - x0 - 0.5, align=MIN) - Cylinder(20.1, x1 - x0, align=MIN))
+    if INLINE:                                                        # M3: AS5048A magnet web (rnd/parts/encoder.py)
+        from .encoder import roll_hub_web
+        h += roll_hub_web()
     return h
 
 
@@ -228,6 +231,10 @@ _R_ROLL = ROLL_TEETH * 5.0 / math.pi / 2 - 0.5715       # roll pulley outer radi
 _R_TOP = R_MOT if INLINE else _R_ROLL                  # inline: the top plate clears the static motor housing (r 50)
 _C_TOP = 4.0 if INLINE else 3.0                        # inline: the yaw shaft's top end (2 mm above the plate) sweeps 2 mm past the housing
 P1 = (-(_R_TOP + _C_TOP) - 6.0, -(_R_TOP + _C_TOP))    # top plate z-span (bearing A flush on its underside)
+# M3 (Fable, 2026-11-27): the yaw AS5048A board sits on pads on the top plate over the tube end (rnd/parts/encoder.py), so
+# the yaw tube's top end is trimmed from 2.0 mm above the plate's top face to 0.5 mm under it (the yaw 61808 A, 7 mm in the
+# 6 mm plate, keeps 6.5 mm of tube under its inner race).
+YAW_TOP = P1[1] - 0.5
 ZF = P1[0] - JA[0]                     # flange plane of the yaw cartridge = the top plate's top face (D24; the KX face was 23.7 higher)
 BAND_CH = 12.0                         # inline: 45° chamfer on the yaw band's inboard top edge (yaw_band)
 
@@ -429,19 +436,41 @@ def roll_spring_ring() -> Part:
     ring = Pos(x0 + 0.5, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(r1 + 2, x1 - x0 + 1.6 - 0.5, align=MIN) - Cylinder(r1, x1 - x0 - 0.5, align=MIN))
     ring -= Pos(x1 - 1, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(r0 + 0.5, 5, align=MIN)
     ring -= Pos((x0 + x1) / 2, ROLL_Y, r1 + 1) * Box(CAV_H - 1, 10, 4)                      # ribbon exit (top)
+    if INLINE:                                                                              # M3: bridge for the roll AS5048A board
+        from .encoder import roll_bridge
+        ring += roll_bridge()
     return ring - Pos((x0 + 1 + x1 + 1.6) / 2, (12 + ROLL_Y - r1) / 2, 0) * Box(x1 + 1.6 - x0 - 1 + 0.01, ROLL_Y - r1 - 12 + 1 + 0.01, 14.01)
+
+
+def _enc_rot(joint):
+    """M3: the rotating side of the yaw / inline-roll AS5048A (holder + magnet), unioned into the part it turns with."""
+    from . import encoder as en
+    _, rot = en.yaw_parts() if joint == "yaw" else en.roll_parts()
+    out = rot[0][1]
+    for _n, q, _c in rot[1:]:
+        out = out + q
+    return out
+
+
+def _enc_static():
+    """M3: the static AS5048A boards (yaw on the top yaw plate; roll on the spring ring's bridge, inline only)."""
+    from . import encoder as en
+    out = [("yaw_enc_pcb", en.yaw_pcb(), "green")]
+    if INLINE:
+        out.append(("roll_enc_pcb", en.roll_pcb(), "green"))
+    return out
 
 
 def module_inline():
     out = [("ferrule_m", Rot(-90, 0, 0) * ferrule(male=True), "orange"),
            ("roll_link", roll_link_inline(), "white"), ("roll_gim_housing", roll_motor_housing(), "dark"),
            ("roll_outflange", roll_outflange(), "steel"), ("roll_arm_rear", roll_arm_rear(), "white"),
-           ("roll_spring_hub", roll_spring_hub(), "dark"), ("roll_spring_ring", roll_spring_ring(), "dark"),
-           ("yaw_block", clevis_and_yaw_block(), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_flange", yaw_flange() + yaw_tie_ring(), "steel"),
+           ("roll_spring_hub", roll_spring_hub() + _enc_rot("roll"), "dark"), ("roll_spring_ring", roll_spring_ring(), "dark"),
+           ("yaw_block", clevis_and_yaw_block(), "white"), ("yaw_shaft", yaw_shaft() + _enc_rot("yaw"), "orange"), ("yaw_flange", yaw_flange() + yaw_tie_ring(), "steel"),
            ("yaw_plate_bot", yaw_plate_bot(), "white"), ("yaw_spring_ring", yaw_spring_ring(), "dark"), ("yaw_band", yaw_band(), "white")]
     out += [(f"yaw_{n}", p, c) for n, p, c in _stage(YAW_T, 20)]
     out.append(("yaw_stop_pin", yaw_stop_pin(), "steel"))
-    return out
+    return out + _enc_static()                                                    # M3: AS5048A boards (rnd/parts/encoder.py)
 
 
 def printed_parts():
@@ -501,6 +530,8 @@ def clevis_and_yaw_block() -> Part:
         pl = _plate_z(-YAW_C - 48, X_PL1, ROLL_Y - 46, ROLL_Y + 46, z0, z1, 16)
         pl -= Pos(0, ROLL_Y, 0) * Cylinder(26, 400)                                # 61808 seat, yaw shaft
         pl -= YAW_T * wall_a_cuts(None, EAR_SITE)                                 # D24 v2: eccentric seat, spigot counterbore, 2 ear bolts + nut pockets
+        from .encoder import yaw_pilot_cuts
+        pl -= yaw_pilot_cuts()                                                    # M3: 2 × M2 pilots for the yaw AS5048A board
         p = pl if p is None else p + pl
     # confidence campaign (FEA): the bottom plate was a free solid. Four Ø14 posts outside the belt loop tie it to the top plate
     # (M5 through-bolts; the belt and both pulleys go in before the bottom plate)
@@ -567,14 +598,14 @@ def yaw_shaft() -> Part:
     the whole sub-assembly (+ spring ring and ribbon) slides sideways into the plates' U-slots, which the two
     yaw_seat_caps close. The flange is a separate part bolted to the tube's lower end (yaw_flange)."""
     z0 = FL_TOP - FL_REC                                                       # tube end = the flange's recess floor
-    h = P1[1] + 2 - z0
+    h = YAW_TOP - z0
     s = Pos(0, ROLL_Y, z0) * (Cylinder(20, h, align=MIN) - Cylinder(YF["bore_r"], 200, align=MIN))
     s += Pos(0, ROLL_Y, YAW_BELT - 8) * (pulley(40, 16, flange=False) - Cylinder(YF["bore_r"], 16, align=MIN))
     s += Pos(0, ROLL_Y, P2[1]) * (Cylinder(21.6, 1.0, align=MIN) - Cylinder(YF["bore_r"], 1.0, align=MIN))
     s += Pos(0, ROLL_Y, P2[1] + 1.0) * (Cylinder(YAW_SPR[0], YAW_BELT - 8 - P2[1] - 1.0, align=MIN) - Cylinder(YF["bore_r"], 30, align=MIN))
     s -= Pos(0, ROLL_Y, z0) * Rot(0, 0, 30) * _hex(YF["hex_af"] + 0.4, YF["hex_h"] + 0.2)   # torque socket for the flange's hex spigot
     t = YAW_TIE
-    top = P1[1] + 2
+    top = YAW_TOP
     s -= Pos(0, ROLL_Y, top - t["cb_depth"]) * Cylinder(t["cb_r"], 10, align=MIN)      # C1: counterbore for the clamp ring + heads
     for a in _yaw_tie_angles():                                                   # C1: 6 × Ø3.4 through the wall (no inserts)
         s -= Pos(t["r"] * math.cos(a), ROLL_Y + t["r"] * math.sin(a), z0 - 1) * Cylinder(t["hole"] / 2, top - z0 + 2, align=MIN)
@@ -584,7 +615,7 @@ def yaw_shaft() -> Part:
 # Yaw flange ↔ tube joint (Astra #2b finding 2, D20 payload): a hollow hex spigot on the flange (AF 24 × 8, Ø16 ribbon bore)
 # in a hex socket in the tube end carries the torque by form.
 # C1 (Fable review 2026-11-27): the bending and hanging load were on 6 × M3 into heat-set inserts in the tube end, in
-# pull-out. Now the flange is **6061-T6** (machined, ESTIMATE $25) and the joint is a tie: 6 × M3 × 45 class 12.9 socket
+# pull-out. Now the flange is **6061-T6** (machined, ESTIMATE $25) and the joint is a tie: 6 × M3 × 40 class 12.9 socket
 # caps (ISO 4762) go down from the tube's top end, heads on a steel clamp ring (r 8.5–16.8 × 2) in a Ø34 × 5.5 counterbore
 # flush under the top, through Ø3.4 holes in the tube wall (bore Ø16 for the ribbon, wall r 8–20) and the hex-socket
 # void, into M3 threads tapped in the aluminium spigot + plate (≈ 10.8 mm engaged, Loctite 243). The whole printed tube
@@ -593,7 +624,7 @@ def yaw_shaft() -> Part:
 # (r 11, 30° + k·60°). Tightened from above before the yaw block goes onto the roll output. Capacity: rnd/joints.py.
 YF = dict(hex_af=24.0, hex_h=8.0, bore_r=8.0, spigot_r_in=8.0)
 YAW_TIE = dict(n=6, r=11.0, ang0=30.0, d=3.0, pitch=0.5, As=5.03, hole=3.4, tap=2.5, grade="12.9", proof=970.0, preload=1000.0,
-               creep=0.75, ring=(8.5, 16.8, 2.0), cb_r=17.0, head_h=3.0, top_gap=0.5, L=45.0, tau_flange=207.0)
+               creep=0.75, ring=(8.5, 16.8, 2.0), cb_r=17.0, head_h=3.0, top_gap=0.5, L=40.0, tau_flange=207.0)   # M3 (encoder): L 45 → 40 with the tube top 2.5 mm lower
 YAW_TIE["cb_depth"] = YAW_TIE["ring"][2] + YAW_TIE["head_h"] + YAW_TIE["top_gap"]    # 5.5 mm
 
 
@@ -604,7 +635,7 @@ def _yaw_tie_angles():
 def yaw_tie_levels():
     """z of the ring seat, the under-head plane, the screw tip and the thread engaged in the flange (mm)."""
     t = YAW_TIE
-    top = P1[1] + 2
+    top = YAW_TOP
     seat = top - t["cb_depth"]
     head = seat + t["ring"][2]
     tip = head - t["L"]
@@ -744,14 +775,14 @@ def module():
            ("roll_link", roll_link(), "white"), ("roll_shaft", roll_shaft(), "orange"),
            ("roll_seat_cap_A", roll_seat_cap(W1), "white"), ("roll_seat_cap_B", roll_seat_cap(W2), "white"),
            ("roll_spring_hub", roll_spring_hub(), "dark"), ("roll_spring_ring", roll_spring_ring(), "dark"),
-           ("yaw_block", clevis_and_yaw_block(), "white"), ("roll_clevis_cap_in", roll_clevis_cap(0), "white"), ("roll_clevis_cap_out", roll_clevis_cap(1), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_flange", yaw_flange() + yaw_tie_ring(), "steel"),
+           ("yaw_block", clevis_and_yaw_block(), "white"), ("roll_clevis_cap_in", roll_clevis_cap(0), "white"), ("roll_clevis_cap_out", roll_clevis_cap(1), "white"), ("yaw_shaft", yaw_shaft() + _enc_rot("yaw"), "orange"), ("yaw_flange", yaw_flange() + yaw_tie_ring(), "steel"),
            ("yaw_plate_bot", yaw_plate_bot(), "white"),
            ("yaw_spring_ring", yaw_spring_ring(), "dark")]
     out += [("shoulder_cap", shoulder_cap(), "white"), ("yaw_band", yaw_band(), "white")]
     out += [(f"roll_{n}", p, c) for n, p, c in _stage(ROLL_T, 18)]
     out += [(f"yaw_{n}", p, c) for n, p, c in _stage(YAW_T, 20)]
     out.append(("yaw_stop_pin", yaw_stop_pin(), "steel"))
-    return out
+    return out + _enc_static()                                                    # M3: AS5048A boards (rnd/parts/encoder.py)
 
 
 def masses(density=1.27, split=False):
@@ -779,7 +810,7 @@ def masses(density=1.27, split=False):
     caps = 0.0 if INLINE else roll_clevis_cap(0).volume + roll_clevis_cap(1).volume
     yaw = {"clevis + caps + yaw block plates + posts (printed)": pr(clevis_and_yaw_block().volume + caps + yaw_plate_bot().volume, 0.6),
            "yaw shaft + 40T + spring hub (one piece), spring ring (printed)": pr(yaw_shaft().volume, 0.7) + pr(yaw_spring_ring().volume, 0.8),
-           "C1 yaw flange (6061-T6) + steel clamp ring + 6 × M3 × 45 12.9": yaw_flange().volume * 2.7e-6 + yaw_tie_ring().volume * 7.85e-6 + 6 * (5.03 * 45 + 45) * 7.85e-6,
+           "C1 yaw flange (6061-T6) + steel clamp ring + 6 × M3 × 40 12.9": yaw_flange().volume * 2.7e-6 + yaw_tie_ring().volume * 7.85e-6 + 6 * (5.03 * YAW_TIE["L"] + 45) * 7.85e-6,
            "yaw D13 v3 stage + Oldham + bolted can flange/nose/cap": d13 + sock, "2 × 61808 + stop pin + belt + screws + ribbon (ESTIMATE)": 0.075}
     if split:
         return sum(roll.values()), sum(yaw.values())
