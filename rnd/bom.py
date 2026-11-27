@@ -31,21 +31,26 @@ def items(d=BASELINE):
         else:
             A("Actuators", n, q, act(n)["price"], "actuators.yaml (mid list price)")
     A("Wheels & power", '6" DuraOmni omni wheel', 4, 33.0, "components.yaml")
-    A("Wheels & power", "6S 10 Ah 21700 Li-ion pack, 35 A cont., 975 g (Lumenier NAV class)", 1, 150.0, "racedayquads.com listing (loop 13)")
-    A("Wheels & power", "6S smart BMS, 40 A cont., UART/CAN telemetry + active balancing (JK-BMS class) — A13: telemetry for the dock stop, weekly 4.20 V balance charge", 1, 45.0, "ESTIMATE")
-    A("Wheels & power", "Fuses + holders (40 / 20 / 15 / 15 / 10 / 7.5 / 5 A)", 1, 15.0)
+    A("Wheels & power", "6S 10 Ah 21700 Li-ion pack (Lumenier NAV, no BMS): 35 A cont. with an 80 °C cut-off, 90 A burst, 975 g; re-terminated XT90", 1, 150.0,
+      "racedayquads.com listing (loop 13); ratings: RaceDayQuads / GetFPV (2026-11-27 search)")
+    A("Wheels & power", "6S smart BMS JK-B2A8S20P-HC: 200 A cont. / 350 A peak, 2 A active balance, CAN + RS485, 2 NTC (Neon #2 F11: the 40 A class BMS tripped on the 74 A peak) "
+      "— A13: telemetry for the dock stop and the software pack-current budget", 1, 95.0, "nkon.nl €83.95 (2026-11-27); 18650batterystore $145 (sold out)")
+    A("Wheels & power", "Steel battery box for the base bay (pack + BMS, vented) — Neon #2 F11", 1, 20.0, "ESTIMATE")
+    A("Wheels & power", "Fuses + holders: 60 A MIDI main (Neon #2 F1/F11: a 40 A main sat at 93 % of the 37 A sustained) + ATO 20 / 20 / 20 / 10 / 7.5 / 5 A", 1, 25.0,
+      "ESTIMATE")
     A("Wheels & power", "E-stop (A5 v2): 2 two-channel latching mushrooms + TE ALEV100 DC contactor (24 V coil, aux contact) + switched pre-charge (K_PRE relay + 3.3 Ω RH-50) + SN74LVC1G123 watchdog on its own LDO", 1, 150.0,
       "LEV100A5ANG $92 (Master Electronics); rest ESTIMATE")
-    A("Wheels & power", "Regen clamp / bus discharge (A5 v2): 3 × Vishay RH-50 0.56 Ω + 3 × IRFB7530 + comparator/reference, gate driver, film caps, 85 °C thermal switch "
-      "(3rd resistor since the inline roll: robot peak regen 2.8 kW > 2.46 kW sink with two; electrical.md)", 1, 76.0,
-      "RH-50 ≈ $15 (RS 5-pack); rest ESTIMATE")
-    A("Wheels & power", "Safety-board logic (Fable M2 netlist, electrical.md): discharge one-shot (LVC1G123), LVC1G74 latch, TLV3702 + TL431, LVC1G32 + UCC27524, "
-      "1 kΩ 3 W bleeder, 12 V buck + 3.3 V LDO, 2 × PC817, 2-layer PCB (the M1 bench board moves to the robot; its ideal diode stays on the bench)", 1, 35.0, "ESTIMATE")
+    A("Wheels & power", "Regen clamp / bus discharge (A5 v2, Neon #2 F1): 3 × Vishay **NH-50** 0.56 Ω (non-inductive) + 3 × VS-40CPQ060-N3 freewheel Schottky + 3 × IRFB7530 + "
+      "TLV3202 / TL431B, gate driver + gate resistors, film caps, 85 °C thermal switch (robot peak regen 2.8 kW; electrical.md)", 1, 127.0,
+      "ESTIMATE: NH-50 $30 each (IBS NH05050R00FE02 $15.01, Future NH05025R00FE02 $42.30); VS-40CPQ060-N3 RS £37 / 25; rest ESTIMATE")
+    A("Wheels & power", "Safety-board logic (netlist v3, electrical.md): discharge one-shot (LVC1G123 on Ā), LVC1G74 latch + power-on reset, LVC1G11 / LVC1G32 / LVC1G04 (K1 hold on AUX), UCC27524, "
+      "1 kΩ 3 W bleeder, 12 V buck + 3.3 V LDO, 2 × PC817, 2-layer PCB (the M1 bench board moves to the robot; its ideal diode stays on the bench)", 1, 40.0, "ESTIMATE")
     A("Drive & structure", "Thermal (Fable M7, thermal.md): aluminium finned rear caps on the 6 arm GIM6010 cartridges + 10 k NTC per GIM", 1, 6 * 15.0 + 6.0,
       "ESTIMATE (6061 CNC instant-quote class, $15 each)")
     A("Wheels & power", "DC-DC 24→12 V 10 A (head servos), 24→5 V 5 A", 1, 30.0)
     A("Wheels & power", "D14 elbow-node power: 24→12 V 6 A buck (two stalled STS3215 draw 5.4 A, Astra #16) + half-duplex TTL transceiver (one per arm)", 2, 10.0)
-    A("Wheels & power", "Connectors: XT60/XT30, 2 × 6-pin pogo blocks, JST-GH/VH, wire", 1, 50.0)
+    A("Wheels & power", "Connectors (Neon #2 F10): XT90 (pack), 5 × XT60 (2 arm detach, 3 base ↔ upper), 2 × 10-pin + 1 × 12-pin pogo blocks (USB on the arm plugs), JST-GH/VH, wire", 1, 62.0)
+    A("Wheels & power", "Lift umbilical (Neon #2 F10): drag chain 15 × 30 mm R 50, 0.55 m + 2 × 14 AWG and 3 × 18 AWG silicone pairs, CAN / e-stop / signal cores, shielded USB (1.2 m each)", 1, 30.0)
     A("Compute & sensors", "Raspberry Pi 5 8 GB", 1, 0.0, "owner has one")
     A("Compute & sensors", "USB-CAN adapter, candleLight/gs_usb (FYSETC UCAN, STM32F072): A14's five channels (CAN A base + lift, two per arm); replaces the Waveshare 2-CH HAT + 3 × $35 adapters", 5, 19.0,
       "MatterHackers FYSETC UCAN V1.0 $19 (2026-11)")
@@ -76,8 +81,8 @@ def items(d=BASELINE):
     # --- self-docking charger (queue item 4, owner request; rnd/parts/dock.py, rnd/dock_sim.py) ---
     A("Docking charger", "6S Li-ion CC/CV charger 25.2 V, 4–5 A (≈ 2.5 h full charge)", 1, 35.0, "ESTIMATE")
     A("Docking charger", "Dock electronics: ESP32-C3 + MOSFET output switch + ID-pin handshake, fuse, DC jack, wiring", 1, 12.0, "ESTIMATE")
-    A("Docking charger", "Contacts: 2 spring leaf contacts + 1 pogo pin (dock); 2 brass pads 60 × 12 mm + reverse-polarity diode/fuse (robot)", 1, 10.0, "ESTIMATE")
-    A("Docking charger", "Floor screws + AprilTag print (dock)", 1, 2.0, "ESTIMATE")
+    A("Docking charger", "Contacts (Neon #2 F12): 2 spring leaf contacts + 1 pogo pin (dock); 3 brass pads 60 × 28 mm + reverse-polarity diode/fuse + ID-line 1 kΩ / 5.6 V TVS (robot)", 1, 14.0, "ESTIMATE")
+    A("Docking charger", "Dock baseplate held down by the robot's wheels (no floor screws; dock_sim.md): 6 mm sheet with two wheel cradles + rubber feet + AprilTag print", 1, 12.0, "ESTIMATE")
     A("Drive & structure", "Torque hangers: 2 × M4×10 + 2 heat-set inserts each (wheels ×4 so far)", 4, 0.6, "ESTIMATE")
     A("Drive & structure", "Elbow belt cassette: 2 × M5×30 bolts + nylocs per arm; 4 × M3 heat-set inserts + screws for the bone cap", 2, 2.0, "ESTIMATE")
     # loop 40: 13 sockets (the wheels bolt on, D17/A11; the wrist roll lost its KX44, D16); D15 screwed sockets with 6 coil springs
@@ -87,16 +92,17 @@ def items(d=BASELINE):
     A("KX interfaces (3 sockets)", "D15 preload: 6 coil springs Ø4 × 8 per socket (assortment) + PTFE washer; 3 × M3 retainer screws + inserts", 3, 1.2, "ESTIMATE")
     A("KX interfaces (3 sockets)", "Torque pins Ø6/Ø5/Ø4 + magnet index (KX cartridges: 4 wheels, lift, head ×2)", 7, 0.4)
     A("Drive & structure", "Dowels Ø6 × 10–12: yaw hard-stop pins + KX-V ferrule dowels (3 per arm)", 1, 6.0, "ESTIMATE")
-    A("Drive & structure", f"D13 v3 small stages ×{ns}: Ø12 h6 steel rod (2 × 300 mm), aluminium HTD 5M 15 mm 20T pulleys 12 mm bore", ns, 9.0, "ESTIMATE")
-    A("Drive & structure", "D24 Oldham couplings: D40, 12 mm clamp hub + acetal disc (one per arm belt stage; the motor-side tongue adapter is printed)", ns, 12.0,
-      "ESTIMATE generic D40; Ruland MOCT41-12-A $55.20 at Motion")
+    A("Drive & structure", f"D13 v3 small stages ×{ns}, keyed (belts.md: a plain Ø12 clamp hub is 0.65× at the 11 N·m peak): Ø12 h6 rod with a 4 × 2.5 keyway (share of 2 × 300 mm), "
+      "aluminium HTD 5M 15 mm 20T pulley 12 H7 + keyway, DIN 6885 4 × 4 keys", ns, 19.5, "ESTIMATE (m1_kit KEYED_* lines)")
+    A("Drive & structure", "D24 Oldham couplings: **D50**, 12 H7 clamp hub + 4 mm keyway, acetal disc (one per arm belt stage; the D40 disc was 0.86×, belts.md; the motor-side tongue adapter is printed)", ns, 20.0,
+      "ESTIMATE generic D50 (m1_kit OLDHAM); Ruland MOCT41-12-A (D41) was $55.20 at Motion")
     A("Drive & structure", "D24/D19 heat-set inserts: 2 × 100 M4 short (≈ 51 per arm: flanges 6 each, seat caps, yaw flange + plate, outer wall, pitch hub) + 100 M3 (≈ 45 per arm: cap rims, forearm rim, palm, bone cap)", 1, 2 * 15.93 + 12.0,
       "Newark M4 brass $15.93 / 100; M3 ESTIMATE")
     A("Drive & structure", "D24 flange screws: 70 × M4 × 12 countersunk ISO 10642 (6 per bolted cartridge × 10 + spares)", 1, 10.0, "ESTIMATE")
     A("Drive & structure", "Wheel hubs bolted to the GIM output (D17/A11: no KX on the wheels): 4 × M4 per wheel", 4, 0.8, "ESTIMATE")
     A("Drive & structure", "Chassis ring (A11): 3 mm 6061 laser-cut ring tying the 4 deck quarters", 1, 40.0, "ESTIMATE (SendCutSend class)")
     A("Drive & structure", "Anti-tip casters (D18/A10): spring-loaded ball transfer units at the 4 diagonals", 4, 4.0, "ESTIMATE")
-    A("Drive & structure", "Clock-spring ribbon stock (A3): 20 AWG silicone pairs, 26 AWG twisted pairs, slim USB, PET/Kapton carrier tape", 1, 30.0, "ESTIMATE")
+    A("Drive & structure", "Clock-spring ribbon stock (A3, Neon #2 F10): 16 AWG high-flex ETFE/FEP pairs (was 20 AWG silicone), 26 AWG twisted pairs, shielded slim USB, PET/Kapton carrier + PTFE tape liners", 1, 40.0, "ESTIMATE")
     A("Drive & structure", "HTD 5M 15 mm closed belts (" + ", ".join(f"{j} {l} mm" for j, l in belts) + ") × 2 arms", 2 * len(belts), 9.0, "Bestorq 400-5M-15 $7.67 at MROSupply (loop 14); Gates ≈ $20–28")
     A("Drive & structure", "HTD 5M 15 mm open belt for the lift (2.4 m at $8.32/m) + 2 clamps", 1, 25.0, "Acorn listing")
     if inline:                                                  # D24 inline roll (rnd/parts/roll.py INLINE section), per arm
@@ -132,6 +138,7 @@ WAVE1_BEFORE = 4898.0   # landed total after the loop-47 cost pass (bom.json bef
 WAVE1_AFTER = 5013.0    # after wave 1 (RND_LOG, buy-list track)
 WAVE2_BEFORE = 5199.0   # after the owner's inline-roll OK, before the wave-2 cost pass
 WAVE2_AFTER = 5308.0    # after the wave-2 cost pass (before the Fable-review fixes)
+NEON2_BEFORE = 5485.0   # bom.json before the Neon review #2 electrical / harness / dock / keyed-drive fixes (2026-11-27)
 HOLDS = {}
 
 
@@ -175,6 +182,10 @@ def report(d=BASELINE):
          "(the inline roll raised the robot's peak regen to 2.8 kW), the safety-board logic the netlist needs (one-shot discharge, latch, comparators), and "
          "aluminium finned rear caps + thermistors on the six arm GIM6010 cartridges (a closed ASA sleeve allows only 0.65 × rated continuous). The C1/M1 "
          "joint hardware (tie-rods, 6061 yaw flange, 7075 crank, steel stop pins) is in the M1 kit and is added here by its own track.", "",
+         f"**Neon review #2 fixes (2026-11-27; findings 1, 10, 11, 12 and the keyed D50 drive of 2/15): ${NEON2_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - NEON2_BEFORE)}).** "
+         "NH-50 clamp resistors + freewheel Schottkys (+$51), a 200 A BMS for the 40 A class (+$50), a steel battery box (+$20), 60 A main fuse (+$10), XT90 / XT60 / USB pogo "
+         "connectors (+$12), the lift umbilical (+$30), 16 AWG fluoropolymer ribbon wire (+$10), the dock baseplate and taller pads instead of floor screws (+$14), "
+         "keyed stages and D50 Oldhams instead of plain shafts and D40s (+$111), the netlist-v3 logic (+$5); plus contingency.", "",
          f"**Wave-2 cost pass (2026-11-27; motor choices and safety items unchanged): ${WAVE2_BEFORE:,.0f} → ${WAVE2_AFTER:,.0f} landed ({_sd(WAVE2_AFTER - WAVE2_BEFORE)}).** "
          "The inline roll was carried as a bare motor with the belt-roll parts still in the list, so corrections come first (lines, before contingency):",
          "- GIM8108-36 $171 → **$240** with its 24 V driver (SteadyWin store $239.80 GDM810 = SDC303; aifitlab $240 GDK810; $190 is the bare motor): +$138.",
