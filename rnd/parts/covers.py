@@ -290,10 +290,11 @@ def torso_frame(lift_mm):
     pod -= Pos((xr + WALL + xt + 2) / 2, 0, (zp + WALL + zt) / 2 + 1) * Box(xt + 2 - xr - WALL, yw - 2 * WALL, zt - zp - WALL + 2)
     pod -= _duct_hole(zp)
     car = upper.carriage(lift_mm)
-    out.append(("spine_pod", _main(pod - car), "white"))
+    rack = Pos(upper.MAST_X - upper.W / 2 - 5, upper.RACK["y"], (zb + zt) / 2) * Box(20, upper.RACK["w"] + 10, zt - zb + 40)   # rack + 5 mm
+    out.append(("spine_pod", _main(pod - car - rack), "white"))
     # the mast passage also cuts the torso's back wall: close that slot below the pod
     bp = Pos(xt - WALL / 2, 0, (zb + zp + WALL) / 2) * Box(WALL, pas + 4, zp + WALL - zb)
-    out.append(("back_plate", _main(bp - car), "white"))
+    out.append(("back_plate", _main(bp - car - rack), "white"))
     return out
 
 

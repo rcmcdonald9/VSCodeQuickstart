@@ -80,13 +80,21 @@ def torque_hanger_pose(zc):
     return Pos(tp["r"], 0, zc) * cm.torque_hanger(reach, slot_in=4.0)
 
 
+def _wheel_chord():
+    """Half-chord of the 6" omni (rollers included, r 76.3) at the deck underside: the wheel's top pokes 3.5 mm into
+    the deck. R17 (2026-11-27): the cut-out is the wheel's footprint + 3 mm a side (was 130 × 60: a Ø12 probe went
+    from the wheel well up into the base interior and under the lift cover)."""
+    r = omni_wheel().bounding_box().max.Y
+    return math.sqrt(max(r * r - (Z1 - DECK_T - Z_AX) ** 2, 0.0))
+
+
 def deck_quarter(q) -> Part:
     """Quarter deck (printed, ribbed), with cut-outs for the wheels."""
     r = R_SHELL - 4
     p = Pos(0, 0, Z1 - DECK_T) * Cylinder(r, DECK_T, align=MIN)
     p &= Rot(0, 0, 90 * q + 45) * Pos(r / 2, r / 2, Z1 - DECK_T) * Box(r, r, DECK_T, align=MIN)      # one diagonal quadrant
-    for k in range(4):                                                               # wheel cut-outs (the wheels rise to z 152)
-        p -= Rot(0, 0, 90 * k) * Pos(R_W, 0, Z1 - DECK_T) * Box(130, 60, DECK_T, align=MIN)
+    for k in range(4):                                                               # wheel cut-outs (the wheels rise to z 152.5)
+        p -= Rot(0, 0, 90 * k) * Pos(R_W, 0, Z1 - DECK_T) * Box(WHEEL_W + 6, 2 * _wheel_chord() + 6, DECK_T, align=MIN)
     p -= Pos(-60 + 40, 0, Z1 - 20) * Box(22, 42, 40, align=MIN)                      # blind-mate plug pass-through
     return p
 

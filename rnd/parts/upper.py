@@ -83,10 +83,10 @@ def lift_belt_xy():
     return LIFT_XF - V3["belt_c"], -2.0, BELT_W, BELT_T
 
 
-RACK = dict(m=1.0, w=10.0, h=10.0, y=23.0, segs=(500.0, 300.0), z0=Z_BASE + 140)   # A15 rack: two lengths (500 + one cut to 300 from a 2nd 500), ESTIMATE source: BOM line
+RACK = dict(m=1.0, w=10.0, h=10.0, y=23.0, segs=(500.0, 300.0), z0=Z_BASE + 140, fill=(Z_BASE + 45, Z_TOP - 35))   # A15 rack: two lengths (500 + one cut to 300 from a 2nd 500), ESTIMATE source: BOM line
 
 
-def ratchet_strip() -> Part:
+def ratchet_strip(fillers: bool = True) -> Part:
     """A15: steel rack (module 1, 10 × 10) bolted to the mast's back face (M4 into rivet nuts every 100 mm, ESTIMATE),
     z 295 … 1095: the pawl (lift − 30) meets it from lift_min to lift_max. Teeth not modelled (m 1: π mm pitch). Name kept
     for callers; it is no longer printed."""
@@ -95,6 +95,9 @@ def ratchet_strip() -> Part:
         s = Pos(MAST_X - W / 2 - RACK["h"] / 2, RACK["y"], z) * Box(RACK["h"], RACK["w"], L - 0.5, align=MIN)
         p = s if p is None else p + s
         z += L
+    if fillers:                                                       # R17: printed 10 × 10 fillers carry the profile on to
+        for z0, z1 in ((RACK["fill"][0], RACK["z0"] - 0.5), (z, RACK["fill"][1])):     # where the collars and carriage travel,
+            p += Pos(MAST_X - W / 2 - RACK["h"] / 2, RACK["y"], z0) * Box(RACK["h"], RACK["w"], z1 - z0, align=MIN)   # so their gaps stay constant
     return p
 
 
@@ -252,18 +255,21 @@ def head_pivot():
 
 def neck_boot(shell, px, pz):
     """R17 (2026-11-27): TPU 95A boot (2 mm) closing the head's neck opening (the cut at the shell's back and bottom where
-    the yoke comes in), head frame (it rides the head; bonded to the opening's rim). A box behind the opening round the
-    yoke's posts and beams (6 mm behind the yoke), a floor 3.5 mm under the yoke plate with a Ø44 hole for the riser
-    hub, and a front lip + side walls from the floor down to the shell's bottom edge. Lip seals 1.5 mm round the yoke
-    beams: the boot flexes there with the tilt (−10…+30°; folding not modelled, ESTIMATE). One print, ≈ 73 × 188 × 93 mm."""
+    the yoke comes in, plus the slots the yoke's tilt sweep cuts in its bottom and back), head frame (it rides the head;
+    bonded to the opening's rim). A box behind the opening round the yoke's posts and beams (6 mm behind the yoke, up to
+    z 100), a floor 3.5 mm under the yoke plate with a Ø44 hole for the riser hub, out to x 80, and a front lip + side
+    walls from the floor down to the shell's bottom. Lip seals 1.5 mm round the yoke
+    beams: the boot flexes there with the tilt (−10…+30°; folding not modelled, ESTIMATE). One print, ≈ 116 × 188 × 164 mm."""
     t = 2.0
     zf = -40.0 - 1.5 - 2.0                                                           # floor top (the yoke plate is at z −40 at tilt 0)
     y1 = 94.0
-    rear = Pos((-36.0 - 6.0) / 2, 0, (zf - t + 29.0) / 2) * soft_shell(30.0, 2 * y1, 29.0 - zf + t, 12, 6, t)
+    zt = 100.0                                                                       # up over the yoke-beam slots in the shell's back wall
+    rear = Pos((-36.0 - 6.0) / 2, 0, (zf - t + zt) / 2) * soft_shell(30.0, 2 * y1, zt - zf + t, 12, 6, t)
     rear -= Pos(0, 0, 0) * Pos(20.0, 0, 0) * Box(60.0, 400, 400)                     # keep x < −10 (the shell's back plane)
-    floor = Pos((-10.0 + 37.0) / 2, 0, zf - t / 2) * Box(47.0, 2 * y1, t)
-    lip = Pos(36.0, 0, (-64.0 + zf) / 2) * Box(t, 2 * y1, zf - (-64.0))
-    sides = [Pos((-10.0 + 37.0) / 2, s * (y1 - t / 2), (-64.0 + zf) / 2) * Box(47.0, t, zf - (-64.0)) for s in (1, -1)]
+    xl = 80.0                                                                        # past the yoke's swept slots in the shell bottom (x ≤ 75)
+    floor = Pos((-10.0 + xl) / 2, 0, zf - t / 2) * Box(xl + 10.0, 2 * y1, t)
+    lip = Pos(xl - t / 2, 0, (-64.0 + zf) / 2) * Box(t, 2 * y1, zf - (-64.0))
+    sides = [Pos((-10.0 + xl) / 2, s * (y1 - t / 2), (-64.0 + zf) / 2) * Box(xl + 10.0, t, zf - (-64.0)) for s in (1, -1)]
     b = rear + floor + lip + sides[0] + sides[1]
     b -= Pos(0, 0, zf - 10) * Cylinder(22.0, 20)                                     # riser hub (Ø40) + 2 mm
     b -= shell
@@ -290,7 +296,7 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     top -= Pos(MAST_X, 0, Z_TOP) * Box(W + 0.4, W + 0.4, 10, align=MIN)
     handle = Pos(MAST_X - 50.5, 0, Z_TOP + 24) * Rot(90, 0, 0) * (Cylinder(34, 24) - Cylinder(24, 25) - Pos(0, -40, 0) * Box(80, 80, 30))   # R15: x −50 → −50.5 (0.9 → 1.4 mm to the pan sleeve)
     xb, yb, wx, ty = lift_belt_xy()                                                   # lift v2: belt in the YZ plane, idler axis along X
-    idler = Pos(xb, yb - 14 - ty / 2, Z_TOP + 8) * Rot(0, 90, 0) * Cylinder(14, wx + 3)
+    idler = Pos(xb, yb - 14 - ty / 2, Z_TOP + 2) * Rot(0, 90, 0) * Cylinder(14, wx + 3)        # top 8 mm under the mast cap's top (R17)
     # pan cartridge S, shaft up, on the top bracket; yoke + head ride on it
     pan = Pos(MAST_X, 0, Z_TOP + 24) * Rot(0, 0, 90) * cs.sleeve()
     yz = Z_TOP + 24 + cs.stack_height() + PAN_RISER
@@ -319,6 +325,8 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     tb = tilt.bounding_box()
     stub_p = Pos(px, (tb.max.Y + 0.8 + yi) / 2, pz) * Rot(90, 0, 0) * Cylinder(15, yi - tb.max.Y - 0.8)
     stub_p += Pos(px, yi - 2, pz) * Rot(90, 0, 0) * Cylinder(22, 4)
+    inner = Pos(70, 0, 28) * soft_box(160 - 4.8, 252 - 4.8, 184 - 4.8, 58 - 2.4, 40 - 2.4)       # R17: the stub flanges stood out
+    stub_m, stub_p = stub_m & inner, stub_p & inner                                              # of the shell's corner blend
     # clearance cuts over the tilt range (and any pan, for the pan sleeve): the yoke grown 3 mm, the tilt sleeve's box,
     # the pan sleeve's cylinder
     env_y = _yoke(px, zp, 3.0)
@@ -354,7 +362,7 @@ def masses(density=1.27):
         "carriage (printed) + 8×625 bearings + solenoid": carriage(L).volume / 1e6 * density * 0.6 + 8 * 0.012 + 0.05,
         "lift pawl (steel)": lift_pawl(L).volume / 1e6 * 7.85,
         "torso shell + tray (printed)": (tor["torso_shell"].volume + tor["e_tray"].volume) / 1e6 * density,
-        "steel rack m1 10 × 10 (A15)": ratchet_strip().volume / 1e6 * 7.85,
+        "steel rack m1 10 × 10 (A15) + printed end fillers": ratchet_strip(False).volume / 1e6 * 7.85 + (ratchet_strip().volume - ratchet_strip(False).volume) / 1e6 * density,
         "lift bracket + cover + bolted can/cap (printed)": (lift_mount().volume * 0.6 + lift_cover().volume
                                                             + sum(p.volume for n, p, c in lift_drive() if n in ("lift_can", "lift_can_cap")) * 0.7) / 1e6 * density,
         "lift stage metal (Ø12 shaft, 2 × 6801, 20T alu, Oldham; ESTIMATE as the arm stages) + belt 2.4 m + idler": 0.10 + 0.10,
