@@ -36,8 +36,13 @@ def items(d=BASELINE):
     A("Wheels & power", "Fuses + holders (40 / 20 / 15 / 15 / 10 / 7.5 / 5 A)", 1, 15.0)
     A("Wheels & power", "E-stop (A5 v2): 2 two-channel latching mushrooms + TE ALEV100 DC contactor (24 V coil, aux contact) + switched pre-charge (K_PRE relay + 3.3 Ω RH-50) + SN74LVC1G123 watchdog on its own LDO", 1, 150.0,
       "LEV100A5ANG $92 (Master Electronics); rest ESTIMATE")
-    A("Wheels & power", "Regen clamp / bus discharge (A5 v2): 2 × Vishay RH-50 0.56 Ω + 2 × IRFB7530 + comparator/reference, gate driver, film caps, 85 °C thermal switch", 1, 58.0,
+    A("Wheels & power", "Regen clamp / bus discharge (A5 v2): 3 × Vishay RH-50 0.56 Ω + 3 × IRFB7530 + comparator/reference, gate driver, film caps, 85 °C thermal switch "
+      "(3rd resistor since the inline roll: robot peak regen 2.8 kW > 2.46 kW sink with two; electrical.md)", 1, 76.0,
       "RH-50 ≈ $15 (RS 5-pack); rest ESTIMATE")
+    A("Wheels & power", "Safety-board logic (Fable M2 netlist, electrical.md): discharge one-shot (LVC1G123), LVC1G74 latch, TLV3702 + TL431, LVC1G32 + UCC27524, "
+      "1 kΩ 3 W bleeder, 12 V buck + 3.3 V LDO, 2 × PC817, 2-layer PCB (the M1 bench board moves to the robot; its ideal diode stays on the bench)", 1, 35.0, "ESTIMATE")
+    A("Drive & structure", "Thermal (Fable M7, thermal.md): aluminium finned rear caps on the 6 arm GIM6010 cartridges + 10 k NTC per GIM", 1, 6 * 15.0 + 6.0,
+      "ESTIMATE (6061 CNC instant-quote class, $15 each)")
     A("Wheels & power", "DC-DC 24→12 V 10 A (head servos), 24→5 V 5 A", 1, 30.0)
     A("Wheels & power", "D14 elbow-node power: 24→12 V 6 A buck (two stalled STS3215 draw 5.4 A, Astra #16) + half-duplex TTL transceiver (one per arm)", 2, 10.0)
     A("Wheels & power", "Connectors: XT60/XT30, 2 × 6-pin pogo blocks, JST-GH/VH, wire", 1, 50.0)
@@ -125,6 +130,7 @@ CONTINGENCY = 0.15      # A16 (review finding 18): price drift, shipping, tax
 WAVE1_BEFORE = 4898.0   # landed total after the loop-47 cost pass (bom.json before wave 1)
 WAVE1_AFTER = 5013.0    # after wave 1 (RND_LOG, buy-list track)
 WAVE2_BEFORE = 5199.0   # after the owner's inline-roll OK, before the wave-2 cost pass
+WAVE2_AFTER = 5308.0    # after the wave-2 cost pass (before the Fable-review fixes)
 HOLDS = {}
 
 
@@ -164,7 +170,11 @@ def report(d=BASELINE):
          "screws ($10), Ø6 dowels for the yaw stops and ferrules ($6); the D13 flange couplings go (−$24); D14 buck 3 → 6 A (+$4); PETG from the "
          "re-sliced print plan. +$13 against the $5,000 limit at the time. The owner's OK for the inline GIM8108-36 roll then put two GIM8108-36 "
          f"in place of two GIM6010-8 (at the yaml's $171): ${WAVE2_BEFORE:,.0f}.", "",
-         f"**Wave-2 cost pass (2026-11-27; motor choices and safety items unchanged): ${WAVE2_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - WAVE2_BEFORE)}).** "
+         f"**Fable review fixes (2026-11-27, M2 + M7): ${WAVE2_AFTER:,.0f} → ${tot:,.0f} landed ({_sd(tot - WAVE2_AFTER)}).** A third clamp resistor + MOSFET "
+         "(the inline roll raised the robot's peak regen to 2.8 kW), the safety-board logic the netlist needs (one-shot discharge, latch, comparators), and "
+         "aluminium finned rear caps + thermistors on the six arm GIM6010 cartridges (a closed ASA sleeve allows only 0.65 × rated continuous). The C1/M1 "
+         "joint hardware (tie-rods, 6061 yaw flange, 7075 crank, steel stop pins) is in the M1 kit and is added here by its own track.", "",
+         f"**Wave-2 cost pass (2026-11-27; motor choices and safety items unchanged): ${WAVE2_BEFORE:,.0f} → ${WAVE2_AFTER:,.0f} landed ({_sd(WAVE2_AFTER - WAVE2_BEFORE)}).** "
          "The inline roll was carried as a bare motor with the belt-roll parts still in the list, so corrections come first (lines, before contingency):",
          "- GIM8108-36 $171 → **$240** with its 24 V driver (SteadyWin store $239.80 GDM810 = SDC303; aifitlab $240 GDK810; $190 is the bare motor): +$138.",
          "- Belt-roll parts out (2 Oldham, 2 D13 stages, 2 belts, 4 × 61808, 4 × 6801: −$72); inline parts in (2 × 7075 output adapter at a $30 CNC "

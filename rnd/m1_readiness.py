@@ -1,8 +1,9 @@
-"""M1 purchase readiness: what the bench-arm buy depends on, how sure each answer is, the day-1 plan and the go/no-go risks.
-python -m rnd.m1_readiness
+"""M1 purchase readiness: what each step of the bench-arm buy depends on, how sure each answer is, the go / no-go per
+step, the day-1 plan and the risks.  python -m rnd.m1_readiness
 
-Reads the cached results of the checks (docs/rnd/*.json, docs/sw/bringup_*.json) so the numbers in the report are the
-ones the checks produced; the kit totals come from rnd/m1_kit.py.
+Reads the cached results of the checks (docs/rnd/*.json, docs/sw/*.json) so the numbers in the report are the ones the
+checks produced; the kit totals come from rnd/m1_kit.py. Structure after the Fable review (2026-11-27): Step 1 (one GIM,
+the protocol and the safety chain) and Step 2 (the rest of the arm), each with its own go / no-go.
 """
 from __future__ import annotations
 
@@ -11,147 +12,139 @@ from pathlib import Path
 
 D = Path(__file__).resolve().parent.parent / "docs"
 J = lambda n: json.loads((D / "rnd" / n).read_text()) if (D / "rnd" / n).exists() else {}
+JS = lambda n: json.loads((D / "sw" / n).read_text()) if (D / "sw" / n).exists() else {}
 V, C, E, U = "verified (sim / CAD check)", "measured in CAD", "ESTIMATE", "untested (M1 / coupon decides)"
-
-
-def _bringup():
-    """Latest virtual bring-up reports: (real GIM table, placeholder GIM table) step results."""
-    out = {}
-    for tag, pat in (("real", "bringup_*_virtual.json"), ("sim", "bringup_*_virtual_simgim.json")):
-        fs = sorted((D / "sw").glob(pat))
-        if fs:
-            try:
-                out[tag] = json.loads(fs[-1].read_text())
-            except Exception:
-                pass
-    return out
+nan = float("nan")
 
 
 def main():
-    from .m1_kit import totals, CONTINGENCY, SELLER_QUESTIONS, items, sd
+    from .m1_kit import CONTINGENCY, SELLER_QUESTIONS, sd, step1, totals
     from .params import BASELINE
     from .spring import workspace_margins
+    from . import accuracy, electrical as el
     wm = workspace_margins(BASELINE)
     t = totals()
-    th, st, dx, sw, asq, integ, sp, hn, ri, ss, ba = (J("thermal.json"), J("stiffness.json"), J("dexterity.json"), J("swept.json"),
-                                                      J("assembly_seq.json"), J("integration.json"), J("spacing.json"), J("harness.json"),
-                                                      J("roll_inline.json"), J("slim_study.json"), J("basket.json"))
-    bu = _bringup()
-    bom = J("bom.json")
+    th, st, ri, ss, bom = J("thermal.json"), J("stiffness.json"), J("roll_inline.json"), J("slim_study.json"), J("bom.json")
+    jit = JS("loop_jitter.json")
     mr = min(v["m_rated"] for v in wm.values())
-    mp = min(v["m_peak"] for v in wm.values())
-    belt, inl = ri.get("belt", {}), ri.get("inline", {})
+    worst = min(wm.items(), key=lambda kv: kv[1]["rated"] / kv[1]["max"])
+    acc_enc, acc_raw = accuracy.score(BASELINE)
+    a_m1 = el.arm_currents(BASELINE, servos=True)
+    st_m1 = el.stop_timing("M1")
     v1 = next((v for k, v in ss.items() if k.startswith("V1")), {})
     hug = v1.get("hug")
-    n_est = sum(1 for *_, src in items() if src.startswith("ESTIMATE"))
+    n_est = sum(1 for *_, src in step1() if src.startswith("ESTIMATE"))
+    wd = el.WATCHDOG["t_nom"] * 1000
+    jmax = (jit.get("loaded") or jit).get("interval_ms", {}).get("max", nan)
     rows = [
-        ("Motors in Buy now: GIM6010-8 (yaw), DM-J4310 (wrist pitch), 2 × STS3215",
-         f"whole-workspace margin ≥ {mr:.2f}× rated (p95, 1 kg), ≥ {mp:.2f}× peak over every joint (spring.py); hottest winding "
-         f"{th.get('task_max_c', float('nan')):.0f} °C on a non-stop task day (thermal.py)", V, "high (90 %)",
-         "Unchanged by either hold. Motor data are datasheet / reseller figures; the bench measures torque constant and friction (bring-up step 6)."),
-        ("Hold A: GIM8108-8 at pitch + elbow (D20)",
-         (f"20 lb hug {hug:.2f}× rated (slim_study V1); " if hug else "") + "basket worst duty margin "
-         f"{v1.get('basket', float('nan')):.2f} (basket.py, D20 motors)", V + " / motor data " + E, "medium (60 %)",
-         "No official datasheet; listings are 48 V nominal. **Do not buy until the seller confirms 24 V torque and speed.** Params and CAD "
-         "still carry the GIM6010 (the D20 CAD follows the answer)."),
-        ("Hold B: inline GIM8108-36 at roll (D24 option)",
-         f"dome {belt.get('dome', {}).get('width_x', '?')} × {belt.get('dome', {}).get('height_z', '?')} (belt) → "
-         f"{inl.get('dome', {}).get('width_x', '?')} × {inl.get('dome', {}).get('height_z', '?')} mm (inline), CAD; R14 roll row, R15, swept, "
-         "basket pass inline (roll_inline.md)", C + "; motor envelope + output bearing " + E, "medium (65 %)",
-         "The CAD assumes Ø100 × 60 and 6 × M4 patterns; the output bearing must carry ≈ 280 N radial (rating not published). Owner OK pending."),
-        ("D24 bolted cartridges (sleeve Ø86.6, Ø68 flange, 6 × M4 into inserts, Oldham drive)",
-         f"CAD (cartridge_m.can_bolted, belt_stage.small_stage_v3); R14 {asq.get('ok', '?')}/{asq.get('n', '?')} shafts assemble; "
-         f"torque paths {integ.get('torque_ok', '?')}/{integ.get('torque_n', '?')} land in structure", C, "medium-high (75 %)",
-         "Flange screws ≈ 63 N each at the 11 N·m peak and the Oldham tongue ≈ 13 MPa are hand calcs (ESTIMATE): the first coupon. "
-         "Roll / yaw (belt) and the lift still draw KX74 sockets in the CAD (in flight); the kit buys for all-bolted (D24)."),
-        ("D19 one-piece shaft-pulleys + capped seats (pitch, roll, yaw, elbow)", "R14 slide-on + insertion (assembly_seq.py); elbow seat caps on "
-         f"lugs: housing stiffness 12.1 → 10.9 mm chain", V, "high (85 %)", "Nothing to buy: printed tubes + bolted caps (inserts are in Buy now)."),
-        ("D13 v3 drive parts (Ø12 shafts, aluminium pulleys, 6801s, Oldham couplings)", "stage length (mounting plane → shaft end) 64.5 → 40.0 mm, "
-         "shaft 49.5 mm (CAD)", C + "; bought-part dimensions " + E, "medium-high (75 %)",
-         "Check the pulley bore (12 mm) and measure the Oldham disc before printing the tongue adapters."),
-        ("Gear ratios and belts", "pitch 3.0, roll 4.44 (80T, belt), yaw 2.0, elbow 2.0 (3.0 with D20); belt pull ≥ 1.4× working rating (belts.py)",
-         V, "high (85 %)", "Belts are cheap; the elbow belt length waits on hold A."),
-        ("Bearings (61808, 6708, 6801, 61804, U604; 61806 inline)", "counted from the CAD (wave 1)", C, "high (90 %)", "A 10-pack of each covers spares."),
-        ("Balancer (ISO 10243 die spring 18.7 N/mm, 2:1 tackle)", "pin B sign fixed, b 20, a 40–60, 35 % of L0 (balancer.py); virtual bring-up "
-         "fits K from the pitch residual", V, "medium (70 %)", "K adjusts with the pulley slot; bring-up step 6 fits the real K."),
-        ("Bench electronics (A5 v2: regen clamp, contactor, pre-charge, watchdog, catch)", "electrical.md: 136 J / 1.0 kW bench (320 J robot) vs "
-         "625 J pulse allowance; heartbeat lost → no torque 24.6 ms bench (budget 25)", "calculated, not measured", "high (85 %)",
-         "Timing is a budget, not a measurement: bring-up step 3 measures e-stop → contactor (≤ 50 ms) and the watchdog (≤ 9.6 ms)."),
-        ("CAN (2 × candleLight, can_map.yaml)", "B1 / B2 at 46 % load, unique IDs, two terminations per bus (sw/can_map.py, virtual bring-up)",
-         V, "high (85 %)", "Adapter-end termination: the FYSETC UCAN's onboard 120 Ω jumper; the nodes terminate the far ends."),
-        ("Bring-up software (sw/bringup.py)", "virtual bench: every step passes with a placeholder GIM table (5/5 joints online); with the real "
-         "table only the DM-J4310 is online, the 4 GIMs are BLOCKED (protocol TODO)", "verified (virtual bench)", "medium (60 %)",
-         "**The GIM CAN protocol is unknown** until the SteadyWin manual is read (seller question 5): day 1 can't move a GIM joint without it."),
-        ("Cable routing (ribbon stock, slim USB, CSI camera)", f"{hn.get('ok', '?')}/{hn.get('n', '?')} joints cross their full range; wrist roll "
-         "302° vs 432° still open (harness.md)", V, "medium (65 %)", "Ribbon stock is cheap and in Buy now; the wrist-roll cassette is a design item."),
-        ("Printed structure (not bought; decides whether M1 meets its accuracy goal)",
-         f"hand deflection {st.get('total_mm', float('nan')):.1f} mm raw, {st.get('after_mm', float('nan')):.1f} mm after a gravity model "
-         "(P2 FEA chain; target ≤ 6 / ≤ 2)", "verified (FEA); target not met", "medium (55 %)", "R2b still fails; the bench measures it. Doesn't change what to buy."),
-        ("Dexterity (R16)", f"top-down {dx.get('top-down', 0):.0%}, 45° {dx.get('45° angled', 0):.0%}, side {dx.get('side (horizontal)', 0):.0%}, "
-         f"across the body {dx.get('side, across the body', 0):.0%} (belt; target 54 % across: inline roll gives 62 %)", V, "high (80 %)", ""),
-        ("Spacing / swept clearances", f"static hard violations {sp.get('under_hard', '?')} (head shell × screen, not on M1); swept roll/yaw "
-         f"{sw.get('under_hard', '?')}; clashes inside modules {integ.get('module_clashes', '?')}", V, "high (85 %)",
-         "The arm's one module clash is the D21 finger hook × fixed jaw (a mounting interface to confirm); the other is the head."),
+        ("1", "Motors: one GIM6010-8, the DM-J4310, 2 × STS3215",
+         f"workspace margin ≥ {mr:.2f}× rated at p95 (1 kg), **worst pose {worst[1]['rated'] / worst[1]['max']:.2f}× ({worst[0]})** (spring.py)",
+         V, "high (85 %)", "Unchanged by either hold. The bench measures torque constant and friction on the test lever."),
+        ("1", "GIM CAN protocol (SDC104)", "MIT mode named in the GIM6010-8 manual rev 1.2 and the GUI v2.0; no public CAN timeout, flash torque "
+         "limit or status codes (docs/sw/gim_protocol_notes.md)", E, "low (40 %)",
+         "**This is what Step 1 finds out** (`python -m sw.gim_discover`, rehearsed in sw/test_s2.py). If there is no impedance mode, the GIM joints "
+         "need a different safety argument before Step 2."),
+        ("1", "Bench supply (Mean Well SE-1000-24, 41.7 A)",
+         f"M1 arm {a_m1['cont']:.1f} A sustained, {a_m1['peak_rated']:.1f} A peak at the rated drive limit, {a_m1['peak']:.1f} A at the peak limit "
+         "(electrical.md *Bench supply*)", "calculated; price sourced", "high (80 %)",
+         "Peak-limit strength tests one joint at a time (1.00× at all joints at once). The 10 A CC supply only does the 1 A first power-up."),
+        ("1", "Safety board (e-stop, contactor, pre-charge, one-shot discharge, clamp, watchdog)",
+         f"netlist + block diagram + state table (electrical.md); heartbeat lost → no torque {st_m1['total'] * 1000:.1f} ms (SW2 50); "
+         f"watchdog {wd:.0f} ms vs the loop's longest measured heartbeat gap {jmax:.1f} ms (sw/loop_jitter.py, this machine, loaded)",
+         "designed, measured jitter; not built", "medium (65 %)",
+         "First-time build of a 146 A-pulse board: review the netlist, run the board tests (electrical.md) before any motor; re-run "
+         "sw/loop_jitter.py on the Pi."),
+        ("1", "Thermal (M7)", f"closed ASA sleeve: {th.get('dt_rated_sleeve', nan):.0f} K at rated → 0.65 × rated continuous; task-day winding "
+         f"{th.get('task_max_c', nan):.0f} °C (old open + 10 K model {th.get('task_max_c_open_model', nan):.0f} °C); with a finned aluminium cap "
+         f"{th.get('task_max_c_al_cap', nan):.0f} °C (thermal.md)", E, "low (45 %)",
+         "Step 1 has thermistors and one aluminium cap to measure it on the real cartridge."),
+        ("1", "Step-1 drive parts (one D13 stage: Ø12 shaft, 20T pulley, D40 Oldham, 315 belt, bearings)", "stage length 40.0 mm, shaft 49.5 mm (CAD)",
+         C + "; bought-part dimensions " + E, "medium-high (75 %)", "Check the pulley bore (12 mm) and measure the Oldham disc before printing the tongue adapter."),
+        ("2", "Arm structure (C1 / C3 / M5 CAD fixes)", "C1 tie-rods at the pitch hub and yaw flange + steel roll stops are on the C1/M1 track "
+         "(rnd/joints.py); C3 rear cap / flange-screw access and M5 belt centres are open", U, "medium (55 %)",
+         "**Do not print the pitch / yaw shafts or the cartridges as drawn** until those land; the Step-2 hardware lines follow them."),
+        ("2", "Hold B: inline GIM8108-36 roll (the plan)", f"dome {ri.get('inline', {}).get('dome', {}).get('width_x', '?')} × "
+         f"{ri.get('inline', {}).get('dome', {}).get('height_z', '?')} mm on the seller drawing (Ø96 × 57); boss dowels 1.6× stall; steel stops",
+         C + "; output bearing, backlash, SDC303 protocol " + E, "medium (55 %)",
+         "Seller questions 3–5. A different driver from Step 1's: protocol discovery again on arrival. Backlash 15 arcmin (ESTIMATE) → "
+         f"hand {acc_raw:.1f} mm without joint encoders."),
+        ("2", "Hold A: GIM8108-8 at pitch + elbow (D20)", (f"20 lb hug {hug:.2f}× rated (slim_study V1); " if hug else "") +
+         "needs a Ø15 keyed stage, Ø50 Oldhams, 25 mm belts and 61902s for 22 N·m (Fable M6; kit lines ESTIMATE)", V + " / motor data " + E, "low (45 %)",
+         "No datasheet; listings are 48 V nominal; the D20 drive is a redesign. **Do not buy until the 24 V answer and the D20 parts list.**"),
+        ("2", "Hand accuracy and encoders (M3)", f"{acc_enc:.1f} mm with joint encoders, {acc_raw:.1f} mm without (accuracy.md, inline backlash in)",
+         E, "low (40 %)", "The AS5048A mounts and the RP2040 node firmware do not exist yet: build them first, or drop the ≤ 1 mm claim for M1."),
+        ("2", "Printed structure (hand sag, R2b)", f"{st.get('total_mm', nan):.1f} mm raw, {st.get('after_mm', nan):.1f} mm after a gravity model "
+         "(stiffness.json; P2 FEA chain; target ≤ 6 / ≤ 2)", "verified (FEA)", "medium (60 %)", "The bench measures it."),
+        ("2", "Bring-up software (sw/bringup.py)", "virtual bench: every step passes with a placeholder GIM table (5/5 joints); with the real table "
+         "only the DM-J4310 is online", "verified (virtual bench)", "medium (60 %)", "The real GIM table is filled from Step 1."),
     ]
     L = ["# M1 bench arm: purchase readiness (generated by `python -m rnd.m1_readiness`)", "",
-         f"**Kit ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)), with {CONTINGENCY:.0%} contingency:** Buy now **${t['now_c']:,.0f}**; "
-         f"hold A (GIM8108-8 × 2) {sd(t['d_a'])} and hold B (inline GIM8108-36) {sd(t['d_b'])} against the GIM6010 / belt defaults "
-         f"(all defaults ${t['default']:,.0f}, both holds ${t['both']:,.0f}).", "",
-         "## Verdict", "",
-         "- **GO on the Buy-now list.** Every line is either decided and checked in this repo or a cheap, re-buyable part whose only "
-         "uncertainty is a dimension (pulley bore, Oldham disc, inserts). Nothing in it changes with hold A or hold B.",
-         "- **Send the seller questions today** (M1_BENCH_ARM.md §4); they gate the three motors that wait.",
-         "- **NO-GO on the GIM8108-8s** until the 24 V answer; **NO-GO on the GIM8108-36** until the owner's OK and the drawing.",
-         "- To have every joint moving on day 1 anyway: the GIM6010-8 fallbacks are zero-regret (the full robot needs ≥ 7).", "",
+         f"**Kit ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)), with {CONTINGENCY:.0%} contingency:** Step 1 **${t['s1_c']:,.0f}**; Step 2 **${t['s2_plan_c']:,.0f}** "
+         f"(today's plan: GIM6010 at pitch + elbow, inline roll); whole kit ${t['plan_c']:,.0f}. Hold A (D20 with its drive parts) {sd(t['d_a'])}; "
+         f"belt-roll fallback {sd(-t['d_b'])}.", "",
+         "## Go / no-go per step", "",
+         "### Step 1: one GIM6010-8 + DM-J4310 + servos + CAN + bench supply + safety board + one D13 stage — **GO**",
+         "- Nothing in it waits on a seller answer or a CAD fix; every line is decided, and all but the two supplies, the stand, the test lever "
+         "and the catch are reused in the arm.",
+         "- It is the cheapest way to settle the biggest unknown: whether the SDC104 has a usable impedance mode, a CAN timeout and a torque "
+         "limit in flash (Fable M4).",
+         "- Send the seller questions the same day (below); they gate Step 2's motors.", "",
+         "**Step 1 exit criteria (all needed before Step 2 is bought):**",
+         "1. Safety board built and its bench tests passed without a motor: ARM refused with a mushroom pressed or without a heartbeat; "
+         "pre-charge then K1; the 10 Ω dummy load trips the pre-charge timeout; the discharge one-shot fires on every opening and never during "
+         f"pre-charge; heartbeat stopped → K1 open ≤ {wd * 1.2:.0f} ms; clamp at 26.5 V.",
+         "2. `python -m sw.gim_discover` on the GIM6010-8: an MIT / impedance mode answers, and the GIM table in sw/drivers/gim.py is filled "
+         "(`python -m sw.drivers.gim`: no TODO).",
+         "3. `python -m sw.bringup --joints yaw,wpitch` on the Step-1 rig passes enumerate, limits (torque limit in flash, read back, kept over a "
+         "power cycle), safety (e-stop → no torque ≤ 50 ms measured, watchdog, the drive's own CAN timeout), calibrate, jog and gravity.",
+         f"4. The real loop's longest heartbeat gap (bring-up report) is under half the {wd:.0f} ms watchdog, on the Pi.",
+         "5. Torque constant and friction measured on the lever; sleeve and aluminium-cap temperatures logged for 30 min at rated torque.",
+         "6. Coupons: insert pull-out (C1) and the bolted flange + Oldham tongue.", "",
+         "### Step 2: the rest of the arm — **NO-GO today**; GO when",
+         "- Step 1's exit criteria are met (if the SDC104 has no impedance mode: stop and redesign the GIM joints' safety argument first);",
+         "- the seller has answered: the GIM8108-36's output face, bearing rating, backlash and the **SDC303 protocol** (same as the SDC104?); "
+         "for hold A, the GIM8108-8's 24 V figures;",
+         "- the CAD fixes have landed: C1 (tie-rods, on the C1/M1 track), C3 (rear cap that can react torque, reachable flange screws), M1 "
+         "(inline boss and steel stops, on the C1/M1 track), M5 (belt centres 80.9 / 70.7);",
+         "- for hold A: the D20 drive redesign's parts list (Ø15 keyed stage, Ø50 Oldham, 25 mm belt);",
+         "- for the ≤ 1 mm accuracy claim: encoder mounts + node firmware (M3), else M1 proves everything but accuracy.", "",
          "## What is verified, measured, or still an ESTIMATE", "",
-         "| What you're buying / relying on | Evidence (checks in this repo) | Status | Confidence | Note |", "|---|---|---|---|---|"]
-    L += [f"| {a} | {b} | {s} | {c} | {d} |" for a, b, s, c, d in rows]
-    L += ["", f"**Still ESTIMATE (no datasheet or measurement in hand):** GIM8108-8 24 V torque/speed and driver choice; GIM8108-36 frame, flanges "
-          "and output-bearing rating; all bolt circles (coupon C9 reads them); Oldham disc geometry; flange-screw and tongue stresses (hand "
-          "calcs); the "
-          f"{n_est} ESTIMATE-priced Buy-now lines; P2S print time (× 0.35 of the generic slicer); the e-stop and watchdog timing (budget).", "",
-          "## Go / no-go risks for buying now", "",
-          "| Risk | Effect if it bites | Mitigation | Blocks Buy now? |", "|---|---|---|---|",
-          "| GIM CAN protocol unknown (manual blocked here) | bring-up can't enable a GIM (4–5 joints BLOCKED) | seller question 5; fill the "
-          "table in sw/drivers/gim.py; the virtual run with a placeholder table already passes every step | no (one GIM6010 is in Buy now: "
-          "read the protocol on it first) |",
-          "| GIM8108-8 is 48 V-only or slow at 24 V | D20 fails; 20 lb hug not met | hold A; fallback GIM6010-8 (bench-valid at 1 kg); "
-          "ask about a 24 V sibling (listings show a GWK8108-8 at 24 V) | no |",
-          "| GIM8108-36 bigger than Ø100 × 60 or weak output bearing | inline roll CAD doesn't fit / bearing overload | hold B; belt roll stays "
-          "the default (built, checked) | no |",
-          "| Wrong variant delivered (48 V GIM, J4310 V1.2, 7.4 V STS3215) | wrong torque / voltage | check the listing and the label on "
-          "arrival (M1_BENCH_ARM.md checks) | no |",
-          "| Bought-part dimensions differ (pulley bore, Oldham disc, insert length) | a reprint | measure on arrival, set the CAD constants, "
-          "then print | no |",
-          "| Printed structure softer than the FEA chain (R2b fails today) | hand sag above 2 mm | stiffer shells / PETG-CF / bolted joints | no |",
-          f"| Robot BOM over budget: ${bom.get('total', 0):,.0f} landed now (limit $5,000), ${bom.get('with_d20', 0):,.0f} with D20, "
-          f"${bom.get('with_d20_inline', 0):,.0f} with both holds | the full robot needs a cost decision | the M1 parts are all reused; "
-          "the decision is the owner's (BOM_v4.md: pending decisions) | no |",
-          "| Category-0 drop on the bench | a falling arm | catch cradle ≤ 50 mm under the arm, tether, remote mushroom (in Buy now) | no |",
-          "", "## Day-1 plan (sw/bringup.py)", "",
-          "Rehearse first: `python -m sw.bringup --bus virtual` passes today (MuJoCo bench twin, injected faults caught by sw/test_s2.py).",
-          "",
-          "0. **Before any motor power:** build the regen clamp and the e-stop / contactor / watchdog board; test the clamp on a dummy "
-          "capacitive source; set the catch cradle ≤ 50 mm under the arm; bolt the stand down; PSU current limit 1 A at 24 V.",
-          "1. **IDs and buses:** STS3215 IDs 1 / 2 with the USB-TTL adapter; DM-J4310 ESC_ID 0x05 / MST_ID 0x15 (factory 0x01 / 0x00); "
-          "GIM IDs per can_map.yaml (0x01–0x04, feedback + 0x10) from the SteadyWin manual; `ip link set can0 up type can bitrate 1000000` "
-          "(and can1); terminations: adapter jumper on, far-end node on.",
-          "2. **Fill the GIM table** in sw/drivers/gim.py from the manual; until then the GIM joints are BLOCKED and held in the fixture.",
-          "3. `python -m sw.bringup --bus socketcan:can0,can1 --estop gpiod:gpiochip0:17:27`, each step gated on the one before:",
-          "    - **enumerate**: every motor on its ID, firmware, MIT mode, MIT ranges fit joint range × ratio;",
-          "    - **limits**: drive torque limit (rated) + CAN timeout written to flash and read back;",
-          "    - **safety**: e-stop → contactor open ≤ 50 ms (budget 25), reset refused while pressed, hung loop → watchdog ≤ 9.6 ms, "
-          "drive CAN timeout disables, limits survive a power cycle;",
-          "    - **calibrate**: distal joints first, zero against the hard stops at low current, span check (catches a wrong belt ratio);",
-          "    - **jog**: ±amplitude at 10 % speed, operator confirms direction; observer peak recorded;",
-          "    - **gravity**: holds from both sides → friction, residual, the balancer K, a drive-clamp sag test, collision thresholds.",
-          "4. Report: docs/sw/bringup_<date>.md + .json (offsets, limits, thresholds); then thermal (A6 can wall), hand sag (R2b), CAN "
-          "timing (SW1) and the first coupon on the bolted flange + Oldham tongue.", "",
-          "Not covered by the tool yet: the RP2040 encoder nodes and the STS3215 bus through the elbow node (no protocol in the tree).", "",
-          "## Seller questions (copy of M1_BENCH_ARM.md §4)", ""]
+         "| Step | What you're buying / relying on | Evidence (checks in this repo) | Status | Confidence | Note |", "|---|---|---|---|---|---|"]
+    L += [f"| {s} | {a} | {b} | {x} | {c} | {d} |" for s, a, b, x, c, d in rows]
+    L += ["", f"**Still ESTIMATE:** the GIM protocols (all three drivers); GIM8108-8 24 V figures; GIM8108-36 output bearing and backlash; the "
+          f"D20 drive parts; the thermal network constants; the safety board's timing until measured; {n_est} ESTIMATE-priced Step-1 lines; "
+          "bolt circles (coupon C9).", "",
+          "## Risks", "",
+          "| Risk | Effect if it bites | Mitigation | Blocks |", "|---|---|---|---|",
+          "| SDC104 has no impedance mode / CAN timeout / flash limit | the supervisor's torque bound does not hold on the GIM joints | Step 1 finds out on one $90 motor; "
+          "safety redesign before Step 2 | Step 2 |",
+          "| SDC303 (inline roll) speaks a different protocol | a second driver table; possibly no impedance mode on the roll | seller question 5; discovery on "
+          "arrival; belt-roll fallback | hold B |",
+          "| Watchdog trips on loop jitter on the Pi | category-0 drops | 25 ms sized on a measurement here; re-measure on the Pi (exit criterion 4) | Step 1 exit |",
+          "| Safety board mis-built | no stop, or a pre-charge that never completes | netlist + board tests before any motor | Step 1 exit |",
+          "| Motors run hot in the closed sleeves | derating to ≈ 0.65 × rated | aluminium finned caps (in the kit), cover vents, the drive's thermal limit | no |",
+          "| GIM8108-8 is 48 V-only or slow at 24 V; D20 drive needs a redesign | D20 fails; 20 lb hug not met | hold A; GIM6010-8 fallback | hold A |",
+          f"| Robot BOM over budget: ${bom.get('total', 0):,.0f} landed (limit $5,000), ${bom.get('with_d20', 0):,.0f} with D20 | the full robot needs a "
+          "cost decision | the M1 parts are reused; the decision is the owner's (BOM_v4.md) | no |",
+          "| Category-0 drop on the bench | a falling arm | catch cradle ≤ 50 mm under the arm, tether, remote mushroom (Step 1) | no |",
+          "", "## Day-1 plan (Step 1)", "",
+          "0. **Before any motor power:** build the safety board (electrical.md netlist) and run its bench tests; set the catch cradle; bolt the "
+          "stand down; the 10 A supply limited to 1 A for the first power-up, then the SE-1000-24.",
+          "1. **Protocol discovery on the one GIM6010-8** (alone on can0, unloaded, in its fixture): vendor tool over USB-C first (node ID, "
+          "firmware, 1 Mbit/s, MIT mode if offered), then `python -m sw.gim_discover --bus socketcan:can0 --id <n>` and, if the probe answers, "
+          "`--enable` (zero gains, turn the output by hand). Fill sw/drivers/gim.py; record what is still unknown (docs/sw/gim_protocol_notes.md).",
+          "2. **IDs and buses:** STS3215 IDs 1 / 2 with the USB-TTL adapter; DM-J4310 ESC_ID 0x05 / MST_ID 0x15; the GIM6010-8 as the yaw "
+          "(0x03 / 0x13, can_map.yaml); terminations: adapter jumper on, far end terminated.",
+          "3. `python -m sw.bringup --bus socketcan:can0,can1 --estop gpiod:gpiochip0:17:27 --joints yaw,wpitch` on the Step-1 rig (the GIM "
+          "stage on its lever), each step gated on the one before: enumerate → limits → safety (e-stop ≤ 50 ms, watchdog "
+          f"{wd:.0f} ms, drive CAN timeout) → calibrate → jog → gravity.",
+          "4. Lever tests: torque constant, friction, the drive-clamp sag, a collision trip; 30 min at rated torque with the sleeve and the "
+          "aluminium cap logged; the coupons.", "",
+          "Rehearse first: `python -m sw.gim_discover --bus virtual --enable` and `python -m sw.bringup --bus virtual` (sw/test_s2.py).", "",
+          "## Seller questions (copy of M1_BENCH_ARM.md)", ""]
     L += [f"{i}. {q}" for i, q in enumerate(SELLER_QUESTIONS, 1)]
     (D / "M1_READINESS.md").write_text("\n".join(L) + "\n")
-    print("\n".join(L[:12]))
+    print("\n".join(L[:20]))
 
 
 if __name__ == "__main__":
