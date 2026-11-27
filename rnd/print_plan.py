@@ -47,7 +47,11 @@ QTY = {
     "clevis + yaw block": (2, ""), "yaw shaft": (2, "one-piece tube + 40T"), "yaw flange": (2, "bolted to the yaw tube (4 × M4)"),
     "yaw plate bottom": (2, "separate bolted print (loop 44)"), "roll spring ring": (2, ""),
     "carriage": (1, ""), "ratchet strip": (1, "4 segments"), "torso_shell": (1, "2 halves"), "e_tray": (1, ""),
-    "head_bracket": (1, ""), "handle": (1, ""), "yoke": (1, ""), "head_shell": (1, ""), "visor": (1, "dark PETG"),
+    "head_bracket": (1, ""), "handle": (1, ""), "yoke": (1, "D22 fork to the tilt pivot"), "head_shell": (1, ""), "visor": (1, "dark PETG"),
+    "head_pivot_stub": (1, "D22 passive pivot (6805)"), "head_drive_stub": (1, "D22 tilt drive disc"), "lift cover": (1, "R17 v3, closed"),
+    **{f"cover {n}": (2, "R17/D23, mirror for the right arm") for n in ("elbow_bay", "collar_door", "forearm_f", "forearm_r", "elbow_cap", "wrist_f", "wrist_r")},
+    **{f"cover {n}": (1, "R17/D23") for n in ("mast_cap", "collar_bot", "collar_top", "spine_pod", "back_plate", *(f"liner_w{a}" for a in (0, 90, 180, 270)), *(f"belly_{q}" for q in range(4)))},
+    **{f"cover belt_duct [{i}/5]": (1, "R17 belt duct segment") for i in range(1, 6)},
     "fin-ray finger": (4, "TPU 95A, 2 per gripper"),
     "deck quarter": (4, ""), "skirt quarter": (4, ""), "wheel pod": (4, ""), "wheel shaft": (4, ""), "dock_wing_l": (2, "self-docking charger: left + mirrored right wing"), "dock_tower": (1, "dock contact tower"), "torque hanger (wheel)": (4, "standard torque-reaction part, screws under the deck"), "mast coupling": (1, ""),
 }

@@ -28,6 +28,8 @@ Z_BASE = (D.base.clearance + D.base.height) * 1000
 Z_TOP = Z_BASE + D.upper.spine_len * 1000
 HEAD_Z = Z_TOP + 10.0
 WALL = 2.0
+PAN_RANGE = (-90.0, 90.0)       # head pan (deg): software limit for the neck cable loop (ESTIMATE)
+TILT_RANGE = (-10.0, 30.0)      # head tilt (deg), D22: −10° (up) … +30° (down to the table), on the passive pivot
 
 
 def _rbox(x, y, z, r):
@@ -85,15 +87,27 @@ def lift_mount(z, zc):
     return m
 
 
+LIFT_COVER_TOP = Z_BASE + 175.0     # D23/R17 lift cover top: the static belt duct (rnd/parts/covers.py) stands on it
+
+
 def lift_cover() -> Part:
-    """Looks pass v2: rounded cover over the lift cartridge, pulley and mount at the mast foot (slot for the belt)."""
-    x0, x1, y0, y1, z0, z1 = -194.0, -91.0, -91.0, 36.0, Z_BASE + 41, Z_BASE + 172      # y0 −88 → −91: clears the torque-pin tip (loop 20)
-    c = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 30, 22, 2.0)
-    c -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 + 2, y1 - y0 + 2, 6)      # open bottom
-    c -= Pos(MAST_X - W / 2 - 34, -2, z1) * Box(26, 22, 10)                           # belt slot
-    c -= Pos(x1, (y0 + y1) / 2, (z0 + z1) / 2) * Box(36, y1 - y0 + 4, z1 - z0 + 4)       # open against the mast / mount face
+    """R17 v3 (was the looks-pass v2, open below and toward the mast): closed PETG enclosure round the lift cartridge,
+    20T pulley, belt end and mount. Down to 3 mm off the deck (notched 3 mm round the mast coupling), a front wall
+    round the mount and ratchet strip (1 mm), a top plate that takes the belt duct. Slides on from behind over the
+    mount, then the duct drops in from above; 4 × M3 into inserts in the deck. ≈ 107 × 139 × 172 mm, one print."""
+    x0, x1, y0, y1, z0, z1 = -198.0, -91.0, -95.0, 44.0, Z_BASE + 3, LIFT_COVER_TOP     # y0: clears the torque-pin tip (loop 20)
+    c = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 30, 6, 2.2)
+    from .base import coupling
+    cb = coupling()[0].bounding_box()
+    c -= Pos(cb.center().X, cb.center().Y, cb.center().Z) * Box(cb.size.X + 6, cb.size.Y + 6, cb.size.Z + 6)   # 3 mm round the coupling
     zl = Z_BASE + 40 + 70
-    c -= lift_mount(zl, cm.stack_height())                                            # loop 31: no overlap with the mount it covers
+    c -= lift_mount(zl, cm.stack_height())                                            # the mount fills the front-wall notch
+    rb = ratchet_strip().bounding_box()
+    c -= Pos(rb.center().X + 4, rb.center().Y, z1) * Box(rb.size.X + 2 + 8, rb.size.Y + 2, 40)   # ratchet strip (open to the front)
+    xb, tb, wb = MAST_X - W / 2 - 50 + 16, 3.6, 15.0
+    c -= Pos(xb, -2, z1) * Box(tb + 8 + 4.4 + 0.4, wb + 8 + 4.4 + 0.4, 6)            # seat for the belt duct
+    for sx, sy in ((x0 + 12, y0 + 12), (x0 + 12, y1 - 12), (x1 - 12, y0 + 12), (x1 - 12, y1 - 12)):
+        c -= Pos(sx, sy, z0) * Cylinder(1.7, 12)
     return c
 
 
@@ -129,6 +143,56 @@ def torso(lift_mm: float):
             ("estop", estop, "orange"), ("chest_light", light, "orange")]
 
 
+HEAD_MASS_G = {"screen": 150.0, "cam": 99.0}      # 7" board ESTIMATE (confirm on the scale); Gemini 2 99 g (as in masses())
+BRG_6805 = dict(d=25.0, D=37.0, B=7.0)            # passive tilt pivot bearing (BOM: 6805-2RS, 25 × 37 × 7)
+TILT_FRICTION_NM = 0.3                            # wave-spring + PTFE washer drag at the pivot, ESTIMATE (holds the head with the servo limp)
+
+
+def _head_body():
+    """Head pieces in the head frame (x forward, origin = the v0 tilt axis 40 mm above the yoke plate), before the
+    clearance cuts. D22: 7" Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (1024 × 600, CAN). Head 252 × 184 mm."""
+    shell = Pos(70, 0, 28) * soft_shell(160, 252, 184, 58, 40, 2.4)                 # pill-shaped head
+    shell -= Pos(150, 0, 40) * Box(20, 236, 124)                                     # bezel opening
+    shell -= Pos(135, 0, -36) * Box(40, 96, 29)                                       # depth-camera window (Gemini 2)
+    shell -= Pos(-20, 0, -20) * Box(110, 180, 90)                                    # neck opening at the back/bottom (yoke + pan servo)
+    visor = Pos(146, 0, 40) * soft_box(6, 232, 120, 2.8, 1.5) - Pos(146, 0, 40) * Box(10, 156, 90)   # 7" active area ≈ 154 × 86
+    screen = Pos(138, 0, 40) * Box(9, 182, 112)                                       # board outline ESTIMATE (confirm with the drawing)
+    eyes = [Pos(142.8, s * 34, 46) * Rot(0, 90, 0) * Cylinder(14, 0.6) for s in (1, -1)]      # drawn on the screen (render only)
+    cam = Pos(128, 0, -36) * Box(30, 90, 25)                                         # Gemini 2, below the bezel
+    return shell, visor, screen, eyes, cam
+
+
+_PIVOT = []
+
+
+def head_pivot():
+    """D22 passive pivot: the tilt axis through the head's centre of mass (head frame x, z), so gravity puts ≈ no torque
+    on the tilt servo at any angle. Masses: printed shell at 80 % of solid PETG, visor solid PETG, board and camera
+    from HEAD_MASS_G."""
+    if not _PIVOT:
+        from build123d import CenterOf
+        shell, visor, screen, _, cam = _head_body()
+        items = [(shell, shell.volume / 1000 * 1.27 * 0.8), (visor, visor.volume / 1000 * 1.27),
+                 (screen, HEAD_MASS_G["screen"]), (cam, HEAD_MASS_G["cam"])]
+        m = sum(w for _, w in items)
+        cx = sum(p.center(CenterOf.MASS).X * w for p, w in items) / m
+        cz = sum(p.center(CenterOf.MASS).Z * w for p, w in items) / m
+        _PIVOT.append((round(cx, 1), round(cz, 1), m))
+    return _PIVOT[0]
+
+
+def _yoke(px, zp, g=0.0):
+    """Fork on the pan output (yoke frame, z = 0 on the pan stack): base plate + two 8 mm arms that rise through the
+    head's neck opening and run forward inside the head to the pivot bosses (Ø48). The −Y boss holds the 6805 pivot
+    bearing; the tilt cartridge bolts to the +Y boss, coaxial. `g` grows it for the clearance cut."""
+    f = Pos(0, 0, -g) * Box(60 + 2 * g, 150 + 2 * g, 8 + 2 * g, align=MIN)
+    for s in (1, -1):
+        f += Pos(0, s * 71, -g) * Box(40 + 2 * g, 8 + 2 * g, zp + g, align=MIN)                     # post
+        f += Pos((px - 20) / 2, s * 71, zp) * Box(px + 20 + 2 * g, 8 + 2 * g, 28 + 2 * g)            # beam to the pivot
+        f += Pos(px, s * 71, zp) * Rot(90, 0, 0) * Cylinder(24 + g, 8 + 2 * g)                    # pivot boss
+    return f
+
+
 def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     top = Pos(MAST_X, 0, Z_TOP) * Box(W + 16, W + 16, 24, align=MIN)                  # top bracket on the mast
     top -= Pos(MAST_X, 0, Z_TOP) * Box(W + 0.4, W + 0.4, 10, align=MIN)
@@ -138,49 +202,55 @@ def head(pan_deg: float = 0.0, tilt_deg: float = 0.0):
     pan = Pos(MAST_X, 0, Z_TOP + 24) * Rot(0, 0, 90) * cs.sleeve()
     yz = Z_TOP + 24 + cs.stack_height()
     P = Pos(MAST_X, 0, yz) * Rot(0, 0, pan_deg)
-    yoke = Box(60, 150, 8, align=MIN) + Pos(0, 71, 0) * Box(40, 8, 60, align=MIN) + Pos(0, -71, 0) * Box(40, 8, 60, align=MIN)
-    tilt = Pos(0, 75, 40) * Rot(-90, 0, 0) * cs.sleeve()
+    # D22 (owner, 2026-11-27): the 7" head (+≈ 120 g, 252 × 184 mm) clashed with the mast bracket at +30° tilt and loaded
+    # the tilt servo (75 % before the bigger screen). The tilt axis moves from the neck (40 mm above the yoke) to the
+    # head's centre of mass: a passive 6805 pivot on the −Y arm (wave spring + PTFE washer for drag), the tilt cartridge
+    # coaxial on the +Y arm. Range TILT_RANGE (−10° up … +30° down).
+    px, pz, _ = head_pivot()
+    zp = 40 + pz                                                                       # pivot height above the yoke plate
+    yoke = _yoke(px, zp)
+    yoke -= Pos(px, -71, zp) * Rot(90, 0, 0) * Cylinder(BRG_6805["D"] / 2 + 0.05, 20)                   # 6805 seat (−Y boss)
+    tilt = Pos(px, 75, zp) * Rot(-90, 0, 0) * Rot(0, 0, 180) * cs.sleeve()                              # body points aft, away from the screen
+    brg = Pos(px, -71, zp) * Rot(90, 0, 0) * (Cylinder(BRG_6805["D"] / 2, BRG_6805["B"]) - Cylinder(BRG_6805["d"] / 2, BRG_6805["B"]))
     # loop 25: slotted torque pads for the pan and tilt cartridges' Ø4 pins (rnd/parts/torque.py)
     from .torque import with_pin_slot
     top = with_pin_slot(pan, top, 1.95, 2.0)
     yoke = with_pin_slot(tilt, yoke, 1.95, 2.0)
-    T = Pos(0, 0, 40) * Rot(0, tilt_deg, 0)
-    # D11 (loop 28): face screen. The shell grows 16 mm upward (120 → 136) so the 4.3" display board sits behind a flat
-    # dark bezel with the depth camera below it.
-    # D22 (owner, 2026-11-27): 7" Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (1024 × 600, CAN). Head 244 × 136 → 252 × 184 mm.
-    shell = Pos(70, 0, 28) * soft_shell(160, 252, 184, 58, 40, 2.4)                 # pill-shaped head
-    shell -= Pos(150, 0, 40) * Box(20, 236, 124)                                     # bezel opening
-    shell -= Pos(135, 0, -36) * Box(40, 96, 29)                                       # depth-camera window (Gemini 2)
-    shell -= Pos(-20, 0, -20) * Box(110, 180, 90)                                    # neck opening at the back/bottom (yoke + pan servo)
-    # bezel (dark PETG) with the screen window; Waveshare ESP32-S3-Touch-LCD-4.3B (112.4 × 75.1 mm board, 4.3" 800×480
-    # capacitive touch, CAN transceiver, 7–36 V input: runs straight off the 24 V bus) behind it
-    # loop 28: clearance for the tilt and pan cartridges over the whole tilt range (±30°) and any pan angle. The shell
-    # used to clip the tilt sleeve (0.4 cm³) and, at +30° tilt, the pan sleeve.
+    T = Pos(0, 0, 40) * Pos(px, 0, pz) * Rot(0, tilt_deg, 0) * Pos(-px, 0, -pz)        # head frame → yoke frame
+    shell, visor, screen, eyes, cam = _head_body()
+    # head-side pivot stubs bonded to the shell's inner side walls (head frame): −Y a Ø25 tube through the 6805 with a
+    # flange on the wall; +Y a Ø30 disc onto the tilt cartridge's output face
+    yi = 124.0 - 2.4                                                                  # shell inner side wall
+    stub_m = Pos(px, -(67 + yi) / 2, pz) * Rot(90, 0, 0) * (Cylinder(BRG_6805["d"] / 2, yi - 67) - Cylinder(8.5, yi))
+    stub_m += Pos(px, -yi + 2, pz) * Rot(90, 0, 0) * Cylinder(22, 4)
     tb = tilt.bounding_box()
+    stub_p = Pos(px, (tb.max.Y + 0.8 + yi) / 2, pz) * Rot(90, 0, 0) * Cylinder(15, yi - tb.max.Y - 0.8)
+    stub_p += Pos(px, yi - 2, pz) * Rot(90, 0, 0) * Cylinder(22, 4)
+    # clearance cuts over the tilt range (and any pan, for the pan sleeve): the yoke grown 3 mm, the tilt sleeve's box,
+    # the pan sleeve's cylinder
+    env_y = _yoke(px, zp, 3.0)
     env_t = Pos(tb.center().X, tb.center().Y, tb.center().Z) * Box(tb.size.X + 4, tb.size.Y + 4, tb.size.Z + 4)
     pb = (Pos(-MAST_X, 0, -yz) * pan).bounding_box()                                 # pan sleeve in the yoke (P) frame
     r_pan = max(math.hypot(x, y) for x in (pb.min.X, pb.max.X) for y in (pb.min.Y, pb.max.Y)) + 2
     env_p = Pos(0, 0, pb.min.Z - 2) * Cylinder(r_pan, pb.size.Z + 4, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    for td in range(-30, 31, 10):
-        inv = (Pos(0, 0, 40) * Rot(0, td, 0)).inverse()
-        shell -= inv * env_t
-        shell -= inv * env_p
-    visor = Pos(146, 0, 40) * soft_box(6, 232, 120, 2.8, 1.5) - Pos(146, 0, 40) * Box(10, 156, 90)   # 7" active area ≈ 154 × 86
-    screen = Pos(138, 0, 40) * Box(9, 182, 112)                                       # board outline ESTIMATE (confirm with the drawing)
-    eyes = [Pos(142.8, s * 34, 46) * Rot(0, 90, 0) * Cylinder(14, 0.6) for s in (1, -1)]      # drawn on the screen (render only)
-    cam = Pos(128, 0, -36) * Box(30, 90, 25)                                         # Gemini 2, below the bezel
+    lo, hi = TILT_RANGE
+    for td in [lo + k * (hi - lo) / 8 for k in range(9)]:
+        inv = (Pos(0, 0, 40) * Pos(px, 0, pz) * Rot(0, td, 0) * Pos(-px, 0, -pz)).inverse()
+        for e in (env_y, env_t, env_p):
+            shell -= inv * e
     out = [("head_bracket", top, "white"), ("handle", handle, "dark"), ("belt_idler", idler, "steel"),
            ("pan_sleeve", pan, "white"), ("yoke", P * yoke, "dark"), ("tilt_sleeve", P * tilt, "white"),
-           ("head_shell", P * T * shell, "white"), ("visor", P * T * visor, "dark"),
-           ("head_screen", P * T * screen, "black"),
+           ("tilt_bearing", P * brg, "steel"),
+           ("head_shell", P * T * shell, "white"), ("head_pivot_stub", P * T * stub_m, "dark"), ("head_drive_stub", P * T * stub_p, "dark"),
+           ("visor", P * T * visor, "dark"), ("head_screen", P * T * screen, "black"),
            ("eye_l", P * T * eyes[0], "orange"), ("eye_r", P * T * eyes[1], "orange"), ("head_cam", P * T * cam, "dark")]
     return out
 
 
-def module(lift_m: float = 0.75):
+def module(lift_m: float = 0.75, head_pan: float = 0.0, head_tilt: float = 0.0):
     L = lift_m * 1000
     return [("mast", mast(), "black"), ("ratchet", ratchet_strip(), "dark"), *lift_drive(), ("lift_cover", lift_cover(), "white"),
-            ("carriage", carriage(L), "white"), *torso(L), *head()]
+            ("carriage", carriage(L), "white"), *torso(L), *head(head_pan, head_tilt)]
 
 
 def masses(density=1.27):

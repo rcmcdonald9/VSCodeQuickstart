@@ -61,14 +61,20 @@ def sweep(moving, static, axis, angles):
     return worst
 
 
-def run(step=10):
+def joints():
+    """The swept joints in the roll-module frame (robot.build places roll.module() at roll = yaw = 0):
+    {joint: (moving, static, axis origin, axis direction, (lo, hi) deg)}. Also used by rnd/pinch.py (R17)."""
     roll, mr, sr, my, sy = _sets()
     from .twin import JR
-    lo, hi = JR["roll"]
-    ax_r = Axis((0, roll.ROLL_Y, 0), (1, 0, 0))
-    ax_y = Axis((0, roll.ROLL_Y, 0), (0, 0, 1))
-    res = {"roll": sweep(mr, sr, ax_r, list(range(lo, hi + 1, step)) + [hi]),
-           "yaw": sweep(my, sy, ax_y, list(range(-roll.YAW_STOP_DEG, roll.YAW_STOP_DEG + 1, 2 * step)) + [roll.YAW_STOP_DEG])}
+    return {"roll": (mr, sr, (0, roll.ROLL_Y, 0), (1, 0, 0), tuple(JR["roll"])),
+            "yaw": (my, sy, (0, roll.ROLL_Y, 0), (0, 0, 1), (-roll.YAW_STOP_DEG, roll.YAW_STOP_DEG))}
+
+
+def run(step=10):
+    res = {}
+    for j, (mv, st, o, d, (lo, hi)) in joints().items():
+        stp = step if j == "roll" else 2 * step
+        res[j] = sweep(mv, st, Axis(o, d), list(range(lo, hi + 1, stp)) + [hi])
     return res
 
 
