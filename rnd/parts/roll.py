@@ -301,6 +301,7 @@ BRG_R = dict(d=30.0, D=42.0, B=7.0)    # 61806, rear roll support
 # bearing path behind the friction. Capacities: drive_capacity().
 OUT_CLAMP = dict(arm_t=14.0, ring=(26.0, 40.0, 2.0), head_h=3.5, preload=1500.0, creep=0.75, mu=0.25)
 R_ARM = 42.0                           # clevis-arm boss radius about the roll axis (covers the Ø76 adapter and the ring)
+R_ARM_REAR = 36.0                      # roll_arm_rear boss radius (61806 seat): inside the hard-stop lugs (r 44 − 4)
 STOP_R, STOP_LUG_R = 44.0, 4.0
 STOP_AT = (ROLL_MIN - 4, 100 + 4)      # hard-stop contact angles (deg)
 if INLINE:
@@ -369,7 +370,7 @@ def roll_arm_rear() -> Part:
     """−X clevis arm (separate print): R 34 boss with the 61806 seat (outer-race lip on the +X side), a ±26 plate down to a
     foot on the top yaw plate (2 × M5). (D24: the yaw cartridge's torque fork is gone; its flange screws carry the torque.)"""
     x0, x1 = X_ARM_R
-    a = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[1], 0, 10) + Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_ARM + 2, x1 - x0, align=MIN)
+    a = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[1], 0, 10) + Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_ARM_REAR, x1 - x0, align=MIN)
     a += _plate_x(x0 - 10, x1, ROLL_Y - 26, ROLL_Y + 26, P1[1], P1[1] + 5, 4)                                    # foot
     a -= Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(BRG_R["D"] / 2, W1[1] - x0, align=MIN)                     # 61806 seat
     a -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(BRG_R["D"] / 2 - 2.0, 400)                                 # lip bore

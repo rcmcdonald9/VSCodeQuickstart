@@ -12,12 +12,12 @@ docs/rnd/roll_inline.json (one entry per drive and check) and docs/rnd/roll_inli
 | Shoulder dome, fore-aft × height (mm), CAD | 148 × 211 (slim-study ESTIMATE 172 × 210) | 121 × 96 (slim-study ESTIMATE 128 × 120) |
 | Dome reach outboard of the detach plane (mm) | 145 | 117 |
 | ROLL_Y / yaw_drop (mm) | 83.0 / 113.4 | 69.0 / 99.3 |
-| Roll / yaw stage mass, CAD (kg, actuator not included) | 0.68 / 0.56 | 0.30 / 0.55 |
-| R14 assembly sequence, roll row | ✅ (7/7 shafts) | not run |
-| R15 spacing, roll/yaw module (under target / hard) | 3 / 0 ✅ | not run |
-| R15 swept: min gap roll / yaw (mm); pairs under target / hard | 0.7 / 2.0; 0 / 0 ✅ | not run |
-| R16 dexterity: top-down / 45° / side / across | 34% / 70% / 65% / 52% ❌ | not run |
-| R2d basket: worst duty margin; roll peak margin | not run | not run |
+| Roll / yaw stage mass, CAD (kg, actuator not included) | 0.68 / 0.56 | 0.29 / 0.55 |
+| R14 assembly sequence, roll row | ✅ (7/7 shafts) | ✅ (7/7 shafts) |
+| R15 spacing, roll/yaw module (under target / hard) | 3 / 0 ✅ | 2 / 0 ✅ |
+| R15 swept: min gap roll / yaw (mm); pairs under target / hard | 0.7 / 2.0; 0 / 0 ✅ | 0.3 / 2.0; 0 / 0 ✅ |
+| R16 dexterity: top-down / 45° / side / across | 34% / 70% / 65% / 52% ❌ | 36% / 68% / 66% / 60% ✅ |
+| R2d basket: worst duty margin; roll peak margin | not run | 1.50; 51.6× ✅ |
 | Shaft → link drive: worst capacity / joint peak (drive_capacity) | 1.55× ✅ | 1.25× ✅ |
 
 Shaft → link torque paths (belt; Astra #2b finding 2; hand calculations, ESTIMATE inputs as listed):
@@ -44,3 +44,8 @@ Spacing pairs under target (belt):
 - yaw_flange ↔ yaw_stop_pin (running) 0.3 mm (target 0.3)
 - roll_shaft ↔ yaw_shaft (moving) 1.33 mm (target 2.0)
 - yaw_block ↔ yaw_shaft (moving) 2.0 mm (target 2.0)
+
+Spacing pairs under target (inline):
+
+- roll_gim_housing ↔ roll_outflange (running) 0.3 mm (target 0.3)
+- yaw_flange ↔ yaw_stop_pin (running) 0.3 mm (target 0.3)

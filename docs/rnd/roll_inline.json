@@ -9,7 +9,7 @@
    "roll_y": 69.0,
    "yaw_drop": 99.3,
    "masses": [
-    0.303,
+    0.293,
     0.552
    ],
    "ferrule_gap": 2.39,
@@ -67,6 +67,139 @@
      "demand": 643.7,
      "ratio": 1.55,
      "basis": "N per screw: M = 20.7 N\u00b7m \u00d7 1.5 (rnd/basket.py worst passing shoulder-pitch torque, an upper bound for the flange) about the centre + 6.7 kg \u00d7 1.5 g; capacity = M3 insert pull-out in PETG-CF \u2248 1.0 kN (ESTIMATE, coupon)"
+    }
+   ]
+  },
+  "spacing": {
+   "under_target": 2,
+   "under_hard": 0,
+   "rows": [
+    {
+     "a": "roll_gim_housing",
+     "b": "roll_outflange",
+     "kind": "running",
+     "d": 0.3,
+     "target": 0.3,
+     "hard": 0.2,
+     "hard_fail": false
+    },
+    {
+     "a": "yaw_flange",
+     "b": "yaw_stop_pin",
+     "kind": "running",
+     "d": 0.3,
+     "target": 0.3,
+     "hard": 0.2,
+     "hard_fail": false
+    }
+   ]
+  },
+  "swept": {
+   "min": {
+    "roll": 0.3,
+    "yaw": 2.0
+   },
+   "under_target": 0,
+   "under_hard": 0,
+   "rows": [],
+   "closest": {
+    "roll": [
+     [
+      0.3,
+      "roll_outflange",
+      "roll_gim_housing",
+      -15
+     ],
+     [
+      0.71,
+      "roll_spring_hub",
+      "roll_spring_ring",
+      95
+     ],
+     [
+      1.04,
+      "roll_spring_hub",
+      "roll_link",
+      -15
+     ],
+     [
+      2.0,
+      "roll_arm_rear",
+      "roll_link",
+      55
+     ]
+    ],
+    "yaw": [
+     [
+      2.0,
+      "yaw_flange",
+      "yaw_plate_bot",
+      65
+     ],
+     [
+      2.5,
+      "yaw_shaft",
+      "yaw_block",
+      -155
+     ],
+     [
+      3.0,
+      "yaw_flange",
+      "yaw_band",
+      155
+     ],
+     [
+      3.64,
+      "yaw_shaft",
+      "yaw_plate_bot",
+      85
+     ]
+    ]
+   }
+  },
+  "basket": {
+   "ok": true,
+   "worst": 1.5,
+   "roll_peak_margin": 51.62,
+   "no_ik": 0,
+   "cap": {
+    "pitch": [
+     21.4,
+     62.7
+    ],
+    "roll": [
+     35.1,
+     102.9
+    ],
+    "yaw": [
+     9.5,
+     20.9
+    ],
+    "elbow": [
+     21.4,
+     62.7
+    ],
+    "wpitch": [
+     3.0,
+     7.0
+    ]
+   }
+  },
+  "dexterity": {
+   "top-down": 0.3576923076923077,
+   "45\u00b0 angled": 0.6807692307692308,
+   "side (horizontal)": 0.6576923076923077,
+   "side, across the body": 0.6,
+   "ok": true
+  },
+  "assembly_seq": {
+   "ok": 7,
+   "n": 7,
+   "roll": [
+    {
+     "name": "roll stage, D24 inline (61806 onto the stub; wave-2 rnd.check run)",
+     "ok": true,
+     "bearings": true
     }
    ]
   }
