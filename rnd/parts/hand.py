@@ -2,7 +2,8 @@
 
 Hand frame: origin on the wrist-pitch axis (Y), hand centre plane y = 0, hand points along -Z. The wrist-pitch cartridge
 sits in the forearm's wrist can, bolted to its rim (6 × M3); the palm bolts to the cartridge's output flange (6 × M3
-through the palm boss; D24, 2026-11-27: the KX56 socket is gone, and with it D21's wrist lift-off problem). Grasp point
+through the palm boss into nuts captive in the flange; D24, 2026-11-27: the KX56 socket is gone, and with it D21's wrist
+lift-off problem). Grasp point
 at z = -l_hand.
 - Palm: holds cartridge S #1 (wrist roll) with its shaft along -Z; its KX44 face is at the palm bottom.
 - Gripper (on the wrist-roll KX44 hub): SO-100-style: a fixed jaw + a jaw on the horn of cartridge S #2, which lies on
@@ -26,10 +27,24 @@ SLEEVE_TOP = -32.0            # palm: wrist-roll sleeve floor (flipped, horn poi
 from ..params import BASELINE as _D
 L_HAND = _D.arm.l_hand * 1000   # wrist-pitch axis → grasp point (params; loop 10 CAD: 0.13 → 0.15)
 WRIST_HUB_Y = 33.0          # loop-10 KX56 hub face (palm +Y side); kept as the datum that places the cartridge (arm.assembly)
-ADAPTER_T = 4.0             # D24 output flange on the motor output
-PALM_FACE_Y = WRIST_HUB_Y + KX56.gap + NECK + KX56.face_t - ADAPTER_T   # 39.65: palm boss face = output flange face
+# Fable review follow-up (2026-11-27, wave 5): the palm screws went into heat-set inserts in the 4 mm output flange, pressed
+# in from the palm side, so the hand's prying load (and the tightening itself) pulled them out toward the palm, as C1 and
+# C3 found elsewhere. Now a through-bolt, as the wrist can flange (arm.WRIST_NUT): ISO 4762 M3 × 60 from the palm's −Y face
+# through the boss and the flange into ISO 4032 M3 nuts (s 5.5, m 2.4) captive in hex pockets on the flange's motor-side
+# face (dropped in before the flange goes onto the motor; recessed, so nothing touches the motor). The flange grew 4 → 6 mm
+# (the palm boss is 2 mm shorter; the hand does not move) for a 2.4 mm floor under each nut, as the rim's: palm and flange
+# are both in compression, no insert anywhere on the hand load path.
+ADAPTER_T = 6.0             # D24 output flange on the motor output (4 → 6: nut pockets on its back face)
+PALM_FACE_Y = WRIST_HUB_Y + KX56.gap + NECK + KX56.face_t - ADAPTER_T   # 37.65: palm boss face = output flange face
 CAN_FL = dict(r_out=40.0, t=4.0, bolt_r=36.0, clr_d=3.6)                 # can flange: 6 × M3 × 12 through the forearm rim into nuts (D24 v2, arm.WRIST_NUT)
-PALM_SCREW_R = 19.0         # 6 × M3 × 60 from the palm's −Y face through the boss into the output flange's inserts
+PALM_SCREW_R = 19.0         # 6 × M3 × 60 from the palm's −Y face through the boss and the output flange into captive nuts
+PALM_Y_BACK = -20.5         # palm's −Y face (the screw heads' side)
+# nut pocket 3.6 deep from the flange's back face (floor 2.4 mm, as arm.WRIST_NUT's rim): the nut sits on the floor and the
+# screw tip ends 0.7 mm inside the back face, so the M3 × 60's ± 0.6 length tolerance (js15, ISO 4759-1, as roll.REAR_SCREW)
+# neither reaches the motor (≥ 0.1 mm under the face) nor leaves the nut short of thread (≥ 2.3 of its 2.4 mm engaged)
+PALM_NUT = dict(af=5.6, pocket=3.6, clr_d=3.4, cb_d=6.4, L=60.0, L_tol=0.6, tip_in=0.7,
+                screw="ISO 4762 M3 × 60 + ISO 4032 M3 nut, captive in a hex pocket on the output flange's motor side")
+PALM_NUT["cb_depth"] = round(PALM_FACE_Y + ADAPTER_T - PALM_NUT["tip_in"] - PALM_NUT["L"] - PALM_Y_BACK, 2)   # head counterbore in the palm's −Y face (3.45)
 
 
 def _rbox(x, y, z, r, align=(Align.CENTER, Align.CENTER, Align.CENTER)):
@@ -75,17 +90,23 @@ WRIST_Y0_FOREARM = 43.0     # forearm wrist-rim face (arm.WRIST_Y0): the can fla
 
 
 def adapter_d() -> Part:
-    """D24 output flange (printed ASA, 4 mm) on the DM-J4310 output: 6 × M3 into the motor (PCD 24, counterbored on the
-    palm side), 6 × M3 heat-set inserts at r 19 for the palm screws, a Ø16 × 2 spigot into the palm boss."""
+    """D24 output flange (printed ASA, 6 mm) on the DM-J4310 output: 6 × M3 into the motor (PCD 24, counterbored on the
+    palm side, 2 mm under the heads), 6 × Ø3.4 clearance holes at r 19 for the palm screws with hex nut pockets on the
+    motor-side face (PALM_NUT; a flat toward the axis), a Ø16 × 2 spigot into the palm boss."""
+    from build123d import RegularPolygon, extrude
     p = Cylinder(25, ADAPTER_T, align=MIN) + Pos(0, 0, ADAPTER_T) * Cylinder(8, 2, align=MIN)
     for k in range(J4310["out_holes"]):
         a = 2 * math.pi * k / J4310["out_holes"]
         x, y = J4310["out_pcd"] / 2 * math.cos(a), J4310["out_pcd"] / 2 * math.sin(a)
         p -= Pos(x, y, 0) * Cylinder(1.7, 40)
-        p -= Pos(x, y, ADAPTER_T - 3) * Cylinder(3.0, 10, align=MIN)
+        p -= Pos(x, y, 2.0) * Cylinder(3.0, 10, align=MIN)
+    n = PALM_NUT
+    hexp = extrude(RegularPolygon(n["af"] / math.sqrt(3), 6), n["pocket"] + 0.01)
     for k in range(6):
         a = math.pi / 3 * k
-        p -= Pos(PALM_SCREW_R * math.cos(a), PALM_SCREW_R * math.sin(a), 0) * Cylinder(2.0, ADAPTER_T, align=MIN)
+        at = Pos(PALM_SCREW_R * math.cos(a), PALM_SCREW_R * math.sin(a), 0)
+        p -= at * Cylinder(n["clr_d"] / 2, ADAPTER_T, align=MIN)
+        p -= at * Pos(0, 0, -0.01) * Rot(0, 0, 30.0 + math.degrees(a)) * hexp           # nut pocket from the motor side, a flat toward the axis
     return p - Cylinder(3, 40)
 
 
@@ -100,13 +121,14 @@ def palm() -> Part:
 
 
 def palm_screw_cuts() -> Part:
-    """D24: 6 × M3 through the palm boss (counterbored on its −Y face) and the Ø16 spigot recess in the boss face."""
+    """D24: 6 × M3 through the palm boss (head counterbores PALM_NUT cb_depth deep in its −Y face) and the Ø16 spigot
+    recess in the boss face."""
     c = Pos(0, PALM_FACE_Y + 0.01, 0) * Rot(90, 0, 0) * Cylinder(8.1, 2.2, align=MIN)
     for k in range(6):
         a = math.pi / 3 * k
         x, z = PALM_SCREW_R * math.cos(a), PALM_SCREW_R * math.sin(a)
-        c += Pos(x, -20.5, z) * Rot(-90, 0, 0) * Cylinder(1.7, PALM_FACE_Y + 21, align=MIN)
-        c += Pos(x, -20.5, z) * Rot(-90, 0, 0) * Cylinder(3.0, 4.0, align=MIN)
+        c += Pos(x, PALM_Y_BACK, z) * Rot(-90, 0, 0) * Cylinder(1.7, PALM_FACE_Y - PALM_Y_BACK + 0.5, align=MIN)
+        c += Pos(x, PALM_Y_BACK - 0.5, z) * Rot(-90, 0, 0) * Cylinder(PALM_NUT["cb_d"] / 2, PALM_NUT["cb_depth"] + 0.5, align=MIN)
     return c
 
 
@@ -286,7 +308,7 @@ def assembly(jaw_deg: float = 25.0):
 def masses(density=1.27):
     printed = palm().volume + sum(p.volume for n, p, c in gripper_parts() if n in ("grip_base", "grip_servo_sleeve", "jaw_moving", "jaw_fixed"))
     return {"palm + gripper printed": printed / 1e6 * density * 0.7,
-            "6 × M3 × 60 palm screws (ESTIMATE)": 0.006,
+            "6 × M3 × 60 palm screws + 6 × M3 nuts (ESTIMATE)": 0.007,
             "D16 wrist-roll spindle + dog (printed) + 2 × 61804": sum(p.volume for n, p, c in wrist_roll_parts() if n in ("wr_dog", "wr_spindle")) / 1e6 * density * 0.9 + 0.016,
             "D21 finger hook (PETG-CF, 80 %) + Ø3 pin": finger_hook().volume / 1e6 * 1.3 * 0.8 + 0.004,
             "wrist camera module (ESTIMATE)": 0.05, "TPU pads, rail screws (ESTIMATE)": 0.02}
