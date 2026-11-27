@@ -32,7 +32,8 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    shoulder roll ≥ +5°; rnd/pinch.py finds the inboard roll wedge ≥ 25 mm from ≈ +1°) get that range as their target bound
    (same margin as the normal limits); targets outside it are clamped like any joint limit. Entering the mode with the arm
    inside the restricted zone does not stop it: the bound starts at the arm's position and rises at PN_EXIT_SPEED
-   (0.2 rad/s), so the arm is walked out slowly; the faults (position outside limits, tracking) still use the hard
+   (0.2 rad/s), never more than one step ahead of the last target (a held step, e.g. SW-T1 walk-in, doesn't let it run
+   ahead and the arm then jump), so the arm is walked out slowly; the faults (position outside limits, tracking) still use the hard
    limits. Leaving the mode restores the full range at once.
 9. **Battery-current budget (W8a, electrical.md *Pack and BMS*; sw/power.py):** every cycle the drives' bus current is
    predicted from the torque the verdict will produce: electrical input power / V_bus per joint (copper loss k·R·I_ph² +
@@ -526,8 +527,9 @@ class Supervisor:
         qm, vm = np.asarray(q_meas, float), np.asarray(v_meas, float)
         # 3. limits (people-near bound when on), slew, workspace
         if self._pn_lo is not None:                                    # D25: the bound walks to the people-near range
-            self._pn_lo = np.minimum(np.maximum(self.lo, self.pn_lo), self._pn_lo + PN_EXIT_SPEED * dt)
-            self._pn_hi = np.maximum(np.minimum(self.hi, self.pn_hi), self._pn_hi - PN_EXIT_SPEED * dt)
+            ql = self.last_q if self.last_q is not None else qm         # never more than one step ahead of the arm (a held
+            self._pn_lo = np.minimum(np.maximum(self.lo, self.pn_lo), np.minimum(self._pn_lo, ql) + PN_EXIT_SPEED * dt)   # target, e.g.
+            self._pn_hi = np.maximum(np.minimum(self.hi, self.pn_hi), np.maximum(self._pn_hi, ql) - PN_EXIT_SPEED * dt)   # SW-T1 walk-in)
         lo, hi = self.target_bounds()
         qw = np.asarray(q_want, float)
         q = np.clip(qw, lo, hi)

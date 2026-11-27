@@ -16,6 +16,14 @@
    demand the 30 s mean stays ≤ 28 A and settles just under it, then recovers when the demand stops; normal motion on
    the bench twin gets exactly the same commands as with the budget off; the R2d basket carry (both arms, 4.54 kg each,
    120 s) is neither capped nor derated; nothing stops the arm; BMS over-current / under-voltage flags latch a fault.
+7. SW-T1 person within reach (A10 v2, rnd/tip.py), the same people-near mode as 4.: a random arm policy and random base
+   commands with the mode on never put the hand outside the SW-T1 box or the base over 0.1 m/s / 0.1 m/s²; with load mode
+   on too the box is the intersection and the lower limits win; > 2.5 kg with a person near stops the base; entering with
+   the hand outside the box walks it in (the box distance never grows, no stop); a person appearing during a fast transit
+   brakes the base at the transit's accel limit down to 0.1 m/s, then holds the SW-T1 limits.
+8. SW-T2 caster lock + SW-T4 threshold speed: locked by default; released only on request for a threshold crossing
+   (speed ≤ 0.12 m/s) or unloaded transit; refused / forced locked with a person near, a fault or too much payload;
+   re-lock, every stop and every 0.3 m of locked travel give a 0.1 s re-seat pulse; accel ≤ 0.5 m/s² while not locked.
 """
 from __future__ import annotations
 
@@ -191,7 +199,7 @@ def test_people_near():
         v = sup.check(q0, 20 * np.ones(6), np.ones(6), None, qm, v0, dt)
         qm = v.q.copy()
     # 1. mode switch with the arm in the zone: walked out at PN_EXIT_SPEED, never stopped, the policy pushing deeper
-    sup.set_people_near(True)
+    sup.set_people_near(True, box=(sup.ws_lo, sup.ws_hi))           # bench frame: SW-T1's hand box is tested in test_person_reach
     r_prev, steps, max_rate = qm[k], 0, 0.0
     while sup.people_near_exiting() or qm[k] < sup.pn_lo[k] - 1e-9:
         t[0] += dt; sup.tick()
@@ -577,8 +585,256 @@ def test_power():
             f"(max {i_arm.max():.1f} A), robot {i_robot.mean():.1f} A, 30 s mean ≤ {means_c.max():.1f} A: no cap, no derate ✅ (overrides: {counts})")
 
 
+def _bench_sup():
+    os.environ.setdefault("MUJOCO_GL", "egl")
+    import mujoco
+    from sw.bench_env import BenchEnv, TABLE_Z
+    from sw.safety import Supervisor
+    env = BenchEnv(render=False)
+    env.reset(0)
+    d2 = mujoco.MjData(env.m)
+
+    def fk(q):
+        d2.qpos[:] = env.d.qpos
+        for k, a in enumerate(env.qadr):
+            d2.qpos[a] = q[k]
+        mujoco.mj_kinematics(env.m, d2)
+        return d2.site_xpos[env.site].copy()
+    t = [0.0]
+    sup = Supervisor(fk=fk, clock=lambda: t[0], ws_lo=(0.05, -0.5, TABLE_Z + 0.01), ws_hi=(0.85, 0.5, TABLE_Z + 0.7))
+    q0 = np.array([env.d.qpos[a] for a in env.qadr])
+    return sup, fk, t, q0
+
+
+def test_person_reach():
+    """SW-T1 (sw/safety.py set_people_near / set_person_near): hand box, base caps, combined with load mode."""
+    from sw.safety import LOAD_WS, PERSON_A, PERSON_V, PERSON_WS, Supervisor
+    dt = 0.002
+    # 0. the robot-frame boxes: PERSON_WS = LOAD_WS with x ≤ 0.35, z ≤ 0.60; with load mode on too, the intersection
+    assert PERSON_WS == (LOAD_WS[0], (0.35, LOAD_WS[1][1], 0.60))
+    r = Supervisor(ws_lo=(0.0, -0.6, 0.0), ws_hi=(0.9, 0.6, 1.4), power=False)
+    assert Supervisor.set_person_near is Supervisor.set_people_near
+    r.set_payload(2.0)
+    assert np.allclose(r.ws_hi, LOAD_WS[1]) and r.base_accel_limit() == 0.3
+    r.set_person_near(True)
+    assert np.allclose(r.ws_lo, PERSON_WS[0]) and np.allclose(r.ws_hi, PERSON_WS[1]) and r.base_accel_limit() == PERSON_A and r.base_speed_limit() == PERSON_V
+    r.set_people_near(False)
+    assert np.allclose(r.ws_hi, LOAD_WS[1]) and r.base_accel_limit() == 0.3
+    r.set_payload(0)
+    assert np.allclose(r.ws_hi, (0.9, 0.6, 1.4)) and r.base_accel_limit() == 1.0 and r.base_speed_limit() == 0.3
+
+    sup, fk, t, q0 = _bench_sup()
+    k = sup.names.index("roll")
+    q0[k] = max(q0[k], sup.pn_lo[k] + 0.05)                          # start clear of the D25 roll zone (tested in 4.)
+    assert sup.reset(q0, 0.002)
+    p0 = fk(q0)
+    # bench-frame boxes around the hand: SW-T1 box (close / low faces just past the hand) and a load box narrower in y
+    PB = (p0 - [0.12, 0.25, 0.10], p0 + [0.02, 0.25, 0.02])
+    LB = (p0 - [0.12, 0.15, 0.10], p0 + [0.12, 0.15, 0.10])
+    rng = np.random.default_rng(11)
+    v0 = np.zeros(6)
+
+    def run(n, box, base_sigma=1.0):
+        """Random arm policy + random base commands; returns (hand-outside cycles, base over-limit cycles)."""
+        qm, vb, out, over = sup.last_q.copy(), sup._v_base.copy(), 0, 0
+        for _ in range(n):
+            t[0] += dt; sup.tick()
+            v = sup.check(q0 + rng.normal(0, 3.0, 6), rng.uniform(0, 200, 6), rng.uniform(0, 10, 6), rng.normal(0, 40, 6), qm, rng.normal(0, 0.5, 6), dt)
+            assert not v.stop and sup.heartbeat_ok(), v.reasons
+            p = fk(v.q)
+            if np.any(p < box[0] - 1e-6) or np.any(p > box[1] + 1e-6) or not sup.workspace_ok():
+                out += 1
+            vc = sup.limit_base(rng.normal(0, base_sigma, 2) * rng.choice([0.0, 1.0, 5.0]), dt)
+            if np.hypot(*vc) > sup.base_speed_limit() + 1e-9 or np.hypot(*(vc - vb)) > sup.base_accel_limit() * dt + 1e-9:
+                over += 1
+            if sup.release_casters("threshold") or sup.release_casters("transit"):
+                over += 1                                                # a release must be refused with a person near
+            vb = vc
+            qm = v.q + rng.normal(0, 0.002, 6)
+        return out, over
+
+    # 1. person near, no load: 0 cycles outside the SW-T1 box or over the base limits
+    sup.set_person_near(True, box=PB)
+    assert sup.base_speed_limit() == PERSON_V and sup.base_accel_limit() == PERSON_A and sup.casters_locked()
+    n1 = 3000
+    out1, over1 = run(n1, PB)
+    assert out1 == 0 and over1 == 0, (out1, over1)
+    # 2. load mode + person near: the intersection, the lower limits
+    sup.set_payload(2.0, box=LB)
+    want = (np.maximum.reduce([PB[0], LB[0], sup._ws_free[0]]), np.minimum.reduce([PB[1], LB[1], sup._ws_free[1]]))
+    assert np.allclose(sup.ws_lo, want[0]) and np.allclose(sup.ws_hi, want[1]) and sup.base_accel_limit() == min(0.3, PERSON_A)
+    n2 = 1500
+    out2, over2 = run(n2, want)
+    assert out2 == 0 and over2 == 0, (out2, over2)
+    # heavier than 2.5 kg (R2d basket) with a person near: the base stops
+    sup.set_payload(4.54, box=LB)
+    assert sup.base_speed_limit() == 0.0
+    for _ in range(200):
+        t[0] += dt
+        vc = sup.limit_base([0.3, 0.0], dt)
+    assert np.hypot(*vc) < 1e-12
+    sup.set_people_near(False)                                          # person gone: load-mode box and 0.3 m/s²
+    assert np.allclose(sup.ws_hi, np.minimum(LB[1], sup._ws_free[1])) and sup.base_accel_limit() == 0.3
+    sup.set_payload(0)
+    assert np.allclose(sup.ws_hi, sup._ws_free[1]) and sup.base_accel_limit() == 1.0
+    # 3. entering with the hand outside the box and the roll in the D25 zone: walked in, the distance to the box never grows,
+    #    the roll still walked out at ≤ PN_EXIT_SPEED (held steps don't let the bound run ahead), no stop
+    from sw.safety import PN_EXIT_SPEED, _box_dist
+    qm = sup.last_q.copy()
+    qm[k] = math.radians(-10.0)
+    t[0] += dt; sup.tick()
+    assert sup.reset(qm, 0.002)
+    pq = fk(qm)
+    PB2 = (pq - [0.20, 0.25, 0.20], pq + [-0.03, 0.25, -0.02])           # hand 30 mm beyond the x face, 20 mm above the top
+    sup.set_people_near(True, box=PB2)
+    d_start = d_prev = _box_dist(fk(qm), sup.ws_lo, sup.ws_hi)
+    assert d_start > 0 and not sup.workspace_ok()
+    grew, n3, inside_at, roll_rate = 0, 3000, None, 0.0
+    for i in range(n3):
+        t[0] += dt; sup.tick()
+        want = qm + rng.normal(0, 0.3, 6)
+        want[k] = math.radians(-15.0)                                     # the policy still asking for the roll stop
+        v = sup.check(want, 30 * np.ones(6), np.ones(6), None, qm, v0, dt)
+        assert not v.stop and sup.heartbeat_ok(), v.reasons
+        dn = _box_dist(fk(v.q), sup.ws_lo, sup.ws_hi)
+        grew += dn > d_prev + 1e-15
+        roll_rate = max(roll_rate, abs(v.q[k] - qm[k]) / dt)
+        d_prev = dn
+        qm = v.q.copy()
+        if dn == 0 and inside_at is None:
+            inside_at = i * dt
+    assert grew == 0 and d_prev < d_start and roll_rate <= PN_EXIT_SPEED + 1e-6, (grew, d_prev, d_start, roll_rate)
+    sup.set_people_near(False)
+    # 4. a person appears during a fast unloaded transit (casters released, 0.8 m/s): braked at the transit's 0.5 m/s², then SW-T1
+    assert sup.release_casters("transit")
+    a_tr = sup.base_accel_limit()
+    vb = sup._v_base.copy()
+    for _ in range(2500):
+        t[0] += dt
+        vb = sup.limit_base([0.8, 0.0], dt)
+    assert abs(vb[0] - 0.8) < 1e-9
+    sup.set_people_near(True, box=PB)
+    assert sup.casters_locked()
+    t_br, over4, prev = None, 0, vb.copy()
+    for i in range(2500):
+        t[0] += dt
+        vc = sup.limit_base([0.8, 0.0], dt)
+        dv = np.hypot(*(vc - prev))
+        if t_br is None:
+            over4 += dv > a_tr * dt + 1e-9 or np.hypot(*vc) > np.hypot(*prev) + 1e-12
+            if np.hypot(*vc) <= PERSON_V + 1e-9:
+                t_br = (i + 1) * dt
+        else:
+            over4 += np.hypot(*vc) > PERSON_V + 1e-9 or dv > PERSON_A * dt + 1e-9
+        prev = vc
+    assert over4 == 0 and t_br is not None and abs(t_br - (0.8 - PERSON_V) / a_tr) < 0.01, (over4, t_br)
+    return (f"SW-T1 person within reach (one people-near mode; `set_person_near` = `set_people_near`): robot-frame box "
+            f"x {PERSON_WS[0][0]:.2f}–{PERSON_WS[1][0]:.2f} m, z {PERSON_WS[0][2]:.2f}–{PERSON_WS[1][2]:.2f} m (LOAD_WS ∩ x ≤ 0.35, z ≤ 0.60). "
+            f"Random arm policy + random base commands with the mode on: {n1} cycles, **0 cycles with the hand outside the box, 0 over "
+            f"{PERSON_V} m/s or {PERSON_A} m/s²**, every caster release refused; with load mode on too (2 kg): {n2} cycles, 0 outside the "
+            f"intersection of the two boxes, accel cap {min(0.3, PERSON_A)} m/s²; 4.54 kg with a person near → base held at 0 m/s. "
+            f"Entering with the hand 30 mm outside and the roll at −10°: walked in{f' in {inside_at:.2f} s' if inside_at is not None else ''}, box distance never grew, "
+            f"roll walked out at ≤ {roll_rate:.2f} rad/s (D25 {PN_EXIT_SPEED}), no stop. "
+            f"Person appearing at 0.8 m/s (casters released for transit): casters locked at once, braked at {a_tr} m/s² to {PERSON_V} m/s in "
+            f"{t_br:.2f} s, then held to the SW-T1 limits ✅")
+
+
+def test_casters():
+    """SW-T2 caster lock state machine + SW-T4 threshold speed (sw/safety.py)."""
+    from sw.safety import (CASTER_LOCKED_V, CASTER_PULSE_S, CASTER_RELEASED_A, CASTER_RESEAT_M, THRESHOLD_SPEED, Supervisor)
+    t, dt = [0.0], 0.002
+    s = Supervisor(clock=lambda: t[0], power=False)
+    q = np.clip(np.zeros(s.n), s.lo, s.hi)
+    assert s.reset(q, 0.002)
+
+    def drive(v, secs):
+        out = None
+        for _ in range(int(round(secs / dt))):
+            t[0] += dt
+            s.tick()
+            out = s.limit_base(v, dt)
+        return out
+
+    def wait(secs):
+        t[0] += secs
+    # default: locked, solenoid off, 0.3 m/s, 1.0 m/s²; SW-T4 value
+    assert s.casters_locked() and not s.caster_solenoid() and s.base_speed_limit() == CASTER_LOCKED_V and s.base_accel_limit() == 1.0
+    assert Supervisor.threshold_speed() == s.threshold_speed() == THRESHOLD_SPEED == 0.12
+    # threshold release: free, speed ≤ 0.12, accel ≤ 0.5 (0.3 loaded)
+    assert s.release_casters("threshold")
+    st = s.caster_state()
+    assert st["state"] == "released" and st["mode"] == "threshold" and s.caster_solenoid() and not s.casters_locked()
+    assert st["speed"] == THRESHOLD_SPEED and st["accel"] == CASTER_RELEASED_A
+    vmax = max(np.hypot(*drive([0.3, 0.1], 0.2 * i)) for i in range(1, 8))
+    assert vmax <= THRESHOLD_SPEED + 1e-9, vmax
+    s.set_payload(2.0)
+    assert not s.casters_locked() and s.base_accel_limit() == 0.3            # 2 kg: still a threshold release, load-mode accel
+    # re-lock: a re-seat pulse, then locked
+    n0 = s.counts.get("caster re-seat pulse", 0)
+    s.lock_casters()
+    assert s.caster_state()["state"] == "reseat" and s.caster_solenoid() and s.counts["caster re-seat pulse"] == n0 + 1
+    wait(CASTER_PULSE_S * 0.5)
+    assert not s.casters_locked()
+    wait(CASTER_PULSE_S * 0.6)
+    assert s.casters_locked() and not s.caster_solenoid()
+    # transit: refused with a load; with none, 0.8 m/s; a payload ends it at once (no pulse)
+    assert not s.release_casters("transit") and not s.release_casters("other")
+    s.set_payload(0)
+    assert s.release_casters("transit") and s.base_speed_limit() == 0.8
+    s.set_payload(1.5)
+    assert s.casters_locked() and s.counts.get("caster forced lock", 0) == 1
+    s.set_payload(0)
+    s.set_payload(3.0)
+    assert not s.release_casters("threshold")                                # over the 2.5 kg a threshold release is analysed for
+    s.set_payload(0)
+    # person near: refused; a person appearing while released locks them
+    s.set_people_near(True)
+    assert not s.release_casters("threshold") and not s.release_casters("transit") and s.casters_locked()
+    s.set_people_near(False)
+    assert s.release_casters("threshold")
+    s.set_people_near(True)
+    assert s.casters_locked()
+    s.set_people_near(False)
+    # a fault locks them and stops the base; reset does not release them again
+    drive([0.0, 0.0], 0.5)
+    wait(1.0)
+    assert s.release_casters("transit")
+    drive([0.5, 0.0], 1.5)
+    s.press_estop()
+    assert s.casters_locked() and not s.caster_solenoid() and s.base_speed_limit() == 0.0 and not s.release_casters("threshold")
+    vb = drive([0.5, 0.0], 2.0)
+    assert np.hypot(*vb) < 1e-9
+    s.release_estop()
+    assert s.reset(q, 0.002) and s.casters_locked()
+    wait(1.0)
+    # re-seat pulse at every stop and every 0.3 m of locked travel
+    s.tick()
+    drive([0.0, 0.0], 0.2)
+    wait(1.0)
+    n0 = s.counts.get("caster re-seat pulse", 0)
+    drive([0.2, 0.0], 0.5)                                                   # 0.1 m, then stop
+    assert s.counts.get("caster re-seat pulse", 0) == n0
+    drive([0.0, 0.0], 0.25)
+    assert s.counts.get("caster re-seat pulse", 0) == n0 + 1
+    drive([0.0, 0.0], 0.2)
+    assert s.casters_locked()
+    n1 = s.counts["caster re-seat pulse"]
+    dist = 0.0
+    for _ in range(int(3.0 / dt)):                                           # 3 s at the locked cap
+        t[0] += dt
+        s.tick()
+        dist += np.hypot(*s.limit_base([0.3, 0.0], dt)) * dt
+    pulses = s.counts["caster re-seat pulse"] - n1
+    assert int(dist / (CASTER_RESEAT_M + 0.3 * CASTER_PULSE_S)) <= pulses <= int(dist / CASTER_RESEAT_M), (pulses, dist)
+    return (f"SW-T2 caster lock: locked by default (solenoid off), {CASTER_LOCKED_V} m/s while locked; threshold release → "
+            f"≤ {THRESHOLD_SPEED} m/s (SW-T4 `threshold_speed()`), ≤ {CASTER_RELEASED_A} m/s² (0.3 loaded); transit release only "
+            f"unloaded (0.8 m/s), ended at once by a payload; releases refused and ended by a person near, a fault (base → 0 m/s) "
+            f"or > 2.5 kg; re-lock, stopping and every {CASTER_RESEAT_M} m locked ({pulses} pulses over {dist:.2f} m) give a "
+            f"{CASTER_PULSE_S * 1000:.0f} ms re-seat pulse ✅ (overrides: { {a: b for a, b in s.counts.items() if 'caster' in a or 'base' in a} })")
+
+
 def main():
-    out = [test_mit(), test_driver(), test_supervisor(), test_people_near(), test_collision(), test_power()]
+    out = [test_mit(), test_driver(), test_supervisor(), test_people_near(), test_collision(), test_power(), test_person_reach(), test_casters()]
     from pathlib import Path
     Path("docs/sw").mkdir(parents=True, exist_ok=True)
     Path("docs/sw/s1_tests.md").write_text("# S1 software tests (generated by `python -m sw.test_s1`)\n\n" + __doc__.split("\n\n", 1)[1].strip()
