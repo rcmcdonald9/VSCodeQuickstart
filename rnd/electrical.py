@@ -318,7 +318,7 @@ def report(d=BASELINE):
           f"| *Loop 39 layout, for reference* | *one bus per arm: 5 motors + node at 500 Hz (with D14's bridge)* | | *{can_load(5, 4, 500):.0%}: too high (review finding 15)* |",
           "",
           "**A14 (loop 40):** each arm gets two CAN channels (≈ 45 % each, room for retries and jitter) and the base runs at 250 Hz. Five channels in all: "
-          "a 2-channel CAN HAT on the Pi + 3 USB-CAN adapters (candleLight class). **M1 needs 2 channels** (one arm). "
+          "five candleLight USB-CAN adapters (FYSETC UCAN class, gs_usb SocketCAN; loop 47 cost pass replaced the 2-channel SPI HAT). **M1 needs 2 channels** (one arm). "
           "Load model: 2 frames per motor per cycle (command + reply) and node frames, ≈ 130 bit per 8-byte frame with stuffing.",
           "| USB3 | head RGB-D (Gemini 2), 2 wrist cameras, lidar | – | Pi 5 has 2 × USB3; use a powered USB3 hub |", "",
           "## Connectors",
