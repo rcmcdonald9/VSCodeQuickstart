@@ -11,7 +11,8 @@ come from the CAD of the parts they cover (bounding boxes and the module constan
 re-run rnd/pinch.py after any change.
 
 Status (loop of 2026-11-27): elbow + forearm, wrist boot, lift (torso collars, spine pod, belt duct, mast cap; the
-closed lift cover is upper.lift_cover) and base (belly pan, wheel-well liners) are printable. The shoulder dome and
+closed lift cover is upper.lift_cover, the head's TPU neck boot is upper.neck_boot) and base (belly pan, wheel-well
+liners) are printable. The shoulder dome and
 yaw sleeve (pitch_frame / roll_frame) are still the render-only concept (see the note there). The elbow dome's 4 M3
 need heat-set inserts in the housing wall (rnd/parts/arm.py, next arm edit).
 """
@@ -96,8 +97,12 @@ def _split_cover(shell, axis, at, pts, h=8.0):
 # joint, best drawn on the D24 inline-roll layout that is replacing this stage.
 def pitch_frame():
     """Concept: rides on the pitch body (static w.r.t. roll): a dome over the roll link, the roll cartridge, the 80T
-    pulley and its belt, down to just above the roll axis; open underneath where the yaw block swings out."""
+    pulley and its belt, down to just above the roll axis; open underneath where the yaw block swings out.
+    Belt roll only: on the D24 inline roll (default) there is no roll belt, and this dome sat across the yaw cartridge
+    (≈ 6 cm³ of overlap); the inline roll's static cover belongs with the shoulder boot (open, see roll_frame)."""
     from . import roll
+    if roll.INLINE:
+        return []
     x0, x1, y0, y1, z0, z1 = -122.0, 62.0, 4.0, roll.ROLL_Y + 72, -30.0, roll.ROLL_C + 78
     d = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 46, 34, 2.2)
     d -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 - 6, y1 - y0 - 6, 8)
@@ -105,10 +110,51 @@ def pitch_frame():
     return [("cover_shoulder", d, "white")]
 
 
+_HOOD = []
+_GROW = [(0, 0, 0)] + [tuple(s * 1.5 * (i == k) for i in range(3)) for k in range(3) for s in (1, -1)]   # ≈ 1.5 mm growth
+
+
+def _yaw_hood():
+    """D24 inline roll (2026-11-27): rides on the roll output. A 2.2 mm hood 3 mm round the bolted yaw cartridge (can +
+    rear cap), standing on the yaw block's top plate (the yaw belt is already inside the yaw band). Cut clear of the
+    static roll link, motor housing, ferrule and spring ring swept over the roll range (3° steps, ±1.5 mm on each axis), and 1.5 mm
+    off the roll output's rear arm; it stops 1.5 mm behind the roll link (x −46.5), leaving the can's front 10 mm open. Concept (render + pinch), not yet a print: the cut leaves it open toward the roll
+    link, which is where the TPU shoulder boot has to close the joint."""
+    if not _HOOD:
+        from . import roll
+        from .. import swept
+        mv, st, o, _, (lo, hi) = swept.joints()["roll"]
+        can = [p for n, p, _ in roll.module() if n == "yaw_can"][0].bounding_box()
+        t, g = WALL, 3.0
+        x0, x1, y0, y1 = can.min.X - g - t, can.max.X + g + t, can.min.Y - g - t, can.max.Y + g + t
+        z0, z1 = roll.ZF + 0.5, can.max.Z + g + t
+        h = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 14, 8, t)
+        h -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 - 2 * t, y1 - y0 - 2 * t, 2 * t + 1)
+        R = lambda a: Pos(0, o[1], o[2]) * Rot(a, 0, 0) * Pos(0, -o[1], -o[2])
+        hx = h.bounding_box().max.X
+        for a in range(int(lo) - 3, int(hi) + 4, 3):
+            for _, p in st:
+                for d in _GROW:
+                    q = Pos(*d) * (R(-a) * p)
+                    if q.bounding_box().min.X <= hx:
+                        h -= q
+        for n, p in mv:
+            if n == "roll_arm_rear":
+                for d in _GROW:
+                    h -= Pos(*d) * p
+        h -= Pos(-46.5 + 100, 0, 0) * Box(200, 600, 600)                       # stop 1.5 mm behind the roll link / rear arm (x −45)
+        _HOOD.append(_main(h))
+    return _HOOD[0]
+
+
 def roll_frame():
     """Concept: rides on the roll output: a sleeve round the whole yaw block (both plates, the belt, the yaw
-    cartridge, its KX collar and torque fork), open at the top (the clevis arms) and the bottom (the yaw flange)."""
+    cartridge, its KX collar and torque fork), open at the top (the clevis arms) and the bottom (the yaw flange).
+    Inline roll (default): the yaw-cartridge hood (_yaw_hood); the old sleeve's top followed ZF + ZC and it engulfed the
+    roll link and motor (≈ 30 cm³ of overlap)."""
     from . import roll
+    if roll.INLINE:
+        return [("cover_yaw", _yaw_hood(), "white")]
     z0, z1 = roll.P2[0] - 4, roll.ZF + roll.ZC + 14
     c = Pos(-38, roll.ROLL_Y, (z0 + z1) / 2) * soft_shell(198, 122, z1 - z0, 46, 18, 2.2)
     c -= Pos(-38, roll.ROLL_Y, z0) * Box(194, 118, 6)
