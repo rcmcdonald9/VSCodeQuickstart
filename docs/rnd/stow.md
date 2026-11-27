@@ -18,7 +18,7 @@ gap), on the move into the stow from the default park pose too; hands ≥ 50 mm 
 reserve (rnd/tip.py reserve(), asymmetric pose) for the threshold crossing (casters released, 1.0 m/s² braking) and
 with a person near (casters locked, 0.1 m/s² + 30 N push at 1 m); static (R12 ≥ 50 mm).
 
-**Result: a door stow exists.** Driving through at the D2b threshold heading (45° to the wheels) the stowed robot is **567 mm** wide over 45° ± 2° of heading (≤ 570 mm = 650 mm clear − 2 × 40 mm: 42 mm a side in a 650 mm opening, 67 mm in a literal 700 mm one), collision-free with every cross-body gap ≥ 28 mm after the cover allowance, arm parts ≥ 50 mm off the floor, inside the supervisor bounds in both modes, tip reserve ≥ 83 mm. Sideways (90°, doors without a threshold) the arms fold inside the base: **500 mm** (the Ø500 shell). **Facing the door (0°) no pose fits:** the shoulder roll motors alone span 644 mm whatever the joints do (best found 984 mm).
+**Result: a door stow exists.** Driving through at the D2b threshold heading (45° to the wheels) the stowed robot is **567 mm** wide over 45° ± 2° of heading (≤ 570 mm = 650 mm clear − 2 × 40 mm: 42 mm a side in a 650 mm opening, 67 mm in a literal 700 mm one), collision-free with every cross-body gap ≥ 28 mm after the cover allowance, arm parts ≥ 140 mm off the floor, inside the supervisor bounds in both modes, tip reserve ≥ 82 mm. Sideways (90°, doors without a threshold) the arms fold inside the base: **500 mm** (the Ø500 shell). **Facing the door (0°) no pose fits:** the shoulder roll motors alone span 644 mm whatever the joints do (twin.TUCK: 795 mm).
 
 ## Door
 
@@ -47,7 +47,7 @@ Forward floor: the pitch body (the GIM8108-36 roll motor, Ø96 on the roll axis 
 
 ## The door stow (ψ = 45°, valid in both supervisor modes)
 
-Search: Powell from 7 seeds over the lift + 12 arm joints inside the supervisor target bounds (limits less 3°, roll ≥ +5° + 3°); cost = max W(45° ± 5°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a centred COM and a low lift). Seed kept: *tuck (twin.TUCK)*.
+Search: Powell from 7 seeds over the lift + 12 arm joints inside the supervisor target bounds (limits less 3°, roll ≥ +5° + 3°); cost = max W(45° ± 2°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a centred COM and a low lift). Seed kept: *tuck (twin.TUCK)*.
 
 | Joint | Right arm | Left arm (twin sign) |
 |---|---|---|
@@ -57,16 +57,16 @@ Search: Powell from 7 seeds over the lift + 12 arm joints inside the supervisor 
 | elbow | -52° | -113° |
 | wpitch | +47° | +59° |
 | wroll | -45° | -116° |
-| lift (shoulder height) | 0.61 m | |
+| lift (shoulder height) | 0.70 m | |
 
 In words: the **right arm swings back** (pitch +57°, elbow -52°); the **left arm points forward** (pitch -82°, elbow -113°). Along the crossing diagonal the right shoulder leads and the left trails, so each arm goes to where the diagonal is short: ahead on the left, behind on the right.
 
 - W(ψ) round the crossing heading: 40° 572, 43° 567, 45° 563, 47° 559, 50° 552 mm.
 - Set by: robot:cylinder2 (+250 mm) and roll_xarm_r (-313 mm) along the normal to the travel direction.
 - Crossing at 135° instead: the mirror pose (left ↔ right), 563 mm.
-- Heading tolerance: 15 mm threshold at the stow's mass + LOAD_KG and COM height, SW-T4 speed (rnd/threshold.py roller model, hard floor + carpet): 40° crosses 1.05×, 43° crosses 1.27×, 44° crosses 1.16×, 45° crosses 1.70×, 46° crosses 1.16×, 47° crosses 1.27×, 50° crosses 1.05× peak margin. Every heading crosses, but the 1.5× SW-T4 margin holds only at 45° itself in this model, so the base must hold 45° closely whatever the arms do; the width is taken over ± 2°. (For the threshold owner: D2b's margin is a knife edge in heading.)
-- Smallest cross-body gaps (after the cover allowance): roll_xarm_l × torso_pitchmod_l 13 mm; roll_xarm_l × torso:box11 13 mm; roll_yawcart_l × torso_pitchmod_l 13 mm.
-- Normal mode only (roll down to −12°): 619 mm (the people-near bound costs 52 mm here).
+- Heading tolerance: 15 mm threshold at the stow's mass + LOAD_KG and COM height, SW-T4 speed (rnd/threshold.py roller model, hard floor + carpet): 40° crosses 1.11×, 43° crosses 1.26×, 44° crosses 1.08×, 45° crosses 1.75×, 46° crosses 1.08×, 47° crosses 1.26×, 50° crosses 1.11× peak margin. Every heading crosses, but the 1.5× SW-T4 margin holds only at 45° itself in this model, so the base must hold 45° closely whatever the arms do; the width is taken over ± 2°. (For the threshold owner: D2b's margin is a knife edge in heading.)
+- Smallest cross-body gaps (after the cover allowance): fore_wrist_l × hand_gripbase_l 28 mm; fore_wrist_r × hand_gripbase_r 28 mm; upper_elbow_cart_r × torso:box11 38 mm.
+- Normal mode only (roll down to −12°): 562 mm (the people-near roll bound costs 5 mm here).
 
 ## Sideways stow (ψ = 90°, doors without a threshold)
 
@@ -77,13 +77,13 @@ In words: the **right arm swings back** (pitch +57°, elbow -52°); the **left a
 | Check | Value | Need | |
 |---|---|---|---|
 | tip (rnd/tip.py reserve): static, wheels only (R12: ≥ 50 mm) | 148 mm (worst heading 0°) | ≥ 50 mm | ✅ |
-| tip (rnd/tip.py reserve): threshold crossing (D2b), casters released, braking 1.0 m/s² | 111 mm (worst heading 134°) | ≥ 30 mm | ✅ |
-| tip (rnd/tip.py reserve): person near: casters locked, braking 0.1 m/s² + 30 N push at 1 m | 83 mm (worst heading 156°) | ≥ 30 mm | ✅ |
-| COM | x 0, y 0, h 367 mm (31.0 kg) | | |
+| tip (rnd/tip.py reserve): threshold crossing (D2b), casters released, braking 1.0 m/s² | 107 mm (worst heading 134°) | ≥ 30 mm | ✅ |
+| tip (rnd/tip.py reserve): person near: casters locked, braking 0.1 m/s² + 30 N push at 1 m | 82 mm (worst heading 156°) | ≥ 30 mm | ✅ |
+| COM | x 0, y 0, h 406 mm (31.0 kg) | | |
 | cross-body gaps in the pose | ≥ 28 mm | ≥ 25 mm (R17) | ✅ |
-| arm parts above the floor | ≥ 50 mm | ≥ 50 mm | ✅ |
-| into the stow from twin.TUCK, all joints together | gap ≥ 28 mm, ≥ 13 mm off the floor | ≥ 25 / 50 mm | ❌ |
-| into the stow, one joint group at a time (better of two orders) | gap ≥ 19 mm, ≥ 45 mm | ≥ 25 / 50 mm | ❌ |
+| arm parts above the floor | ≥ 140 mm | ≥ 50 mm | ✅ |
+| into the stow from twin.TUCK, all joints together | gap ≥ 28 mm, ≥ 86 mm off the floor | ≥ 25 / 50 mm | ✅ |
+| into the stow, one joint group at a time (better of two orders) | gap ≥ 19 mm, ≥ 135 mm | ≥ 25 / 50 mm | ❌ |
 
 **Not gated here: the roll output × torso wedge** (roll_xarm_l × torso_pitchmod_l: 13 mm in the stow, 14 mm in twin.TUCK). It is a pitch + roll pair that rnd/pinch.py already sweeps (rows roll_cover_yaw / roll_yaw_band × torso_shell; 17 mm at +15° with people near), it sits in the 8–25 mm band in every arms-down pose, and only a cover change closes it (a torso-side skirt that keeps it ≤ 8 mm, or a hood that keeps ≥ 25 mm). The stow is no worse than the park pose.
 

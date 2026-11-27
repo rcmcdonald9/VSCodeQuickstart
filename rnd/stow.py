@@ -39,7 +39,8 @@ DOOR_FRAME_CLEAR = 0.688
 CLEAR = 0.650                    # R5 clear width used (ESTIMATE, see above)
 CLEAR_LITERAL = 0.700
 MARGIN = 0.040                   # each side: approach error of the base planner (lidar ± a few cm) + sway (ESTIMATE)
-PSI_TOL = 2.0                    # deg: base heading error while crossing (ESTIMATE; lidar heading hold); the width is the worst over ψ ± PSI_TOL
+LIFT_PARK = 0.70                 # m: the lift in the park pose (twin.TUCK) the stow starts from
+PSI_TOL = 2.0                   # deg: base heading error while crossing (ESTIMATE; lidar heading hold); the width is the worst over ψ ± PSI_TOL
 W_MAX = CLEAR - 2 * MARGIN       # 0.570 m
 DOOR_H = 1.97                    # DIN 18101 leaf 1985 → ≈ 1.97 m clear under the head jamb (ESTIMATE)
 
@@ -287,9 +288,10 @@ def search(T, psi, both_modes=True, quick=False, seeds=None):
         ok = g >= GAP_OPEN - 1e-4 and zf >= FLOOR_MIN - 1e-4
         if best is None or (ok, -w) > (best["ok"], -best["w"]):
             best = dict(seed=name, q=x, w=w, gap=g, zf=zf, ok=ok)
-    # lowest lift that keeps the width and the checks (a lower COM for the tip reserve; the width barely depends on it)
+    # the lift barely changes the width: keep it at the park height if the checks pass there (the stow is then an arms-only
+    # move), else the lowest lift that keeps the width and the checks (lower COM)
     if best["ok"]:
-        for z in np.arange(lo[0], best["q"][0], 0.02):
+        for z in [LIFT_PARK] + list(np.arange(lo[0], best["q"][0], 0.02)):
             x = best["q"].copy(); x[0] = z
             _, (w, g, zf) = cost(T, x, psi, both_modes)
             if w <= best["w"] + 5e-4 and g >= GAP_OPEN - 1e-4 and zf >= FLOOR_MIN - 1e-4:
@@ -401,23 +403,23 @@ def main(argv=None):
     base_rows = []
     for i, tk in enumerate(TUCKS):
         v = [math.degrees(tk[j]) for j in ARM_J]
-        q = np.array([0.70] + v + v)
+        q = np.array([LIFT_PARK] + v + v)
         T.set(q)
         W = T.widths(psis)
         base_rows.append(dict(name="twin.TUCK" if i == 0 else f"twin.TUCKS[{i}]", q=q.tolist(), w0=float(W[0]), w45=float(W[45]), w90=float(W[90]),
                               wmin=float(W.min()), at=float(psis[W.argmin()]), gap=T.min_gap()))
     floor0 = shoulder_floor(T)
 
-    # 2. the search: ψ = 45° (threshold-legal, governing), 90° (sideways, no threshold), 0° (forward, for the record)
+    # 2. the search: ψ = 45° (threshold-legal, governing), 90° (sideways, no threshold); 0° has the fixed floor above
     res = {}
-    for psi in (45.0, 90.0, 0.0):
+    for psi in (45.0, 90.0):
         b = search(T, psi, True, a.quick)
         T.set(b["q"])
         W = T.widths(psis)
         (hv, hn), (lv, ln) = T.extremes(psi)
-        res[psi] = dict(b, q=b["q"].tolist(), W=W.tolist(), extremes=[[hn, hv], [ln, lv]], zmax=T.zmax(), gaps=T.gaps()[:6])
-    # normal-mode only (roll down to −12°) at 45°, to show what the people-near bound costs
-    bn = search(T, 45.0, False, True, {k: SEEDS[k] for k in ("left fwd, right back", "left fwd folded in, right back")})
+        res[psi] = dict(b, q=b["q"].tolist(), W=W.tolist(), extremes=[[hn, hv], [ln, lv]], zmax=T.zmax(), gaps=T.gaps(cls="cross")[:6])
+    # normal-mode only (roll down to −12°) at 45°, to show what the people-near bound costs (seeded with the both-mode stow)
+    bn = search(T, 45.0, False, True, {"both-mode stow": res[45.0]["q"], **{k: SEEDS[k] for k in ("left fwd, right back", "tuck (twin.TUCK)")}})
     res["45n"] = dict(bn, q=bn["q"].tolist())
     # rolls held at the people-near floor (+8°, ≈ the park value): what the roll abduction buys
     hi = T.hi.copy()
@@ -491,7 +493,7 @@ def _deg(v):
 
 
 def report(o):
-    S, S90, S0, Sn = o["stow"]["45.0"], o["stow"]["90.0"], o["stow"]["0.0"], o["stow"]["45n"]
+    S, S90, Sn = o["stow"]["45.0"], o["stow"]["90.0"], o["stow"]["45n"]
     q = S["q"]
     mm = lambda v: f"{round(v * 1000) + 0:.0f}"
     ok = lambda b: "✅" if b else "❌"
@@ -504,7 +506,7 @@ def report(o):
          f"{mm(S['gap'])} mm after the cover allowance, arm parts ≥ {mm(S['zf'])} mm off the floor, inside the supervisor bounds in both "
          f"modes, tip reserve ≥ {mm(tip_min)} mm. Sideways (90°, doors without a threshold) the arms fold inside the base: "
          f"**{mm(S90['w'])} mm** (the Ø500 shell). **Facing the door (0°) no pose fits:** the shoulder roll motors alone span "
-         f"{mm(o['shoulder_floor_w0'])} mm whatever the joints do (best found {mm(S0['w'])} mm).", ""]
+         f"{mm(o['shoulder_floor_w0'])} mm whatever the joints do (twin.TUCK: {mm(o['baseline'][0]['w0'])} mm).", ""]
     L += ["## Door", "", "| | mm | source |", "|---|---|---|",
           "| R5 text | 700 | \"fits 70 cm doors with arms folded\" (RND_PLAN §2): no clear width, no source |",
           f"| door leaf (70 cm class) | {mm(o['leaf'])} | DIN 18101 nominal 750 (leaf 735 × 1985); UK 686, US 28\" 711 |",
@@ -523,7 +525,7 @@ def report(o):
           f"{mm(o['shoulder_floor_w0'])} mm with the cover allowance. The tip-over track's 0.70–0.78 m is this, measured facing forward.", ""]
     L += ["## The door stow (ψ = 45°, valid in both supervisor modes)", "",
           f"Search: Powell from {len(SEEDS)} seeds over the lift + 12 arm joints inside the supervisor target bounds (limits less 3°, "
-          f"roll ≥ +5° + 3°); cost = max W(45° ± 5°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a "
+          f"roll ≥ +5° + 3°); cost = max W(45° ± {o['psi_tol']:.0f}°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a "
           f"centred COM and a low lift). Seed kept: *{S['seed']}*.", "",
           "| Joint | Right arm | Left arm (twin sign) |", "|---|---|---|"]
     for i, j in enumerate(ARM_J):
@@ -543,7 +545,7 @@ def report(o):
           f"hold 45° closely whatever the arms do; the width is taken over ± {o['psi_tol']:.0f}°. (For the threshold owner: D2b's "
           "margin is a knife edge in heading.)",
           "- Smallest cross-body gaps (after the cover allowance): " + "; ".join(f"{g[1]} × {g[2]} {mm(g[0])} mm" for g in S["gaps"][:3]) + ".",
-          f"- Normal mode only (roll down to −12°): {mm(Sn['w'])} mm (the people-near bound costs {mm(Sn['w'] - S['w'])} mm here).", ""]
+          f"- Normal mode only (roll down to −12°): {mm(Sn['w'])} mm (the people-near roll bound costs {mm(max(0.0, S['w'] - Sn['w']))} mm here).", ""]
     L += ["## Sideways stow (ψ = 90°, doors without a threshold)", "",
           f"{mm(S90['w'])} mm (seed *{S90['seed']}*), set by {S90['extremes'][0][0]} / {S90['extremes'][1][0]}. Joints (right / left, twin "
           "sign): " + ", ".join(f"{j} {_deg(S90['q'][1 + i])} / {_deg(S90['q'][7 + i] * MIRROR[j])}" for i, j in enumerate(ARM_J)) +
