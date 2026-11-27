@@ -172,3 +172,66 @@ def split_pulley(teeth: int, width: float = 16.0, flange: bool = False, af: floa
         for z in (0.0, width / 2 + 2.5):
             p -= Pos(0, 0, z) * (Cylinder(r_rim, width / 2 - 2.5, align=(Align.CENTER, Align.CENTER, Align.MIN)) - Cylinder(28, width / 2 - 2.5, align=(Align.CENTER, Align.CENTER, Align.MIN)))
     return p
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# D24 (2026-11-27): small-pulley stage v3 for the bolted cartridge (cartridge_m.can_bolted). Between the walls it is the
+# D13 v2 stack unchanged (Ø12 shaft, 2 × 6801 in eccentric bushings, aluminium HTD pulley); the KX74 hub, collar and
+# flange coupling go, and an Oldham coupling (clamp hub on the shaft end) takes the motor's output.
+# Stage frame: z = 0 is the cartridge flange mating plane = the cartridge-side face of wall A (6 mm, z −6 … 0), so V3 is
+# V2 shifted up by the 23.7 mm the KX hub and coupling took above wall A. Callers keep their walls where they were.
+V3_SHIFT = -(V2["jA"][1] + 1.0)                          # 23.7
+V3 = {k: (tuple(x + V3_SHIFT for x in v) if isinstance(v, tuple) else v + V3_SHIFT) for k, v in V2.items() if k != "hub_h"}
+V3["wall_a"] = (-6.0, 0.0)
+
+
+def small_stage_v3(teeth: int = 20):
+    """(name, part, colour) list in the stage frame (flange plane z = 0, cartridge +Z): the Oldham drive, Ø12 shaft,
+    2 × 6801 and the aluminium pulley. The cartridge itself is bolted_cartridge(); the wall features are wall_a_cuts()."""
+    from . import cartridge_m as cm
+    MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
+    v = V3
+    lv = cm.bolted_levels()
+    shaft_top = lv["hub"][1] - cm.OLDHAM["tongue_h"] - 1.0
+    shaft = Pos(0, 0, v["end"]) * Cylinder(SHAFT_D / 2, shaft_top - v["end"], align=MINZ)
+    brg = lambda j: Pos(0, 0, j[0]) * (Cylinder(BRG_6801["D"] / 2, BRG_6801["B"], align=MINZ) - Cylinder(BRG_6801["d"] / 2, BRG_6801["B"], align=MINZ))
+    pd = teeth * PITCH / math.pi
+    p0, p1 = v["pulley"][1], v["pulley"][0]
+    pul = Pos(0, 0, p0 - AL_PULLEY["body_l"]) * (Cylinder(pd / 2 - PLD, AL_PULLEY["body_l"], align=MINZ))
+    for z in (p0 - 1.5, p0 - AL_PULLEY["body_l"]):
+        pul += Pos(0, 0, z) * Cylinder(AL_PULLEY["flange_od"] / 2, 1.5, align=MINZ)
+    pul += Pos(0, 0, p1) * Cylinder(AL_PULLEY["hub_d"] / 2, AL_PULLEY["hub_l"], align=MINZ)
+    pul -= Pos(0, 0, -200) * Cylinder(SHAFT_D / 2, 400, align=MINZ)
+    old = dict((n, p) for n, p, _ in cm.oldham_parts())
+    # names kept for callers (spacing / masses): "flange_coupling" = the shaft-side clamp hub, "kx_hub_v2" = the motor adapter
+    return [("kx_hub_v2", old["drive_adapter"], "dark"), ("oldham_disc", old["oldham_disc"], "dark"),
+            ("flange_coupling", old["oldham_hub"], "steel"), ("shaft_12", shaft, "steel"),
+            ("brg_A_6801", brg(v["jA"]), "steel"), ("brg_B_6801", brg(v["jB"]), "steel"), ("al_pulley", pul, "steel")]
+
+
+def bolted_cartridge():
+    """(name, part, colour) of the bolted cartridge M in the stage frame: sleeve, rear cap, motor."""
+    from . import cartridge_m as cm
+    return [("can", cm.can_bolted(), "white"), ("can_cap", cm.can_cap_bolted(), "white"), ("motor", cm.motor_bolted(), "dark")]
+
+
+def bolted_stage(T, teeth: int = 20, prefix: str = ""):
+    """Cartridge + stage v3 mapped by T (stage frame → module frame), names prefixed. One call per joint."""
+    return [(prefix + n, T * p, c) for n, p, c in bolted_cartridge() + small_stage_v3(teeth)]
+
+
+def wall_a_cuts() -> Part:
+    """What to subtract from wall A (stage frame, wall z −6 … 0): the eccentric-bushing seat (Ø38.2), the Ø49.2 × 1.6
+    counterbore for the cartridge's centring lip and 6 countersunk M4 clearance holes (heads flush on the pulley side)."""
+    from build123d import Cone
+    from . import cartridge_m as cm
+    MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
+    f = cm.FLANGE_B
+    c = Pos(0, 0, -20) * Cylinder(ECC_V2["od"] / 2 + 0.1, 40, align=MINZ)
+    c += Pos(0, 0, -cm.NOSE_B["lip"] - 0.1) * Cylinder(cm.NOSE_B["r_out"] + 0.1, 5, align=MINZ)
+    for a in cm.FLANGE_ANG:
+        t = math.radians(a)
+        at = Pos(f["bolt_r"] * math.cos(t), f["bolt_r"] * math.sin(t), 0)
+        c += at * Pos(0, 0, -10) * Cylinder(f["clr_d"] / 2, 20, align=MINZ)
+        c += at * Pos(0, 0, -6.01) * Cone(f["csk_d"] / 2, f["clr_d"] / 2, (f["csk_d"] - f["clr_d"]) / 2, align=MINZ)
+    return c
