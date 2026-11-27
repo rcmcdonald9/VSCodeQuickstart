@@ -1,7 +1,7 @@
 {
- "gap_fails": 22,
+ "gap_fails": 21,
  "exposed_fails": 16,
- "fails": 38,
+ "fails": 37,
  "reach_zones": 36,
  "joints": [
   "pitch",
@@ -94,20 +94,6 @@
    "sides": [
     "l",
     "r"
-   ]
-  },
-  {
-   "joint": "pan",
-   "moving": "head_shell",
-   "static": "pan_sleeve",
-   "tier": 1,
-   "min": 7.259878440000948,
-   "max": 26.459933836942593,
-   "ok": false,
-   "shear": false,
-   "at": 60.0,
-   "sides": [
-    "-"
    ]
   },
   {
@@ -278,11 +264,11 @@
    "moving": "head_shell",
    "static": "yoke",
    "tier": 1,
-   "min": 3.000024088060685,
-   "max": 40.0,
+   "min": 3.0004754783719267,
+   "max": 38.72285244087213,
    "ok": false,
    "shear": false,
-   "at": 15.0,
+   "at": -10.0,
    "sides": [
     "-"
    ]
@@ -292,8 +278,8 @@
    "moving": "head_drive_stub",
    "static": "tilt_sleeve",
    "tier": 1,
-   "min": 6.6259887777058415,
-   "max": 8.05286117643242,
+   "min": 6.625988777705826,
+   "max": 8.052861176432508,
    "ok": false,
    "shear": false,
    "at": 10.0,
@@ -306,11 +292,11 @@
    "moving": "head_shell",
    "static": "tilt_sleeve",
    "tier": 1,
-   "min": 6.707765513071317,
-   "max": 8.664583898326436,
+   "min": 8.199182325139219,
+   "max": 9.675015753994863,
    "ok": false,
    "shear": false,
-   "at": 15.0,
+   "at": 10.0,
    "sides": [
     "-"
    ]
@@ -320,7 +306,7 @@
    "moving": "visor",
    "static": "tilt_sleeve",
    "tier": 1,
-   "min": 24.555655370849575,
+   "min": 24.555655370849482,
    "max": 27.10024970995867,
    "ok": false,
    "shear": false,
@@ -575,8 +561,8 @@
    "moving": "yoke",
    "static": "pan_sleeve",
    "tier": 1,
-   "min": 10.600010366749425,
-   "max": 10.604566066248543,
+   "min": 10.600010366749423,
+   "max": 10.604566066248529,
    "ok": true,
    "shear": true,
    "at": -90.0,
@@ -798,7 +784,7 @@
    "moving": "head_pivot_stub",
    "static": "tilt_bearing",
    "tier": 1,
-   "min": 0.018221566232668053,
+   "min": 0.01822156623257522,
    "max": 0.15881725814216283,
    "ok": true,
    "shear": false,
@@ -812,8 +798,8 @@
    "moving": "head_screen",
    "static": "yoke",
    "tier": 1,
-   "min": 6.521406652476632,
-   "max": 6.601529162519524,
+   "min": 6.521406652476593,
+   "max": 6.601529162519509,
    "ok": true,
    "shear": false,
    "at": 10.0,
@@ -826,7 +812,7 @@
    "moving": "visor",
    "static": "yoke",
    "tier": 1,
-   "min": 16.3988588123767,
+   "min": 16.39885881237663,
    "max": 16.70698951423525,
    "ok": true,
    "shear": true,
@@ -1782,7 +1768,7 @@
     100.0
    ]
   },
-  "gap_fails": 19,
+  "gap_fails": 18,
   "exposed_fails": 16,
   "reach_zones": 31,
   "gaps": [
@@ -1859,20 +1845,6 @@
     "sides": [
      "l",
      "r"
-    ]
-   },
-   {
-    "joint": "pan",
-    "moving": "head_shell",
-    "static": "pan_sleeve",
-    "tier": 1,
-    "min": 7.259878440000948,
-    "max": 26.459933836942593,
-    "ok": false,
-    "shear": false,
-    "at": 60.0,
-    "sides": [
-     "-"
     ]
    },
    {
@@ -1998,11 +1970,11 @@
     "moving": "head_shell",
     "static": "yoke",
     "tier": 1,
-    "min": 3.000024088060685,
-    "max": 40.0,
+    "min": 3.0004754783719267,
+    "max": 38.72285244087213,
     "ok": false,
     "shear": false,
-    "at": 15.0,
+    "at": -10.0,
     "sides": [
      "-"
     ]
@@ -2012,8 +1984,8 @@
     "moving": "head_drive_stub",
     "static": "tilt_sleeve",
     "tier": 1,
-    "min": 6.6259887777058415,
-    "max": 8.05286117643242,
+    "min": 6.625988777705826,
+    "max": 8.052861176432508,
     "ok": false,
     "shear": false,
     "at": 10.0,
@@ -2026,11 +1998,11 @@
     "moving": "head_shell",
     "static": "tilt_sleeve",
     "tier": 1,
-    "min": 6.707765513071317,
-    "max": 8.664583898326436,
+    "min": 8.199182325139219,
+    "max": 9.675015753994863,
     "ok": false,
     "shear": false,
-    "at": 15.0,
+    "at": 10.0,
     "sides": [
      "-"
     ]
@@ -2040,7 +2012,7 @@
     "moving": "visor",
     "static": "tilt_sleeve",
     "tier": 1,
-    "min": 24.555655370849575,
+    "min": 24.555655370849482,
     "max": 27.10024970995867,
     "ok": false,
     "shear": false,
@@ -2295,8 +2267,8 @@
     "moving": "yoke",
     "static": "pan_sleeve",
     "tier": 1,
-    "min": 10.600010366749425,
-    "max": 10.604566066248543,
+    "min": 10.600010366749423,
+    "max": 10.604566066248529,
     "ok": true,
     "shear": true,
     "at": -90.0,
@@ -2519,7 +2491,7 @@
     "moving": "head_pivot_stub",
     "static": "tilt_bearing",
     "tier": 1,
-    "min": 0.018221566232668053,
+    "min": 0.01822156623257522,
     "max": 0.15881725814216283,
     "ok": true,
     "shear": false,
@@ -2533,8 +2505,8 @@
     "moving": "head_screen",
     "static": "yoke",
     "tier": 1,
-    "min": 6.521406652476632,
-    "max": 6.601529162519524,
+    "min": 6.521406652476593,
+    "max": 6.601529162519509,
     "ok": true,
     "shear": false,
     "at": 10.0,
@@ -2547,7 +2519,7 @@
     "moving": "visor",
     "static": "yoke",
     "tier": 1,
-    "min": 16.3988588123767,
+    "min": 16.39885881237663,
     "max": 16.70698951423525,
     "ok": true,
     "shear": true,

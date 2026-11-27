@@ -47,11 +47,11 @@ two-joint combinations (each joint is swept with the others at the reference pos
 
 **Tiers.** Tier 1 (counted, R17): the moving body against its parent link (the joint's own nips: elbow fold, shoulder–torso, wrist–forearm, head–neck), and for the lift the carriage body against the mast, base, head and bellows. Tier 2 (listed): everything else, e.g. a hand reaching the base at an extreme yaw or a hanging arm on the base rim at the lowest lift; those are clamping zones handled by the planner's keep-outs and force limiting (D23 (5)), not by cover geometry.
 
-**Result: 22 joint-nip gap fails, 16 exposed belt / pulley / motor parts. R17 needs 0 and 0.** Also listed: 36 reach-clamping zones (tier 2) and 12 exposed shafts (warnings).
+**Result: 21 joint-nip gap fails, 16 exposed belt / pulley / motor parts. R17 needs 0 and 0.** Also listed: 36 reach-clamping zones (tier 2) and 12 exposed shafts (warnings).
 
-**People near (D25 soft limits: roll 5…100°): 19 joint-nip gap fails, 16 exposed parts** (7 → 4 on roll; 31 reach-clamping zones; exposure is reported over the full range).
+**People near (D25 soft limits: roll 5…100°): 18 joint-nip gap fails, 16 exposed parts** (7 → 4 on roll; 31 reach-clamping zones; exposure is reported over the full range).
 
-Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 14.3 min.
+Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 14.7 min.
 
 ## Exposed drive parts (accessible to the Ø12 probe at some step)
 
@@ -107,7 +107,6 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 | elbow | arm_forearm | arm_e_seat_cap_p | l/r | 7.0 | 8.6 | -120 | ❌ | same |
 | elbow | arm_cover_forearm_f | arm_upper_bone | l/r | 7.7 | 14.5 | -150 | ❌ | same |
 | elbow | arm_cover_forearm_r | arm_upper_bone | l/r | 9.4 | 15.8 | -150 | ❌ | same |
-| pan | head_shell | pan_sleeve | - | 7.3 | 26.5 | 60 | ❌ | same |
 | pitch | roll_roll_link | sh_pitch_hub | l/r | 9.6 | 10.6 | 40 | ❌ | same |
 | pitch | roll_roll_link | torso_shell | l/r | 13.0 | 18.3 | -200 | ❌ | same |
 | pitch | roll_cover_yaw | torso_shell | l/r | 19.3 | 26.6 | -20 | ❌ | same |
@@ -119,9 +118,9 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 | roll | roll_yaw_block | roll_roll_link | l/r | 9.1 | 12.6 | 5 | ❌ | 9.1 … 12.6 ❌ |
 | roll | roll_yaw_band | roll_roll_link | l/r | 12.9 | 23.0 | -15 | ❌ | 22.8 … 23.0 ⚠️ shear |
 | roll | roll_roll_outflange | roll_roll_link | r | 13.1 | 14.1 | 60 | ❌ | 13.1 … 14.1 ❌ |
-| tilt | head_shell | yoke | - | 3.0 | > 40 | 15 | ❌ | same |
+| tilt | head_shell | yoke | - | 3.0 | 38.7 | -10 | ❌ | same |
 | tilt | head_drive_stub | tilt_sleeve | - | 6.6 | 8.1 | 10 | ❌ | same |
-| tilt | head_shell | tilt_sleeve | - | 6.7 | 8.7 | 15 | ❌ | same |
+| tilt | head_shell | tilt_sleeve | - | 8.2 | 9.7 | 10 | ❌ | same |
 | tilt | visor | tilt_sleeve | - | 24.6 | 27.1 | 15 | ❌ | same |
 | yaw | arm_upper_bone | roll_yaw_stop_pin | l/r | 7.3 | 9.8 | 145 | ❌ | same |
 | elbow | arm_e_shaft40 | arm_enc_magnet_holder | l/r | 0.0 | 0.2 | -105 | ✅ | same |
