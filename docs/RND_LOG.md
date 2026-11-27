@@ -1145,3 +1145,9 @@ One long push instead of half-hour runs. In order:
 
 - sw/config/can_map.yaml: bus membership, command/feedback IDs, termination ends, node ports (PIO-CAN + MCP2562, SPI encoders, I²C tactile/ToF, half-duplex TTL servos) — the single file drivers and harness read. sw/can_map.py validates it: B1 46 %, B2 46 %, IDs unique, 2 terminations per bus, ratios = params.
 - Found the D14 buck under-sized (3 A vs 5.4 A for two stalled STS3215) → 6 A in the M1 kit.
+
+## Loop 44 (2026-11-27, hardware): D19 on the yaw stage
+
+- Yaw shaft one piece again (Ø40 tube + 40T + clock-spring hub); flange is a separate part bolted to the tube end (4 × M4); the bottom yaw plate is its own print, bolted on last (it was fused to the top half since loop 10: Astra #14).
+- Tried capped U-slots first: the +X clevis arm stands over the slot and the caps hit the flange and spring ring, so the separable bottom plate is the cleaner fix here.
+- R14 4/7 (yaw passes); roll/yaw module clean (only the intended stop-pin press fit).

@@ -65,8 +65,8 @@ def cases():
     C.append(("roll shaft (80T split on a hex; clock-spring hub on the +X end)", rs,
               [(roll.W1[0], roll.W1[1], 40.0), (roll.W2[0], roll.W2[1], 40.0), (-8.0, 8.0, roll.HEX_AF + 0.4)], None))
     ys = Pos(0, -roll.ROLL_Y, 0) * roll.yaw_shaft()
-    C.append(("yaw shaft + flange (40T split on a hex)", ys,
-              [(roll.P1[0], roll.P1[1], 40.0), (roll.P2[0], roll.P2[1], 40.0), (roll.P2[1], roll.YAW_BELT + 8.0, roll.HEX_AF + 0.4)], None))
+    C.append(("yaw shaft (D19, loop 44: 40T + spring hub one piece; up into the top plate, bottom plate bolted on, flange last)", ys,
+              [(roll.P1[0], roll.P1[1], 40.0), (roll.P2[0], roll.P2[1], 40.0)], None))
     eh = Rot(-90, 0, 0) * arm.elbow_pulley_hub()
     C.append(("elbow shaft (40T split on a double-D; 2 × 61808 + 2 × 6708)", eh,
               [(arm.CAS_A[0], arm.CAS_A[1], 40.0), (arm.CAS_B[0], arm.CAS_B[1], 40.0), (-54 - 3.5, -54 + 3.5, 40.0), (54 - 3.5, 54 + 3.5, 40.0),

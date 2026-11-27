@@ -159,9 +159,24 @@ YAW_DROP = round(-(P2[0] - 2.3 - 5.0), 1)   # flange: 5 mm, 2.3 mm under the bot
 YAW_WALL_Y = 44.0                      # side-wall centre offset from the yaw axis (plates span ±46)
 
 
+def yaw_plate_bot() -> Part:
+    """D19 (loop 44): the bottom yaw plate is its own print, bolted on last with the 4 post bolts (M5) and 4 × M4 into the
+    side walls. Assembly: one-piece yaw shaft (40T + spring hub) with bearing A on top goes up into the top plate from
+    below; the spring ring and ribbon go on; this plate comes up over bearing B; the flange bolts to the tube end last.
+    (Loops 10–43 fused it to the top half, so nothing could be assembled; Astra review #2b finding 14.)"""
+    pl = _plate_z(-YAW_C - 48, 48, ROLL_Y - 46, ROLL_Y + 46, P2[0], P2[1], 16)
+    pl -= Pos(0, ROLL_Y, 0) * Cylinder(26, 400)
+    pl -= Pos(-YAW_C, ROLL_Y, 0) * Cylinder(19.1, 400)
+    for xx, yy in ((-YAW_C / 2, ROLL_Y - 38), (-YAW_C / 2, ROLL_Y + 38), (-YAW_C - 24, ROLL_Y - 38), (-YAW_C - 24, ROLL_Y + 38)):
+        pl -= Pos(xx, yy, P2[0]) * Cylinder(2.75, 20, align=MIN)                  # post bolts
+    t = math.radians(STOP_PIN_AZ)
+    pl -= Pos(STOP_PIN_R * math.cos(t), ROLL_Y + STOP_PIN_R * math.sin(t), P2[0]) * Cylinder(2.95, 5, align=MIN)   # stop pin seat
+    return pl
+
+
 def clevis_and_yaw_block() -> Part:
     p = None
-    for z0, z1 in (P1, P2):
+    for z0, z1 in (P1,):                                                           # D19: P2 is yaw_plate_bot()
         pl = _plate_z(-YAW_C - 48, 48, ROLL_Y - 46, ROLL_Y + 46, z0, z1, 16)
         pl -= Pos(0, ROLL_Y, 0) * Cylinder(26, 400)                                # 61808 seat, yaw shaft
         pl -= Pos(-YAW_C, ROLL_Y, 0) * Cylinder(19.1, 400)                        # eccentric-bushing seat, small hub
@@ -176,8 +191,6 @@ def clevis_and_yaw_block() -> Part:
     for yy in (ROLL_Y + YAW_WALL_Y, ROLL_Y - YAW_WALL_Y):
         p += Pos((-112 + 32) / 2, yy, (P2[1] + P1[0]) / 2) * Box(144, 4, P1[0] - P2[1])
     p += yaw_torque_fork()
-    t = math.radians(STOP_PIN_AZ)
-    p -= Pos(STOP_PIN_R * math.cos(t), ROLL_Y + STOP_PIN_R * math.sin(t), P2[0]) * Cylinder(2.95, 5, align=MIN)   # loop 34: press-fit seat for the stop pin
     for x0, x1 in ((W1[0] - 12, W1[0] - 2), (W2[1] + 2, W2[1] + 12)):            # clevis arms outside the walls
         arm = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[0], 26, 10)           # arms end on the top plate (yaw pulley below is clear)
         arm -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(20.2, 100)           # clamps on the roll shaft ends
@@ -200,17 +213,30 @@ def yaw_torque_fork() -> Part:
 
 
 def yaw_shaft() -> Part:
-    """Loop 40 (R14): Ø40 tube + bottom flange, one piece; the 40T pulley is separate (hex AF 34). Inserted from below
-    through the bottom plate's 61808, the static spring ring, the pulley and the top plate's 61808. The upper bone bolts
-    to the flange inside the stop slot (6 × M4 at r 28), so no torque crosses the slot."""
-    h = P1[1] + 2 - (-YAW_DROP)
-    s = Pos(0, ROLL_Y, -YAW_DROP) * (Cylinder(20, h, align=MIN) - Cylinder(14, 200, align=MIN))
-    z0 = P2[1]
-    s -= Pos(0, ROLL_Y, z0) * (Cylinder(21, YAW_BELT + 8 - z0, align=MIN) - _hex(HEX_AF, YAW_BELT + 8 - z0))
-    s += Pos(0, ROLL_Y, -YAW_DROP) * (Cylinder(45, 5, align=MIN) - Cylinder(14, 5, align=MIN))   # flange → upper bone
-    # hard-stop slot (blind, 3.5 mm deep in the top of the flange) for the fixed Ø6 stop pin: software ±150°, hard ±155°
-    s -= Pos(0, ROLL_Y, -YAW_DROP + 1.5) * _arc_slot(STOP_PIN_R, 3.3, STOP_PIN_AZ, YAW_STOP_DEG, 4.0)
+    """D19 (loop 44, after Astra review #2b finding 1): Ø40 tube with the 40T pulley and the clock-spring hub printed on
+    it in one piece (no keyed joint). The bearings slide on from the two ends (A from the top, B from the bottom), then
+    the whole sub-assembly (+ spring ring and ribbon) slides sideways into the plates' U-slots, which the two
+    yaw_seat_caps close. The flange is a separate part bolted to the tube's lower end (yaw_flange)."""
+    h = P1[1] + 2 - (-YAW_DROP + 5)
+    s = Pos(0, ROLL_Y, -YAW_DROP + 5) * (Cylinder(20, h, align=MIN) - Cylinder(14, 200, align=MIN))
+    s += Pos(0, ROLL_Y, YAW_BELT - 8) * (pulley(40, 16, flange=False) - Cylinder(14, 16, align=MIN))
+    s += Pos(0, ROLL_Y, P2[1]) * (Cylinder(21.6, 1.0, align=MIN) - Cylinder(14, 1.0, align=MIN))
+    s += Pos(0, ROLL_Y, P2[1] + 1.0) * (Cylinder(YAW_SPR[0], YAW_BELT - 8 - P2[1] - 1.0, align=MIN) - Cylinder(14, 30, align=MIN))
+    for k in range(4):                                                         # M4 heat-set inserts for the flange screws
+        a = math.pi / 2 * k + math.pi / 4
+        s -= Pos(17 * math.cos(a), ROLL_Y + 17 * math.sin(a), -YAW_DROP + 5) * Cylinder(2.05, 8, align=MIN)
     return s
+
+
+def yaw_flange() -> Part:
+    """Upper-arm flange, bolted to the yaw tube's lower end (4 × M4 at r 17); the upper bone bolts to it inside the stop
+    slot. Hard-stop slot (blind, 3.5 mm deep in its top) for the fixed Ø6 stop pin: software ±150°, hard ±155°."""
+    f = Pos(0, ROLL_Y, -YAW_DROP) * (Cylinder(45, 5, align=MIN) - Cylinder(14, 5, align=MIN))
+    f -= Pos(0, ROLL_Y, -YAW_DROP + 1.5) * _arc_slot(STOP_PIN_R, 3.3, STOP_PIN_AZ, YAW_STOP_DEG, 4.0)
+    for k in range(4):
+        a = math.pi / 2 * k + math.pi / 4
+        f -= Pos(17 * math.cos(a), ROLL_Y + 17 * math.sin(a), -YAW_DROP) * Cylinder(2.2, 5, align=MIN)
+    return f
 
 
 def _arc_slot(r, hw, az, half, h):
@@ -301,7 +327,8 @@ def module():
     out = [("ferrule_m", Rot(-90, 0, 0) * ferrule(male=True), "orange"),
            ("roll_link", roll_link(), "white"), ("roll_shaft", roll_shaft(), "orange"), ("roll_pulley72", roll_pulley(), "orange"),
            ("roll_spring_hub", roll_spring_hub(), "dark"),
-           ("yaw_block", clevis_and_yaw_block(), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_pulley40", yaw_pulley(), "orange"),
+           ("yaw_block", clevis_and_yaw_block(), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_flange", yaw_flange(), "orange"),
+           ("yaw_plate_bot", yaw_plate_bot(), "white"),
            ("yaw_spring_ring", yaw_spring_ring(), "dark")]
     out += [("shoulder_cap", shoulder_cap(), "white"), ("yaw_band", yaw_band(), "white")]
     out += [(f"roll_{n}", p, c) for n, p, c in _stage(ROLL_T, 18)]
@@ -321,8 +348,8 @@ def masses(density=1.27, split=False):
     pr = lambda v, f: v * f / 1e6 * density
     roll = {"roll link + spring ring/bar (printed)": pr(roll_link().volume, 0.6), "roll shaft + 72T pulley + spring hub": pr(roll_shaft().volume + roll_pulley().volume, 0.7) + pr(roll_spring_hub().volume, 0.8),
             "roll D13 stage + KX74 socket": d13 + sock, "2 × 61808 (ESTIMATE)": 0.04, "male ferrule (printed) + dowels + belt + screws + ribbon (ESTIMATE)": pr(67213, 0.7) + 0.05}
-    yaw = {"clevis + yaw block plates + posts (printed)": pr(clevis_and_yaw_block().volume, 0.6),
-           "yaw shaft + flange + 40T pulley + spring ring": pr(yaw_shaft().volume + yaw_pulley().volume, 0.7) + pr(yaw_spring_ring().volume, 0.8),
+    yaw = {"clevis + yaw block plates + posts (printed)": pr(clevis_and_yaw_block().volume + yaw_plate_bot().volume, 0.6),
+           "yaw shaft + 40T + spring hub (one piece), flange, spring ring": pr(yaw_shaft().volume + yaw_flange().volume, 0.7) + pr(yaw_spring_ring().volume, 0.8),
            "yaw D13 stage + KX74 socket": d13 + sock, "2 × 61808 + stop pin + belt + screws + ribbon (ESTIMATE)": 0.075}
     if split:
         return sum(roll.values()), sum(yaw.values())

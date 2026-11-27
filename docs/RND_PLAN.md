@@ -139,7 +139,7 @@ Each scheduled run (and any interactive session) does one **loop**:
 
 **Open queue (ordered):**
 0. **Astra review #2b criticals (verified, 2026-11-26)** — these come before anything else ([triage](review/triage_astra_2026-11-26.md)):
-    - D19 capped seats + integral shaft-pulleys: roll, yaw, pitch, elbow (R14 now 2/6 with the pulley-bore rows)
+    - D19 integral shaft-pulleys: ~~yaw~~ *(loop 44: one-piece tube + 40T + spring hub; the bottom plate is a separate bolted print, so no capped seats were needed there — the slot idea clashed with the +X clevis arm)*; roll, pitch, elbow still to do (capped seats or a separable wall)
     - shaft → link drive: clevis pinch clamps, forearm clamp on the elbow shaft, yaw-flange bolt pattern, CF-tube bond lengths (≥ 1 × OD)
     - ~~D15 male face~~ *loop 42: one relief channel per pin track; the rim now holds each ball past its equator over 58 % (KX44 53 %) of the circumference (was 0 %); modelled ball centres fixed; Ø4.1 insert holes for the retainer. Still to do: separate hub / collar / retainer print files*
     - ~~D16 wrist skirt~~ *loop 43: seat open below + screwed end cap; spindle in from above with a shoulder on the upper bearing, gripper base bolted to its end through a spacer boss on the lower inner race: held both ways; dog clearance 0.4 → 0.1 mm a side. R14 adds the spindle (passes)*

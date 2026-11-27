@@ -35,15 +35,15 @@ MATE = [("can", "motor"), ("collar", "hub"), ("hub", "shaft"), ("shaft", "wheel"
         ("yaw_block", "yaw_stop_pin"), ("e_hub", "e_belt"), ("e_belt", "e_bigpulley"), ("roll_can", "roll_motor"), ("yaw_can", "yaw_motor"),
         ("grip_servo_sleeve", "grip_servo"), ("kx_hub_v2", "flange_coupling"), ("flange_coupling", "shaft_12"), ("shaft_12", "brg_"),
         ("shaft_12", "al_pulley"), ("al_pulley", "belt"), ("bigpulley", "belt"), ("e_cassette", "brg_"), ("brg_", "al_pulley"),
-        ("flange_coupling", "brg_"), ("roll_shaft", "roll_pulley72"), ("yaw_shaft", "yaw_pulley40"), ("e_bigpulley", "e_shaft40"), ("shaft", "pitch_pulley60"), ("roll_spring_hub", "yaw_block"),
+        ("flange_coupling", "brg_"), ("roll_shaft", "roll_pulley72"), ("yaw_shaft", "yaw_flange"), ("yaw_block", "yaw_plate_bot"), ("yaw_plate_bot", "brg_"), ("yaw_plate_bot", "yaw_stop_pin"), ("yaw_plate_bot", "yaw_spring_ring"), ("yaw_plate_bot", "yaw_band"), ("e_bigpulley", "e_shaft40"), ("shaft", "pitch_pulley60"), ("roll_spring_hub", "yaw_block"),
         ("yaw_block", "yaw_spring_ring"), ("roll_shaft", "roll_spring_hub"), ("yaw_pulley40", "brg_"), ("roll_pulley72", "brg_"),
         ("wr_spindle", "wr_brg"), ("palm", "wr_brg"), ("wr_brg_U", "wr_brg_L"), ("wr_spindle", "grip_base"), ("wr_dog", "wr_sleeve"), ("palm", "wr_dog"), ("palm", "wr_cap"), ("wr_cap", "wr_brg"),
         ("wr_dog", "wr_spindle"), ("wr_brg", "grip_base")]   # dog: 0.1 mm a side by design (lash); the base boss clamps the lower inner race   # bearing inner races, shims and the pulley rotate together on the shaft
-RUNNING = [("bracket", "kx_hub_v2"), ("bracket", "al_pulley"), ("bracket", "flange_coupling"), ("e_cassette", "e_al_pulley"), ("e_cassette", "e_kx_hub_v2"), ("e_cassette", "e_flange_coupling"), ("e_cassette", "e_hub"), ("roll_link", "roll_smallhub"), ("yaw_block", "yaw_smallhub"), ("bracket", "smallhub"),
+RUNNING = [("yaw_plate_bot", "yaw_shaft"), ("yaw_flange", "yaw_stop_pin"), ("bracket", "kx_hub_v2"), ("bracket", "al_pulley"), ("bracket", "flange_coupling"), ("e_cassette", "e_al_pulley"), ("e_cassette", "e_kx_hub_v2"), ("e_cassette", "e_flange_coupling"), ("e_cassette", "e_hub"), ("roll_link", "roll_smallhub"), ("yaw_block", "yaw_smallhub"), ("bracket", "smallhub"),
            ("yaw_shaft", "yaw_stop_pin"), ("bracket", "pulleyA"), ("roll_link", "al_pulley"), ("yaw_block", "al_pulley"),
-           ("roll_link", "roll_spring_hub"), ("yaw_spring_ring", "yaw_pulley40"), ("roll_link", "roll_pulley72"), ("yaw_block", "yaw_pulley40"),
+           ("roll_link", "roll_spring_hub"), ("yaw_spring_ring", "yaw_shaft"), ("yaw_plate_bot", "al_pulley"), ("roll_link", "roll_pulley72"), ("yaw_block", "yaw_pulley40"),
            ("palm", "wr_spindle"), ("palm", "grip_base"), ("wr_brg", "wr_dog"), ("wr_cap", "grip_base"), ("wr_cap", "wr_spindle")]
-MOVING = [("e_cassette", "e_bigpulley"), ("roll_shaft", "yaw_shaft"), ("yaw_block", "yaw_shaft"), ("upper_bone", "forearm")]
+MOVING = [("yaw_plate_bot", "yaw_flange"), ("e_cassette", "e_bigpulley"), ("roll_shaft", "yaw_shaft"), ("yaw_block", "yaw_shaft"), ("upper_bone", "forearm")]
 
 
 def _match(a, b, table):
