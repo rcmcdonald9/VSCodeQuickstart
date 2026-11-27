@@ -185,7 +185,7 @@ SLOT = 7.0                       # belt-clamp slot in the duct (≤ 8 mm, R17)
 
 def _belt_xy():
     from . import upper
-    return upper.MAST_X - upper.W / 2 - 50 + 16, -2.0, 3.6, 15.0     # strand centre x, y; thickness, width (upper.lift_drive)
+    return upper.lift_belt_xy()      # strand centre x, y; size along x, size along y (lift v2: belt in the YZ plane, 15 mm along x)
 
 
 def belt_duct():
@@ -194,7 +194,7 @@ def belt_duct():
     (≤ 200 mm), spigot joints, M3 into the mast's rear face. Returned whole (one solid) for the checks."""
     from . import upper
     xb, yb, tb, wb = _belt_xy()
-    z0, z1 = upper.LIFT_COVER_TOP - 2, upper.Z_TOP - 30 + 4
+    z0, z1 = upper.LIFT_COVER_TOP, upper.Z_TOP - 30 + 4                       # stands on the lift cover's chimney (same footprint)
     ix, iy = tb + 8, wb + 8
     d = Pos(xb, yb, (z0 + z1) / 2) * (Box(ix + 2 * WALL, iy + 2 * WALL, z1 - z0) - Box(ix, iy, z1 - z0 + 2))
     d -= Pos(xb + ix / 2 + WALL / 2, yb, (z0 + z1) / 2) * Box(WALL + 2, SLOT, z1 - z0 + 2)
@@ -234,7 +234,7 @@ def torso_frame(lift_mm):
         xa = xr if n == "collar_top" else upper.MAST_X - pas / 2 - 10
         c = Pos((xa + xf) / 2, 0, z + WALL / 2) * soft_box(xf - xa, yw, WALL, 6, 0.6)
         c -= Pos(upper.MAST_X, 0, z) * Box(upper.W + 10, upper.W + 10, 20)
-        c -= Pos(upper.MAST_X - upper.W / 2 - 3, 23, z) * Box(16, 24, 20)            # ratchet strip + 5 mm
+        c -= Pos(upper.MAST_X - upper.W / 2 - 5, upper.RACK["y"], z) * Box(20, upper.RACK["w"] + 10, 20)   # steel rack (A15) + 5 mm
         c -= _duct_hole(z)
         for sx, sy in ((xf - 8, yw / 2 - 8), (xf - 8, -yw / 2 + 8), (xt + 8, yw / 2 - 8), (xt + 8, -yw / 2 + 8)):
             c -= Pos(sx, sy, z) * Cylinder(M3_CLEAR / 2, 20)

@@ -13,6 +13,10 @@ from .params import BASELINE, Design, act, G
 
 TRAVEL = None   # from params
 ACCEL = 1.0     # m/s² carriage acceleration (ESTIMATE, brisk)
+RACK_M, RACK_FACE = 1.0, 10.0   # A15 steel rack: module 1, 10 mm face (BOM line; ESTIMATE until bought)
+RACK_TAU_LIMIT = 200.0          # MPa, shear limit for a C45 rack tooth (ESTIMATE)
+PRELOAD = 0.25                  # belt preload per side as a fraction of the lifting force (ESTIMATE)
+BRG_C0_N = 1000.0               # 6801 static rating (belt_stage.BRG_6801 note: C0 ≈ 1.0 kN, ESTIMATE)
 PAYLOAD = 2.0   # kg, both hands
 
 
@@ -51,9 +55,18 @@ def option_c(d: Design = BASELINE):
     travel = d.upper.lift_max - d.upper.lift_min
     allow = BELT["allowable_tension_n_per_10mm"] * 15 / 10
     pawl_shock = 3 * M * G                       # pawl catch after a power loss mid-move (ESTIMATE ×3)
-    tooth_shear = pawl_shock / (15 * 3.0)        # MPa, 15 mm wide × 3 mm tooth root in PETG
+    # A15 (lift v2): steel rack module 1, 10 mm face; one tooth carries the catch. Root section ≈ face × 2.25 mm
+    # (m 1 spur tooth, root thickness ≈ 2.25·m, ESTIMATE); limit ≈ 200 MPa shear for a mild-steel C45 rack (ESTIMATE).
+    tooth_shear = pawl_shock / (RACK_FACE * 2.25 * RACK_M)
+    # D13 stage (upper.lift_stage_T): both strands rise from the 20T, so the shaft carries ≈ the tight side F + 2 × the
+    # preload (ESTIMATE 0.25 F each side) and splits it over 6801 A (pulley side, 13 mm from the belt) and 6801 B (20 mm).
+    from .parts.belt_stage import V3, BRG_6801
+    radial = F * (1 + 2 * PRELOAD)
+    a = abs(V3["belt_c"] - sum(V3["jA"]) / 2); b = abs(sum(V3["jB"]) / 2 - V3["belt_c"])
+    brg_A, brg_B = radial * b / (a + b), radial * a / (a + b)
     return dict(M=M, F=F, torque=torque, m_torque=gim["rated"] / torque, v=v_rated, t_full=travel / v_rated,
-                belt_sf=allow / F, tooth_shear=tooth_shear)
+                belt_sf=allow / F, tooth_shear=tooth_shear, radial=radial, brg_A=brg_A, brg_B=brg_B,
+                brg_sf=BRG_C0_N / max(brg_A, brg_B), pawl_shock=pawl_shock)
 
 
 def report(d: Design = BASELINE) -> str:
@@ -69,7 +82,12 @@ def report(d: Design = BASELINE) -> str:
           f"| Motor torque on a 20T HTD 5M pulley | {c['torque']:.2f} N·m → **{c['m_torque']:.2f}×** rated margin |",
           f"| Speed at rated rpm / full travel | {c['v']:.2f} m/s / {c['t_full']:.1f} s (faster when lightly loaded, up to ~420 rpm) |",
           f"| Belt (15 mm HTD 5M, open-ended along the spine) | safety {c['belt_sf']:.1f}× |",
-          f"| Pawl catch after a power loss mid-move (×3 shock) | ratchet tooth shear {c['tooth_shear']:.1f} MPa in PETG (limit ~30) |", "",
+          f"| Pawl catch after a power loss mid-move (×3 shock, {c['pawl_shock']:.0f} N) | steel rack tooth (m 1, 10 mm face) shear {c['tooth_shear']:.0f} MPa (limit ≈ {RACK_TAU_LIMIT:.0f}, ESTIMATE) → {RACK_TAU_LIMIT / c['tooth_shear']:.1f}× |",
+          f"| D13 stage: shaft load (F + 2 × {PRELOAD:.0%} preload, ESTIMATE) | {c['radial']:.0f} N → 6801 A {c['brg_A']:.0f} N, B {c['brg_B']:.0f} N; C0 ≈ {BRG_C0_N:.0f} N → **{c['brg_sf']:.1f}×** (the motor bearing carries none of it) |", "",
+          "**Lift v2 layout (rnd/parts/upper.py):** bolted GIM6010-8 cartridge + Oldham → Ø12 steel shaft in 2 × 6801 → 20T aluminium HTD pulley, "
+          "between the two walls of one printed bracket on the deck behind the mast coupling; cartridge axis along −X, belt in the YZ plane. "
+          "Everything that rides the lift stays ≥ 25 mm above the static drive and its cover at the lowest stop (R17), and the torso bottom is 120 mm off the deck there (D23 (3)). "
+          "Lock (A15): steel rack m 1 bolted to the mast's back face, hardened steel pawl in the carriage.", "",
           "**Why C:** it's the lightest and uses the standard GIM cartridge (motors are reusable across builds). It holds with **zero power** at rest, "
           "and it's fail-safe: the pawl is spring-applied and solenoid-released, so losing power drops it into the ratchet. "
           "Precedent: spring-applied / power-released safety brakes and ratchet fall arrest (stair lifts, hoists, FRC climbers).",

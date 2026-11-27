@@ -48,8 +48,9 @@ def parts():
     from .parts.cartridge_m import coupon_motor
     from .parts.hand import fin_ray
     from .parts.kx import KX74, collar, hub_pip, male
-    from .parts.upper import ratchet_strip
-    rs = ratchet_strip().solids()[0]
+    from build123d import Box
+    from .parts.upper import carriage
+    rs = carriage(750.0) & Pos(-110.0, 23.0, 720.0) * Box(30, 40, 60)          # A15 (lift v2): the steel rack + pawl are bought; the print to prove is the pawl box
     bb = rs.bounding_box()
     return {
         "C1_kx74_socket_and_collar": (hub_pip(KX74) + collar(KX74, locked=False), "PETG", "D15 screwed socket: print hub, collar and retainer separately; press 6 × Ø5×14 pins in radially, 6 × Ø4 coil springs in the step pockets, collar on, retainer 3 × M3"),
@@ -59,7 +60,7 @@ def parts():
         "C5_eccentric_bushing": (eccentric_bushing(), "PETG", "Fit a 6804 bearing; rotate in a Ø38.2 test hole"),
         "C6_pulleys_20T_40T": (pulley(20) + Pos(60, 0, 0) * pulley(40), "PETG", "Check against a real HTD 5M belt: engagement, no tooth ride-over"),
         "C7_finray_finger": (fin_ray(0, -37, 0, 18, 28, -1), "TPU 95A", "Push a Ø66 can into the face: the face should wrap ≥ 30° of the can"),
-        "C8_ratchet_segment": (Pos(-bb.center().X, -bb.center().Y, -bb.min.Z) * rs, "PETG", "Hang 15 kg (×1.2 the moving mass) from a printed pawl on one tooth for 1 h"),
+        "C8_pawl_box": (Pos(-bb.center().X, -bb.center().Y, -bb.min.Z) * rs, "PETG", "Steel pawl on its Ø4 pin in the printed pawl box, on a length of the m 1 rack: hang 15 kg (×1.2 the moving mass) for 1 h"),
         "C9_gim_boltcircle": (coupon_motor(), "PETG", "Bolt to the GIM6010-8 front and back; read the real PCDs from the ruler ticks"),
     }
 
@@ -74,7 +75,7 @@ PROTOCOL = [
     ("C5", "Bearing seat fit; eccentric rotates with a lock screw and holds", "no play, holds 300 N belt pull", "belt_stage.ECC"),
     ("C6", "Belt engagement on printed pulleys, ride-over under hand load", "no ride-over at ~300 N", "belt_stage tooth form (DEPTH, GROOVE_R)"),
     ("C7", "Fin-ray wrap angle on a can; return after 100 squeezes", "≥ 30° wrap; no permanent set", "hand.fin_ray (rib count, wall)"),
-    ("C8", "Ratchet tooth under 15 kg for 1 h; pawl engagement", "no tooth shear, < 0.5 mm creep", "upper.ratchet_strip tooth depth"),
+    ("C8", "Pawl box + pin under 15 kg for 1 h on the steel rack (A15); pawl engagement", "no pin-hole elongation, < 0.5 mm creep", "upper.carriage pawl pocket, upper.lift_pawl"),
     ("C9", "Real GIM6010-8 bolt circles (needs one motor)", "read PCD to ±0.5 mm", "cartridge_m.MOTOR out_pcd / rear_pcd"),
     ("C10", "D16 wrist-roll dog coupling + spindle (loop 40): 2 × 61804 in the printed skirt; 1 kg on a 90 mm lever, rotate ±180° 1000 times by hand drill at low speed",
      "no play you can feel at the gripper flange; dog slot wear ≤ 0.1 mm", "hand.py BRG_WR seats, dog slot width"),

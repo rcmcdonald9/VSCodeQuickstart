@@ -121,10 +121,10 @@ class Upper:
     lift_max: float = 1.05         # reach sweep: 0.95 -> 1.05
     spine_len: float = 1.06        # extrusion length
     spine_mass_per_m: float = 1.25 # loop 10 (rnd/mast.py): 60×60×2 Al square tube, torso sway 1.4 mm (2040 swayed 5.5 mm)
-    lift_motor_mass: float = 0.81  # FROM CAD (build-out, rnd/parts/upper.py): GIM cartridge + 20T + mount + 2.4 m belt + idler + ratchet strip
+    lift_motor_mass: float = 1.45  # lift v2 (2026-11-27, upper.masses): GIM6010-8 0.39 + printed bracket, cover, bolted can/cap 0.24 + D13 stage metal, belt 2.4 m, idler 0.20 (ESTIMATE) + A15 steel rack m1 10 × 10 × 800 mm 0.63 (FROM CAD volume × 7.85). Was 0.81 (KX cartridge, printed ratchet strip)
     lift_motor: str = "GIM6010-8"
     carriage_mass: float = 0.58    # FROM CAD: printed sleeve + 8×625 bearings + pawl + solenoid
-    torso_struct_mass: float = 0.867 # FROM CAD: rounded two-piece body enclosing the pitch modules (looks pass) + electronics tray
+    torso_struct_mass: float = 0.813 # FROM CAD (upper.masses, lift v2: bottom at lift − 75, edge r 30; was 0.867): rounded two-piece body enclosing the pitch modules + electronics tray
     compute_mass: float = 0.45     # Pi 5 + Jetson option + CAN + DC-DC
     head_mass: float = 0.94        # FROM CAD (looks pass) 0.82 + D11 (loop 28): 4.3" screen board ~90 g (ESTIMATE), shell +16 mm ~25 g, larger bezel ~8 g, − eye LEDs
     head_on_mast: bool = True      # owner suggestion (2026-11-25): head fixed on top of the spine; torso + arms ride the lift below it
