@@ -237,7 +237,7 @@ Category 0 removes torque, so the arm falls (Astra 18). From horizontal, the M1 
 | Interface | Power | Signal |
 |---|---|---|
 | Arm detach plug (blind-mate, floats in a printed mount beside the V-band) | **XT60** (Amass 30 A cont. / 60 A burst; was XT30, 15 A, under the 20 A fuse and the 38 A peak: Neon #2 F10) | **10-pin** 2 mm pogo block: CAN1 H/L, CAN2 H/L, **USB D+/D− (adjacent, GND pins either side)**, 3 × GND, ID strap (the old 6-pin block had no USB at all; rnd/harness.py) |
-| Upper ↔ base coupling (under the cam lever) | **3 × XT60**: left arm, right arm, lift + 12 V + logic (one XT60 at 30 A was under the upper's sustained load; rnd/harness.py *Lift umbilical*) | 10-pin pogo: CAN A H/L, e-stop loop ×2 (torso mushroom), ESTOP_SENSE, heartbeat, AUX_OK, 5 V sense, GND ×2 |
+| Upper ↔ base coupling (under the cam lever) | **3 × XT60**: left arm, right arm, lift + 12 V + logic (one XT60 at 30 A was under the upper's sustained load; rnd/harness.py *Lift umbilical*) | 12-pin pogo: CAN A H/L, e-stop loop ×2 (torso mushroom), ESTOP_SENSE, heartbeat, AUX_OK, 5 V sense, GND ×2, always-on logic 24 V ×2 (≤ 4 A) |
 | Battery slide-out | **XT90** (keyed; 40 A cont. / 90 A burst) | balance lead to the charger only |
 | Dock contacts (skirt at 45°, flush brass pads) | + at 84 mm, − at 128 mm, 60 × 28 mm pads, 5 A (Neon #2 F12: were 60 × 12 mm at 60 / 100) | ID pad at 40 mm (60 × 28) → 1 kΩ + 5.6 V TVS → base sensor node (handshake, stop-charge command); dock_sim.md *Contacts and retention* |
 | Every joint cartridge | 2-pin JST-VH (24 V) or GH (12 V) | 4-pin JST-GH CAN/TTL daisy chain |

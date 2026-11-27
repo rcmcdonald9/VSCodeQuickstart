@@ -686,7 +686,7 @@ def report(d=BASELINE):
           "| Arm detach plug (blind-mate, floats in a printed mount beside the V-band) | **XT60** (Amass 30 A cont. / 60 A burst; was XT30, 15 A, under the 20 A fuse and the 38 A peak: Neon #2 F10) | "
           "**10-pin** 2 mm pogo block: CAN1 H/L, CAN2 H/L, **USB D+/D− (adjacent, GND pins either side)**, 3 × GND, ID strap (the old 6-pin block had no USB at all; rnd/harness.py) |",
           "| Upper ↔ base coupling (under the cam lever) | **3 × XT60**: left arm, right arm, lift + 12 V + logic (one XT60 at 30 A was under the upper's sustained load; rnd/harness.py *Lift umbilical*) | "
-          "10-pin pogo: CAN A H/L, e-stop loop ×2 (torso mushroom), ESTOP_SENSE, heartbeat, AUX_OK, 5 V sense, GND ×2 |",
+          "12-pin pogo: CAN A H/L, e-stop loop ×2 (torso mushroom), ESTOP_SENSE, heartbeat, AUX_OK, 5 V sense, GND ×2, always-on logic 24 V ×2 (≤ 4 A) |",
           "| Battery slide-out | **XT90** (keyed; 40 A cont. / 90 A burst) | balance lead to the charger only |",
           f"| Dock contacts (skirt at 45°, flush brass pads) | + at {DOCK_PADS['+'][0]:.0f} mm, − at {DOCK_PADS['−'][0]:.0f} mm, {DOCK_PAD_W:.0f} × {DOCK_PADS['+'][1]:.0f} mm pads, 5 A (Neon #2 F12: were 60 × 12 mm at 60 / 100) | "
           f"ID pad at {DOCK_PADS['ID'][0]:.0f} mm ({DOCK_PAD_W:.0f} × {DOCK_PADS['ID'][1]:.0f}) → 1 kΩ + 5.6 V TVS → base sensor node (handshake, stop-charge command); dock_sim.md *Contacts and retention* |",

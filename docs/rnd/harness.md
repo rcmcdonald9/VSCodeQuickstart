@@ -18,10 +18,10 @@ The joint ranges come from the twin (rnd/twin.py JR). The free lengths and the c
 
 | Joint | Range | Torsion: free length / needed | Spiral cavity r_in–r_out (mm) | Bend r (10×OD) | Ribbon t | Spiral S: turns tight / loose | Capacity: zero-thickness / close-wound / packed 85 % (need) | Ribbon build / width | Method | Stock USB |
 |---|---|---|---|---|---|---|---|---|---|---|
-| shoulder pitch | 260° | 200 / 361 mm ❌ | 25.5–45.0 | 22 mm | 2.3 mm | 0.80 m: 4.20 / 3.07 | 779° / 406° / **352°** (312°) | 11.0 mm / 9.8 mm | clock spring ✅ | ❌ 0° |
-| shoulder roll | 115° | 100 / 160 mm ❌ | 22.0–38.0 | 22 mm | 2.3 mm | 0.25 m: 1.66 / 1.08 | 274° / 209° / **199°** (138°) | 4.0 mm / 9.8 mm | clock spring ✅ | ❌ 0° |
-| upper-arm yaw | 300° | 0 / 417 mm ❌ | 22.5–42.5 | 22 mm | 2.3 mm | 0.75 m: 4.34 / 3.06 | 899° / 461° / **400°** (360°) | 11.7 mm / 9.8 mm | clock spring ✅ | ❌ 0° |
-| elbow | 150° | 130 / 208 mm ❌ | 22–50 | 22 mm | 2.3 mm | 0.60 m: 3.65 / 2.00 | 875° / 592° / **555°** (180°) | 9.5 mm / 13.4 mm | clock spring ✅ | ❌ 36° |
+| shoulder pitch | 260° | 200 / 361 mm ❌ | 25.5–45.0 | 22 mm | 2.3 mm | 0.80 m: 4.20 / 3.07 | 779° / 406° / **352°** (312°) | 11.0 mm / 10.0 mm | clock spring ✅ | ❌ 0° |
+| shoulder roll | 115° | 100 / 160 mm ❌ | 22.0–38.0 | 22 mm | 2.3 mm | 0.25 m: 1.66 / 1.08 | 274° / 209° / **199°** (138°) | 4.0 mm / 10.0 mm | clock spring ✅ | ❌ 0° |
+| upper-arm yaw | 300° | 0 / 417 mm ❌ | 22.5–42.5 | 22 mm | 2.3 mm | 0.75 m: 4.34 / 3.06 | 899° / 461° / **400°** (360°) | 11.7 mm / 10.0 mm | clock spring ✅ | ❌ 0° |
+| elbow | 150° | 130 / 208 mm ❌ | 22–50 | 22 mm | 2.3 mm | 0.60 m: 3.65 / 2.00 | 875° / 592° / **555°** (180°) | 9.5 mm / 13.6 mm | clock spring ✅ | ❌ 36° |
 | wrist pitch | 220° | 60 / 306 mm ❌ | 16–30 | 12 mm | 1.3 mm | 0.40 m: 3.49 / 2.23 | 668° / 452° / **421°** (264°) | 4.8 mm / — | clock spring ✅ | ❌ 0° |
 | wrist roll | 240° | 30 / 333 mm ❌ | 14–24 | 12 mm | 1.3 mm | 0.35 m: 3.43 / 2.49 | 597° / 340° / **302°** (288°) | 4.8 mm / — | clock spring ✅ | ❌ 0° |
 
@@ -34,7 +34,7 @@ The joint ranges come from the twin (rnd/twin.py JR). The free lengths and the c
 
 - **Yaw fix (recommended): r_out 40 → 42.5 mm with the ribbon lengthened to the best S** (Fix B); or keep r_out and go to a thinner ribbon (Fix C, needs a flat-flex USB: the 20 AWG pair alone is 1.8 mm). The ribbon length costs 24 V drop: 20 AWG ≈ 0.033 Ω/m per conductor (Astra 16), so each extra 0.4 m of loop is ≈ 0.3 V at 11 A.
 - **Roll** has margin with the current 0.25 m (packed 199° vs 138°), but its r_in 22 mm equals the USB's 10×OD bend radius: zero reserve (Astra 15). The D24 inline-roll redesign should keep r_in ≥ 24 mm.
-- **Ribbon width (new):** A14 puts **two** CAN pairs through the shoulder, so the ribbon is 9.8 mm wide, not 7.8 mm; the cassettes are 11.3 mm high (width ≤ 10.3 mm). Fix: cavity height ≥ 11.3 mm, or 28 AWG CAN pairs (OD 0.8 → 9.0 mm wide, cavity ≥ 10.5 mm).
+- **Ribbon width (new):** A14 puts **two** CAN pairs through the shoulder, so the ribbon is 10.0 mm wide, not 7.8 mm; the cassettes are 11.3 mm high (width ≤ 10.3 mm). Fix: cavity height ≥ 11.5 mm, or 28 AWG CAN pairs (OD 0.8 → 9.2 mm wide, cavity ≥ 10.7 mm).
 - **Wrist roll:** ±180° needed 432°; the 14–24 mm palm annulus gives 302° packed with its 1.3 mm bundle. **2026-11-27: wrist roll limited to ±120° (288° needed)** instead of r_out 24 → 27.5: the palm axis is taken by the servo horn, dog and spindle bearings, so a bigger cassette means an Ø74 ring around the bearing skirt or +17 mm of hand length; the parallel-jaw gripper is 180°-symmetric, so ±90° already covers every jaw orientation (params.wrist_roll_range_deg).
 - C11 (10k reversals) must measure the real packing factor and the capacity at both stops; these are ideal-geometry numbers.
 
@@ -53,8 +53,48 @@ The joint ranges come from the twin (rnd/twin.py JR). The free lengths and the c
 ## Harness kit (pre-made, one per arm + torso + base)
 | Segment | Contents | Length (ESTIMATE) | Ends |
 |---|---|---|---|
-| Torso e-tray → shoulder detach plug | 24 V pair, CAN pair, 12 V/TTL, USB | 0.45 m + 0.6 m pitch spiral | XT30 + 6-pin pogo / USB-C |
-| Detach plug → elbow sensor node | same | 0.40 m + 3 × 0.6 m spirals (roll, yaw, elbow) | daisy-chain JST-GH / VH at each cartridge |
-| Elbow node → hand | 12 V/TTL, I²C, camera (FFC per option 1) | 0.35 m + 2 × 0.3 m spirals (wrist) | JST-GH / FFC |
+| Torso e-tray → shoulder detach plug | 24 V pair (2 × 16 AWG ETFE/FEP), 2 CAN pairs, shielded USB | 0.45 m + 0.80 m pitch spiral | XT60 + 10-pin pogo (CAN ×2, USB D+/D−, GND, ID) |
+| Detach plug → elbow sensor node | same | 0.10 m + roll 0.25 + link 0.10 + yaw 0.75 + upper arm 0.40 | daisy-chain JST-GH / VH at each cartridge |
+| Elbow node → hand | 24 V (DM-J4310), 12 V/TTL (servos), I²C, camera (FFC per option 1) | 0.60 m elbow spiral + 0.35 m + 2 × wrist spirals | JST-GH / FFC |
+| **Lift umbilical: base → torso (new)** | 2 × arm pairs 14 AWG, lift + 12 V + logic pairs 18 AWG, CAN A, e-stop ×2, safety signals, USB (lidar) | 1.16 m in a drag chain (R 50) | base fuse block / torso e-tray |
 | Mast: torso → head | 24 V (F 1 A), CAN A, TTL 3 | 0.75 m in a cable chain along the lift travel | JST-GH |
-| Base ↔ upper coupling | XT60 + 6-pin pogo (CAN A, e-stop loop) | 0.3 m | blind-mate |
+| Base ↔ upper coupling | 3 × XT60 + 12-pin pogo (CAN A, e-stop loop, safety signals, logic 24 V) | 0.3 m | blind-mate |
+
+## Neon review #2 finding 10: arm power wire, USB, lift umbilical
+
+**Arm 24 V pair, verified in part.** The review's 0.216 Ω (6.5 m of 20 AWG) at 20–30 A puts the whole arm current through the whole length. Per segment (sustained = every big joint at 50 % of rated power; peak = the two farthest GIMs stalled + roll at rated + wrist peak + servos stalled; conductors at 60 °C) the drop at the DM-J4310 is **6.4 V with 20 AWG** (the review's 4.3–6.5 V range is right) and 2.6 V with 16 AWG. It does **not** trip a drive: 20 V − 6.4 V = 13.6 V against the GIM's 12 V minimum; it costs speed headroom. The heating claim is right for the wound spiral: ribbon edges conduct to the two cassette faces across ≈ 0.5 mm of air, G ≈ 2·k_air·t/gap = 0.24 W/(m·K) (ESTIMATE; C11 measures it).
+
+| Segment | Length (m) | Sustained / peak (A) | 20 AWG: W/m, ribbon ΔT | 16 AWG: W/m, ribbon ΔT | |
+|---|---|---|---|---|---|
+| torso e-tray → pitch spiral entry | 0.45 | 12.3 / 36.5 | 11.6 W/m, 48 K | 4.6 W/m, 19 K | free run |
+| pitch clock spring | 0.80 | 12.3 / 36.5 | 11.6 W/m, 48 K | 4.6 W/m, 19 K | in a cassette: ✅ |
+| detach plug (XT60) → roll motor | 0.10 | 12.3 / 36.5 | 11.6 W/m, 48 K | 4.6 W/m, 19 K | free run |
+| roll clock spring + roll link | 0.35 | 7.4 / 26.8 | 4.2 W/m, 18 K | 1.7 W/m, 7 K | in a cassette: ✅ |
+| yaw clock spring + upper arm → elbow motor / node | 1.15 | 4.9 / 17.4 | 1.8 W/m, 8 K | 0.7 W/m, 3 K | in a cassette: ✅ |
+| elbow clock spring + forearm → DM-J4310 | 0.95 | 1.2 / 4.5 | 0.1 W/m, 1 K | 0.0 W/m, 0 K | in a cassette: ✅ |
+| **Drop to the DM-J4310 (sustained / peak, incl. the XT60)** | 3.80 | | 2.00 / **6.43 V** | 0.79 / **2.57 V** | |
+
+Limit: ribbon ≤ 60 °C at 40 °C inside the covers (ΔT ≤ 20 K). **Fix: 2 × 16 AWG high-flex ETFE/FEP (OD ≤ 1.9 mm)**; it keeps the ribbon thickness (the USB's 2.2 mm sets it), so the capacities above do not change. The sustained case is the fuse-sizing one; the duty-cycle budget (budget.md) puts the arms near 1 A each, so the cassettes normally run cool. C11 (10k reversals) runs **with 12 A on the pair and the wrist camera streaming 60 fps**, logging the ribbon temperature and USB re-enumerations.
+
+**USB 2.0 HS, verified in part.** Bridge (forearm, wrist end) → hub in the torso e-tray: **3.80 m**, under the 5 m segment limit (1.2 m spare), so length is not the problem; the review is right that the detach plug had **no USB pins** (electrical.md's 6-pin pogo block) while the harness kit listed a USB-C there. Fix, without moving the camera off USB (CAN cannot carry video; Ethernet adds magnetics and a camera change):
+- a real shielded USB cable (90 Ω twisted data pair inside its own jacket) in the ribbon, never loose cores; on the ribbon edge away from the power pair, the CAN pairs between;
+- the detach plug becomes a 10-pin pogo block with D+ / D− on adjacent pins flanked by GND pins (≈ 5 mm of pin: short against the 480 Mbps edge), the shield on GND at the hub end only; the powered USB hub moves to the torso e-tray (so the arm run is one segment);
+- acceptance in C11 as above; fallback if it fails: a USB 2.0 redriver at the torso side of the plug (ESTIMATE ≈ $5), then a manual latching connector (M8 / GX12 class).
+
+**Lift umbilical (missing before), verified.** The torso rides 0.70 m on the mast; the battery, contactor and branch fuses are in the base, the Pi in the torso. A vertical drag chain fixed at mid-stroke: chain 0.51 m (stroke / 2 + π × R 50 mm), cable 1.16 m one way with the fixed runs.
+
+| Circuit | Conductors | Wire | Sustained / peak (A) | Base fuse | Drop at peak (V) | W/m per conductor (sustained) |
+|---|---|---|---|---|---|---|
+| left arm 24 V (switched) | 2 | 14 AWG silicone | 13.7 / 38.0 | 20 | 0.84 | 1.81 |
+| right arm 24 V (switched) | 2 | 14 AWG silicone | 13.7 / 38.0 | 20 | 0.84 | 1.81 |
+| lift motor + pawl solenoid 24 V (switched; motor on the carriage) | 2 | 18 AWG silicone | 2.0 / 9.3 | 10 | 0.53 | 0.09 |
+| 12 V DC-DC input (head servos; switched) | 2 | 18 AWG silicone | 2.9 / 5.8 | 7.5 | 0.33 | 0.21 |
+| logic 24 V (always on: Pi 5 DC-DC, screen, Jetson reserve) | 2 | 18 AWG silicone | 2.8 / 3.9 | 5 | 0.22 | 0.18 |
+| CAN A twisted pair (base node, lift, D11 screen) | 2 | Ø1.0 signal | – | – | – | – |
+| e-stop loop, torso mushroom: ch1 pair + ch2 pair | 4 | Ø1.0 signal | – | – | – | – |
+| heartbeat, AUX_OK, ESTOP_SENSE + GND (safety board in the base, Pi in the torso) | 4 | Ø0.8 signal | – | – | – | – |
+| USB 2.0 (RPLIDAR C1 in the base → torso hub), shielded | 1 | Ø3.8 signal | – | – | – | – |
+
+- Chain: inner 15 × 30 mm, bend R 50 mm ≥ 10 × the thickest cable (Ø3.8) ✅; fill 16% of the cross-section (≤ 60%) ✅. Chain-rated (torsion-free, fine-strand) cable; the two arm pairs and the lift pair are separate circuits so each branch fuse still protects its own wire.
+- Coupling at the mast foot: the upper's sustained load is 35.1 A, over one XT60 (30 A); now 3 × XT60 (left arm, right arm, lift + 12 V) with the always-on logic feed on two pogo pins (electrical.md *Connectors*).
+- Space claim for the CAD owner (rnd/parts/upper.py, base.py): the chain's moving loop needs ≈ 2R + chain height ≈ 120 mm beside the mast over the lower half of the stroke, fixed end at mast mid-height, moving end on the carriage.
