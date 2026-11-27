@@ -308,7 +308,7 @@ NECK_GAP, SADDLE_T = 4.0, 3.0     # saddle ↔ shell inner surface (R17 ≤ 8, c
 SADDLE_LAP = (4.0, 8.0)           # saddle overlap past the slot rim at the worst tilt: angle (deg), y (mm)
 BOSS_Y = 61.0                     # pivot bosses (8 mm) centred at y ±BOSS_Y (v1: ±71)
 BOSS_R, TUBE_R = 22.0, 18.0       # pivot boss (6805 OD 37: 3.5 mm wall; v1 Ø48) and cross-tube radius (Ø28 bore round the Ø25 stub)
-PIVOT_BACK = 6.0                  # tilt axis this far behind the head's COM: the boss clears the screen board by 2.5 mm; gravity
+PIVOT_BACK = 6.0                  # tilt axis this far behind the head's COM: the bosses clear the screen board by 4 mm; gravity
                                   # torque 0.6 kg × 9.81 × 6 mm ≈ 0.035 N·m (≈ 1 % of the STS3215's stall, under the 0.3 N·m pivot drag)
 HUB_TOP = -40.0                   # riser hub top (head frame z): the yoke plate's old level (yoke z 0)
 
