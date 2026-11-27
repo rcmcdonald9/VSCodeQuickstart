@@ -21,6 +21,8 @@ def items(d=BASELINE):
     counts = {n: names.count(n) for n in sorted(set(names))}
     belts = [(j, round(stage(j, r, z, c, w)["length"] / 5) * 5) for j, r, z, c, w in STAGES]
     pp = json.loads((DOCS / "print_plan.json").read_text()) if (DOCS / "print_plan.json").exists() else {"kg": 10.4}
+    ns = 2 * len(STAGES)                 # belt stages on both arms (D24 inline roll: pitch, yaw, elbow; the roll has none)
+    inline = d.arm.roll_drive == "inline"
     I = []
     A = lambda cat, item, q, unit, src="ESTIMATE": I.append((cat, item, q, unit, src))
     for n, q in counts.items():
@@ -48,7 +50,7 @@ def items(d=BASELINE):
     A("Compute & sensors", "Wrist camera (D12): global-shutter OV9281-class MIPI-CSI module + FFC through the wrist + CSI→USB (UVC) bridge on the forearm + slim 4-core high-flex USB (OD ≤ 2.2 mm)", 2, 55.0, "T01: USB versions $60–155; CSI module + bridge ESTIMATE")
     # --- sensor pack v2 (owner, loop 15: favour accuracy + dexterity over cost) ---
     A("Sensor pack v2", "Joint-side absolute encoders AS5048A + diametric magnets (8 arm belt joints + lift) → hand error 4.0 → 0.9 mm", 9, 12.0, "ESTIMATE")
-    A("Sensor pack v2", "Sensor nodes: RP2040 + CAN transceiver (one per arm at the elbow, one in the base)", 3, 10.0, "ESTIMATE")
+    A("Sensor pack v2", "Sensor nodes: RP2040 + CAN transceiver (shoulder + elbow node per arm, sw/config/can_map.yaml 0x30 / 0x31; one in the base)", 5, 10.0, "ESTIMATE")
     A("Sensor pack v2", "Fingertip tactile pads: magnetised elastomer + MLX90393 magnetometer (AnySkin/ReSkin principle), 2 per gripper", 4, 10.0, "ESTIMATE")
     A("Sensor pack v2", "Gripper ToF proximity (VL53L4CD) for pre-grasp alignment", 2, 8.0, "ESTIMATE")
     A("Sensor pack v2", "Base cliff / stair-edge ToF sensors (VL53L1X, downward)", 4, 8.0, "ESTIMATE")
@@ -56,10 +58,11 @@ def items(d=BASELINE):
     A("Compute & sensors", "IMU (BNO085) + optical-flow (PAA5100JE)", 1, 55.0, "components.yaml (flow)")
     A("Compute & sensors", "Mic array + speaker + chest/bumper LEDs (eyes are now drawn on the D11 screen)", 1, 36.0, "ESTIMATE")
     A("Compute & sensors", "D22 face screen: Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (7\" 1024×600 cap. touch, CAN + RS485) + 24→5 V 2 A buck", 1, 46.99 + 6.0, "waveshare.com SKU 32510 (2026-11-27)")
-    A("Drive & structure", "D23 consumer covers: soft-touch joint covers, TPU bumper skins, lift mast bellows/telescoping cover (filament + fasteners)", 1, 60.0, "ESTIMATE")
-    A("Bearings", "6808-2RS (40×52×7), no-name 10-pack (check the 2RS variant)", 24, 2.02, "AliExpress MOCHU snapshot (loop 14); Zoro generic $4.71")
+    A("Drive & structure", f"D23 consumer covers: TPU 95A gaiters/bumper skins (1 kg) + fasteners; the rigid PETG covers ({COVERS_KG} kg, covers.printed()) are in the PETG bundles below", 1, 30.0,
+      "ESTIMATE (TPU 95A ≈ $20–25 / kg)")
+    A("Bearings", "6808-2RS (40×52×7), no-name 10-pack (check the 2RS variant): 2 per wheel + 2 per arm belt stage", 8 + 2 * ns, 2.02, "AliExpress MOCHU snapshot (loop 14); Zoro generic $4.71")
     A("Bearings", "6804-2RS (20×32×7): lift small hub + D16 wrist-roll spindles", 6, 0.92, "AliExpress MOCHU snapshot; Zoro $4.69")
-    A("Bearings", "6801-2RS (12×21×5): D13 stage shafts, 2 per stage × 8 stages", 16, 0.9, "ESTIMATE")
+    A("Bearings", f"6801-2RS (12×21×5): D13 stage shafts, 2 per stage × {ns} stages", 2 * ns, 0.9, "ESTIMATE")
     A("Bearings", "6805-2RS (25×37×7): head tilt passive pivot (A4)", 4, 1.15, "AliExpress snapshot; Zoro $5.69")
     A("Bearings", "U604ZZ grooved pulley bearings (A9 balancers: pulley A + tackle pulley)", 4, 1.5, "ESTIMATE")
     A("Bearings", "625ZZ (carriage, idlers)", 10, 0.25, "Walmart 40-pack")
@@ -78,8 +81,8 @@ def items(d=BASELINE):
     A("KX interfaces (3 sockets)", "D15 preload: 6 coil springs Ø4 × 8 per socket (assortment) + PTFE washer; 3 × M3 retainer screws + inserts", 3, 1.2, "ESTIMATE")
     A("KX interfaces (3 sockets)", "Torque pins Ø6/Ø5/Ø4 + magnet index (KX cartridges: 4 wheels, lift, head ×2)", 7, 0.4)
     A("Drive & structure", "Dowels Ø6 × 10–12: yaw hard-stop pins + KX-V ferrule dowels (3 per arm)", 1, 6.0, "ESTIMATE")
-    A("Drive & structure", "D13 v3 small stages ×8: Ø12 h6 steel rod (2 × 300 mm), aluminium HTD 5M 15 mm pulleys 12 mm bore (6 × 20T, 2 × 18T)", 8, 9.0, "ESTIMATE")
-    A("Drive & structure", "D24 Oldham couplings: D40, 12 mm clamp hub + acetal disc (one per arm GIM stage; the motor-side tongue adapter is printed)", 8, 12.0,
+    A("Drive & structure", f"D13 v3 small stages ×{ns}: Ø12 h6 steel rod (2 × 300 mm), aluminium HTD 5M 15 mm 20T pulleys 12 mm bore", ns, 9.0, "ESTIMATE")
+    A("Drive & structure", "D24 Oldham couplings: D40, 12 mm clamp hub + acetal disc (one per arm belt stage; the motor-side tongue adapter is printed)", ns, 12.0,
       "ESTIMATE generic D40; Ruland MOCT41-12-A $55.20 at Motion")
     A("Drive & structure", "D24/D19 heat-set inserts: 2 × 100 M4 short (≈ 51 per arm: flanges 6 each, seat caps, yaw flange + plate, outer wall, pitch hub) + 100 M3 (≈ 45 per arm: cap rims, forearm rim, palm, bone cap)", 1, 2 * 15.93 + 12.0,
       "Newark M4 brass $15.93 / 100; M3 ESTIMATE")
@@ -88,27 +91,40 @@ def items(d=BASELINE):
     A("Drive & structure", "Chassis ring (A11): 3 mm 6061 laser-cut ring tying the 4 deck quarters", 1, 40.0, "ESTIMATE (SendCutSend class)")
     A("Drive & structure", "Anti-tip casters (D18/A10): spring-loaded ball transfer units at the 4 diagonals", 4, 4.0, "ESTIMATE")
     A("Drive & structure", "Clock-spring ribbon stock (A3): 20 AWG silicone pairs, 26 AWG twisted pairs, slim USB, PET/Kapton carrier tape", 1, 30.0, "ESTIMATE")
-    A("Drive & structure", "HTD 5M 15 mm closed belts (" + ", ".join(f"{j} {l} mm" for j, l in belts) + ") × 2 arms", 8, 9.0, "Bestorq 400-5M-15 $7.67 at MROSupply (loop 14); Gates ≈ $20–28")
+    A("Drive & structure", "HTD 5M 15 mm closed belts (" + ", ".join(f"{j} {l} mm" for j, l in belts) + ") × 2 arms", 2 * len(belts), 9.0, "Bestorq 400-5M-15 $7.67 at MROSupply (loop 14); Gates ≈ $20–28")
     A("Drive & structure", "HTD 5M 15 mm open belt for the lift (2.4 m at $8.32/m) + 2 clamps", 1, 25.0, "Acorn listing")
+    if inline:                                                  # D24 inline roll (rnd/parts/roll.py INLINE section), per arm
+        A("Bearings", "61806-2RS (30×42×7): inline roll rear support on the roll link's stub", 2, 3.0, "ESTIMATE (m1_kit Hold B)")
+        A("Drive & structure", "Inline roll output adapter: 7075-T6 Ø76 × 7, Ø30 pilot, 3 × Ø4 H7 reamed + 3 × M4 csk, 8 × M5 tapped on PCD 64 (CNC, qty 2)", 2, 30.0,
+          "ESTIMATE: JLCCNC / PCBWay-class instant quote for a 3-axis Ø76 × 7 part ≈ $20–25 each at qty 2 + shipping share; a printed adapter fails (3 × M4 into PETG ≈ 85 N·m < 103 N·m stall, roll.py)")
+        A("Drive & structure", "Inline roll hardware: Ø80/Ø52 × 2 steel clamp ring (laser-cut, rides on the chassis-ring order), 8 × M5×16 DIN 7984 10.9, 8 × M4×18 ISO 4762, "
+          "3 × M4×10 ISO 10642, 3 × Ø4 m6 dowels, end washer + M5", 2, 11.0, "ESTIMATE (ring ≈ $5 SendCutSend class; screws/dowels ≈ $6)")
     A("Drive & structure", "Al square tube 60×60×2, 1.1 m (mast), black anodised", 1, 45.0, "no US listing found: ESTIMATE")
     A("Drive & structure", "Carbon tubes Ø40×38 (0.5 m) + Ø30×28 (1 m), roll-wrapped", 1, 70.0, "eBay / Carbonwebshop listings")
     A("Drive & structure", '3" quick-release squeeze tri-clamp, 304 SS (arm detach; flange OD 90.9 mm confirmed)', 2, 25.0, "hosewarehouse (Dixon 13MHHM-Q300)")
     A("Drive & structure", "Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards", 1, 35.0, "ESTIMATE")
     A("Drive & structure", "Balancers (A9): ISO 10243 green die spring Ø25/Ø12.5 × 115, 18.7 N/mm (Berger Tools V25-115 / Accu TJL25-115) + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
     A("Drive & structure", "Fasteners (other), heat-set inserts (base, torso, head), epoxy, grease", 1, 60.0)
-    n10 = math.ceil(pp["kg"] * 1.2 / 10)                       # loop 47: 10 kg bundles instead of $20/kg single spools
-    A("Printed parts", f"PETG {pp['kg']:.1f} kg + 20 % spare (print_plan.md): {n10} × Elegoo PETG Pro 10 kg bundle", n10, 109.99,
+    kg = pp["kg"] + COVERS_KG                                   # print plan + the D23 rigid covers (not in print_plan.md)
+    n10 = math.ceil(kg * 1.2 / 10)                              # loop 47: 10 kg bundles instead of $20/kg single spools
+    A("Printed parts", f"PETG {pp['kg']:.1f} kg (print_plan.md) + {COVERS_KG} kg D23 covers + 20 % spare = {kg * 1.2:.1f} kg: {n10} × Elegoo PETG Pro 10 kg bundle", n10, 109.99,
       "us.elegoo.com PETG Pro 10 kg $109.99 (2026-11; list $140)")
     A("Printed parts", "ASA 2 kg (A6: motor cans, KX hubs/collars and D13 hubs near motors)", 1, 40.0)
     return I
 
 
-# loop 47 cost pass: the same parts at the best verified price (motor choices unchanged)
-BEST_PRICE = {"GIM6010-8": (90.0, "aifitlab $90 with SDC104 driver (actuators.yaml, loop 14)"),
-              "DM-J4310-2EC_V1.1": (150.0, "Robotics Center $150 in stock (2026-11-27); AIFit $125 backordered")}
+# loop 47 cost pass: the same parts at the best verified price (motor choices unchanged); wave-2 cost pass (2026-11-27) below
+BEST_PRICE = {"GIM6010-8": (90.0, "aifitlab $90 with SDC104 driver (actuators.yaml, loop 14); SteadyWin store $93.88 with GDS68"),
+              "GIM8108-36": (240.0, "with a driver: SteadyWin store $239.80 (GDM810 = SDC303, 24 V), aifitlab $240 (GDK810); bare motor $190 "
+                                    "(aifitlab, backordered), so the yaml mid $171 had no driver (2026-11-27 search snapshots)"),
+              "DM-J4310-2EC_V1.1": (125.0, "AIFit Lab $125 (24 V V1.1/V3, US seller; backordered 2026-11-27): the full-robot buy "
+                                           "comes after M1; M1 keeps Robotics Center $150 in stock")}
+COVERS_KG = 1.4         # D23 rigid PETG covers, both arms: 1,126 cm³ (rnd/parts/covers.py printed(), arm pieces ×2) × 1.27 g/cm³
 
 CONTINGENCY = 0.15      # A16 (review finding 18): price drift, shipping, tax
 WAVE1_BEFORE = 4898.0   # landed total after the loop-47 cost pass (bom.json before wave 1)
+WAVE1_AFTER = 5013.0    # after wave 1 (RND_LOG, buy-list track)
+WAVE2_BEFORE = 5199.0   # after the owner's inline-roll OK, before the wave-2 cost pass
 HOLDS = {}
 
 
@@ -143,18 +159,32 @@ def report(d=BASELINE):
          "($152 → $95); one USB-TTL adapter instead of three (the D14 nodes drive the buses); no separate balance charger (the dock's CC/CV charger + the BMS's active "
          "balancing do the weekly 4.20 V charge, A13); GIM6010-8 at the verified $90, DM-J4310 at $150 in stock, RPLIDAR C1 at $69.",
          "- Result: **$4,898**, under the $5,000 limit; the $4,000 target would need the motor or sensor choices reopened.", "",
-         f"**Wave 1 (D24 bolted cartridges, D19 one-piece shafts; 2026-11-27): ${WAVE1_BEFORE:,.0f} → ${tot:,.0f} landed.** The arm's 10 KX sockets go "
+         f"**Wave 1 (D24 bolted cartridges, D19 one-piece shafts; 2026-11-27): ${WAVE1_BEFORE:,.0f} → ${WAVE1_AFTER:,.0f} landed.** The arm's 10 KX sockets go "
          "(balls, dowel packs, springs, torque pins: −$35 of lines); in: 8 Oldham couplings ($96; the spare acetal rod is an M1 bench item), heat-set inserts ($44), flange "
          "screws ($10), Ø6 dowels for the yaw stops and ferrules ($6); the D13 flange couplings go (−$24); D14 buck 3 → 6 A (+$4); PETG from the "
-         f"re-sliced print plan ({pp['kg']:.1f} kg). **{_sd(tot - 5000)} against the $5,000 limit.** The largest new line is the 8 Oldham "
-         "couplings at a $12 ESTIMATE (no sourced generic D40 price yet); each $1 there is $9 landed, so a sourced ≤ $10 coupling brings "
-         "the total back under the limit.", "",
+         "re-sliced print plan. +$13 against the $5,000 limit at the time. The owner's OK for the inline GIM8108-36 roll then put two GIM8108-36 "
+         f"in place of two GIM6010-8 (at the yaml's $171): ${WAVE2_BEFORE:,.0f}.", "",
+         f"**Wave-2 cost pass (2026-11-27; motor choices and safety items unchanged): ${WAVE2_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - WAVE2_BEFORE)}).** "
+         "The inline roll was carried as a bare motor with the belt-roll parts still in the list, so corrections come first (lines, before contingency):",
+         "- GIM8108-36 $171 → **$240** with its 24 V driver (SteadyWin store $239.80 GDM810 = SDC303; aifitlab $240 GDK810; $190 is the bare motor): +$138.",
+         "- Belt-roll parts out (2 Oldham, 2 D13 stages, 2 belts, 4 × 61808, 4 × 6801: −$72); inline parts in (2 × 7075 output adapter at a $30 CNC "
+         "ESTIMATE, 2 × 61806, steel clamp ring + screws + dowels: +$88). A printed adapter is not an option (3 × M4 into PETG ≈ 85 N·m < 103 N·m stall).",
+         "- Sensor nodes 3 → 5 (sw/config/can_map.yaml has a shoulder and an elbow node per arm): +$20.",
+         "- Savings: DM-J4310 $150 → **$125** (AIFit Lab, 24 V, US seller, backordered: the full-robot buy comes after M1): −$50; D23 covers $60 → $30 "
+         f"(the rigid covers, {COVERS_KG} kg of PETG, fit in the 10 kg bundles: 18.2 kg needed with spare of 20 kg bought; TPU 95A + fasteners stay): −$30.",
+         "- Not taken: Foxtech DM-J4310 $116–120 (ships from China: tariff/duty exposure eats the gap); pultruded CF (higher axial E, but the forearm's "
+         "double-D pinch clamp and 1 mm wall split a unidirectional tube; roll-wrapped listings are already $63–70); DIY 6S2P from cells (≈ −$50, but a "
+         "home-welded pack without a spot welder or cell matching is a safety risk in a home robot); generic D40 Oldham (no sourced price under $12; Ruland/GMT $36–67); cheaper "
+         "heat-set inserts (the short M4 is $11–21 / 50 elsewhere); a lower contingency (this pass found a +40 % price on one line, and China-direct "
+         "parts now pay duty: 15 % stays); Gemini 2 / RPLIDAR C1 / battery / GIM6010-8 are already at the best sourced price.",
+         f"- **{_sd(tot - 5000)} against the $5,000 limit.** Closing it needs a design decision: the belt roll (fallback `PIP_ROLL_DRIVE=belt`) is "
+         f"{_sd(-HOLDS['inline'])} landed; the owner chose the inline roll for its hand-feel and slimmer shoulder.", "",
          "**Pending decisions (not in the total; the M1 kit's holds, robot-wide, with contingency):**",
          f"- **D20 GIM8108-8 at shoulder pitch + elbow** (waits on the seller's 24 V answer): 4 × GIM6010-8 → 4 × GIM8108-8: "
          f"**{_sd(HOLDS['d20'])}** (up to {_sd(HOLDS['d20_hi'])} at the dearest listing) → ${tot + HOLDS['d20']:,.0f}.",
-         f"- **D24 inline GIM8108-36 at shoulder roll** (owner OK + drawing): per arm a GIM6010-8 + the belt-roll parts → a GIM8108-36 + 61806: "
-         f"**{_sd(HOLDS['inline'])}** (up to {_sd(HOLDS['inline_hi'])}) → both: ${tot + HOLDS['d20'] + HOLDS['inline']:,.0f}.",
-         "- Prices: [M1_BENCH_ARM.md](../M1_BENCH_ARM.md) (GIM8108-8 ≈ $115, GIM8108-36 ≈ $215: ESTIMATE within the listings' ranges).", "",
+         f"- **D24 inline GIM8108-36 at shoulder roll: in the total** (owner OK 2026-11-27). Against the belt roll it costs "
+         f"**{_sd(HOLDS['inline'])}** (up to {_sd(HOLDS['inline_hi'])} at the dearest listing).",
+         "- Prices: [M1_BENCH_ARM.md](../M1_BENCH_ARM.md) (GIM8108-8 ≈ $115 ESTIMATE; GIM8108-36 $240 with the SDC303 driver).", "",
          "| Category | Subtotal |", "|---|---|"] + [f"| {c} | ${v:,.0f} |" for c, v in cats.items()] + [
          "", "| Category | Item | Qty | Unit $ | Line $ | Source |", "|---|---|---|---|---|---|"]
     L += [f"| {c} | {n} | {q} | {u:,.2f} | {q * u:,.0f} | {s} |" for c, n, q, u, s in I]
@@ -164,5 +194,5 @@ def report(d=BASELINE):
 if __name__ == "__main__":
     md, tot = report()
     (DOCS / "BOM_v4.md").write_text(md)
-    (DOCS / "bom.json").write_text(json.dumps({"total": tot, "with_d20": tot + HOLDS["d20"], "with_d20_inline": tot + HOLDS["d20"] + HOLDS["inline"]}))
+    (DOCS / "bom.json").write_text(json.dumps({"total": tot, "with_d20": tot + HOLDS["d20"], "with_d20_inline": tot + HOLDS["d20"]}))
     print(md[:1500])

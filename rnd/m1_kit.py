@@ -23,7 +23,8 @@ GIM6010 = (90.0, "aifitlab $90 with SDC104 (loop 14); Robotics Center lists $70,
 GIM8108_8 = (115.0, "ESTIMATE: aifitlab $85 bare (no driver, backordered) + ≈ $25 driver (the GIM6010 gap $70 → $90); "
                     "openelab.com $113.99–213.99 by variant")
 GIM8108_8_HI = 213.99
-GIM8108_36 = (215.0, "ESTIMATE: aifitlab $190 bare (no driver, backordered) + ≈ $25; openelab.com $213.99–306.99 by variant")
+GIM8108_36 = (240.0, "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); "
+                     "openelab.com $303.99+ with a driver (2026-11-27 search snapshots)")
 GIM8108_36_HI = 306.99
 BELT = (9.0, "Bestorq 400-5M-15 $7.67 at MROSupply (loop 14); Gates ≈ $20–28")
 AL_PULLEY = (7.0, E)
@@ -109,7 +110,12 @@ HOLD_B = dict(
     title="Hold B: inline GIM8108-36 at shoulder roll (D24, **approved by the owner 2026-11-27**)",
     waits="only the seller's dimension drawing (frame Ø, flange patterns, output-bearing radial rating ≥ 280 N); the owner approved it 2026-11-27. The *no* list is the fallback if the drawing doesn't fit",
     yes=[("Actuators", "SteadyWin GIM8108-36, **SDC303 (24 V)** driver", 1, GIM8108_36[0], "shoulder roll, inline 36:1 (dome 163 × 219 → 117 × 100 mm, roll 27 → 48 rpm)", GIM8108_36[1]),
-         ("Bearings", "61806 (30×42×7)", 1, 3.0, "rear roll support on the roll link's stub (68 mm from the motor's output bearing)", E)],
+         ("Bearings", "61806 (30×42×7)", 1, 3.0, "rear roll support on the roll link's stub (68 mm from the motor's output bearing)", E),
+         ("Drive (D24 inline)", "Output adapter, 7075-T6 Ø76 × 7 (CNC: Ø30 pilot, 3 × Ø4 H7 reamed, 3 × M4 csk, 8 × M5 tapped on PCD 64)", 1, 30.0,
+          "motor Ø30 boss → printed clevis arm (a printed adapter fails: 3 × M4 into PETG ≈ 85 N·m < 103 N·m stall)",
+          "ESTIMATE: JLCCNC / PCBWay-class instant quote ≈ $20–25 each at qty 2 + shipping share"),
+         ("Drive (D24 inline)", "Ø80/Ø52 × 2 steel clamp ring + 8 × M5×16 DIN 7984 10.9, 8 × M4×18 ISO 4762, 3 × M4×10 ISO 10642, 3 × Ø4 m6 dowels", 1, 11.0,
+          "adapter ↔ clevis arm clamp, motor rear face into the roll-link floor, boss ↔ adapter", E)],
     no=[("Actuators", "SteadyWin GIM6010-8 24 V SDC104", 1, GIM6010[0], "shoulder roll on the 18T:80T belt (4.44:1)", GIM6010[1]),
         ("Drive (D13 v3)", "Aluminium HTD 5M pulley, 18T, 15 mm, 12 mm bore", 1, AL_PULLEY[0], "roll small pulley", AL_PULLEY[1]),
         ("Drive (D24)", "Oldham coupling D40, 12 mm clamp hub, POM disc", 1, OLDHAM[0], "roll stage", OLDHAM[1]),
@@ -119,7 +125,7 @@ HOLD_B = dict(
     note="The CAD and checks for both drives are in the tree (`PIP_ROLL_DRIVE=inline`, roll_inline.md): R14/R15/R16/basket pass "
          "inline; R16 across-body 62 % inline vs 52 % belt (target 54 %). The inline CAD assumes Ø100 × 60 and 6 × M4 patterns "
          "(ESTIMATE); one listing gives Ø96 × 57 with the driver and 1000 N radial / 250 N axial, which would fit.",
-    hi=lambda: GIM8108_36_HI + 3.0 - line_sum(HOLD_B["no"]),
+    hi=lambda: line_sum(HOLD_B["yes"]) - GIM8108_36[0] + GIM8108_36_HI - line_sum(HOLD_B["no"]),
 )
 
 # Exact questions for the seller (SteadyWin reseller: aifitlab / Robotics Center / openelab), one message.
