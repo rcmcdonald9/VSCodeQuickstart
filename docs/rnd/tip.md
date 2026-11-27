@@ -17,7 +17,7 @@ limit are what the safety supervisor allows (sw/safety.py is read, not copied): 
 LOAD_WS and base_accel_limit(); at or under LOAD_KG the arms may be straight out at shoulder height, lift mid (the old
 worst pose). Target: reserve ≥ 30 mm in every case (twin v1 dynamic rule); R12 keeps its own 50 mm static rule.
 
-**Result: worst reserve 33 mm, 16/16 cases ≥ 30 mm with the A10 v2 hardware and the requested supervisor rules (SW-T1/T2 below); 8/16 (worst -36 mm) with the rules sw/safety.py enforces today.** Before: loop 40's reading -85 mm (6/16; the review quoted the older −102 mm); the same hardware read honestly (D18 take-up, all headings, today's rules) -121 mm (6/16).
+**Result: worst reserve 33 mm, 16/16 cases ≥ 30 mm with the A10 v2 hardware and the requested supervisor rules (SW-T1/T2 below); 16/16 (worst 33 mm) with the rules sw/safety.py enforces today.** Before: loop 40's reading -85 mm (6/16; the review quoted the older −102 mm); the same hardware read honestly (D18 take-up, all headings, today's rules) -121 mm (6/16).
 
 ## What changed (A10 v2)
 
@@ -30,20 +30,20 @@ worst pose). Target: reserve ≥ 30 mm in every case (twin v1 dynamic rule); R12
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1.0 kg | 0° |  |  | straight | 0.0 | 86 | 0.43 | 0 | 82 ✅ | 61 ✅ | 105 ✅ | **105 ✅** | 336° |
 | 1.0 kg | 0° | yes |  | straight | 1.0 | 86 | 0.43 | 44 | 57 ✅ | 8 ❌ | 61 ✅ | **61 ✅** | 336° |
-| 1.0 kg | 0° |  | yes | box_person | 0.0 | 46 | 0.41 | 96 | -31 ❌ | -58 ❌ | 10 ❌ | **47 ✅** | 336° |
-| 1.0 kg | 0° | yes | yes | box_person | 0.1 | 46 | 0.41 | 100 | -55 ❌ | -110 ❌ | -34 ❌ | **43 ✅** | 336° |
+| 1.0 kg | 0° |  | yes | box_person | 0.0 | 46 | 0.41 | 96 | -31 ❌ | -58 ❌ | 47 ✅ | **47 ✅** | 336° |
+| 1.0 kg | 0° | yes | yes | box_person | 0.1 | 46 | 0.41 | 100 | -55 ❌ | -110 ❌ | 43 ✅ | **43 ✅** | 336° |
 | 1.0 kg | 45° |  |  | straight | 0.0 | 86 | 0.43 | 0 | 87 ✅ | 51 ✅ | 103 ✅ | **103 ✅** | 66° |
 | 1.0 kg | 45° | yes |  | straight | 1.0 | 86 | 0.43 | 44 | 63 ✅ | -2 ❌ | 59 ✅ | **59 ✅** | 66° |
-| 1.0 kg | 45° |  | yes | box_person | 0.0 | 46 | 0.41 | 96 | -20 ❌ | -68 ❌ | 8 ❌ | **46 ✅** | 66° |
-| 1.0 kg | 45° | yes | yes | box_person | 0.1 | 46 | 0.41 | 100 | -44 ❌ | -121 ❌ | -36 ❌ | **42 ✅** | 66° |
+| 1.0 kg | 45° |  | yes | box_person | 0.0 | 46 | 0.41 | 96 | -20 ❌ | -68 ❌ | 46 ✅ | **46 ✅** | 66° |
+| 1.0 kg | 45° | yes | yes | box_person | 0.1 | 46 | 0.41 | 100 | -44 ❌ | -121 ❌ | 42 ✅ | **42 ✅** | 66° |
 | 2.5 kg | 0° |  |  | box | 0.0 | 75 | 0.40 | 0 | 47 ✅ | 78 ✅ | 117 ✅ | **117 ✅** | 336° |
 | 2.5 kg | 0° | yes |  | box | 0.3 | 68 | 0.56 | 17 | 21 ❌ | 58 ✅ | 102 ✅ | **102 ✅** | 336° |
-| 2.5 kg | 0° |  | yes | box_person | 0.0 | 60 | 0.41 | 91 | -59 ❌ | -34 ❌ | 25 ❌ | **39 ✅** | 336° |
-| 2.5 kg | 0° | yes | yes | box_person | 0.1 | 60 | 0.41 | 96 | -85 ❌ | -54 ❌ | 11 ❌ | **34 ✅** | 336° |
+| 2.5 kg | 0° |  | yes | box_person | 0.0 | 60 | 0.41 | 91 | -59 ❌ | -34 ❌ | 39 ✅ | **39 ✅** | 336° |
+| 2.5 kg | 0° | yes | yes | box_person | 0.1 | 60 | 0.41 | 96 | -85 ❌ | -54 ❌ | 34 ✅ | **34 ✅** | 336° |
 | 2.5 kg | 45° |  |  | box | 0.0 | 75 | 0.40 | 0 | 53 ✅ | 62 ✅ | 115 ✅ | **115 ✅** | 66° |
 | 2.5 kg | 45° | yes |  | box | 0.3 | 68 | 0.56 | 17 | 29 ❌ | 41 ✅ | 101 ✅ | **101 ✅** | 66° |
-| 2.5 kg | 45° |  | yes | box_person | 0.0 | 60 | 0.41 | 91 | -48 ❌ | -50 ❌ | 24 ❌ | **37 ✅** | 24° |
-| 2.5 kg | 45° | yes | yes | box_person | 0.1 | 60 | 0.41 | 96 | -72 ❌ | -71 ❌ | 10 ❌ | **33 ✅** | 66° |
+| 2.5 kg | 45° |  | yes | box_person | 0.0 | 60 | 0.41 | 91 | -48 ❌ | -50 ❌ | 37 ✅ | **37 ✅** | 24° |
+| 2.5 kg | 45° | yes | yes | box_person | 0.1 | 60 | 0.41 | 96 | -72 ❌ | -71 ❌ | 33 ✅ | **33 ✅** | 66° |
 
 Columns: *loop 40 reading* = the old tip.py (rigid D18, both arms straight out, 0.5 m/s², along the load direction only); *before, honest* = the same hardware with D18's 5 mm take-up, every heading and the supervisor's real limits (1 kg: arms straight out allowed, 1.0 m/s²; 2.5 kg: load box, 0.3 m/s²); *A10 v2* = power board + ballast + locked D18b casters. Without the ballast blocks (A10 v2 + rules): worst -10 mm, 6/16.
 
