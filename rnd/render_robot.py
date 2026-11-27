@@ -20,11 +20,11 @@ def mat(n, c, r=0.4, metal=0.0, emit=0.0):
 
 
 M = {"black": mat("k", (0.02, 0.021, 0.024), 0.32, 0.6), "white": mat("w", (0.80, 0.81, 0.83), 0.28), "dark": mat("d", (0.035, 0.037, 0.042), 0.38),
-     "orange": mat("o", (1.0, 0.42, 0.06), 0.35, emit=0.6), "steel": mat("s", (0.55, 0.56, 0.58), 0.3, 0.8)}
+     "orange": mat("o", (1.0, 0.42, 0.06), 0.35, emit=0.6), "steel": mat("s", (0.55, 0.56, 0.58), 0.3, 0.8), "green": mat("g", (0.05, 0.30, 0.12), 0.45)}
 for line in (d / LIST).read_text().splitlines():
     n, c = line.split()
     bpy.ops.wm.stl_import(filepath=str(d / f"{n}.stl"))
-    o = bpy.context.selected_objects[0]; o.scale = (0.001, 0.001, 0.001); o.data.materials.append(M[c])
+    o = bpy.context.selected_objects[0]; o.scale = (0.001, 0.001, 0.001); o.data.materials.append(M.get(c, M["dark"]))
     for f in o.data.polygons: f.use_smooth = True
     try: o.data.use_auto_smooth = True; o.data.auto_smooth_angle = math.radians(35)
     except AttributeError: pass
