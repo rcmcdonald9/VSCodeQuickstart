@@ -26,8 +26,12 @@ compression closes the layers, so the across-layer 12 MPa does not apply).
 
 Preload over life (Neon review 2026-11-27, finding 3 / assumption 1): the flat "× 0.75 for creep" is replaced by a
 creep model (life_preload(): effective modulus, creep coefficient φ bounded from printed-PETG data, + embedding + a
-cold day), and each C1 tie now has a DIN 6796 disc-spring stack in series so the printed stack is not the only spring.
-The service rows are checked at the life preload (no gap), the contact stress at the fresh preload. M1 rows (inline
+cold day). With it, the wave-3 joints (print as the clamped member) keep ≈ 30 % of their preload, and the yaw tie
+gaps under the basket wrench. Disc springs in series (the review's fix) keep more preload but soften the bolts, whose
+stiffness carried the bending (disc_alternative()): not enough. So each C1 bolt now runs in steel crush sleeves
+(SleeveClamp: bolt ↔ sleeve metal stack, the print sandwiched with a light squeeze): the preload only loses its
+embedding, the no-gap moment is the metal stack's, and the service rows are checked at that life preload with the
+print's squeeze crept away; the fault rows at the fresh and the life preload. M1 rows (inline
 GIM8108-36): output dowels with load sharing, the metal rear clamp (plate + sleeves), the two-bearing roll support
 (61806 + the motor's output bearing: reactions per load case from the twin, misalignment preload), the hard stops.
 """
@@ -379,67 +383,121 @@ def bolt_ring(n, r, ang0_deg, d_s, L_grip, E=E_STEEL):
     return [(r * math.cos(math.radians(ang0_deg + 360 * i / n)), r * math.sin(math.radians(ang0_deg + 360 * i / n)), k) for i in range(n)]
 
 
+class SleeveClamp(Clamp):
+    """Neon finding 3 fix: each bolt runs in a steel crush sleeve (compression limiter) that spans the printed stack, so
+    the bolt preload is reacted metal to metal (bolt ↔ sleeve) and the print is only sandwiched with a light squeeze.
+    Rigid end plate; per bolt a tension spring k_b (preload Fp) and a compression-only sleeve spring k_s at the same
+    point; the printed annulus is a compression-only foundation pre-squeezed by u0p (mm; 0 once creep has relaxed it).
+    'gap' = the most-unloaded sleeve leaves its seat (the metal interface opens)."""
+
+    def __init__(self, r_in, r_out, L_print, bolts, Fp, k_s, u0p=0.0, n=50):
+        super().__init__(r_in, r_out, L_print, bolts, Fp, n=n)
+        self.k_s = k_s
+        self.u0 = u0p
+        P = self.kf * u0p * self.dA.sum()
+        self.us0 = (Fp - P / len(bolts)) / k_s                       # sleeve pre-compression
+
+    def _res(self, v, N, M):
+        w, th = v
+        p = self.kf * np.maximum(self.u0 - w - th * self.Y, 0.0)
+        S = self.k_s * np.maximum(self.us0 - w - th * self.by, 0.0)
+        Fb = self.Fp + self.kb * (w + th * self.by)
+        self._S = S
+        return np.array([N + (p * self.dA).sum() + S.sum() - Fb.sum(),
+                         (M + (p * self.dA * self.Y).sum() + (S * self.by).sum() - (Fb * self.by).sum()) / 20.0]), p, Fb
+
+    def solve(self, N, M):
+        p, Fb, _ = super().solve(N, M)
+        return p, Fb, bool((self._S <= 0).any())
+
+    def check(self, N, M):
+        p, Fb, gap = self.solve(N, M * 1000)
+        return dict(gap=gap, F_bolt=float(Fb.max()), sigma=float(p.max()), S=float(self._S.max()))
+
+
 # ------------------------------------------------------------------------------------------------ the joints
 SERVICE = ("basket × 1.5", "hug × 1.5")
 
 
 def joint_models():
-    """The two C1 joints: geometry, the bolt / disc-spring / printed-stack compliances, the life preload, and clamp-model
-    factories (two printed-stack lengths, stiff / soft foundation; two pattern orientations) for a given preload."""
+    """The two C1 joints: geometry, compliances, the life preload, and clamp-model factories (two printed-stack lengths
+    for the print's share; two bolt-pattern orientations). make(Fp, u0p) → the sleeve-clamp models; make_bare(Fp) → the
+    wave-3 joint (print as the clamped member, no sleeves) for the before/after comparison."""
     from .parts import roll, shoulder
     h, y = shoulder.HUB_TIE, roll.YAW_TIE
     lv = roll.yaw_tie_levels()
     L_hub = shoulder.Y_TUBE_END - shoulder.Y_TUBE_IN                         # printed tube length under the clamp
     L_hub2 = shoulder.hub_print_under_ring()                                 # the hub's print between the tube end and the ring
     L_yaw = lv["seat"] - (roll.FL_TOP - roll.FL_REC)
-    holes = lambda t: t["n"] * math.pi * (t["hole"] / 2) ** 2
+    holes = lambda t, d: t["n"] * math.pi * (d / 2) ** 2
     out = {}
-    for name, t, r_in, r_out, L, L_soft, grip, nut, stack, n_if in (
+    for name, t, r_in, r_out, L, L_soft, grip, nut, stack, L_sl, n_if in (
             ("pitch hub ↔ tube", h, 12.0, 19.0, L_hub, L_hub + 19.0, shoulder.hub_tie_length() - 2.0 - h["nut_h"] / 2,
              dict(what=f"{h['crank_mat']} crank ({h['crank_t']:.0f} mm tapped through, {h['crank_t'] - 1.5 * h['pitch']:.2f} effective)",
                   L_e=h["crank_t"] - 1.5 * h["pitch"], tau=TAU[h["crank_mat"]], tau_ext=TAU[h["grade"]]),
-             # tube wall r 11–20 (49.8 mm) + the hub under the ring (ring footprint r 11–21), per stud
-             [(L_hub, math.pi * (20.0 ** 2 - h["tube_r_in"] ** 2) - holes(h)), (L_hub2, math.pi * (h["ring"][1] ** 2 - h["ring"][0] ** 2) - holes(h))], 3),
+             [(L_hub, math.pi * (20.0 ** 2 - h["tube_r_in"] ** 2)), (L_hub2, math.pi * (h["ring"][1] ** 2 - h["ring"][0] ** 2))],
+             L_hub + L_hub2, 3),
             ("yaw flange ↔ tube", y, 14.1, 20.0, L_yaw, L_yaw, y["L"] - lv["engaged"] / 2,
              dict(what=f"6061-T6 flange ({lv['engaged']:.1f} mm tapped, {lv['engaged'] - y['pitch']:.1f} effective)", L_e=lv["engaged"] - y["pitch"],
                   tau=y["tau_flange"], tau_ext=TAU[y["grade"]]),
-             # the hex-socket end (wall r 14.1–20, 8 mm) + the rest of the tube (wall r 8–20)
-             [(roll.YF["hex_h"], math.pi * (20.0 ** 2 - 14.1 ** 2) - holes(y)), (L_yaw - roll.YF["hex_h"], math.pi * (20.0 ** 2 - 8.0 ** 2) - holes(y))], 2)):
-        bell = Disc(t["bell"]) if t.get("n_bell") else None
-        nb = t.get("n_bell", 0)
-        c_b = grip / (E_STEEL * t["As"])
-        c_p = sum(Li / (E_PRINT * Ai / t["n"]) for Li, Ai in stack)
+             [(roll.YF["hex_h"], math.pi * (20.0 ** 2 - 14.1 ** 2)), (L_yaw - roll.YF["hex_h"], math.pi * (20.0 ** 2 - 8.0 ** 2))],
+             L_yaw - roll.YF["hex_h"], 2)):
+        sl = t["sleeve"]
+        A_s = math.pi / 4 * (sl[0] ** 2 - sl[1] ** 2)
+        k_s = E_STEEL * A_s / L_sl
+        c_b, c_s = grip / (E_STEEL * t["As"]), 1 / k_s
+        c_p_bare = sum(Li / (E_PRINT * (Ai - holes(t, t["hole"])) / t["n"]) for Li, Ai in stack)
         Lp = sum(Li for Li, _ in stack)
         F0 = t["preload"]
-        F_life = life_preload(F0, c_b, c_p, bell, nb, Lp, n_if)
-        F_nom = life_preload(F0, c_b, c_p, bell, nb, Lp, n_if, phi=CREEP["phi_nom"])
-        F_bare = life_preload(F0, c_b, c_p, None, 0, Lp, n_if)                  # the same joint without the disc springs
-        k_b = E_STEEL * t["As"] / grip
-        k_soft = 1 / (c_b + nb * (bell.s(F_life * 1.02) - bell.s(F_life)) / (0.02 * F_life)) if bell else None   # tangent at the life preload
-        knee = bell.F_flat if bell else None
+        # sleeved: metal stack, embedding only (head/nut, sleeve ends ×2–3, threads; VDI 2230 ≈ 2 µm each, ESTIMATE)
+        F_life = life_preload(F0, c_b + c_s, 0.0, n_metal_if=n_if + 2, phi=0.0)
+        # wave 3 as designed (the print is the clamped member): creep φ, embedding, the cold day
+        F0_bare = t.get("preload_bare", F0)
+        F_bare = life_preload(F0_bare, c_b, c_p_bare, L_p=Lp, n_print_if=n_if)
+        F_bare_nom = life_preload(F0_bare, c_b, c_p_bare, L_p=Lp, n_print_if=n_if, phi=CREEP["phi_nom"])
+        u0p = t["squeeze"]                                                    # the print's squeeze, fresh (mm over the stack)
 
-        def make(Fp, soft=True, t=t, r_in=r_in, r_out=r_out, L=L, L_soft=L_soft, grip=grip, k_soft=k_soft, knee=knee):
-            ms = []
-            for Lp_ in (0.5 * L, L_soft):
-                for rot in (0.0, 180.0 / t["n"]):
-                    ms.append(Clamp(r_in, r_out, Lp_, bolt_ring(t["n"], t["r"], t["ang0"] + rot, t["As"], grip), Fp,
-                                    k_soft=k_soft if soft else None, F_knee=knee if soft else None))
-            return ms
-        out[name] = dict(t=t, make=make, models=make(F_life), strip=thread_strip(t["d"], t["pitch"], nut["L_e"], nut["tau"], nut["tau_ext"]), nut=nut,
-                         proof=t["proof"] * t["As"], r=(r_in, r_out), area=math.pi * (r_out ** 2 - r_in ** 2), bell=bell, n_bell=nb,
-                         c_b=c_b, c_p=c_p, L_print=Lp, F0=F0, F_life=F_life, F_nom=F_nom, F_bare=F_bare, creep=F_life / F0,
-                         travel=nb * bell.s(F0) if bell else 0.0, k_b=k_b, k_soft=k_soft)
+        def make(Fp, u0p_=0.0, t=t, r_in=r_in, r_out=r_out, L=L, L_soft=L_soft, grip=grip, k_s=k_s):
+            return [SleeveClamp(r_in, r_out, Lp_, bolt_ring(t["n"], t["r"], t["ang0"] + rot, t["As"], grip), Fp, k_s, u0p_)
+                    for Lp_ in (0.5 * L, L_soft) for rot in (0.0, 180.0 / t["n"])]
+
+        def make_bare(Fp, k_soft=None, knee=None, t=t, r_in=r_in, r_out=r_out, L=L, L_soft=L_soft, grip=grip):
+            return [Clamp(r_in, r_out, Lp_, bolt_ring(t["n"], t["r"], t["ang0"] + rot, t["As"], grip), Fp, k_soft=k_soft, F_knee=knee)
+                    for Lp_ in (0.5 * L, L_soft) for rot in (0.0, 180.0 / t["n"])]
+        out[name] = dict(t=t, make=make, make_bare=make_bare, models=make(F_life), strip=thread_strip(t["d"], t["pitch"], nut["L_e"], nut["tau"], nut["tau_ext"]),
+                         nut=nut, proof=t["proof"] * t["As"], r=(r_in, r_out), area=math.pi * (r_out ** 2 - r_in ** 2), A_s=A_s, k_s=k_s, L_sl=L_sl,
+                         c_b=c_b, c_s=c_s, c_p=c_p_bare, L_print=Lp, F0=F0, F0_bare=F0_bare, F_life=F_life, F_bare=F_bare, F_bare_nom=F_bare_nom,
+                         creep=F_life / F0, u0p=u0p, P_print=E_PRINT / Lp * u0p * (stack[0][1] - holes(t, sl[0] + 0.1)))
     return out
 
 
-def required_preload(J, N, M):
-    """Smallest preload (N per bolt) at which the joint does not gap under (N, M N·m) in any of its clamp models."""
-    lo, hi = 0.0, 3.0 * J["F0"]
+def required_preload(J, N, M, bare=False):
+    """Smallest preload (N per bolt) at which the joint does not gap under (N, M N·m) in any of its clamp models (the
+    sleeved joint with the print's squeeze relaxed; bare = the wave-3 print-clamped joint)."""
+    lo, hi = 0.0, 4.0 * J["F0"]
     for _ in range(30):
         mid = (lo + hi) / 2
-        ok = all(not m.check(N, M)["gap"] for m in J["make"](mid))
+        ok = all(not m.check(N, M)["gap"] for m in (J["make_bare"](mid) if bare else J["make"](mid)))
         lo, hi = (lo, mid) if ok else (mid, hi)
     return hi
+
+
+def disc_alternative(J, N, M, n_disc=3):
+    """What the review's DIN 6796 stack would do: n discs in series under each nut/head on the wave-3 joint (print as the
+    clamped member). The stack keeps more preload but softens the bolts, and the stiff bolts are what carried the bending:
+    → (life preload, preload needed for no gap) N."""
+    t = J["t"]
+    disc = Disc(t["bell"])
+    F0 = J["F0_bare"]
+    F_life = life_preload(F0, J["c_b"], J["c_p"], disc, n_disc, J["L_print"], 3 if t["n"] == 4 else 2)
+    k_soft = 1 / (J["c_b"] + n_disc * (disc.s(F_life * 1.02) - disc.s(F_life)) / (0.02 * F_life))
+    mk = lambda Fp: J["make_bare"](Fp, k_soft, disc.F_flat)
+    lo, hi = 0.0, 4.0 * F0
+    for _ in range(30):
+        mid = (lo + hi) / 2
+        ok = all(not m.check(N, M)["gap"] for m in mk(mid))
+        lo, hi = (lo, mid) if ok else (mid, hi)
+    return F_life, hi, n_disc * disc.s(F0)
 
 
 def _before(name, N, M):
@@ -449,46 +507,54 @@ def _before(name, N, M):
     return round(1000.0 / max(M * 1000 / (3 * r) + N / 6, 1e-6), 2)
 
 
+SLEEVE_RP = 750.0      # MPa, sleeve yield: turned 42CrMo4+QT (R_p0.2 ≥ 750, EN 10083-3; an E235 tube, 235 MPa, yields at the bump / stall)
+
+
 def joint_rows(loads):
     rows = []
     for name, J in joint_models().items():
         t = J["t"]
         F0 = t["n"] * t["preload"]
-        bell_txt = (f"{J['n_bell']} × DIN 6796-{t['bell']} in series under each {'nut' if name.startswith('pitch') else 'head'} "
-                    f"({J['travel']:.2f} mm of spring travel at the preload, flat at {J['bell'].F_flat / 1e3:.2f} kN)") if J["bell"] else "no disc springs"
         svc = [(L["N"], L["M"]) for c, L in loads[name].items() if c in SERVICE]
         Nw, Mw = max(svc, key=lambda v: v[1])
         F_req = required_preload(J, max(Nw, 0.0), Mw)
+        F_req_bare = required_preload(J, max(Nw, 0.0), Mw, bare=True)
+        dF_life, dF_req, d_trav = disc_alternative(J, max(Nw, 0.0), Mw)
+        bare_txt = (f"wave 3 as designed (print as the clamped member, {J['F0_bare'] / 1e3:.1f} kN): bolt {J['c_b'] * 1e6:.0f} vs print {J['c_p'] * 1e6:.0f} µm/kN per bolt "
+                    f"({J['L_print']:.1f} mm of PETG: {J['F0_bare'] * J['c_p'] * 1000:.0f} µm of elastic squeeze, so the springs are bolt + print, not the bolt alone), "
+                    f"life preload {J['F_bare'] / 1e3:.2f} kN ({100 * J['F_bare'] / J['F0_bare']:.0f} %; φ {CREEP['phi_nom']:.0f}: {J['F_bare_nom'] / 1e3:.2f} kN) vs "
+                    f"{F_req_bare / 1e3:.2f} kN needed → {J['F_bare'] / F_req_bare:.2f}×")
+        disc_txt = (f"the review's disc springs (3 × DIN 6796-{t['bell']} in series, {d_trav:.2f} mm travel): life {dF_life / 1e3:.2f} kN but the softer bolts need "
+                    f"{dF_req / 1e3:.2f} kN → {dF_life / dF_req:.2f}× (the stiff bolts carried the bending)")
         rows.append(dict(joint=name, case="preload (assembly → life)", verdict=bool(J["F_life"] >= F_req), margin=round(J["F_life"] / F_req, 2),
-                         F0=t["preload"], F_life=round(J["F_life"]), F_nom=round(J["F_nom"]), F_bare=round(J["F_bare"]), F_req=round(F_req),
-                         text=(f"{t['n']} × M{t['d']:.0f} {t['grade']} at {t['preload'] / 1e3:.1f} kN = {F0 / 1e3:.1f} kN → {F0 / J['area']:.1f} MPa on the printed "
-                               f"contact annulus r {J['r'][0]:.1f}–{J['r'][1]:.1f}; {bell_txt}. Per bolt: bolt {J['c_b'] * 1e6:.0f}, print {J['c_p'] * 1e6:.0f} µm/kN "
-                               f"({J['L_print']:.1f} mm of PETG: {t['preload'] * J['c_p'] * 1000:.0f} µm elastic, {t['preload'] * J['c_p'] * CREEP['phi'] * 1000:.0f} µm of creep at φ {CREEP['phi']:.0f}). "
-                               f"Life preload (φ {CREEP['phi']:.0f}, embedding, 10 °C day) **{J['F_life'] / 1e3:.2f} kN ({100 * J['creep']:.0f} %)**; φ {CREEP['phi_nom']:.0f}: "
-                               f"{J['F_nom'] / 1e3:.2f} kN; without the disc springs {J['F_bare'] / 1e3:.2f} kN ({100 * J['F_bare'] / t['preload']:.0f} %). No gap under the "
-                               f"worst service wrench ({Mw:.1f} N·m, {Nw:.0f} N) needs ≥ {F_req / 1e3:.2f} kN → {J['F_life'] / F_req:.2f}×"
-                               f"; bare {J['F_bare'] / F_req:.2f}× ({'no gap' if J['F_bare'] >= F_req else 'gaps'})")))
-        fresh, life = J["make"](t["preload"]), J["models"]
-        stiff = J["make"](t["preload"], soft=False)
+                         F0=t["preload"], F_life=round(J["F_life"]), F_req=round(F_req), F_bare=round(J["F_bare"]), F_req_bare=round(F_req_bare),
+                         disc=dict(F_life=round(dF_life), F_req=round(dF_req)),
+                         text=(f"{t['n']} × M{t['d']:.0f} {t['grade']} at {t['preload'] / 1e3:.2f} kN in Ø{t['sleeve'][0]}/{t['sleeve'][1]} steel crush sleeves "
+                               f"({J['L_sl']:.1f} mm, {J['k_s'] / 1e3:.0f} kN/mm; the print sandwiched with a {t['squeeze']:.2f} mm squeeze ≈ "
+                               f"{E_PRINT * t['squeeze'] / J['L_print']:.1f} MPa that may creep away): metal stack, embedding only → life preload "
+                               f"**{J['F_life'] / 1e3:.2f} kN ({100 * J['creep']:.0f} %)** vs {F_req / 1e3:.2f} kN for no gap under the worst service wrench "
+                               f"({Mw:.1f} N·m, {Nw:.0f} N) → **{J['F_life'] / F_req:.2f}×**. Before: {bare_txt}. Not chosen: {disc_txt}.")))
+        fresh = J["make"](t["preload"], J["u0p"])
+        life = J["models"]
         for case, L in loads[name].items():
             N, M = max(L["N"], 0.0), L["M"]
+            chk = [m.check(N, M) for m in fresh + life]
+            Fb = max(c["F_bolt"] for c in chk)
+            sig = max(c["sigma"] for c in chk)
+            S = max(c["S"] for c in chk)
+            s_sl = S / J["A_s"]
             if case in SERVICE:
                 mg = min(m.m_gap(N) for m in life)
-                sig = max(m.check(N, M)["sigma"] for m in fresh)           # contact stress at the fresh preload (highest)
-                Fb = max(m.check(N, M)["F_bolt"] for m in fresh + life)
                 ok = mg >= M and sig <= SIGMA_SERVICE
-                margin = min(mg / max(M, 1e-6), SIGMA_SERVICE / sig)
-                txt = f"no gap up to {mg:.0f} N·m at the life preload; bolt {Fb / 1e3:.2f} kN; contact {sig:.1f} MPa fresh (≤ {SIGMA_SERVICE:.0f})"
+                margin = min(mg / max(M, 1e-6), SIGMA_SERVICE / max(sig, 1e-6))
+                txt = f"no gap up to {mg:.0f} N·m at the life preload; bolt {Fb / 1e3:.2f} kN; print contact {sig:.1f} MPa (≤ {SIGMA_SERVICE:.0f})"
             else:
-                chk = [m.check(N, M) for m in fresh + life + stiff]
-                Fb = max(c["F_bolt"] for c in chk)
-                sig = max(c["sigma"] for c in chk)
                 gap = any(c["gap"] for c in chk)
-                ok = Fb <= J["proof"] and J["strip"] >= 1.5 * Fb and sig <= SIGMA_FAULT
-                margin = min(J["proof"] / Fb, J["strip"] / (1.5 * Fb), SIGMA_FAULT / sig)
+                ok = Fb <= J["proof"] and J["strip"] >= 1.5 * Fb and sig <= SIGMA_FAULT and s_sl <= SLEEVE_RP
+                margin = min(J["proof"] / Fb, J["strip"] / (1.5 * Fb), SIGMA_FAULT / max(sig, 1e-6), SLEEVE_RP / s_sl)
                 txt = (f"{'gaps' if gap else 'no gap'}; bolt {Fb / 1e3:.2f} kN vs proof {J['proof'] / 1e3:.2f} kN; thread strip (the weaker of the "
                        f"{J['nut']['what']} and the {t['grade']} {'stud' if name.startswith('pitch') else 'screw'}) {J['strip'] / 1e3:.1f} kN ({J['strip'] / Fb:.2f}× the bolt, need 1.5×); "
-                       f"contact {sig:.1f} MPa (≤ {SIGMA_FAULT:.0f})")
+                       f"sleeve {s_sl:.0f} MPa (≤ {SLEEVE_RP:.0f}); print contact {sig:.1f} MPa (≤ {SIGMA_FAULT:.0f})")
             rows.append(dict(joint=name, case=case, N=N, M=M, T=L["T"], pose=L["note"], margin=round(margin, 2), verdict=bool(ok), text=txt,
                              before=_before(name, N, M)))
     return rows
@@ -507,7 +573,7 @@ def huth_k(t1, E1, t2, E2, d, E3=E_STEEL, n=1, a=2 / 3, b=3.0):
 # k·δ before the other two engage. δ: H7 hole / m6 dowel spread 0.008 mm (ISO 286: Ø4 H7 0/+12 µm, m6 +4/+12 µm) once the
 # dowels are bonded (Loctite 638) into Ø4.1 holes of the adapter while seated in the motor's holes, so the adapter's own
 # hole positions drop out; dry dowels in jig-bored adapter holes: + ±0.02 true position on each side (ESTIMATE) → 0.04.
-DOWEL = dict(sb=150.0, d_fit=0.008, d_dry=0.040, mu=0.15, pre=1500.0)
+DOWEL = dict(sb=150.0, d_fit=0.008, d_dry=0.040, mu=0.15, pre=2000.0)
 SKF_61806 = dict(C=4.49e3, C0=2.9e3)      # SKF catalogue, 61806 (30 × 42 × 7)
 S0_SERVICE, S0_FAULT = 1.5, 1.0           # static safety C0/P0: slowly oscillating (SKF guideline 1–2, as rnd/balancer.py), fault 1.0
 
@@ -558,7 +624,9 @@ def roll_rows(loads=None):
     x_face = roll.X_MOT[0] / 1000
     R2_max = max([v["R2"] for v in lb.values()] or [300.0])
     M_face = R2_max * (x2 - x_face)
-    F_bolt = rs["preload"] + M_face / (rs["n"] * M["rear_pcd"] / 2000 / 2)            # load factor 1 (conservative)
+    phi_l = (c_s + c_pl) / (c_b + c_s + c_pl)                                          # load factor of a sleeved metal joint (VDI 2230, load at the interface)
+    M_open = F_life * rs["n"] * M["rear_pcd"] / 2000 / 2 / (1 - phi_l)
+    F_bolt = rs["preload"] + (phi_l if M_face < M_open else 1.0) * M_face / (rs["n"] * M["rear_pcd"] / 2000 / 2)
     sl_bear = stall / (rs["n"] * M["rear_pcd"] / 2000) / (rs["sleeve_od"] * (rs["grip"] - rs["plate_t"]))
     rows.append(dict(item="M1 rear mount: 8 × M4 into the 3.5 mm housing threads",
                      before="8 × M4 × 18 + washer + picked shim through 13.9 mm of PETG at 0.5 kN (4 µm of bolt stretch; friction 38 N·m at × 0.75 creep)",
@@ -572,7 +640,7 @@ def roll_rows(loads=None):
                             f"{rs['mu']} steel/Al (ESTIMATE). Engagement {rs['L']:.0f} − {rs['grip']:.0f} = {L_eng:.1f} mm, worst ± {worst:.2f} (screw length js15 ± {rs['L_tol']}, ISO 4759-1; "
                             f"plate ± {rs['plate_tol']}, sleeve ± {rs['sleeve_tol']}): {L_eng - worst:.2f}–{L_eng + worst:.2f} in {rs['tap']} mm, so no shim picking; strip at the "
                             f"shortest ({L_eng - worst - 0.35:.2f} mm effective) {strip_r / 1e3:.1f} kN vs the worst bolt {F_bolt / 1e3:.2f} kN ({strip_r / F_bolt:.1f}×; motor "
-                            f"bearing {R2_max:.0f} N × {1000 * (x2 - x_face):.0f} mm → {M_face:.0f} N·m on the bolt circle, load factor 1). Stall reaction through the sleeves "
+                            f"bearing {R2_max:.0f} N × {1000 * (x2 - x_face):.0f} mm → {M_face:.0f} N·m on the bolt circle, under the {M_open:.0f} N·m that opens it, load factor {phi_l:.2f}). Stall reaction through the sleeves "
                             f"into the print: {sl_bear:.1f} MPa bearing (Ø{rs['sleeve_od']:.0f} × {rs['grip'] - rs['plate_t']:.0f} mm, 8 sleeves)")))
     # (c) the two-bearing roll support: 61806 (W1) + the motor's output bearing (W2)
     B = roll.ROLL_SUPPORT
@@ -652,26 +720,28 @@ def report(loads=None):
     L = ["# Arm structural joints: C1 tie-rod joints + M1 inline roll (generated by `python -m rnd.joints`)", "",
          __doc__.split("\n\n", 1)[1].strip(), "", "## Hardware", "",
          f"- **Pitch hub ↔ pitch tube** (rnd/parts/shoulder.py HUB_TIE): {h['n']} × M{h['d']:.0f} class {h['grade']} studs (DIN 976-1, cut to {shoulder.hub_tie_length():.1f} mm) "
-         f"on r {h['r']} at {h['ang0']:.0f}° + k·90°, Loctite 270 into the {h['crank_mat']} balancer crank (tapped through {h['crank_t']:.0f} mm, stud end flush with its inboard face; "
-         f"was 7075-T6: its thread strip was 1.25× the stall bolt force with the chamfers counted), Ø{h['hole']} holes through the tube wall (r {h['tube_r_in']:.0f}–20) and the hub, "
-         f"M4 nuts (ISO 4032 class 8, Loctite 243) on a stack of {h['n_bell']} × DIN 6796-M4 conical spring washers (in series, alternating) on a 6061 clamp ring "
+         f"on r {h['r']} at {h['ang0']:.0f}° + k·90°, Loctite 270 into the {h['crank_mat']} balancer crank (tapped through {h['crank_t']:.0f} mm, stud end flush with its inboard face), "
+         f"each in two steel crush sleeves Ø{h['sleeve'][0]} / Ø{h['sleeve'][1]} (turned 42CrMo4+QT; one through the tube wall r {h['tube_r_in']:.0f}–20, one through "
+         f"the hub, butting at the hub ↔ tube face, each {h['squeeze']} mm shorter than its print), M4 nuts (ISO 4032 class 8, Loctite 243) on a 6061 clamp ring "
          f"r {h['ring'][0]:.0f}–{h['ring'][1]:.0f} × {h['ring'][2]:.0f} in a {h['recess']:.1f} mm recess of the detach face; {h['preload'] / 1e3:.1f} kN each (≈ 1.3 N·m, ESTIMATE). "
-         "Assembly: tube into the inner wall → crank + studs from the inboard side → belt → outer wall → hub over the double-D and the studs → ring, spring stacks, nuts.",
+         "Assembly: tube into the inner wall → crank + studs from the inboard side → tube sleeves over the studs → belt → outer wall → hub over the double-D, hub sleeves → ring, nuts.",
          f"- **Yaw flange ↔ yaw tube** (rnd/parts/roll.py YAW_TIE): 6061-T6 flange (its hex spigot stays the torque path). "
-         f"{y['n']} × M{y['d']:.0f} × {y['L']:.0f} ISO 4762 class {y['grade']} go down from the tube's top end, heads on {y['n_bell']} × DIN 6796-M3 each, on a steel clamp ring "
+         f"{y['n']} × M{y['d']:.0f} × {y['L']:.0f} ISO 4762 class {y['grade']} go down from the tube's top end in steel crush sleeves Ø{y['sleeve'][0]} / Ø{y['sleeve'][1]} (ring → the "
+         f"flange's spigot top, {y['squeeze']} mm shorter than the print), heads on a steel clamp ring "
          f"r {y['ring'][0]}–{y['ring'][1]} × {y['ring'][2]:.0f} in a Ø{2 * y['cb_r']:.0f} × {y['cb_depth']:.1f} counterbore (heads {y['top_gap']} mm under the top), through Ø{y['hole']} holes in the "
          f"wall into M3 threads tapped at the hex corners (r {y['r']:.0f}) of the flange's spigot + plate ({lv['engaged']:.1f} mm engaged, Loctite 243); {y['preload'] / 1e3:.1f} kN each "
          "(≈ 0.5 N·m). Tightened from above on the bench, before the yaw block goes onto the roll output.",
-         "- Disc springs: DIN 6796 spring steel (not A2 stainless), load to flat M3 1.32 kN / M4 3.77 kN (DIN 6796 table). Sources: McMaster-Carr \"DIN 6796 lock "
-         "washers\", norelem 07000, Bossard BN 794 (part numbers to confirm at order).",
+         "- Crush sleeves: turned 42CrMo4+QT (R_p0.2 ≥ 750 MPa) Ø7 / Ø4.3 (pitch, 8 pcs: 4 × the tube length, 4 × the hub) and Ø4.6 / Ø3.2 "
+         "(yaw, 6 pcs), ends faced square, length = the measured print − 0.05 (ESTIMATE $3 each; E235 tube would yield at the bump and stall rows). The review's DIN 6796 disc springs (McMaster-Carr \"DIN 6796 lock "
+         "washers\", norelem 07000, Bossard BN 794; load to flat M3 1.32 / M4 3.77 kN) were evaluated and not used: see the preload rows.",
          "- Not drawn (rnd/parts/arm.py, arm track): the upper bone ↔ yaw flange screws. With the flange in aluminium they should be M4 into tapped holes in the flange, "
          "heads on washers on the bone flange, not inserts.", "",
          "## C1: preload over life", "", CREEP_BASIS + ".", ""]
     L += [f"- **{r['joint']}:** {r['text']} {'✅' if r['verdict'] else '❌'}" for r in jr if r["case"].startswith("preload")]
     L += ["", "## C1: capacity per load case", "",
           "Before = the wave-2 joint (6 × M3 into heat-set inserts, ≈ 1.0 kN pull-out ESTIMATE, force per insert = M/(3r) + N/6, as the review). Service rows "
-          "(basket, hug) need no gap at the life preload and ≤ 12 MPa at the fresh preload; fault rows (bump, stall) need bolt ≤ proof, thread strip ≥ 1.5 × bolt, "
-          "contact ≤ 40 MPa (worst of the fresh / life preload and the flat-spring stiffness).", "",
+          "(basket, hug) need no gap at the life preload and print contact ≤ 12 MPa; fault rows (bump, stall) need bolt ≤ proof, thread strip ≥ 1.5 × bolt, "
+          "sleeve ≤ its yield, print contact ≤ 40 MPa (worst of the fresh and the life preload).", "",
           "| Joint | Case | Pull-off (N) | Bending (N·m) | Worst pose | Before: inserts | After | Margin | |", "|---|---|---|---|---|---|---|---|---|"]
     L += [f"| {r['joint']} | {r['case']} | {r['N']:.0f} | {r['M']:.1f} | {r['pose']} | {r['before']:.2f}× | {r['text']} | {r['margin']:.2f}× | {'✅' if r['verdict'] else '❌'} |"
           for r in jr if not r["case"].startswith("preload")]
@@ -683,8 +753,9 @@ def report(loads=None):
         L += ["", "Roll support reactions per load case (N, N·m; worst pose by the motor-bearing load):", "",
               "| Case | 61806 | Motor bearing (with the 61806) | Motor alone: radial | Motor alone: tilting | Roll torque | Pose |", "|---|---|---|---|---|---|---|"]
         L += [f"| {c} | {v['R1']:.0f} | {v['R2']:.0f} | {v['F']:.0f} | {v['Mm']:.1f} | {v['T']:.1f} | {v['note']} |" for c, v in lb.items()]
-    L += ["", "Coupons to add (docs/COUPONS.md): the tie-rod joint with its disc springs (printed tube + hub under the stud preload, 1000 h at 40 °C with a "
-          "load washer or a re-torque check, then the moment to gap: measures φ), the 6061 threads of the yaw flange, the stop bush in its print foundation at 2.4 kN."]
+    L += ["", "Coupons to add (docs/COUPONS.md): a printed tube clamped as wave 3 (no sleeves) at 8.8 MPa, 1000 h at 40 °C with a load washer (measures φ, "
+          "the ESTIMATE behind the 'before' rows), the sleeved joint's moment to gap, the 6061 threads of the yaw flange, the stop bush in its print "
+          "foundation at 2.4 kN, the output dowels' slip torque on a seller motor."]
     ok = all(r["verdict"] for r in jr) and all(r["ok"] for r in rr)
     return "\n".join(L), ok, jr, rr, lb
 

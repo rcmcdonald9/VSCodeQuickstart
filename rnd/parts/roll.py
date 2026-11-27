@@ -707,7 +707,7 @@ def yaw_shaft() -> Part:
     top = YAW_TOP
     s -= Pos(0, ROLL_Y, top - t["cb_depth"]) * Cylinder(t["cb_r"], 10, align=MIN)      # C1: counterbore for the clamp ring + heads
     for a in _yaw_tie_angles():                                                   # C1: 6 × Ø3.4 through the wall (no inserts)
-        s -= Pos(t["r"] * math.cos(a), ROLL_Y + t["r"] * math.sin(a), z0 - 1) * Cylinder(t["hole"] / 2, top - z0 + 2, align=MIN)
+        s -= Pos(t["r"] * math.cos(a), ROLL_Y + t["r"] * math.sin(a), z0 - 1) * Cylinder(t["sleeve_hole"] / 2, top - z0 + 2, align=MIN)   # Neon 3: crush sleeve
     return s
 
 
@@ -722,16 +722,18 @@ def yaw_shaft() -> Part:
 # (compression) → shoulder → bearing B, and the tube's bending at bearing B is prestressed. Screws at the hex corners
 # (r 11, 30° + k·60°). Tightened from above before the yaw block goes onto the roll output. Capacity: rnd/joints.py.
 YF = dict(hex_af=24.0, hex_h=8.0, bore_r=8.0, spigot_r_in=8.0)
-# Neon review 2026-11-27 (finding 3): the 37.7 mm printed tube creeps under the 9.5 MPa clamp; 36 µm of screw stretch
-# and ≈ 0.14 mm of the print's own squeeze were the only springs (≈ 30 % of the preload left at a creep coefficient of
-# 2, and the joint then gaps under the basket wrench). Each head now sits on 3 × DIN 6796-M3 in series (≈ 0.53 mm of
-# travel at 1.0 kN; they go flat at 1.32 kN, beyond which the screw carries alone): life preload ≈ 70 %. The counterbore
-# is deeper by the stack, the heads stay where they were (same screw, same engagement). Rows: rnd/joints.py.
-YAW_TIE = dict(n=6, r=11.0, ang0=30.0, d=3.0, pitch=0.5, As=5.03, hole=3.4, tap=2.5, grade="12.9", proof=970.0, preload=1000.0,
-               ring=(8.5, 16.8, 2.0), cb_r=17.0, head_h=3.0, top_gap=0.5, L=40.0, tau_flange=207.0, bell="M3", n_bell=3)   # M3 (encoder): L 45 → 40 with the tube top 2.5 mm lower
+# Neon review 2026-11-27 (finding 3): the 37.7 mm printed tube was the clamped member; 36 µm of screw stretch and
+# ≈ 0.14 mm of the print's own squeeze were the springs: ≈ 30 % of the preload left at a creep coefficient of 2, and the
+# joint then gaps under the basket wrench (rnd/joints.py). Each screw now runs in a steel crush sleeve (Ø4.6 / Ø3.2,
+# turned 42CrMo4+QT) from the clamp ring to the flange's spigot top, so the clamp is ring → sleeve → 6061 flange in
+# metal, raised to 1.2 kN (the print no longer limits it); the print is sandwiched with a 0.05 mm squeeze. The sleeve
+# leaves 0.65 mm of wall to the Ø16 ribbon bore. Rows: rnd/joints.py.
+YAW_TIE = dict(n=6, r=11.0, ang0=30.0, d=3.0, pitch=0.5, As=5.03, hole=3.4, tap=2.5, grade="12.9", proof=970.0, preload=1200.0, preload_bare=1000.0,
+               ring=(8.5, 16.8, 2.0), cb_r=17.0, head_h=3.0, top_gap=0.5, L=40.0, tau_flange=207.0, sleeve=(4.6, 3.2), sleeve_hole=4.7, squeeze=0.05,
+               bell="M3", n_bell=0)   # M3 (encoder): L 45 → 40 with the tube top 2.5 mm lower
 from .shoulder import _stack_h
 YAW_TIE["stack_h"] = _stack_h(YAW_TIE["bell"], YAW_TIE["n_bell"], YAW_TIE["preload"])
-YAW_TIE["cb_depth"] = YAW_TIE["ring"][2] + YAW_TIE["stack_h"] + YAW_TIE["head_h"] + YAW_TIE["top_gap"]    # 7.5 mm (was 5.5)
+YAW_TIE["cb_depth"] = YAW_TIE["ring"][2] + YAW_TIE["stack_h"] + YAW_TIE["head_h"] + YAW_TIE["top_gap"]    # 5.5 mm
 
 
 def _yaw_tie_angles():
@@ -924,8 +926,8 @@ def masses(density=1.27, split=False):
     caps = 0.0 if INLINE else roll_clevis_cap(0).volume + roll_clevis_cap(1).volume
     yaw = {"clevis + caps + yaw block plates + posts (printed)": pr(clevis_and_yaw_block().volume + caps + yaw_plate_bot().volume, 0.6),
            "yaw shaft + 40T + spring hub (one piece), spring ring (printed)": pr(yaw_shaft().volume, 0.7) + pr(yaw_spring_ring().volume, 0.8),
-           "C1 yaw flange (6061-T6) + steel clamp ring + 6 × M3 × 40 12.9 + 18 × DIN 6796-M3": yaw_flange().volume * 2.7e-6 + yaw_tie_ring().volume * 7.85e-6
-           + 6 * (5.03 * YAW_TIE["L"] + 45) * 7.85e-6 + YAW_TIE["n"] * YAW_TIE["n_bell"] * 0.13e-3,
+           "C1 yaw flange (6061-T6) + steel clamp ring + 6 × M3 × 40 12.9 + 6 crush sleeves": yaw_flange().volume * 2.7e-6 + yaw_tie_ring().volume * 7.85e-6
+           + 6 * (5.03 * YAW_TIE["L"] + 45) * 7.85e-6 + YAW_TIE["n"] * math.pi / 4 * (YAW_TIE["sleeve"][0] ** 2 - YAW_TIE["sleeve"][1] ** 2) * 30.0 * 7.85e-6,
            "yaw D13 v3 stage + Oldham + bolted can flange/nose/cap": d13 + sock, "2 × 61808 + stop pin + belt + screws + ribbon (ESTIMATE)": 0.075}
     if split:
         return sum(roll.values()), sum(yaw.values())
@@ -994,6 +996,6 @@ def drive_capacity():
         dem, src = 20.7 * 1.5, "20.7 N·m × 1.5, rnd/basket.py worst shoulder-pitch torque (run python -m rnd.joints for the twin value)"
     mg = min(m.m_gap(0.0) for m in J["models"])
     rows.append(("yaw", "tube ↔ flange, C1 tie (6 × M3 12.9 into the 6061 flange): moment before the joint gaps vs the service bending", mg, dem,
-                 f"clamp model (rnd/joints.py): {t['n']} × {J['F_life'] / 1e3:.2f} kN life preload (DIN 6796 stacks, creep φ {joints.CREEP['phi']:.0f}) on the r 14.1–20 tube end; demand {src}; "
+                 f"clamp model (rnd/joints.py): {t['n']} × {J['F_life'] / 1e3:.2f} kN life preload in steel crush sleeves (metal stack, the print sandwiched); demand {src}; "
                  "fault cases (140 N bump, stalls) in docs/rnd/joints.md"))
     return [dict(joint=j, path=pth, cap=round(c, 1), demand=round(dm, 1), ratio=round(c / dm, 2), basis=b) for j, pth, c, dm, b in rows]
