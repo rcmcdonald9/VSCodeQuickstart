@@ -2,7 +2,7 @@
 
 | Metric | Now | Target | |
 |---|---|---|---|
-| R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 94% | ≥ 95 % | ❌ |
+| R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 98% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 78 mm | ≥ 50 mm | ✅ |
 | R2 min joint margin at spec load (rated, planar check) | 1.92× | ≥ 1.5× | ✅ |
@@ -38,19 +38,19 @@
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 66 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
 | FEA critical printed parts: min margin vs 12 MPa (across layers) | 5.6× (8 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip) | 100/100 (95 % LB 96%), worst pad error 19 mm | LB ≥ 90 %, within ±25 mm | ✅ |
-| R15 spacing: pairs under the hard limit / under target (static 1, running 0.3, moving 2, belt 3 mm) | 7 / 17 | 0 under hard | ❌ |
+| R15 spacing: pairs under the hard limit / under target (static 1, running 0.3, moving 2, belt 3 mm) | 0 / 8 | 0 under hard | ✅ |
 | R14 assembly sequence: drive shafts whose bearings slide on and whose shaft can be inserted (rnd/assembly_seq.py) | 7/7 | all | ✅ |
 | Cable routing: joints the arm bundle can cross over their full range (rnd/harness.py) | 6/6 | all | ✅ |
 | Threshold/carpet Monte Carlo (5–15 mm, heading ±10°, 0.12–0.18 m/s, μ, mass, COM) | 55/55 (95 % LB 93%); 15–18 mm: 25/25 | LB ≥ 90 % | ✅ |
 | KX Monte Carlo (tolerances, μ, spring, 10-year PETG creep): slip below rated / below peak; twist p95 | 0.00% / 13%; 2.9 N·m | ≤ 0.1 % below rated; twist ≤ 3 N·m | ✅ |
 | Thermal: hottest motor, non-stop task day (MC worst corner) | 99 °C | ≤ 100 °C | ✅ |
-| R16 dexterity: bench table grid reachable with top-down / 45° / side / side across the body (rnd/dexterity.py) | 35% / 50% / 47% / 50% | ≥ 30 / 63 / 62 / 54 % | ❌ |
-| R15 swept spacing over the roll and yaw ranges: pairs under the hard limit (rnd/swept.py) | 0 (min roll 0.3 / yaw 2.0 mm) | 0 | ✅ |
-| R2b hand deflection, full compliance chain (P2 FEA + bearing play + tubes), 1 kg straight out: raw / after gravity model | 8.3 / 1.7 mm | ≤ 6 / ≤ 2 mm | ❌ |
+| R16 dexterity: bench table grid reachable with top-down / 45° / side / side across the body (rnd/dexterity.py) | 35% / 78% / 78% / 71% | ≥ 30 / 63 / 62 / 54 % | ✅ |
+| R15 swept spacing over the roll and yaw ranges: pairs under the hard limit (rnd/swept.py) | 0 (min roll 0.3 / yaw 1.0 mm) | 0 | ✅ |
+| R2b hand deflection, full compliance chain (P2 FEA + bearing play + tubes), 1 kg straight out: raw / after gravity model | 8.5 / 1.7 mm | ≤ 6 / ≤ 2 mm | ❌ |
 | A10 tip-over, review cases (2.5 kg two-handed, 45°, braking, 30 N nudge; arms straight out) with D18 casters: worst ZMP margin | -102 mm (6/16 cases ≥ 30 mm) | ≥ 30 mm, or a planner rule | — |
 | A6 printed can wall, non-stop task day (enclosed +10 K): ASA limit 75 °C | 49 °C | ≤ 75 °C (ASA) | ✅ |
 | SW6 synthetic demos: expert success / rate (sw/gen_demos.py, LeRobot format) | 98% / 887 per h | ≥ 95 % / ≥ 500 per h | ✅ |
 | S0.4a pipeline dry run: BC policy from scratch, closed-loop success in the twin (info) | 10% (200 demos, CPU) | runs end to end | — |
 | Load path: cartridge torque pins landing in structure | 19/19 | all | ✅ |
-| Clashes inside modules (> 50 mm³, fused interfaces excluded) | 5 | 0 | ❌ |
+| Clashes inside modules (> 50 mm³, fused interfaces excluded) | 3 | 0 | ❌ |
 | R11 looks | engineering render v0 (robot_v0.png); industrial-design pass pending | owner approval | — |
