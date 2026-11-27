@@ -1,0 +1,104 @@
+{
+ "date": "2026-11-27",
+ "node_id": 1,
+ "phases": {
+  "listen": {
+   "frames": 0,
+   "ids": [],
+   "sample": []
+  },
+  "probe": [
+   {
+    "sent_to": 1,
+    "frame": "ff ff ff ff ff ff ff fd",
+    "replies": [
+     {
+      "arb": "0x11",
+      "data": "01 7c 76 80 08 00 20 22",
+      "mit": [
+       {
+        "ranges": [
+         12.5,
+         30.0,
+         10.0
+        ],
+        "id": 1,
+        "err": 0,
+        "p": -0.3454,
+        "v": 0.007,
+        "t": 0.002,
+        "temp": [
+         32,
+         34
+        ],
+        "plausible": true
+       },
+       {
+        "ranges": [
+         12.5,
+         65.0,
+         18.0
+        ],
+        "id": 1,
+        "err": 0,
+        "p": -0.3454,
+        "v": 0.016,
+        "t": 0.004,
+        "temp": [
+         32,
+         34
+        ],
+        "plausible": true
+       },
+       {
+        "ranges": [
+         95.5,
+         45.0,
+         18.0
+        ],
+        "id": 1,
+        "err": 0,
+        "p": -2.6391,
+        "v": 0.011,
+        "t": 0.004,
+        "temp": [
+         32,
+         34
+        ],
+        "plausible": true
+       },
+       {
+        "ranges": [
+         12.5,
+         45.0,
+         54.0
+        ],
+        "id": 1,
+        "err": 0,
+        "p": -0.3454,
+        "v": 0.011,
+        "t": 0.013,
+        "temp": [
+         32,
+         34
+        ],
+        "plausible": true
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "enable": {
+   "node": 1,
+   "frames": 45,
+   "p_span": 0.2151,
+   "t_max_seen": 0.095,
+   "err_codes": [
+    1
+   ]
+  }
+ },
+ "verdict": "MIT-family frames answered (exit-motor-mode \u2192 MIT feedback layout plausible): fill CONTROL/FEEDBACK/ENABLE/DISABLE/CODEC in sw/drivers/gim.py, then the ranges from the vendor tool",
+ "mit_plausible": true
+}

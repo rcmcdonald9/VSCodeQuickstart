@@ -8,15 +8,28 @@ lists the GIM joints as BLOCKED and brings up the DM-J4310 wrist alone. The stru
 sw/drivers/mit.py (filled), which is the reference for every field; the SDC104's own frames may look different, which
 the templates allow (any 8-byte layout with {id_lo} {id_hi} {reg} {v0..v3} placeholders, any arbitration-ID expression).
 
-Day-1 checklist (with the motor on the bench, PSU current-limited to 1 A, regen clamp fitted — electrical.md A5):
-1. Read the node ID, firmware version and CAN bit rate with the vendor tool over USB-C; set 1 Mbps and unique IDs
-   (shoulder bus B1: pitch 1, roll 2, yaw 3; bus B2: elbow 4, DM-J4310 wrist 5; feedback IDs +0x10, can_map.yaml).
-2. Check whether the SDC104 firmware offers an MIT-style impedance mode (kp, kd, feed-forward torque). If it does, set
-   CODEC "mit" and its ranges; if not, the table cannot be used as is (position mode needs a different torque bound in
-   sw/safety.py: say so in the bring-up report and stop).
-3. Measure the torque constant against a luggage scale on a 0.2 m lever (thermal.md assumes 75 % of nominal in the
-   worst corner) and the encoder resolution at the output.
-4. Fill the table, run `python -m sw.drivers.gim` (no TODO left), then `python -m sw.bringup --bus socketcan:can0,can1`.
+What is publicly known (2026-11-27 search; the maker's manual host is blocked here) is in `GIM_KNOWN` / `GIM_DRIVERS`
+below and in docs/sw/gim_protocol_notes.md: the GIM6010-8 manual rev 1.2 has a CAN protocol section and a release note
+"fixed bug in CAN MIT protocol" (2024-05-24), and the GIM GUI manual v2.0 lists position, speed, current and MIT control
+modes; but a GIM8115-9 owner reports the MIT frames did nothing until a mode was changed over the serial terminal, and a
+GIM8108 manual names the default CAN protocol "SmartCAN". Nothing public covers the SDC303 (GIM8108-36) or says the three
+drivers in this arm share one protocol (Fable review M4).
+
+Day-1 checklist (Step 1 of the M1 kit: ONE GIM6010-8 on the bench, PSU current-limited to 1 A, safety board built:
+electrical.md):
+1. **Protocol discovery**: `python -m sw.gim_discover --bus socketcan:can0 --id <n>`: listen, a no-torque probe
+   (MIT exit-motor-mode), then with `--enable` a zero-gain motor-mode trace while you turn the output by hand. Report:
+   docs/sw/gim_discovery_<date>.md. Before it: read the node ID, firmware version and bit rate with the vendor tool over
+   USB-C, select the MIT control mode there if the tool offers it, set 1 Mbps.
+2. If MIT answers: set CODEC "mit", CONTROL / FEEDBACK / ENABLE / DISABLE from the discovery report and RANGES from the
+   tool. If it does not: the table cannot be used as is (a position/velocity-only drive needs a different torque bound
+   in sw/safety.py): say so in the report and stop. No further GIM is bought until this step passes (M1_READINESS.md).
+3. Registers from the manual / vendor tool: IDs, CAN timeout, the current or torque limit and its flash save; prove each
+   with sw/bringup.py steps "limits" and "safety" (written, read back, survives a power cycle, the drive disables itself
+   after the CAN timeout).
+4. Measure the torque constant against a luggage scale on a 0.2 m lever (thermal.md assumes 75 % of nominal in the
+   worst corner) and the encoder resolution at the output; `python -m sw.drivers.gim` (no TODO left), then
+   `python -m sw.bringup --bus socketcan:can0,can1`.
 """
 from __future__ import annotations
 
@@ -63,6 +76,35 @@ GIM6010 = {
     "CAN_TIMEOUT_UNIT_S": TODO,  # seconds per count of the can_timeout register
     "DEFAULT_ID": TODO,       # factory (command ID, feedback ID), to detect unconfigured motors
     "ABSOLUTE": TODO,         # True if the output position survives a power cycle (else re-zero, or use the AS5048A joint encoders)
+}
+
+# What is publicly known per field (2026-11-27). status: "candidate" = a documented value of the MIT / Ben Katz family that
+# sw/gim_discover.py tests; "unknown" = needs the manual or the vendor tool; "assumed" = what sw/ code assumes today.
+GIM_KNOWN = {
+    "CODEC": ("candidate", "MIT mode exists in the GIM6010-8 manual rev 1.2 (release note: 'fixed bug in CAN MIT protocol', 2024-05-24) "
+                           "and in the GIM GUI v2.0 mode list (position / speed / current / MIT); may have to be selected in the tool first"),
+    "ENABLE": ("candidate", "MIT / Ben Katz family: FF FF FF FF FF FF FF FC on the node ID. A GIM8115-9 owner quotes 0x91 00..00 from "
+                            "another document, and no motion until a firmware setting was changed over serial"),
+    "DISABLE": ("candidate", "FF x7 FD on the node ID (Ben Katz 'exit motor mode'); the discovery probe uses it because it gives no torque"),
+    "SET_ZERO": ("candidate", "FF x7 FE (Ben Katz)"),
+    "CONTROL": ("candidate", "MIT 8-byte frame on the node ID"),
+    "FEEDBACK": ("unknown", "Ben Katz firmware answers on ID 0 with the node ID in byte 0; SteadyWin may use a settable master ID"),
+    "RANGES": ("unknown", "P/V/T ranges are firmware settings; candidates tried: P 12.5 / 95.5, V 30 / 45 / 65, T 10 / 18 / 54"),
+    "REG.esc_id": ("unknown", "IDs 1-252, unique per bus (GIM GUI v2.0); set in the vendor tool"),
+    "REG.can_timeout": ("unknown", "no public source for a CAN-command timeout on SteadyWin drivers"),
+    "TORQUE_LIMIT_REG": ("unknown", "no public source for a current / torque limit saved to flash"),
+    "STATUS_OK": ("unknown", "no public status / error code list"),
+    "ABSOLUTE": ("assumed False", "driver encoders are MT6816 / MA732 class on the motor side (reseller listing): after a power cycle the "
+                                  "output angle is known only within one motor turn / 8; the AS5048A joint encoders or a re-zero fix it"),
+    "bit rate": ("candidate", "1 Mbit/s (GIM8108 manual: 'SmartCAN protocol, speed 1M')"),
+}
+GIM_DRIVERS = {   # the three driver types this arm would mix (Fable M4)
+    "SDC104 (GDS68)": dict(motor="GIM6010-8 (pitch, yaw, elbow; Step 1)", bus="CAN only, to 48 V / 15 A (reseller)", mit="manual rev 1.2 mentions MIT",
+                           status="Step 1 discovers it"),
+    "SDC303 (GDM810 / GDK810)": dict(motor="GIM8108-36 (inline roll)", bus="CAN, 24 V version (store listing)", mit="no public document",
+                                     status="seller question 5; discovery again on arrival (Step 2)"),
+    "GIM8108-8 driver (SDC104 / GDZ468 = SDC215 / GDS68?)": dict(motor="GIM8108-8 (hold A)", bus="GDZ468: CAN + RS-485, 12-40 V, 10 A (reseller)",
+                                                                 mit="unknown", status="seller questions 1 + 5; hold A"),
 }
 
 # What each field means for the report / TODO printout
@@ -145,5 +187,6 @@ if __name__ == "__main__":
     m = missing(GIM6010)
     print(f"GIM6010 table: {len(m)} field(s) still TODO" if m else "GIM6010 table complete ✅")
     for k in m:
-        print(f"  TODO {k:22s} {GIM_TODO_HELP.get(k, '')}")
+        st, why = GIM_KNOWN.get(k, ("unknown", ""))
+        print(f"  TODO {k:22s} {GIM_TODO_HELP.get(k, '')}  [{st}] {why}")
     raise SystemExit(1 if m else 0)

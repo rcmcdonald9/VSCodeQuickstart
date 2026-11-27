@@ -5,6 +5,10 @@ Same code against a python-can virtual bus answered by sw/virtual_arm.py and aga
 order; **each refuses to run unless the one before passed**, and every step that can move a joint runs inside the 500 Hz
 loop with the safety supervisor (sw/safety.py) in it, the hardware heartbeat toggled only after a healthy cycle:
 
+0. **GIM protocol discovery** (Fable review M4; separate tool, Step 1 of the M1 kit): `python -m sw.gim_discover` on the
+   ONE Step-1 GIM6010-8 alone on the bus: listen, a no-torque MIT probe, a zero-gain motor-mode trace. It decides
+   whether the GIM table in sw/drivers/gim.py can be filled at all (MIT / impedance mode or not) before any other GIM
+   is bought; this tool then runs with that single GIM plus the DM-J4310 (`--joints yaw,wpitch` on the Step-1 rig).
 1. **enumerate** — CAN map check (sw/can_map.py); every motor on the map answers on its command / feedback ID, firmware
    and hardware version, serial, control mode (must be MIT), status; a motor still at its factory ID is reported as such;
    the MIT frame ranges are read from the drive and the joint range × ratio must fit in P_MAX. Joints whose protocol
@@ -517,7 +521,8 @@ class BringUp:
         for r in rows:
             what = f"{r['joint']} ({r['kind']}, {r['bus']} 0x{r['id']:02X}/0x{r['fb_id']:02X})"
             if r["status"] == "BLOCKED" and not self.want_joints:
-                s.notes.append(f"⛔ {what} BLOCKED (left out, held in the fixture): {r['why']}")
+                s.notes.append(f"⛔ {what} BLOCKED (left out, held in the fixture): {r['why']}. Protocol discovery first: "
+                               f"python -m sw.gim_discover --bus <adapter> --id 0x{r['id']:02X} (docs/sw/gim_protocol_notes.md)")
                 continue
             s.check(what, r["status"] == "PASS", f"{r['status']}: {r.get('why', '')}".strip(": ")
                     + (f" (fw 0x{r['fw']:04X}, hw 0x{r['hw']:04X}, serial {r['serial']})" if r.get("fw") is not None else ""))
