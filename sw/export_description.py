@@ -90,7 +90,7 @@ def urdf(m):
 
 def main():
     import mujoco
-    from rnd.params import BASELINE, act
+    from rnd.params import BASELINE, SPECS, act
     from sw.bench_env import ARM, xml
     OUT.mkdir(exist_ok=True)
     x = xml()
@@ -103,8 +103,12 @@ def main():
         jid = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, j)
         an, ratio = BASELINE.arm.joints[jmap[j]]
         s = act(an)
+        # max joint speed: the spec's max (no-load) speed after reduction where one is published (GIM6010-8: 420 rpm), else
+        # the rated speed. (Was rated × 420/120 for every "GIM*", which gave the inline GIM8108-36 168 rpm against 48 rated.)
+        rpm_max = SPECS[an].get("max_speed_rpm")
+        w_max = rpm_max * 2 * math.pi / 60 if rpm_max else s["speed"]
         out.append(dict(name=j, actuator=an, ratio=ratio, lower=float(m.jnt_range[jid][0]), upper=float(m.jnt_range[jid][1]),
-                        rated_nm=s["rated"] * ratio, peak_nm=s["peak"] * ratio, max_speed_rad_s=s["speed"] / ratio * (420 / 120 if an.startswith("GIM") else 1)))
+                        rated_nm=s["rated"] * ratio, peak_nm=s["peak"] * ratio, max_speed_rad_s=w_max / ratio))
     (OUT / "joints.json").write_text(json.dumps(out, indent=1))
     # self-check: the URDF parses and has one actuated joint per arm joint
     import xml.etree.ElementTree as ET

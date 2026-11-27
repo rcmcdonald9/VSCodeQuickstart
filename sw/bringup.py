@@ -594,6 +594,12 @@ class BringUp:
         self.op.release_estop()
         self.arm()
         sup.release_estop()
+        # The e-stop cut the drives' power: an uncalibrated joint whose drive has no absolute output encoder now reads a
+        # new arbitrary angle (on the inline 1:1 roll that is up to ±1.5 rad at the joint, vs ±0.34 rad behind the old
+        # 4.44:1 belt), so the travel window built before the press is re-anchored on the fresh reading. Same supervisor:
+        # the point of this check is that its e-stop latch clears only through reset().
+        self.refresh_cycle(heartbeat=True)
+        sup.set_limits(self._raw_limits())
         self.start(sup)
         # limits survived the power cycle (flash)
         okp = []

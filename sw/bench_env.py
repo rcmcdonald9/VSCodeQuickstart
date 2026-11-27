@@ -43,7 +43,7 @@ def xml(d=BASELINE) -> str:
  <light name="key" pos="0.4 -0.6 2.0" dir="-0.2 0.3 -1" diffuse=".7 .7 .7"/>
  <geom name="floor" type="plane" size="3 3 .1" rgba=".7 .7 .72 1"/>
  <geom name="table" type="box" pos="0.45 0 {TABLE_Z - 0.02}" size="0.35 0.45 0.02" material="tbl" friction="1 0.01 0.001"/>
- <geom name="stand" type="box" pos="0 0 {(SHOULDER_Z - 0.06) / 2}" size="0.04 0.04 {(SHOULDER_Z - 0.06) / 2}" rgba=".2 .2 .22 1"/>  <!-- top 6 cm under the pitch axis: the shoulder never touches it -->
+ <geom name="stand" type="box" pos="0 {-s * 0.10} {(SHOULDER_Z - 0.06) / 2}" size="0.04 0.04 {(SHOULDER_Z - 0.06) / 2}" rgba=".2 .2 .22 1"/>  <!-- top 6 cm under the pitch axis, 0.10 m inboard (the bracket clamps the shoulder from the torso side): with the inline roll (offset 69 mm, was 83) a post centred under the pitch axis sat inside the upper arm's sweep, and the twin's upper arm jammed on it -->
  <camera name="exterior" pos="1.15 -0.55 1.35" xyaxes="0.45 0.89 0 -0.42 0.21 0.88" fovy="55"/>
  <body name="sh" gravcomp="1" pos="0 {-s * 0.0} {SHOULDER_Z}">
   <joint name="pitch" axis="0 1 0" range="{JR['pitch'][0]} {JR['pitch'][1]}" damping="2" armature="0.05"/>

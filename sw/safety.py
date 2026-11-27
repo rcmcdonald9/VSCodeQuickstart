@@ -84,6 +84,7 @@ class Supervisor:
         tq = torque or {}
         self.rated = np.array([min(j["rated_nm"], tq.get(j["name"], np.inf)) for j in J])
         self.peak = np.array([min(j["peak_nm"], tq.get(j["name"], np.inf)) for j in J])
+        self._margin = m
         self.v_max, self.clock, self.fk = v_max, clock, fk
         self.ws_lo, self.ws_hi = np.array(ws_lo), np.array(ws_hi)
         self.last_tick = None
@@ -96,6 +97,14 @@ class Supervisor:
         self._ws_free = (self.ws_lo.copy(), self.ws_hi.copy())
         self.collision = collision
         self._anchor = None
+
+    def set_limits(self, limits):
+        """Replace the bounds of some joints ({name: (lower, upper)}, rad, before the margin). Used by bring-up after a
+        power cycle: an uncalibrated joint without an absolute output encoder reads a new, arbitrary angle on power-up,
+        so its travel window has to be re-anchored on the new reading before reset() can accept the feedback."""
+        for k, n in enumerate(self.names):
+            if n in limits:
+                self.lo[k], self.hi[k] = limits[n][0] + self._margin, limits[n][1] - self._margin
 
     # ---- load mode (R2d)
     def set_payload(self, kg, box=None):
