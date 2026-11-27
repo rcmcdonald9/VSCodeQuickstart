@@ -1,7 +1,9 @@
-"""Wrist + hand v0: DM-J4310 cartridge (KX56), palm with the wrist-roll cartridge S, parallel gripper, wrist camera.
+"""Wrist + hand v0: DM-J4310 cartridge (bolted, D24), palm with the wrist-roll cartridge S, parallel gripper, wrist camera.
 
 Hand frame: origin on the wrist-pitch axis (Y), hand centre plane y = 0, hand points along -Z. The wrist-pitch cartridge
-sits in the forearm's wrist can; its KX56 hub is on the palm's +Y face. Grasp point at z = -l_hand (130 mm).
+sits in the forearm's wrist can, bolted to its rim (6 × M3); the palm bolts to the cartridge's output flange (6 × M3
+through the palm boss; D24, 2026-11-27: the KX56 socket is gone, and with it D21's wrist lift-off problem). Grasp point
+at z = -l_hand.
 - Palm: holds cartridge S #1 (wrist roll) with its shaft along -Z; its KX44 face is at the palm bottom.
 - Gripper (on the wrist-roll KX44 hub): SO-100-style: a fixed jaw + a jaw on the horn of cartridge S #2, which lies on
   its side under the base plate. Wrist camera on the base, looking along -Z past the fixed jaw.
@@ -23,7 +25,11 @@ WALL, FLOOR, NECK = 2.4, 3.0, 4.0
 SLEEVE_TOP = -32.0            # palm: wrist-roll sleeve floor (flipped, horn pointing -Z)
 from ..params import BASELINE as _D
 L_HAND = _D.arm.l_hand * 1000   # wrist-pitch axis → grasp point (params; loop 10 CAD: 0.13 → 0.15)
-WRIST_HUB_Y = 33.0          # KX56 hub face (palm +Y side); the wrist cartridge's male face arrives from +Y
+WRIST_HUB_Y = 33.0          # loop-10 KX56 hub face (palm +Y side); kept as the datum that places the cartridge (arm.assembly)
+ADAPTER_T = 4.0             # D24 output flange on the motor output
+PALM_FACE_Y = WRIST_HUB_Y + KX56.gap + NECK + KX56.face_t - ADAPTER_T   # 39.65: palm boss face = output flange face
+CAN_FL = dict(r_out=40.0, t=4.0, bolt_r=36.0, clr_d=3.6)                 # can flange: 6 × M3 into inserts in the forearm rim
+PALM_SCREW_R = 19.0         # 6 × M3 × 60 from the palm's −Y face through the boss into the output flange's inserts
 
 
 def _rbox(x, y, z, r, align=(Align.CENTER, Align.CENTER, Align.CENTER)):
@@ -31,8 +37,8 @@ def _rbox(x, y, z, r, align=(Align.CENTER, Align.CENTER, Align.CENTER)):
     return fillet(b.edges().filter_by(Axis.Z), min(r, x / 2 - 0.2, y / 2 - 0.2))
 
 
-# ---------------- cartridge D: DM-J4310 in a can with a KX56 output ----------------
-def can_d() -> Part:
+# ---------------- cartridge D: DM-J4310 in a can, bolted (D24) ----------------
+def _can_d_loop10() -> Part:
     od = J4310["od"] + 2 * WALL + 0.6
     h = J4310["h"] + FLOOR
     p = Cylinder(od / 2, h, align=MIN) - Pos(0, 0, FLOOR) * Cylinder(J4310["od"] / 2 + 0.3, h, align=MIN)
@@ -41,18 +47,46 @@ def can_d() -> Part:
         p -= Pos(J4310["rear_pcd"] / 2 * math.cos(a), J4310["rear_pcd"] / 2 * math.sin(a), 0) * Cylinder(1.7, 10)
     p -= Cylinder(9, 10)
     p -= Pos(od / 2, 0, h / 2 + 3) * Box(10, 14, h - 8)
-    p -= Pos(22, 0, 0) * Cylinder(2.45, 2 * FLOOR)                 # Ø5 torque-pin seat
     return p
 
 
+def can_d_loop10_volume() -> float:
+    return _can_d_loop10().volume - math.pi * 2.45 ** 2 * FLOOR    # with its old torque-pin seat
+
+
+def can_d() -> Part:
+    """D24: the can runs 4.65 mm past the motor face into a Ø80 × 4 front flange; 6 × M3 from the palm side through the
+    flange into heat-set inserts in the forearm's wrist rim, the can's Ø62.4 OD is the spigot in the rim bore (0.3 mm a
+    side). No torque pin (the flange carries the 7 N·m peak: ≈ 32 N per screw); the hand's bending goes motor bearings →
+    can → flange → forearm, with no lift-off interface in between."""
+    od = J4310["od"] + 2 * WALL + 0.6
+    h = J4310["h"] + FLOOR
+    front = cartridge_d_stack() + WRIST_HUB_Y + KX56.gap - WRIST_Y0_FOREARM + CAN_FL["t"]   # flange front face (can frame, 53.65)
+    p = _can_d_loop10()
+    p += Pos(0, 0, h) * (Cylinder(od / 2, front - h, align=MIN) - Cylinder(J4310["od"] / 2 + 0.3, front - h, align=MIN))
+    fl = Pos(0, 0, front - CAN_FL["t"]) * (Cylinder(CAN_FL["r_out"], CAN_FL["t"], align=MIN) - Cylinder(od / 2 - 0.1, CAN_FL["t"], align=MIN))
+    for k in range(6):
+        a = math.pi / 3 * k + math.pi / 6
+        fl -= Pos(CAN_FL["bolt_r"] * math.cos(a), CAN_FL["bolt_r"] * math.sin(a), 0) * Cylinder(CAN_FL["clr_d"] / 2, 400)
+    return p + fl
+
+
+WRIST_Y0_FOREARM = 43.0     # forearm wrist-rim face (arm.WRIST_Y0): the can flange's back face sits on it
+
+
 def adapter_d() -> Part:
-    p = Cylinder(25, NECK, align=MIN) + Pos(0, 0, NECK + KX56.face_t) * Rot(180, 0, 0) * male(KX56, bore=6)
+    """D24 output flange (printed ASA, 4 mm) on the DM-J4310 output: 6 × M3 into the motor (PCD 24, counterbored on the
+    palm side), 6 × M3 heat-set inserts at r 19 for the palm screws, a Ø16 × 2 spigot into the palm boss."""
+    p = Cylinder(25, ADAPTER_T, align=MIN) + Pos(0, 0, ADAPTER_T) * Cylinder(8, 2, align=MIN)
     for k in range(J4310["out_holes"]):
         a = 2 * math.pi * k / J4310["out_holes"]
         x, y = J4310["out_pcd"] / 2 * math.cos(a), J4310["out_pcd"] / 2 * math.sin(a)
         p -= Pos(x, y, 0) * Cylinder(1.7, 40)
-        p -= Pos(x, y, NECK + KX56.face_t - 3) * Cylinder(3.0, 10, align=MIN)
-    return p
+        p -= Pos(x, y, ADAPTER_T - 3) * Cylinder(3.0, 10, align=MIN)
+    for k in range(6):
+        a = math.pi / 3 * k
+        p -= Pos(PALM_SCREW_R * math.cos(a), PALM_SCREW_R * math.sin(a), 0) * Cylinder(2.0, ADAPTER_T, align=MIN)
+    return p - Cylinder(3, 40)
 
 
 def cartridge_d_stack() -> float:
@@ -62,11 +96,23 @@ def cartridge_d_stack() -> float:
 # ---------------- palm + wrist roll ----------------
 def palm() -> Part:
     from .torque import with_pin_slot
-    return with_pin_slot(wrist_roll_sleeve(), _palm_body(), 1.95, 2.0)             # loop 25: slotted pad for the wrist-roll cartridge's Ø4 torque pin
+    return with_pin_slot(wrist_roll_sleeve(), _palm_body(), 1.95, 2.0) - palm_screw_cuts()   # loop 25: slotted pad for the wrist-roll cartridge's Ø4 torque pin
+
+
+def palm_screw_cuts() -> Part:
+    """D24: 6 × M3 through the palm boss (counterbored on its −Y face) and the Ø16 spigot recess in the boss face."""
+    c = Pos(0, PALM_FACE_Y + 0.01, 0) * Rot(90, 0, 0) * Cylinder(8.1, 2.2, align=MIN)
+    for k in range(6):
+        a = math.pi / 3 * k
+        x, z = PALM_SCREW_R * math.cos(a), PALM_SCREW_R * math.sin(a)
+        c += Pos(x, -20.5, z) * Rot(-90, 0, 0) * Cylinder(1.7, PALM_FACE_Y + 21, align=MIN)
+        c += Pos(x, -20.5, z) * Rot(-90, 0, 0) * Cylinder(3.0, 4.0, align=MIN)
+    return c
 
 
 def _palm_body() -> Part:
-    p = Pos(0, 0, -6) * Rot(90, 0, 0) * Cylinder(30, 40)               # boss around the wrist axis (KX56 hub bolts on +Y)
+    p = Pos(0, 0, -6) * Rot(90, 0, 0) * Cylinder(30, 40)               # boss around the wrist axis
+    p += Pos(0, 19.5, 0) * Rot(-90, 0, 0) * Cylinder(24, PALM_FACE_Y - 19.5, align=MIN)   # D24: boss extension to the output flange (was the KX56 hub)
     zb = SLEEVE_TOP - cs.SERVO["case_h"] - cs.SERVO["bottom"] - cs.FLOOR + 2      # palm bottom ≈ servo top face
     p += Pos(cs.SERVO["l"] / 2 - cs.SERVO["shaft_off"], 0, zb + (-6 - zb) / 2) * soft_box(64, 40, -6 - zb, 16, 10)   # looks pass v2
     # pocket for the flipped wrist-roll sleeve (slides in from the bottom, 2 screws)
@@ -228,18 +274,15 @@ def finger_hook() -> Part:
 
 
 def assembly(jaw_deg: float = 25.0):
-    """Hand frame parts: KX56 hub + collar at the wrist, palm, wrist-roll cartridge, gripper."""
-    yf = WRIST_HUB_Y
-    out = [("wp_hub", Pos(0, yf, 0) * Rot(-90, 0, 0) * hub(KX56), "dark"),
-           ("wp_collar", Pos(0, yf, 0) * Rot(-90, 0, 0) * collar(KX56), "orange"),
-           ("palm", palm(), "white"), ("wr_sleeve", wrist_roll_sleeve(), "white")]
+    """Hand frame parts: palm (bolted to the wrist cartridge's output flange, D24), wrist-roll cartridge, gripper."""
+    out = [("palm", palm(), "white"), ("wr_sleeve", wrist_roll_sleeve(), "white")]
     return out + wrist_roll_parts() + gripper_parts(jaw_deg)
 
 
 def masses(density=1.27):
     printed = palm().volume + sum(p.volume for n, p, c in gripper_parts() if n in ("grip_base", "grip_servo_sleeve", "jaw_moving", "jaw_fixed"))
     return {"palm + gripper printed": printed / 1e6 * density * 0.7,
-            "KX56 hub+collar (hand side)": (hub(KX56).volume + collar(KX56).volume) / 1e6 * density * 0.7,
+            "6 × M3 × 60 palm screws (ESTIMATE)": 0.006,
             "D16 wrist-roll spindle + dog (printed) + 2 × 61804": sum(p.volume for n, p, c in wrist_roll_parts() if n in ("wr_dog", "wr_spindle")) / 1e6 * density * 0.9 + 0.016,
             "D21 finger hook (PETG-CF, 80 %) + Ø3 pin": finger_hook().volume / 1e6 * 1.3 * 0.8 + 0.004,
             "wrist camera module (ESTIMATE)": 0.05, "TPU pads, rail screws (ESTIMATE)": 0.02}

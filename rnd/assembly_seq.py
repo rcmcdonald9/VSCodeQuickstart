@@ -56,11 +56,10 @@ def cases():
     from .parts import arm, base, roll, shoulder
     from .parts import belt_stage as bs
     C = []
-    # loop 40: every big pulley is split (double-D / hex), so the shafts are plain tubes + their outboard ends
-    ps = Rot(90, 0, 0) * shoulder.pitch_shaft()           # z = y: the ferrule end (outboard) is at +Z, the free inboard end at −Z
-    C.append(("pitch shaft (60T split on a double-D; balancer disc + ferrule outboard)", ps,
-              [(shoulder.W_IN - 3.0, shoulder.W_IN + 3.0, 40.0), (shoulder.W_OUT - 3.0, shoulder.W_OUT + 3.0, 40.0),
-               (shoulder.Y_BELT - 8.0, shoulder.Y_BELT + 8.0, bs.DD_AF + 0.4)], None))
+    # D19 (2026-11-27): pitch and elbow are one-piece tube + pulley (like yaw, loop 44); roll is still split (roll.py)
+    ps = Rot(90, 0, 0) * shoulder.pitch_shaft()           # z = y: the outboard end (double-D, bolted pitch hub) at +Z
+    C.append(("pitch shaft (D19: 60T one piece; pitch hub bolted on the outboard double-D, outer wall bolted on after the shaft)", ps,
+              [(shoulder.W_IN - 3.0, shoulder.W_IN + 3.0, 40.0), (shoulder.W_OUT - 3.0, shoulder.W_OUT + 3.0, 40.0)], None))
     if roll.INLINE:
         # D24 inline roll: no roll shaft or pulley. The 61806 (in roll_arm_rear) slides onto the roll link's Ø30 stub from −X;
         # only roll-link material inside the bearing's path (r ≤ 25 about the roll axis) can block it.
@@ -75,12 +74,11 @@ def cases():
     ys = Pos(0, -roll.ROLL_Y, 0) * roll.yaw_shaft()
     C.append(("yaw shaft (D19, loop 44: 40T + spring hub one piece; up into the top plate, bottom plate bolted on, flange last)", ys,
               [(roll.P1[0], roll.P1[1], 40.0), (roll.P2[0], roll.P2[1], 40.0)], None))
-    eh = Rot(-90, 0, 0) * arm.elbow_pulley_hub()
-    C.append(("elbow shaft (40T split on a double-D; 2 × 61808 + 2 × 6708)", eh,
-              [(arm.CAS_A[0], arm.CAS_A[1], 40.0), (arm.CAS_B[0], arm.CAS_B[1], 40.0), (-54 - 3.5, -54 + 3.5, 40.0), (54 - 3.5, 54 + 3.5, 40.0),
-               (arm.BELT_Y - 8.0, arm.BELT_Y + 8.0, bs.DD_AF + 0.4)], None))
+    eh = Rot(90, 0, 0) * arm.elbow_pulley_hub()           # z = y (loop 40 used Rot(-90): z = −y, which mirrored the journals)
+    C.append(("elbow shaft (D19: 40T one piece; 2 × 61808 in capped U-seats + 2 × 6708; the cassette goes in from below)", eh,
+              [(arm.CAS_A[0], arm.CAS_A[1], 40.0), (arm.CAS_B[0], arm.CAS_B[1], 40.0), (-54 - 3.5, -54 + 3.5, 40.0), (54 - 3.5, 54 + 3.5, 40.0)], None))
     st = dict((n, p) for n, p, _ in bs.small_stage_v2(20))
-    C.append(("D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow", st["shaft_12"],
+    C.append(("D13 small stage (steel Ø12 shaft; pulley, coupling, bearings separate): v2 at roll, yaw; v3 (D24, same shaft stack) at pitch, elbow", st["shaft_12"],
               [(bs.V2["jA"][0], bs.V2["jA"][1], bs.BRG_6801["d"]), (bs.V2["jB"][0], bs.V2["jB"][1], bs.BRG_6801["d"]),
                (bs.V2["pulley"][0], bs.V2["pulley"][1], bs.SHAFT_D)], None))
     from .parts import hand

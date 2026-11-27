@@ -15,16 +15,16 @@ chain adds those terms for the worst static case: 1 kg at the grasp point, arm s
 The total is the static error a calibrated gravity model can largely remove (it is repeatable); the wrist camera closes
 the loop for grasping in any case. Target R2b: uncompensated ≤ 6 mm, after the gravity model (assumed to remove 80 %) ≤ 2 mm.
 
-**Static hand deflection, 1 kg straight out: 12.1 mm uncompensated (target ≤ 6), 2.4 mm after a gravity model (target ≤ 2).** ❌
+**Static hand deflection, 1 kg straight out: 10.9 mm uncompensated (target ≤ 6), 2.2 mm after a gravity model (target ≤ 2).** ❌
 
 ## 1. Printed parts (P2 vs P1 on the same mesh)
 
 | Part | Elements | Seat rotation P1 → P2 (mrad, static) | P2/P1 | Seat translation (mm) | Lever to hand (mm) | Hand (mm) | Von Mises P2 max / 99.5 % (P1 99.5 %) |
 |---|---|---|---|---|---|---|---|
-| Upper bone / elbow housing | 30,471 | 1.65 → 9.49 | 5.75 | 0.34 | 436 | 4.48 | 8.7 / 2.2 (0.6) MPa |
-| Shoulder pitch bracket | 30,162 | 1.30 → 2.06 | 1.59 | 0.17 | 736 | 1.68 | 4.3 / 2.2 (1.8) MPa |
+| Upper bone / elbow housing | 32,876 | 1.40 → 7.02 | 5.00 | 0.31 | 436 | 3.37 | 4.3 / 2.0 (0.5) MPa |
+| Shoulder pitch bracket | 29,841 | 1.32 → 1.98 | 1.50 | 0.16 | 736 | 1.62 | 4.3 / 2.6 (2.0) MPa |
 | Roll link | 24,396 | 1.67 → 2.71 | 1.62 | 0.18 | 736 | 2.17 | 8.2 / 2.6 (1.5) MPa |
-| Clevis + yaw block | 22,924 | 0.93 → 1.90 | 2.05 | 0.11 | 736 | 1.51 | 6.6 / 2.3 (0.9) MPa |
+| Clevis + yaw block | 23,590 | 0.94 → 1.91 | 2.03 | 0.11 | 736 | 1.51 | 6.8 / 2.3 (0.9) MPa |
 
 ## 2. Bearing play (shimmed pairs, 30 % of 10 µm C0 clearance)
 
@@ -35,6 +35,6 @@ the loop for grasping in any case. Target R2b: uncompensated ≤ 6 mm, after the
 | yaw (61808 pair) | 34 | 0.13 |
 | elbow (61808 + 6708) | 108 | 0.02 |
 
-## 3. Carbon tubes (rnd/bones.py): 1.9 mm
+## 3. Carbon tubes (rnd/bones.py): 1.8 mm
 
 **Reading:** P2 elements roughly double the P1 bending rotations here, as the review said; P1 FEA alone under-states the deflection. The stress margins in fea.md (P1, 99.5th percentile) are re-checked by the P2 column: compare with the 12 MPa across-layer allowable.

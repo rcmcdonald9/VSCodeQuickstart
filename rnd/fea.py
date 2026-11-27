@@ -136,7 +136,7 @@ def cases():
     # 2. Elbow housing (upper bone): bonded to the CF neck tube; the forearm load (outboard 3 kg ×1.5, applied on the +Y side
     #    link at FORE_Y) split over the two elbow 61808 bosses. (The motor-torque reaction path is still open: rnd/integration.py.)
     #    Belt tension no longer reaches the shell: it closes inside the elbow belt cassette (case 5).
-    ub = max(arm.upper_bone().solids(), key=lambda s: s.volume)
+    ub = max(arm.upper_bone_with_caps().solids(), key=lambda s: s.volume)   # D19: bolted seat caps taken as bonded
     w_out = 3.0 * G * 1.5
     zE, zS, hy = -arm.ELBOW_Z, -arm.ELBOW_Z + arm.BELT_C, arm.HOUSING["y"] / 2
     fp, fm = w_out * (arm.FORE_Y + hy) / (2 * hy), -w_out * (arm.FORE_Y - hy) / (2 * hy)
@@ -180,7 +180,7 @@ def cases():
     P1, P2, YC = rl.P1, rl.P2, rl.YAW_C
     Fy = 19.0 / ((P1[0] + P1[1] - P2[0] - P2[1]) / 2000)
     inp = lambda x, P: (x[2] > P[0] - 0.2) & (x[2] < P[1] + 0.2)
-    C.append((f"Clevis + yaw block: yaw belt peak 691 N + arm moment 19 N·m (couple {Fy:.0f} N)", rl.clevis_and_yaw_block(), 2.5,
+    C.append((f"Clevis + yaw block: yaw belt peak 691 N + arm moment 19 N·m (couple {Fy:.0f} N)", rl.clevis_and_yaw_block() + rl.yaw_plate_bot(), 2.5,   # loop 44 made the bottom plate a bolted print: taken as bonded here
               lambda x: (np.hypot(x[1] - RY, x[2]) < 20.5) & ((x[0] < W1[0] - 1) | (x[0] > W2[1] + 1)),
               [(lambda x, P=P: (np.hypot(x[0], x[1] - RY) < 26.3) & inp(x, P), (-345.0 + sg * Fy, 0, -28.0)) for P, sg in ((P1, 1), (P2, -1))]
               + [(lambda x, P=P: (np.hypot(x[0] + YC, x[1] - RY) < 19.4) & inp(x, P), (345.0, 0, 0)) for P in (P1, P2)]))
