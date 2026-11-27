@@ -5,7 +5,7 @@ HTD 5M, 15 mm, printed pulleys, small pulley on its own bearing hub. **Loop 13 r
 | Joint | Teeth | Pitch Ø small / big | Sustained pull vs working | Peak pull vs ultimate/3 | Teeth in mesh | Centre / belt length |
 |---|---|---|---|---|---|---|
 | shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 194 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 354 mm |
-| shoulder_roll | 18:80 (4.44:1) | 28.6 / 127.3 | 216 / 312 N → 1.4× ✅ | 768 N → 5.1× ultimate ✅ | 6.1 ✅ | 103.3 / 475 mm |
+| shoulder_roll | 18:80 (4.44:1) | 28.6 / 127.3 | 217 / 312 N → 1.4× ✅ | 768 N → 5.1× ultimate ✅ | 6.1 ✅ | 103.3 / 475 mm |
 | upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 176 / 312 N → 1.8× ✅ | 691 N → 5.6× ultimate ✅ | 8.7 ✅ | 80 / 313 mm |
 | elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 205 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.5 ✅ | 70 / 294 mm |
 

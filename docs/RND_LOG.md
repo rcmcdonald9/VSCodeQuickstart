@@ -1210,3 +1210,8 @@ One long push instead of half-hour runs. In order:
 - Balancer: pin B is opposite the arm in shoulder.py (spring adds to gravity); real ISO 10243 spring is 18.7 N/mm → b 20, a 40–60, 35 % max. shoulder.py change queued for the arm track (exact edit in queue item 0); cable must clear the Ø40 shaft.
 - Clock springs with ribbon thickness: yaw 279° vs 360° → r_out 42.5 mm or ribbon ≤ 1.8 mm; two CAN pairs need an 11.3 mm cavity; wrist roll 302° vs 432°. harness 6/6 → 3/6 (now honest).
 - sw/collision.py momentum observer: 0 false trips over 9,000 cycles with 20 lb, trips ≤ 18 ms → compliant hold. BOM $5,030 → $4,898 landed.
+
+### 2026-11-27 — Wave 1, track B merged (shoulder roll) + merged-tree checks (rnd.check: 9 checks, 15 min)
+- D24 inline GIM8108-36 roll behind `ROLL_DRIVE` (default belt; `PIP_ROLL_DRIVE=inline`): measured dome 117 × 100 mm vs 163 × 219 belt; R14/R15/basket pass; R16 across-body 62 % inline vs 52 % belt (target 54 %; the 2.6 mm cassette drop cost belt 2 points). Awaiting owner OK.
+- D19 belt roll: one-piece 80T shaft, capped seats, clevis pinch caps → R14 roll row passes. Cassettes 11.3 mm (two CAN pairs), yaw r_out 42.5 + 0.75 m ribbon → yaw 400° vs 360° ✅.
+- Scorecard 39 ✅ / 7 ❌. Open fails are all in flight: R14 pitch + elbow (arm track), R15 head_shell × head_screen 0 mm (pinch/head track), harness wrist roll 302° vs 432° (next wave), R16 belt across-body, R8 cost $4,898, R2b stiffness.

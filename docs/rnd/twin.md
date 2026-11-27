@@ -4,13 +4,13 @@ Model generated from `rnd/params.py`: arm 0.3+0.28+0.156 m, wrist ±120°, shoul
 
 | Target | Reach coverage | Tip margin per layout (mm / max base accel m/s²) |
 |---|---|---|
-| counter, angled 45° grasp (z 0.95) | 100% | X wheel-fwd R.21 (chosen): 73 / 1.3; X edge-fwd R.21: 60 / 1.0; kiwi R.21 (rejected): 44 / 0.8 |
-| floor pickup (z 0.03, gripper down) | 100% | X wheel-fwd R.21 (chosen): 77 / 2.0; X edge-fwd R.21: 60 / 1.6; kiwi R.21 (rejected): 47 / 1.2 |
-| dishwasher low rack (z 0.20, down) | 94% | X wheel-fwd R.21 (chosen): 64 / 1.5; X edge-fwd R.21: 48 / 1.1; kiwi R.21 (rejected): 38 / 0.9 |
-| table top (z 0.78, down) | 95% | X wheel-fwd R.21 (chosen): 69 / 1.1; X edge-fwd R.21: 57 / 0.9; kiwi R.21 (rejected): 41 / 0.7 |
-| counter top-down only (z 0.95) [info: counters use top-down OR 45°, see D4b] | 52% | X wheel-fwd R.21 (chosen): 69 / 1.1; X edge-fwd R.21: 57 / 0.9; kiwi R.21 (rejected): 41 / 0.6 |
-| shelf (z 1.20, horizontal) | 100% | X wheel-fwd R.21 (chosen): 85 / 1.4; X edge-fwd R.21: 70 / 1.1; kiwi R.21 (rejected): 53 / 0.8 |
-| high shelf (z 1.40, horizontal) | 100% | X wheel-fwd R.21 (chosen): 88 / 1.3; X edge-fwd R.21: 80 / 1.1; kiwi R.21 (rejected): 55 / 0.8 |
+| counter, angled 45° grasp (z 0.95) | 100% | X wheel-fwd R.21 (chosen): 80 / 1.3; X edge-fwd R.21: 61 / 1.0; kiwi R.21 (rejected): 53 / 0.9 |
+| floor pickup (z 0.03, gripper down) | 100% | X wheel-fwd R.21 (chosen): 78 / 2.1; X edge-fwd R.21: 60 / 1.6; kiwi R.21 (rejected): 51 / 1.4 |
+| dishwasher low rack (z 0.20, down) | 90% | X wheel-fwd R.21 (chosen): 74 / 1.7; X edge-fwd R.21: 48 / 1.1; kiwi R.21 (rejected): 51 / 1.2 |
+| table top (z 0.78, down) | 92% | X wheel-fwd R.21 (chosen): 80 / 1.3; X edge-fwd R.21: 56 / 0.9; kiwi R.21 (rejected): 55 / 0.9 |
+| counter top-down only (z 0.95) [info: counters use top-down OR 45°, see D4b] | 67% | X wheel-fwd R.21 (chosen): 80 / 1.3; X edge-fwd R.21: 57 / 0.9; kiwi R.21 (rejected): 55 / 0.9 |
+| shelf (z 1.20, horizontal) | 100% | X wheel-fwd R.21 (chosen): 89 / 1.4; X edge-fwd R.21: 69 / 1.1; kiwi R.21 (rejected): 62 / 1.0 |
+| high shelf (z 1.40, horizontal) | 100% | X wheel-fwd R.21 (chosen): 93 / 1.3; X edge-fwd R.21: 80 / 1.1; kiwi R.21 (rejected): 62 / 0.9 |
 
 ## Two-handed tasks (shared lift, both arms, collision-free)
 
