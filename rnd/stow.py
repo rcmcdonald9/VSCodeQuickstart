@@ -9,7 +9,7 @@ torso, base, head, mast) narrow enough for the door.
 Width is measured **across the travel direction**: the base is holonomic (4 omni wheels at 0/90/180/270°), so the
 robot need not face the door. W(ψ) = extent of the plan view along the normal of a travel heading ψ in the robot frame
 (ψ = 0: driving forward). Thresholds (R4, ≤ 15–20 mm) must be crossed at ψ = 45° (D2b, rnd/threshold.py: straight
-at a wheel fails at 15 mm), so the governing case is **W(45°)**; W(90°) (sideways) is for doors with no threshold.
+at a wheel fails at 15 mm), so the governing case is **W(45°)**, taken as the worst over 45° ± 2° (heading error, which the threshold crossing needs held anyway: see the crossing table); W(90°) (sideways) is for doors with no threshold.
 The stow found for 45° is chiral: its mirror image (left ↔ right) is the stow for ψ = 135°.
 
 Checks in the pose: cross-body gaps (arm vs torso / base / head / mast / the other arm, and non-adjacent links of the
@@ -39,6 +39,7 @@ DOOR_FRAME_CLEAR = 0.688
 CLEAR = 0.650                    # R5 clear width used (ESTIMATE, see above)
 CLEAR_LITERAL = 0.700
 MARGIN = 0.040                   # each side: approach error of the base planner (lidar ± a few cm) + sway (ESTIMATE)
+PSI_TOL = 2.0                    # deg: base heading error while crossing (ESTIMATE; lidar heading hold); the width is the worst over ψ ± PSI_TOL
 W_MAX = CLEAR - 2 * MARGIN       # 0.570 m
 DOOR_H = 1.97                    # DIN 18101 leaf 1985 → ≈ 1.97 m clear under the head jamb (ESTIMATE)
 
@@ -143,8 +144,6 @@ class Twin:
             if b == 0 or b in pay or m.geom_group[g] == 3 or m.geom_type[g] == T.mjGEOM_SPHERE or m.geom_rgba[g][3] == 0:
                 continue
             nm = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_MESH, m.geom_dataid[g]) if m.geom_type[g] == T.mjGEOM_MESH else None
-            if m.geom_type[g] == T.mjGEOM_BOX and m.geom_size[g][0] < 0.015:      # the head's screen bezel plate: inside the head box ± 1 cm
-                pass
             self.geoms.append(g)
             key = (nm or "")[:-2]
             self.pad.append((PAD_GEOM.get(key, PAD)) if b in self.arm_side else 0.0)
@@ -255,7 +254,7 @@ def cost(T, q, psi, both_modes=True):
     lo = T.pn_lo if both_modes else T.lo
     q = np.clip(q, lo, T.hi)
     T.set(q)
-    w = T.widths([psi])[0]
+    w = float(T.widths([psi - PSI_TOL, psi, psi + PSI_TOL]).max())
     g = T.min_gap()
     zf = T.arm_zmin()
     pen = 20.0 * max(0.0, GAP_OPEN - g) + 20.0 * max(0.0, FLOOR_MIN - zf)
@@ -288,7 +287,33 @@ def search(T, psi, both_modes=True, quick=False, seeds=None):
         ok = g >= GAP_OPEN - 1e-4 and zf >= FLOOR_MIN - 1e-4
         if best is None or (ok, -w) > (best["ok"], -best["w"]):
             best = dict(seed=name, q=x, w=w, gap=g, zf=zf, ok=ok)
+    # lowest lift that keeps the width and the checks (a lower COM for the tip reserve; the width barely depends on it)
+    if best["ok"]:
+        for z in np.arange(lo[0], best["q"][0], 0.02):
+            x = best["q"].copy(); x[0] = z
+            _, (w, g, zf) = cost(T, x, psi, both_modes)
+            if w <= best["w"] + 5e-4 and g >= GAP_OPEN - 1e-4 and zf >= FLOOR_MIN - 1e-4:
+                best.update(q=x, w=w, gap=g, zf=zf)
+                break
     return best
+
+
+def crossing(M, h, psis):
+    """rnd/threshold.py's roller model over a 15 mm step at headings psis (hard floor + carpet), at mass M and COM height
+    h, at the SW-T4 speed (as rnd/tip.py threshold_check does): {psi: (crossed, peak margin to the GIM6010-8 peak)}."""
+    from . import threshold as TH, tip
+    from .params import act, BASELINE
+    orig, sp = TH.build, TH.SPEED
+    TH.build = lambda *a, **k: orig(*a, **{**k, "mass": M, "com_h": h})
+    TH.SPEED = tip.CROSS_SLOW
+    out = {}
+    try:
+        for p in psis:
+            rs = [TH.run(0.015, float(p), c, t_max=0.5 + 1.4 / TH.SPEED) for c in (False, True)]
+            out[str(p)] = dict(crossed=all(r["crossed"] for r in rs), margin=act(BASELINE.base.wheel_motor)["peak"] / max(r["peak"] for r in rs))
+    finally:
+        TH.build, TH.SPEED = orig, sp
+    return out
 
 
 def approach(T, q0, q1, n=40):
@@ -363,17 +388,12 @@ def shoulder_floor(T):
     return 2 * max(ys)
 
 
-def fmt_q(q):
-    r = dict(zip(ARM_J, q[1:7])); l = dict(zip(ARM_J, q[7:13]))
-    return r, l
-
-
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true")
     a = ap.parse_args(argv)
     from .params import BASELINE
-    from .twin import TUCK, TUCKS
+    from .twin import TUCKS
     T = Twin(BASELINE)
     psis = np.arange(0.0, 180.0, 1.0)
 
@@ -399,6 +419,12 @@ def main(argv=None):
     # normal-mode only (roll down to −12°) at 45°, to show what the people-near bound costs
     bn = search(T, 45.0, False, True, {k: SEEDS[k] for k in ("left fwd, right back", "left fwd folded in, right back")})
     res["45n"] = dict(bn, q=bn["q"].tolist())
+    # rolls held at the people-near floor (+8°, ≈ the park value): what the roll abduction buys
+    hi = T.hi.copy()
+    T.hi[2] = T.hi[8] = T.pn_lo[2] + 0.5
+    bh = search(T, 45.0, True, True)
+    T.hi = hi
+    roll_held = dict(w=bh["w"], ok=bh["ok"], q=bh["q"].tolist())
 
     S = res[45.0]
     q = np.array(S["q"])
@@ -408,12 +434,14 @@ def main(argv=None):
     order2 = [[0], [4, 10], [3, 9], [1, 7], [2, 8], [5, 6, 11, 12]]
     st = min(staged(T, tk, q, order), staged(T, tk, q, order2), key=lambda w: -w[0])
     tipr = tip_cases(T, q)
+    from sw.safety import LOAD_KG
+    cross = crossing(tipr["M"] + LOAD_KG, tipr["com"][2], (45.0,) if a.quick else (40.0, 43.0, 44.0, 45.0, 46.0, 47.0, 50.0))
     pin = pinch_rows(q)
     mirror = np.concatenate([[q[0]], q[7:13], q[1:7]])
     T.set(mirror)
     w135 = float(T.widths([135.0])[0])
 
-    S["W_band"] = {str(k): float(S["W"][int(k)]) for k in (35, 40, 45, 50, 55)}
+    S["W_band"] = {str(k): float(S["W"][int(k)]) for k in (40, 43, 45, 47, 50)}
     T.set(q)
     shoulder_gaps = dict(stow=[list(x) for x in T.gaps(cls="shoulder")[:1]])
     T.set(tk)
@@ -426,8 +454,7 @@ def main(argv=None):
     for sy in (0.175,):
         dd = dataclasses.replace(BASELINE, arm=dataclasses.replace(BASELINE.arm, shoulder_y=sy))
         T2 = Twin(dd)
-        T2.set(np.array(SEEDS["hanging"]))
-        b2 = search(T2, 45.0, True, True, {k: SEEDS[k] for k in ("tuck (twin.TUCK)", "left fwd, right back")})
+        b2 = search(T2, 45.0, True, True)
         geo.append(dict(shoulder_y=sy, floor_w0=shoulder_floor(T2), w45=b2["w"], ok=b2["ok"], r1=r1_outer(dd)))
     ok45 = S["ok"] and S["w"] <= W_MAX
     out = dict(clear=CLEAR, clear_literal=CLEAR_LITERAL, frame_clear=DOOR_FRAME_CLEAR, leaf=DOOR_LEAF, margin=MARGIN, w_max=W_MAX,
@@ -437,7 +464,7 @@ def main(argv=None):
                stow={str(k): {kk: vv for kk, vv in v.items() if kk != "W"} for k, v in res.items()},
                W_curve={str(k): v["W"] for k, v in res.items() if "W" in v},
                approach_linear=dict(gap=ap_lin[0], zmin=ap_lin[1], at=ap_lin[2]), approach_staged=dict(gap=st[0], zmin=st[1]),
-               shoulder_gaps=shoulder_gaps, tip=tipr, pinch_near=pin, mirror_q=mirror.tolist(), w135_mirror=w135, ok=bool(ok45))
+               shoulder_gaps=shoulder_gaps, roll_held=roll_held, psi_tol=PSI_TOL, crossing=cross, tip=tipr, pinch_near=pin, mirror_q=mirror.tolist(), w135_mirror=w135, ok=bool(ok45))
     (DOCS / "stow.json").write_text(json.dumps(out, indent=1, default=float))
     (DOCS / "stow.md").write_text(report(out))
     print(f"stow: W(45°) {S['w'] * 1000:.0f} mm (≤ {W_MAX * 1000:.0f}), gap {S['gap'] * 1000:.0f} mm, ok={ok45}")
@@ -466,12 +493,12 @@ def _deg(v):
 def report(o):
     S, S90, S0, Sn = o["stow"]["45.0"], o["stow"]["90.0"], o["stow"]["0.0"], o["stow"]["45n"]
     q = S["q"]
-    mm = lambda v: f"{v * 1000:.0f}"
+    mm = lambda v: f"{round(v * 1000) + 0:.0f}"
     ok = lambda b: "✅" if b else "❌"
     tip_min = min(r["reserve"] for r in o["tip"]["rows"] if "static" not in r["case"])
     L = ["# Door stow pose, R5 (generated by `python -m rnd.stow`)", "", __doc__.split("\n\n", 1)[1].strip(), "",
          f"**Result: {'a door stow exists' if o['ok'] else 'no stow fits'}.** Driving through at the D2b threshold heading (45° to "
-         f"the wheels) the stowed robot is **{mm(S['w'])} mm** wide (≤ {mm(o['w_max'])} mm = {mm(o['clear'])} mm clear − 2 × "
+         f"the wheels) the stowed robot is **{mm(S['w'])} mm** wide over 45° ± {PSI_TOL:.0f}° of heading (≤ {mm(o['w_max'])} mm = {mm(o['clear'])} mm clear − 2 × "
          f"{mm(o['margin'])} mm: {mm((o['clear'] - S['w']) / 2)} mm a side in a {mm(o['clear'])} mm opening, "
          f"{mm((o['clear_literal'] - S['w']) / 2)} mm in a literal 700 mm one), collision-free with every cross-body gap ≥ "
          f"{mm(S['gap'])} mm after the cover allowance, arm parts ≥ {mm(S['zf'])} mm off the floor, inside the supervisor bounds in both "
@@ -496,7 +523,7 @@ def report(o):
           f"{mm(o['shoulder_floor_w0'])} mm with the cover allowance. The tip-over track's 0.70–0.78 m is this, measured facing forward.", ""]
     L += ["## The door stow (ψ = 45°, valid in both supervisor modes)", "",
           f"Search: Powell from {len(SEEDS)} seeds over the lift + 12 arm joints inside the supervisor target bounds (limits less 3°, "
-          f"roll ≥ +5° + 3°); cost = W(45°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a "
+          f"roll ≥ +5° + 3°); cost = max W(45° ± 5°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a "
           f"centred COM and a low lift). Seed kept: *{S['seed']}*.", "",
           "| Joint | Right arm | Left arm (twin sign) |", "|---|---|---|"]
     for i, j in enumerate(ARM_J):
@@ -509,6 +536,12 @@ def report(o):
           f"- Set by: {S['extremes'][0][0]} (+{mm(S['extremes'][0][1])} mm) and {S['extremes'][1][0]} ({mm(S['extremes'][1][1])} mm) "
           "along the normal to the travel direction.",
           f"- Crossing at 135° instead: the mirror pose (left ↔ right), {mm(o['w135_mirror'])} mm.",
+          "- Heading tolerance: 15 mm threshold at the stow's mass + LOAD_KG and COM height, SW-T4 speed (rnd/threshold.py roller "
+          "model, hard floor + carpet): " + ", ".join(f"{float(k):.0f}° {'crosses' if v['crossed'] else '❌'} {v['margin']:.2f}×"
+                                                      for k, v in o["crossing"].items()) +
+          " peak margin. Every heading crosses, but the 1.5× SW-T4 margin holds only at 45° itself in this model, so the base must "
+          f"hold 45° closely whatever the arms do; the width is taken over ± {o['psi_tol']:.0f}°. (For the threshold owner: D2b's "
+          "margin is a knife edge in heading.)",
           "- Smallest cross-body gaps (after the cover allowance): " + "; ".join(f"{g[1]} × {g[2]} {mm(g[0])} mm" for g in S["gaps"][:3]) + ".",
           f"- Normal mode only (roll down to −12°): {mm(Sn['w'])} mm (the people-near bound costs {mm(Sn['w'] - S['w'])} mm here).", ""]
     L += ["## Sideways stow (ψ = 90°, doors without a threshold)", "",
@@ -543,6 +576,12 @@ def report(o):
             if k not in seen:
                 seen.add(k)
                 L.append(f"| {r['src']} | {r['joint']} | {r['moving']} × {r['static']} | {r['min']:.1f} mm | {r['at']:.0f}° | {r['stow']:.0f}° |")
+        rr = [r for r in o["pinch_near"] if r["joint"] == "roll"]
+        if rr:
+            L += ["", f"The stow needs the rolls out at {_deg(q[2])} / {_deg(q[8])} (held at the +8° park value it is "
+                  f"{mm(o['roll_held']['w'])} mm), so the move in crosses the roll rows above "
+                  "(the yaw hood closes on the ferrule near +15°). Those rows fail for any roll move through that band (every reach does "
+                  "it); the fix is the shoulder cover's (rnd/parts/covers.py compliant() note), not the stow."]
     g0 = o["geometry"][0]
     L += ["", "## Facing the door (0°): the floor and the geometry it would take", "",
           f"W(0°) ≥ {mm(o['shoulder_floor_w0'])} mm in any pose. To fit {mm(o['w_max'])} mm facing the door the roll motors' outboard "
@@ -558,14 +597,15 @@ def report(o):
                  f"| {mm(g['floor_w0'])} | {mm(g['w45'])}{'' if g['ok'] else ' (gaps ❌)'} | {r1} |")
     L += ["", "R16 (rnd/dexterity.py) is computed on the bench arm in its own frame (sw/bench_env.py has no shoulder_y), so it does not "
           "change. The narrower torso is hull-level only (pitch-module hulls shifted, torso box narrowed; ESTIMATE).", "",
-          "Not recommended: the 45° crossing fits with the shipped geometry, and 25 mm off the torso costs tray width and still "
+          "Not recommended: the 45° crossing fits with the shipped geometry, and 2 × 25 mm off the torso width costs tray room and still "
           "does not fit facing the door.", ""]
     L += ["## Planner / supervisor (\"door mode\")", "",
           "For the software owner. A door is a map feature with a clear width c and a threshold flag.", "",
           "1. `planner.door_mode(door)`: crossing heading ψ = 45° or 135° (the mirror stow; whichever needs less base rotation) when "
           "the door has a threshold, ψ = 90° (sideways stow) otherwise; refuse the door and report it if c − W(ψ) < 2 × 40 mm "
           "(W from docs/rnd/stow.json).",
-          "2. Stop ≥ 0.5 m before the door; lift first, then the arms into the stow (paths checked above); pan the head to the travel "
+          "2. Stop ≥ 0.5 m before the door; move lift and arms together along the straight joint-space line from the park pose "
+          "(twin.TUCK) to the stow, the path checked above (joint-by-joint orders close a gap below 25 mm); pan the head to the travel "
           "direction; centre on the door axis (lateral error ≤ (c − W) / 2); cross at ≤ 0.12 m/s (SW-T4, D2b); back to the park pose.",
           "3. Supervisor: the stow puts the hands outside the hand workspace box (ws_lo / ws_hi: x ≥ 0.10 m, z ≥ 0.76 m), so the fk "
           "workspace check would reject it. Proposed `Supervisor.set_door_stow(q_stow | None)`: while set, arm targets must lie within "

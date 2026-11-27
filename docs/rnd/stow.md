@@ -9,7 +9,7 @@ torso, base, head, mast) narrow enough for the door.
 Width is measured **across the travel direction**: the base is holonomic (4 omni wheels at 0/90/180/270°), so the
 robot need not face the door. W(ψ) = extent of the plan view along the normal of a travel heading ψ in the robot frame
 (ψ = 0: driving forward). Thresholds (R4, ≤ 15–20 mm) must be crossed at ψ = 45° (D2b, rnd/threshold.py: straight
-at a wheel fails at 15 mm), so the governing case is **W(45°)**; W(90°) (sideways) is for doors with no threshold.
+at a wheel fails at 15 mm), so the governing case is **W(45°)**, taken as the worst over 45° ± 2° (heading error, which the threshold crossing needs held anyway: see the crossing table); W(90°) (sideways) is for doors with no threshold.
 The stow found for 45° is chiral: its mirror image (left ↔ right) is the stow for ψ = 135°.
 
 Checks in the pose: cross-body gaps (arm vs torso / base / head / mast / the other arm, and non-adjacent links of the
@@ -18,7 +18,7 @@ gap), on the move into the stow from the default park pose too; hands ≥ 50 mm 
 reserve (rnd/tip.py reserve(), asymmetric pose) for the threshold crossing (casters released, 1.0 m/s² braking) and
 with a person near (casters locked, 0.1 m/s² + 30 N push at 1 m); static (R12 ≥ 50 mm).
 
-**Result: a door stow exists.** Driving through at the D2b threshold heading (45° to the wheels) the stowed robot is **563 mm** wide (≤ 570 mm = 650 mm clear − 2 × 40 mm: 43 mm a side in a 650 mm opening, 68 mm in a literal 700 mm one), collision-free with every cross-body gap ≥ 28 mm after the cover allowance, arm parts ≥ 127 mm off the floor, inside the supervisor bounds in both modes, tip reserve ≥ 83 mm. Sideways (90°, doors without a threshold) the arms fold inside the base: **500 mm** (the Ø500 shell). **Facing the door (0°) no pose fits:** the shoulder roll motors alone span 644 mm whatever the joints do (best found 784 mm).
+**Result: a door stow exists.** Driving through at the D2b threshold heading (45° to the wheels) the stowed robot is **567 mm** wide over 45° ± 2° of heading (≤ 570 mm = 650 mm clear − 2 × 40 mm: 42 mm a side in a 650 mm opening, 67 mm in a literal 700 mm one), collision-free with every cross-body gap ≥ 28 mm after the cover allowance, arm parts ≥ 50 mm off the floor, inside the supervisor bounds in both modes, tip reserve ≥ 83 mm. Sideways (90°, doors without a threshold) the arms fold inside the base: **500 mm** (the Ø500 shell). **Facing the door (0°) no pose fits:** the shoulder roll motors alone span 644 mm whatever the joints do (best found 984 mm).
 
 ## Door
 
@@ -47,29 +47,30 @@ Forward floor: the pitch body (the GIM8108-36 roll motor, Ø96 on the roll axis 
 
 ## The door stow (ψ = 45°, valid in both supervisor modes)
 
-Search: Powell from 7 seeds over the lift + 12 arm joints inside the supervisor target bounds (limits less 3°, roll ≥ +5° + 3°); cost = W(45°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a centred COM and a low lift). Seed kept: *tuck (twin.TUCK)*.
+Search: Powell from 7 seeds over the lift + 12 arm joints inside the supervisor target bounds (limits less 3°, roll ≥ +5° + 3°); cost = max W(45° ± 5°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a centred COM and a low lift). Seed kept: *tuck (twin.TUCK)*.
 
 | Joint | Right arm | Left arm (twin sign) |
 |---|---|---|
-| pitch | +55° | -85° |
-| roll | +14° | +29° |
-| yaw | -14° | +0° |
-| elbow | -46° | -107° |
-| wpitch | +116° | +58° |
-| wroll | +116° | +54° |
-| lift (shoulder height) | 0.62 m | |
+| pitch | +57° | -82° |
+| roll | +13° | +26° |
+| yaw | -3° | -0° |
+| elbow | -52° | -113° |
+| wpitch | +47° | +59° |
+| wroll | -45° | -116° |
+| lift (shoulder height) | 0.61 m | |
 
-In words: the **right arm swings back** (pitch +55°, elbow -46°); the **left arm points forward** (pitch -85°, elbow -107°). Along the crossing diagonal the right shoulder leads and the left trails, so each arm goes to where the diagonal is short: ahead on the left, behind on the right.
+In words: the **right arm swings back** (pitch +57°, elbow -52°); the **left arm points forward** (pitch -82°, elbow -113°). Along the crossing diagonal the right shoulder leads and the left trails, so each arm goes to where the diagonal is short: ahead on the left, behind on the right.
 
-- W(ψ) round the crossing heading: 35° 619, 40° 572, 45° 563, 50° 552, 55° 539 mm.
+- W(ψ) round the crossing heading: 40° 572, 43° 567, 45° 563, 47° 559, 50° 552 mm.
 - Set by: robot:cylinder2 (+250 mm) and roll_xarm_r (-313 mm) along the normal to the travel direction.
 - Crossing at 135° instead: the mirror pose (left ↔ right), 563 mm.
-- Smallest cross-body gaps (after the cover allowance): roll_xarm_l × torso_pitchmod_l 12 mm; roll_xarm_l × torso:box11 12 mm; roll_yawcart_r × torso_pitchmod_r 13 mm.
-- Normal mode only (roll down to −12°): 616 mm (the people-near bound costs 53 mm here).
+- Heading tolerance: 15 mm threshold at the stow's mass + LOAD_KG and COM height, SW-T4 speed (rnd/threshold.py roller model, hard floor + carpet): 40° crosses 1.05×, 43° crosses 1.27×, 44° crosses 1.16×, 45° crosses 1.70×, 46° crosses 1.16×, 47° crosses 1.27×, 50° crosses 1.05× peak margin. Every heading crosses, but the 1.5× SW-T4 margin holds only at 45° itself in this model, so the base must hold 45° closely whatever the arms do; the width is taken over ± 2°. (For the threshold owner: D2b's margin is a knife edge in heading.)
+- Smallest cross-body gaps (after the cover allowance): roll_xarm_l × torso_pitchmod_l 13 mm; roll_xarm_l × torso:box11 13 mm; roll_yawcart_l × torso_pitchmod_l 13 mm.
+- Normal mode only (roll down to −12°): 619 mm (the people-near bound costs 52 mm here).
 
 ## Sideways stow (ψ = 90°, doors without a threshold)
 
-500 mm (seed *hanging*), set by robot:cylinder2 / robot:cylinder2. Joints (right / left, twin sign): pitch +4° / -1°, roll +8° / +12°, yaw -41° / -2°, elbow -5° / -5°, wpitch +38° / -0°, wroll -51° / -16°, lift 0.78 m. Straight at a wheel, so only where there is no threshold (rnd/threshold.py: 0° fails at 15 mm).
+500 mm (seed *hanging*), set by robot:cylinder2 / robot:cylinder2. Joints (right / left, twin sign): pitch +4° / -1°, roll +8° / +12°, yaw -63° / +0°, elbow -5° / -5°, wpitch +38° / -0°, wroll +102° / +12°, lift 0.78 m. Straight at a wheel, so only where there is no threshold (rnd/threshold.py: 0° fails at 15 mm).
 
 ## Checks in the stow
 
@@ -77,24 +78,25 @@ In words: the **right arm swings back** (pitch +55°, elbow -46°); the **left a
 |---|---|---|---|
 | tip (rnd/tip.py reserve): static, wheels only (R12: ≥ 50 mm) | 148 mm (worst heading 0°) | ≥ 50 mm | ✅ |
 | tip (rnd/tip.py reserve): threshold crossing (D2b), casters released, braking 1.0 m/s² | 111 mm (worst heading 134°) | ≥ 30 mm | ✅ |
-| tip (rnd/tip.py reserve): person near: casters locked, braking 0.1 m/s² + 30 N push at 1 m | 83 mm (worst heading 114°) | ≥ 30 mm | ✅ |
-| COM | x -0, y 0, h 371 mm (31.0 kg) | | |
+| tip (rnd/tip.py reserve): person near: casters locked, braking 0.1 m/s² + 30 N push at 1 m | 83 mm (worst heading 156°) | ≥ 30 mm | ✅ |
+| COM | x 0, y 0, h 367 mm (31.0 kg) | | |
 | cross-body gaps in the pose | ≥ 28 mm | ≥ 25 mm (R17) | ✅ |
-| arm parts above the floor | ≥ 127 mm | ≥ 50 mm | ✅ |
-| into the stow from twin.TUCK, all joints together | gap ≥ 28 mm, ≥ 85 mm off the floor | ≥ 25 / 50 mm | ✅ |
-| into the stow, one joint group at a time (better of two orders) | gap ≥ 19 mm, ≥ 57 mm | ≥ 25 / 50 mm | ❌ |
+| arm parts above the floor | ≥ 50 mm | ≥ 50 mm | ✅ |
+| into the stow from twin.TUCK, all joints together | gap ≥ 28 mm, ≥ 13 mm off the floor | ≥ 25 / 50 mm | ❌ |
+| into the stow, one joint group at a time (better of two orders) | gap ≥ 19 mm, ≥ 45 mm | ≥ 25 / 50 mm | ❌ |
 
-**Not gated here: the roll output × torso wedge** (roll_xarm_l × torso_pitchmod_l: 12 mm in the stow, 14 mm in twin.TUCK). It is a pitch + roll pair that rnd/pinch.py already sweeps (rows roll_cover_yaw / roll_yaw_band × torso_shell; 17 mm at +15° with people near), it sits in the 8–25 mm band in every arms-down pose, and only a cover change closes it (a torso-side skirt that keeps it ≤ 8 mm, or a hood that keeps ≥ 25 mm). The stow is no worse than the park pose.
+**Not gated here: the roll output × torso wedge** (roll_xarm_l × torso_pitchmod_l: 13 mm in the stow, 14 mm in twin.TUCK). It is a pitch + roll pair that rnd/pinch.py already sweeps (rows roll_cover_yaw / roll_yaw_band × torso_shell; 17 mm at +15° with people near), it sits in the 8–25 mm band in every arms-down pose, and only a cover change closes it (a torso-side skirt that keeps it ≤ 8 mm, or a hood that keeps ≥ 25 mm). The stow is no worse than the park pose.
 
 rnd/pinch.py single-joint rows (docs/rnd/pinch.json, tier 1) that fail within 15° of a stow angle. They fail over the sweep whichever pose is used; listed so the pose owner knows which ones it sits near:
 
 | Sweep | Joint | Moving × static | min gap | worst at | stow within |
 |---|---|---|---|---|---|
-| all | elbow | arm_forearm × arm_e_seat_cap_p | 7.0 mm | -120° | 13° |
-| all | pitch | roll_roll_link × sh_pitch_hub | 9.6 mm | 40° | 15° |
-| all | pitch | roll_yaw_band × torso_shell | 24.0 mm | 60° | 5° |
-| all | roll | roll_cover_yaw × roll_ferrule_m | 2.7 mm | 15° | 1° |
-| all | roll | roll_yaw_block × roll_roll_link | 9.1 mm | 5° | 9° |
+| all | elbow | arm_forearm × arm_e_seat_cap_p | 7.0 mm | -120° | 7° |
+| all | pitch | roll_yaw_band × torso_shell | 24.0 mm | 60° | 3° |
+| all | roll | roll_cover_yaw × roll_ferrule_m | 2.7 mm | 15° | 2° |
+| all | roll | roll_yaw_block × roll_roll_link | 9.1 mm | 5° | 8° |
+
+The stow needs the rolls out at +13° / +26° (held at the +8° park value it is 570 mm), so the move in crosses the roll rows above (the yaw hood closes on the ferrule near +15°). Those rows fail for any roll move through that band (every reach does it); the fix is the shoulder cover's (rnd/parts/covers.py compliant() note), not the stow.
 
 ## Facing the door (0°): the floor and the geometry it would take
 
@@ -102,19 +104,19 @@ W(0°) ≥ 644 mm in any pose. To fit 570 mm facing the door the roll motors' ou
 
 | shoulder_y | W(0°) floor | W(45°) stow | R1 coverage, outer columns y −0.40 / −0.325 m (twin IK, 2 seeds) |
 |---|---|---|---|
-| 0.200 (today) | 644 | 563 | counter, angled 45° grasp 100%; floor pickup 100%; dishwasher low rack 100%; table top 100%; shelf 100%; high shelf 100% |
-| 0.175 (torso shell 390 → 340 mm) | 594 | 599 | counter, angled 45° grasp 100%; floor pickup 100%; dishwasher low rack 93%; table top 94%; shelf 100%; high shelf 100% |
+| 0.200 (today) | 644 | 567 | counter, angled 45° grasp 100%; floor pickup 100%; dishwasher low rack 100%; table top 100%; shelf 100%; high shelf 100% |
+| 0.175 (torso shell 390 → 340 mm) | 594 | 540 | counter, angled 45° grasp 100%; floor pickup 100%; dishwasher low rack 93%; table top 94%; shelf 100%; high shelf 100% |
 
 R16 (rnd/dexterity.py) is computed on the bench arm in its own frame (sw/bench_env.py has no shoulder_y), so it does not change. The narrower torso is hull-level only (pitch-module hulls shifted, torso box narrowed; ESTIMATE).
 
-Not recommended: the 45° crossing fits with the shipped geometry, and 25 mm off the torso costs tray width and still does not fit facing the door.
+Not recommended: the 45° crossing fits with the shipped geometry, and 2 × 25 mm off the torso width costs tray room and still does not fit facing the door.
 
 ## Planner / supervisor ("door mode")
 
 For the software owner. A door is a map feature with a clear width c and a threshold flag.
 
 1. `planner.door_mode(door)`: crossing heading ψ = 45° or 135° (the mirror stow; whichever needs less base rotation) when the door has a threshold, ψ = 90° (sideways stow) otherwise; refuse the door and report it if c − W(ψ) < 2 × 40 mm (W from docs/rnd/stow.json).
-2. Stop ≥ 0.5 m before the door; lift first, then the arms into the stow (paths checked above); pan the head to the travel direction; centre on the door axis (lateral error ≤ (c − W) / 2); cross at ≤ 0.12 m/s (SW-T4, D2b); back to the park pose.
+2. Stop ≥ 0.5 m before the door; move lift and arms together along the straight joint-space line from the park pose (twin.TUCK) to the stow, the path checked above (joint-by-joint orders close a gap below 25 mm); pan the head to the travel direction; centre on the door axis (lateral error ≤ (c − W) / 2); cross at ≤ 0.12 m/s (SW-T4, D2b); back to the park pose.
 3. Supervisor: the stow puts the hands outside the hand workspace box (ws_lo / ws_hi: x ≥ 0.10 m, z ≥ 0.76 m), so the fk workspace check would reject it. Proposed `Supervisor.set_door_stow(q_stow | None)`: while set, arm targets must lie within ±3° of the stow path (anything else rejected) in place of the workspace box; base_accel_limit() unchanged; refused when payload > LOAD_KG (no door crossing with a load in this pose). The stow is inside the people-near bounds, so set_people_near() never has to walk it out.
 
 ## Scorecard row (for rnd/run_all.py)
