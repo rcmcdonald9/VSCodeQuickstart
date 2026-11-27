@@ -17,6 +17,6 @@ Targets (set from the loop-32 arm with yaw ±150°: 36 / 69 / 68 / 60 %): no gra
 | Grasp | Reachable (now) | Target | Loop 32 (yaw ±150°) | Loop 33–39 (yaw ±70°) | |
 |---|---|---|---|---|---|
 | top-down | 36% | ≥ 30% | 36% | 34% | ✅ |
-| 45° angled | 68% | ≥ 63% | 69% | 57% | ✅ |
+| 45° angled | 69% | ≥ 63% | 69% | 57% | ✅ |
 | side (horizontal) | 66% | ≥ 62% | 68% | 40% | ✅ |
-| side, across the body | 60% | ≥ 54% | 60% | 2% | ✅ |
+| side, across the body | 61% | ≥ 54% | 60% | 2% | ✅ |

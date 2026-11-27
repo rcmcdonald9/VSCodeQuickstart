@@ -1253,3 +1253,7 @@ One long push instead of half-hour runs. In order:
 - Shaft → link joints sized: inline boss→adapter 128 N·m (3.65× drive limit, 1.25× stall), adapter→clevis 2.05× limit; belt clevis pinch 1.83×, yaw hex spigot 1.76×, yaw inserts 1.55×. FEA inline roll link 5.6×, clevis/yaw/rear arm 10.8×.
 - Belt roll + yaw on D24 bolted cartridges (KX + torque forks gone). Inline baseline: R14 7/7, swept 0/0, R16 60 % ✅, basket 1.50, roll 51.6×.
 - Open: insert pull-out + μ coupons; seller: output face, bearing radial rating, 7075 adapter sourcing. Belt-only items deprioritised (belt R16, roll 450 belt, 80T/18T stock).
+
+### 2026-11-27 — Merged-tree checks after the inline default (9 checks, 9.5 min) + check fixes
+- Fixed check bugs: belts.py still rated a roll belt for the inline drive (peak pull 7.2 kN "0.5× ultimate" — there is no belt); integration.py now treats the D21 hook-in-jaw and D22 tilt stubs-in-shell as designed interfaces (module clashes 7 → 0).
+- Real open fails: R1 reach 94 % (floor pickup 100 → 94 % with inline geometry), R13 lift_cover × carriage at lift 0.40 (both → lift track), R15 head_screen × shell (lift/head track), harness wrist roll (arm track), R2b 11.0 mm raw, **R8 BOM $5,199** (inline roll on both arms +$186 → $199 over the $5,000 limit; needs a cost pass).
