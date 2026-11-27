@@ -42,6 +42,22 @@ GIM8108-8:
     - https://www.roboticscenter.ai/store/product/steadywin-gim8108-8-planetary-reducer-servo-motor/
     - https://rcdrone.top/products/steadywin-gim8108-8-planetary-reducer-servo-motor
 
+GIM8108-36:
+  role: "slim-arm study (2026-11-27): inline shoulder pitch / roll, no belt"
+  maker: SteadyWin
+  gear_ratio: 36
+  voltage_nominal_v: 24      # SDC303 driver version (24 V); SDC103 is 48 V
+  rated_torque_nm: 35.1      # SDC303 (24 V) per listing; 32.76 with SDC103
+  peak_torque_nm: 102.9      # stall, SDC303
+  rated_speed_rpm: 48        # nominal after reduction (48–51)
+  mass_g: 1000               # one seller's net weight
+  outer_diameter_mm: 100     # ESTIMATE (8108 frame); not published
+  price_usd: [152, 190]
+  sources:
+    - https://aifitlab.com/products/steadywin-gim8108-36-planetary-reducer-servo-motor
+    - https://openelab.com/products/steadywin-gim8108-36-robot-actuator
+    - https://www.roboticscenter.ai/store/product/steadywin-gim8108-36-planetary-reducer-servo-motor/
+
 DM-J4310-2EC_V1.1:
   role: cartridge M-light (upper-arm yaw, wrist pitch upgrade)
   maker: Damiao

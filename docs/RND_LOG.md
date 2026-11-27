@@ -1193,3 +1193,8 @@ One long push instead of half-hour runs. In order:
 
 - Head 252 × 184 mm with the 7" ESP32-P4 board behind a 232 × 120 bezel (156 × 90 window); level and −30° tilt clean, **+30° tilt hits the mast top bracket (1.4 cm³)** → fix with the queued passive tilt pivot.
 - rnd/parts/covers.py (render-only, robot.build(covers=True)): shoulder domes, yaw-block sleeves, elbow bay domes + collar-window doors, forearm sleeves, wrist boots, mast bellows. Not yet checked for sweeps/pinch (rnd/pinch.py next).
+
+## 2026-11-27: slim-arm study (rnd/slim_study.py) → D24
+
+- V1 bolted cartridges: motor bumps Ø113 → ≈ 90, elbow 110 → 98 mm, arm 4.26 → 4.03 kg, margins unchanged or better. V2 adds inline GIM8108-36 at pitch + roll: shoulder dome 172 × 210 → 128 × 120 mm, basket margin 1.47 → 2.45, 48 rpm, +$152 per arm, pitch 2.25× stiffer to back-drive.
+- D24: bolt every cartridge (owner OK); propose inline GIM8108-36 at roll only (same hand-feel as today's 35.5:1 belt, most of the slimming, +$61 per arm).

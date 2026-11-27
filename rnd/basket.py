@@ -48,11 +48,11 @@ def design():
     return dataclasses.replace(BASELINE, arm=dataclasses.replace(BASELINE.arm, joints=j, payload=PER_HAND))
 
 
-def run():
+def run(d=None):
     import mujoco
     from .arm_sizing import capacity
     from .twin import Reacher, margin, support_polygon
-    d = design()
+    d = d or design()
     R = Reacher(d)
     m, dat = R.m, R.d
     jid = {j: mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, f"{j}_r") for j in JOINTS}
