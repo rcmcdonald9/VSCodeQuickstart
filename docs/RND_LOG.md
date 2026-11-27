@@ -1226,3 +1226,9 @@ One long push instead of half-hour runs. In order:
 - D24 bolted cartridges at pitch + elbow (Ø68 flange, 6 × M4 into inserts, nose spigot, Oldham drive); wrist KX56 → bolted M3 flange. Motor bump Ø113 → Ø86.6; stage 63.7 → 40 mm (mount plane → shaft end).
 - D19 one-piece pitch (bolted pitch hub + outer wall) and elbow (bolted seat caps) shafts → R14 6/7 (+ roll from track B). Elbow housing 110 → 98 mm. Forearm double-D pinch clamp; CF bonds ≥ 1 × OD. Balancer pin B moved per track D. P2 hand sag 12.1 → 10.9 mm raw.
 - Wave 2 (3 engineers): roll/yaw onto bolted stages + clevis clamps + inline FEA + belt R16 recovery; D20 motor switch + wrist-roll cable + balancer plane + stiffness; M1 kit buy/hold lists + readiness + measured slim study. Covers/pinch track from wave 1 still running.
+
+### 2026-11-27 — Wave 2, buy-list track merged
+- M1 kit split: **Buy now $1,401** (incl. 15 % contingency); Hold A GIM8108-8 at pitch + elbow (+$57; seller 24 V answer); Hold B inline GIM8108-36 roll (+$108; owner OK + drawing). Seller questions in M1_BENCH_ARM.md §4.
+- D24 in kit + BOM: arm KX socket hardware out; Oldham (D40 12 mm clamp hub + acetal disc, printed motor tongue), inserts, flange screws in. BOM $4,898 → $5,013 landed (+$13 over limit; Oldham $12 ESTIMATE — branded Ruland hubs are $36–47, generic D40 needed).
+- Slim study on measured CAD (bump Ø113.8 → 86.6, elbow 110 → 98, stage 64.5 → 40 mm; inline roll +$94/arm at current listings). Print plan 13.8 kg / 325 h (slice cache); one arm 5.63 h hands-on (−25 min).
+- Readiness: go on Buy now; GIM CAN protocol is the day-1 blocker (bring-up blocks GIM joints until the manual's table is filled).
