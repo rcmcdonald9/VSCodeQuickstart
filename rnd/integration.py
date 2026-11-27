@@ -30,7 +30,8 @@ FUSED = {("ferrule_m", "roll_link"), ("roll_link", "shoulder_cap"), ("yaw_block"
          ("e_belt", "e_bigpulley"), ("e_belt", "e_shaft40"), ("e_al_pulley", "e_belt"), ("hand_grip_base", "hand_grip_servo_sleeve"), ("grip_base", "grip_servo_sleeve"),
          ("hand_finray_fixed", "hand_pad_fixed"), ("finray_fixed", "pad_fixed"),
          ("hand_jaw_fixed", "hand_finger_hook"), ("jaw_fixed", "finger_hook"),          # D21 hook pinned into the fixed jaw (by design)
-         ("head_shell", "head_pivot_stub"), ("head_shell", "head_drive_stub")}         # D22 tilt stubs bonded/screwed into the shell
+         ("head_shell", "head_pivot_stub"), ("head_shell", "head_drive_stub"),
+         ("lift_al_pulley", "lift_belt")}                                            # belt in mesh on its pulley (as e_al_pulley/e_belt)         # D22 tilt stubs bonded/screwed into the shell
 
 
 def module_clashes():

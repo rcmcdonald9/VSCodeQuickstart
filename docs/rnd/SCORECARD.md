@@ -2,7 +2,7 @@
 
 | Metric | Now | Target | |
 |---|---|---|---|
-| R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 98% | ≥ 95 % | ✅ |
+| R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 78 mm | ≥ 50 mm | ✅ |
 | R2 min joint margin at spec load (rated, planar check) | 1.92× | ≥ 1.5× | ✅ |
@@ -26,7 +26,7 @@
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 2.1× (5.3 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md): tracked, no hard target (owner 2026-11-26); lower is a priority | 23 h | minimise | — |
-| R8 cost from the itemised BOM (BOM_v4.md) | $5,480 | ≤ $4,000 (D9; limit $5,000) | ❌ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $5,485 | ≤ $5,500 limit (owner 2026-11-27; aim $4,000) | ✅ |
 | R13 printed pieces that fit the P2S (256 mm) | 98/98 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
@@ -36,7 +36,7 @@
 | R4 sim: 15 mm threshold on hard floor + carpet (45°, ≤ 0.15 m/s), peak margin | crossed, 1.7× | cross, ≥ 1.5× | ✅ |
 | R4 sim: carpet cruise wheel torque (RMS / rated) | 2.2 / 5 N·m | ≤ 70 % | ✅ |
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 66 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
-| FEA critical printed parts: min margin vs 12 MPa (across layers) | 5.6× (8 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
+| FEA critical printed parts: min margin vs 12 MPa (across layers) | 3.1× (13 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip) | 100/100 (95 % LB 96%), worst pad error 19 mm | LB ≥ 90 %, within ±25 mm | ✅ |
 | R15 spacing: pairs under the hard limit / under target (static 1, running 0.3, moving 2, belt 3 mm) | 0 / 8 | 0 under hard | ✅ |
 | R14 assembly sequence: drive shafts whose bearings slide on and whose shaft can be inserted (rnd/assembly_seq.py) | 7/7 | all | ✅ |
