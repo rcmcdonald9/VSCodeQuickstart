@@ -25,9 +25,9 @@
  "status": "PASS",
  "fails": [],
  "motion": {
-  "seconds": 60.0,
+  "seconds": 45.0,
   "rms_torque_frac": {
-   "wpitch": 0.411
+   "wpitch": 0.409
   },
   "supervisor_stops": [],
   "rejected_frames": 0
@@ -35,9 +35,9 @@
  "drift": {
   "wpitch": {
    "drift": {
-    "coulomb_pct": -0.892,
-    "viscous_pct": -0.072,
-    "kt_pct": -0.006,
+    "coulomb_pct": -1.045,
+    "viscous_pct": 0.154,
+    "kt_pct": -0.061,
     "backlash_deg": 0.0,
     "latency_mean_ms": 0.0,
     "latency_p95_ms": 0.0
@@ -55,25 +55,25 @@
  "fits": {
   "start": {
    "wpitch": {
-    "coulomb_nm": 0.03922,
-    "viscous_nms": 0.50062,
-    "kt_scale": 0.97253,
+    "coulomb_nm": 0.03923,
+    "viscous_nms": 0.50075,
+    "kt_scale": 0.97278,
     "backlash_rad": 0.0,
     "latency_ms": {
-     "mean": 2.067,
-     "p95": 2.0
+     "mean": 2.167,
+     "p95": 2.9
     }
    }
   },
   "end": {
    "wpitch": {
-    "coulomb_nm": 0.03887,
-    "viscous_nms": 0.50026,
-    "kt_scale": 0.97247,
+    "coulomb_nm": 0.03882,
+    "viscous_nms": 0.50152,
+    "kt_scale": 0.97219,
     "backlash_rad": 0.0,
     "latency_ms": {
-     "mean": 2.067,
-     "p95": 2.0
+     "mean": 2.167,
+     "p95": 2.9
     }
    }
   }
@@ -103,7 +103,7 @@
    [
     "loop period (SW1: p99 |period \u2212 2 ms| < 1 ms)",
     "\u2139\ufe0f",
-    "p50 0.49, p99.9 1.97, max 13.06 ms; jitter p99 1.62 ms; > 8 ms: 5 \u2014 virtual run: compute time per cycle, not a real-time measurement"
+    "p50 0.49, p99.9 3.10, max 30.07 ms; jitter p99 1.62 ms; > 8 ms: 6 \u2014 virtual run: compute time per cycle, not a real-time measurement"
    ],
    [
     "CAN B2 controller health",
@@ -117,7 +117,7 @@
    ]
   ],
   "loop": {
-   "n": 63424,
+   "n": 55140,
    "period_ms": 2.0,
    "bins_ms": [
     "0\u20131",
@@ -134,40 +134,40 @@
     "> 25"
    ],
    "counts": [
-    62542,
-    759,
-    56,
-    10,
+    54540,
+    422,
+    53,
     17,
-    14,
-    12,
-    7,
+    25,
+    24,
+    31,
+    17,
+    5,
+    3,
     2,
-    4,
-    1,
-    0
+    1
    ],
    "interval_ms": {
-    "p50": 0.494,
-    "p99": 1.031,
-    "p999": 1.971,
-    "p9999": 5.787,
-    "max": 13.063
+    "p50": 0.488,
+    "p99": 1.011,
+    "p999": 3.095,
+    "p9999": 8.377,
+    "max": 30.07
    },
    "jitter_ms": {
-    "p99": 1.616,
-    "p999": 1.64,
-    "max": 11.063
+    "p99": 1.621,
+    "p999": 1.656,
+    "max": 28.07
    },
    "over_ms": {
-    "3": 26,
-    "4": 14,
-    "6": 7,
-    "8": 5,
-    "10": 4,
-    "15": 0,
-    "20": 0,
-    "25": 0
+    "3": 59,
+    "4": 28,
+    "6": 11,
+    "8": 6,
+    "10": 5,
+    "15": 1,
+    "20": 1,
+    "25": 1
    }
   },
   "samples": [
@@ -217,9 +217,9 @@
     },
     "cpus": 4,
     "loadavg": [
-     4.54248046875,
-     3.34033203125,
-     3.509765625
+     2.0029296875,
+     2.7060546875,
+     3.3427734375
     ],
     "drive_temp_c": {
      "wpitch": 34
@@ -272,9 +272,9 @@
     },
     "cpus": 4,
     "loadavg": [
-     4.73974609375,
-     3.4013671875,
-     3.52880859375
+     2.00244140625,
+     2.69384765625,
+     3.33544921875
     ],
     "drive_temp_c": {
      "wpitch": 34
@@ -327,9 +327,9 @@
     },
     "cpus": 4,
     "loadavg": [
-     4.73974609375,
-     3.4013671875,
-     3.52880859375
+     2.00244140625,
+     2.69384765625,
+     3.33544921875
     ],
     "drive_temp_c": {
      "wpitch": 35
@@ -382,69 +382,14 @@
     },
     "cpus": 4,
     "loadavg": [
-     4.9208984375,
-     3.46142578125,
-     3.5478515625
+     2.001953125,
+     2.68212890625,
+     3.328125
     ],
     "drive_temp_c": {
      "wpitch": 35
     },
     "t_s": 40.0
-   },
-   {
-    "machine": "x86_64",
-    "raspberry_pi": false,
-    "cpu_temp_c": null,
-    "throttled_raw": null,
-    "throttled_flags": [],
-    "cpu_freq": {
-     "cur_mhz": null,
-     "max_mhz": null,
-     "governor": null,
-     "vc_arm_hz": null
-    },
-    "rt": {
-     "kernel": "6.18.44-fc-v880",
-     "version": "#1 SMP PREEMPT_DYNAMIC @0",
-     "preempt_rt": false,
-     "preempt_model": "PREEMPT_DYNAMIC (not RT)",
-     "isolated_cpus": null,
-     "isolcpus_cmdline": false,
-     "sched_policy": "SCHED_OTHER",
-     "sched_priority": 0
-    },
-    "can": {
-     "B1": {
-      "state": "ERROR-ACTIVE",
-      "berr_tx": 0,
-      "berr_rx": 0,
-      "bus_off": 0,
-      "restarts": 0,
-      "bus_errors": 0,
-      "rx_dropped": 0,
-      "tx_dropped": 0
-     },
-     "B2": {
-      "state": "ERROR-ACTIVE",
-      "berr_tx": 0,
-      "berr_rx": 0,
-      "bus_off": 0,
-      "restarts": 0,
-      "bus_errors": 3,
-      "rx_dropped": 1,
-      "tx_dropped": 0
-     }
-    },
-    "cpus": 4,
-    "loadavg": [
-     4.92724609375,
-     3.4873046875,
-     3.5556640625
-    ],
-    "drive_temp_c": {
-     "wpitch": 35
-    },
-    "t_s": 50.0
    }
   ],
   "start": {
@@ -493,9 +438,9 @@
    },
    "cpus": 4,
    "loadavg": [
-    4.3603515625,
-    3.22412109375,
-    3.4765625
+    2.0048828125,
+    2.755859375,
+    3.373046875
    ]
   },
   "end": {
@@ -544,9 +489,9 @@
    },
    "cpus": 4,
    "loadavg": [
-    5.0048828125,
-    3.578125,
-    3.58447265625
+    2.00048828125,
+    2.64794921875,
+    3.30615234375
    ]
   }
  },

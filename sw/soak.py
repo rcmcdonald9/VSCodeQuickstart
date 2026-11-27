@@ -224,7 +224,7 @@ def main(argv=None):
         cfg = load_cfg()
         cfg["cal_speed"] = 0.5
         cfg["soak"] = dict(mass_kg=0.5, sample_s=10.0)          # the virtual DM path is the 3 N·m wrist: 0.5 kg, not the lever's 2 kg
-        bu, arm = build_virtual(cfg=cfg, faults=a.fault, bus=a.profile, joints=joints, log=print,
+        bu, arm = build_virtual(cfg=cfg, faults=a.fault, bus=a.profile, joints=joints, log=print, act={},
                                 actuator_dir=Path(__file__).resolve().parent / "out" / "soak")
         secs = a.seconds if a.seconds is not None else (a.hours * 3600 if a.hours else 60.0)
         res = run(bu, secs, extra)

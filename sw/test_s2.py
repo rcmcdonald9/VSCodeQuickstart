@@ -224,7 +224,7 @@ def test_soak():
         cfg["cal_speed"] = 0.5
         cfg["soak"] = dict(mass_kg=0.5, sample_s=10.0)
         cfg["sysid"] = dict(latency_steps=12)
-        bu, arm = build_virtual(cfg=cfg, faults=fault, bus="usb", log=_quiet, actuator_dir=OUT / "soak")
+        bu, arm = build_virtual(cfg=cfg, faults=fault, bus="usb", log=_quiet, actuator_dir=OUT / "soak", act={})
         res = soak.run(bu, 45.0, log=_quiet)
         soak.write(res, "soak_virtual" + ("_drift" if fault else ""))
         out[fault] = res

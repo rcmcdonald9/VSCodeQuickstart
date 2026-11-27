@@ -4,18 +4,18 @@ Virtual bench, bus profile **usb** (sw/bus_sim.py), seed 0: GIM6010-8 yaw stage 
 
 | Joint | Quantity | Hidden truth | Fit | Error | Tolerance |
 |---|---|---|---|---|---|
-| yaw | coulomb [N·m] | 0.32 | 0.3349 | +4.7 % | ±10 % |
-| yaw | viscous [N·m·s/rad] | 0.85 | 0.7993 | -6.0 % | ±15 % |
-| yaw | kt [—] | 0.955 | 0.9447 | -1.1 % | ±2 % |
+| yaw | coulomb [N·m] | 0.32 | 0.335 | +4.7 % | ±10 % |
+| yaw | viscous [N·m·s/rad] | 0.85 | 0.7992 | -6.0 % | ±15 % |
+| yaw | kt [—] | 0.955 | 0.9448 | -1.1 % | ±2 % |
 | yaw | backlash [°] | 0.3 | 0.2841 | -5.3 % | ±20 % |
-| yaw | latency [ms (round trip)] | 2.024 | 2 | -1.2 % | ±15 % |
-| wpitch | coulomb [N·m] | 0.055 | 0.05416 | -1.5 % | ±10 % |
-| wpitch | viscous [N·m·s/rad] | 0.42 | 0.4202 | +0.1 % | ±15 % |
+| yaw | latency [ms (round trip)] | 2.024 | 2.067 | +2.1 % | ±15 % |
+| wpitch | coulomb [N·m] | 0.055 | 0.05418 | -1.5 % | ±10 % |
+| wpitch | viscous [N·m·s/rad] | 0.42 | 0.4201 | +0.0 % | ±15 % |
 | wpitch | kt [—] | 1.035 | 1.034 | -0.1 % | ±2 % |
 | wpitch | backlash [°] | 0.25 | 0.2623 | +4.9 % | ±20 % |
-| wpitch | latency [ms (round trip)] | 2.03 | 2.067 | +1.8 % | ±15 % |
+| wpitch | latency [ms (round trip)] | 2.03 | 2.133 | +5.1 % | ±15 % |
 
-Latency truth = the plant's own record of command → host-visible reply during the latency test (whole run: {'n': 178960, 'mean': 2.026, 'p50': 2.0, 'p95': 2.0, 'p99': 4.0, 'max': 6.0}).
+Latency truth = the plant's own record of command → host-visible reply during the latency test (whole run: {'n': 178968, 'mean': 2.026, 'p50': 2.0, 'p95': 2.0, 'p99': 4.0, 'max': 6.0}).
 
 **Not randomised once measured (Asimov lesson 4):** Once measured these are fixed facts of each drive (per serial), not domain-randomised: Coulomb + viscous friction, effective torque constant, backlash, the command → response latency distribution (use the measured histogram, not 0–9 ms uniform), encoder zero (calibrated), drive torque clamp, link masses (CAD + the gravity step's residual). Re-measured at the start and end of the soak test: if they drift, model the drift (e.g. temperature) instead of widening a randomisation range.
 

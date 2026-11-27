@@ -9,12 +9,21 @@
 4. Fault injection (each must stop the bring-up at the right step, later steps REFUSED): motor at its factory ID,
    welded contactor, dead watchdog, drive without CAN timeout, drive that ignores its torque limit, motor mounted the
    other way round.
-5. Teleop (sw/teleop_sim.py): 5 scripted-leader episodes through the supervisor recorded as LeRobot v3.0 and reloaded
+5. Bus realism (sw/bus_sim.py): 0–9 ms delay each way, drops, duplicates, CRC errors, bus-off, corrupted payloads: the
+   old 10 ms stale-feedback bound false-trips; the tuned bring-up passes, no false trip in motion, real faults (contact,
+   silent bus, bus-off) still caught; corrupted frames are dropped by the driver's plausibility gate.
+6. Actuator sysid on the Step-1 rig with hidden friction / torque constant / backlash and a USB-CAN bus: the fit recovers
+   them within tolerance; actuators_<serial>.yaml is loaded back by rnd/twin.py and sw/virtual_arm.py.
+7. Soak test: sysid before and after cyclic motion; a stable drive passes, a drive whose friction drifts fails.
+8. Teleop (sw/teleop_sim.py): 5 scripted-leader episodes through the supervisor recorded as LeRobot v3.0 and reloaded
    with the official loader; an extra episode with an e-stop is discarded and the arm stops.
 
 - Protocol tables: template build/parse round trip; DM-J4310 table complete; GIM6010 table has 21 TODO fields ✅
 - GIM protocol discovery (bring-up step 1, sw/gim_discover.py) against a simulated MIT-family drive: listen, no-torque exit-motor-mode probe answered on ID 1, zero-gain motor mode tracks a hand turn (0.23 rad, |τ| ≤ 0.10 N·m) ✅
-- Bring-up, DM-J4310 path (GIM joints BLOCKED by their TODO table, held in the fixture): all 6 steps pass in 11 s (27142 cycles at 500 Hz); zero vs the hidden encoder offset 0.064°; gravity residual 0.091 N·m matches the plant's hidden hand mass + Kt error within 4 mN·m; sag test proves the drive clamp ✅
-- Bring-up, whole arm with the SIM PLACEHOLDER GIM table: all 6 steps pass in 52 s; 5 zeros within 0.113° of the hidden offsets; jog tracking ≤ 2.4° at 10 % speed; effective balancer K 4.546 N·m (nominal 4.5, plant 4.725 + hidden mass/Kt); collision thresholds [0.95, 1.89, 0.68, 0.96, 0.3] N·m load into CollisionDetector ✅
+- Bring-up, DM-J4310 path (GIM joints BLOCKED by their TODO table, held in the fixture): all 7 steps pass in 30 s (63102 cycles at 500 Hz); zero vs the hidden encoder offset 0.064°; gravity residual 0.091 N·m matches the plant's hidden hand mass + Kt error within 4 mN·m; sag test proves the drive clamp; sysid K 0.973 (hidden 0.972); report has the fitted model and the determinism checks ✅
+- Bring-up, whole arm with the SIM PLACEHOLDER GIM table: all 7 steps pass in 112 s; 5 zeros within 0.097° of the hidden offsets; jog tracking ≤ 2.4° at 10 % speed; effective balancer K 4.548 N·m (nominal 4.5, plant 4.725 + hidden mass/Kt); collision thresholds [0.95, 1.94, 0.68, 0.96, 0.3] N·m load into CollisionDetector ✅
 - Fault injection, each caught at its step with every later step REFUSED: factory_id:wpitch → enumerate; estop_stuck → safety; watchdog_dead → safety; no_timeout → safety; no_clamp → gravity; reversed:wpitch → jog ✅
-- Teleop (scripted leader → EEF delta → IK → supervisor at 500 Hz → MIT law on the twin): 5 episodes recorded (603 frames, 5/5 placed, loop 10.19 ms p50 / 19.09 ms p99 per 15 Hz step), reloaded with LeRobotDataset (v3.0, 603 frames, actions exact); the e-stop episode was discarded and the arm stopped (drift 54.6 mrad) ✅
+- Bus realism (sw/bus_sim.py; docs/sw/bus_realism.md): with 0–9 ms of delay each way (round trip mean 12, max 20 ms) the old 10 ms stale-feedback bound false-trips the safety step; with 20 ms + the fixes every step of the bring-up passes, no false stop or collision trip in motion, a contact still trips in 16 ms, a silent bus stops the supervisor in 26 ms and the drive's own timeout fires at 38 ms, bus-off in 26 ms; 197 corrupted payloads → 28 dropped by the plausibility gate, bring-up passes ✅
+- Actuator sysid (bring-up step 7, sw/sysid.py) rehearsed on the Step-1 rig (GIM yaw stage on a lever + DM-J4310, hidden values, USB-CAN bus): fit vs hidden truth worst error coulomb 4.7 %, viscous 6.0 %, kt 1.1 %, backlash 5.3 %, latency 5.1 % (docs/sw/sysid_rehearsal.md); actuators_<serial>.yaml written and loaded back by rnd/twin.py and sw/virtual_arm.py ✅
+- Soak test (sw/soak.py, Step-1 exit criterion): sysid at start and end of cyclic motion; stable virtual drive PASS (drift Coulomb -1.0 %, K -0.06 %, latency +0.0 ms); a drive whose friction grows with temperature FAILS (wpitch coulomb_pct +28.82 (limit 20.0)) ✅
+- Teleop (scripted leader → EEF delta → IK → supervisor at 500 Hz → MIT law on the twin): 5 episodes recorded (603 frames, 5/5 placed, loop 10.38 ms p50 / 18.43 ms p99 per 15 Hz step), reloaded with LeRobotDataset (v3.0, 603 frames, actions exact); the e-stop episode was discarded and the arm stopped (drift 54.6 mrad) ✅

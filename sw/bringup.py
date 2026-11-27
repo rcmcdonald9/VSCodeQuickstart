@@ -1295,7 +1295,7 @@ def build_virtual(cfg=None, gim_table=None, faults=(), seed=0, joints=None, hand
         buses[bn] = b
     # register replies wait in simulated time (the loop keeps cycling: BringUp._reg_idle), so a 50 ms timeout is 25 cycles
     bu = BringUp(buses, cm, cfg, tables, io=arm.io, operator=SimOperator(arm), clock=arm.clock, plant=arm, joints=joints,
-                 reg_timeout=0.05, log=log, **kw)
+                 reg_timeout=0.05, log=log, actuator_dir=actuator_dir, **kw)
     tables_used = tables
     bu.tables = tables_used
     return bu, arm

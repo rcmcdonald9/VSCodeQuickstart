@@ -2,17 +2,17 @@
 
 Definition: 2.0 h at ≈ 50% rated (0.25 Hz sine, soak weight 0.5 kg), sysid at the start and the end; limits {'coulomb_pct': 20.0, 'viscous_pct': 25.0, 'kt_pct': 5.0, 'backlash_deg': 0.1, 'latency_mean_ms': 0.5, 'latency_p95_ms': 2.0}. Coulomb ±20 % / viscous ±25 %: grease warm-up alone moves friction ≈ 10–20 %; K ±5 %: NdFeB magnets lose ≈ 0.1 %/K, a 40 K winding rise ≈ 4–5 %; backlash +0.1°: wear or a loosening stage, not warm-up; latency mean +0.5 ms, p95 +2 ms: the bus and the host must not get slower as the CPU heats (the Asimov throttling finding).
 
-Motion: 60.0 s, RMS torque {'wpitch': 0.411} of rated, supervisor stops 0, implausible frames 0; drive temperatures at the end {'wpitch': 35} °C.
+Motion: 45.0 s, RMS torque {'wpitch': 0.409} of rated, supervisor stops 0, implausible frames 0; drive temperatures at the end {'wpitch': 35} °C.
 
 | Joint | F_c start → end | B | K | backlash ° | latency mean / p95 ms | drift | verdict |
 |---|---|---|---|---|---|---|---|
-| wpitch | 0.0402 → 0.0541 | 0.501 → 0.497 | 0.97188 → 0.97175 | 0.000 → 0.000 | 2.0/2.0 → 2.0/2.0 | {'coulomb_pct': 34.643, 'viscous_pct': -0.892, 'kt_pct': -0.013, 'backlash_deg': 0.0, 'latency_mean_ms': 0.0, 'latency_p95_ms': 0.0} | ❌ |
+| wpitch | 0.0402 → 0.0518 | 0.502 → 0.499 | 0.97216 → 0.97152 | 0.000 → 0.000 | 2.0/2.0 → 2.0/2.0 | {'coulomb_pct': 28.817, 'viscous_pct': -0.491, 'kt_pct': -0.066, 'backlash_deg': 0.0, 'latency_mean_ms': 0.0, 'latency_p95_ms': 0.0} | ❌ |
 
 - ℹ️ kernel real-time (PREEMPT_RT): 6.18.44-fc-v880 (PREEMPT_DYNAMIC (not RT)); policy SCHED_OTHER prio 0; isolated CPUs —; governor None — not the Pi: informational
 - ℹ️ CPU throttling / under-voltage (vcgencmd get_throttled): not available on this machine (skipped)
 - ℹ️ CPU temperature: no sensor readable (skipped)
-- ℹ️ loop period (SW1: p99 |period − 2 ms| < 1 ms): p50 0.48, p99.9 2.32, max 18.69 ms; jitter p99 1.61 ms; > 8 ms: 4 — virtual run: compute time per cycle, not a real-time measurement
-- ✅ CAN B1 controller health: state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +0, RX dropped +0
+- ℹ️ loop period (SW1: p99 |period − 2 ms| < 1 ms): p50 0.50, p99.9 2.61, max 21.22 ms; jitter p99 1.62 ms; > 8 ms: 2 — virtual run: compute time per cycle, not a real-time measurement
 - ⚠️ CAN B2 controller health: state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +3, RX dropped +0
+- ✅ CAN B1 controller health: state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +0, RX dropped +0
 
-**Fails:** wpitch coulomb_pct +34.64 (limit 20.0)
+**Fails:** wpitch coulomb_pct +28.82 (limit 20.0)
