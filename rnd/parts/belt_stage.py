@@ -337,10 +337,11 @@ def ear_boss(motor: dict | None = None, site: str = "default", r: float = 7.5, t
 #     ear screws, and the cartridge comes out WITH its stub, pulley and 6001 (the bonded bushing stays in wall B).
 # Stage frame as v3 (flange plane z = 0, cartridge +Z, wall A z −6 … 0, wall B pulley face z −34).
 BRG_B = dict(name="6001-2RS", d=12.0, D=28.0, B=8.0, C=5.4e3, C0=2.36e3)    # SKF 6001 (12×28×8): C 5.4 kN, C0 2.36 kN (catalogue)
-STUB = dict(flange_od=42.0, t=4.0, pilot_d=20.0, pilot_h=1.5, n_screw=8, screw="DIN 7984 M3 × 6 8.8 (D20: 10.9), Loctite 243",
-            material="C45 / 1045 turned, 4 × 2.5 DIN 6885 keyway under the pulley")
+STUB = dict(flange_od=42.0, t=4.0, pilot_d=20.0, pilot_h=1.5, n_screw=8, screw="DIN 7984 M3 × 6, Loctite 243 (8.8; D20 10.9)",
+            material="C45 / 1045, 4 × 2.5 DIN 6885 keyway under the pulley")
 BUSH_B = dict(od=37.4, seat_d=38.2, t=8.0, adhesive="structural epoxy (EA 9466 / DP420 class), 0.4 mm radial bond line")
 WALL_A_HOLE_R = AL_PULLEY["flange_od"] / 2 + 1.3      # 20.3: the pulley's flange passes wall A on a swap (was the Ø38.2 eccentric seat)
+WALL_SLOT_HW = 20 * PITCH / math.pi / 2 - PLD + 1.05   # 16.4: wall-A exit slot half-width (the 20T's toothed body + 1 mm)
 MOTOR_BRG_DEPTH = 6.0                                 # motor output bearing centre behind the output face (ESTIMATE: not on any drawing)
 
 
@@ -379,7 +380,7 @@ def idler_parts(idler: dict):
     for z in (zc - w / 2 - 1.5, zc + w / 2):
         roll += Pos(x, y, z) * Cylinder(r + idler["flange"], 1.5, align=MINZ)
     roll -= Pos(x, y, -200) * Cylinder(2.6, 400, align=MINZ)
-    z0, z1 = idler.get("wall_b_out", -40.0) - 3.5, 3.5                           # head (wall B side) and nut (wall A's cartridge side)
+    z0, z1 = idler.get("wall_b_out", -40.0) - 5.0, idler.get("axle_top", -0.5)    # M5 × 40 ISO 4762: head (5) on wall B, tip flush in the captive nut in wall A
     axle = Pos(x, y, z0) * Cylinder(2.5, z1 - z0, align=MINZ)
     return [("idler_roller", roll, "dark"), ("idler_axle", axle, "steel")]
 
@@ -394,6 +395,18 @@ def idler_cuts(idler: dict, z0: float, z1: float, grow: float = 0.0) -> Part:
     if L > 1e-6:
         c += Pos((xa + xb) / 2, (ya + yb) / 2, z0) * Rot(0, 0, math.degrees(math.atan2(yb - ya, xb - xa))) * Box(L, 2 * r, z1 - z0, align=MINZ)
     return c
+
+
+def idler_nut_pocket(idler: dict, depth: float = 4.1) -> Part:
+    """Captive ISO 4032 M5 nut (s 8, m 4) on wall A's cartridge-side face (stage z −depth … 0): a slot pocket 8.1 wide along
+    the idler's travel, so the nut slides with the axle but cannot turn (the bolt is turned from its head on wall B's outer
+    face). It sits partly under the cartridge flange's rim; the 1.9 mm floor is in compression between the nut and the
+    axle's spacer."""
+    MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
+    (xa, ya), (xb, yb) = idler["slot"]
+    L = math.hypot(xb - xa, yb - ya)
+    ang = math.degrees(math.atan2(yb - ya, xb - xa)) if L > 1e-6 else 0.0
+    return Pos((xa + xb) / 2, (ya + yb) / 2, -depth) * Rot(0, 0, ang) * Box(L + 9.3, 8.1, depth + 0.01, align=MINZ)
 
 
 def idler_boss(idler: dict, z0: float, z1: float, r: float = 7.0) -> Part:
@@ -437,8 +450,7 @@ def small_stage_v4(teeth: int = 20, motor: dict | None = None, idler: dict | Non
     pd_ = teeth * PITCH / math.pi
     p0, p1 = v["pulley"][1], v["pulley"][0]
     pul = Pos(0, 0, p0 - AL_PULLEY["body_l"]) * (Cylinder(pd_ / 2 - PLD, AL_PULLEY["body_l"], align=MINZ))
-    for z in (p0 - 1.5, p0 - AL_PULLEY["body_l"]):
-        pul += Pos(0, 0, z) * Cylinder(AL_PULLEY["flange_od"] / 2, 1.5, align=MINZ)
+    pul += Pos(0, 0, p0 - 1.5) * Cylinder(AL_PULLEY["flange_od"] / 2, 1.5, align=MINZ)   # motor-side flange only (belts.INSTALL_SLACK)
     pul += Pos(0, 0, p1) * Cylinder(AL_PULLEY["hub_d"] / 2, AL_PULLEY["hub_l"], align=MINZ)
     pul -= Pos(0, 0, -200) * Cylinder(SHAFT_D / 2, 400, align=MINZ)
     out = [("kx_hub_v2", fl, "steel"), ("shaft_12", shaft, "steel"), ("brg_B_6001", brg, "steel"), ("brg_B_bushing", bush, "white"),
@@ -449,14 +461,15 @@ def small_stage_v4(teeth: int = 20, motor: dict | None = None, idler: dict | Non
 def wall_a_cuts_v4(motor: dict | None = None, site: str = "default") -> Part:
     """wall_a_cuts for the direct stage: the Ø38.2 eccentric seat becomes a Ø40.6 clearance hole (the pulley's flange
     passes on a swap), plus, where the cartridge cannot be pulled its stub's length along its axis (cartridge_m.WALL_EXIT:
-    the pitch, with the lift carriage 12.6 mm behind its rear cap), a U-slot as wide as that hole from the hole to the
-    wall's edge, so the pulley and stub leave sideways once the 6001 is out of wall B (8 mm of axial travel)."""
+    the pitch, with the lift carriage 12.6 mm behind its rear cap), a U-slot from the hole to the wall's edge: after
+    cartridge_m.DIRECT_LIFT (8.5 mm) along the axis the 6001 is out of wall B, the pulley's flange is above wall A and only
+    its toothed body (r 15.35) and the stub are in wall A's plane, so the slot is 32.8 wide (WALL_SLOT_HW)."""
     from . import cartridge_m as cm
     MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
     c = wall_a_cuts(motor, site)
     c += Pos(0, 0, -20) * Cylinder(WALL_A_HOLE_R, 40, align=MINZ)
-    if site in cm.WALL_EXIT:
-        c += Rot(0, 0, cm.WALL_EXIT[site]) * Pos(0, 0, -6.5) * Box(300, 2 * WALL_A_HOLE_R, 7.0, align=(Align.MIN, Align.CENTER, Align.MIN))
+    if site in cm.WALL_EXIT:                                           # after the lift only the toothed body (r 15.35) is in wall A's plane
+        c += Rot(0, 0, cm.WALL_EXIT[site]) * Pos(0, 0, -6.5) * Box(300, 2 * WALL_SLOT_HW, 7.0, align=(Align.MIN, Align.CENTER, Align.MIN))
     return c
 
 

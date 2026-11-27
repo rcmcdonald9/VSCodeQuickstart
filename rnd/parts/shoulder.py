@@ -31,7 +31,8 @@ from .belt_stage import pulley
 from ..params import BASELINE as _D
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
-EAR_SITE = "pitch4"         # D24 v2 flange-ear pattern + side exit (cartridge_m.EAR_SITES / EXIT_SITES), read by rnd/assembly_seq.py
+EAR_SITE = "pitch4"         # D24 v2 flange-ear pattern + side exit (cartridge_m.EAR_SITES / WALL_EXIT), read by rnd/assembly_seq.py
+DRIVE = "direct"            # D26 (2026-11-27): direct stage v4 (belt_stage.small_stage_v4, no Oldham) + back-side slotted idler; read by rnd/assembly_seq.py
 MOT = cm.MOTORS[_D.arm.joints["shoulder_pitch"][0]]   # D20 switch (params.ARM_MOTORS): GIM6010-8, or the GIM8108-8 (Ø96 ESTIMATE, Ø50 Oldham, Ø84 flange)
 WALL = 1.6
 BELT_C = 70.0
@@ -203,6 +204,19 @@ def hub_tie_length() -> float:
 
 
 _ST = Pos(-BELT_C, Y_F, 0) * Rot(90, 0, 0)          # stage frame → module frame (stage +Z → −Y, hub face at Y_F, axis at x = −BELT_C)
+
+
+def idler():
+    """D26: the pitch belt's back-side slotted idler (rnd/belts.py IDLERS["shoulder_pitch"]: on the stage +Y = upper strand,
+    0.45 of the way to the 60T; the lower side is the cartridge's exit path through wall A's U-slot). Stage frame."""
+    from .. import belts as _b
+    from .belt_stage import PITCH as _P
+    g = _b.idler_geom("shoulder_pitch", 20, 60, BELT_C, _b.STOCK_TEETH["shoulder_pitch"], MOT_PEAK * 1000 / (20 * _P / math.pi / 2))
+    g["wall_b_out"] = -40.0
+    return g
+
+
+MOT_PEAK = 22.0 if MOT is cm.MOTOR_8108 else 11.0     # actuator peak (rnd/specs/actuators.yaml), for the idler's preload / loads
 _XS, _ZS = 190.0, 150.0
 _X0 = -BELT_C / 2 - 10
 WEB_INSERTS_Z = (-50.0, 10.0, 70.0)                 # 3 × M4 (outer wall → web end face)
@@ -215,13 +229,17 @@ LIGHTEN_OUT = LIGHTEN
 def _wall(y: float, inner: bool) -> Part:
     w = Pos(_X0, y, 10) * Rot(-90, 0, 0) * fillet(Box(_XS, _ZS, WALL_T).edges().filter_by(Axis.Z), 20)
     w -= Pos(0, y, 0) * Rot(-90, 0, 0) * Cylinder(26, WALL_T + 1)                      # 61808 seat (OD 52)
+    from .belt_stage import idler_cuts, idler_nut_pocket
+    g = idler()
     if inner:
-        from .belt_stage import wall_a_cuts
-        w -= _ST * wall_a_cuts(MOT, EAR_SITE)   # D24 v2: eccentric seat, spigot counterbore, 3 ear bolts + nut pockets (pulley side)
+        from .belt_stage import wall_a_cuts_v4
+        w -= _ST * wall_a_cuts_v4(MOT, EAR_SITE)   # D26: Ø40.6 pulley hole + U-slot exit downward, spigot counterbore, ear bolts + nut pockets
+        w -= _ST * (idler_cuts(g, -6.5, 0.5) + idler_nut_pocket(g))   # D26: idler axle slot + captive M5 nut pocket (under the cartridge flange's edge)
     else:
-        w -= Pos(-BELT_C, y, 0) * Rot(-90, 0, 0) * Cylinder(19.1, WALL_T + 1)       # eccentric-bushing seat (Ø38) for bearing B
+        w -= Pos(-BELT_C, y, 0) * Rot(-90, 0, 0) * Cylinder(19.1, WALL_T + 1)       # Ø38.2 seat: the bonded 6001 bushing (D26)
         from .belt_stage import wall_b_cuts
         w -= _ST * wall_b_cuts(MOT, EAR_SITE)   # Neon #2 F2: the pitch4 rear ear pair is screwed from the pulley side through the outer wall (Ø10 driver holes)
+        w -= _ST * idler_cuts(g, -40.5, -33.5)  # D26: idler axle slot (head + jack screw on the outboard face)
     # lightening (loop 8 diet): keep ≥ 10 mm of material around both bearing seats and along the back web
     for cx, cz, lx, lz in (LIGHTEN if inner else LIGHTEN_OUT):
         w -= Pos(cx, y, cz) * Rot(-90, 0, 0) * fillet(Box(lx, lz, WALL_T + 1).edges().filter_by(Axis.Z), 5)
@@ -315,13 +333,13 @@ def pulley_a() -> Part:
 def module(with_motor: bool = True):
     """(name, part, colour) list in the module frame. Stage frame (belt_stage.small_stage_v3): flange plane z = 0,
     cartridge +Z; mapped so stage +Z → world −Y, flange plane at Y_F, axis at x = −BELT_C."""
-    from .belt_stage import small_stage_v3, bolted_cartridge
+    from .belt_stage import small_stage_v4, bolted_cartridge
     from . import encoder as _enc
     out = [("bracket", bracket_body(), "white"), ("bracket_wall", bracket_wall_out(), "white"), ("shaft", pitch_shaft(), "orange"),
            ("pitch_hub", pitch_hub(), "orange"), ("pitch_hub_crank", crank() + _enc.pitch_magnet(), "steel"),   # M3: magnet bonded in the crank ("pitch_hub_collar", hub_clamp_ring(), "steel"),   # name: a "collar"/"hub" mate in rnd.spacing
            ("pulleyA", pulley_a(), "steel"),
            ("bracket_wall_spring_ring", spring_ring(), "dark")]   # screwed to the outer wall (a mate for rnd.spacing)
-    out += [(n, _ST * pp, c) for n, pp, c in small_stage_v3(20, MOT)]                # D24: Oldham drive + D13 stage
+    out += [(n, _ST * pp, c) for n, pp, c in small_stage_v4(20, MOT, idler())]       # D26: direct stage (stub on the motor, 6001 in the outer wall) + idler
     out += _enc.pitch_parts()                                                          # M3: AS5048A strip board ("enc_pcb")
     if with_motor:
         out += [(n, _ST * pp, c) for n, pp, c in bolted_cartridge(MOT, EAR_SITE)]
@@ -331,16 +349,19 @@ def module(with_motor: bool = True):
 def masses(density=1.27):
     """D24/D19 roll-up (2026-11-27). The bolted cartridge's sleeve is counted here only by what it adds over the loop-10 can
     (nose, flange, rear cap); the motor is the actuator mass."""
-    from .belt_stage import small_stage_v3
-    st = dict((n, p) for n, p, _ in small_stage_v3(20, MOT))
-    oldham = st["flange_coupling"].volume * 2.7e-3 * 0.8 + st["oldham_disc"].volume * 1.41e-3 + st["kx_hub_v2"].volume * 2.7e-3   # metal (6061) motor-side Oldham hub, Neon #2 F2
+    from .belt_stage import small_stage_v4
+    st = dict((n, p) for n, p, _ in small_stage_v4(20, MOT, idler()))
+    # D26: the turned C45 stub (flange + shaft) and the idler (2 × 625 + printed roller + M5 axle) replace the Oldham drive
+    # (the stage shaft was never counted here; the stub's shaft is 11.6 mm longer than the v3 shaft: + 10 g)
+    oldham = (st["kx_hub_v2"].volume * 7.85e-3 + 10.0 + st["idler_roller"].volume * 1.27e-3 * 0.7 + st["idler_axle"].volume * 7.85e-3
+              + 2 * 4.0)   # g (625-2RS ≈ 4 g each)
     can_extra = (cm.can_bolted(MOT, EAR_SITE).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-3
     m = {"bracket body + bolted outer wall (walls, web, cage)": bracket().volume / 1e6 * density * 0.6,
          "pitch shaft + integral 60T + pitch hub (ferrule) + clock-spring ring": (pitch_shaft().volume + pitch_hub().volume + spring_ring().volume) / 1e6 * density * 0.7,
          "balancer crank (HUB_TIE crank_mat) + Ø6 pin B": crank().volume * HUB_TIE["crank_density"],
          "C1 hub tie: 4 × M4 10.9 studs + nuts + 8 crush sleeves (steel) + 6061 clamp ring": (4 * 8.78 * hub_tie_length() + 4 * 100.0) * 7.85e-6
          + hub_clamp_ring().volume * 2.7e-6 + HUB_TIE["n"] * math.pi / 4 * (HUB_TIE["sleeve"][0] ** 2 - HUB_TIE["sleeve"][1] ** 2) * (Y_TUBE_END - Y_TUBE_IN + hub_print_under_ring()) * 7.85e-6,
-         "D24 Oldham drive (alu hub, acetal disc, ASA adapter) + can nose/flange/cap": (oldham + can_extra) / 1e3,
+         "D26 drive stub (C45) + idler + can nose/flange/cap": (oldham + can_extra) / 1e3,
          "bearings 2×61808 + 2×61804 (ESTIMATE)": 0.056,
          "spring + cable + 2 × (608-2Z + POM tyre) + Ø8 axles (ESTIMATE; M8: was U604, 0.09)": 0.11,
          "V-band clamp, stainless 3\" (ESTIMATE)": 0.11,

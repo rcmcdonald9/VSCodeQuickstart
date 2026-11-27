@@ -17,6 +17,8 @@ from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 from . import cartridge_m as cm
 from .soft import soft_shell
 EAR_SITE = "elbow"          # D24 v2 flange-ear pattern (cartridge_m.EAR_SITES), read by rnd/assembly_seq.py
+DRIVE = "direct"            # D26 (2026-11-27): direct stage v4 (belt_stage.small_stage_v4, no Oldham); fixed centre, no tensioner
+                            # (rnd/belts.py FIXED_CENTRE: params elbow_belt_c = the stock belt's exact centre + 0.25 mm); read by rnd/assembly_seq.py
 from .kx import KX56, KX74, hub as kx_hub, collar as kx_collar   # (masses: what D24 removed)
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
@@ -244,10 +246,10 @@ def cassette_plate(side: str = "B") -> Part:
         p += Pos(0, y0 + t / 2, (zS + 27 - 12 + SLOT_Z) / 2) * Box(16, t, SLOT_Z - (zS + 27 - 12) + 6)
     p -= disc(0, zE, 25)                                                  # 6708 (40×50×6) seat
     if side == "A":
-        from .belt_stage import wall_a_cuts
-        p -= STAGE * wall_a_cuts(MOT, EAR_SITE)                           # D24 v2: eccentric seat, spigot counterbore, ear bolts + nut pockets
+        from .belt_stage import wall_a_cuts_v4
+        p -= STAGE * wall_a_cuts_v4(MOT, EAR_SITE)                        # D26: Ø40.6 pulley hole, spigot counterbore, ear bolts + nut pockets
     else:
-        p -= disc(0, zS, 19.1)                                            # eccentric-bushing seat
+        p -= disc(0, zS, 19.1)                                            # Ø38.2 seat: the bonded 6001 bushing (D26)
     return p
 
 
@@ -401,9 +403,9 @@ def masses(density=1.27):
     integral with the elbow shaft, the D13 v3 metal parts are counted by material, the elbow seat caps are added. The yaw
     KX74 socket stays here until roll.py moves the yaw stage to D24."""
     from . import cartridge_m as cm, hand as hd
-    from .belt_stage import small_stage_v3
+    from .belt_stage import small_stage_v4
     from .kx import retainer
-    st = dict((n, p) for n, p, _ in small_stage_v3(20, MOT))
+    st = dict((n, p) for n, p, _ in small_stage_v4(20, MOT))
     shells = {"upper bone shell + D19 bolted seat caps": upper_bone().volume + elbow_seat_cap("-").volume + elbow_seat_cap("+").volume,
               "forearm shell": forearm().volume}
     cf = {"CF tubes (neck Ø40 + forearm Ø30)": (cf_neck().volume + cf_fore().volume) / 1e6 * 1.55}
@@ -413,9 +415,9 @@ def masses(density=1.27):
                "wrist D24 output flange + can flange ring": hd.adapter_d().volume + hd.can_d().volume - hd.can_d_loop10_volume()}
     out = {k: v / 1e6 * density for k, v in shells.items()}
     out.update({k: v / 1e6 * density * 0.7 for k, v in sockets.items()})
-    out["elbow D13 v3 stage (steel Ø12, alu pulley, 6801s) + Oldham (alu hubs both sides since Neon #2, acetal disc)"] = (
-        st["shaft_12"].volume * 7.85e-3 + st["al_pulley"].volume * 2.7e-3 + (st["brg_A_6801"].volume + st["brg_B_6801"].volume) * 7.85e-3 * 0.6
-        + st["flange_coupling"].volume * 2.7e-3 * 0.8 + st["oldham_disc"].volume * 1.41e-3 + st["kx_hub_v2"].volume * 2.7e-3) / 1e3
+    out["elbow D26 direct stage (C45 stub on the motor, alu pulley, 6001 + bonded bushing; no Oldham)"] = (
+        (st["shaft_12"].volume + st["kx_hub_v2"].volume) * 7.85e-3 + st["al_pulley"].volume * 2.7e-3 + st["brg_B_6001"].volume * 7.85e-3 * 0.6
+        + st["brg_B_bushing"].volume * density * 0.8e-3) / 1e3
     out["elbow shaft 6061 core tube Ø30 × 1.5 (Neon #2 finding 7)"] = elbow_core_tube().volume * 2.7e-6
     out["elbow can nose/flange/rear cap over the loop-10 can"] = (cm.can_bolted(MOT).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-6
     out.update(cf)
@@ -431,8 +433,8 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     from .kx import collar, balls_mated
     out = [("upper_bone", upper_bone(), "white"), ("bone_cap", bone_cap(), "white"), ("e_cassette", cassette(), "dark")]
     # elbow stage, built in the stage frame (cartridge +Z, big pulley at +X), then mapped: +Z→-Y, +X→-Z (STAGE)
-    from .belt_stage import bolted_stage, V3
-    out += bolted_stage(STAGE, 20, "e_", MOT, EAR_SITE)                                  # D24: bolted cartridge + Oldham + D13 stage
+    from .belt_stage import bolted_stage_v4, V3
+    out += bolted_stage_v4(STAGE, 20, "e_", MOT, EAR_SITE)                               # D26: bolted cartridge + direct stage (no Oldham, fixed centre)
     bc = V3["belt_c"]
     out += [("e_belt", STAGE * Pos(0, 0, bc - 7.5) * belt_loop(31.8, E_TEETH * 5.0 / math.pi, BELT_C, width=15.0, exact=True), "dark"),
             ("e_seat_cap_m", elbow_seat_cap("-"), "white"), ("e_seat_cap_p", elbow_seat_cap("+"), "white")]

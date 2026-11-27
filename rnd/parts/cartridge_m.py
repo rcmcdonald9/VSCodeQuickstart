@@ -214,7 +214,16 @@ EAR_FEED = {"yaw": {50.0: 90.0, -50.0: -90.0, 145.0: 180.0, -145.0: 180.0}}   # 
 # of the disc, lip out of the counterbore) and slides off sideways AWAY from the opening, so the shaft-side hub and the
 # disc (which stays on it) leave through the slot. Opening angle from the stage +X (pitch: +Y = up, the cartridge drops
 # out downward; lift: −X = down, it comes out upward); the ears keep ≥ 40° clear of it.
-EXIT_SITES = {"pitch": 90.0, "lift": 180.0, "pitch4": 90.0, "lift4": 180.0}
+EXIT_SITES = {"pitch": 90.0, "lift": 180.0, "lift4": 180.0}
+# D26 (owner, 2026-11-27): the arm sites drive their pulley straight from the motor output (belt_stage.small_stage_v4: a
+# turned stub on the output flange, a 6001 in wall B, a slotted idler); the lift sites keep the Oldham (v3) until
+# upper.py moves (lift_d26 is the direct pattern for it). With the pulley on the motor nothing static passes through the
+# flange, so the flange is whole again; where the cartridge cannot be pulled its stub's length (pitch: the lift carriage
+# 12.6 mm behind), wall A gets a U-slot instead (WALL_EXIT: the direction the pulley and stub leave, from the stage +X,
+# after 8.5 mm along the axis frees the 6001 from wall B).
+DIRECT_SITES = {"pitch4", "elbow", "yaw", "roll_belt", "lift_d26"}
+WALL_EXIT = {"pitch4": 270.0, "lift_d26": 0.0}
+DIRECT_LIFT = 8.5                            # axial travel that frees the 6001 (8 wide, flush with wall B's pulley face) + 0.5
 EXIT_LIFT = 4.5                              # axial travel before the side move: adapter tongue (3.7 in the disc) + 0.8
 STEP_T = 3.0
 CAP_T = FLOOR
@@ -434,8 +443,43 @@ def motor_adapter_bolted(m: dict | None = None) -> Part:
 # ---------------------------------------------------------------------------------------------------------------------
 # Bought parts per bolted stage (D24 v2, Fable C3/M5/M6, 2026-11-27): for the BOM / M1 kit. Standard designations; sizes
 # not on a datasheet are ESTIMATE. Ear-screw count per site: EAR_SITES (elbow 4, pitch 3, yaw 2, lift 2).
+def parts_list_direct(m: dict | None = None, site: str = "elbow", idler: bool = False):
+    """D26: [(item, spec, qty)] for one bolted cartridge + its DIRECT stage (belt_stage.small_stage_v4), motor m at site;
+    idler=True adds the pitch's back-side slotted idler (rnd/belts.py IDLERS)."""
+    from . import belt_stage as bs
+    m = m or MOTOR
+    d20 = m is MOTOR_8108
+    n_rev = len(EAR_REVERSED.get(site, ()))
+    n_ear = len(EAR_SITES[site]) - n_rev
+    out = [("actuator", "SteadyWin GIM8108-8 (8:1) with driver; 24 V operation to confirm (D20 gate)" if d20 else "SteadyWin GIM6010-8 with SDC104 driver", 1),
+           ("drive stub", f"turned {bs.STUB['material']}: Ø{bs.STUB['flange_od']:.0f} × {bs.STUB['t']:.0f} flange, 8 × Ø3.4 + Ø6.0 × 2.2 c'bore on PCD "
+                          f"{m['out_pcd']:.0f} (ESTIMATE until coupon_motor), Ø{bs.STUB['pilot_d']:.0f} pilot (ESTIMATE), Ø12 h6 × 63 shaft, k6 seat for the 6001 at its end", 1),
+           ("stub screws", f"DIN 7984 M3 × 6 {'10.9' if d20 else '8.8'}, Loctite 243", 8),
+           ("key", f"DIN 6885 A 4 × 4 × {20 if d20 else 16} (pulley)", 1),
+           ("small pulley", f"HTD 5M 20T for 15 mm belt, {'steel C45' if d20 else 'aluminium'}, bore 12 H7 + 4 mm keyway, set screw on the key; "
+                            "hub-side flange turned off (motor-side flange only: the belt slides off in mesh, belts.INSTALL_SLACK)", 1),
+           ("bearing", f"{bs.BRG_B['name']} (12 × 28 × 8) pressed on the stub end; outer ring slip fit in the printed bushing", 1),
+           ("bushing adhesive", f"wall-B bushing bonded after the cartridge is bolted: {bs.BUSH_B['adhesive']} (from the epoxy line)", 1),
+           ("flange ear screws", f"{EAR['screw']}", n_ear),
+           ("rear cap", f"{CAP['screw']} × 2; {CAP['motor_screw']} × {m['rear_holes'] // 2} into the motor", 1)]
+    if n_rev:
+        out.insert(-1, ("flange ear screws (reversed)", EAR["rev_screw"], n_rev))
+    if idler:
+        out += [("idler bearings", "625-2RS (5 × 16 × 5)", 2),
+                ("idler axle", "ISO 4762 M5 × 40 8.8 (plain shank under the bearings) + ISO 4032 M5 nut (captive in wall A) + 2 aluminium Ø8 × 5.3 round spacers", 1),
+                ("idler jack screw", "ISO 4762 M4 × 20 + M4 nut in the wall-B lug (pushes the axle along its slot)", 1),
+                ("idler roller", "printed PETG-CF flat roller Ø25 × 16 with 1.5 mm flanges (print plan)", 1)]
+    if d20:
+        out += [("belt", "HTD 5M 15 mm PU steel-cord (Fable M6): 355-5M at the pitch, 380-5M at the elbow", 1),
+                ("firmware", "flash torque limit 18 N·m motor-side (sw/bringup.py limit step): 6001 2.0×, stub 8 × M3 1.7× at that limit", 1)]
+    return out
+
+
 def parts_list(m: dict | None = None, site: str = "default"):
-    """[(item, spec, qty)] for one bolted cartridge + its small stage, motor m at site."""
+    """[(item, spec, qty)] for one bolted cartridge + its small stage, motor m at site (D24 v3 Oldham stage; D26 arm sites:
+    parts_list_direct)."""
+    if site in DIRECT_SITES:
+        return parts_list_direct(m, site, idler=site.startswith("pitch"))
     m = m or MOTOR
     d20 = m is MOTOR_8108
     n_rev = len(EAR_REVERSED.get(site, ()))
@@ -480,19 +524,40 @@ FLANGE_LOAD = dict(preload=750.0, retained=0.3, g=3.0, mu_face=0.3, mu_oldham=0.
                    screw_proof=580.0 * 8.78, nut_area=26.5)   # M4 8.8 proof 580 MPa × As 8.78 mm² (ISO 898-1) = 5.1 kN; ISO 4032 M4 bearing ring mm²
 
 
-def flange_joint(m: dict | None = None, angles=None, site: str = "default", retained: float = 1.0):
-    """Tipping / bolt-load check of one ear pattern for motor m: angles (deg) given, or the site's (with its lobe sizes)."""
+def direct_brg_load(m: dict | None = None, T: float | None = None):
+    """D26 direct stage: radial load on the motor's output bearing at torque T (default the actuator peak): the small
+    pulley's shaft load F + 2·T0 (rnd/lift.py model: tight side F + T0, slack side T0, T0 = 0.25 F) times the motor
+    bearing's share of the stub span (belt_stage.support_split). Returns (motor bearing N, 6001 N, shaft load N, z of the
+    motor bearing in the stage frame)."""
+    from . import belt_stage as bs
+    m = m or MOTOR
+    T = (22.0 if m is MOTOR_8108 else 11.0) if T is None else T
+    F = T * 1000 / (20 * bs.PITCH / math.pi / 2)
+    shaft = F * (1 + 2 * 0.25)
+    sm, sb, _, _ = bs.support_split(m)
+    return sm * shaft, sb * shaft, shaft, bs._v4_levels(m)["motor_brg"]
+
+
+def flange_joint(m: dict | None = None, angles=None, site: str = "default", retained: float = 1.0, direct: bool | None = None):
+    """Tipping / bolt-load check of one ear pattern for motor m: angles (deg) given, or the site's (with its lobe sizes).
+    direct (default: the site is in DIRECT_SITES): D26, the motor's output bearing carries its share of the belt pull, which
+    the cartridge passes to wall A (shear through the centring lip, a moment on the ears); no Oldham side load."""
     m = m or MOTOR
     d20 = m is MOTOR_8108
     L = FLANGE_LOAD
+    direct = (angles is None and site in DIRECT_SITES) if direct is None else direct
     ang = tuple(EAR_SITES[site] if angles is None else angles)
     r, od = ear_r(m), m["flange"][0]
     T = 22.0 if d20 else 11.0
     mass = (0.396 if d20 else 0.388) + L["m_print"][d20] + L["m_hub"][d20]
     lv = bolted_levels(m)
     z_cg = lv["motor_face"] + m["h"] / 2
-    z_old = lv["adapter"][0] - (OLDHAM["tongue_h"] - OLDHAM["gap"]) / 2
-    F_r = L["mu_oldham"] * T * 1000 / (m["oldham"] / 3)
+    if direct:                                                                       # stub (≈ 0.1 kg C45) half on the motor
+        F_r, z_old = direct_brg_load(m)[0], direct_brg_load(m)[3]
+        mass += 0.05
+    else:
+        z_old = lv["adapter"][0] - (OLDHAM["tongue_h"] - OLDHAM["gap"]) / 2
+        F_r = L["mu_oldham"] * T * 1000 / (m["oldham"] / 3)
     M_app = (mass * 9.81 * L["g"] * z_cg + F_r * z_old) / 1000                       # N·m
     Fp = L["preload"] * retained
     pts = [(r * math.cos(math.radians(a)), r * math.sin(math.radians(a)), ear_boss_r(site, a) if angles is None else EAR["boss_r"]) for a in ang]
@@ -510,12 +575,12 @@ def flange_joint(m: dict | None = None, angles=None, site: str = "default", reta
     gap = max(((a[(i + 1) % len(a)] - a[i]) % 360 or 360) for i in range(len(a)))
     T_fric = L["mu_face"] * len(ang) * Fp * r / 1000
     return dict(n=len(ang), angles=ang, gap=gap, rule=(len(ang) >= 3 and gap <= 120.001) or (len(ang) >= 4 and gap <= 180.001),
-                T=T, mass=mass, z_cg=z_cg, F_r=F_r, M_app=M_app, preload=Fp, M_open=Mo, theta=k, sf_tip=Mo / M_app,
+                T=T, mass=mass, direct=direct, z_cg=z_cg, F_r=F_r, M_app=M_app, preload=Fp, M_open=Mo, theta=k, sf_tip=Mo / M_app,
                 F_max=F_max, sf_bolt=L["screw_proof"] / F_max, p_nut=F_max / L["nut_area"], T_fric=T_fric, sf_T=T_fric / T)
 
 
 C3_PATTERNS = {"pitch": (40.0, -30.0, -70.0), "yaw": (145.0, -145.0), "lift": (140.0, -140.0), "elbow": (40.0, -40.0, 140.0, -140.0)}
-NEW_SITES = {"pitch": "pitch4", "yaw": "yaw", "lift": "lift4", "elbow": "elbow"}
+NEW_SITES = {"pitch": "pitch4", "yaw": "yaw", "lift": "lift4", "elbow": "elbow"}   # "now": the arm sites are D26 direct stages
 
 
 def flange_rows():
