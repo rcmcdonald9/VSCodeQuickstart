@@ -51,18 +51,18 @@ class Arm:
     })
     spring_k_nm: float = 4.5       # shoulder balancer torque at the horizontal arm, τ = K·sin(pitch). Loop 5 (rnd/spring.py):
                                    # replaces the "85 % everywhere" assumption; K tuned for a 0.5 kg typical payload
-    bone_mass_upper: float = 0.75  # loop 40: +98 g housing stiffener (A8, P2 FEA; rnd/parts/arm.py housing_stiffener). FROM CAD (loop 23 roll-up: shell + cap + torque arm 216 g, cassette 52 g, CF neck 10 g, 40T hub 92 g, elbow small hub + KX74 108 g, bearings 90 g, hardware 70 g ESTIMATE = 0.638 kg; +9 g for the 110 mm housing = 0.647), rounded up
-    bone_mass_fore: float = 0.31   # FROM CAD (loop 9): side link with CF Ø30 tube + wrist KX56 socket + bearings + fasteners
+    bone_mass_upper: float = 0.79  # D24/D19 (2026-11-27, rnd/parts/arm.py masses): 98 mm housing, no elbow KX74 socket / torque arm, Oldham drive + bolted-can nose/flange/cap, integral 40T = −0.06; + 0.10 for the D13 elbow stage metal (steel shaft, alu pulley, 6801s) the loop-38 roll-up never counted. Loop 40: +98 g housing stiffener (A8, P2 FEA; rnd/parts/arm.py housing_stiffener). FROM CAD (loop 23 roll-up: shell + cap + torque arm 216 g, cassette 52 g, CF neck 10 g, 40T hub 92 g, elbow small hub + KX74 108 g, bearings 90 g, hardware 70 g ESTIMATE = 0.638 kg; +9 g for the 110 mm housing = 0.647), rounded up
+    bone_mass_fore: float = 0.28   # D24 (2026-11-27): wrist KX56 socket (57 g) → bolted output flange + can flange + forearm rim (+23 g). FROM CAD (loop 9): side link with CF Ø30 tube + wrist KX56 socket + bearings + fasteners
     bone_wall_mm: float = 1.2      # printed shell wall (rnd/bones.py: strength is never binding)
     cf_tubes: bool = True          # carbon-tube neck + forearm (loop 9: bone-bending sag at the hand 4.1 → 1.5 mm)
-    gripper_mech_mass: float = 0.30  # FROM CAD (loop 16 gripper v2: fin-ray TPU fingers, tactile pads, palm ToF; rnd/parts/hand.py)
+    gripper_mech_mass: float = 0.28  # D24 (2026-11-27, hand.masses 0.390 → 0.365): KX56 hub + collar → palm boss extension + 6 × M3. FROM CAD (loop 16 gripper v2: fin-ray TPU fingers, tactile pads, palm ToF; rnd/parts/hand.py)
     wrist_cam_mass: float = 0.05
     payload: float = 1.0           # kg at the grasp point (R2)
     # Elbow motor placement: None = at the elbow; a distance (m from the shoulder pitch axis) = motor sits up the
     # upper arm, just past the yaw joint, and drives the elbow through a long belt (precedent: Berkeley Blue moves
     # motors back along belts). The elbow then carries only a pulley hub + bearings.
     elbow_motor_at: float | None = None
-    pitch_module_mass: float = 0.79    # FROM CAD (loop 7; loop 8 lightening 0.81 → 0.76; loop 10 60T pulley 0.79, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
+    pitch_module_mass: float = 0.76    # D24/D19 (2026-11-27, shoulder.masses 0.758 → 0.729): bolted cartridge + Oldham, no KX74 socket / torque fork, integral 60T, bolted pitch hub + outer wall. FROM CAD (loop 7; loop 8 lightening 0.81 → 0.76; loop 10 60T pulley 0.79, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
                                        # KX-V ferrule, small hub + KX74 socket, bearings, spring/cable/pulley A, V-band clamp. Torso side.
     roll_stage_mass: float = 0.71      # FROM CAD (loop 40, rnd/parts/roll.py masses(split=True)): ferrule, roll link + spring ring, roll shaft + split 72T + spring hub, D13 stage + KX74 socket, 2×61808. Loop 10: 0.58
     yaw_stage_mass: float = 0.56       # FROM CAD (loop 40, incl. the A8 box walls): clevis + yaw block, yaw shaft + flange + split 40T + spring ring, D13 stage + KX74 socket, 2×61808. Loop 10: 0.47

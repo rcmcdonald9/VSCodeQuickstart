@@ -19,6 +19,6 @@ things for every drive shaft:
 | roll shaft (80T split on a hex; clock-spring hub on the +X end) | z -16.5…-10.5 (Ø40.0): ✅ −Z end; z 17.5…23.5 (Ø40.0): ✅ −Z end; z -8.0…8.0 (Ø34.4): ❌ blocked both ways | ✅ | ❌ |
 | yaw shaft (D19, loop 44: 40T + spring hub one piece; up into the top plate, bottom plate bolted on, flange last) | z -72.1…-66.1 (Ø40.0): ✅ +Z end; z -106.1…-100.1 (Ø40.0): ✅ −Z end | ✅ | ✅ |
 | elbow shaft (D19: 40T one piece; 2 × 61808 in capped U-seats + 2 × 6708; the cassette goes in from below) | z 3.7…9.7 (Ø40.0): ✅ −Z end; z 37.7…42.9 (Ø40.0): ✅ +Z end; z -57.5…-50.5 (Ø40.0): ✅ −Z end; z 50.5…57.5 (Ø40.0): ✅ +Z end | ✅ | ✅ |
-| D13 small stage v2 (steel Ø12 shaft; pulley, coupling, bearings separate): pitch, roll, yaw, elbow | z -30.5…-25.5 (Ø12.0): ✅ −Z end; z -63.5…-58.5 (Ø12.0): ✅ −Z end; z -58.0…-31.0 (Ø12.0): ✅ −Z end | ✅ | ✅ |
+| D13 small stage (steel Ø12 shaft; pulley, coupling, bearings separate): v2 at roll, yaw; v3 (D24, same shaft stack) at pitch, elbow | z -30.5…-25.5 (Ø12.0): ✅ −Z end; z -63.5…-58.5 (Ø12.0): ✅ −Z end; z -58.0…-31.0 (Ø12.0): ✅ −Z end | ✅ | ✅ |
 | D16 wrist-roll spindle (loop 43: from above, shoulder on the upper bearing; bearings from below, end cap) | z -91.1…-84.1 (Ø20.0): ✅ −Z end; z -98.1…-91.1 (Ø20.0): ✅ −Z end | ✅ | ✅ |
 | wheel shaft + flange (×4) | z -44…-37 (Ø40.0): ✅ +Z end; z -39…-32 (Ø40.0): ✅ +Z end | ✅ | ✅ |

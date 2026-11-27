@@ -95,8 +95,9 @@ def upper_bone() -> Part:
     h = HOUSING
     p = Pos(0, 0, -6) * Cylinder(45, 6, align=MIN)                                    # yaw-hub flange
     # neck (loop 9): carbon tube Ø40×1 (see cf_neck()) bonded into two printed sockets, one on the flange and one on the housing
-    for z in (-6 - 20, h["z1"] - 2):
-        p += Pos(0, 0, z) * (Cylinder(23, 22, align=MIN) - Cylinder(20.1, 22, align=MIN))
+    # Astra #2b finding 2 (2026-11-27): the tube started where its sockets ended (zero bond). The neck is only ≈ 55 mm, so
+    # one continuous printed sleeve runs flange → housing and the tube is bonded over its whole length (≈ 57 mm ≥ 1 × OD)
+    p += Pos(0, 0, h["z1"] - 2) * (Cylinder(23, -4 - (h["z1"] - 2), align=MIN) - Cylinder(20.1, -4 - (h["z1"] - 2), align=MIN))
     hz = h["z1"] - h["z0"]
     p += housing_shell()                                                                 # looks pass: soft on every edge (loop 23: two corner radii)
     p += housing_stiffener()                                                             # loop 40 (A8): P2 FEA found the 1.2 mm shell far too soft
@@ -200,17 +201,25 @@ def forearm() -> Part:
     y = FORE_Y
     link_t = 22.0
     p = Pos(0, y, 0) * Rot(90, 0, 0) * Cylinder(40, link_t)                            # hub disc on the elbow pulley hub
-    p -= Pos(0, y, 0) * Rot(90, 0, 0) * Cylinder(21, link_t)
+    # Astra #2b finding 2 (2026-11-27): the disc now clamps the elbow tube's double-D end (36 AF, y 59 … 83): a double-D
+    # bore (positive drive) split by a 1.5 mm slot toward +Z and pinched by 2 × M5 across it (≈ 2 × 18 N·m friction,
+    # ESTIMATE, on top of the flats; elbow ≤ 13 N·m in the basket carry, 22 N·m GIM peak)
+    from .belt_stage import dd_prism, DD_AF
+    p -= Pos(0, y - link_t / 2, 0) * Rot(-90, 0, 0) * dd_prism(link_t, DD_AF + 0.3, 20.15)
+    p -= Pos(0, y, 30) * Box(1.5, link_t + 1, 21)
+    for yy in (y - 5.5, y + 5.5):
+        p -= Pos(0, yy, 29) * Rot(0, 90, 0) * Cylinder(2.75, 60)
     body_len = FORE_L - 40 - 38
     # link (loop 9): carbon tube Ø30×1 (see cf_fore()) bonded into a socket on the hub disc and one on the wrist can
-    for z0 in (-40 - 24, -FORE_L + 38):
-        p += Pos(0, y, z0) * (Cylinder(18, 24, align=MIN) - Cylinder(15.1, 24, align=MIN))
+    for z0 in (-40 - FORE_SOCKET, -FORE_L + 38):                                       # sockets ≥ 1 × OD (Astra #2b finding 2)
+        p += Pos(0, y, z0) * (Cylinder(18, FORE_SOCKET, align=MIN) - Cylinder(15.1, FORE_SOCKET, align=MIN))
     # wrist housing: holds the wrist cartridge (axis Y, output toward -Y)
     # (loop 10) sized to the real DM-J4310 cartridge (rnd/parts/hand.py): KX56 face at y = WRIST_Y0, open toward -Y
     can_d = J4310["od"] + 2 * 2.4 + 0.6 + 0.6               # D24: the can OD is the spigot in this bore (0.3 a side; loop 36 had 1 mm float)
     wy = WRIST_Y1 - WRIST_Y0
     p += Pos(0, WRIST_Y0, -FORE_L) * Rot(-90, 0, 0) * (Cylinder(can_d / 2 + WALL, wy, align=MIN) - Cylinder(can_d / 2, wy - WALL, align=MIN))
     p += Pos(0, y, -FORE_L + 38) * Box(56, link_t, 12)                                  # web joining link and wrist can
+    p -= Pos(0, y, -FORE_L + 38) * Cylinder(15.1, 2 * FORE_SOCKET, align=MIN)           # the CF tube runs 30 mm into the wrist socket
     # D24 (2026-11-27): the wrist cartridge bolts to a 5 mm rim (Ø80) with 6 × M3 heat-set inserts (r 36); loop 24's
     # torque pad and slot are gone (no torque pin)
     rim = Pos(0, WRIST_Y0, -FORE_L) * Rot(-90, 0, 0) * (Cylinder(40.0, 5.0, align=MIN) - Cylinder(can_d / 2, 5.0, align=MIN))
@@ -221,14 +230,17 @@ def forearm() -> Part:
 
 
 def cf_neck() -> Part:
-    """Carbon tube Ø40×1, flange socket → housing socket."""
-    z_top, z_bot = -6.0, HOUSING["z1"] + 20
+    """Carbon tube Ø40×1 in the neck sleeve, bonded over its full length (flange → housing)."""
+    z_top, z_bot = -6.0, HOUSING["z1"]                       # bonded z1 … −6 (≈ 55 mm ≥ 1 × OD); the housing top plate is below z1
     return Pos(0, 0, z_bot) * (Cylinder(20, z_top - z_bot, align=MIN) - Cylinder(19, z_top - z_bot, align=MIN))
 
 
+FORE_SOCKET = 30.0
+
+
 def cf_fore() -> Part:
-    """Carbon tube Ø30×1 along the forearm side link."""
-    z_top, z_bot = -40.0, -FORE_L + 38 + 24
+    """Carbon tube Ø30×1 along the forearm side link, 30 mm (1 × OD) into each socket (it used to stop at the sockets)."""
+    z_top, z_bot = -40.0, -FORE_L + 38
     return Pos(0, FORE_Y, z_bot) * (Cylinder(15, z_top - z_bot, align=MIN) - Cylinder(14, z_top - z_bot, align=MIN))
 
 
@@ -237,11 +249,13 @@ def elbow_pulley_hub() -> Part:
     review #2b finding 1: loop 40's split 40T could not pass the tube). The 61808s and 6708s slide on from the two ends;
     the whole cassette (shaft + plates + belt + small stage) goes up into the housing's U-seats, closed by
     elbow_seat_cap()."""
-    from .belt_stage import pulley
-    L = HOUSING["y"] + 24                                     # loop 23: +12 (forearm link moved out 6 mm)
+    from .belt_stage import pulley, dd_flats
+    y0, y1 = -(HOUSING["y"] / 2 + 12), FORE_Y + 11.0          # −66 … 83: the +Y end runs through the forearm disc (was ±66)
+    L = y1 - y0
     t = Cylinder(20, L, align=MIN) - Cylinder(15, L, align=MIN)
-    t += Pos(0, 0, L / 2 - BELT_Y - 8) * (pulley(40, 16, flange=True) - Pos(0, 0, -5) * Cylinder(15, 30, align=MIN))   # local z = L/2 − y
-    return Pos(0, L / 2, 0) * Rot(90, 0, 0) * t
+    t += Pos(0, 0, y1 - BELT_Y - 8) * (pulley(40, 16, flange=True) - Pos(0, 0, -5) * Cylinder(15, 30, align=MIN))   # local z = y1 − y
+    t -= dd_flats(0, y1 - (FORE_Y - 13.0))                    # double-D under the forearm clamp (y 59 … 83)
+    return Pos(0, y1, 0) * Rot(90, 0, 0) * t
 
 
 PRINT = {
@@ -288,9 +302,10 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     out += bolted_stage(STAGE, 20, "e_")                                                 # D24: bolted cartridge + Oldham + D13 stage
     bc = V3["belt_c"]
     out += [("e_belt", STAGE * Pos(0, 0, bc - 7.5) * belt_loop(31.8, 63.7, BELT_C, width=15.0), "dark"),
-            ("e_shaft40", Pos(0, 0, -ELBOW_Z) * elbow_pulley_hub(), "steel")]             # D19: integral 40T (seat towers: bone_cap)
+            ]
     # (the yaw stage above the flange lives in rnd/parts/roll.py)
     fe = Pos(0, 0, -ELBOW_Z) * Rot(0, elbow_deg, 0)
+    out.append(("e_shaft40", fe * elbow_pulley_hub(), "steel"))                           # D19: integral 40T, turns with the forearm (its clamp, double-D)
     out += [("forearm", fe * forearm(), "white"), ("cf_fore", fe * cf_fore(), "dark"), ("cf_neck", cf_neck(), "dark")]
     # wrist cartridge (DM-J4310 + KX56) + hand (rnd/parts/hand.py), hand centre plane on the arm's centre plane (y = 0)
     from . import hand as hd
