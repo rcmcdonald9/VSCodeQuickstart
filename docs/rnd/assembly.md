@@ -5,11 +5,11 @@
 | Piece | Best-fit size (mm) | Volume (cm³) | Fits |
 |---|---|---|---|
 | skirt quarter | 124 × 250 × 250 | 96 | ✅ |
-| deck quarter | 6 × 246 × 246 | 269 | ✅ |
-| cover belly_2 | 2 × 246 × 246 | 81 | ✅ |
-| cover belly_0 | 2 × 246 × 246 | 81 | ✅ |
-| cover belly_1 | 2 × 246 × 246 | 81 | ✅ |
-| cover belly_3 | 2 × 246 × 246 | 81 | ✅ |
+| deck quarter | 6 × 246 × 246 | 259 | ✅ |
+| cover belly_2 | 2 × 246 × 246 | 74 | ✅ |
+| cover belly_0 | 2 × 246 × 246 | 74 | ✅ |
+| cover belly_1 | 2 × 246 × 246 | 74 | ✅ |
+| cover belly_3 | 2 × 246 × 246 | 74 | ✅ |
 | head_shell | 184 × 243 × 243 | 294 | ✅ |
 | upper bone | 98 × 112 × 233 | 280 | ✅ |
 | torso_shell [1] | 180 × 195 × 230 | 293 | ✅ |
@@ -17,14 +17,14 @@
 | cover forearm_r | 18 × 32 × 214 | 18 | ✅ |
 | cover forearm_f | 18 × 32 × 214 | 18 | ✅ |
 | dock_wing_l | 160 × 191 × 198 | 406 | ✅ |
-| clevis + yaw block | 92 × 130 × 188 | 226 | ✅ |
+| clevis + yaw block | 92 × 130 × 192 | 232 | ✅ |
 | cover belt_duct [3/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [1/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [2/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [4/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [5/5] | 16 × 27 × 188 | 29 | ✅ |
-| neck_boot | 116 × 164 × 188 | 97 | ✅ |
-| yaw plate bottom | 8 × 185 × 185 | 72 | ✅ |
+| neck_boot | 116 × 164 × 188 | 98 | ✅ |
+| yaw plate bottom | 8 × 188 × 188 | 73 | ✅ |
 | cover spine_pod | 55 × 110 × 167 | 89 | ✅ |
 | visor | 120 × 166 × 166 | 82 | ✅ |
 | shoulder bracket body | 150 × 158 × 162 | 197 | ✅ |
@@ -34,7 +34,7 @@
 | cover liner_w180 | 124 × 158 × 158 | 66 | ✅ |
 | cover liner_w0 | 124 × 158 × 158 | 66 | ✅ |
 | yoke | 111 × 150 × 157 | 191 | ✅ |
-| shoulder bracket outer wall | 127 × 149 × 150 | 144 | ✅ |
+| shoulder bracket outer wall | 127 × 149 × 150 | 143 | ✅ |
 | dock_tower | 50 × 59 × 150 | 435 | ✅ |
 | e_tray | 6 × 148 × 148 | 54 | ✅ |
 | cover collar_top | 2 × 110 × 148 | 23 | ✅ |
@@ -43,12 +43,12 @@
 | elbow pulley hub | 67 × 132 × 132 | 112 | ✅ |
 | elbow cassette plate | 5 × 81 × 129 | 19 | ✅ |
 | wheel pod | 26 × 80 × 124 | 114 | ✅ |
+| roll link | 108 × 112 × 122 | 226 | ✅ |
 | palm | 58 × 75 × 122 | 193 | ✅ |
-| roll link | 108 × 112 × 120 | 208 | ✅ |
 | lift cover | 89 × 109 × 118 | 96 | ✅ |
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
 | cover collar_bot | 2 × 110 × 110 | 15 | ✅ |
-| cover yaw hood (inline roll) | 71 × 99 × 109 | 67 | ✅ |
+| cover yaw hood (inline roll) | 71 × 99 × 109 | 76 | ✅ |
 | forearm (ends) [1] | 53 × 80 × 108 | 44 | ✅ |
 | cover elbow_bay | 45 × 104 × 104 | 53 | ✅ |
 | KX74 collar | 20 × 98 × 103 | 38 | ✅ |
@@ -56,15 +56,15 @@
 | mast coupling | 40 × 100 × 100 | 253 | ✅ |
 | cover collar_door [1] | 3 × 27 × 98 | 7 | ✅ |
 | cartridge M can (bolted, D24) | 71 × 94 × 95 | 64 | ✅ |
-| pitch shaft (integral 60T) | 50 × 94 × 94 | 98 | ✅ |
+| pitch shaft (integral 60T) | 50 × 94 × 94 | 93 | ✅ |
 | pulley 60T | 16 × 94 × 94 | 107 | ✅ |
 | upper bone cap [2] | 5 × 83 × 93 | 2 | ✅ |
 | gripper grip_base | 12 × 91 × 91 | 43 | ✅ |
-| pitch hub (balancer disc + ferrule) | 34 × 91 × 91 | 81 | ✅ |
+| pitch hub (balancer disc + ferrule) | 34 × 91 × 91 | 79 | ✅ |
 | ferrule (arm side) | 18 × 91 × 91 | 67 | ✅ |
 | KX74 hub | 13 × 90 × 90 | 67 | ✅ |
 | small-pulley hub | 46 × 90 × 90 | 82 | ✅ |
-| roll arm rear | 18 × 72 × 88 | 32 | ✅ |
+| roll arm rear | 18 × 71 × 88 | 32 | ✅ |
 | cartridge M can | 44 × 87 × 87 | 50 | ✅ |
 | KX56 collar | 19 × 78 × 85 | 28 | ✅ |
 | lift bracket (D13 stage walls) | 40 × 71 × 82 | 63 | ✅ |
@@ -81,7 +81,7 @@
 | KX56 hub | 13 × 70 × 70 | 39 | ✅ |
 | pulley 40T | 18 × 67 × 67 | 54 | ✅ |
 | handle | 34 × 65 × 65 | 22 | ✅ |
-| yaw shaft | 43 × 62 × 62 | 67 | ✅ |
+| yaw shaft | 43 × 62 × 62 | 65 | ✅ |
 | KX56 male | 6 × 61 × 61 | 14 | ✅ |
 | wheel shaft | 35 × 60 × 60 | 34 | ✅ |
 | KX44 hub | 13 × 56 × 56 | 24 | ✅ |
@@ -114,8 +114,8 @@
 
 | Piece | kg |
 |---|---|
-| base | 6.31 |
-| upper core | 8.50 |
-| arm (each) | 4.75 |
+| base | 7.66 |
+| upper core | 8.64 |
+| arm (each) | 4.85 |
 | battery | 1.10 |
-| total robot | 25.40 |
+| total robot | 27.09 |

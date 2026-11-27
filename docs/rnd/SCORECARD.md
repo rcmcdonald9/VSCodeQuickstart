@@ -9,12 +9,12 @@
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 100 mm | ≥ 50 mm | ✅ |
-| R2 min joint margin at spec load (rated, planar check) | 1.90× | ≥ 1.5× | ✅ |
+| R2 min joint margin at spec load (rated, planar check) | 1.87× | ≥ 1.5× | ✅ |
 | R2c 20 lb two-handed hug, held close (4.54 kg per forearm at ≤ 0.25 m from the elbow): min rated margin, shoulder pitch / elbow (rnd/payload_study.py) | gim6010: 0.69× (0.20 m: 0.82×) ❌; D20 (on hold): 1.54× → pass with D20 only | ≥ 1.5× rated (a hold), default config | ❌ |
-| R2d 20 lb laundry basket, floor → carry → bed (rnd/basket.py: peak ≥ 1.5× pick / ≥ 2× and ≤ 15 K over a 2-min carry, tip ≥ 30 mm) | gim6010: FAIL (worst 0.66 of the rule); D20 (on hold, basket.json): pass → pass with D20 only | pass, default config | ❌ |
+| R2d 20 lb laundry basket, floor → carry → bed (rnd/basket.py: peak ≥ 1.5× pick / ≥ 2× and ≤ 15 K over a 2-min carry, tip ≥ 30 mm) | gim6010: FAIL (worst 0.65 of the rule); D20 (on hold, basket.json): pass → pass with D20 only | pass, default config | ❌ |
 | R3 upper core (arms detached) | 8.6 kg | ≤ 10 kg | ✅ |
 | R3 each arm (detaches at the shoulder KX) | 4.8 kg | ≤ 10 kg | ✅ |
-| R3 assembled upper (core + arms, for reference) | 18.1 kg | info | — |
+| R3 assembled upper (core + arms, for reference) | 18.3 kg | info | — |
 | R3 base module mass | 7.7 kg | ≤ 8 kg (piece limit 10) | ✅ |
 | R3 battery mass | 1.1 kg | ≤ 3 kg | ✅ |
 | R3 ballast blocks (A10 v2, removable, each its own carry piece) | 2 × 2.45 kg | ≤ 10 kg each | ✅ |
@@ -22,16 +22,16 @@
 | R8 cost, parametric estimate (superseded by the BOM row) | $3,070 (actuators $1,775 ×21) | info | — |
 | R9 KX interface slip torque / actuator peak (min) | 1.16× | ≥ 1.1× | ✅ |
 | R2 min joint margin, whole workspace (rated / 95th pct, 1 kg) | 1.55× | ≥ 1.5× | ✅ |
-| R2 min joint margin, whole workspace (peak / worst pose) | 2.60× | ≥ 1.5× | ✅ |
-| R2 hand sag from bone bending, 1 kg straight out (static) | 1.8 mm | ≤ 2 mm | ✅ |
+| R2 min joint margin, whole workspace (peak / worst pose) | 2.57× | ≥ 1.5× | ✅ |
+| R2 hand sag from bone bending, 1 kg straight out (static) | 1.9 mm | ≤ 2 mm | ✅ |
 | R2 belts: sustained pull vs working rating / peak vs ultimate (min) | 1.5× / 5.6× | ≥ 1.2× / ≥ 3× | ✅ |
 | R3 arm-detach clamp: lift-off moment / need (×1.5 dynamic) | 1.8× | ≥ 1.5× | ✅ |
 | R12 socket bearing static safety (min) | 3.9 | ≥ 2 | ✅ |
 | R2 hand positioning error, joint chain RSS at 0.6 m (with joint-side encoders; without) | 0.9 mm (4.3) | ≤ 2 mm | ✅ |
-| R2 torso sway from mast bending (worst static) | 1.5 mm | ≤ 2 mm | ✅ |
-| R5 lift: torque margin / full-travel time | 1.79× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
+| R2 torso sway from mast bending (worst static) | 1.6 mm | ≤ 2 mm | ✅ |
+| R5 lift: torque margin / full-travel time | 1.77× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
-| R4 15 mm threshold: peak torque margin (transient < 1 s) | 1.7× (6.6 of 11 N·m peak) | ≥ 1.5× | ✅ |
+| R4 15 mm threshold: peak torque margin (transient < 1 s) | 1.7× (6.7 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md): tracked, no hard target (owner 2026-11-26); lower is a priority | 23 h | minimise | — |
 | R8 cost from the itemised BOM (BOM_v4.md) | $5,845 | ≤ $5,500 limit (owner 2026-11-27; aim $4,000) | ❌ |
 | R13 printed pieces that fit the P2S (256 mm) | 99/99 | all | ✅ |

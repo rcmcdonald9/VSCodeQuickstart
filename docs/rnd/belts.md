@@ -4,7 +4,7 @@ HTD 5M, 15 mm, printed pulleys, small pulley on its own bearing hub. **Loop 13 r
 
 | Joint | Teeth | Pitch Ø small / big | Sustained pull vs working | Peak pull vs ultimate/3 | Teeth in mesh | Centre / belt length |
 |---|---|---|---|---|---|---|
-| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 194 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 355 mm |
+| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 195 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 355 mm |
 | upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 173 / 312 N → 1.8× ✅ | 691 N → 5.6× ultimate ✅ | 8.7 ✅ | 80 / 313 mm |
 | elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 202 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.6 ✅ | 70.7 / 295 mm |
 
@@ -15,7 +15,7 @@ Exact pitch length 2C·cos φ + π(D+d)/2 + φ(D−d); the eccentric bushings gi
 | Joint | Stock belt | Exact centre | CAD centre | Adjuster used |
 |---|---|---|---|---|
 | shoulder_pitch | 355-5M | 70.15 | 70.00 | 15% ✅ |
-| upper_yaw | 315-5M | 80.93 | 80.00 | 93% ❌ |
+| upper_yaw | 315-5M | 80.93 | 80.93 | 0% ✅ |
 | elbow | 295-5M | 70.70 | 70.70 | 0% ✅ |
 
 ## Shaft joints at the motor peak (Fable M5/M6)
