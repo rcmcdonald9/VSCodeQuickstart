@@ -29,8 +29,10 @@ def items(d=BASELINE):
     A("Wheels & power", "6S smart BMS, 40 A cont., UART/CAN telemetry + active balancing (JK-BMS class) — A13: telemetry for the dock stop, weekly 4.20 V balance charge", 1, 45.0, "ESTIMATE")
     A("Wheels & power", "6S charger, balance (ToolKitRC C6 class)", 1, 30.0, "racedayquads.com listing")
     A("Wheels & power", "Fuses + holders (40 / 20 / 15 / 15 / 10 / 7.5 / 5 A)", 1, 15.0)
-    A("Wheels & power", "E-stop (A5): 2 two-channel latching mushrooms + 24 V contactor + 22 Ω 25 W pre-charge + timer relay + watchdog relay", 1, 55.0)
-    A("Wheels & power", "Regen clamp (A5): 26.5 V shunt regulator (MOSFET, comparator, 10 Ω 50 W Al-clad resistor) + 33 V TVS", 1, 16.0)
+    A("Wheels & power", "E-stop (A5 v2): 2 two-channel latching mushrooms + TE ALEV100 DC contactor (24 V coil, aux contact) + switched pre-charge (K_PRE relay + 3.3 Ω RH-50) + SN74LVC1G123 watchdog on its own LDO", 1, 150.0,
+      "LEV100A5ANG $92 (Master Electronics); rest ESTIMATE")
+    A("Wheels & power", "Regen clamp / bus discharge (A5 v2): 2 × Vishay RH-50 0.56 Ω + 2 × IRFB7530 + comparator/reference, gate driver, film caps, 85 °C thermal switch", 1, 58.0,
+      "RH-50 ≈ $15 (RS 5-pack); rest ESTIMATE")
     A("Wheels & power", "DC-DC 24→12 V 10 A (head servos), 24→5 V 5 A", 1, 30.0)
     A("Wheels & power", "D14 elbow-node power: 24→12 V 3 A buck + half-duplex TTL transceiver (one per arm)", 2, 8.0)
     A("Wheels & power", "Connectors: XT60/XT30, 2 × 6-pin pogo blocks, JST-GH/VH, wire", 1, 50.0)
