@@ -14,6 +14,8 @@ can the hand reach **with a given grasp orientation**, from any approach heading
 - IK: the bench env's damped least squares, 8 seeds; success = 5 mm and ≈ 6° orientation error, inside the joint limits
   (sw/bench_env.py builds the arm from rnd/params.py and the twin's joint ranges, so a range change shows up here)
 - "across the body" = the points with y > 0 (the other arm's side of the bench)
+- people near (D25): the same map with the people-near soft limits (rnd/twin.JR_PEOPLE_NEAR: shoulder roll ≥ +5°),
+  reported as extra rows; the R16 metric and its targets stay on the full joint ranges
 
 Targets (set from the loop-32 arm with yaw ±150°: 36 / 69 / 68 / 60 %): no grasp class may drop more than 6 points.
 Before 2026-11-27 each heading was tried with one jaw orientation, and the wrist was ±180°. Cutting the wrist to ±120°
@@ -30,3 +32,7 @@ the body: 78 / 78 / 71 against 78 / 77 / 68 %). The history columns are from the
 | 45° angled | 78% | ≥ 63% | 69% | 57% | ✅ |
 | side (horizontal) | 78% | ≥ 62% | 68% | 40% | ✅ |
 | side, across the body | 71% | ≥ 54% | 60% | 2% | ✅ |
+| top-down, people near (roll 5…100°; D25) | 18% (-17 points) | (not a target) | | | ℹ️ |
+| 45° angled, people near (roll 5…100°; D25) | 57% (-21 points) | (not a target) | | | ℹ️ |
+| side (horizontal), people near (roll 5…100°; D25) | 67% (-11 points) | (not a target) | | | ℹ️ |
+| side, across the body, people near (roll 5…100°; D25) | 49% (-23 points) | (not a target) | | | ℹ️ |
