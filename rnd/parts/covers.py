@@ -15,6 +15,12 @@ closed lift cover is upper.lift_cover, the head's TPU neck boot is upper.neck_bo
 liners) are printable. The shoulder dome and
 yaw sleeve (pitch_frame / roll_frame) are still the render-only concept (see the note there). The elbow dome's 4 M3
 need heat-set inserts in the housing wall (rnd/parts/arm.py, next arm edit).
+
+Wave 5 (shoulder roll + neck, R17): the inline-roll yaw hood now runs over the yaw can's front 10 mm (it was open there
+and the probe reached the can's pigtail window and the motor through the hood's front corners). Compliant (TPU) covers
+are judged by rnd/pinch.py's rule (compliant() below): the shoulder's inboard wedge (yaw block vs ferrule, ≈ 2 mm at
+roll −15°, ≈ 135 mm at 100°) cannot be closed by any boot within ±40 % and the D22 neck boot's floor would have to
+follow the riser hub ≈ 84 mm; both need a geometry or range decision (see compliant()).
 """
 from __future__ import annotations
 
@@ -118,8 +124,11 @@ def _yaw_hood():
     """D24 inline roll (2026-11-27): rides on the roll output. A 2.2 mm hood 3 mm round the bolted yaw cartridge (can +
     rear cap), standing on the yaw block's top plate (the yaw belt is already inside the yaw band). Cut clear of the
     static roll link, motor housing, ferrule and spring ring swept over the roll range (3° steps, ±1.5 mm on each axis), and 1.5 mm
-    off the roll output's rear arm; it stops 1.5 mm behind the roll link (x −46.5), leaving the can's front 10 mm open. Concept (render + pinch), not yet a print: the cut leaves it open toward the roll
-    link, which is where the TPU shoulder boot has to close the joint."""
+    off the roll output's rear arm. Wave 5: it no longer stops at x −46.5 (that left the can's front 10 mm and the
+    hood's front corners open); it runs over the can's front to its own box end (5.2 mm past the can), cut only by those
+    swept parts. One PETG print (≈ 99 × 109 × 71 mm, in printed()); fixing still to draw: 4 × M3 tabs at its foot into
+    heat-set inserts in the yaw block's top plate (inserts: next rnd/parts/roll.py edit). The inboard wedge between the yaw block
+    and the ferrule stays open (see compliant())."""
     if not _HOOD:
         from . import roll
         from .. import swept
@@ -142,7 +151,10 @@ def _yaw_hood():
             if n == "roll_arm_rear":
                 for d in _GROW:
                     h -= Pos(*d) * p
-        h -= Pos(-46.5 + 100, 0, 0) * Box(200, 600, 600)                       # stop 1.5 mm behind the roll link / rear arm (x −45)
+        # R17 (2026-11-27, wave 5): the hood used to stop at x −46.5 (1.5 mm behind the roll link), which left its
+        # front corners (box round a round can) open and the probe reached the can's pigtail window (12 × 16) and the
+        # motor through them. It now runs on over the can's front 10 mm to 5.2 mm past the can (its own box end),
+        # cut only by the static parts swept over the roll range (+1.5 mm) and the rear clevis arm (+1.5 mm).
         _HOOD.append(_main(h))
     return _HOOD[0]
 
@@ -377,6 +389,39 @@ def base_frame():
     return out
 
 
+# ---------------------------------------------------------------------------------------------- compliant (TPU) covers
+def _roll_inboard_spans():
+    """Design study, shoulder roll (R17 wave 5): a TPU 95A fan bellows across the inboard wedge between the static
+    roll body (ferrule flange Ø91 / roll-link frame, lowest edge at φ_s) and the yaw block's inboard top edge (φ_b + roll),
+    pleats radiating from the roll axis (φ: 0 = −Z, + toward +Y). Developed length at the block's edge radius; floor 2 mm
+    (the closest approach, rnd/parts/roll.ferrule_sweep_gap ≥ 2). The wedge goes from ≈ 2 mm at −15° to ≈ 135 mm at
+    100°, so no pleat pitch keeps it within ±40 % (a printed fan would stack solid at −15° and be the pinch itself)."""
+    from . import roll
+    from .shoulder import FERRULE
+    r = math.hypot(46.0, -roll.P1[1])                                               # block inboard top edge (plates ±46, top at P1)
+    phi_b = -math.degrees(math.atan2(46.0, -roll.P1[1]))                            # −41.5°
+    phi_s = math.degrees(math.atan2(-(roll.ROLL_Y - 1.5), FERRULE["od"] / 2))        # ferrule flange's lowest edge, −55.4°
+    f = lambda a: max(2.0, r * math.radians(a + phi_b - phi_s))
+    lo, hi = roll.ROLL_MIN, 100.0
+    L0 = (f(lo) + f(hi)) / 2                                                        # best case: as printed at mid-stroke
+    return [("fan, block edge → ferrule (arc at r %.0f)" % r, L0, f)]
+
+
+def compliant():
+    """Compliant (TPU 95A) covers for rnd/pinch.py's rule: [{name, part (robot part-name suffix; None = design study),
+    joint, wall (mm), spans: [(name, free length mm, length(joint deg) mm)], note}]."""
+    from . import upper
+    return [dict(name="shoulder roll inboard fan bellows", part=None, joint="roll", wall=1.6, spans=_roll_inboard_spans(),
+                 note="not buildable: needs the wedge ≥ 25 mm at −15° (roll soft limit ≥ +15° near people, or ROLL_Y ≈ +23 mm); "
+                      "the outer sector is closed by the yaw hood (rigid)"),
+            dict(name="neck boot (upper.neck_boot)", part="neck_boot", joint="tilt", wall=upper.NECK_BOOT_T, spans=[],
+                 note="rides the head, cut 1.5 mm clear of the yoke over −10…+30°: no deflection (integration clash gone); "
+                      "the hub's sweep leaves a slot in its floor"),
+            dict(name="neck boot floor bonded to the riser hub", part=None, joint="tilt", wall=upper.NECK_BOOT_T,
+                 spans=upper.neck_boot_spans(),
+                 note="not buildable: the D22 pivot (head COM, 67 mm above the yoke plate) moves the hub ≈ 84 mm under the head")]
+
+
 # ---------------------------------------------------------------------------------------------- printable list
 def printed():
     """{piece: solid} for the printability check (rigid pieces in PETG, gaiters in TPU 95A)."""
@@ -387,6 +432,9 @@ def printed():
             P[f"cover {n.removeprefix('cover_')}"] = p
     for n, p, _ in torso_frame(750.0):
         P[f"cover {n}"] = p
+    from . import roll
+    if roll.INLINE:
+        P["cover yaw hood (inline roll)"] = _yaw_hood()
     duct = belt_duct()[0][1]
     x0, x1, y0, y1, z0, z1 = _bb(duct)
     k = math.ceil((z1 - z0) / 200)

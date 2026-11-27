@@ -1,1 +1,1 @@
-{"torque_ok": 19, "torque_n": 19, "module_clashes": 3, "module_clash_list": [["upper (mast, lift, torso, head)", "lift_al_pulley", "lift_belt", 75], ["head tilt -10\u00b0", "yoke", "neck_boot", 2437], ["head tilt +30\u00b0", "yoke", "neck_boot", 1478]]}
+{"torque_ok": 19, "torque_n": 19, "module_clashes": 1, "module_clash_list": [["upper (mast, lift, torso, head)", "lift_al_pulley", "lift_belt", 75]]}
