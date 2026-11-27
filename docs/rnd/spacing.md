@@ -14,20 +14,15 @@ pair is classified, and the first matching rule wins:
 Swept checks over the joint ranges are separate (rnd/swept.py, rnd/pinch.py); the head is also checked here at both
 ends of its tilt range (upper.TILT_RANGE), since its pivot moves the shell round the yoke.
 
-**Pairs under target: 14; under the hard limit: 5.**
+**Pairs under target: 9; under the hard limit: 0.**
 
 | Module | Part A | Part B | Kind | Gap (mm) | Target / hard | |
 |---|---|---|---|---|---|---|
-| arm | upper_bone | e_brg_B_6001 | static | 0.0 | 1.0 / 0.5 | ❌ hard |
-| arm | upper_bone | e_brg_B_bushing | static | 0.0 | 1.0 / 0.5 | ❌ hard |
-| arm | e_brg_B_6001 | e_brg_B_bushing | static | 0.02 | 1.0 / 0.5 | ❌ hard |
-| roll/yaw | yaw_brg_B_6001 | yaw_brg_B_bushing | static | 0.02 | 1.0 / 0.5 | ❌ hard |
-| shoulder | brg_B_6001 | brg_B_bushing | static | 0.02 | 1.0 / 0.5 | ❌ hard |
 | roll/yaw | roll_gim_housing | roll_outflange | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
 | roll/yaw | yaw_flange | yaw_stop_pin | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
-| shoulder | idler_axle | can | static | 0.5 | 1.0 / 0.5 | ⚠️ target |
 | roll/yaw | roll_arm_rear | yaw_can | static | 0.68 | 1.0 / 0.5 | ⚠️ target |
 | upper | lift_bracket | lift_cover | static | 0.84 | 1.0 / 0.5 | ⚠️ target |
+| arm | upper_bone | e_brg_B_bushing | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
 | base | w90_hub | w90_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
 | base | w180_hub | w180_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
 | base | w270_hub | w270_pod | static | 1.0 | 1.0 / 0.5 | ⚠️ target |
