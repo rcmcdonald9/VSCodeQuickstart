@@ -412,7 +412,8 @@ def compliant():
     joint, wall (mm), spans: [(name, free length mm, length(joint deg) mm)], note}]."""
     from . import upper
     return [dict(name="shoulder roll inboard fan bellows", part=None, joint="roll", wall=1.6, spans=_roll_inboard_spans(),
-                 note="not buildable: needs the wedge ≥ 25 mm at −15° (roll soft limit ≥ +15° near people, or ROLL_Y ≈ +23 mm); "
+                 note="not buildable: needs the wedge ≥ 25 mm at −15° (or ROLL_Y ≈ +23 mm); closed instead by the D25 people-near "
+                      "roll soft limit (twin.JR_PEOPLE_NEAR, sw/safety.py): ≥ 25 mm from ≈ +1°, limit +5°; "
                       "the outer sector is closed by the yaw hood (rigid)"),
             dict(name="neck boot (upper.neck_boot)", part="neck_boot", joint="tilt", wall=upper.NECK_BOOT_T, spans=[],
                  note="rides the head, cut 1.5 mm clear of the yoke over −10…+30°: no deflection (integration clash gone); "

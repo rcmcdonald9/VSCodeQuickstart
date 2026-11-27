@@ -29,7 +29,7 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    stop, so the arm doesn't fall and can be pushed away. Any other fault still stops. reset() clears it.
 8. **People-near mode (D25 / R17, 2026-11-27):** `set_people_near(True)` while a person is close (PeopleNearTrigger below;
    docs/SOFTWARE_PLAN.md). Joints with a people-near range in joints.json (`people_near`, from rnd/twin.JR_PEOPLE_NEAR:
-   shoulder roll ≥ +15°, where rnd/pinch.py finds the inboard roll wedge ≥ 25 mm) get that range as their target bound
+   shoulder roll ≥ +5°; rnd/pinch.py finds the inboard roll wedge ≥ 25 mm from ≈ +1°) get that range as their target bound
    (same margin as the normal limits); targets outside it are clamped like any joint limit. Entering the mode with the arm
    inside the restricted zone does not stop it: the bound starts at the arm's position and rises at PN_EXIT_SPEED
    (0.2 rad/s), so the arm is walked out slowly; the faults (position outside limits, tracking) still use the hard
@@ -140,7 +140,7 @@ class Supervisor:
 
     # ---- people-near mode (D25)
     def set_people_near(self, on):
-        """Restrict the joints that have a people-near range (shoulder roll ≥ +15°) while a person is close. Entering with a
+        """Restrict the joints that have a people-near range (shoulder roll ≥ +5°) while a person is close. Entering with a
         joint inside the restricted zone walks it out at PN_EXIT_SPEED (no stop); leaving restores the full range."""
         on = bool(on)
         if on and not self.people_near:

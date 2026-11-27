@@ -28,9 +28,12 @@ JR = {  # joint ranges (deg). Conventions: arm hangs straight down at 0.
     "elbow": (-150, 0), "wpitch": (-110, 110),
     "wroll": (-BASELINE.arm.wrist_roll_range_deg, BASELINE.arm.wrist_roll_range_deg)}   # 2026-11-27: ±180 → ±120 (clock-spring capacity, params)
 # D25 (owner, 2026-11-27; R17): soft limits while a person is near (sw/safety.py Supervisor.set_people_near). The inboard
-# shoulder-roll wedge (yaw band / block against the arm-side ferrule) closes from > 25 mm to ≈ 2 mm towards the −15° stop and
-# no boot can span it; above the people-near lower limit it stays ≥ 25 mm (rnd/pinch.py people-near column + limit scan).
-JR_PEOPLE_NEAR = {"roll": (15.0, JR["roll"][1])}
+# shoulder-roll wedge (yaw band / block against the arm-side ferrule) closes to ≈ 2.5 mm at the −15° stop and no boot can
+# span it. Measured with rnd/pinch.py (wave 7, per-pose worst reachable cell): yaw band × ferrule 2.6 / 16.5 / 23.4 / 24.7 /
+# 26.1 / 30.2 / > 40 mm at −15 / −5 / 0 / +1 / +2 / +5 / +7.5°, so the wedge is ≥ 25 mm from ≈ +1.2°; the yaw block ×
+# ferrule nip opens past 0°. +5° keeps ≈ 5 mm (≈ 4°) of margin for print / assembly tolerance and the probe lattice, and the
+# supervisor's 3° margin puts the targets at ≥ +8° (≈ 34 mm). The owner's estimate was ≈ +15° (wedge > 40 mm there).
+JR_PEOPLE_NEAR = {"roll": (5.0, JR["roll"][1])}
 
 
 # ---- actuator model (real2sim, 2026-11-27). Joint-side units: N·m, N·m·s/rad, rad, ms. The datasheet model is the fallback;
