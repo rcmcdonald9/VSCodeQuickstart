@@ -1247,3 +1247,9 @@ One long push instead of half-hour runs. In order:
 - Printable covers (elbow dome + collar door, forearm halves, wrist boot, torso collars, spine pod, belt duct, mast cap, closed lift cover, base pan + wheel liners): 98/98 pieces fit the P2S. Bellows dropped (no collapsed stack at bottom of travel).
 - D22 head tilt −10…+30° on a 6805 friction pivot through the head COM, no clash over pan ±90.
 - Open → wave 3 (lift/base/head track): head_screen vs shell R15 hard fail, lift bottom clash (keep lift_min 0.35), lift onto the bolted stage + steel rack/pawl, base interior leak, wheel cans, neck boot. Shoulder TPU boot waits for the inline roll CAD.
+
+### 2026-11-27 — Wave 2 roll track merged: inline GIM8108-36 is the default
+- Built to the seller drawing: Ø96 × 57, 8 × M4 × 18 into a cup (2.5 of 3.5 mm thread), Ø30 boss + 3 × M4 + 3 × Ø4 dowels → 7075 adapter → 8 × M5 (PCD 64) into the clevis. ROLL_Y 69, yaw_drop 99.3, dome 121 × 96 mm. Belt kept (PIP_ROLL_DRIVE=belt).
+- Shaft → link joints sized: inline boss→adapter 128 N·m (3.65× drive limit, 1.25× stall), adapter→clevis 2.05× limit; belt clevis pinch 1.83×, yaw hex spigot 1.76×, yaw inserts 1.55×. FEA inline roll link 5.6×, clevis/yaw/rear arm 10.8×.
+- Belt roll + yaw on D24 bolted cartridges (KX + torque forks gone). Inline baseline: R14 7/7, swept 0/0, R16 60 % ✅, basket 1.50, roll 51.6×.
+- Open: insert pull-out + μ coupons; seller: output face, bearing radial rating, 7075 adapter sourcing. Belt-only items deprioritised (belt R16, roll 450 belt, 80T/18T stock).
