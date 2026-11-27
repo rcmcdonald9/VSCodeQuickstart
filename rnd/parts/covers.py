@@ -21,6 +21,9 @@ and the probe reached the can's pigtail window and the motor through the hood's 
 are judged by rnd/pinch.py's rule (compliant() below): the shoulder's inboard wedge (yaw block vs ferrule, ≈ 2 mm at
 roll −15°, ≈ 135 mm at 100°) cannot be closed by any boot within ±40 % and the D22 neck boot's floor would have to
 follow the riser hub ≈ 84 mm; both need a geometry or range decision (see compliant()).
+
+Neck CAD pass (R17, 2026-11-27): the head's back is now round the tilt axis and the neck slot is closed by a rigid saddle
+on the neck bar at a constant 4 mm (upper.py, neck v2), so the neck boot and its two compliant() rows are gone.
 """
 from __future__ import annotations
 

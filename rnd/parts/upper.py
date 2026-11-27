@@ -409,8 +409,8 @@ def head_pivot():
 
 def _yoke(px, pz, g=0.0):
     """Neck v2 yoke in the head frame at tilt 0 (head(): + 40 mm to the yoke frame, z = 0 at the old yoke plate): riser
-    hub on the pan output (Ø40, z −60 … HUB_TOP), the neck bar from the hub to the tilt axis, the Ø40 cross-tube on the
-    axis (Ø30 bore: the −Y pivot stub and the neck cable), the two Ø48 pivot bosses at y ±BOSS_Y and the neck saddle.
+    hub on the pan output (Ø40, z −60 … HUB_TOP), the neck bar from the hub to the tilt axis, the cross-tube on the axis
+    (TUBE_R, Ø28 bore: the −Y pivot stub and the neck cable), the two pivot bosses (BOSS_R) at y ±BOSS_Y and the neck saddle.
     `g` grows it for the clearance cut."""
     bar_a, _, sad = _neck_angles(px, pz)
     u = (math.cos(math.radians(bar_a)), math.sin(math.radians(bar_a)))
