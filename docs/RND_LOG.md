@@ -1363,3 +1363,9 @@ One long push instead of half-hour runs. In order:
 ### 2026-11-27 — W11b merged (cost-down, part 1): BOM $7,949 → $7,505
 - Clevis + rear sleeves cut from E235+C precision tube (yield checked 1.69× / 2.34×; $196 → $35); pitch sleeves can follow if shoulder.py's hole goes Ø7.1 → Ø6.45 (≈ −$100); yaw sleeves and stop bushes stay turned 42CrMo4. D18b ball transfers → printed PTFE skid feet ($180 → $28; A10 16/16, worst 35 mm; R4 1.70×; ≈ 3 N drag locked). Ballast → saw-cut 1¾ × 3" A36 bar ($100 → $27).
 - Black Friday check: no BOM line priced from a 26/27 Nov snapshot showed a sale price (product pages blocked here; snippets only); no Step 1 item is on sale. Flag: the $150 DM-J4310 page is the 48 V variant; the 24 V one is aifitlab $125 (backordered).
+
+### 2026-11-27 — W11a merged (D26): Oldham couplings removed from the arm
+- New stage v4: fixed motor, turned C45 stub bolted to the motor output (8 × M3) carrying the keyed 20T, motor bearing + one bonded 6001-2RS in wall B; swap pulls cartridge + stub + pulley + 6001 together. Pitch: back-side slotted idler. Elbow / yaw: fixed centre at the stock belt's exact centre + 0.25 mm (RSS ±0.25 mm).
+- ≈ −$105 per GIM6010 stage (arms ≈ −$617; ≈ −$795 with the lift + spares), −0.14 kg. Motor bearing 323 N vs an 800 N listing (2.5×, ESTIMATE); 6001 3.3×; stub torque joint 2.47× (Oldham disc was 1.35×); pitch teeth in mesh 7.0 → 7.8.
+- Worse: fixed-centre preload 0–165 N across tolerance (target 173 N; measure belts before printing plates), ear tipping at 30 % preload 10× → 3.0× (D20 1.8× < 2×), hand deflection 5.1 → 5.4 mm (≤ 6 ✅). Checks pass on both motor sets except the D20 pitch swap (needs the carriage edit). rnd.assembly_check ran out of memory (12 GB).
+- W12 launched: lift conversion + D20 carriage edit (upper.py), assembly_check memory, BOM to the new design.
