@@ -236,10 +236,10 @@ def c1_tie_cases():
     rho = lambda x: np.hypot(x[0], x[2])
     part = sh.pitch_shaft() + sh.pitch_hub()
     fixed = lambda x: (np.abs(rho(x) - 20.0) < 0.35) & (((x[1] > sh.W_IN - 3.5) & (x[1] < sh.W_IN + 3.5)) | ((x[1] > sh.W_OUT - 3.5) & (x[1] < sh.W_OUT + 3.5)))
-    for tag, (M, N), k in (("service (basket/hug × 1.5)", worst("pitch hub ↔ tube", True, (29.6, 0.0)), 1.0),
-                           ("fault (bump/stall) × 0.5", worst("pitch hub ↔ tube", False, (184.0, 343.0)), 0.5)):
+    for tag, (M, N), k in (("service: basket/hug × 1.5", worst("pitch hub ↔ tube", True, (29.6, 0.0)), 1.0),
+                           ("fault: bump/stall × 0.5", worst("pitch hub ↔ tube", False, (184.0, 343.0)), 0.5)):
         F = M * 1000 / (2 * zc)
-        C.append((f"Pitch tube + hub (C1 tie, {h['n']} × M4 at {Fp / 1e3:.1f} kN): {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", part, 3.0, fixed,
+        C.append((f"Pitch tube + hub (C1 tie, {h['n']} × M4 at {Fp / 1e3:.1f} kN), {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", part, 3.0, fixed,
                   [(lambda x: (np.abs(x[1] - y_seat) < 0.3) & (rho(x) > 11.0) & (rho(x) < 21.0), (0, -Fp * k, 0)),
                    (lambda x: (np.abs(x[1] - y_in) < 0.3) & (rho(x) > 10.5), (0, Fp * k, 0)),
                    (lambda x: (np.abs(x[1] - y_face) < 0.3) & (rho(x) > 21.2) & (x[2] > 0), (0, (F + N / 2) * k, 0)),
@@ -252,10 +252,10 @@ def c1_tie_cases():
     zc = _half_annulus_centroid(14.1, 20.0)
     rh = lambda x: np.hypot(x[0], x[1] - rl.ROLL_Y)
     fixed = lambda x: (np.abs(rh(x) - 20.0) < 0.35) & (((x[2] > rl.P1[0]) & (x[2] < rl.P1[1])) | ((x[2] > rl.YAW_BRG_B[0]) & (x[2] < rl.YAW_BRG_B[1])))
-    for tag, (M, N), k in (("service (basket/hug × 1.5)", worst("yaw flange ↔ tube", True, (32.5, 100.0)), 1.0),
-                           ("fault (bump/stall) × 0.5", worst("yaw flange ↔ tube", False, (98.5, 166.0)), 0.5)):
+    for tag, (M, N), k in (("service: basket/hug × 1.5", worst("yaw flange ↔ tube", True, (32.5, 100.0)), 1.0),
+                           ("fault: bump/stall × 0.5", worst("yaw flange ↔ tube", False, (98.5, 166.0)), 0.5)):
         F = M * 1000 / (2 * zc)
-        C.append((f"Yaw tube (C1 tie, {y['n']} × M3 at {Fp / 1e3:.1f} kN): {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", rl.yaw_shaft(), 3.0, fixed,
+        C.append((f"Yaw tube (C1 tie, {y['n']} × M3 at {Fp / 1e3:.1f} kN), {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", rl.yaw_shaft(), 3.0, fixed,
                   [(lambda x: (np.abs(x[2] - z_seat) < 0.3) & (rh(x) > 8.2) & (rh(x) < 17.0), (0, 0, -Fp * k)),
                    (lambda x: (np.abs(x[2] - z_end) < 0.3) & (rh(x) > 12.0) & (x[0] > 0), (0, 0, (Fp / 2 + F - N / 2) * k)),
                    (lambda x: (np.abs(x[2] - z_end) < 0.3) & (rh(x) > 12.0) & (x[0] < 0), (0, 0, (Fp / 2 - F - N / 2) * k))]))
