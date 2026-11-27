@@ -142,7 +142,10 @@ def _yaw_hood():
             if n == "roll_arm_rear":
                 for d in _GROW:
                     h -= Pos(*d) * p
-        h -= Pos(-46.5 + 100, 0, 0) * Box(200, 600, 600)                       # stop 1.5 mm behind the roll link / rear arm (x −45)
+        # R17 (2026-11-27, wave 5): the hood used to stop at x −46.5 (1.5 mm behind the roll link), which left its
+        # front corners (box round a round can) open and the probe reached the can's pigtail window (12 × 16) and the
+        # motor through them. It now runs on over the can's front 10 mm to 5.2 mm past the can (its own box end),
+        # cut only by the static parts swept over the roll range (+1.5 mm) and the rear clevis arm (+1.5 mm).
         _HOOD.append(_main(h))
     return _HOOD[0]
 
