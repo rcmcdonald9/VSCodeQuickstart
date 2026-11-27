@@ -27,6 +27,10 @@ JR = {  # joint ranges (deg). Conventions: arm hangs straight down at 0.
     "pitch": (-200, 60), "roll": (-15, 100), "yaw": (-150, 150),        # loop 33: ±150 → ±70 (torsion crossing); loop 40: back to ±150 with a clock-spring cassette (dexterity, owner 2026-11-26)
     "elbow": (-150, 0), "wpitch": (-110, 110),
     "wroll": (-BASELINE.arm.wrist_roll_range_deg, BASELINE.arm.wrist_roll_range_deg)}   # 2026-11-27: ±180 → ±120 (clock-spring capacity, params)
+# D25 (owner, 2026-11-27; R17): soft limits while a person is near (sw/safety.py Supervisor.set_people_near). The inboard
+# shoulder-roll wedge (yaw band / block against the arm-side ferrule) closes from > 25 mm to ≈ 2 mm towards the −15° stop and
+# no boot can span it; above the people-near lower limit it stays ≥ 25 mm (rnd/pinch.py people-near column + limit scan).
+JR_PEOPLE_NEAR = {"roll": (15.0, JR["roll"][1])}
 
 
 # ---- actuator model (real2sim, 2026-11-27). Joint-side units: N·m, N·m·s/rad, rad, ms. The datasheet model is the fallback;
