@@ -21,7 +21,12 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    up), and `base_accel_limit()` drops from 1.0 to 0.3 m/s² (tip margin while braking, rnd/tip.py). Pointing the load at a
    wheel is the base planner's job; `load_heading_ok(heading)` checks it (within ±20° of a wheel axis).
 5. **Heartbeat:** `heartbeat_ok()` is true only after a complete healthy cycle; the loop toggles the hardware watchdog line
-   only then (electrical.md A5).
+   only then (electrical.md A5; the A5 v2 watchdog times out after 8 ms, four missed cycles).
+7. **Collision detection (D23 / R17, loop 47):** with a `collision=CollisionDetector(...)` (sw/collision.py) and the measured
+   joint torque from the drive current passed as `tau_meas`, a momentum observer compares it with the twin's model torque
+   (inertia + Coriolis + gravity + damping). A residual over the per-joint threshold for N_TRIP cycles latches "collision";
+   the verdict is then a **compliant hold** (kp = 0, light damping, the twin's gravity torque as feed-forward) instead of a
+   stop, so the arm doesn't fall and can be pushed away. Any other fault still stops. reset() clears it.
 Every override is counted so a session log shows how often the policy was overruled.
 """
 from __future__ import annotations
@@ -33,6 +38,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
+
+from sw.collision import KD_COMPLIANT, KP_COMPLIANT, T_ANCHOR
 
 WATCHDOG_S, FB_MAX_AGE, TEMP_C = 0.050, 0.010, 70.0     # TEMP_C: driver/case sensor (thermal.md: winding ≤ 69 °C on a task day)
 V_FAULT, TRACK_FAULT = 4.0, 0.35                          # rad/s measured, rad tracking error
@@ -50,6 +57,7 @@ class Verdict:
     kd: np.ndarray | None = None
     t_ff: np.ndarray | None = None
     reasons: list = field(default_factory=list)
+    compliant: bool = False
 
 
 def _finite(x, n):
@@ -58,7 +66,8 @@ def _finite(x, n):
 
 
 class Supervisor:
-    def __init__(self, v_max=1.5, margin_deg=3.0, ws_lo=(0.10, -0.45, 0.76), ws_hi=(0.80, 0.45, 1.35), clock=time.monotonic, fk=None):
+    def __init__(self, v_max=1.5, margin_deg=3.0, ws_lo=(0.10, -0.45, 0.76), ws_hi=(0.80, 0.45, 1.35), clock=time.monotonic, fk=None,
+                 collision=None):
         J = json.loads(DESC.read_text())
         self.n = len(J)
         m = math.radians(margin_deg)
@@ -76,12 +85,17 @@ class Supervisor:
         self.counts = {}
         self.payload = 0.0
         self._ws_free = (self.ws_lo.copy(), self.ws_hi.copy())
+        self.collision = collision
+        self._anchor = None
 
     # ---- load mode (R2d)
     def set_payload(self, kg, box=None):
         """box: (lo, hi) in the supervisor's FK frame; default LOAD_WS (full-robot base frame). Enter load mode only with
         the hand inside the box (the planner moves there first); targets outside it are then rejected."""
         self.payload = float(kg)
+        if self.collision is not None and hasattr(self.collision.twin, "set_payload"):
+            self.collision.twin.set_payload(self.payload)          # the twin must know what the hand carries
+            self.collision.reset()
         if self.payload > LOAD_KG:
             lo, hi = map(np.array, box or LOAD_WS)
             self.ws_lo, self.ws_hi = np.maximum(self._ws_free[0], lo), np.minimum(self._ws_free[1], hi)
@@ -131,12 +145,15 @@ class Supervisor:
         if np.any(q < self.lo - math.radians(8)) or np.any(q > self.hi + math.radians(8)):
             return False
         self.latched = []
+        if self.collision is not None:
+            self.collision.reset()
         self.last_q = np.clip(q, self.lo, self.hi)
         self.tick()
         return True
 
     # ---- the per-cycle check
-    def check(self, q_want, kp, kd, t_ff, q_meas, v_meas, fb_age, err=None, temp=None, dt=1 / 500, allow_peak=False) -> Verdict:
+    def check(self, q_want, kp, kd, t_ff, q_meas, v_meas, fb_age, err=None, temp=None, dt=1 / 500, allow_peak=False,
+              tau_meas=None) -> Verdict:
         self.healthy_cycle = False
         now = self.clock()
         if self.last_tick is None or now - self.last_tick > WATCHDOG_S:
@@ -151,6 +168,11 @@ class Supervisor:
                 self._latch("measured speed over limit")
             if self.last_q is not None and np.any(np.abs(self.last_q - qm) > TRACK_FAULT):
                 self._latch("tracking error")
+            if self.collision is not None and tau_meas is not None and "collision" not in self.latched:
+                if not _finite(tau_meas, self.n):
+                    self._latch("feedback missing, NaN or stale")
+                elif self.collision.update(qm, vm, tau_meas, dt):
+                    self._latch("collision")
         if err is not None and np.any(np.asarray(err) != 0):
             self._latch("motor error flag")
         if temp is not None:
@@ -159,6 +181,20 @@ class Supervisor:
                 self._latch("over temperature or bad temperature reading")
         if not _finite(q_want, self.n):
             self._latch("non-finite command")
+        if self.latched == ["collision"]:                               # compliant hold, not a stop: the arm must not drop
+            qm = np.asarray(q_meas, float)
+            lim = self.peak if allow_peak else self.rated
+            if self._anchor is None:
+                self._anchor = qm.copy()
+            self._anchor += (qm - self._anchor) * min(dt / T_ANCHOR, 1.0)
+            g = self.collision.twin.gravity(qm)
+            kp_c = np.full(self.n, KP_COMPLIANT)
+            room = np.maximum(lim - np.abs(kp_c * (self._anchor - qm)), 0)
+            g = np.clip(g, -room, room)
+            self.last_q = qm.copy()
+            self.healthy_cycle = True                                    # controlled state: keep the hardware heartbeat
+            return Verdict(False, self._anchor.copy(), kp_c, np.full(self.n, KD_COMPLIANT), g, ["collision: compliant hold"], compliant=True)
+        self._anchor = None
         if self.latched:
             return Verdict(True, reasons=list(self.latched))
         qm, vm = np.asarray(q_meas, float), np.asarray(v_meas, float)

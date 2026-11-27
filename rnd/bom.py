@@ -6,6 +6,7 @@ single quantity, 2026). The Pi 5 is excluded (the owner has one), as are tools.
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 from .belts import STAGES, stage
@@ -23,21 +24,25 @@ def items(d=BASELINE):
     I = []
     A = lambda cat, item, q, unit, src="ESTIMATE": I.append((cat, item, q, unit, src))
     for n, q in counts.items():
-        A("Actuators", n, q, act(n)["price"], "actuators.yaml (mid list price)")
+        if n in BEST_PRICE:                                    # loop 47 cost pass: best verified price, same part
+            A("Actuators", n, q, *BEST_PRICE[n])
+        else:
+            A("Actuators", n, q, act(n)["price"], "actuators.yaml (mid list price)")
     A("Wheels & power", '6" DuraOmni omni wheel', 4, 33.0, "components.yaml")
     A("Wheels & power", "6S 10 Ah 21700 Li-ion pack, 35 A cont., 975 g (Lumenier NAV class)", 1, 150.0, "racedayquads.com listing (loop 13)")
     A("Wheels & power", "6S smart BMS, 40 A cont., UART/CAN telemetry + active balancing (JK-BMS class) — A13: telemetry for the dock stop, weekly 4.20 V balance charge", 1, 45.0, "ESTIMATE")
-    A("Wheels & power", "6S charger, balance (ToolKitRC C6 class)", 1, 30.0, "racedayquads.com listing")
     A("Wheels & power", "Fuses + holders (40 / 20 / 15 / 15 / 10 / 7.5 / 5 A)", 1, 15.0)
-    A("Wheels & power", "E-stop (A5): 2 two-channel latching mushrooms + 24 V contactor + 22 Ω 25 W pre-charge + timer relay + watchdog relay", 1, 55.0)
-    A("Wheels & power", "Regen clamp (A5): 26.5 V shunt regulator (MOSFET, comparator, 10 Ω 50 W Al-clad resistor) + 33 V TVS", 1, 16.0)
+    A("Wheels & power", "E-stop (A5 v2): 2 two-channel latching mushrooms + TE ALEV100 DC contactor (24 V coil, aux contact) + switched pre-charge (K_PRE relay + 3.3 Ω RH-50) + SN74LVC1G123 watchdog on its own LDO", 1, 150.0,
+      "LEV100A5ANG $92 (Master Electronics); rest ESTIMATE")
+    A("Wheels & power", "Regen clamp / bus discharge (A5 v2): 2 × Vishay RH-50 0.56 Ω + 2 × IRFB7530 + comparator/reference, gate driver, film caps, 85 °C thermal switch", 1, 58.0,
+      "RH-50 ≈ $15 (RS 5-pack); rest ESTIMATE")
     A("Wheels & power", "DC-DC 24→12 V 10 A (head servos), 24→5 V 5 A", 1, 30.0)
     A("Wheels & power", "D14 elbow-node power: 24→12 V 3 A buck + half-duplex TTL transceiver (one per arm)", 2, 8.0)
     A("Wheels & power", "Connectors: XT60/XT30, 2 × 6-pin pogo blocks, JST-GH/VH, wire", 1, 50.0)
     A("Compute & sensors", "Raspberry Pi 5 8 GB", 1, 0.0, "owner has one")
-    A("Compute & sensors", "Waveshare 2-CH CAN FD HAT for the Pi 5 (CAN B + C, mode A: separate SPI)", 1, 46.99, "waveshare.com (loop 14)")
-    A("Compute & sensors", "USB-CAN adapter (A14: CAN A base + lift, and the second channel of each arm)", 3, 35.0, "components.yaml")
-    A("Compute & sensors", "Bus-servo TTL adapter", 3, 8.0)
+    A("Compute & sensors", "USB-CAN adapter, candleLight/gs_usb (FYSETC UCAN, STM32F072): A14's five channels (CAN A base + lift, two per arm); replaces the Waveshare 2-CH HAT + 3 × $35 adapters", 5, 19.0,
+      "MatterHackers FYSETC UCAN V1.0 $19 (2026-11)")
+    A("Compute & sensors", "Bus-servo USB-TTL adapter (half-duplex, ID programming only: D14 elbow nodes and the torso node drive the TTL buses)", 1, 8.0)
     A("Compute & sensors", "Powered USB3 hub", 1, 25.0)
     A("Compute & sensors", "Head RGB-D camera (Orbbec Gemini 2: 0.15–10 m, global-shutter IR, 98 g)", 1, 234.0, "store.orbbec.com (loop 14); Gemini 336 was $310")
     A("Compute & sensors", "Wrist camera (D12): global-shutter OV9281-class MIPI-CSI module + FFC through the wrist + CSI→USB (UVC) bridge on the forearm + slim 4-core high-flex USB (OD ≤ 2.2 mm)", 2, 55.0, "T01: USB versions $60–155; CSI module + bridge ESTIMATE")
@@ -47,7 +52,7 @@ def items(d=BASELINE):
     A("Sensor pack v2", "Fingertip tactile pads: magnetised elastomer + MLX90393 magnetometer (AnySkin/ReSkin principle), 2 per gripper", 4, 10.0, "ESTIMATE")
     A("Sensor pack v2", "Gripper ToF proximity (VL53L4CD) for pre-grasp alignment", 2, 8.0, "ESTIMATE")
     A("Sensor pack v2", "Base cliff / stair-edge ToF sensors (VL53L1X, downward)", 4, 8.0, "ESTIMATE")
-    A("Compute & sensors", "2D lidar (RPLIDAR C1)", 1, 75.0, "components.yaml")
+    A("Compute & sensors", "2D lidar (RPLIDAR C1)", 1, 69.0, "RobotShop US $69 (2026-11); Waveshare $79.99")
     A("Compute & sensors", "IMU (BNO085) + optical-flow (PAA5100JE)", 1, 55.0, "components.yaml (flow)")
     A("Compute & sensors", "Mic array + speaker + chest/bumper LEDs (eyes are now drawn on the D11 screen)", 1, 36.0, "ESTIMATE")
     A("Compute & sensors", "D22 face screen: Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (7\" 1024×600 cap. touch, CAN + RS485) + 24→5 V 2 A buck", 1, 46.99 + 6.0, "waveshare.com SKU 32510 (2026-11-27)")
@@ -82,12 +87,18 @@ def items(d=BASELINE):
     A("Drive & structure", "Carbon tubes Ø40×38 (0.5 m) + Ø30×28 (1 m), roll-wrapped", 1, 70.0, "eBay / Carbonwebshop listings")
     A("Drive & structure", '3" quick-release squeeze tri-clamp, 304 SS (arm detach; flange OD 90.9 mm confirmed)', 2, 25.0, "hosewarehouse (Dixon 13MHHM-Q300)")
     A("Drive & structure", "Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards", 1, 35.0, "ESTIMATE")
-    A("Drive & structure", "Balancers (A9): 2 × ISO 10243 light die spring Ø25 × 115 + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
+    A("Drive & structure", "Balancers (A9): ISO 10243 green die spring Ø25/Ø12.5 × 115, 18.7 N/mm (Berger Tools V25-115 / Accu TJL25-115) + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
     A("Drive & structure", "Fasteners, heat-set inserts, epoxy, grease", 1, 60.0)
-    A("Printed parts", f"PETG {pp['kg']:.1f} kg + 20 % spare (print_plan.md)", 1, round(pp["kg"] * 1.2 * 20, 0))
+    n10 = math.ceil(pp["kg"] * 1.2 / 10)                       # loop 47: 10 kg bundles instead of $20/kg single spools
+    A("Printed parts", f"PETG {pp['kg']:.1f} kg + 20 % spare (print_plan.md): {n10} × Elegoo PETG Pro 10 kg bundle", n10, 109.99,
+      "us.elegoo.com PETG Pro 10 kg $109.99 (2026-11; list $140)")
     A("Printed parts", "ASA 2 kg (A6: motor cans, KX hubs/collars and D13 hubs near motors)", 1, 40.0)
     return I
 
+
+# loop 47 cost pass: the same parts at the best verified price (motor choices unchanged)
+BEST_PRICE = {"GIM6010-8": (90.0, "aifitlab $90 with SDC104 driver (actuators.yaml, loop 14)"),
+              "DM-J4310-2EC_V1.1": (150.0, "Robotics Center $150 in stock (2026-11-27); AIFit $125 backordered")}
 
 CONTINGENCY = 0.15      # A16 (review finding 18): price drift, shipping, tax
 
@@ -102,6 +113,12 @@ def report(d=BASELINE):
         cats[c] = cats.get(c, 0) + q * u
     L = ["# Bill of materials v4 (auto-generated by `python -m rnd.bom`)", "",
          f"**Total ≈ ${tot:,.0f} landed** (${sub:,.0f} + {CONTINGENCY:.0%} contingency; target ≤ $4,000 since D9 (owner: sensors over savings); limit $5,000; excludes the owner's Pi 5 and tools). Single-unit online prices; hardware lines are ESTIMATEs.", "",
+         "**Loop 47 cost pass** (motor choices unchanged; before → after, each with the 15 % contingency):",
+         "- A5 v2 safety electrics added first: DC contactor with aux contact, switched pre-charge, energy-rated regen clamp: $71 → $208 of lines (+$158 landed): $5,030 → $5,188.",
+         "- Savings (−$290 landed): PETG in 10 kg bundles ($333 → $220); five $19 candleLight USB-CAN adapters in place of the CAN HAT + three $35 adapters "
+         "($152 → $95); one USB-TTL adapter instead of three (the D14 nodes drive the buses); no separate balance charger (the dock's CC/CV charger + the BMS's active "
+         "balancing do the weekly 4.20 V charge, A13); GIM6010-8 at the verified $90, DM-J4310 at $150 in stock, RPLIDAR C1 at $69.",
+         f"- Result: **${tot:,.0f}**, under the $5,000 limit; the $4,000 target would need the motor or sensor choices reopened.", "",
          "| Category | Subtotal |", "|---|---|"] + [f"| {c} | ${v:,.0f} |" for c, v in cats.items()] + [
          "", "| Category | Item | Qty | Unit $ | Line $ | Source |", "|---|---|---|---|---|---|"]
     L += [f"| {c} | {n} | {q} | {u:,.2f} | {q * u:,.0f} | {s} |" for c, n, q, u, s in I]
