@@ -36,8 +36,18 @@ MOT36 = dict(od=96.0, drv_d=75.0, drv_h=12.5, body_h=29.0, step=((60.0, 10.0), (
 REAR_ANG0 = 0.0                                                    # first of the 8 rear M4 (≥ 9 mm from the hard-stop lugs)
 MOT36["h"] = MOT36["body_h"] + sum(h for _, h in MOT36["step"])   # body rear face → output step face (44.5); + the driver = 57
 CUP_H = MOT36["drv_h"] + 0.5                                       # roll-link cup ring around the driver section
-REAR_SCREW = dict(size="M4 × 18 ISO 4762", grip=CUP_H + 6.0 - 3.5, engage=None)   # counterbore 3.5 deep in the 6 mm floor
-REAR_SCREW["engage"] = 18.0 - REAR_SCREW["grip"]                   # 2.5 mm into the 3.5 mm tapped holes (≤ 3.5, no bottoming; ≈ 1.6 kN thread shear each in Al, ESTIMATE)
+# M1 (Fable review 2026-11-27): the housing's M4 are tapped only 3.5 deep; wave 2's M4 × 18 under a 3.5 mm counterbore
+# engaged 2.5 ± 0.55 mm (under 3 threads, or bottoming). Now: M4 × 18 ISO 4762 12.9 + ISO 7089 washer (0.8) + one DIN 988
+# shim (0.3 nominal, chosen from 0 / 0.3 / 0.5 at assembly) under the head in a Ø9.6 × 5.1 counterbore (head flush): the
+# printed grip is 13.9, the engagement 18 − 13.9 − 0.8 − 0.3 = 3.0 mm. Stack: screw length js15 ±0.35 (ISO 4759-1),
+# printed grip ±0.15 (ESTIMATE), washer ±0.1 (ISO 7089) → ±0.6 worst case; so each screw's protrusion past the cup's
+# motor face is measured with the washer + shim seated (depth gauge, motor off) and the shim picked to land 3.0 ± 0.15
+# (+ gauge ± 0.05): 2.8–3.2 mm, never bottoming (3.5). Preload 0.5 kN (≈ 0.45 N·m, ≈ 10 MPa under the washer on the
+# PETG). Rows: rnd/joints.py. Alternative (the review's): Loctited M4 studs bottomed then backed off ¼ turn + nuts.
+REAR_SCREW = dict(size="M4 × 18 ISO 4762 12.9", L=18.0, L_tol=0.35, washer=0.8, washer_tol=0.1, shim=0.3, shims=(0.0, 0.3, 0.5),
+                  cb_depth=4.0 + 0.8 + 0.3, cb_d=9.6, grip_tol=0.15, preload=500.0, engage=None, grip=None)
+REAR_SCREW["grip"] = CUP_H + 6.0 - REAR_SCREW["cb_depth"] + REAR_SCREW["washer"] + REAR_SCREW["shim"]   # 15.0 under the head
+REAR_SCREW["engage"] = REAR_SCREW["L"] - REAR_SCREW["grip"]       # 3.0 mm into the 3.5 mm tapped holes
 # Metal output adapter (7075-T6, Ø76 × 7, ESTIMATE): 3 × M4 × 10 countersunk (ISO 10642; 3.0 mm into the 4 mm tapped holes)
 # + 3 × Ø4 m6 hardened dowels in the H7 holes into the Ø30 boss, Ø30 pilot; 8 × M5 tapped on PCD 64 take the printed clevis
 # arm (bolted from +X through a steel clamp ring: M5 × 16 low-head, 6 mm into the adapter).
@@ -291,8 +301,11 @@ ROLL_OUT = {"roll_shaft", "roll_pulley72", "roll_spring_hub", "yaw_block", "yaw_
 # 6 × M4 into the flange from +X, roll_arm_rear's foot 2 × M5 into the top plate (the torque pin rises into the fork
 # slot) → spring hub on the arm, ribbon, spring ring onto the bar. No pulley, belt or D13 stage, so R14 has nothing to
 # block (rnd/assembly_seq.py checks the 61806 slide-on).
-# Roll travel: software −15…100° (twin.JR); hard stops at ≈ −19° / 104°: two Ø8 lugs on the floor's −X face (r 44) meet
-# roll_arm_rear's edges (≈ 800 N at the 35 N·m rated torque limit set in the drive; fault only).
+# Roll travel: software −15…100° (twin.JR); hard stops at ≈ −19° / 104°. M1 (Fable review 2026-11-27): the stops were two
+# printed Ø8 lugs (≈ 800 N at the 35 N·m drive limit, ≈ 16 MPa vs the 12 MPa allowable; 2.3 kN at stall). Now two
+# hardened ISO 8734 Ø10 × 28 dowels at r 43, pressed 19.5 mm into the floor + cup ring and standing 8 mm proud on its
+# −X face, meet 20 × 8 × 1.5 stainless wear strips bonded flush into roll_arm_rear's edges (pin on steel; the strip spreads
+# the load on the print). Rows: rnd/joints.py.
 # ---------------------------------------------------------------------------------------------------------------------
 BRG_R = dict(d=30.0, D=42.0, B=7.0)    # 61806, rear roll support
 # +X clevis arm ↔ metal output adapter (Astra #2b finding 2; the motor's own 3 × M4 on PCD 28.5 are too small to go
@@ -301,8 +314,9 @@ BRG_R = dict(d=30.0, D=42.0, B=7.0)    # 61806, rear roll support
 # bearing path behind the friction. Capacities: drive_capacity().
 OUT_CLAMP = dict(arm_t=14.0, ring=(26.0, 40.0, 2.0), head_h=3.5, preload=1500.0, creep=0.75, mu=0.25)
 R_ARM = 42.0                           # clevis-arm boss radius about the roll axis (covers the Ø76 adapter and the ring)
-R_ARM_REAR = 36.0                      # roll_arm_rear boss radius (61806 seat): inside the hard-stop lugs (r 44 − 4)
-STOP_R, STOP_LUG_R = 44.0, 4.0
+R_ARM_REAR = 36.0                      # roll_arm_rear boss radius (61806 seat): inside the hard-stop pins (r 43 − 5)
+STOP_R, STOP_LUG_R = 43.0, 5.0          # M1: steel Ø10 stop pins (were printed Ø8 lugs at r 44)
+STOP_PIN = dict(d=10.0, seat=6.0 + CUP_H - 0.5, proud=8.0, strip=(20.0, 8.0, 1.5))
 STOP_AT = (ROLL_MIN - 4, 100 + 4)      # hard-stop contact angles (deg)
 if INLINE:
     _ycx = max(p.bounding_box().max.X for _, p, _c in _stage(YAW_T, 20) if p.bounding_box().max.Z > P1[1])
@@ -342,7 +356,7 @@ def roll_link_inline() -> Part:
         a = 2 * math.pi * k / MOT36["rear_n"] + REAR_ANG0
         y, z = ROLL_Y + MOT36["rear_pcd"] / 2 * math.cos(a), MOT36["rear_pcd"] / 2 * math.sin(a)
         p -= Pos(0, y, z) * Rot(0, 90, 0) * Cylinder(2.25, 400)
-        p -= Pos(xf0, y, z) * Rot(0, 90, 0) * Cylinder(3.8, 3.5, align=MIN)                                     # counterbore: M4 × 18 engages 2.5 of the 3.5 mm thread
+        p -= Pos(xf0, y, z) * Rot(0, 90, 0) * Cylinder(REAR_SCREW["cb_d"] / 2, REAR_SCREW["cb_depth"], align=MIN)   # M1: head + washer + shim; M4 × 18 engages 3.0 of 3.5
     p -= Pos(xf1 - 2.5, (ROLL_Y + 8) / 2, 0) * Box(5, ROLL_Y - 8, 10)                                           # motor-lead groove to the frame
     x_st = W1[0]
     p += Pos(x_st, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(BRG_R["d"] / 2, xf0 - x_st, align=MIN) - Cylinder(9, xf0 - x_st, align=MIN))
@@ -422,7 +436,7 @@ def module_inline():
            ("roll_link", roll_link_inline(), "white"), ("roll_gim_housing", roll_motor_housing(), "dark"),
            ("roll_outflange", roll_outflange(), "steel"), ("roll_arm_rear", roll_arm_rear(), "white"),
            ("roll_spring_hub", roll_spring_hub(), "dark"), ("roll_spring_ring", roll_spring_ring(), "dark"),
-           ("yaw_block", clevis_and_yaw_block(), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_flange", yaw_flange(), "orange"),
+           ("yaw_block", clevis_and_yaw_block(), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_flange", yaw_flange() + yaw_tie_ring(), "steel"),
            ("yaw_plate_bot", yaw_plate_bot(), "white"), ("yaw_spring_ring", yaw_spring_ring(), "dark"), ("yaw_band", yaw_band(), "white")]
     out += [(f"yaw_{n}", p, c) for n, p, c in _stage(YAW_T, 20)]
     out.append(("yaw_stop_pin", yaw_stop_pin(), "steel"))
@@ -558,24 +572,60 @@ def yaw_shaft() -> Part:
     s += Pos(0, ROLL_Y, P2[1]) * (Cylinder(21.6, 1.0, align=MIN) - Cylinder(YF["bore_r"], 1.0, align=MIN))
     s += Pos(0, ROLL_Y, P2[1] + 1.0) * (Cylinder(YAW_SPR[0], YAW_BELT - 8 - P2[1] - 1.0, align=MIN) - Cylinder(YF["bore_r"], 30, align=MIN))
     s -= Pos(0, ROLL_Y, z0) * Rot(0, 0, 30) * _hex(YF["hex_af"] + 0.4, YF["hex_h"] + 0.2)   # torque socket for the flange's hex spigot
-    s -= Pos(0, ROLL_Y, P1[1] - 3) * Cylinder(14, 10, align=MIN)                     # top end: Ø28 bore (clears the 80T rim by ≥ 2 mm, R15 moving)
-    for k in range(YF["n"]):                                                   # M3 heat-set inserts (Ø4.0 × 6) between the hex corners
-        a = math.radians(60 * k)
-        s -= Pos(YF["bolt_r"] * math.cos(a), ROLL_Y + YF["bolt_r"] * math.sin(a), z0) * Cylinder(2.0, 6.0, align=MIN)
+    t = YAW_TIE
+    top = P1[1] + 2
+    s -= Pos(0, ROLL_Y, top - t["cb_depth"]) * Cylinder(t["cb_r"], 10, align=MIN)      # C1: counterbore for the clamp ring + heads
+    for a in _yaw_tie_angles():                                                   # C1: 6 × Ø3.4 through the wall (no inserts)
+        s -= Pos(t["r"] * math.cos(a), ROLL_Y + t["r"] * math.sin(a), z0 - 1) * Cylinder(t["hole"] / 2, top - z0 + 2, align=MIN)
     return s
 
 
 # Yaw flange ↔ tube joint (Astra #2b finding 2, D20 payload): a hollow hex spigot on the flange (AF 24 × 8, Ø16 ribbon bore)
-# in a hex socket in the tube end carries the torque by form; 6 × M3 countersunk screws into heat-set inserts in the tube
-# end carry the bending and the hanging load. Capacities: drive_capacity().
-YF = dict(hex_af=24.0, hex_h=8.0, bore_r=10.0, spigot_r_in=8.0, n=6, bolt_r=16.5)
+# in a hex socket in the tube end carries the torque by form.
+# C1 (Fable review 2026-11-27): the bending and hanging load were on 6 × M3 into heat-set inserts in the tube end, in
+# pull-out. Now the flange is **6061-T6** (machined, ESTIMATE $25) and the joint is a tie: 6 × M3 × 45 class 12.9 socket
+# caps (ISO 4762) go down from the tube's top end, heads on a steel clamp ring (r 8.5–16.8 × 2) in a Ø34 × 5.5 counterbore
+# flush under the top, through Ø3.4 holes in the tube wall (bore Ø16 for the ribbon, wall r 8–20) and the hex-socket
+# void, into M3 threads tapped in the aluminium spigot + plate (≈ 10.8 mm engaged, Loctite 243). The whole printed tube
+# is clamped in compression between the ring and the flange, so the hanging load goes flange → screws → ring → tube
+# (compression) → shoulder → bearing B, and the tube's bending at bearing B is prestressed. Screws at the hex corners
+# (r 11, 30° + k·60°). Tightened from above before the yaw block goes onto the roll output. Capacity: rnd/joints.py.
+YF = dict(hex_af=24.0, hex_h=8.0, bore_r=8.0, spigot_r_in=8.0)
+YAW_TIE = dict(n=6, r=11.0, ang0=30.0, d=3.0, pitch=0.5, As=5.03, hole=3.4, tap=2.5, grade="12.9", proof=970.0, preload=1000.0,
+               creep=0.75, ring=(8.5, 16.8, 2.0), cb_r=17.0, head_h=3.0, top_gap=0.5, L=45.0, tau_flange=207.0)
+YAW_TIE["cb_depth"] = YAW_TIE["ring"][2] + YAW_TIE["head_h"] + YAW_TIE["top_gap"]    # 5.5 mm
+
+
+def _yaw_tie_angles():
+    return [math.radians(YAW_TIE["ang0"] + 360.0 * k / YAW_TIE["n"]) for k in range(YAW_TIE["n"])]
+
+
+def yaw_tie_levels():
+    """z of the ring seat, the under-head plane, the screw tip and the thread engaged in the flange (mm)."""
+    t = YAW_TIE
+    top = P1[1] + 2
+    seat = top - t["cb_depth"]
+    head = seat + t["ring"][2]
+    tip = head - t["L"]
+    spigot_top = FL_TOP - FL_REC + YF["hex_h"]
+    return dict(seat=seat, head=head, tip=tip, engaged=spigot_top - tip, tip_to_face=tip + YAW_DROP)
+
+
+def yaw_tie_ring() -> Part:
+    """C1: steel clamp ring (laser-cut S235, r 8.5–16.8 × 2, 6 × Ø3.4) under the 6 screw heads, at the counterbore floor."""
+    r0, r1, th = YAW_TIE["ring"]
+    z = yaw_tie_levels()["seat"]
+    p = Pos(0, ROLL_Y, z) * (Cylinder(r1, th, align=MIN) - Cylinder(r0, th, align=MIN))
+    for a in _yaw_tie_angles():
+        p -= Pos(YAW_TIE["r"] * math.cos(a), ROLL_Y + YAW_TIE["r"] * math.sin(a), z) * Cylinder(YAW_TIE["hole"] / 2, th, align=MIN)
+    return p
 
 
 def yaw_flange() -> Part:
-    """Upper-arm flange (the upper bone bolts to it inside the stop slot), on the yaw tube's lower end: a Ø64 × FL_REC
-    recess in its top clears the bearing-B boss; in it, the hollow hex spigot goes up into the tube's socket (torque) and
-    6 × M3 countersunk screws go into the tube's inserts (bending, axial). Hard-stop slot (blind, 3.5 mm deep in its top)
-    for the fixed Ø6 stop pin: software ±150°, hard ±155°."""
+    """Upper-arm flange (6061-T6 since C1; the upper bone bolts to it inside the stop slot), on the yaw tube's lower end: a
+    Ø64 × FL_REC recess in its top clears the bearing-B boss; in it, the hollow hex spigot goes up into the tube's socket
+    (torque); 6 × M3 tapped holes at the hex corners take the YAW_TIE screws from the tube's top (bending, axial). Hard-stop
+    slot (blind, 3.5 mm deep in its top) for the fixed Ø6 stop pin: software ±150°, hard ±155°."""
     z0 = -YAW_DROP
     f = Pos(0, ROLL_Y, z0) * Cylinder(FL_R, FL_T, align=MIN)
     f -= Pos(0, ROLL_Y, z0 + FL_T - FL_REC) * Cylinder(BOSS[1] + 2.0, FL_REC + 1, align=MIN)
@@ -583,12 +633,9 @@ def yaw_flange() -> Part:
     f += Pos(0, ROLL_Y, zr) * Rot(0, 0, 30) * _hex(YF["hex_af"] - 0.2, YF["hex_h"])
     f -= Pos(0, ROLL_Y, z0 - 1) * Cylinder(YF["spigot_r_in"], 50, align=MIN)          # ribbon / cable bore Ø16
     f -= Pos(0, ROLL_Y, z0 + 1.5) * _arc_slot(STOP_PIN_R, 3.3, STOP_PIN_AZ, YAW_STOP_DEG, 4.0)
-    from build123d import Cone
-    for k in range(YF["n"]):
-        a = math.radians(60 * k)
-        at = Pos(YF["bolt_r"] * math.cos(a), ROLL_Y + YF["bolt_r"] * math.sin(a), z0)
-        f -= at * Cylinder(1.7, 20, align=MIN)
-        f -= at * Pos(0, 0, -0.01) * Cone(3.1, 1.6, 1.5, align=MIN)                   # M3 countersunk (ISO 10642 head Ø6, 1.7)
+    tip = yaw_tie_levels()["tip"]
+    for a in _yaw_tie_angles():
+        f -= Pos(YAW_TIE["r"] * math.cos(a), ROLL_Y + YAW_TIE["r"] * math.sin(a), tip) * Cylinder(YAW_TIE["tap"] / 2, zr + YF["hex_h"] - tip, align=MIN)
     return f
 
 
@@ -696,7 +743,7 @@ def module():
            ("roll_link", roll_link(), "white"), ("roll_shaft", roll_shaft(), "orange"),
            ("roll_seat_cap_A", roll_seat_cap(W1), "white"), ("roll_seat_cap_B", roll_seat_cap(W2), "white"),
            ("roll_spring_hub", roll_spring_hub(), "dark"), ("roll_spring_ring", roll_spring_ring(), "dark"),
-           ("yaw_block", clevis_and_yaw_block(), "white"), ("roll_clevis_cap_in", roll_clevis_cap(0), "white"), ("roll_clevis_cap_out", roll_clevis_cap(1), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_flange", yaw_flange(), "orange"),
+           ("yaw_block", clevis_and_yaw_block(), "white"), ("roll_clevis_cap_in", roll_clevis_cap(0), "white"), ("roll_clevis_cap_out", roll_clevis_cap(1), "white"), ("yaw_shaft", yaw_shaft(), "orange"), ("yaw_flange", yaw_flange() + yaw_tie_ring(), "steel"),
            ("yaw_plate_bot", yaw_plate_bot(), "white"),
            ("yaw_spring_ring", yaw_spring_ring(), "dark")]
     out += [("shoulder_cap", shoulder_cap(), "white"), ("yaw_band", yaw_band(), "white")]
@@ -730,7 +777,8 @@ def masses(density=1.27, split=False):
                 "roll D13 v3 stage + Oldham + bolted can flange/nose/cap": d13 + sock, "2 × 61808 (ESTIMATE)": 0.04, "male ferrule (printed) + dowels + belt + screws + ribbon (ESTIMATE)": pr(67213, 0.7) + 0.05}
     caps = 0.0 if INLINE else roll_clevis_cap(0).volume + roll_clevis_cap(1).volume
     yaw = {"clevis + caps + yaw block plates + posts (printed)": pr(clevis_and_yaw_block().volume + caps + yaw_plate_bot().volume, 0.6),
-           "yaw shaft + 40T + spring hub (one piece), flange, spring ring": pr(yaw_shaft().volume + yaw_flange().volume, 0.7) + pr(yaw_spring_ring().volume, 0.8),
+           "yaw shaft + 40T + spring hub (one piece), spring ring (printed)": pr(yaw_shaft().volume, 0.7) + pr(yaw_spring_ring().volume, 0.8),
+           "C1 yaw flange (6061-T6) + steel clamp ring + 6 × M3 × 45 12.9": yaw_flange().volume * 2.7e-6 + yaw_tie_ring().volume * 7.85e-6 + 6 * (5.03 * 45 + 45) * 7.85e-6,
            "yaw D13 v3 stage + Oldham + bolted can flange/nose/cap": d13 + sock, "2 × 61808 + stop pin + belt + screws + ribbon (ESTIMATE)": 0.075}
     if split:
         return sum(roll.values()), sum(yaw.values())
