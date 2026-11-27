@@ -211,12 +211,12 @@ def _half_annulus_centroid(r0, r1):
 
 def c1_tie_cases():
     """C1 (Fable review 2026-11-27): the printed parts of the two tie-rod joints (rnd/joints.py), held at their bearing seats.
-    The tie preload (× 0.75 creep) is a pair of opposite face loads (ring seat ↔ crank / flange face); the joint wrench is
+    The print's share of the tie preload (its squeeze: the crush sleeves carry the rest) is a pair of opposite face loads (ring seat ↔ crank / flange face); the joint wrench is
     a couple on the two halves of the loaded face + the pull-off. Service = the worst basket/hug × 1.5 (no gap, so the
     clamped interface is taken as bonded). Fault = the worst 140 N bump / stall, applied × 0.5 together with the preload:
     linear, so its margin vs 12 MPa equals the full fault vs 24 MPa (≈ the across-layer ultimate, ESTIMATE); the joint
     gaps at that load, so the bonded interface over-states the stress at the tension edge."""
-    from .joints import DOCS as JD, SERVICE
+    from .joints import DOCS as JD, SERVICE, joint_models
     from .parts import roll as rl, shoulder as sh
     try:
         rows = json.loads((JD / "joints.json").read_text())["joints"]
@@ -230,7 +230,7 @@ def c1_tie_cases():
     # pitch tube + hub (module frame, axis Y): ring seat in the hub's detach-face recess, crank on the tube's inboard end,
     # moment on the ferrule face (r 21–45.5 at y = 20), bearings A and B on the tube (r 20)
     h = sh.HUB_TIE
-    Fp = h["n"] * h["preload"] * h["creep"]
+    Fp = joint_models()["pitch hub ↔ tube"]["P_print"]     # Neon 3: crush sleeves carry the stud preload; the print sees only its 0.05 mm squeeze
     y_face, y_seat, y_in = sh.Y_FER + 18, sh.Y_FER + 18 - h["recess"], sh.Y_TUBE_IN
     zc = _half_annulus_centroid(21.2, 45.5)
     rho = lambda x: np.hypot(x[0], x[2])
@@ -239,7 +239,7 @@ def c1_tie_cases():
     for tag, (M, N), k in (("service: basket/hug × 1.5", worst("pitch hub ↔ tube", True, (29.6, 0.0)), 1.0),
                            ("fault: bump/stall × 0.5", worst("pitch hub ↔ tube", False, (184.0, 343.0)), 0.5)):
         F = M * 1000 / (2 * zc)
-        C.append((f"Pitch tube + hub (C1 tie, {h['n']} × M4 at {Fp / 1e3:.1f} kN), {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", part, 3.0, fixed,
+        C.append((f"Pitch tube + hub (C1 tie, {h['n']} × M4 in crush sleeves, print squeeze {Fp / 1e3:.1f} kN), {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", part, 3.0, fixed,
                   [(lambda x: (np.abs(x[1] - y_seat) < 0.3) & (rho(x) > 11.0) & (rho(x) < 21.0), (0, -Fp * k, 0)),
                    (lambda x: (np.abs(x[1] - y_in) < 0.3) & (rho(x) > 10.5), (0, Fp * k, 0)),
                    (lambda x: (np.abs(x[1] - y_face) < 0.3) & (rho(x) > 21.2) & (x[2] > 0), (0, (F + N / 2) * k, 0)),
@@ -247,7 +247,7 @@ def c1_tie_cases():
     # yaw tube (roll frame, axis Z at y = ROLL_Y): ring seat in the top counterbore, the 6061 flange on the end face,
     # bearings A (top plate) and B (bottom plate)
     y = rl.YAW_TIE
-    Fp = y["n"] * y["preload"] * y["creep"]
+    Fp = joint_models()["yaw flange ↔ tube"]["P_print"]
     z_seat, z_end = rl.yaw_tie_levels()["seat"], rl.FL_TOP - rl.FL_REC
     zc = _half_annulus_centroid(14.1, 20.0)
     rh = lambda x: np.hypot(x[0], x[1] - rl.ROLL_Y)
@@ -255,7 +255,7 @@ def c1_tie_cases():
     for tag, (M, N), k in (("service: basket/hug × 1.5", worst("yaw flange ↔ tube", True, (32.5, 100.0)), 1.0),
                            ("fault: bump/stall × 0.5", worst("yaw flange ↔ tube", False, (98.5, 166.0)), 0.5)):
         F = M * 1000 / (2 * zc)
-        C.append((f"Yaw tube (C1 tie, {y['n']} × M3 at {Fp / 1e3:.1f} kN), {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", rl.yaw_shaft(), 3.0, fixed,
+        C.append((f"Yaw tube (C1 tie, {y['n']} × M3 in crush sleeves, print squeeze {Fp / 1e3:.1f} kN), {tag}, M {M:.0f} N·m, pull-off {N:.0f} N", rl.yaw_shaft(), 3.0, fixed,
                   [(lambda x: (np.abs(x[2] - z_seat) < 0.3) & (rh(x) > 8.2) & (rh(x) < 17.0), (0, 0, -Fp * k)),
                    (lambda x: (np.abs(x[2] - z_end) < 0.3) & (rh(x) > 12.0) & (x[0] > 0), (0, 0, (Fp / 2 + F - N / 2) * k)),
                    (lambda x: (np.abs(x[2] - z_end) < 0.3) & (rh(x) > 12.0) & (x[0] < 0), (0, 0, (Fp / 2 - F - N / 2) * k))]))
@@ -391,7 +391,7 @@ def inline_roll_cases(M=19.0, T=35.1, belt=691.0, weight=28.0):
         y, z = RY + rp * math.cos(a), rp * math.sin(a)
         ft = T / (n * rp / 1000)                                    # tangential (torque about +X): direction (−sin a, cos a) in (y, z)
         fx = Fc * arm_m * (z / 1000) / sum(((rp * math.sin(2 * math.pi * j / n + rl.REAR_ANG0)) / 1000) ** 2 for j in range(n))
-        holes.append((lambda x, y=y, z=z: (np.hypot(x[1] - y, x[2] - z) < 2.6) & (x[0] > rl.X_FLOOR[0] - 0.2) & (x[0] < xf1 + 0.2),
+        holes.append((lambda x, y=y, z=z, rh=(rl.STOP_BUSH["d_thru"] if k in rl.STOP_K else rl.REAR_SCREW["sleeve_od"]) / 2 + 0.5: (np.hypot(x[1] - y, x[2] - z) < rh) & (x[0] > rl.X_FLOOR[0] - 0.2) & (x[0] < xf1 + 0.2),
                       (-fx, -ft * math.sin(a), ft * math.cos(a) - Fc / n)))
     C = [(f"Roll link (D24 inline): rear 61806 stub + GIM8108-36 floor, arm moment {M:.0f} N·m (couple {Fc:.0f} N) + roll torque {T:.0f} N·m", rl.roll_link_inline(), 2.0,
           lambda x: (np.abs(x[1] - 8) < 0.3) & (np.hypot(x[0], x[2]) < 45),
@@ -404,7 +404,7 @@ def inline_roll_cases(M=19.0, T=35.1, belt=691.0, weight=28.0):
     xa = rl.X_ARM_F
     na, pa = rl.ADAPT["n"], rl.ADAPT["pcd"] / 2
     out_holes = [(RY + pa * math.cos(2 * math.pi * k / na + math.pi / na), pa * math.sin(2 * math.pi * k / na + math.pi / na)) for k in range(na)]
-    fixed = lambda x: (((x[0] > xa[0] - 0.2) & (x[0] < xa[1] + 0.2) & np.any([np.hypot(x[1] - y, x[2] - z) < 2.8 for y, z in out_holes], axis=0))
+    fixed = lambda x: (((x[0] > xa[0] - 0.2) & (x[0] < xa[1] + 0.2) & np.any([np.hypot(x[1] - y, x[2] - z) < rl.OUT_CLAMP["sleeve"][0] / 2 + 0.3 for y, z in out_holes], axis=0))
                        | ((np.hypot(x[1] - RY, x[2]) < rl.BRG_R["D"] / 2 + 0.3) & (x[0] > W1[0] - 0.2) & (x[0] < W1[1] + 0.2)))
     C.append((f"Clevis + yaw block (D24 inline, + rear arm): yaw belt {'peak ' if belt == 691.0 else ''}{belt:.0f} N + arm moment {M:.0f} N·m (couple {Fy:.0f} N)",
               rl.clevis_and_yaw_block() + rl.yaw_plate_bot() + rl.roll_arm_rear(), 2.5, fixed,
