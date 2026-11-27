@@ -4,10 +4,15 @@
   (D24: 6 × M4 flange, Oldham drive into the D13 small stage).
 - HTD 5M 20T → 60T belt (3:1, loop 10) in the belt plane; the 60T is integral with the pitch shaft (D19; Ø40, 2 × 61808
   in the bracket walls, the outer wall a separate bolted print).
-- Balancer plane, outboard of the bracket: the pitch hub's disc carries anchor pin B (b = 20 mm, along the hanging arm);
-  pulley A rides in a vertical slot 40–60 mm above the axis; the cable runs back over A into a horizontal cage with an
-  ISO 10243 Ø25 die spring, 18.7 N/mm (rnd/balancer.py, balancer track 2026-11-27). Open: the straight A–B cable passes
-  through the Ø40 shaft at every pitch angle, so the balancer plane has to move past the shaft end.
+- Balancer plane **inboard of the shaft's inboard end** (2026-11-27): an aluminium crank disc bolted to the tube's inboard
+  end face carries anchor pin B (b = 20 mm, along the hanging arm); pulley A rides in a vertical slot 40–60 mm above the
+  axis between a post on the inner wall and an outer cheek (double shear); the cable runs back over A into a horizontal
+  cage with an ISO 10243 Ø25 die spring, 18.7 N/mm (rnd/balancer.py). Nothing coaxial sits in the cable plane, so the
+  straight A–B cable never meets the shaft. (Outboard of the tube end the hub → ferrule load path and the harness both
+  have to cross the plane on the axis, which the cable sweeps at pitch 0° and 180°: no room for a crank there.)
+- Harness: no longer through the pitch-tube bore (the crank closes it). The pitch clock spring sits outboard of the outer
+  wall around the pitch hub (static ring on the wall, cavity r 25.5–45 × 12.8 mm); its inner end enters the hub bore
+  through a side window and runs to the detach plug on the ferrule.
 - Outboard end of the shaft (the bolted pitch hub): the **KX-V ferrule** (3" sanitary profile, 3 dowels): the arm clamps on here with a V-band.
 """
 from __future__ import annotations
@@ -18,8 +23,10 @@ from build123d import Align, Axis, Box, Cylinder, Part, Pos, Rot, fillet
 
 from . import cartridge_m as cm
 from .belt_stage import pulley
+from ..params import BASELINE as _D
 
 MIN = (Align.CENTER, Align.CENTER, Align.MIN)
+MOT = cm.MOTORS[_D.arm.joints["shoulder_pitch"][0]]   # D20 switch (params.ARM_MOTORS): GIM6010-8, or the GIM8108-8 (Ø96 ESTIMATE, Ø50 Oldham, Ø84 flange)
 WALL = 1.6
 BELT_C = 70.0
 # D24 (2026-11-27): the pitch cartridge is bolted (cartridge_m.can_bolted, belt_stage.small_stage_v3). Y_F is now the
@@ -31,14 +38,26 @@ WALL_T = 6.0
 W_IN = Y_F - (_V3["jA"][1] + _V3["jA"][0]) / 2 - 0.5               # 6 mm wall, bearing A flush on the pulley side (−54.3 … −48.3)
 W_OUT = Y_F - (_V3["jB"][1] + _V3["jB"][0]) / 2 + 0.5              # 6 mm wall, bearing B flush on the pulley side (−20.3 … −14.3)
 Y_BELT = Y_F - _V3["belt_c"]                                       # belt plane
-Y_BAL = -3.0               # balancer plane (outboard of the outer wall); loop 39: -6 → -3 (post ≥ 7.8 mm, 2.5 mm to the ferrule spigot)
+Y_DISC = -3.0              # pitch hub shoulder plane (the loop-39 balancer disc; the balancer moved inboard 2026-11-27)
 Y_FER = 2.0                # ferrule spigot start; the detach plane (flat face) is at Y_FER + 18 = 20
 FERRULE = dict(od=91.0, t=8.0, taper_deg=20.0, dowel_r=30.0)
 # D19 (2026-11-27): the 60T is printed in one piece with the pitch tube again. The tube's outboard end (double-D, 6 × M3
 # heat-set inserts in its end face) carries the separate pitch hub (balancer disc + lever + pin B + female ferrule), and
 # the outer wall is its own print bolted to the web, so: bearing A on the tube's inboard end → tube into the inner wall's
 # 61808 → belt → outer wall over bearing B → pitch hub on the double-D.
-Y_TUBE_END = Y_BAL - 2.5   # tube end face = inboard face of the balancer disc (−5.5)
+Y_TUBE_END = Y_DISC - 2.5  # tube end face (−5.5)
+# Balancer (2026-11-27): the cable plane sits inboard of the tube's inboard end (y −55.3), past an aluminium crank disc
+# (Ø44 × 4, 6 × M3 into heat-set inserts in the tube end, ESTIMATE) that carries a Ø6 steel pin B. The cage axis is in the
+# cable plane, its tube trimmed to y −75.4 … −48.3 so it stays 3 mm off the belt and ≥ 1 mm off the can sleeve (both motors).
+Y_TUBE_IN = W_IN - 4.0     # tube inboard end face (−55.3)
+CRANK_T = 4.0
+Y_BAL = Y_TUBE_IN - CRANK_T - 2.2   # cable plane (−61.5): 2.2 mm past the crank face (Ø2 cable: 1.2 mm clear)
+PIN_B = (0.0, Y_BAL, -20.0)         # b = 20 mm along the hanging arm (−Z at pitch 0)
+CAGE = dict(z=58.0, x0=-15.0, L=135.0, r_out=14.6, r_in=13.0, y_lo=-75.4, y_hi=W_IN + WALL_T / 2)   # Ø26 bore for the Ø25 die spring
+POST_Y = (W_IN - WALL_T / 2, Y_BAL + 3.5)          # wall-side cheek (3.7 mm; pulley A is Y_BAL ± 3) …
+CHEEK_Y = (Y_BAL - 7.5, Y_BAL - 3.5)               # … and the outer cheek (4 mm): 7.7 mm of slot bearing for pulley A's axle
+PITCH_SPR = (25.5, 45.0)   # pitch clock-spring cavity r_in, r_out (rnd/harness.py reads it)
+SPR_Y = (W_OUT + WALL_T / 2, -1.5)                  # cavity y span (12.8 mm; ribbon 9.8 wide): outer wall face → the ring's lip
 HUB_Y0 = W_OUT + WALL_T / 2 + 0.5   # pitch hub sleeve starts 0.5 mm outboard of the outer wall (on bearing B's inner race)
 HUB_SCREW_R = 15.5         # 6 × M3 into the tube end (inserts Ø4.0 between the Ø22 end bore and the flats at 18)
 WEB_X = -BELT_C / 2 - 10 - 190.0 / 2 + 4                           # back-web centre (x)
@@ -80,6 +99,10 @@ def pitch_shaft() -> Part:
         p60 -= Pos(0, 0, z) * (Cylinder(r_rim, 5.5, align=MIN) - Cylinder(28, 5.5, align=MIN))
     t += Pos(0, 0, Y_BELT - 8 - y0) * (p60 - Cylinder(15, 16, align=MIN))
     t += Pos(0, 0, L - 12) * (Cylinder(15, 12, align=MIN) - Cylinder(11, 12, align=MIN))     # end bore Ø22 (room for the inserts)
+    t += Cylinder(15, 12, align=MIN) - Cylinder(11, 12, align=MIN)                             # inboard end: the same, for the balancer crank
+    for k in range(6):                                                                         # (0°, 60° …: pin B sits at 270°)
+        a = math.pi / 3 * k
+        t -= Pos(HUB_SCREW_R * math.cos(a), HUB_SCREW_R * math.sin(a), 0) * Cylinder(2.0, 8, align=MIN)
     t -= dd_flats(HUB_Y0 - y0, y1 - HUB_Y0 + 1)
     for k in range(6):
         a = math.pi / 3 * k + math.pi / 6
@@ -96,10 +119,10 @@ def pitch_hub() -> Part:
     h = Y_TUBE_END - HUB_Y0
     sl = Cylinder(25, h, align=MIN) - dd_prism(h, DD_AF + 0.4, 20.2)
     s = Pos(0, HUB_Y0, 0) * _rot_y(sl)
-    disc = Cylinder(25, 5, align=MIN) - Cylinder(12, 5, align=MIN)
-    disc += Pos(0, 20, 0) * Cylinder(3, 9, align=MIN)                       # pin B, b = 20 mm along the hanging arm (−Z): balancer track 2026-11-27 (pin was on the wrong side, spring added to gravity)
-    s += Pos(0, Y_BAL - 2.5, 0) * _rot_y(disc)
-    s += Pos(0, Y_BAL + 2.5, 0) * _rot_y(Cylinder(20, Y_FER - Y_BAL - 2.5, align=MIN) - Cylinder(12, 20, align=MIN))
+    # 2026-11-27: the balancer disc and pin B moved to the inboard crank; here an r 25 sleeve (the clock spring's rotating
+    # hub) runs to the ferrule, with a 7 × 12 side window for the ribbon's inner end into the Ø24 bore
+    s += Pos(0, Y_TUBE_END, 0) * _rot_y(Cylinder(25, Y_FER - Y_TUBE_END, align=MIN) - Cylinder(12, 20, align=MIN))
+    s -= Pos(19, (Y_TUBE_END + Y_FER - 0.5) / 2, 0) * Box(16, Y_FER - 0.5 - Y_TUBE_END, 12)
     fer = ferrule(male=False) + (Cylinder(15.05, 18, align=MIN) - Cylinder(12, 18, align=MIN))     # Ø24 bore here: room for the screws
     s += Pos(0, Y_FER + 18, 0) * Rot(90, 0, 0) * fer                       # flat face outboard at the detach plane
     for k in range(6):
@@ -121,7 +144,7 @@ def _wall(y: float, inner: bool) -> Part:
     w -= Pos(0, y, 0) * Rot(-90, 0, 0) * Cylinder(26, WALL_T + 1)                      # 61808 seat (OD 52)
     if inner:
         from .belt_stage import wall_a_cuts
-        w -= _ST * wall_a_cuts()          # D24: eccentric seat, cartridge spigot counterbore, 6 × M4 countersunk clearance
+        w -= _ST * wall_a_cuts(MOT)       # D24: eccentric seat, cartridge spigot counterbore, 6 × M4 countersunk clearance
     else:
         w -= Pos(-BELT_C, y, 0) * Rot(-90, 0, 0) * Cylinder(19.1, WALL_T + 1)       # eccentric-bushing seat (Ø38) for bearing B
     # lightening (loop 8 diet): keep ≥ 10 mm of material around both bearing seats and along the back web
@@ -134,6 +157,7 @@ def bracket_body() -> Part:
     """D19: inner wall (pitch bearing A, the bolted pitch cartridge) + back web, one print. Loop 21's torque fork is gone:
     the D24 flange carries the cartridge torque into the inner wall."""
     p = _wall(W_IN, True)
+    p += balancer_mount()
     y1 = W_OUT - WALL_T / 2
     p += Pos(WEB_X, (W_IN + y1) / 2, 10) * Box(8, y1 - W_IN, _ZS)
     for z in WEB_INSERTS_Z:
@@ -145,14 +169,53 @@ def bracket_wall_out() -> Part:
     """D19: the outer wall is its own print (pitch bearing B, stage bearing B, balancer post + spring cage), bolted to the
     web end with 3 × M4, so the one-piece pitch shaft can go in before it."""
     p = _wall(W_OUT, False)
-    post_y0, post_y1 = W_OUT + WALL_T / 2, Y_BAL - 3.5                                   # post beside pulley A (axle cantilevered)
-    post = Pos(0, (post_y0 + post_y1) / 2, 58) * Box(16, post_y1 - post_y0, 40)
-    post -= Pos(0, (post_y0 + post_y1) / 2, 50) * Box(4.2, 40, 24)                      # vertical slot: a = 40–60 mm (balancer track 2026-11-27)
-    p += post
-    cage = Pos(-15, Y_BAL, 58) * Rot(0, -90, 0) * (Cylinder(14.6, 135, align=MIN) - Cylinder(13.0, 135, align=MIN))   # Ø26 bore for the ISO 10243 Ø25 die spring (18.7 N/mm)
-    p += cage
     for z in WEB_INSERTS_Z:
         p -= Pos(WEB_X, W_OUT, z) * Rot(90, 0, 0) * Cylinder(2.25, 20)
+    return p
+
+
+def balancer_mount() -> Part:
+    """2026-11-27: pulley A's fork (wall-side cheek + outer cheek + top bridge, vertical slot a = 38–62 mm) and the spring
+    cage, on the inboard face of the inner wall (part of the bracket-body print). The wall's lightening hole is filled
+    where the cage passes, and the cage bore is cut through everything."""
+    c = CAGE
+    p = Part()
+    for y0, y1 in (POST_Y, CHEEK_Y):
+        y0, y1 = min(y0, y1), max(y0, y1)
+        ch = Pos(0, (y0 + y1) / 2, 60) * Box(16, y1 - y0, 44)
+        ch -= Pos(0, (y0 + y1) / 2, 50) * Box(4.2, 40, 24)                               # vertical slot: a = 38–62 mm
+        p += ch
+    yb0, yb1 = CHEEK_Y[0], POST_Y[0]
+    p += Pos(0, (yb0 + yb1) / 2, 78) * Box(16, yb1 - yb0, 8)                            # bridge over pulley A (a = 60: top at 68)
+    tube = Pos(c["x0"], 0, c["z"]) * Rot(0, -90, 0) * Cylinder(c["r_out"], c["L"], align=MIN)
+    tube = tube.translate((0, Y_BAL, 0)) & Pos(0, (c["y_lo"] + c["y_hi"]) / 2, 0) * Box(400, c["y_hi"] - c["y_lo"], 400)
+    p += tube
+    p += Pos(c["x0"] - c["L"] / 2, W_IN, c["z"]) * Box(c["L"], WALL_T, 2 * c["r_out"])  # fill the lightening hole under the cage
+    p -= Pos(c["x0"] + 1, Y_BAL, c["z"]) * Rot(0, -90, 0) * Cylinder(c["r_in"], c["L"] + 2, align=MIN)
+    return p
+
+
+def crank() -> Part:
+    """Balancer crank (aluminium, ESTIMATE): Ø44 × 4 disc on the tube's inboard end face (6 × M3 into the inserts, heads
+    counterbored), Ø6 steel pin B pressed in at b = 20 mm along the hanging arm, standing 5.2 mm into the cable plane.
+    It also holds bearing A's inner race. Pin moment ≈ 318 N × 2.2 mm ≈ 0.7 N·m (hand calc)."""
+    d = Pos(0, Y_TUBE_IN, 0) * Rot(90, 0, 0) * Cylinder(22, CRANK_T, align=MIN)          # y −55.3 … −59.3
+    for k in range(6):
+        a = math.pi / 3 * k
+        x, z = HUB_SCREW_R * math.cos(a), HUB_SCREW_R * math.sin(a)
+        d -= Pos(x, Y_TUBE_IN, z) * Rot(90, 0, 0) * Cylinder(1.7, CRANK_T, align=MIN)
+        d -= Pos(x, Y_TUBE_IN - CRANK_T + 1.8, z) * Rot(90, 0, 0) * Cylinder(3.0, 1.8, align=MIN)
+    d += Pos(PIN_B[0], Y_TUBE_IN - CRANK_T + 1.0, PIN_B[2]) * Rot(90, 0, 0) * Cylinder(3.0, Y_TUBE_IN - CRANK_T + 1.0 - (Y_BAL - 3.0), align=MIN)
+    return d
+
+
+def spring_ring() -> Part:
+    """Pitch clock spring, static side (printed, screwed to the outer wall's outboard face): ring r 45–46.5 over the cavity
+    SPR_Y and a lip r 30–46.5 on its outboard end; the rotating hub is the pitch hub's r 25 sleeve."""
+    r_in, r_out = PITCH_SPR
+    y0, y1 = SPR_Y
+    p = Pos(0, y0, 0) * _rot_y(Cylinder(r_out + 1.5, y1 - y0, align=MIN) - Cylinder(r_out, y1 - y0, align=MIN))
+    p += Pos(0, y1, 0) * _rot_y(Cylinder(r_out + 1.5, 1.0, align=MIN) - Cylinder(30.0, 1.0, align=MIN))
     return p
 
 
@@ -163,7 +226,7 @@ def bracket() -> Part:
 
 
 def pulley_a() -> Part:
-    return Pos(0, Y_BAL, 48) * Rot(-90, 0, 0) * (Cylinder(8, 6) - Cylinder(2, 6))
+    return Pos(0, Y_BAL, 48) * Rot(-90, 0, 0) * (Cylinder(8, 6) - Cylinder(2, 6))   # U604ZZ-class grooved pulley, centred on the cable plane
 
 
 def module(with_motor: bool = True):
@@ -171,10 +234,11 @@ def module(with_motor: bool = True):
     cartridge +Z; mapped so stage +Z → world −Y, flange plane at Y_F, axis at x = −BELT_C."""
     from .belt_stage import small_stage_v3, bolted_cartridge
     out = [("bracket", bracket_body(), "white"), ("bracket_wall", bracket_wall_out(), "white"), ("shaft", pitch_shaft(), "orange"),
-           ("pitch_hub", pitch_hub(), "orange"), ("pulleyA", pulley_a(), "steel")]
-    out += [(n, _ST * pp, c) for n, pp, c in small_stage_v3(20)]                     # D24: Oldham drive + D13 stage
+           ("pitch_hub", pitch_hub(), "orange"), ("pitch_hub_crank", crank(), "steel"), ("pulleyA", pulley_a(), "steel"),
+           ("bracket_wall_spring_ring", spring_ring(), "dark")]   # screwed to the outer wall (a mate for rnd.spacing)
+    out += [(n, _ST * pp, c) for n, pp, c in small_stage_v3(20, MOT)]                # D24: Oldham drive + D13 stage
     if with_motor:
-        out += [(n, _ST * pp, c) for n, pp, c in bolted_cartridge()]
+        out += [(n, _ST * pp, c) for n, pp, c in bolted_cartridge(MOT)]
     return out
 
 
@@ -182,11 +246,12 @@ def masses(density=1.27):
     """D24/D19 roll-up (2026-11-27). The bolted cartridge's sleeve is counted here only by what it adds over the loop-10 can
     (nose, flange, rear cap); the motor is the actuator mass."""
     from .belt_stage import small_stage_v3
-    st = dict((n, p) for n, p, _ in small_stage_v3(20))
+    st = dict((n, p) for n, p, _ in small_stage_v3(20, MOT))
     oldham = st["flange_coupling"].volume * 2.7e-3 * 0.8 + st["oldham_disc"].volume * 1.41e-3 + st["kx_hub_v2"].volume * density * 0.7e-3
-    can_extra = (cm.can_bolted().volume + cm.can_cap_bolted().volume - cm.can().volume) * density * 0.8e-3
+    can_extra = (cm.can_bolted(MOT).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-3
     m = {"bracket body + bolted outer wall (walls, web, cage)": bracket().volume / 1e6 * density * 0.6,
-         "pitch shaft + integral 60T + pitch hub (balancer disc, ferrule)": (pitch_shaft().volume + pitch_hub().volume) / 1e6 * density * 0.7,
+         "pitch shaft + integral 60T + pitch hub (ferrule) + clock-spring ring": (pitch_shaft().volume + pitch_hub().volume + spring_ring().volume) / 1e6 * density * 0.7,
+         "balancer crank (aluminium) + Ø6 pin B": crank().volume * 2.7e-6,
          "D24 Oldham drive (alu hub, acetal disc, ASA adapter) + can nose/flange/cap": (oldham + can_extra) / 1e3,
          "bearings 2×61808 + 2×61804 (ESTIMATE)": 0.056,
          "spring 2 N/mm + cable + pulley A + axle (ESTIMATE)": 0.09,

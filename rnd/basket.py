@@ -41,11 +41,9 @@ JOINTS = {"pitch": "shoulder_pitch", "roll": "shoulder_roll", "yaw": "upper_yaw"
 
 
 def design():
-    from .params import BASELINE
-    j = dict(BASELINE.arm.joints)
-    j["shoulder_pitch"] = ("GIM8108-8", 3.0)
-    j["elbow"] = ("GIM8108-8", 3.0)
-    return dataclasses.replace(BASELINE, arm=dataclasses.replace(BASELINE.arm, joints=j, payload=PER_HAND))
+    from .params import BASELINE, with_arm_motors
+    d = with_arm_motors(BASELINE, "d20")          # 2026-11-27: the D20 motors with the D20 CAD masses (params.ARM_MOTOR_SETS)
+    return dataclasses.replace(d, arm=dataclasses.replace(d.arm, payload=PER_HAND))
 
 
 def run(d=None):

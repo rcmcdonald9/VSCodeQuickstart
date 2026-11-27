@@ -13,7 +13,7 @@ from build123d import Box, Cylinder, Plane, Pos, Rot, export_stl, mirror
 from . import arm, cartridge_m as cm, roll
 from .kx import KX74
 
-OUT = Path(__file__).resolve().parents[1] / "out" / ("collision" if not roll.INLINE else "collision_inline")   # D24: one hull set per roll drive (= twin.COLL)
+OUT = Path(__file__).resolve().parents[1] / "out" / (("collision" if not roll.INLINE else "collision_inline") + ("_d20" if arm.D20 else ""))   # D24: one hull set per roll drive, D20: per arm-motor set (= twin.COLL)
 
 
 def arm_sh_x():
@@ -45,7 +45,7 @@ def _roll_inline():
 
 def pieces():
     h = arm.HOUSING
-    cart_len = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + cm.MOTOR["h"]
+    cart_len = KX74.gap + KX74.face_t + cm.NECK + cm.FLOOR + arm.MOT["h"]          # D20: arm.MOT = the elbow motor
     y0 = -20.0                                                     # cartridge KX face plane (arm.assembly)
     fy, link_t = arm.FORE_Y, 22.0
     wy = arm.J4310["h"] + 4 + 6
@@ -53,7 +53,7 @@ def pieces():
         "upper": {
             "neck": Pos(0, 0, h["z1"] - 2) * Cylinder(36, 104 - 6 + 2, align=arm.MIN) + Pos(0, 0, -6) * Cylinder(45, 6, align=arm.MIN),
             "housing": Pos(0, 0, (h["z0"] + h["z1"]) / 2) * Box(h["x"], h["y"] + 16, h["z1"] - h["z0"]),
-            "elbow_cart": Pos(0, y0 - cart_len / 2, -arm.ELBOW_Z + arm.BELT_C) * Rot(90, 0, 0) * Cylinder(cm.MOTOR["od"] / 2 + 3.3, cart_len),
+            "elbow_cart": Pos(0, y0 - cart_len / 2, -arm.ELBOW_Z + arm.BELT_C) * Rot(90, 0, 0) * Cylinder(arm.MOT["od"] / 2 + 3.3, cart_len),
         },
         "fore": {
             "link": Pos(0, fy, -arm.FORE_L / 2 + 10) * Box(56, link_t, arm.FORE_L - 2 * 38),
