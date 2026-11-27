@@ -1198,3 +1198,9 @@ One long push instead of half-hour runs. In order:
 
 - V1 bolted cartridges: motor bumps Ø113 → ≈ 90, elbow 110 → 98 mm, arm 4.26 → 4.03 kg, margins unchanged or better. V2 adds inline GIM8108-36 at pitch + roll: shoulder dome 172 × 210 → 128 × 120 mm, basket margin 1.47 → 2.45, 48 rpm, +$152 per arm, pitch 2.25× stiffer to back-drive.
 - D24: bolt every cartridge (owner OK); propose inline GIM8108-36 at roll only (same hand-feel as today's 35.5:1 belt, most of the slimming, +$61 per arm).
+
+### 2026-11-27 — Sprint mode (owner: "it's taking days when it should be hours")
+- Cause: one deliverable per scheduled run, then idle until the next firing → ≈ 2 serial items an hour. Now: parallel tracks in worktrees, lead integrates, heartbeats only resume (RND_PLAN §1 "Sprint mode"; both scheduled tasks re-prompted).
+- Wave 1 launched (4 engineers): arm CAD (D24 bolted cartridges, D19 pitch + elbow, narrower elbow), shoulder roll (D24 inline GIM8108-36 behind a params switch, D19 belt roll), R17 pinch.py + printable covers + head tilt pivot, non-CAD Astra criticals (A5 v2, balancer sign, clock-spring capacity) + software collision detection + BOM cost pass.
+- New `python -m rnd.check`: maps changed files → checks, runs light ones 3-wide, heavy ones serially, logs to rnd/out/check_logs/.
+- Fable review pass added (owner): once per day, after a significant merged wave.

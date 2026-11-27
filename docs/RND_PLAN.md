@@ -29,22 +29,14 @@ Each scheduled run (and any interactive session) does one **loop**:
 6. **Record:** commit and push to `claude/robot-dog-p2s-printer-j4esie`, and add a log entry: what, numbers before → after, files, open questions.
 7. **Tell the owner:** a short summary every run. A **digest** (renders + scorecard delta + decisions taken) every ~4 runs, or after any major change. Digests **don't block**; work continues.
 
-**External review budget (owner, 2026-11-26):** Gemini 4 Neon (`rnd/external_review.py`) costs ≈ $1.67 per run. Use it **at most once per day**, and only after a significant batch of fixes. The script refuses a second run within 24 h.
+**Sprint mode (owner, 2026-11-27: "it's taking days when it should be hours").** Replaces the one-deliverable-per-run rule. Why it was slow: each scheduled run did *one* deliverable and then the session sat idle until the next firing, so the queue moved ≈ 2 items an hour at best, serially.
+1. **Parallel tracks.** The lead splits the open queue into 3–4 tracks with **disjoint files** (e.g. arm CAD / shoulder roll / covers + pinch / electrical + software + cost) and runs one background engineer per track, each in its own git worktree. Engineers don't touch RND_PLAN, RND_LOG or the scorecard; they report, the lead merges, re-runs the affected checks on the merged tree, logs and pushes.
+2. **No idle time.** The lead keeps working (integration, checks, the next wave's briefs) while engineers run; when a wave lands, the next wave starts in the same turn. Scheduled runs are now a heartbeat: if a wave is in flight they integrate whatever finished and keep going; if not, they start the next wave.
+3. **Don't block on the owner.** An owner decision that is pending (e.g. D24's inline roll) is built as a params switch so the decision costs nothing either way.
+4. **Checks:** each engineer runs only the checks covering its files; the lead runs `run_all --quick` + the affected heavy checks once per merged wave, full `run_all` at most once per wave of CAD changes. 4 cores: at most one heavy job (FEA, Monte Carlo) per engineer at a time.
+5. Commit per finished item; one log entry per wave (≤ 5 lines per track). Don't chase the last 1 %.
 
-**Cadence (owner, 2026-11-26):** runs every 30 minutes (two hourly scheduled tasks at :10 and :40, since one task can't run more often than hourly).
-
-**Two tracks (owner, 2026-11-26):** hardware (this plan) and **software** ([SOFTWARE_PLAN.md](SOFTWARE_PLAN.md), starting with the bench arm). Runs **alternate**: the :10 run does hardware, the :40 run does software, unless one track is blocked.
-
-**Efficiency rules (owner, 2026-11-26: "make more progress per run"):**
-1. **One concrete deliverable per run**, picked in under 2 minutes from the queue top. No re-deliberating settled decisions.
-2. **Incremental checks only.** Run the checks that cover what changed:
-   - CAD of the arm → integration, spacing, assembly_seq
-   - masses → spacing/workspace via `run_all --quick`
-
-   The slow full set (FEA, dynamic sim, print plan, Monte Carlos, full `run_all`) runs only when its inputs changed, and at most every 4th run.
-3. **Long jobs go to the background** while the next step proceeds. Run independent checks in parallel processes.
-4. **Commit early** (at least once per run), with a short log entry (5 lines max) and a short owner summary (3 lines max).
-5. **Don't chase the last 1 %:** stop when the deliverable passes its check. Queue polish separately.
+**External reviews (once per day each, only after a significant batch of fixes):** Gemini 4 Neon (`rnd/external_review.py`, ≈ $1.67; the script refuses a second run within 24 h), Astra (`rnd/astra_review.py`), and a **Fable** review pass (owner, 2026-11-27) run by the lead as a review subagent after a significant merged wave; stamp file `docs/review/.fable_last` (24 h).
 
 **The loop never "finishes".** When the queue is empty, the next run starts with a fresh critique of the whole design and writes a new queue: a stronger design, cheaper parts, easier assembly, better looks.
 

@@ -3,3 +3,4 @@ __pycache__/
 rnd/out/asm_*
 rnd/out/asm_colors.txt
 sw/out/
+rnd/out/check_logs/
