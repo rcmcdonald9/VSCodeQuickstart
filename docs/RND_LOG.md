@@ -1173,3 +1173,8 @@ One long push instead of half-hour runs. In order:
 
 - 20 lb basket, hands hooked down into the end handles, full 3D twin statics with the D20 motors: floor pick, carry and bed set-down pass with the basket centre ≤ 0.45 m out (shoulder ≤ 21 N·m: ≥ 3× peak, +10 K over a 2-min carry; tip ≥ 31 mm toward a wheel). Washer/counter top not reachable with this grasp.
 - D21: rigid fingertip hooks + wrist-pitch outboard support (the KX56 would see ≈ 2.4 N·m bending vs ≈ 1.5 N·m lift-off).
+
+## Loop 45-sw (2026-11-27, software): load mode in the safety supervisor (R2d)
+
+- sw/safety.py set_payload(kg): above 1 kg the hand workspace shrinks to the box rnd/basket.py passed (load ≤ 0.45 m out, ≤ 0.80 m up), base braking caps at 0.3 m/s², load_heading_ok() checks the load points within ±20° of a wheel.
+- sw/test_s1.py: 800 random-policy cycles with 4.54 kg in hand → 0 cycles outside the load box; all earlier S1 tests still pass.

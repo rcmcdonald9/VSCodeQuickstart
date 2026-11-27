@@ -16,6 +16,10 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    sensor), measured speed over V_FAULT, tracking error over TRACK_FAULT, position outside the limits by > 8°.
    A latched fault returns STOP (disable the drives, drop the hardware heartbeat) until `reset()`, which needs the e-stop
    button physically released and fresh, in-limit feedback.
+6. **Load mode (R2d, 2026-11-27):** `set_payload(kg)`. Above LOAD_KG (1 kg) the hand workspace shrinks to the box the
+   basket study passed (rnd/basket.py: load ≤ 0.45 m in front of the base centre, hands ≤ 0.80 m high, ≥ 0.20 m
+   up), and `base_accel_limit()` drops from 1.0 to 0.3 m/s² (tip margin while braking, rnd/tip.py). Pointing the load at a
+   wheel is the base planner's job; `load_heading_ok(heading)` checks it (within ±20° of a wheel axis).
 5. **Heartbeat:** `heartbeat_ok()` is true only after a complete healthy cycle; the loop toggles the hardware watchdog line
    only then (electrical.md A5).
 Every override is counted so a session log shows how often the policy was overruled.
@@ -32,7 +36,9 @@ import numpy as np
 
 WATCHDOG_S, FB_MAX_AGE, TEMP_C = 0.050, 0.010, 70.0     # TEMP_C: driver/case sensor (thermal.md: winding ≤ 69 °C on a task day)
 V_FAULT, TRACK_FAULT = 4.0, 0.35                          # rad/s measured, rad tracking error
-KP_MAX, KD_MAX = 60.0, 3.0                                # N·m/rad, N·m·s/rad at the joint (bench defaults)
+KP_MAX, KD_MAX = 60.0, 3.0
+LOAD_KG = 1.0
+LOAD_WS = ((0.10, -0.45, 0.20), (0.45, 0.45, 0.80))               # base frame, m (R2d basket study)                                # N·m/rad, N·m·s/rad at the joint (bench defaults)
 DESC = Path(__file__).resolve().parent / "description" / "joints.json"
 
 
@@ -68,6 +74,29 @@ class Supervisor:
         self.estop_pressed = False
         self.healthy_cycle = False
         self.counts = {}
+        self.payload = 0.0
+        self._ws_free = (self.ws_lo.copy(), self.ws_hi.copy())
+
+    # ---- load mode (R2d)
+    def set_payload(self, kg, box=None):
+        """box: (lo, hi) in the supervisor's FK frame; default LOAD_WS (full-robot base frame). Enter load mode only with
+        the hand inside the box (the planner moves there first); targets outside it are then rejected."""
+        self.payload = float(kg)
+        if self.payload > LOAD_KG:
+            lo, hi = map(np.array, box or LOAD_WS)
+            self.ws_lo, self.ws_hi = np.maximum(self._ws_free[0], lo), np.minimum(self._ws_free[1], hi)
+        else:
+            self.ws_lo, self.ws_hi = self._ws_free
+
+    def base_accel_limit(self):
+        return 0.3 if self.payload > LOAD_KG else 1.0
+
+    def load_heading_ok(self, heading_deg):
+        """x-drive wheels at 0/90/180/270°: a heavy load must point within ±20° of one of them (tip margin)."""
+        if self.payload <= LOAD_KG:
+            return True
+        r = abs(((heading_deg + 45) % 90) - 45)
+        return r <= 20
 
     # ---- inputs from the loop / hardware
     def _count(self, k):

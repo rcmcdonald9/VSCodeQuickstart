@@ -121,7 +121,27 @@ def test_supervisor():
     assert sup.check(qm, 20 * np.ones(6), np.ones(6), None, qm, v0 + 5.0, 0.002).stop             # measured overspeed
     assert sup.reset(qm, 0.002); t[0] += 0.002; sup.tick()
     assert sup.check(qm, 20 * np.ones(6), np.ones(6), None, qm + 0.5, v0, 0.002).stop             # tracking error
-    return (f"Safety supervisor v2 vs a random policy (random targets, gains 0–200 N·m/rad, τ_ff σ 40 N·m): {n} cycles, 0 limit/workspace "
+    # load mode (R2d): with a 4.5 kg basket half, targets outside the basket box are rejected and braking is capped
+    assert sup.reset(qm, 0.002)
+    p0 = fk(qm)                                                    # bench frame: a load box around the current hand position
+    sup.set_payload(4.54, box=(p0 - [0.12, 0.15, 0.10], p0 + [0.12, 0.15, 0.10]))
+    assert sup.base_accel_limit() == 0.3 and sup.load_heading_ok(10) and not sup.load_heading_ok(45)
+    load_viol = 0
+    for k in range(800):
+        t[0] += 0.002
+        sup.tick()
+        v = sup.check(q0 + rng.normal(0, 3.0, 6), 30 * np.ones(6), np.ones(6), None, qm, v0, 0.002)
+        assert not v.stop, v.reasons
+        p = fk(v.q)
+        if np.any(p < sup.ws_lo - 1e-6) or np.any(p > sup.ws_hi + 1e-6):
+            load_viol += 1
+        qm = v.q.copy()
+    assert load_viol == 0, load_viol
+    sup.set_payload(0)
+    assert sup.base_accel_limit() == 1.0
+    return (f"Load mode (R2d): with 4.54 kg in hand the hand stays in the load box over 800 random cycles (robot default: ≤ 0.45 m out, ≤ 0.80 m up), braking capped at 0.3 m/s², "
+            f"load heading checked against the wheel axes ✅. "
+            f"Safety supervisor v2 vs a random policy (random targets, gains 0–200 N·m/rad, τ_ff σ 40 N·m): {n} cycles, 0 limit/workspace "
             f"violations, **0 cycles where the drive torque kp·e + kd·ė + τ_ff exceeds the rated torque**. NaN feedback, stale feedback, watchdog, "
             f"e-stop (reset refused while pressed), over-temperature, motor error, overspeed and tracking error each stop on the next cycle and stay latched ✅ "
             f"(overrides: {sup.counts})")
