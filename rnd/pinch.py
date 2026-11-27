@@ -98,12 +98,12 @@ def judge_compliant(ranges=None):
     for c in covers.compliant():
         lo, hi = ranges[c["joint"]]
         th = np.linspace(lo, hi, int(round(hi - lo)) + 1)
-        worst = None
+        worst = (0.0, "none: clears the joint's sweep (no deflection)", 0.0, 0.0, 0.0, 0.0, 0.0)
         for name, L0, f in c["spans"]:
             L = np.array([f(t) for t in th])
             comp, ext = 1 - L.min() / L0, L.max() / L0 - 1
             k = max(comp, ext)
-            if worst is None or k > worst[0]:
+            if k >= worst[0]:
                 worst = (k, name, L0, float(L.min()), float(L.max()), comp, ext)
         k, sname, L0, lmin, lmax, comp, ext = worst
         ok = bool(c["wall"] >= TPU_WALL_MIN and k <= TPU_STRAIN + 1e-9)
@@ -217,7 +217,6 @@ class Robot:
         self.compliant = judge_compliant()
         bad = [r["part"] for r in self.compliant if r["part"] and not r["ok"]]
         self.dropped = [n for n, _, _ in self.parts if any(_strip(n) == b for b in bad)]
-        self.parts = [q for q in self.parts if q[0] not in self.dropped]          # a boot that fails the rule closes nothing
         judged = {r["part"] for r in self.compliant if r["part"]}
         self.unjudged = sorted({_strip(n) for n, _, _ in self.parts if SOFT.search(n) and _strip(n) not in judged})
         self.names = [n for n, _, _ in self.parts]
@@ -228,11 +227,13 @@ class Robot:
             self.sig[n] = _vsig(p)
         self.pts, self.nrm, self.pid = [], [], []
         for i, (n, p, _) in enumerate(self.parts):
-            P, N = _sample(p, i)
+            P, N = _sample(p, i) if n not in self.dropped else (np.zeros((0, 3)), np.zeros((0, 3)))   # a boot that fails the
             self.pts.append(P); self.nrm.append(N); self.pid.append(np.full(len(P), i))
         self.offs = np.cumsum([0] + [len(p) for p in self.pts])
         self.P = np.concatenate(self.pts); self.N = np.concatenate(self.nrm); self.I = np.concatenate(self.pid)
-        self.log(f"reference build + {len(self.P):,} surface samples on {len(self.parts)} parts in {time.time() - t0:.0f} s")
+        # rule closes nothing: it stays in the part list (same sampling seeds for the rest) with no surface samples
+        self.log(f"reference build + {len(self.P):,} surface samples on {len(self.parts)} parts in {time.time() - t0:.0f} s"
+                 + (f"; compliant covers taken out: {', '.join(self.dropped)}" if self.dropped else ""))
 
     def moved(self, parts, tol=0.05):
         """{name: (centroid, volume)} of the parts that differ from the reference: compared by their topological
@@ -240,8 +241,6 @@ class Robot:
         from scipy.spatial import cKDTree
         out = {}
         for n, p, _ in parts:
-            if n not in self.idx:                       # e.g. a compliant cover the rule took out of the model
-                continue
             s0 = self.sig.get(n)
             s = _vsig(p)
             if s0 is None or len(s) != len(s0) or (len(s) and cKDTree(s0).query(s)[0].max() > tol):

@@ -276,8 +276,8 @@ def neck_boot(shell, px, pz):
     the yoke comes in, plus the slots the yoke's tilt sweep cuts in its bottom and back), head frame (it rides the head;
     bonded to the opening's rim). A box behind the opening round the yoke's posts and beams (6 mm behind the yoke, up to
     z 100), a floor 3.5 mm under the yoke plate with a Ø44 hole for the riser hub, out to x 80, and a front lip + side
-    walls from the floor down to the shell's bottom. Lip seals 1.5 mm round the yoke
-    beams: the boot flexes there with the tilt (−10…+30°; folding not modelled, ESTIMATE). One print, ≈ 116 × 188 × 164 mm."""
+    walls from the floor down to the shell's bottom, cut 1.5 mm clear of the yoke over the whole tilt range (wave 5;
+    it does not deflect). One print, ≈ 116 × 188 × 164 mm."""
     t = NECK_BOOT_T
     zf = -40.0 - 1.5 - 2.0                                                           # floor top (the yoke plate is at z −40 at tilt 0)
     y1 = 94.0
@@ -291,7 +291,15 @@ def neck_boot(shell, px, pz):
     b = rear + floor + lip + sides[0] + sides[1]
     b -= Pos(0, 0, zf - 10) * Cylinder(22.0, 20)                                     # riser hub (Ø40) + 2 mm
     b -= shell
-    b -= Pos(0, 0, -40.0) * _yoke(px, 40.0 + pz, 1.5)                               # 1.5 mm round the yoke at tilt 0
+    # wave 5 (integration: yoke × neck_boot 2.4 cm³ at −10°, 1.5 cm³ at +30°): the boot was cut round the yoke at tilt 0
+    # only and assumed to fold with the tilt, but its floor would have to follow the riser hub ≈ 84 mm (rnd/pinch.py's
+    # compliant-cover rule: +590 %). It is now cut 1.5 mm clear of the yoke over the whole tilt range (2° steps), so it
+    # never deflects; the hub's sweep leaves a slot in the floor (the neck stays open to the probe there: open issue).
+    lo, hi = TILT_RANGE
+    yk = _yoke(px, 40.0 + pz, 1.5)
+    for k in range(int(round((hi - lo) / 2)) + 1):
+        td = lo + 2.0 * k
+        b -= (Pos(0, 0, 40) * Pos(px, 0, pz) * Rot(0, td, 0) * Pos(-px, 0, -pz)).inverse() * yk
     sols = b.solids()
     return max(sols, key=lambda q: q.volume) if len(sols) > 1 else b
 
