@@ -67,7 +67,7 @@ def _finite(x, n):
 
 class Supervisor:
     def __init__(self, v_max=1.5, margin_deg=3.0, ws_lo=(0.10, -0.45, 0.76), ws_hi=(0.80, 0.45, 1.35), clock=time.monotonic, fk=None,
-                 collision=None, joints=None, limits=None, torque=None):
+                 collision=None, joints=None, limits=None, torque=None, fb_max_age=FB_MAX_AGE):
         """joints: subset of joint names (default: all of joints.json, in order), e.g. the joints online during bring-up.
         limits: {name: (lower, upper)} overriding joints.json (rad, before the margin), e.g. the travel bounds used while a
         joint is not yet calibrated. torque: {name: N·m} overriding the rated/peak bound (e.g. the low calibration torque)."""
@@ -97,6 +97,7 @@ class Supervisor:
         self._ws_free = (self.ws_lo.copy(), self.ws_hi.copy())
         self.collision = collision
         self._anchor = None
+        self.fb_max_age = float(fb_max_age)      # bring-up passes bringup.yaml fb_max_age_s (sized on the bus-realism runs)
 
     def set_limits(self, limits):
         """Replace the bounds of some joints ({name: (lower, upper)}, rad, before the margin). Used by bring-up after a
@@ -159,7 +160,7 @@ class Supervisor:
         """Clear latched faults: only with the button released and fresh, finite, in-limit feedback."""
         if self.estop_pressed:
             return False
-        if not _finite(q_meas, self.n) or fb_age is None or fb_age > FB_MAX_AGE:
+        if not _finite(q_meas, self.n) or fb_age is None or fb_age > self.fb_max_age:
             return False
         q = np.asarray(q_meas, float)
         if np.any(q < self.lo - math.radians(8)) or np.any(q > self.hi + math.radians(8)):
@@ -178,7 +179,7 @@ class Supervisor:
         now = self.clock()
         if self.last_tick is None or now - self.last_tick > WATCHDOG_S:
             self._latch("watchdog")
-        if not (_finite(q_meas, self.n) and _finite(v_meas, self.n)) or fb_age is None or not math.isfinite(fb_age) or fb_age > FB_MAX_AGE:
+        if not (_finite(q_meas, self.n) and _finite(v_meas, self.n)) or fb_age is None or not math.isfinite(fb_age) or fb_age > self.fb_max_age:
             self._latch("feedback missing, NaN or stale")
         else:
             qm, vm = np.asarray(q_meas, float), np.asarray(v_meas, float)

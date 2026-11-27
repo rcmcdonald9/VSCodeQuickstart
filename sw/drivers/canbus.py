@@ -45,6 +45,8 @@ class CanBus:
         self.inbox = defaultdict(lambda: deque(maxlen=maxlen))     # arb id → deque of (stamp, bytes)
         self.n_tx = self.n_rx = 0
         self.pump = None            # virtual bus: the simulated motors' frame handler, run before each read
+        self.err_source = None      # virtual bus: the impairment model's error counters (sw/bus_sim.py)
+        self.kind, self.chan = kind, chan
 
     def send(self, arb_id: int, data: bytes):
         self.bus.send(self.can.Message(arbitration_id=int(arb_id), data=bytes(data), is_extended_id=False))
@@ -82,6 +84,16 @@ class CanBus:
                 return (None, None) if with_stamp else None
             time.sleep(0.0002)
 
+    def error_counters(self):
+        """CAN controller health: state (ERROR-ACTIVE / -WARNING / -PASSIVE / BUS-OFF), TX/RX error counters, bus-off
+        events and restarts, bus errors, dropped frames. SocketCAN: `ip -details -statistics -json link show <if>`;
+        virtual: the impairment model; other adapters: None (not reported)."""
+        if self.err_source is not None:
+            return dict(self.err_source())
+        if self.kind != "socketcan":
+            return None
+        return socketcan_counters(self.chan)
+
     def ids_seen(self):
         self.drain()
         return sorted(k for k, q in self.inbox.items() if q)
@@ -95,3 +107,23 @@ class CanBus:
             self.bus.shutdown()
         except Exception:
             pass
+
+
+def socketcan_counters(ifname):
+    """Parse `ip -details -statistics -json link show <ifname>` (iproute2 ≥ 5.x); None if unavailable."""
+    import json
+    import subprocess
+    try:
+        out = subprocess.run(["ip", "-details", "-statistics", "-json", "link", "show", ifname], capture_output=True, text=True, timeout=2)
+        js = json.loads(out.stdout)[0]
+    except Exception:
+        return None
+    info = (js.get("linkinfo") or {}).get("info_data") or {}
+    xs = (js.get("linkinfo") or {}).get("info_xstats") or {}
+    be = info.get("berr_counter") or {}
+    st = js.get("stats64") or js.get("stats") or {}
+    rx, tx = st.get("rx") or {}, st.get("tx") or {}
+    return dict(state=info.get("state"), berr_tx=be.get("tx"), berr_rx=be.get("rx"), bus_off=xs.get("bus_off"),
+                restarts=xs.get("restarts"), bus_errors=xs.get("bus_error"), error_passive=xs.get("error_passive"),
+                arbitration_lost=xs.get("arbitration_lost"), rx_dropped=rx.get("dropped"), rx_over=rx.get("over_errors"),
+                tx_dropped=tx.get("dropped"), rx_errors=rx.get("errors"), tx_errors=tx.get("errors"))

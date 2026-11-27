@@ -241,6 +241,7 @@ class BringUp:
         self.n_cycles = 0
         self.t_start = time.time()
         self.saved = {}
+        self._sup = None              # the supervisor in charge of the loop (register waits keep cycling it: _reg_idle)
         self.t_hb = None
         self.hb_gap_max = 0.0
         # Configuration keep-alive: while every drive is disabled (enumerate, limits, between steps) the host keeps the
@@ -328,7 +329,9 @@ class BringUp:
     def supervisor(self, limits=None, torque=None, v_max=None):
         from sw.safety import Supervisor
         vm = v_max if v_max is not None else np.array([self.cfg["jog_speed_frac"] * self.J[j]["max_speed_rad_s"] for j in self.names])
-        return Supervisor(v_max=vm, clock=self.clock, joints=self.names, limits=limits, torque=torque)
+        from sw.safety import FB_MAX_AGE
+        return Supervisor(v_max=vm, clock=self.clock, joints=self.names, limits=limits, torque=torque,
+                          fb_max_age=float(self.cfg.get("fb_max_age_s", FB_MAX_AGE)))
 
     def cycle(self, sup, q=None, kp=None, kd=None, tff=None, idle=False):
         """One control period with the supervisor in the loop. idle: drives stay disabled (status requests only)."""
@@ -405,9 +408,13 @@ class BringUp:
         healthy idle cycles. Drives enabled (switching supervisors mid-step): reset on the last cycle's feedback, no gap."""
         enabled = self.any_enabled()
         if not enabled:
-            for _ in range(3):
-                self.refresh_cycle(heartbeat=True)          # all drives disabled: configuration keep-alive
+            for i in range(25):                             # all drives disabled: configuration keep-alive; on a late bus
+                self.refresh_cycle(heartbeat=True)          # wait (<= 50 ms) until every drive's feedback is fresh
+                fb = self.feedback()
+                if i >= 2 and fb.age is not None and fb.age <= sup.fb_max_age and np.all(np.isfinite(fb.q)):
+                    break
         fb = self.feedback()
+        self._sup = sup
         if not sup.reset(fb.q, fb.age):
             raise StepFail(f"supervisor reset refused (feedback {fb.q}, age {fb.age}, latched {sup.latched})")
         self.keepalive = False
@@ -421,8 +428,14 @@ class BringUp:
     def enable_all(self, sup):
         for d in self.drivers.values():
             d.enable()
-        v, fb = self.cycle(sup, idle=True)
-        bad = [j for j in self.names if self.drivers[j].state.get("status") != self.drivers[j].table["STATUS_ENABLED"]]
+        for i in range(25):                                 # the status reply can be a few cycles late on a real bus
+            v, fb = self.cycle(sup, idle=True)
+            bad = [j for j in self.names if self.drivers[j].state.get("status") != self.drivers[j].table["STATUS_ENABLED"]]
+            if not bad or v.stop:
+                break
+            if i % 8 == 7:
+                for j in bad:
+                    self.drivers[j].enable()
         if bad:
             raise StepFail(f"did not enable: {bad} (status {[self.drivers[j].state.get('status') for j in bad]})")
         return fb
@@ -431,8 +444,43 @@ class BringUp:
         for d in self.drivers.values():
             d.disable()
         self.keepalive = True
+        self._sup = None
         self.wait()
         self.poll_all()
+
+    def _reg_idle(self):
+        """One control cycle while a register reply is awaited: the keep-alive (all drives disabled) or the supervisor's
+        loop (hold commands for enabled drives, status requests otherwise), so the heartbeat never pauses for the bus."""
+        sup = self._sup
+        if self.keepalive or sup is None or self.io is None:
+            self.wait()
+            return
+        if self.any_enabled():
+            self.cycle(sup, *self._cmd_hold(self.feedback()))
+        else:
+            self.cycle(sup, idle=True)
+
+    def await_fresh(self, drivers=None, timeout=0.04, hb=False):
+        """Status requests until every driver in `drivers` has answered (or timeout, bus clock). -> {name: state}."""
+        ds = list(drivers if drivers is not None else self.drivers.values())
+        got = {}
+        t_end = self.now() + timeout
+        i = 0
+        while True:
+            if i % 5 == 0:
+                for d in ds:
+                    if d.name not in got:
+                        d.refresh()
+            if hb:
+                self.hb()
+            self.wait()
+            for d in ds:
+                st = d.poll()
+                if st.get("fresh"):
+                    got[d.name] = dict(st)
+            i += 1
+            if len(got) == len(ds) or self.now() >= t_end:
+                return {d.name: got.get(d.name, dict(d.state, fresh=False)) for d in ds}
 
     def gains(self):
         return (np.array([self.jc(j)["kp"] for j in self.names], float), np.array([self.jc(j)["kd"] for j in self.names], float))
@@ -482,6 +530,7 @@ class BringUp:
                     continue
                 jc = self.jc(dv["name"])
                 d = P.TableDriver(self.buses[bn], dv["name"], dv["id"], dv["fb_id"], dv["ratio"], tbl, sign=jc.get("sign", 1))
+                d.idle = self._reg_idle
                 info = {r: d.read_reg(r, self.reg_timeout) for r in ("esc_id", "mst_id", "ctrl_mode", "fw_version", "hw_version", "serial")
                         if r in tbl["REG"]}
                 if info.get("esc_id") is None:
@@ -490,14 +539,13 @@ class BringUp:
                     used = {x["id"] for x in b["devices"]}
                     if dflt and dflt[0] not in used:
                         probe = P.TableDriver(self.buses[bn], dv["name"], dflt[0], dflt[1], dv["ratio"], tbl)
+                        probe.idle = self._reg_idle
                         if probe.read_reg("esc_id", self.reg_timeout) is not None:
                             row["why"] = (f"a motor answers at the FACTORY ID 0x{dflt[0]:02X}/0x{dflt[1]:02X}: set ESC_ID 0x{dv['id']:02X}, "
                                           f"MST_ID 0x{dv['fb_id']:02X} with the vendor tool")
                     rows.append(row)
                     continue
-                d.refresh()
-                self.wait()
-                st = d.poll()
+                st = self.await_fresh([d])[d.name]
                 ok_ids = info["esc_id"] == dv["id"] and info["mst_id"] == dv["fb_id"]
                 ok_mode = info.get("ctrl_mode") == tbl["CTRL_MODE_MIT"]
                 ok_fb = st.get("fresh") and st.get("status") in tbl["STATUS_OK"]
@@ -651,12 +699,8 @@ class BringUp:
         while self.now() < t_s + 2.5 * self.cfg["can_timeout_s"]:
             self.hb()
             self.wait()
-        for d in self.drivers.values():
-            d.refresh()
-        self.hb()
-        self.wait()
-        self.poll_all()
-        stat = {j: self.drivers[j].state.get("status") for j in self.names}
+        fr = self.await_fresh(hb=True)
+        stat = {j: fr[j].get("status") for j in self.names}
         ok = all(stat[j] in (self.drivers[j].table.get("STATUS_TIMEOUT"), self.drivers[j].table["STATUS_DISABLED"]) for j in self.names)
         s.check(f"drive CAN timeout: drives disable themselves {self.cfg['can_timeout_s'] * 1000:.0f} ms after the last command", ok, str(stat))
         for d in self.drivers.values():
@@ -1153,8 +1197,11 @@ def load_collision_thresholds(path):
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-def build_virtual(cfg=None, gim_table=None, faults=(), seed=0, joints=None, hand_extra_kg=0.05, log=print):
-    """A BringUp wired to a VirtualArm (python-can virtual bus + MuJoCo plant + simulated e-stop circuit and operator)."""
+def build_virtual(cfg=None, gim_table=None, faults=(), seed=0, joints=None, hand_extra_kg=0.05, log=print, bus="ideal", act=None,
+                  rig_only=False, actuator_dir=None, **kw):
+    """A BringUp wired to a VirtualArm (python-can virtual bus + MuJoCo plant + simulated e-stop circuit and operator).
+    bus: sw/bus_sim.py profile (latency, jitter, drops, duplicates, corruption); act: hidden actuator truth (see
+    sw/virtual_arm.py); rig_only: only `joints` are motors in the plant (the Step-1 rig: the rest held in the fixture)."""
     from sw.can_map import load
     from sw.drivers.canbus import CanBus
     from sw.virtual_arm import SimOperator, VirtualArm
@@ -1163,14 +1210,17 @@ def build_virtual(cfg=None, gim_table=None, faults=(), seed=0, joints=None, hand
     tables = dict(TABLES)
     if gim_table is not None:
         tables["gim6010"] = gim_table
-    arm = VirtualArm(cm, cfg, tables, seed=seed, faults=faults, hand_extra_kg=hand_extra_kg)
+    arm = VirtualArm(cm, cfg, tables, seed=seed, faults=faults, hand_extra_kg=hand_extra_kg, bus=bus, act=act,
+                     joints=joints if rig_only else None, actuator_dir=actuator_dir)
     buses = {}
     for bn in cm["buses"]:
         b = CanBus(arm.endpoint(bn), clock=arm.clock)
         b.pump = arm.handle_frames
+        b.err_source = arm.imp[bn].error_counters
         buses[bn] = b
+    # register replies wait in simulated time (the loop keeps cycling: BringUp._reg_idle), so a 50 ms timeout is 25 cycles
     bu = BringUp(buses, cm, cfg, tables, io=arm.io, operator=SimOperator(arm), clock=arm.clock, plant=arm, joints=joints,
-                 reg_timeout=0.0, log=log)
+                 reg_timeout=0.05, log=log, **kw)
     tables_used = tables
     bu.tables = tables_used
     return bu, arm

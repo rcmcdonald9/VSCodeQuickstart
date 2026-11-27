@@ -29,7 +29,47 @@ JR = {  # joint ranges (deg). Conventions: arm hangs straight down at 0.
     "wroll": (-BASELINE.arm.wrist_roll_range_deg, BASELINE.arm.wrist_roll_range_deg)}   # 2026-11-27: ±180 → ±120 (clock-spring capacity, params)
 
 
-COLL = Path(__file__).resolve().parent / "out" / (("collision" if BASELINE.arm.roll_drive == "belt" else f"collision_{BASELINE.arm.roll_drive}")
+# ---- actuator model (real2sim, 2026-11-27). Joint-side units: N·m, N·m·s/rad, rad, ms. The datasheet model is the fallback;
+# the bring-up's sysid step (sw/bringup.py step "sysid") fits each drive and writes sw/config/actuators_<serial>.yaml,
+# which `actuator_model()` returns instead once it exists. Once measured these are NOT domain-randomised (they are a fixed,
+# per-serial fact of the robot); payload, contact friction and object properties still are (docs/sw/actuator_sysid.md).
+ACTUATOR_DATASHEET = {   # coulomb/viscous/armature: the bench twin's values (sw/bench_env.py) and the virtual plant's; all ESTIMATE
+    "pitch":  dict(actuator="GIM6010-8 + 3:1 belt", coulomb_nm=0.25, viscous_nms=2.0, armature=0.05, kt_scale=1.0, backlash_rad=0.0015, latency_ms=None),
+    "roll":   dict(actuator="GIM8108-36 inline", coulomb_nm=0.25, viscous_nms=2.0, armature=0.05, kt_scale=1.0, backlash_rad=0.0044, latency_ms=None),
+    "yaw":    dict(actuator="GIM6010-8 + 2:1 belt", coulomb_nm=0.25, viscous_nms=1.0, armature=0.03, kt_scale=1.0, backlash_rad=0.0022, latency_ms=None),
+    "elbow":  dict(actuator="GIM6010-8 + 2:1 belt", coulomb_nm=0.25, viscous_nms=1.0, armature=0.03, kt_scale=1.0, backlash_rad=0.0022, latency_ms=None),
+    "wpitch": dict(actuator="DM-J4310-2EC 10:1", coulomb_nm=0.04, viscous_nms=0.5, armature=0.01, kt_scale=1.0, backlash_rad=0.0035, latency_ms=None),
+    "wroll":  dict(actuator="STS3215 (TTL)", coulomb_nm=0.05, viscous_nms=0.3, armature=0.005, kt_scale=1.0, backlash_rad=0.0087, latency_ms=None),
+}   # backlash: planetary-stage ESTIMATE (≈ 0.25–0.5° at the motor output, divided by the belt ratio); no vendor figure found
+ACTUATOR_DIR = Path(__file__).resolve().parent.parent / "sw" / "config"
+
+
+def measured_actuators(config_dir=None):
+    """{joint: fitted model} from every actuators_<serial>.yaml in config_dir (default sw/config); newest fit per joint."""
+    import yaml
+    out = {}
+    for f in sorted(Path(config_dir or ACTUATOR_DIR).glob("actuators_*.yaml")):
+        try:
+            a = yaml.safe_load(f.read_text()) or {}
+        except Exception:
+            continue
+        j = a.get("joint")
+        if j and (j not in out or str(a.get("date", "")) >= str(out[j].get("date", ""))):
+            out[j] = dict(a, file=f.name)
+    return out
+
+
+def actuator_model(joint, config_dir=None):
+    """The model the sims use for one joint: the fitted one when its yaml exists, else the datasheet fallback."""
+    base = dict(ACTUATOR_DATASHEET[joint], source="datasheet (ESTIMATE)")
+    fit = measured_actuators(config_dir).get(joint)
+    if fit:
+        base.update({k: v for k, v in fit.items() if v is not None})
+        base["source"] = f"fitted ({fit['file']})"
+    return base
+
+
+COLL = Path(__file__).resolve().parent / "out" /(("collision" if BASELINE.arm.roll_drive == "belt" else f"collision_{BASELINE.arm.roll_drive}")
                                                  + ("_d20" if BASELINE.arm.arm_motors == "d20" else ""))   # D24: one hull set per roll drive; D20: per arm-motor set
 GEOMETRY = "cad"     # "cad": arm collision from the CAD hulls (rnd/parts/collision.py); "capsule": twin v0 primitives
 

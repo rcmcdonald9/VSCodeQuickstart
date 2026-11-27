@@ -22,7 +22,7 @@ os.environ.setdefault("MUJOCO_GL", "egl")
 import mujoco  # noqa: E402
 
 from rnd.params import BASELINE, act  # noqa: E402
-from rnd.twin import JR  # noqa: E402
+from rnd.twin import JR, actuator_model  # noqa: E402
 
 CONTROL_HZ = 15
 TABLE_Z = 0.75
@@ -34,6 +34,7 @@ def xml(d=BASELINE) -> str:
     a = d.arm
     m = {j: act(n)["mass"] for j, (n, _) in a.joints.items()}
     s = -1                              # right arm
+    A = {j: actuator_model(j) for j in ARM}   # joint damping / armature: fitted actuators_<serial>.yaml when present, else datasheet
     return f"""<mujoco model="pip_bench_arm">
 <option timestep="0.002" cone="elliptic" impratio="10"/>
 <visual><headlight ambient=".4 .4 .4"/><global offwidth="640" offheight="640"/></visual>
@@ -46,22 +47,22 @@ def xml(d=BASELINE) -> str:
  <geom name="stand" type="box" pos="0 {-s * 0.10} {(SHOULDER_Z - 0.06) / 2}" size="0.04 0.04 {(SHOULDER_Z - 0.06) / 2}" rgba=".2 .2 .22 1"/>  <!-- top 6 cm under the pitch axis, 0.10 m inboard (the bracket clamps the shoulder from the torso side): with the inline roll (offset 69 mm, was 83) a post centred under the pitch axis sat inside the upper arm's sweep, and the twin's upper arm jammed on it -->
  <camera name="exterior" pos="1.15 -0.55 1.35" xyaxes="0.45 0.89 0 -0.42 0.21 0.88" fovy="55"/>
  <body name="sh" gravcomp="1" pos="0 {-s * 0.0} {SHOULDER_Z}">
-  <joint name="pitch" axis="0 1 0" range="{JR['pitch'][0]} {JR['pitch'][1]}" damping="2" armature="0.05"/>
+  <joint name="pitch" axis="0 1 0" range="{JR['pitch'][0]} {JR['pitch'][1]}" damping="{A["pitch"]["viscous_nms"]}" armature="{A["pitch"]["armature"]}"/>
   <geom type="sphere" size="0.04" mass="{m['shoulder_pitch'] * 0.3}" rgba=".1 .1 .1 1"/>
   <body name="roll" gravcomp="1" pos="0 {s * a.roll_offset_y} 0">
-   <joint name="roll" axis="{s} 0 0" range="{JR['roll'][0]} {JR['roll'][1]}" damping="2" armature="0.05"/>
+   <joint name="roll" axis="{s} 0 0" range="{JR['roll'][0]} {JR['roll'][1]}" damping="{A["roll"]["viscous_nms"]}" armature="{A["roll"]["armature"]}"/>
    <geom type="sphere" size="0.038" mass="{m['shoulder_roll'] + a.roll_stage_mass}" rgba=".1 .1 .1 1"/>
    <body name="upper" gravcomp="1" pos="0 0 {-a.yaw_drop}">
-    <joint name="yaw" axis="0 0 1" range="{JR['yaw'][0]} {JR['yaw'][1]}" damping="1" armature="0.03"/>
+    <joint name="yaw" axis="0 0 1" range="{JR['yaw'][0]} {JR['yaw'][1]}" damping="{A["yaw"]["viscous_nms"]}" armature="{A["yaw"]["armature"]}"/>
     <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_upper - a.yaw_drop)}" size="0.032" mass="{a.bone_mass_upper + m['upper_yaw'] + a.yaw_stage_mass}" rgba=".9 .9 .9 1"/>
     <body name="fore" gravcomp="1" pos="0 0 {-(a.l_upper - a.yaw_drop)}">
-     <joint name="elbow" axis="0 1 0" range="{JR['elbow'][0]} {JR['elbow'][1]}" damping="1" armature="0.03"/>
+     <joint name="elbow" axis="0 1 0" range="{JR['elbow'][0]} {JR['elbow'][1]}" damping="{A["elbow"]["viscous_nms"]}" armature="{A["elbow"]["armature"]}"/>
      <geom type="capsule" fromto="0 0 0 0 0 {-(a.l_fore - 0.06)}" size="0.026" mass="{a.bone_mass_fore + m['elbow']}" rgba=".9 .9 .9 1"/>
      <body name="wrist" gravcomp="1" pos="0 0 {-a.l_fore}">
-      <joint name="wpitch" axis="0 1 0" range="{-a.wrist_pitch_range_deg} {a.wrist_pitch_range_deg}" damping="0.5" armature="0.01"/>
+      <joint name="wpitch" axis="0 1 0" range="{-a.wrist_pitch_range_deg} {a.wrist_pitch_range_deg}" damping="{A["wpitch"]["viscous_nms"]}" armature="{A["wpitch"]["armature"]}"/>
       <geom type="sphere" size="0.028" mass="{m['wrist_pitch']}" rgba=".1 .1 .1 1"/>
       <body name="hand" gravcomp="1" pos="0 0 -0.04">
-       <joint name="wroll" axis="0 0 1" range="{JR['wroll'][0]} {JR['wroll'][1]}" damping="0.3" armature="0.005"/>
+       <joint name="wroll" axis="0 0 1" range="{JR['wroll'][0]} {JR['wroll'][1]}" damping="{A["wroll"]["viscous_nms"]}" armature="{A["wroll"]["armature"]}"/>
        <geom type="box" size="0.032 0.02 0.025" pos="0 0 -0.035" mass="{m['wrist_roll'] + m['gripper'] + a.gripper_mech_mass}" rgba=".15 .15 .15 1"/>
        <camera name="wrist" pos="0.05 0 -0.03" xyaxes="0 -1 0 0.95 0 0.3" fovy="80"/>  <!-- looks down past the fingertips (DROID-style wrist view) -->
        <site name="grasp" pos="0 0 {-(a.l_hand - 0.04)}" size="0.005"/>

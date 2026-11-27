@@ -142,6 +142,7 @@ class TableDriver(JointDriver):
         rg = table.get("RANGES") or {}
         self.r = Ranges(**rg) if rg and TODO not in rg.values() else Ranges()
         self._replies = []            # param replies seen while polling feedback
+        self.idle = None              # callable run while waiting for a register reply (one control cycle)
         self.stamp = None
         self.state = dict(p=float("nan"), v=float("nan"), t=float("nan"), temp=None, err=0, status=None)
 
@@ -255,18 +256,24 @@ class TableDriver(JointDriver):
         return self.table["REG"][name]
 
     def _wait_reply(self, rid, timeout):
+        """With `self.idle` set (sw/bringup.py does), the wait runs control cycles (heartbeat, hold commands) on the bus
+        clock instead of blocking: a register reply that is late or lost then costs cycles, not a heartbeat gap."""
         tpl = self.table["PARAM_REPLY"][1]
         m = matcher(tpl, self.id, rid)
-        t_end = time.monotonic() + timeout
+        clock = self.bus.clock if self.idle is not None else time.monotonic
+        t_end = clock() + timeout
         while True:
             self._take()
             for k, d in enumerate(self._replies):
                 if m(d):
                     del self._replies[k]
                     return d
-            if time.monotonic() >= t_end:
+            if clock() >= t_end:
                 return None
-            time.sleep(0.0002)
+            if self.idle is not None:
+                self.idle()
+            else:
+                time.sleep(0.0002)
 
     def read_reg(self, name, timeout=0.05, retries=3):
         rid, fmt = self._reg(name)
