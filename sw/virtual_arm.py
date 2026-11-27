@@ -294,6 +294,12 @@ class SimOperator:
         """+1 if the joint moved in its positive direction (the arrow on the part) since watch_start, −1 otherwise."""
         return 1 if self.arm.q_phys(joint) - self._w > 0 else -1
 
+    def hang_test_mass(self, kg):
+        self.arm.add_test_mass(kg)
+
+    def test_mass_ready(self):
+        return True
+
 
 DEFAULT_COULOMB = {"pitch": 0.25, "roll": 0.25, "yaw": 0.25, "elbow": 0.25, "wpitch": 0.04}   # N·m at the joint (plant default)
 

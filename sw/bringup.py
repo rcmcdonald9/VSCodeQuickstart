@@ -30,7 +30,13 @@ loop with the safety supervisor (sw/safety.py) in it, the hardware heartbeat tog
    (half the difference), noise; balancer K fitted from the pitch residual; a drive-clamp sag test (limit set below the
    gravity load: the joint must sag, proving the drive enforces its limit); **collision thresholds** for sw/collision.py
    suggested from the residuals and the jog observer peaks.
-7. **report** — docs/sw/bringup_<date>[_virtual].md + .json (calibration offsets, limits, thresholds, the GIM TODO table).
+7. **sysid** (real2sim, sw/sysid.py) — per joint, at low torque: constant-velocity sweeps (Coulomb + viscous friction),
+   holds with and without a known test mass (effective torque constant), slow reversals at the zero-gravity angle
+   (backlash), torque steps + a chirp (command → response latency) → sw/config/actuators_<serial>.yaml, which
+   rnd/twin.py, sw/bench_env.py and sw/virtual_arm.py load instead of the datasheet model.
+8. **report** — docs/sw/bringup_<date>[_virtual].md + .json (calibration offsets, limits, thresholds, the fitted actuator
+   model, determinism checks: loop-period histogram, CPU temperature / throttling, PREEMPT_RT, CAN error counters; the GIM
+   TODO table).
 
 Not covered (no protocol yet): RP2040 joint-encoder nodes, the STS3215 wrist roll / gripper (TTL via the elbow node).
 """
@@ -55,7 +61,7 @@ from sw.drivers.mit import DM_J4310
 
 ROOT = Path(__file__).resolve().parent
 ARM = ["pitch", "roll", "yaw", "elbow", "wpitch", "wroll"]
-STEPS = ["enumerate", "limits", "safety", "calibrate", "jog", "gravity"]
+STEPS = ["enumerate", "limits", "safety", "calibrate", "jog", "gravity", "sysid"]
 TABLES = {"dm_j4310": DM_J4310, "gim6010": GIM6010}
 KD_LIMP = 0.5                    # N·m·s/rad: joints not yet calibrated hang limp with light damping
 D2R = math.pi / 180
@@ -201,6 +207,19 @@ class ConsoleOperator:
             self._answer = sys.stdin.readline().strip()
         return None if self._answer is None else (1 if self._answer.startswith("+") else -1)
 
+    def hang_test_mass(self, kg):
+        """Non-blocking (the loop keeps holding the joints): the operator hangs / removes the weight, then presses Enter."""
+        self.say(f"{'HANG the ' + str(kg) + ' kg test weight at the lever end / grasp point' if kg else 'REMOVE the test weight'}, "
+                 "hands clear, then press Enter")
+        self._mass_done = False
+
+    def test_mass_ready(self):
+        import select
+        if not getattr(self, "_mass_done", True) and select.select([sys.stdin], [], [], 0)[0]:
+            sys.stdin.readline()
+            self._mass_done = True
+        return getattr(self, "_mass_done", True)
+
 
 # ---------------------------------------------------------------------------------------------------------------------
 # the rig: drivers + loop
@@ -218,7 +237,7 @@ class Fb:
 
 class BringUp:
     def __init__(self, buses, can_map=None, cfg=None, tables=None, io=None, operator=None, clock=None, plant=None,
-                 joints=None, limit=None, reg_timeout=0.05, log=print):
+                 joints=None, limit=None, reg_timeout=0.05, log=print, actuator_dir=None):
         from sw.can_map import load
         self.cfg = cfg or load_cfg()
         self.can_map = can_map or load()
@@ -230,6 +249,9 @@ class BringUp:
         self.limit_kind = limit or self.cfg.get("limit", "rated")
         self.reg_timeout = reg_timeout
         self.log = log
+        # where the sysid step writes actuators_<serial>.yaml: sw/config on the bench (loaded by the sims from then on);
+        # a virtual rehearsal writes next to its outputs so it never replaces a real fit
+        self.actuator_dir = Path(actuator_dir) if actuator_dir else (ROOT / "config" if plant is None else ROOT / "out" / "actuators_virtual")
         self.J = joints_json()
         self.steps = {s: Step(s) for s in STEPS}
         self.drivers = {}             # online joints, ARM order
@@ -1065,6 +1087,13 @@ class BringUp:
             rest = {j: float(np.clip(self.cfg["rest_pose"][j] * D2R, sup.lo[k], sup.hi[k])) for k, j in enumerate(self.names)}
             self._move(sup, rest, settle=0.3)
         self.disable_all()
+
+    def step_sysid(self):
+        from sw import sysid
+        try:
+            sysid.run(self, self.steps["sysid"])
+        except RuntimeError as e:
+            raise StepFail(str(e))
 
     def _sag_test(self, sup, j, pose, g):
         """Move to the pose, set the drive limit to half the gravity load, hold: a drive that enforces its limit lets the
