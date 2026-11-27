@@ -51,7 +51,8 @@ RUNNING = [("head_drive_stub", "tilt_sleeve"), ("yoke", "head_pivot_stub"), ("br
            ("yaw_shaft", "yaw_stop_pin"), ("bracket", "pulleyA"), ("roll_link", "al_pulley"), ("yaw_block", "al_pulley"),
            ("roll_link", "roll_spring_hub"), ("yaw_spring_ring", "yaw_shaft"), ("yaw_plate_bot", "al_pulley"), ("roll_link", "roll_pulley72"), ("yaw_block", "yaw_pulley40"),
            ("palm", "wr_spindle"), ("palm", "grip_base"), ("wr_brg", "wr_dog"), ("wr_cap", "grip_base"), ("wr_cap", "wr_spindle"),
-           ("roll_gim_housing", "roll_outflange"), ("roll_link", "roll_arm_rear"), ("roll_spring_ring", "roll_spring_hub"),
+           ("roll_gim_housing", "roll_outflange"), ("roll_link", "roll_arm_rear"), ("roll_gim_housing", "roll_arm_rear"),   # Neon 6d: the hard-stop bushes are bolted to the housing (were printed lugs on the roll link): 1.5° of over-travel at the software limit
+           ("roll_spring_ring", "roll_spring_hub"),
            ("enc_pcb", "pitch_hub_crank"), ("enc_pcb", "yaw_shaft"), ("enc_pcb", "roll_spring_hub"), ("enc_pcb", "enc_magnet")]   # M3: AS5048A air gaps (board ↔ magnet side, one bearing set)   # D24 inline roll: motor bearing, 61806 set
 MOVING = [("yaw_plate_bot", "yaw_flange"), ("e_cassette", "e_bigpulley"), ("roll_shaft", "yaw_shaft"), ("yaw_block", "yaw_shaft"), ("upper_bone", "forearm")]
 

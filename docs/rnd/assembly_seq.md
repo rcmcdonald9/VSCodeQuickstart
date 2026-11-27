@@ -88,14 +88,14 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | wrist | can flange M3 210° (hand off) | swap | ✅ straight Ø6 × 80 | — |
 | wrist | can flange M3 270° (hand off) | swap | ✅ straight Ø6 × 80 | — |
 | wrist | can flange M3 330° (hand off) | swap | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 0° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 45° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 90° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 135° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 180° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 225° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 270° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 315° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
+| roll (inline) | motor M4 × 18 21° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
+| roll (inline) | motor M4 × 18 66° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
+| roll (inline) | motor M4 × 18 111° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
+| roll (inline) | motor M4 × 18 156° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
+| roll (inline) | motor M4 × 18 201° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
+| roll (inline) | motor M4 × 18 246° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
+| roll (inline) | motor M4 × 18 291° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
+| roll (inline) | motor M4 × 18 336° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
 | roll (inline) | clevis M5 22° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
 | roll (inline) | clevis M5 68° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
 | roll (inline) | clevis M5 112° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
