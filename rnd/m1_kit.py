@@ -6,7 +6,7 @@ Oldham drive, D19 one-piece shaft-pulleys in capped seats, A5 v2 electrics, the 
 by what is still open:
 - **Buy now**: decided, no open question.
 - **Hold A (D20)**: GIM8108-8 at shoulder pitch + elbow, waiting on the seller's 24 V confirmation.
-- **Hold B (D24 option)**: inline GIM8108-36 at shoulder roll, waiting on the owner's OK + the seller's drawing.
+- **Hold B (D24, owner-approved 2026-11-27)**: inline GIM8108-36 at shoulder roll; order once the seller's drawing confirms the fit.
 Each hold lists what it buys if the answer is yes and the default lines it replaces (today's params) if no.
 Every price is a retailer snapshot (source named) or ESTIMATE.
 """
@@ -106,8 +106,8 @@ HOLD_A = dict(
 
 # Hold B (D24 option): yes = owner OK + the drawing fits the inline roll CAD (Ø100 × 60 envelope, 6 × M4 patterns).
 HOLD_B = dict(
-    title="Hold B: inline GIM8108-36 at shoulder roll (D24 option)",
-    waits="the owner's OK and the seller's dimension drawing (frame Ø, flange patterns, output-bearing radial rating ≥ 280 N)",
+    title="Hold B: inline GIM8108-36 at shoulder roll (D24, **approved by the owner 2026-11-27**)",
+    waits="only the seller's dimension drawing (frame Ø, flange patterns, output-bearing radial rating ≥ 280 N); the owner approved it 2026-11-27. The *no* list is the fallback if the drawing doesn't fit",
     yes=[("Actuators", "SteadyWin GIM8108-36, **SDC303 (24 V)** driver", 1, GIM8108_36[0], "shoulder roll, inline 36:1 (dome 163 × 219 → 117 × 100 mm, roll 27 → 48 rpm)", GIM8108_36[1]),
          ("Bearings", "61806 (30×42×7)", 1, 3.0, "rear roll support on the roll link's stub (68 mm from the motor's output bearing)", E)],
     no=[("Actuators", "SteadyWin GIM6010-8 24 V SDC104", 1, GIM6010[0], "shoulder roll on the 18T:80T belt (4.44:1)", GIM6010[1]),
@@ -204,6 +204,7 @@ def main():
          f"| Buy now only (yaw, wrist and everything else; pitch / roll / elbow motors not yet) | ${t['now_c']:,.0f} |",
          f"| Both holds answered no (today's params: 4 × GIM6010-8, belt roll) | ${t['default']:,.0f} |",
          f"| Hold A yes, hold B no (D20) | ${t['a_only']:,.0f} |",
+         f"| Hold A no, hold B yes (**today's plan**: GIM6010 at pitch + elbow, approved inline roll) | ${t['default'] + t['d_b']:,.0f} |",
          f"| Both yes (D20 + inline roll) | ${t['both']:,.0f} |", "",
          f"{len(I) - n_est} of the {len(I)} buy-now lines are priced from retailer snapshots, {n_est} are ESTIMATE. Everything except the bench "
          "supply and the catch is reused in the full robot.", "",

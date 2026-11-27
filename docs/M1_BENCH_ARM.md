@@ -7,6 +7,7 @@
 | Buy now only (yaw, wrist and everything else; pitch / roll / elbow motors not yet) | $1,401 |
 | Both holds answered no (today's params: 4 × GIM6010-8, belt roll) | $1,761 |
 | Hold A yes, hold B no (D20) | $1,818 |
+| Hold A no, hold B yes (**today's plan**: GIM6010 at pitch + elbow, approved inline roll) | $1,869 |
 | Both yes (D20 + inline roll) | $1,927 |
 
 12 of the 33 buy-now lines are priced from retailer snapshots, 21 are ESTIMATE. Everything except the bench supply and the catch is reused in the full robot.
@@ -76,9 +77,9 @@
 
 **Delta: +$50 before contingency, +$57 with it** (at the dearest listing +$285). No other bought part changes: the Ø96 can, the 60T elbow pulley and the larger elbow housing are printed (CAD after the answer; params still carry the GIM6010). The 24 V question is the gate: most GIM8108-8 listings are 48 V nominal and one driver option (GDZ468) is rated 12–40 V, so 24 V is inside its range but the speed at 24 V is unknown.
 
-## 3. Hold B: inline GIM8108-36 at shoulder roll (D24 option)
+## 3. Hold B: inline GIM8108-36 at shoulder roll (D24, **approved by the owner 2026-11-27**)
 
-**Waits on:** the owner's OK and the seller's dimension drawing (frame Ø, flange patterns, output-bearing radial rating ≥ 280 N).
+**Waits on:** only the seller's dimension drawing (frame Ø, flange patterns, output-bearing radial rating ≥ 280 N); the owner approved it 2026-11-27. The *no* list is the fallback if the drawing doesn't fit.
 
 **If yes, buy** ($218):
 

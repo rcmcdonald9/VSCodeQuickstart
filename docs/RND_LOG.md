@@ -1232,3 +1232,7 @@ One long push instead of half-hour runs. In order:
 - D24 in kit + BOM: arm KX socket hardware out; Oldham (D40 12 mm clamp hub + acetal disc, printed motor tongue), inserts, flange screws in. BOM $4,898 → $5,013 landed (+$13 over limit; Oldham $12 ESTIMATE — branded Ruland hubs are $36–47, generic D40 needed).
 - Slim study on measured CAD (bump Ø113.8 → 86.6, elbow 110 → 98, stage 64.5 → 40 mm; inline roll +$94/arm at current listings). Print plan 13.8 kg / 325 h (slice cache); one arm 5.63 h hands-on (−25 min).
 - Readiness: go on Buy now; GIM CAN protocol is the day-1 blocker (bring-up blocks GIM joints until the manual's table is filled).
+
+### 2026-11-27 — Owner approved the inline GIM8108-36 at shoulder roll (D24)
+- After the side-by-side render (docs/rnd/img/roll_inline_vs_belt.png). ROLL_DRIVE default → inline (roll track applying it now, belt kept as fallback via PIP_ROLL_DRIVE=belt).
+- M1 kit: Hold B marked approved; waits only on the seller's drawing. Today's plan (GIM6010 at pitch + elbow, inline roll) = $1,869 with contingency; with D20 too = $1,927.
