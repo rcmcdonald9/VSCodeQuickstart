@@ -72,8 +72,8 @@ def housing_shell():
     return _housing_solid(0.0) - _housing_solid(WALL)
 
 
-STIFF_T = 2.8                # loop 40 (A8): inner layer on the +Y half and the top (1.2 + 2.8 = 4 mm)
-SIDE_T = 0.0                 # R2b last mile (2026-11-27): inner layer on the ±X side faces (0 = none)
+STIFF_T = 4.3                # loop 40 (A8): inner layer on the +Y face and the top (1.2 + 2.8 = 4 mm); R2b last mile (2026-11-27): 5.5 mm
+SIDE_T = 0.0 if D20 else 2.8  # R2b last mile (2026-11-27): 2.8 mm inner layer on the ±X side faces (4 mm walls; the can r 43.3 keeps 1.7 mm). P2 FEA (housing case): hand term 3.37 → 2.12 (sides) → 1.42 mm (+ the 5.5 mm +Y face). D20: no room beside the Ø102.6 can
 
 
 def housing_stiffener() -> Part:
@@ -127,7 +127,10 @@ def upper_bone() -> Part:
     p += Pos(0, (CAS_B[1] + 2 + h["y"] / 2 - WALL) / 2, SLOT_Z) * (Box(16, h["y"] / 2 - WALL - CAS_B[1] - 2, 16)
                                                                 - Box(5.4, 40, 12))
     # openings: cartridge bay on -Y (the cartridge drops in from the side), elbow hub exit on +Y
-    p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(MOT["od"] / 2 + 4.5, 20)   # loop 36 (R15): 1.2 mm around the can
+    if D20:                                                                              # the rounded top edge dips over the can: bay runs to y −40
+        p -= Pos(0, -52, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(MOT["od"] / 2 + 4.5, 24)
+    else:
+        p -= Pos(0, -h["y"] / 2, -ELBOW_Z + BELT_C) * Rot(90, 0, 0) * Cylinder(MOT["od"] / 2 + 4.5, 20)   # loop 36 (R15): 1.2 mm around the can
     p -= Pos(0, h["y"] / 2, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20)
     p -= Pos(0, -h["y"] / 2 + 3, -ELBOW_Z) * Rot(90, 0, 0) * Cylinder(26, 20, align=MIN)   # loop 40: −Y wall opened for the elbow shaft (was blind; the shaft now goes in from −Y)
     # D19: U-slots under both elbow seats: the whole cassette (shaft + 40T + plates + belt + small stage, 61808s on the tube

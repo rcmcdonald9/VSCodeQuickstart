@@ -137,6 +137,10 @@ _ST = Pos(-BELT_C, Y_F, 0) * Rot(90, 0, 0)          # stage frame → module fra
 _XS, _ZS = 190.0, 150.0
 _X0 = -BELT_C / 2 - 10
 WEB_INSERTS_Z = (-50.0, 10.0, 70.0)                 # 3 × M4 (outer wall → web end face)
+# wall lightening windows (x, z, lx, lz). Loop 8 diet had (-75, 62, 96, 22) and (-62, -52, 110, 18) as well; R2b last mile
+# (2026-11-27, P2 FEA of the bracket case): closing them takes the hand term 1.54 → 0.84 mm for +40 g
+LIGHTEN = ((-128, 0, 14, 60),)
+LIGHTEN_OUT = LIGHTEN
 
 
 def _wall(y: float, inner: bool) -> Part:
@@ -148,7 +152,7 @@ def _wall(y: float, inner: bool) -> Part:
     else:
         w -= Pos(-BELT_C, y, 0) * Rot(-90, 0, 0) * Cylinder(19.1, WALL_T + 1)       # eccentric-bushing seat (Ø38) for bearing B
     # lightening (loop 8 diet): keep ≥ 10 mm of material around both bearing seats and along the back web
-    for cx, cz, lx, lz in ((-75, 62, 96, 22), (-62, -52, 110, 18), (-128, 0, 14, 60)):
+    for cx, cz, lx, lz in (LIGHTEN if inner else LIGHTEN_OUT):
         w -= Pos(cx, y, cz) * Rot(-90, 0, 0) * fillet(Box(lx, lz, WALL_T + 1).edges().filter_by(Axis.Z), 5)
     return w
 
