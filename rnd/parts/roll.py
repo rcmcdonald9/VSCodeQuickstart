@@ -74,9 +74,9 @@ W1 = (XF - JA[0] - 6.0, XF - JA[0])                    # inner wall (bearing A a
 W2 = (XF - JB[1], XF - JB[1] + 6.0)                    # outer wall (bearing B at x 17.5 … 22.5)
 ROLL_T = Pos(XF, ROLL_Y, ROLL_C) * Rot(0, -90, 0)        # stage +Z → world −X
 HEX_AF = 34.0                                          # shaft hex under the split pulleys (corners Ø39.3: passes the 61808 bore)
-CAV_H = 9.5                                            # clock-spring cavity height (D14 ribbon 7.8 mm + clearance)
+CAV_H = 11.3                                           # clock-spring cavity height: A14's two CAN pairs make the ribbon 9.8 mm wide (rnd/harness.py); was 9.5 for 7.8
 ROLL_SPR = (22.0, 38.0)                                # roll clock spring r_in, r_out
-YAW_SPR = (22.5, 40.0)                                 # yaw clock spring (inner wall = the 40T pulley's hub)
+YAW_SPR = (22.5, 42.5)                                 # yaw clock spring (inner wall = the 40T pulley's hub); r_out 40 → 42.5: 2.3 mm ribbon packs only 279° at r 40 (rnd/harness.py), ≈ 400° with a 0.75 m ribbon
 
 
 def _hex(af, h):
@@ -233,7 +233,9 @@ if INLINE:                             # ROLL_Y derived: the motor clearance (ab
     while ferrule_sweep_gap(ROLL_Y) < 2.0:
         ROLL_Y += 0.5
 YAW_T = Pos(-YAW_C, ROLL_Y, ZF)
-P2 = (ZF + JB[1] - 6.0, ZF + JB[1])    # bottom plate (−99.7 … −93.7), bearing B flush on its top
+_CAV0 = -PUL_C - 8.8 - JB[1]           # yaw cavity height with the bottom plate at the D13 bearing B (9.5 mm)
+DP2 = max(0.0, CAV_H - _CAV0)          # the bottom plate drops this much for CAV_H; a boss under D13 bearing B keeps its seat
+P2 = (ZF + JB[1] - DP2 - 6.0, ZF + JB[1] - DP2)    # bottom plate; yaw bearing B flush on its top
 YAW_BELT = ZF - PUL_C                  # −76.2
 YAW_DROP = round(-(P2[0] - 2.3 - 5.0), 1)   # flange: 5 mm, 2.3 mm under the bottom plate (R15 moving ≥ 2; 113.4 = params.arm.yaw_drop)
 
@@ -407,6 +409,8 @@ def yaw_plate_bot() -> Part:
     (Loops 10–43 fused it to the top half, so nothing could be assembled; Astra review #2b finding 14.)"""
     pl = _plate_z(-YAW_C - 48, X_PL1, ROLL_Y - 46, ROLL_Y + 46, P2[0], P2[1], 16)
     pl -= Pos(0, ROLL_Y, 0) * Cylinder(26, 400)
+    if DP2 > 0:                                                                   # boss under the D13 stage's bearing B (CAV_H)
+        pl += Pos(-YAW_C, ROLL_Y, P2[1]) * Cylinder(23.0, DP2, align=MIN)
     pl -= Pos(-YAW_C, ROLL_Y, 0) * Cylinder(19.1, 400)
     for xx, yy in ((-YAW_C / 2, ROLL_Y - 38), (-YAW_C / 2, ROLL_Y + 38), (-YAW_C - 24, ROLL_Y - 38), (-YAW_C - 24, ROLL_Y + 38)):
         pl -= Pos(xx, yy, P2[0]) * Cylinder(2.75, 20, align=MIN)                  # post bolts
@@ -431,6 +435,7 @@ def clevis_and_yaw_block() -> Part:
     # the +X end stays open for the ribbon). The walls belong to the top half; the bottom plate still bolts on last.
     for yy in (ROLL_Y + YAW_WALL_Y, ROLL_Y - YAW_WALL_Y):
         p += Pos((-112 + 32) / 2, yy, (P2[1] + P1[0]) / 2) * Box(144, 4, P1[0] - P2[1])
+    p -= Pos(0, ROLL_Y, P2[1]) * Cylinder(YAW_SPR[1] + 1.6, CAV_H + 1.0, align=MIN)   # the Ø88 yaw spring ring sits in the walls (2 mm left at x 0)
     if INLINE:
         # D24 inline: only the +X clevis arm is fused to the block; it bolts to the motor's output flange (6 × M4). The −X
         # arm (roll_arm_rear, with the yaw torque fork) is a separate print on the 61806 support bearing.
@@ -544,7 +549,7 @@ def yaw_spring_ring() -> Part:
     the +X clevis arm and in between the plates)."""
     r1 = YAW_SPR[1]
     top = YAW_BELT - 8 - 0.8
-    g = Pos(0, ROLL_Y, P2[1]) * (Cylinder(r1 + 2, top - P2[1], align=MIN) - Cylinder(r1, top - P2[1], align=MIN))
+    g = Pos(0, ROLL_Y, P2[1]) * (Cylinder(r1 + 1.5, top - P2[1], align=MIN) - Cylinder(r1, top - P2[1], align=MIN))   # 1.5 mm wall (r_out 42.5)
     g -= Pos(r1 + 1, ROLL_Y, P2[1] + 0.5) * Box(4, 10, CAV_H, align=MIN)
     return g
 

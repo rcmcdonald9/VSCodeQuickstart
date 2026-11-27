@@ -1,16 +1,16 @@
 {
  "inline": {
   "dome": {
-   "width_x": 115.1,
+   "width_x": 116.9,
    "height_z": 100.0,
    "out_y": 120.0,
    "z_top": 50.0,
    "z_bot": -50.0,
    "roll_y": 70.0,
-   "yaw_drop": 101.3,
+   "yaw_drop": 103.9,
    "masses": [
-    0.273,
-    0.542
+    0.276,
+    0.548
    ],
    "ferrule_gap": 3.36,
    "est": [
@@ -116,16 +116,16 @@
    }
   },
   "dexterity": {
-   "top-down": 0.34615384615384615,
-   "45\u00b0 angled": 0.7076923076923077,
-   "side (horizontal)": 0.6576923076923077,
+   "top-down": 0.35,
+   "45\u00b0 angled": 0.7153846153846154,
+   "side (horizontal)": 0.65,
    "side, across the body": 0.625,
    "ok": true
   },
   "basket": {
    "ok": true,
    "worst": 1.48,
-   "roll_peak_margin": 52.58,
+   "roll_peak_margin": 52.48,
    "no_ik": 0,
    "cap": {
     "pitch": [
@@ -135,6 +135,174 @@
     "roll": [
      35.1,
      102.9
+    ],
+    "yaw": [
+     9.5,
+     20.9
+    ],
+    "elbow": [
+     21.4,
+     62.7
+    ],
+    "wpitch": [
+     3.0,
+     7.0
+    ]
+   }
+  }
+ },
+ "belt": {
+  "dome": {
+   "width_x": 162.9,
+   "height_z": 218.8,
+   "out_y": 153.0,
+   "z_top": 173.3,
+   "z_bot": -45.5,
+   "roll_y": 83.0,
+   "yaw_drop": 116.0,
+   "masses": [
+    0.722,
+    0.568
+   ],
+   "ferrule_gap": null,
+   "est": [
+    172,
+    210
+   ]
+  },
+  "assembly_seq": {
+   "ok": 5,
+   "n": 7,
+   "roll": [
+    {
+     "name": "roll shaft (D19: 80T printed on the tube; bearings from both ends, into the walls' capped U-slots from below; clevis caps on top)",
+     "ok": true,
+     "bearings": [
+      [
+       -16.5,
+       -10.5,
+       40.0,
+       true,
+       "\u2212Z end"
+      ],
+      [
+       17.5,
+       23.5,
+       40.0,
+       true,
+       "+Z end"
+      ]
+     ]
+    }
+   ]
+  },
+  "spacing": {
+   "under_target": 2,
+   "under_hard": 0,
+   "rows": [
+    {
+     "a": "yaw_block",
+     "b": "yaw_shaft",
+     "kind": "moving",
+     "d": 2.0,
+     "target": 2.0,
+     "hard": 1.0,
+     "hard_fail": false
+    },
+    {
+     "a": "yaw_flange",
+     "b": "yaw_stop_pin",
+     "kind": "running",
+     "d": 0.3,
+     "target": 0.3,
+     "hard": 0.2,
+     "hard_fail": false
+    }
+   ]
+  },
+  "swept": {
+   "min": {
+    "roll": 0.71,
+    "yaw": 2.0
+   },
+   "under_target": 0,
+   "under_hard": 0,
+   "rows": [],
+   "closest": {
+    "roll": [
+     [
+      0.71,
+      "roll_spring_hub",
+      "roll_spring_ring",
+      95
+     ],
+     [
+      1.04,
+      "roll_spring_hub",
+      "roll_link",
+      -15
+     ],
+     [
+      2.0,
+      "roll_clevis_cap_in",
+      "roll_link",
+      65
+     ],
+     [
+      2.0,
+      "roll_clevis_cap_in",
+      "roll_seat_cap_A",
+      -15
+     ]
+    ],
+    "yaw": [
+     [
+      2.0,
+      "yaw_shaft",
+      "yaw_block",
+      155
+     ],
+     [
+      2.31,
+      "yaw_flange",
+      "yaw_plate_bot",
+      -155
+     ],
+     [
+      3.64,
+      "yaw_shaft",
+      "yaw_plate_bot",
+      -155
+     ],
+     [
+      3.8,
+      "yaw_flange",
+      "yaw_band",
+      155
+     ]
+    ]
+   }
+  },
+  "dexterity": {
+   "top-down": 0.3384615384615385,
+   "45\u00b0 angled": 0.6961538461538461,
+   "side (horizontal)": 0.65,
+   "side, across the body": 0.525,
+   "ok": false
+  },
+  "basket": {
+   "ok": true,
+   "worst": 1.46,
+   "roll_peak_margin": 34.26,
+   "no_ik": 0,
+   "cap": {
+    "pitch": [
+     21.4,
+     62.7
+    ],
+    "roll": [
+     21.1,
+     46.4
     ],
     "yaw": [
      9.5,

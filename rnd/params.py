@@ -38,11 +38,11 @@ def act(name: str) -> dict:
 # roll_offset_y / yaw_drop drift from the geometry it derives.
 ROLL_DRIVE = os.environ.get("PIP_ROLL_DRIVE", "belt")
 ROLL_DRIVES = {
-    "belt": dict(roll_offset_y=0.083, yaw_drop=0.1134, shoulder_roll=("GIM6010-8", 80 / 18), roll_stage_mass=0.72, yaw_stage_mass=0.56),   # D19 caps: +10 g
+    "belt": dict(roll_offset_y=0.083, yaw_drop=0.1160, shoulder_roll=("GIM6010-8", 80 / 18), roll_stage_mass=0.72, yaw_stage_mass=0.57),   # D19 caps: +10 g; yaw_drop 113.4 → 116.0: the yaw clock-spring cavity 8.7 → 11.3 mm (A14 ribbon 9.8 wide)
     # FROM CAD (rnd/parts/roll.py, inline): ROLL_Y = ferrule face 18 + 2 + motor r 50 (Ø100 ESTIMATE); the top yaw plate
-    # clears the motor (r 50 + 4) instead of the Ø127 80T pulley (yaw_drop 113.4 → 101.3); masses = roll.masses(split=True), the motor (1.0 kg) is the
+    # clears the motor (r 50 + 4) instead of the Ø127 80T pulley (yaw_drop 116.0 → 103.9); masses = roll.masses(split=True), the motor (1.0 kg) is the
     # roll actuator mass.
-    "inline": dict(roll_offset_y=0.070, yaw_drop=0.1013, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.27, yaw_stage_mass=0.54),
+    "inline": dict(roll_offset_y=0.070, yaw_drop=0.1039, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.28, yaw_stage_mass=0.55),
 }
 assert ROLL_DRIVE in ROLL_DRIVES, f"PIP_ROLL_DRIVE must be one of {list(ROLL_DRIVES)}"
 _RD = ROLL_DRIVES[ROLL_DRIVE]
