@@ -463,6 +463,8 @@ class BringUp:
     def await_fresh(self, drivers=None, timeout=0.04, hb=False):
         """Status requests until every driver in `drivers` has answered (or timeout, bus clock). -> {name: state}."""
         ds = list(drivers if drivers is not None else self.drivers.values())
+        for d in ds:                       # discard frames buffered before the request: after a pause the newest queued
+            d._take()                      # frame is old (bus-realism finding: a stale "enabled" passed as the answer)
         got = {}
         t_end = self.now() + timeout
         i = 0
@@ -481,6 +483,20 @@ class BringUp:
             i += 1
             if len(got) == len(ds) or self.now() >= t_end:
                 return {d.name: got.get(d.name, dict(d.state, fresh=False)) for d in ds}
+
+    def clear_errors(self, timeout=0.06):
+        """CLEAR_ERROR + DISABLE to every drive, then status requests until each reports an OK status: on a late bus the
+        next step must not start on a reply that left the drive before the clear arrived (bus-realism finding)."""
+        t_end = self.now() + timeout
+        while True:
+            for d in self.drivers.values():
+                d.clear_error()
+                d.disable()
+            fr = self.await_fresh(hb=True, timeout=0.02)
+            if all(fr[j].get("fresh") and fr[j].get("status") in self.drivers[j].table["STATUS_OK"] for j in self.names):
+                return True
+            if self.now() >= t_end:
+                return False
 
     def gains(self):
         return (np.array([self.jc(j)["kp"] for j in self.names], float), np.array([self.jc(j)["kd"] for j in self.names], float))
@@ -703,12 +719,7 @@ class BringUp:
         stat = {j: fr[j].get("status") for j in self.names}
         ok = all(stat[j] in (self.drivers[j].table.get("STATUS_TIMEOUT"), self.drivers[j].table["STATUS_DISABLED"]) for j in self.names)
         s.check(f"drive CAN timeout: drives disable themselves {self.cfg['can_timeout_s'] * 1000:.0f} ms after the last command", ok, str(stat))
-        for d in self.drivers.values():
-            d.clear_error()
-            d.disable()
-        self.hb()
-        self.wait()
-        self.poll_all()
+        self.clear_errors()
         if self.io.estop_active():
             self.arm()
         s.summary = (f"e-stop → contactor {s.data.get('estop_ms')} ms, watchdog {s.data.get('watchdog_ms')} ms, "

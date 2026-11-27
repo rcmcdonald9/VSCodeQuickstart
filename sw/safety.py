@@ -5,7 +5,7 @@ v1 clamped only the feed-forward torque, so an MIT-mode command (kp·e + kd·ė 
 it also accepted NaN or stale feedback and released most faults on the next cycle. v2:
 
 1. **Feedback first.** Every cycle needs measured position and speed for all joints: finite, the right shape, and no older
-   than FB_MAX_AGE (10 ms). Missing/NaN/stale feedback → STOP.
+   than FB_MAX_AGE (20 ms; was 10, bus-realism runs). Missing/NaN/stale feedback → STOP.
 2. **Total torque bound.** The torque the drive will produce, |kp·(q_cmd − q_meas)| + |kd·v_meas| + |τ_ff|, must stay under
    the joint's rated torque (peak only with `allow_peak`). The supervisor first trims τ_ff, then lowers kp and kd for that
    cycle until the bound holds; gains are also capped at KP_MAX / KD_MAX. The same limit must be set in the drive as a
@@ -41,7 +41,9 @@ import numpy as np
 
 from sw.collision import KD_COMPLIANT, KP_COMPLIANT, T_ANCHOR
 
-WATCHDOG_S, FB_MAX_AGE, TEMP_C = 0.050, 0.010, 70.0     # TEMP_C: driver/case sensor (thermal.md: winding ≤ 69 °C on a task day)
+WATCHDOG_S, FB_MAX_AGE, TEMP_C = 0.050, 0.020, 70.0     # TEMP_C: driver/case sensor (thermal.md: winding ≤ 69 °C on a task day)
+# FB_MAX_AGE 10 → 20 ms (2026-11-27, docs/sw/bus_realism.md): with 0–9 ms of bus delay each way the feedback age reached 16 ms
+# in normal running (p99.9 12 ms) and 10 ms false-tripped; a dead bus is still stopped in ≤ 22 ms, before the drive's 30 ms timeout
 V_FAULT, TRACK_FAULT = 4.0, 0.35                          # rad/s measured, rad tracking error
 KP_MAX, KD_MAX = 60.0, 3.0
 LOAD_KG = 1.0

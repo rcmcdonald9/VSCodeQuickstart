@@ -31,6 +31,14 @@ NEEDED = {
 }
 
 
+# Frame plausibility gate (TableDriver.poll), joint-side units: rad/s, rad/s², s, rad, rad/s, °C. v_max is twice the
+# supervisor's V_FAULT; slack_s covers frames bunched by bus jitter (two samples received in one cycle). Sized so that a
+# 2 ms frame spacing passes any physical motion of these joints (wrist pitch: 7 N·m peak / 0.02 kg·m² ≈ 350 rad/s² →
+# 0.7 rad/s per frame, under the 2.3 rad/s bound) while a flipped high bit in position (≥ bit 9, 0.2 rad), velocity
+# (≥ bit 8, 3.7 rad/s) or a temperature byte is dropped.
+GATE = dict(v_max=8.0, a_max=150.0, slack_s=0.010, dp0=0.02, dv0=0.5, dtemp=5.0, n_reanchor=3)
+
+
 class ProtocolTodo(RuntimeError):
     pass
 
@@ -143,6 +151,9 @@ class TableDriver(JointDriver):
         self.r = Ranges(**rg) if rg and TODO not in rg.values() else Ranges()
         self._replies = []            # param replies seen while polling feedback
         self.idle = None              # callable run while waiting for a register reply (one control cycle)
+        self.gate = True              # frame plausibility gate (poll)
+        self._acc, self._acc_t, self._n_rej, self._last_status = None, None, 0, None
+        self.rejected = self.held = 0
         self.stamp = None
         self.state = dict(p=float("nan"), v=float("nan"), t=float("nan"), temp=None, err=0, status=None)
 
@@ -225,16 +236,51 @@ class TableDriver(JointDriver):
         g, s = self.ratio, self.sign
         ok = self.table.get("STATUS_OK", (0,))
         return dict(p=s * fb["p"] / g - self.offset, v=s * fb["v"] / g, t=s * fb["t"] * g, temp=max(fb["t_mos"], fb["t_rotor"]),
-                    status=fb["err"], err=0 if fb["err"] in ok else fb["err"], id=fb["id"], p_motor=fb["p"])
+                    status=fb["err"], err=0 if fb["err"] in ok else fb["err"], id=fb["id"], p_motor=fb["p"], v_motor=fb["v"])
+
+    def _plausible(self, new, st):
+        """Frame plausibility gate (bus-realism finding, docs/sw/bus_realism.md): a payload that passed the CAN CRC can
+        still be corrupt (a buggy controller driver / adapter firmware). Compared with the last accepted frame, motor
+        side: a position jump faster than GATE v_max, a velocity jump faster than a_max, a temperature jump > dtemp °C is
+        rejected (= a lost frame: the supervisor's stale-feedback check still bounds how many can be lost). A drive error
+        status must be seen on two frames in a row. After n_reanchor rejects in a row the newest frame is taken (the
+        reference itself was wrong, or the drive was power-cycled and re-zeroed)."""
+        G, old = GATE, self._acc
+        if not self.gate or old is None:
+            return True
+        if self._n_rej >= G["n_reanchor"]:
+            return True
+        dt = max(st - self._acc_t, 0.0) + G["slack_s"]
+        r = self.ratio
+        if abs(new["p_motor"] - old["p_motor"]) > r * (G["v_max"] * dt + G["dp0"]):
+            return False
+        if abs(new["v_motor"] - old["v_motor"]) > r * (G["a_max"] * dt + G["dv0"]):
+            return False
+        if new["temp"] is not None and old["temp"] is not None and abs(new["temp"] - old["temp"]) > G["dtemp"]:
+            return False
+        return True
 
     def poll(self):
-        """Newest feedback frame (non-blocking); state['fresh'] says whether one arrived since the last poll."""
+        """Newest plausible feedback frame (non-blocking); state['fresh'] says whether one arrived since the last poll."""
         fbs = self._take()
         fresh = False
+        ok = self.table.get("STATUS_OK", (0,))
         for st, d in fbs:
             if self.table.get("FB_ID_NIBBLE", True) and (d[0] & 0x0F) != (self.id & 0x0F):
                 continue
-            self.state = self.decode(d)
+            new = self.decode(d)
+            if not self._plausible(new, st):
+                self._n_rej += 1
+                self.rejected += 1
+                continue
+            if self.gate and new["status"] not in ok and new["status"] != self._last_status:
+                self._last_status = new["status"]           # an error status counts from its second frame
+                self.held += 1
+                continue
+            self._last_status = new["status"]
+            self._n_rej = 0
+            self._acc, self._acc_t = new, st
+            self.state = new
             self.stamp = st
             fresh = True
         self.state["fresh"] = fresh

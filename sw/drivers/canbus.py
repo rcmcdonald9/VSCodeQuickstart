@@ -61,7 +61,12 @@ class CanBus:
                 return
             if m.is_error_frame or m.is_remote_frame:
                 continue
-            self.inbox[m.arbitration_id].append((self.clock(), bytes(m.data)))
+            now = self.clock()
+            if self.kind != "virtual" and getattr(m, "timestamp", None):
+                # kernel RX timestamp (epoch): age the frame from when it arrived, not from when this loop read it, so a
+                # frame that sat in the socket buffer during a pause is not taken as fresh
+                now -= max(0.0, time.time() - float(m.timestamp))
+            self.inbox[m.arbitration_id].append((now, bytes(m.data)))
             self.n_rx += 1
 
     def recv_for(self, arb_id: int, match=None, timeout: float = 0.0, with_stamp=False):

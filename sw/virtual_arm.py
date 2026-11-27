@@ -432,11 +432,14 @@ class VirtualArm:
         self.test_mass = float(kg)
 
     # ---- the wire: python-can virtual bus + impairments (sw/bus_sim.py)
-    def _send(self, bn, meta=None):
+    def _send(self, bn, meta=None, base=None):
+        """A drive's transmit: the frame leaves at `base` (when the drive answered: the arrival of the request it answers)
+        and reaches the host after the bus's RX delay."""
         imp, line = self.imp[bn], self.to_host[bn]
 
         def send(a, data):
-            line.push([(t, (a, d)) for t, d in imp.pass_frame("rx", self.clock(), bytes(data))], meta)
+            t0 = self.clock() if base is None else base
+            line.push([(t, (a, d)) for t, d in imp.pass_frame("rx", t0, bytes(data))], meta)
             self._flush_host(bn)
         return send
 
@@ -447,7 +450,10 @@ class VirtualArm:
                 self.rt_log.append(now - meta)
             self.buses[bn].send(self.can.Message(arbitration_id=a, data=d, is_extended_id=False))
 
-    def handle_frames(self):
+    def handle_frames(self, lookahead=0.0):
+        """Deliver the host's frames that have reached the drives. Inside step() `lookahead` = the step: a frame that
+        arrives during the 2 ms physics step acts from its start (≤ 1 step early) and is answered from its arrival time,
+        so a sub-cycle bus delay costs no extra cycle (a drive answers within ≈ 0.1 ms)."""
         now = self.clock()
         for bn, bus in self.buses.items():
             self._flush_host(bn)
@@ -457,9 +463,11 @@ class VirtualArm:
                 if msg is None:
                     break
                 line.push([(t, (msg.arbitration_id, d)) for t, d in imp.pass_frame("tx", now, bytes(msg.data))], now)
-            for t, (a, d), t_sent in line.due(now):
+            for t, (a, d), t_sent in line.due(now + lookahead):
+                t_arr = max(t, now)
                 for mt in self.motors:
-                    if mt.bus == bn and mt.handle(a, d, now, self._send(bn)):
+                    if mt.bus == bn and mt.handle(a, d, t_arr, self._send(bn, base=t_arr)):
+                        mt.t_arr = t_arr
                         if a == mt.ctrl_arb and mt.pending_t is None:
                             mt.pending_t = t_sent
                         break
@@ -482,7 +490,8 @@ class VirtualArm:
 
     def step(self, dt):
         """One control period: apply what the drives were told, integrate, then the drives answer with the new state."""
-        self.handle_frames()
+        t_step = self.clock()
+        self.handle_frames(lookahead=dt - 1e-9)
         n = max(1, int(round(dt / self.env.m.opt.timestep)))
         for _ in range(n):
             q = np.array([self.env.d.qpos[a] for a in self.qadr])
@@ -501,7 +510,7 @@ class VirtualArm:
             k = ARM.index(mt.name)
             mt._last_p = mt.motor_pos(q[k])
             meta = mt.pending_t if mt.want_reply else None
-            mt.feedback(q[k], qd[k], self._send(mt.bus, meta))
+            mt.feedback(q[k], qd[k], self._send(mt.bus, meta, base=max(getattr(mt, "t_arr", t_step), t_step)))
             if meta is not None:
                 mt.pending_t = None
         for bn in self.buses:

@@ -1,0 +1,1264 @@
+{
+ "date": "2026-11-27",
+ "seed": 0,
+ "motion_s": 20.0,
+ "base_thr": [
+  null,
+  null,
+  null,
+  null,
+  0.3,
+  null
+ ],
+ "profiles": {
+  "ideal": {
+   "profile": "ideal",
+   "seed": 0,
+   "wall_s": 9.4,
+   "steps": {
+    "enumerate": "PASS",
+    "limits": "PASS",
+    "safety": "PASS",
+    "calibrate": "PASS",
+    "jog": "PASS",
+    "gravity": "PASS"
+   },
+   "failed": [],
+   "bus": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 21332,
+       "delivered": 21332,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 21309,
+       "delivered": 21309,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 21122,
+     "mean": 2.0,
+     "p50": 2.0,
+     "p95": 2.0,
+     "p99": 2.0,
+     "max": 2.0
+    }
+   },
+   "thr": [
+    null,
+    null,
+    null,
+    null,
+    0.3,
+    null
+   ],
+   "motion": {
+    "cycles": 10000,
+    "supervisor_stops": [],
+    "observer_trips": [],
+    "observer_peak_ratio": 0.402,
+    "fb_age_ms": {
+     "p50": 0.0,
+     "p99": 0.0,
+     "p999": 0.0,
+     "max": 0.0
+    },
+    "fresh_gap_ms": {
+     "p99": 2.0,
+     "max": 2.0
+    },
+    "rejected_frames": 0
+   },
+   "faults": {
+    "contact_trip_ms": 14.0,
+    "silent": {
+     "supervisor_stop_ms": 12.0,
+     "reason": [
+      "feedback missing, NaN or stale"
+     ],
+     "drive_disabled_ms": 32.0,
+     "adapter": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 0,
+      "rx_dropped": 0,
+      "tx_dropped": 16
+     }
+    },
+    "bus_off": {
+     "supervisor_stop_ms": 12.0,
+     "reason": [
+      "feedback missing, NaN or stale"
+     ],
+     "drive_disabled_ms": 32.0,
+     "adapter": {
+      "state": "BUS-OFF",
+      "berr_tx": 256,
+      "berr_rx": 0,
+      "bus_off": 1,
+      "restarts": 0,
+      "bus_errors": 0,
+      "rx_dropped": 0,
+      "tx_dropped": 16
+     }
+    }
+   },
+   "bus_after": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 31809,
+       "delivered": 31777,
+       "dropped": 16,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 16,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 31750,
+       "delivered": 31750,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "BUS-OFF",
+       "berr_tx": 256,
+       "berr_rx": 0,
+       "bus_off": 1,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 16
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 31427,
+     "mean": 2.0,
+     "p50": 2.0,
+     "p95": 2.0,
+     "p99": 2.0,
+     "max": 2.0
+    }
+   }
+  },
+  "usb": {
+   "profile": "usb",
+   "seed": 0,
+   "wall_s": 9.9,
+   "steps": {
+    "enumerate": "PASS",
+    "limits": "PASS",
+    "safety": "PASS",
+    "calibrate": "PASS",
+    "jog": "PASS",
+    "gravity": "PASS"
+   },
+   "failed": [],
+   "bus": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 21343,
+       "delivered": 21343,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.404,
+        "p50": 0.324,
+        "p99": 1.357,
+        "max": 4.609
+       }
+      },
+      "rx": {
+       "sent": 21278,
+       "delivered": 21276,
+       "dropped": 1,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 1,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.405,
+        "p50": 0.325,
+        "p99": 1.36,
+        "max": 4.17
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 1,
+       "rx_dropped": 1,
+       "tx_dropped": 0
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 21043,
+     "mean": 2.026,
+     "p50": 2.0,
+     "p95": 2.0,
+     "p99": 4.0,
+     "max": 6.0
+    }
+   },
+   "thr": [
+    null,
+    null,
+    null,
+    null,
+    0.3,
+    null
+   ],
+   "motion": {
+    "cycles": 10000,
+    "supervisor_stops": [],
+    "observer_trips": [],
+    "observer_peak_ratio": 0.41,
+    "fb_age_ms": {
+     "p50": 0.0,
+     "p99": 2.0,
+     "p999": 2.0,
+     "max": 4.0
+    },
+    "fresh_gap_ms": {
+     "p99": 4.0,
+     "max": 6.0
+    },
+    "rejected_frames": 0
+   },
+   "faults": {
+    "contact_trip_ms": 16.0,
+    "silent": {
+     "supervisor_stop_ms": 12.0,
+     "reason": [
+      "feedback missing, NaN or stale"
+     ],
+     "drive_disabled_ms": 32.0,
+     "adapter": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 1,
+      "rx_dropped": 1,
+      "tx_dropped": 16
+     }
+    },
+    "bus_off": {
+     "supervisor_stop_ms": 12.0,
+     "reason": [
+      "feedback missing, NaN or stale"
+     ],
+     "drive_disabled_ms": 32.0,
+     "adapter": {
+      "state": "BUS-OFF",
+      "berr_tx": 256,
+      "berr_rx": 0,
+      "bus_off": 1,
+      "restarts": 0,
+      "bus_errors": 1,
+      "rx_dropped": 1,
+      "tx_dropped": 16
+     }
+    }
+   },
+   "bus_after": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 31820,
+       "delivered": 31754,
+       "dropped": 16,
+       "duplicated": 1,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 50,
+       "delay_ms": {
+        "mean": 0.405,
+        "p50": 0.325,
+        "p99": 1.35,
+        "max": 4.609
+       }
+      },
+      "rx": {
+       "sent": 31665,
+       "delivered": 31663,
+       "dropped": 1,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 1,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.406,
+        "p50": 0.324,
+        "p99": 1.364,
+        "max": 4.198
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 1,
+       "restarts": 1,
+       "bus_errors": 1,
+       "rx_dropped": 1,
+       "tx_dropped": 16
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 31329,
+     "mean": 2.025,
+     "p50": 2.0,
+     "p95": 2.0,
+     "p99": 4.0,
+     "max": 6.0
+    }
+   }
+  },
+  "pil9": {
+   "profile": "pil9",
+   "seed": 0,
+   "wall_s": 0.1,
+   "steps": {
+    "enumerate": "PASS",
+    "limits": "PASS",
+    "safety": "FAIL",
+    "calibrate": "REFUSED",
+    "jog": "REFUSED",
+    "gravity": "REFUSED"
+   },
+   "failed": [
+    "safety: healthy idle: 100 cycles, heartbeat every cycle, contactor closed \u2014 15/100",
+    "safety: step completed \u2014 supervisor stop: ['feedback missing, NaN or stale']"
+   ],
+   "bus": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 229,
+       "delivered": 229,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 5.377,
+        "p50": 5.345,
+        "p99": 8.876,
+        "max": 8.995
+       }
+      },
+      "rx": {
+       "sent": 82,
+       "delivered": 82,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 4.753,
+        "p50": 4.924,
+        "p99": 8.902,
+        "max": 8.981
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 13,
+     "mean": 11.231,
+     "p50": 10.0,
+     "p95": 14.8,
+     "p99": 15.76,
+     "max": 16.0
+    }
+   },
+   "thr": null,
+   "bus_after": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 229,
+       "delivered": 229,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 5.377,
+        "p50": 5.345,
+        "p99": 8.876,
+        "max": 8.995
+       }
+      },
+      "rx": {
+       "sent": 82,
+       "delivered": 82,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 4.753,
+        "p50": 4.924,
+        "p99": 8.902,
+        "max": 8.981
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 13,
+     "mean": 11.231,
+     "p50": 10.0,
+     "p95": 14.8,
+     "p99": 15.76,
+     "max": 16.0
+    }
+   }
+  },
+  "lossy": {
+   "profile": "lossy",
+   "seed": 0,
+   "wall_s": 9.9,
+   "steps": {
+    "enumerate": "PASS",
+    "limits": "PASS",
+    "safety": "PASS",
+    "calibrate": "PASS",
+    "jog": "PASS",
+    "gravity": "PASS"
+   },
+   "failed": [],
+   "bus": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 21316,
+       "delivered": 21006,
+       "dropped": 215,
+       "duplicated": 114,
+       "corrupted": 0,
+       "crc_errors": 95,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.754,
+        "p50": 0.564,
+        "p99": 3.363,
+        "max": 7.59
+       }
+      },
+      "rx": {
+       "sent": 20175,
+       "delivered": 19899,
+       "dropped": 168,
+       "duplicated": 101,
+       "corrupted": 0,
+       "crc_errors": 108,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.753,
+        "p50": 0.563,
+        "p99": 3.388,
+        "max": 7.184
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 203,
+       "rx_dropped": 168,
+       "tx_dropped": 215
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 19773,
+     "mean": 2.452,
+     "p50": 2.0,
+     "p95": 4.0,
+     "p99": 6.0,
+     "max": 10.0
+    }
+   },
+   "thr": [
+    null,
+    null,
+    null,
+    null,
+    0.3,
+    null
+   ],
+   "motion": {
+    "cycles": 10000,
+    "supervisor_stops": [],
+    "observer_trips": [],
+    "observer_peak_ratio": 0.426,
+    "fb_age_ms": {
+     "p50": 0.0,
+     "p99": 4.0,
+     "p999": 6.0,
+     "max": 8.0
+    },
+    "fresh_gap_ms": {
+     "p99": 6.0,
+     "max": 10.0
+    },
+    "rejected_frames": 0
+   },
+   "faults": {
+    "contact_trip_ms": 12.0,
+    "silent": {
+     "supervisor_stop_ms": 14.0,
+     "reason": [
+      "feedback missing, NaN or stale"
+     ],
+     "drive_disabled_ms": 32.0,
+     "adapter": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 304,
+      "rx_dropped": 259,
+      "tx_dropped": 325
+     }
+    },
+    "bus_off": {
+     "supervisor_stop_ms": 12.0,
+     "reason": [
+      "feedback missing, NaN or stale"
+     ],
+     "drive_disabled_ms": 32.0,
+     "adapter": {
+      "state": "BUS-OFF",
+      "berr_tx": 256,
+      "berr_rx": 0,
+      "bus_off": 1,
+      "restarts": 0,
+      "bus_errors": 306,
+      "rx_dropped": 260,
+      "tx_dropped": 326
+     }
+    }
+   },
+   "bus_after": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 31793,
+       "delivered": 31272,
+       "dropped": 326,
+       "duplicated": 167,
+       "corrupted": 0,
+       "crc_errors": 144,
+       "bus_off_drops": 51,
+       "delay_ms": {
+        "mean": 0.756,
+        "p50": 0.563,
+        "p99": 3.386,
+        "max": 7.59
+       }
+      },
+      "rx": {
+       "sent": 30010,
+       "delivered": 29588,
+       "dropped": 260,
+       "duplicated": 148,
+       "corrupted": 0,
+       "crc_errors": 162,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.754,
+        "p50": 0.566,
+        "p99": 3.325,
+        "max": 7.184
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 1,
+       "restarts": 1,
+       "bus_errors": 306,
+       "rx_dropped": 260,
+       "tx_dropped": 326
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 29417,
+     "mean": 2.456,
+     "p50": 2.0,
+     "p95": 4.0,
+     "p99": 6.0,
+     "max": 10.0
+    }
+   }
+  },
+  "corrupt": {
+   "profile": "corrupt",
+   "seed": 0,
+   "wall_s": 1.0,
+   "steps": {
+    "enumerate": "PASS",
+    "limits": "PASS",
+    "safety": "PASS",
+    "calibrate": "FAIL",
+    "jog": "REFUSED",
+    "gravity": "REFUSED"
+   },
+   "failed": [
+    "calibrate: step completed \u2014 wpitch: supervisor stop while seeking the stop: ['tracking error']"
+   ],
+   "bus": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 2348,
+       "delivered": 2348,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 5,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.491,
+        "p50": 0.41,
+        "p99": 1.45,
+        "max": 2.767
+       }
+      },
+      "rx": {
+       "sent": 2324,
+       "delivered": 2324,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 7,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.505,
+        "p50": 0.421,
+        "p99": 1.471,
+        "max": 2.385
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 2143,
+     "mean": 2.05,
+     "p50": 2.0,
+     "p95": 2.0,
+     "p99": 4.0,
+     "max": 4.0
+    }
+   },
+   "thr": null,
+   "motion": {
+    "cycles": 3866,
+    "supervisor_stops": [
+     {
+      "t": 7.732,
+      "reasons": [
+       "measured position outside limits",
+       "tracking error"
+      ]
+     }
+    ],
+    "observer_trips": [],
+    "observer_peak_ratio": 0.396,
+    "fb_age_ms": {
+     "p50": 0.0,
+     "p99": 2.0,
+     "p999": 2.0,
+     "max": 4.0
+    },
+    "fresh_gap_ms": {
+     "p99": 4.0,
+     "max": 6.0
+    },
+    "rejected_frames": 0
+   },
+   "bus_after": {
+    "buses": {
+     "B1": {
+      "tx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "rx": {
+       "sent": 0,
+       "delivered": 0,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 0,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.0,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     },
+     "B2": {
+      "tx": {
+       "sent": 7760,
+       "delivered": 7760,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 12,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.497,
+        "p50": 0.403,
+        "p99": 1.584,
+        "max": 3.203
+       }
+      },
+      "rx": {
+       "sent": 7719,
+       "delivered": 7719,
+       "dropped": 0,
+       "duplicated": 0,
+       "corrupted": 16,
+       "crc_errors": 0,
+       "bus_off_drops": 0,
+       "delay_ms": {
+        "mean": 0.5,
+        "p50": 0.408,
+        "p99": 1.562,
+        "max": 3.12
+       }
+      },
+      "errors": {
+       "state": "ERROR-ACTIVE",
+       "berr_tx": 0,
+       "berr_rx": 0,
+       "bus_off": 0,
+       "restarts": 0,
+       "bus_errors": 0,
+       "rx_dropped": 0,
+       "tx_dropped": 0
+      }
+     }
+    },
+    "round_trip_ms": {
+     "n": 7530,
+     "mean": 2.06,
+     "p50": 2.0,
+     "p95": 2.0,
+     "p99": 4.0,
+     "max": 6.0
+    }
+   }
+  }
+ },
+ "legacy": true
+}
