@@ -797,14 +797,15 @@ def drive_capacity():
         m = act("GIM8108-36")
         M, A, o = MOT36, ADAPT, OUT_CLAMP
         r0, r1 = M["out_pcd"] / 2000, A["pcd"] / 2000
-        # (a) motor Ø30 boss → metal adapter (metal to metal; seller drawing: 3 × M4 tapped 4 deep + 3 × Ø4 H7)
-        t_m4 = M["out_n"] * 4000.0 * 0.15 * r0                                           # M4 12.9 at ≈ 4 kN (ESTIMATE), μ 0.15 steel/Al
-        t_sh = M["dowel_n"] * 7500.0 * r0                                                # Ø4 hardened dowel ≈ 7.5 kN single shear (lead)
-        t_bb = M["dowel_n"] * M["dowel_d"] * M["dowel_l"] * 150.0 * r0                   # bearing on the boss if it is Al (150 MPa, 4 mm deep, ESTIMATE)
-        basis0 = (f"{M['out_n']} × M4 × 10 csk (3.0 mm into 4 mm threads) friction {t_m4:.0f} N·m (≈ 4 kN, μ 0.15, ESTIMATE) + {M['dowel_n']} × Ø4 m6 dowels in H7: "
-                  f"shear {t_sh:.0f} N·m, bearing in an Al boss {t_bb:.0f} N·m (150 MPa, 4 mm, ESTIMATE; governs)")
-        rows.append(("roll (inline)", "motor Ø30 boss ↔ 7075 adapter vs the drive limit (35.1)", t_m4 + min(t_sh, t_bb), m["rated"], basis0))
-        rows.append(("roll (inline)", "motor Ø30 boss ↔ 7075 adapter vs stall", t_m4 + min(t_sh, t_bb), m["peak"], basis0 + f"; stall {m['peak']:.1f} N·m (actuators.yaml)"))
+        # (a) motor output → metal adapter. M1 (Fable review 2026-11-27): wave 2 counted 26 N·m of friction from a 4 kN preload
+        # that 3 mm of M4 in aluminium can't hold. Now the dowels alone carry the torque (rnd/joints.py roll_rows, same numbers)
+        t_sh = M["dowel_n"] * math.pi * 2.0 ** 2 * 450.0 * r0                             # ISO 8734 Ø4: min double shear 11.3 kN → single 5.65 kN
+        t_bb = M["dowel_n"] * M["dowel_d"] * M["dowel_l"] * 240.0 * r0                   # bearing yield in the motor's output, 4 mm deep (ESTIMATE 240 MPa)
+        t_m4 = M["out_n"] * 1500.0 * 0.15 * r0                                           # bonus, not counted: 1.5 kN per M4 (3.0 mm of thread in Al)
+        basis0 = (f"{M['dowel_n']} × Ø4 m6 hardened dowels in H7: shear {t_sh:.0f} N·m (ISO 8734), bearing in the motor's output {t_bb:.0f} N·m (240 MPa bearing yield, "
+                  f"4 mm deep, ESTIMATE: cast A380 / 6061-T6; governs); the 3 × M4 × 10 csk friction ({t_m4:.0f} N·m at an honest 1.5 kN) is not counted")
+        rows.append(("roll (inline)", "motor output ↔ 7075 adapter (dowels only) vs the drive limit (35.1)", min(t_sh, t_bb), m["rated"], basis0))
+        rows.append(("roll (inline)", "motor output ↔ 7075 adapter (dowels only) vs stall", min(t_sh, t_bb), m["peak"], basis0 + f"; stall {m['peak']:.1f} N·m (actuators.yaml)"))
         # (b) metal adapter → printed clevis arm
         F = A["n"] * o["preload"] * o["creep"]
         t_fr = o["mu"] * F * r1
@@ -823,22 +824,29 @@ def drive_capacity():
         rows.append(("roll (belt)", "roll shaft ↔ clevis, 2 pinch clamps (friction)", 2 * t_arm, T_roll,
                      f"per arm {p['n_per_arm']} × M5 into heat-set inserts, {p['preload']:.0f} N (ESTIMATE ≈ 50 % of M5 insert pull-out in PETG-CF) × {p['creep']} creep, "
                      f"μ {p['mu']} PETG-CF/PETG-CF (ESTIMATE); T = μ·π·F·r per arm; clamp pressure {press[0]:.1f} / {press[1]:.1f} MPa on a solid shaft end; demand = GIM6010-8 peak × 4.44 × 0.95"))
-    # yaw flange ↔ tube (both drives): hex spigot (form) + 6 × M3 (friction, bending)
+    # yaw flange ↔ tube (both drives): hex spigot (form) for torque; C1: the YAW_TIE clamp for bending and the hanging load
     y = YF
     rc, strip = y["hex_af"] / 2000, 3.0
     t_hex = 6 * 25.0 * strip * y["hex_h"] * rc                                                  # flats bear in-layer (25 MPa)
     ro, ri = y["hex_af"] / 2 * 1.05, y["spigot_r_in"]
     rm, tw = (ro + ri) / 2, ro - ri
     t_root = 12.0 * 2 * math.pi * rm ** 2 * tw / 1000                                            # root torsion on a layer plane (12 MPa)
-    t_m3 = y["n"] * 800.0 * 0.75 * 0.30 * y["bolt_r"] / 1000
+    t = YAW_TIE
+    t_cl = t["n"] * t["preload"] * t["creep"] * 0.30 * t["r"] / 1000
     rows.append(("yaw", "tube ↔ flange, hex spigot AF 24 × 8 (form)", min(t_hex, t_root), T_yaw,
                  f"flats {t_hex:.0f} N·m (3 mm strips at 25 MPa in-layer), spigot root {t_root:.0f} N·m (torsion at 12 MPa across layers); "
-                 f"+ {t_m3:.0f} N·m friction from the 6 × M3 (800 N ESTIMATE × 0.75, μ 0.3) not counted; demand = GIM6010-8 peak × 2 × 0.95"))
-    below = (a.bone_mass_upper + act(a.joints["elbow"][0])["mass"] + a.bone_mass_fore + act(a.joints["wrist_pitch"][0])["mass"]
-             + act(a.joints["wrist_roll"][0])["mass"] + a.gripper_mech_mass + a.wrist_cam_mass + 4.54)
-    M = 20.7 * 1.5
-    F_b = M / (3 * y["bolt_r"] / 1000) + below * G * 1.5 / y["n"]
-    rows.append(("yaw", "tube ↔ flange, 6 × M3 inserts in tension (bending + hanging load, 20 lb basket)", 1000.0, F_b,
-                 f"N per screw: M = 20.7 N·m × 1.5 (rnd/basket.py worst passing shoulder-pitch torque, an upper bound for the flange) about the centre "
-                 f"+ {below:.1f} kg × 1.5 g; capacity = M3 insert pull-out in PETG-CF ≈ 1.0 kN (ESTIMATE, coupon)"))
+                 f"+ {t_cl:.0f} N·m clamp friction from the YAW_TIE (μ 0.3) not counted; demand = GIM6010-8 peak × 2 × 0.95"))
+    from .. import joints
+    J = joints.joint_models()["yaw flange ↔ tube"]
+    try:
+        import json as _json
+        dem = _json.loads((joints.DOCS / "joints.json").read_text())
+        dem = max(r["M"] for r in dem["joints"] if r["joint"] == "yaw flange ↔ tube" and r["case"] in joints.SERVICE)
+        src = "rnd/joints.py: the twin's worst basket/hug wrench × 1.5"
+    except (OSError, ValueError, KeyError):
+        dem, src = 20.7 * 1.5, "20.7 N·m × 1.5, rnd/basket.py worst shoulder-pitch torque (run python -m rnd.joints for the twin value)"
+    mg = min(m.m_gap(0.0) for m in J["models"])
+    rows.append(("yaw", "tube ↔ flange, C1 tie (6 × M3 12.9 into the 6061 flange): moment before the joint gaps vs the service bending", mg, dem,
+                 f"clamp model (rnd/joints.py): {t['n']} × {t['preload'] / 1e3:.1f} kN × {t['creep']} creep on the r 14.1–20 tube end; demand {src}; "
+                 "fault cases (140 N bump, stalls) in docs/rnd/joints.md"))
     return [dict(joint=j, path=pth, cap=round(c, 1), demand=round(dm, 1), ratio=round(c / dm, 2), basis=b) for j, pth, c, dm, b in rows]

@@ -16,17 +16,28 @@ Zero-free-length cable-spring balancer. Pulley A sits 40–60 mm above the pitch
 | Cable-side rate behind the 2:1 tackle, k = R/4 | **4.67 N/mm** |
 | K at the nominal a = 48 mm | 4.49 N·m (design 4.5) |
 | K adjustment by sliding A (40–60 mm) | 3.7–5.6 N·m; rate ± 10 % still reaches 4.5 N·m: a = 44–53 mm |
-| Spring deflection, nominal (arm hanging) | 33.9 mm = 29% of L0 (medium life ≤ 30%) ✅ |
+| Spring deflection, nominal (arm hanging) | 33.5 mm = 29% of L0 (medium life ≤ 30%) ✅ |
 | Spring deflection at the slot end a = 60 mm | 40.0 mm = **35%** of L0 (ISO max 40%) ✅ |
-| Spring force, nominal / slot end / ISO Fmax | 634 / 748 / 860 N |
-| Stored energy (nominal, hanging) | 10.7 J |
+| Spring force, nominal / slot end / ISO Fmax | 626 / 748 / 860 N |
+| Stored energy (nominal, hanging) | 10.5 J |
 | Cage: L0 + 12 ≤ 135 mm; bore Ø26.0 vs Ø25 spring hole | ✅; ✅ |
 | B clears A at pitch 180° (|a − b| ≥ 15 mm over the slot) | ✅ (20 mm at the bottom of the slot) |
-| Law error from the Ø11 mm pulley (max over −200…60°) | 0.51 N·m (11% of K) |
+| Law error from the Ø24 mm pulley (max over −200…60°) | 1.12 N·m (25% of K) |
 | Cable safety (2 mm UHMWPE, ESTIMATE 2000 N) | 6× |
 
 Life: ISO 10243 green allows 25 % of L0 for long life, 30 % for medium life and 40 % at Fmax. The spring works between |a − b|/2 (arm up) and (a + b)/2 (arm hanging); most cycles are pitch 0 ↔ 90°, i.e. (a + b)/2 ↔ √(a² + b²)/2. Coupon C-bal: 10⁵ cycles at the slot end before the bulk buy.
-Cable: B → U604 pulley A → U604 moving pulley on the spring plate → anchor screw on the cage.
+Cable: B → pulley A (608-2Z in a Ø28 POM U-groove tyre, Ø8 axle in the fork) → moving tackle pulley (608-2Z in a 1 mm POM tyre, Ø24, in the Ø26 cage) → anchor screw on the cage. D/d at the cable ≈ 12 (was 5.5 on the U604).
+
+**M8 (Fable review 2026-11-27): pulley bearings.** The tackle pulley carries 2 T (180° wrap), pulley A up to 2 T; T = half the spring force. Worst load P0 = 748 N (slot end). Static ratings: SKF catalogue C0 (deep-groove -2Z); s0 = C0 / P0, need ≥ 1.5 (SKF guideline 1–2 for slowly oscillating bearings, ESTIMATE).
+
+| Bearing (d × D × B mm) | C0 (kN) | s0 at the slot end | |
+|---|---|---|---|
+| U604ZZ (wave 2) (4 × 13 × 4) | 0.28 | 0.37 | ❌ |
+| 625-2Z (5 × 16 × 5) | 0.68 | 0.91 | ❌ |
+| 626-2Z (6 × 19 × 6) | 0.95 | 1.27 | ❌ |
+| 608-2Z (M8 choice) (8 × 22 × 7) | 1.37 | 1.83 | ✅ |
+
+Pin-and-bushing pulleys (iglidur G on a Ø6 pin, 80 MPa static) would carry it too, but the bushing friction (μ ≈ 0.15 on r 3 vs the r 5.5 sheave) is ≈ ±16 % of the cable tension per pulley, a hysteresis band in the balancer law; the 608s keep it near zero.
 **Detach hazard (A9):** with the arm off, the spring torque K·sin(pitch) is unopposed. Detach and attach only with the arm hanging (pitch 0, where the torque is zero), with the **park pin** in: a Ø6 pin through the bracket wall into a hole in the balancer disc at pitch 0. The pitch motor holds the shaft as well while powered.
 **Failure mode:** with the cable cut, the arm is simply unbalanced; the pitch motor still holds it (see the workspace margins without the spring in spring.md).
 

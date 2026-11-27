@@ -22,9 +22,10 @@ JOBS = 3
 HEAVY = {"rnd.stiffness", "rnd.kx_mc", "rnd.mc", "rnd.threshold_mc", "rnd.run_all"}
 CAD = ["rnd.assembly_seq", "rnd.spacing", "rnd.integration", "rnd.assembly_check", "rnd.swept"]
 MAP = [  # (glob, checks)
-    ("rnd/parts/roll.py", CAD + ["rnd.dexterity", "rnd.harness"]),
+    ("rnd/parts/roll.py", CAD + ["rnd.dexterity", "rnd.harness", "rnd.joints"]),
     ("rnd/parts/arm.py", CAD + ["rnd.stiffness"]),
-    ("rnd/parts/shoulder.py", CAD + ["rnd.balancer"]),
+    ("rnd/parts/shoulder.py", CAD + ["rnd.balancer", "rnd.joints"]),
+    ("rnd/joints.py", ["rnd.joints"]),
     ("rnd/parts/kx.py", CAD + ["rnd.kx_check"]),
     ("rnd/parts/covers.py", ["rnd.pinch"]),
     ("rnd/parts/*.py", CAD),
