@@ -418,13 +418,31 @@ class SleeveClamp(Clamp):
 # ------------------------------------------------------------------------------------------------ the joints
 SERVICE = ("basket × 1.5", "hug × 1.5")
 
+# D26 cost-down (wave 11): the crush sleeves from stock tube, cut and faced to length by the builder, where the yield
+# clears the sleeve stress; turned 42CrMo4+QT only where no stock tube fits the CAD hole. Per sleeve set: (OD, ID) mm,
+# material, R_p (MPa, the guaranteed minimum), stock. The CAD holes (shoulder.HUB_TIE / roll.YAW_TIE sleeve_hole,
+# roll.REAR_SCREW, roll.OUT_CLAMP) are unchanged: every stock OD is ≤ the CAD sleeve OD.
+SLEEVE_STOCK = {
+    "pitch": dict(sleeve=(7.0, 4.3), mat="42CrMo4+QT, turned", Rp=750.0,
+                  stock=("turned: the two sleeves butt at the hub ↔ tube face, so they must be located by the Ø7.1 hole; 1/4\" × .035\" 4130 "
+                         "(F_ty 517) floats 0.4 mm in it (butt overlap down to ≈ 0.3 of its 0.89 mm wall) and its softer section takes the stall "
+                         "row 1.18 → 1.08× (thread strip); it fits if the CAD hole goes Ø7.1 → Ø6.45")),
+    "yaw": dict(sleeve=(4.6, 3.2), mat="42CrMo4+QT, turned", Rp=750.0,
+                stock="turned: no stock tube ≤ Ø4.7 with an ID ≥ 3.2 clears the yaw stall stress (4.5 × 0.6 E355+SR, R_eH 440: ≈ 1.07×)"),
+    "rear": dict(sleeve=(6.0, 4.4), mat="E235+C precision tube (EN 10305-1; R_eH taken as the E235+N 235 MPa floor)", Rp=235.0,
+                 stock="6 × 0.8 seamless E235+C precision tube"),
+    "clevis": dict(sleeve=(8.0, 5.6), mat="E235+C precision tube (EN 10305-1; R_eH taken as 235 MPa)", Rp=235.0,
+                   stock="8 × 1.2 seamless E235+C precision tube (press fit in the print: the bearing path)"),
+}
+
 
 def joint_models():
     """The two C1 joints: geometry, compliances, the life preload, and clamp-model factories (two printed-stack lengths
     for the print's share; two bolt-pattern orientations). make(Fp, u0p) → the sleeve-clamp models; make_bare(Fp) → the
     wave-3 joint (print as the clamped member, no sleeves) for the before/after comparison."""
     from .parts import roll, shoulder
-    h, y = shoulder.HUB_TIE, roll.YAW_TIE
+    h = dict(shoulder.HUB_TIE, sleeve=SLEEVE_STOCK["pitch"]["sleeve"], Rp=SLEEVE_STOCK["pitch"]["Rp"])
+    y = dict(roll.YAW_TIE, sleeve=SLEEVE_STOCK["yaw"]["sleeve"], Rp=SLEEVE_STOCK["yaw"]["Rp"])
     lv = roll.yaw_tie_levels()
     L_hub = shoulder.Y_TUBE_END - shoulder.Y_TUBE_IN                         # printed tube length under the clamp
     L_hub2 = shoulder.hub_print_under_ring()                                 # the hub's print between the tube end and the ring
@@ -507,7 +525,7 @@ def _before(name, N, M):
     return round(1000.0 / max(M * 1000 / (3 * r) + N / 6, 1e-6), 2)
 
 
-SLEEVE_RP = 750.0      # MPa, sleeve yield: turned 42CrMo4+QT (R_p0.2 ≥ 750, EN 10083-3; an E235 tube, 235 MPa, yields at the bump / stall)
+SLEEVE_RP = 750.0      # MPa, turned 42CrMo4+QT (R_p0.2 ≥ 750, EN 10083-3); each joint's own sleeve yield is SLEEVE_STOCK[...]["Rp"]
 
 
 def joint_rows(loads):
@@ -550,11 +568,11 @@ def joint_rows(loads):
                 txt = f"no gap up to {mg:.0f} N·m at the life preload; bolt {Fb / 1e3:.2f} kN; print contact {sig:.1f} MPa (≤ {SIGMA_SERVICE:.0f})"
             else:
                 gap = any(c["gap"] for c in chk)
-                ok = Fb <= J["proof"] and J["strip"] >= 1.5 * Fb and sig <= SIGMA_FAULT and s_sl <= SLEEVE_RP
-                margin = min(J["proof"] / Fb, J["strip"] / (1.5 * Fb), SIGMA_FAULT / max(sig, 1e-6), SLEEVE_RP / s_sl)
+                ok = Fb <= J["proof"] and J["strip"] >= 1.5 * Fb and sig <= SIGMA_FAULT and s_sl <= t["Rp"]
+                margin = min(J["proof"] / Fb, J["strip"] / (1.5 * Fb), SIGMA_FAULT / max(sig, 1e-6), t["Rp"] / s_sl)
                 txt = (f"{'gaps' if gap else 'no gap'}; bolt {Fb / 1e3:.2f} kN vs proof {J['proof'] / 1e3:.2f} kN; thread strip (the weaker of the "
                        f"{J['nut']['what']} and the {t['grade']} {'stud' if name.startswith('pitch') else 'screw'}) {J['strip'] / 1e3:.1f} kN ({J['strip'] / Fb:.2f}× the bolt, need 1.5×); "
-                       f"sleeve {s_sl:.0f} MPa (≤ {SLEEVE_RP:.0f}); print contact {sig:.1f} MPa (≤ {SIGMA_FAULT:.0f})")
+                       f"sleeve {s_sl:.0f} MPa (≤ {t['Rp']:.0f}); print contact {sig:.1f} MPa (≤ {SIGMA_FAULT:.0f})")
             rows.append(dict(joint=name, case=case, N=N, M=M, T=L["T"], pose=L["note"], margin=round(margin, 2), verdict=bool(ok), text=txt,
                              before=_before(name, N, M)))
     return rows
@@ -613,7 +631,7 @@ def roll_rows(loads=None):
                             f"the 7075 adapter side is {roll.ADAPT['t']:.0f} mm deep. The 140 N bump puts up to {T_bump:.0f} N·m on the roll output "
                             f"({T_bump / cap:.2f}× this capacity): below the stall only if the actuator backdrives at its current limit (open: backdrive torque, seller / bench)")))
     # (b) rear mount: metal clamp stack (plate + sleeves + motor), the print is only sandwiched
-    rs = roll.REAR_SCREW
+    rs = dict(roll.REAR_SCREW, sleeve_od=SLEEVE_STOCK["rear"]["sleeve"][0], sleeve_id=SLEEVE_STOCK["rear"]["sleeve"][1])
     c_b = rs["grip"] / (E_STEEL * 8.78)
     c_s = (rs["grip"] - rs["plate_t"]) / (E_STEEL * math.pi / 4 * (rs["sleeve_od"] ** 2 - rs["sleeve_id"] ** 2))
     c_pl = rs["plate_t"] / (E_AL * math.pi / 4 * (9.0 ** 2 - 4.5 ** 2))
@@ -630,12 +648,21 @@ def roll_rows(loads=None):
     M_open = F_life * rs["n"] * M["rear_pcd"] / 2000 / 2 / (1 - phi_l)
     F_bolt = rs["preload"] + (phi_l if M_face < M_open else 1.0) * M_face / (rs["n"] * M["rear_pcd"] / 2000 / 2)
     sl_bear = stall / (rs["n"] * M["rear_pcd"] / 2000) / (rs["sleeve_od"] * (rs["grip"] - rs["plate_t"]))
+    # D26 stock-tube sleeves: their own yield (rear: the worst bolt force; clevis M5: preload + the largest output moment
+    # of any case shared over the 8 on PCD ADAPT, as a bolt ring)
+    A_rs = math.pi / 4 * (rs["sleeve_od"] ** 2 - rs["sleeve_id"] ** 2)
+    s_rs = F_bolt / A_rs
+    oc, ck = roll.OUT_CLAMP, SLEEVE_STOCK["clevis"]
+    M_out = max([v["Mm"] for v in lb.values()] or [100.0])
+    F_ck = oc["preload"] + M_out * 1000 / (roll.ADAPT["n"] * roll.ADAPT["pcd"] / 2 / 2)
+    s_ck = F_ck / (math.pi / 4 * (ck["sleeve"][0] ** 2 - ck["sleeve"][1] ** 2))
+    sl_ok = s_rs <= SLEEVE_STOCK["rear"]["Rp"] and s_ck <= ck["Rp"]
     rows.append(dict(item="M1 rear mount: 8 × M4 into the 3.5 mm housing threads",
                      before="8 × M4 × 18 + washer + picked shim through 13.9 mm of PETG at 0.5 kN (4 µm of bolt stretch; friction 38 N·m at × 0.75 creep)",
                      after=(f"metal clamp: {rs['size']} through a {rs['plate_t']:.0f} mm 7075 rear plate and Ø{rs['sleeve_od']:.0f}/{rs['sleeve_id']} steel sleeves onto the "
                             f"motor at {rs['preload'] / 1e3:.1f} kN → {F_life / 1e3:.2f} kN after embedding (no print in the stack); friction {T_fr:.0f} N·m = "
                             f"{T_fr / limit:.2f}× the drive limit; engagement {L_eng:.1f} ± {worst:.2f} (never bottoms in 3.5)"),
-                     ok=T_fr >= 1.5 * limit and strip_r >= 1.5 * F_bolt and L_eng + worst < rs["tap"] and L_eng - worst >= 2.5, margin=T_fr / limit,
+                     ok=T_fr >= 1.5 * limit and strip_r >= 1.5 * F_bolt and L_eng + worst < rs["tap"] and L_eng - worst >= 2.5 and sl_ok, margin=T_fr / limit,
                      basis=(f"stack per screw: bolt {c_b * 1e6:.0f} + sleeve {c_s * 1e6:.0f} + plate {c_pl * 1e6:.0f} µm/kN, 5 metal interfaces × "
                             f"{CREEP['embed_metal'] * 1000:.0f} µm embedding (VDI 2230, ESTIMATE) → {100 * F_life / rs['preload']:.0f} % left, no creep term (the printed floor + cup "
                             f"ring are sandwiched between the plate and the motor face, sleeves {rs['sleeve_fit']:+.2f} mm vs the print: located, not clamped). Friction μ "
@@ -643,7 +670,10 @@ def roll_rows(loads=None):
                             f"plate ± {rs['plate_tol']}, sleeve ± {rs['sleeve_tol']}): {L_eng - worst:.2f}–{L_eng + worst:.2f} in {rs['tap']} mm, so no shim picking; strip at the "
                             f"shortest ({L_eng - worst - 0.35:.2f} mm effective) {strip_r / 1e3:.1f} kN vs the worst bolt {F_bolt / 1e3:.2f} kN ({strip_r / F_bolt:.1f}×; motor "
                             f"bearing {R2_max:.0f} N × {1000 * (x2 - x_face):.0f} mm → {M_face:.0f} N·m on the bolt circle, under the {M_open:.0f} N·m that opens it, load factor {phi_l:.2f}). Stall reaction through the sleeves "
-                            f"into the print: {sl_bear:.1f} MPa bearing (Ø{rs['sleeve_od']:.0f} × {rs['grip'] - rs['plate_t']:.0f} mm, 8 sleeves)")))
+                            f"into the print: {sl_bear:.1f} MPa bearing (Ø{rs['sleeve_od']:.0f} × {rs['grip'] - rs['plate_t']:.0f} mm, 8 sleeves). Sleeve yield (D26 stock tube): "
+                            f"rear {SLEEVE_STOCK['rear']['stock']} {s_rs:.0f} MPa at the worst bolt vs {SLEEVE_STOCK['rear']['Rp']:.0f} ({SLEEVE_STOCK['rear']['Rp'] / s_rs:.2f}×); "
+                            f"clevis M5 {ck['stock']} {s_ck:.0f} MPa at {oc['preload'] / 1e3:.1f} kN + the {M_out:.0f} N·m worst output moment on PCD {roll.ADAPT['pcd']:.0f} "
+                            f"vs {ck['Rp']:.0f} ({ck['Rp'] / s_ck:.2f}×)")))
     # (c) the two-bearing roll support: 61806 (W1) + the motor's output bearing (W2)
     B = roll.ROLL_SUPPORT
     F_mis = (B["e_worst"] * B["k_r"][1], B["e_rss"] * B["k_r"][0])
@@ -723,7 +753,7 @@ def report(loads=None):
          __doc__.split("\n\n", 1)[1].strip(), "", "## Hardware", "",
          f"- **Pitch hub ↔ pitch tube** (rnd/parts/shoulder.py HUB_TIE): {h['n']} × M{h['d']:.0f} class {h['grade']} studs (DIN 976-1, cut to {shoulder.hub_tie_length():.1f} mm) "
          f"on r {h['r']} at {h['ang0']:.0f}° + k·90°, Loctite 270 into the {h['crank_mat']} balancer crank (tapped through {h['crank_t']:.0f} mm, stud end flush with its inboard face), "
-         f"each in two steel crush sleeves Ø{h['sleeve'][0]} / Ø{h['sleeve'][1]} (turned 42CrMo4+QT; one through the tube wall r {h['tube_r_in']:.0f}–20, one through "
+         f"each in two steel crush sleeves Ø{SLEEVE_STOCK['pitch']['sleeve'][0]} / Ø{SLEEVE_STOCK['pitch']['sleeve'][1]} ({SLEEVE_STOCK['pitch']['mat']}; one through the tube wall r {h['tube_r_in']:.0f}–20, one through "
          f"the hub, butting at the hub ↔ tube face, each {h['squeeze']} mm shorter than its print), M4 nuts (ISO 4032 class 8, Loctite 243) on a 6061 clamp ring "
          f"r {h['ring'][0]:.0f}–{h['ring'][1]:.0f} × {h['ring'][2]:.0f} in a {h['recess']:.1f} mm recess of the detach face; {h['preload'] / 1e3:.1f} kN each (≈ 1.3 N·m, ESTIMATE). "
          "Assembly: tube into the inner wall → crank + studs from the inboard side → tube sleeves over the studs → belt → outer wall → hub over the double-D, hub sleeves → ring, nuts.",
@@ -733,8 +763,10 @@ def report(loads=None):
          f"r {y['ring'][0]}–{y['ring'][1]} × {y['ring'][2]:.0f} in a Ø{2 * y['cb_r']:.0f} × {y['cb_depth']:.1f} counterbore (heads {y['top_gap']} mm under the top), through Ø{y['hole']} holes in the "
          f"wall into M3 threads tapped at the hex corners (r {y['r']:.0f}) of the flange's spigot + plate ({lv['engaged']:.1f} mm engaged, Loctite 243); {y['preload'] / 1e3:.1f} kN each "
          "(≈ 0.5 N·m). Tightened from above on the bench, before the yaw block goes onto the roll output.",
-         "- Crush sleeves: turned 42CrMo4+QT (R_p0.2 ≥ 750 MPa) Ø7 / Ø4.3 (pitch, 8 pcs: 4 × the tube length, 4 × the hub) and Ø4.6 / Ø3.2 "
-         "(yaw, 6 pcs), ends faced square, length = the measured print − 0.05 (ESTIMATE $3 each; E235 tube would yield at the bump and stall rows). The review's DIN 6796 disc springs (McMaster-Carr \"DIN 6796 lock "
+         "- Crush sleeves (D26 cost-down: stock tube where its guaranteed yield clears the sleeve stress, cut and faced square by the builder in a "
+         "drilled guide block to the measured print − 0.05 ± 0.02, checked with a micrometer): "
+         + "; ".join(f"{k} Ø{v['sleeve'][0]} / Ø{v['sleeve'][1]} {v['mat']} (R_p ≥ {v['Rp']:.0f} MPa): {v['stock']}" for k, v in SLEEVE_STOCK.items())
+         + ". Was turned 42CrMo4+QT on all four sets ($7 each, 56 per robot); an E235 tube would yield at the pitch / yaw bump and stall rows. The review's DIN 6796 disc springs (McMaster-Carr \"DIN 6796 lock "
          "washers\", norelem 07000, Bossard BN 794; load to flat M3 1.32 / M4 3.77 kN) were evaluated and not used: see the preload rows.",
          "- Not drawn (rnd/parts/arm.py, arm track): the upper bone ↔ yaw flange screws. With the flange in aluminium they should be M4 into tapped holes in the flange, "
          "heads on washers on the bone flange, not inserts.", "",
