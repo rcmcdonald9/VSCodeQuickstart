@@ -61,12 +61,13 @@ def main():
          f"{th.get('task_max_c', nan):.0f} °C (old open + 10 K model {th.get('task_max_c_open_model', nan):.0f} °C); with a finned aluminium cap "
          f"{th.get('task_max_c_al_cap', nan):.0f} °C (thermal.md)", E, "low (45 %)",
          "Step 1 logs the motor case on the lever with thermistors; the aluminium cap is a Step-2 line after seller question 6 (which face carries the housing holes)."),
-        ("1", "Step-1 rig: a 6061 lever bolted straight to the GIM output + one keyed D50 Oldham for the tongue coupon",
+        ("1", "Step-1 rig: a 6061 lever bolted straight to the GIM output + the joint's keyed D50 Oldham with its 6061 motor-side hub (the Oldham coupon)",
          "no belt stage in Step 1 (Neon #2 F15): the D40 disc (0.86×) and the plain Ø12 clamp hub (0.65×) fail at the 11 N·m peak (belts.md); the keyed D50 "
          "stage (1.35× / 1.63×) and the 315 belt at the 80.93 mm centre are Step-2 lines", C + "; bought-part dimensions " + E, "high (80 %)",
-         "Drill the lever to the measured output pattern; measure the D50 disc before printing the tongue adapter."),
-        ("2", "Arm structure (C1 / C3 / M5 CAD fixes)", "C1 tie-rods at the pitch hub and yaw flange + steel roll stops are on the C1/M1 track "
-         "(rnd/joints.py); C3 rear cap / flange-screw access and M5 belt centres are open", U, "medium (55 %)",
+         "Drill the lever to the measured output pattern; measure the D50 disc and the GIM output PCD before ordering the 6061 motor hubs "
+         "(W8b: the printed ASA tongue was rejected, 0.74× friction at the peak)."),
+        ("2", "Arm structure (C1 / C3 / M5 CAD fixes)", "C1 tie-rods with steel crush sleeves at the pitch hub and yaw flange (W8c: life preload 88 / 87 %), "
+         "4-ear cartridge flanges (W8b: tipping ≥ 10× at 30 % preload), yaw centre 80.93 mm for a stock 315-5M (rnd/joints.py, belts.md)", C + "; creep data " + E, "medium (60 %)",
          "**Do not print the pitch / yaw shafts or the cartridges as drawn** until those land; the Step-2 hardware lines follow them."),
         ("2", "Hold B: inline GIM8108-36 roll (the plan)", f"dome {ri.get('inline', {}).get('dome', {}).get('width_x', '?')} × "
          f"{ri.get('inline', {}).get('dome', {}).get('height_z', '?')} mm on the seller drawing (Ø96 × 57); boss dowels 1.6× stall; steel stops",
@@ -74,8 +75,9 @@ def main():
          "Seller questions 3–5. A different driver from Step 1's: protocol discovery again on arrival. Backlash 15 arcmin (ESTIMATE) → "
          f"hand {acc_raw:.1f} mm without joint encoders."),
         ("2", "Hold A: GIM8108-8 at pitch + elbow (D20)", (f"20 lb hug {hug:.2f}× rated (slim_study V1); " if hug else "") +
-         "needs a Ø15 keyed stage, Ø50 Oldhams, 25 mm belts and 61902s for 22 N·m (Fable M6; kit lines ESTIMATE)", V + " / motor data " + E, "low (45 %)",
-         "No datasheet; listings are 48 V nominal; the D20 drive is a redesign. **Do not buy until the 24 V answer and the D20 parts list.**"),
+         "cartridge_m.parts_list(MOTOR_8108): D63 Oldhams (≥ 25 N·m, M5 clamp, doweled 6061 hubs), the shared Ø12 keyed stage with a steel 20T, PU steel-cord "
+         "15 mm belts, an 18 N·m flash limit (W8b; kit lines ESTIMATE)", V + " / motor data " + E, "low (45 %)",
+         "No datasheet; listings are 48 V nominal; the D20 drive is a redesign. **Do not buy until the 24 V answer.**"),
         ("2", "Hand accuracy and encoders (M3)", f"{acc_enc:.1f} mm with joint encoders, {acc_raw:.1f} mm without (accuracy.md, inline backlash in)",
          E, "low (40 %)", "The AS5048A mounts and the RP2040 node firmware do not exist yet: build them first, or drop the ≤ 1 mm claim for M1."),
         ("2", "Printed structure (hand sag, R2b)", f"{st.get('total_mm', nan):.1f} mm raw, {st.get('after_mm', nan):.1f} mm after a gravity model "
@@ -109,7 +111,8 @@ def main():
          "(a UVC camera streaming + `stress-ng` at ≈ 75 % CPU; Neon #2 assumption 5). If it is not: run the loop SCHED_FIFO on an isolated core, or move the "
          f"heartbeat + supervisor out of Python (sw track); raising `watchdog_s` is allowed only up to {el_tmax:.0f} ms (the SW2 budget, electrical.md).",
          "5. Torque constant and friction measured on the lever; the motor case temperature logged for 30 min at rated torque.",
-         "6. Coupons: insert pull-out (C1), the bolted flange, and the printed ASA Oldham tongue against the D50 disc to 1.5 × the 11 N·m peak.",
+         "6. Coupons: insert pull-out (C1), the bolted 4-ear flange, and the Oldham coupon: the 6061 motor hub on the GIM output against the D50 disc to 1.5 × the 11 N·m peak "
+         "(the printed ASA tongue was rejected in W8b).",
          "7. **Soak test** (determinism; Asimov sim2real lesson 1, hour 20 = hour 1): `python -m sw.soak --joints yaw,wpitch --hours 2` passes. That is a sysid fit (friction, torque constant, backlash, latency) before and after 2 h of cyclic motion at ≈ 50 % rated, with drift ≤ 20 % Coulomb, ≤ 25 % viscous, ≤ 5 % torque constant, ≤ +0.1° backlash, ≤ +0.5 ms mean / +2 ms p95 latency; no supervisor stop, no bus-off, no new throttle flag, zero corrupted CAN frames, loop jitter p99 < 1 ms on the Pi (PREEMPT_RT reported). The bring-up report's determinism section is clean (docs/sw/sim2real_bench.md).", "",
          "### Step 2: the rest of the arm — **NO-GO today**; GO when",
          "- Step 1's exit criteria are met (if the SDC104 has no impedance mode: stop and redesign the GIM joints' safety argument first);",
@@ -117,7 +120,7 @@ def main():
          "for hold A, the GIM8108-8's 24 V figures;",
          "- the CAD fixes have landed: C1 (tie-rods, on the C1/M1 track), C3 (rear cap that can react torque, reachable flange screws), M1 "
          "(inline boss and steel stops, on the C1/M1 track), M5 (belt centres 80.9 / 70.7);",
-         "- for hold A: the D20 drive redesign's parts list (Ø15 keyed stage, Ø50 Oldham, 25 mm belt);",
+         "- for hold A: the seller's 24 V answer (the D20 parts list landed in W8b: D63 Oldhams, steel 20T, PU steel-cord belts);",
          "- for the ≤ 1 mm accuracy claim: encoder mounts + node firmware (M3), else M1 proves everything but accuracy.", "",
          "## What is verified, measured, or still an ESTIMATE", "",
          "| Step | What you're buying / relying on | Evidence (checks in this repo) | Status | Confidence | Note |", "|---|---|---|---|---|---|"]
