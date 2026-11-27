@@ -27,14 +27,14 @@ bracket and the elbow housing keep their strength cases ÷ 1.5 (belt peak, a 3 k
 The total is the static error a calibrated gravity model can largely remove (it is repeatable); the wrist camera closes
 the loop for grasping in any case. Target R2b: uncompensated ≤ 6 mm, after the gravity model (assumed to remove 80 %) ≤ 2 mm.
 
-**Static hand deflection, 1 kg straight out: 6.2 mm uncompensated (target ≤ 6), 1.2 mm after a gravity model (target ≤ 2).** ❌
+**Static hand deflection, 1 kg straight out: 5.4 mm uncompensated (target ≤ 6), 1.1 mm after a gravity model (target ≤ 2).** ✅
 
 ## 1. Printed parts (P2 vs P1 on the same mesh)
 
 | Part | Elements | Seat rotation P1 → P2 (mrad, static) | P2/P1 | Seat translation (mm) | Lever to hand (mm) | Hand (mm) | Von Mises P2 max / 99.5 % (P1 99.5 %) |
 |---|---|---|---|---|---|---|---|
 | Upper bone / elbow housing | 34,645 | 0.83 → 3.38 | 4.08 | 0.12 | 436 | 1.59 | 2.4 / 1.1 (0.4) MPa |
-| Shoulder pitch bracket | 31,869 | 2.14 → 2.85 | 1.33 | 0.22 | 736 | 2.32 | 7.8 / 3.9 (2.9) MPa |
+| Shoulder pitch bracket | 33,938 | 0.88 → 1.87 | 2.12 | 0.14 | 736 | 1.52 | 35.6 / 3.3 (1.8) MPa |
 | Roll link | 19,388 | 0.50 → 0.77 | 1.52 | 0.03 | 736 | 0.59 | 6.1 / 1.0 (0.6) MPa |
 | Clevis + yaw block | 36,740 | 0.30 → 0.47 | 1.59 | 0.03 | 736 | 0.38 | 2.9 / 0.9 (0.5) MPa |
 
