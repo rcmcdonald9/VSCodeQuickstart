@@ -16,7 +16,8 @@
 - Outboard end of the shaft (the bolted pitch hub): the **KX-V ferrule** (3" sanitary profile, 3 dowels): the arm clamps on here with a V-band.
 - **C1 (Fable review 2026-11-27): the arm no longer hangs from heat-set inserts.** Four M4 10.9 studs (HUB_TIE) run the
   whole stack, from the aluminium crank (tapped through, the "nut") through the pitch tube's wall and the pitch hub to
-  nuts on an aluminium clamp ring recessed in the detach face. Hub and tube are printed parts in compression only; the hub's
+  nuts on DIN 6796 spring-washer stacks on an aluminium clamp ring recessed in the detach face (Neon review: the printed
+  stack creeps, so the springs keep the preload). Hub and tube are printed parts in compression only; the hub's
   double-D still carries the pitch torque. Capacity vs the basket, hug, 140 N bump and stall wrenches: rnd/joints.py.
 """
 from __future__ import annotations
@@ -52,7 +53,7 @@ FERRULE = dict(od=91.0, t=8.0, taper_deg=20.0, dowel_r=30.0)
 # 61808 → belt → outer wall over bearing B → pitch hub on the double-D.
 Y_TUBE_END = Y_DISC - 2.5  # tube end face (−5.5)
 # Balancer (2026-11-27): the cable plane sits inboard of the tube's inboard end (y −55.3), past an aluminium crank disc
-# (Ø44 × 4, 7075-T6, tapped for the HUB_TIE studs since C1) that carries a Ø6 steel pin B. The cage axis is in the
+# (Ø44 × 4, Ti-6Al-4V since the Neon review, tapped for the HUB_TIE studs since C1) that carries a Ø6 steel pin B. The cage axis is in the
 # cable plane, its tube trimmed to y −75.4 … −48.3 so it stays 3 mm off the belt and ≥ 1 mm off the can sleeve (both motors).
 Y_TUBE_IN = W_IN - 4.0     # tube inboard end face (−55.3)
 CRANK_T = 4.0
@@ -81,9 +82,26 @@ HUB_Y0 = W_OUT + WALL_T / 2 + 0.5   # pitch hub sleeve starts 0.5 mm outboard of
 # inboard face, 2.2 mm off the cable plane) through Ø4.5 holes in the tube wall (r 11–20 over the whole tube) and the hub
 # to M4 nuts on a 6061 clamp ring (r 11–21 × 2) recessed in the detach face. Preload 1.5 kN each (≈ 1.3 N·m, Loctite
 # 243, ESTIMATE). Capacity vs basket / hug / 140 N bump / stall: rnd/joints.py.
-HUB_TIE = dict(n=4, r=15.5, ang0=45.0, d=4.0, pitch=0.7, As=8.78, hole=4.5, grade="10.9", proof=830.0, preload=1500.0, creep=0.75,
-               ring=(11.0, 21.0, 2.0), nut_h=3.2, face_gap=0.5, tube_r_in=11.0, crank_t=4.0, tau_crank=331.0)   # crank 7075-T6 (τ_u 331 MPa, ASM): its 4 mm of thread is the weak link at the roll stall
-HUB_TIE["recess"] = HUB_TIE["ring"][2] + HUB_TIE["nut_h"] + HUB_TIE["face_gap"]        # 5.7 mm below the detach face
+# Neon review 2026-11-27 (finding 3): (1) the printed stack (tube 49.8 + hub) creeps under the 8.8 MPa clamp; with the
+# stud stretch (≈ 64 µm) and the print's own elastic squeeze (≈ 0.25 mm) as the only springs, a creep coefficient of 2
+# leaves ≈ 30 % of the preload. Now each nut sits on 5 × DIN 6796-M4 conical spring washers in series (≈ 0.47 mm of
+# travel at 1.5 kN, flat at 3.77 kN), so the life preload stays ≈ 60 % (rnd/joints.py life_preload); the recess is
+# deeper by the stack. (2) The crank's 4 mm thread, with its two chamfers and the flush stud end (≈ 2.95 mm effective),
+# strips at ≈ 7.6 kN in 7075-T6 (1.24× the 6.1 kN stall bolt force, not 1.9×): the crank is now Ti-6Al-4V (τ_u 550 MPa,
+# non-magnetic for the AS5048A magnet in its centre; ESTIMATE $45 machined), and the 10.9 stud's own thread governs.
+HUB_TIE = dict(n=4, r=15.5, ang0=45.0, d=4.0, pitch=0.7, As=8.78, hole=4.5, grade="10.9", proof=830.0, preload=1500.0,
+               ring=(11.0, 21.0, 2.0), nut_h=3.2, face_gap=0.5, tube_r_in=11.0, crank_t=4.0, crank_mat="Ti-6Al-4V", crank_density=4.43e-3,
+               bell="M4", n_bell=5)
+
+
+def _stack_h(size, n, F):
+    """Loaded height (mm) of n DIN 6796 discs in series at F (h max − deflection; rnd/joints.py Disc)."""
+    from ..joints import DIN6796, Disc
+    return round(n * (DIN6796[size]["h"] - Disc(size).s(F)), 2)
+
+
+HUB_TIE["stack_h"] = _stack_h(HUB_TIE["bell"], HUB_TIE["n_bell"], HUB_TIE["preload"])
+HUB_TIE["recess"] = HUB_TIE["ring"][2] + HUB_TIE["stack_h"] + HUB_TIE["nut_h"] + HUB_TIE["face_gap"]        # 11.7 mm below the detach face (was 5.7)
 HUB_SCREW_R = HUB_TIE["r"]
 WEB_X = -BELT_C / 2 - 10 - 190.0 / 2 + 4                           # back-web centre (x)
 
@@ -138,7 +156,7 @@ def pitch_shaft() -> Part:
 
 def pitch_hub() -> Part:
     """D19: clock-spring hub sleeve + female KX-V ferrule in one print, on the tube's double-D (torque). C1 (2026-11-27):
-    clamped onto the tube end by the 4 HUB_TIE studs, their nuts on a steel ring in a 5.7 mm recess (r 11–21) in the
+    clamped onto the tube end by the 4 HUB_TIE studs, their nuts on DIN 6796 stacks on a ring in a HUB_TIE["recess"] recess (r 11–21) in the
     detach face, so the hub is in compression between the ring and the tube end; no heat-set inserts. The sleeve's
     inboard end holds bearing B's inner race. Double-D bearing stress ≈ 8 MPa at the 21 N·m basket hold, ≈ 26 MPa at a 66 N·m fault
     peak (hand calc, ESTIMATE; coupon with the C-series)."""
@@ -170,6 +188,11 @@ def hub_clamp_ring() -> Part:
     for a in _tie_angles():
         p -= Pos(HUB_TIE["r"] * math.cos(a), y, HUB_TIE["r"] * math.sin(a)) * _rot_y(Cylinder(HUB_TIE["hole"] / 2, t, align=MIN))
     return p
+
+
+def hub_print_under_ring() -> float:
+    """Printed length (mm) of the pitch hub between the tube end and the clamp ring's seat (part of the clamped stack)."""
+    return round(Y_FER + 18 - HUB_TIE["recess"] - Y_TUBE_END, 2)
 
 
 def hub_tie_length() -> float:
@@ -248,7 +271,7 @@ def balancer_mount() -> Part:
 
 
 def crank() -> Part:
-    """Balancer crank (7075-T6, ESTIMATE): Ø44 × 4 disc on the tube's inboard end face, tapped M4 through for the 4
+    """Balancer crank (Ti-6Al-4V since the Neon review: the C1 stud threads; was 7075-T6, ESTIMATE): Ø44 × 4 disc on the tube's inboard end face, tapped M4 through for the 4
     HUB_TIE studs (C1: it is the "nut" of the pitch-hub clamp; the studs end flush with its inboard face), Ø6 steel pin B
     pressed in at b = 20 mm along the hanging arm, standing 5.2 mm into the cable plane. It also holds bearing A's inner
     race. Pin moment ≈ 374 N × 4.2 mm ≈ 1.6 N·m (hand calc, M3 cable plane); the AS5048A magnet sits flush in a Ø6.1 × 2.5
@@ -310,8 +333,9 @@ def masses(density=1.27):
     can_extra = (cm.can_bolted(MOT, EAR_SITE).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-3
     m = {"bracket body + bolted outer wall (walls, web, cage)": bracket().volume / 1e6 * density * 0.6,
          "pitch shaft + integral 60T + pitch hub (ferrule) + clock-spring ring": (pitch_shaft().volume + pitch_hub().volume + spring_ring().volume) / 1e6 * density * 0.7,
-         "balancer crank (aluminium) + Ø6 pin B": crank().volume * 2.7e-6,
-         "C1 hub tie: 4 × M4 10.9 studs + nuts (steel) + 6061 clamp ring": (4 * 8.78 * hub_tie_length() + 4 * 100.0) * 7.85e-6 + hub_clamp_ring().volume * 2.7e-6,
+         "balancer crank (Ti-6Al-4V) + Ø6 pin B": crank().volume * HUB_TIE["crank_density"],
+         "C1 hub tie: 4 × M4 10.9 studs + nuts (steel) + 6061 clamp ring + 20 × DIN 6796-M4": (4 * 8.78 * hub_tie_length() + 4 * 100.0) * 7.85e-6
+         + hub_clamp_ring().volume * 2.7e-6 + HUB_TIE["n"] * HUB_TIE["n_bell"] * 0.35e-3,
          "D24 Oldham drive (alu hub, acetal disc, ASA adapter) + can nose/flange/cap": (oldham + can_extra) / 1e3,
          "bearings 2×61808 + 2×61804 (ESTIMATE)": 0.056,
          "spring + cable + 2 × (608-2Z + POM tyre) + Ø8 axles (ESTIMATE; M8: was U604, 0.09)": 0.11,

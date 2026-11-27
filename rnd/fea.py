@@ -211,7 +211,7 @@ def _half_annulus_centroid(r0, r1):
 
 def c1_tie_cases():
     """C1 (Fable review 2026-11-27): the printed parts of the two tie-rod joints (rnd/joints.py), held at their bearing seats.
-    The tie preload (× 0.75 creep) is a pair of opposite face loads (ring seat ↔ crank / flange face); the joint wrench is
+    The tie preload (fresh, the most compressive) is a pair of opposite face loads (ring seat ↔ crank / flange face); the joint wrench is
     a couple on the two halves of the loaded face + the pull-off. Service = the worst basket/hug × 1.5 (no gap, so the
     clamped interface is taken as bonded). Fault = the worst 140 N bump / stall, applied × 0.5 together with the preload:
     linear, so its margin vs 12 MPa equals the full fault vs 24 MPa (≈ the across-layer ultimate, ESTIMATE); the joint
@@ -230,7 +230,7 @@ def c1_tie_cases():
     # pitch tube + hub (module frame, axis Y): ring seat in the hub's detach-face recess, crank on the tube's inboard end,
     # moment on the ferrule face (r 21–45.5 at y = 20), bearings A and B on the tube (r 20)
     h = sh.HUB_TIE
-    Fp = h["n"] * h["preload"] * h["creep"]
+    Fp = h["n"] * h["preload"]                     # fresh preload: the highest compression in the print (Neon review: no × 0.75 creep credit)
     y_face, y_seat, y_in = sh.Y_FER + 18, sh.Y_FER + 18 - h["recess"], sh.Y_TUBE_IN
     zc = _half_annulus_centroid(21.2, 45.5)
     rho = lambda x: np.hypot(x[0], x[2])
@@ -247,7 +247,7 @@ def c1_tie_cases():
     # yaw tube (roll frame, axis Z at y = ROLL_Y): ring seat in the top counterbore, the 6061 flange on the end face,
     # bearings A (top plate) and B (bottom plate)
     y = rl.YAW_TIE
-    Fp = y["n"] * y["preload"] * y["creep"]
+    Fp = y["n"] * y["preload"]
     z_seat, z_end = rl.yaw_tie_levels()["seat"], rl.FL_TOP - rl.FL_REC
     zc = _half_annulus_centroid(14.1, 20.0)
     rh = lambda x: np.hypot(x[0], x[1] - rl.ROLL_Y)

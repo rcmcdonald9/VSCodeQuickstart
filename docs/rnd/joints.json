@@ -1,11 +1,17 @@
 {
- "ok": true,
+ "ok": false,
  "joints": [
   {
    "joint": "pitch hub \u2194 tube",
-   "case": "preload (assembly)",
-   "verdict": true,
-   "text": "4 \u00d7 M4 10.9 at 1.5 kN = 6.0 kN \u2192 8.8 MPa on the printed contact annulus r 12.0\u201319.0 (\u00d7 0.75 after creep); M_gap at N = 0: 84 N\u00b7m"
+   "case": "preload (assembly \u2192 life)",
+   "verdict": false,
+   "margin": 0.91,
+   "F0": 1500.0,
+   "F_life": 837,
+   "F_nom": 1041,
+   "F_bare": 458,
+   "F_req": 922,
+   "text": "4 \u00d7 M4 10.9 at 1.5 kN = 6.0 kN \u2192 8.8 MPa on the printed contact annulus r 12.0\u201319.0; 5 \u00d7 DIN 6796-M4 in series under each nut (0.46 mm of spring travel at the preload, flat at 3.77 kN). Per bolt: bolt 43, print 169 \u00b5m/kN (63.6 mm of PETG: 253 \u00b5m elastic, 506 \u00b5m of creep at \u03c6 2). Life preload (\u03c6 2, embedding, 10 \u00b0C day) **0.84 kN (56 %)**; \u03c6 1: 1.04 kN; without the disc springs 0.46 kN (31 %). No gap under the worst service wrench (30.0 N\u00b7m, 0 N) needs \u2265 0.92 kN \u2192 0.91\u00d7; bare 0.50\u00d7 (gaps)"
   },
   {
    "joint": "pitch hub \u2194 tube",
@@ -14,9 +20,9 @@
    "M": 16.89,
    "T": 39.42,
    "pose": "floor pick, x 0.50",
-   "margin": 1.51,
+   "margin": 1.01,
    "verdict": true,
-   "text": "no gap up to 84 N\u00b7m; bolt 1.58 kN; contact 7.9 MPa (\u2264 12)",
+   "text": "no gap up to 27 N\u00b7m at the life preload; bolt 1.71 kN; contact 11.8 MPa fresh (\u2264 12)",
    "before": 2.75
   },
   {
@@ -26,9 +32,9 @@
    "M": 29.96,
    "T": 24.05,
    "pose": "yaw -45\u00b0, elbow -90\u00b0",
-   "margin": 1.34,
-   "verdict": true,
-   "text": "no gap up to 84 N\u00b7m; bolt 1.93 kN; contact 9.0 MPa (\u2264 12)",
+   "margin": 0.84,
+   "verdict": false,
+   "text": "no gap up to 27 N\u00b7m at the life preload; bolt 1.86 kN; contact 14.2 MPa fresh (\u2264 12)",
    "before": 1.55
   },
   {
@@ -38,9 +44,9 @@
    "M": 130.45,
    "T": 112.79,
    "pose": "abducted 90\u00b0, -Z",
-   "margin": 1.56,
-   "verdict": true,
-   "text": "gaps; bolt 4.66 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (2.5\u00d7 the bolt, need 1.5\u00d7); contact 17.0 MPa (\u2264 40)",
+   "margin": 0.99,
+   "verdict": false,
+   "text": "gaps; bolt 5.03 kN vs proof 7.29 kN; thread strip (the weaker of the Ti-6Al-4V crank (4 mm tapped through, 2.95 effective) and the 10.9 stud) 10.2 kN (2.02\u00d7 the bolt, need 1.5\u00d7); contact 40.3 MPa (\u2264 40)",
    "before": 0.35
   },
   {
@@ -50,16 +56,22 @@
    "M": 184.08,
    "T": 115.6,
    "pose": "roll stall, elbow 90\u00b0",
-   "margin": 1.19,
-   "verdict": true,
-   "text": "gaps; bolt 6.14 kN vs proof 7.29 kN; thread strip in the 7075-T6 crank (4 mm tapped) 11.6 kN (1.9\u00d7 the bolt, need 1.5\u00d7); contact 21.6 MPa (\u2264 40)",
+   "margin": 0.7,
+   "verdict": false,
+   "text": "gaps; bolt 6.52 kN vs proof 7.29 kN; thread strip (the weaker of the Ti-6Al-4V crank (4 mm tapped through, 2.95 effective) and the 10.9 stud) 10.2 kN (1.56\u00d7 the bolt, need 1.5\u00d7); contact 56.9 MPa (\u2264 40)",
    "before": 0.25
   },
   {
    "joint": "yaw flange \u2194 tube",
-   "case": "preload (assembly)",
-   "verdict": true,
-   "text": "6 \u00d7 M3 12.9 at 1.0 kN = 6.0 kN \u2192 9.5 MPa on the printed contact annulus r 14.1\u201320.0 (\u00d7 0.75 after creep); M_gap at N = 0: 72 N\u00b7m"
+   "case": "preload (assembly \u2192 life)",
+   "verdict": false,
+   "margin": 0.99,
+   "F0": 1000.0,
+   "F_life": 690,
+   "F_nom": 799,
+   "F_bare": 297,
+   "F_req": 694,
+   "text": "6 \u00d7 M3 12.9 at 1.0 kN = 6.0 kN \u2192 9.5 MPa on the printed contact annulus r 14.1\u201320.0; 3 \u00d7 DIN 6796-M3 in series under each head (0.53 mm of spring travel at the preload, flat at 1.32 kN). Per bolt: bolt 36, print 138 \u00b5m/kN (35.7 mm of PETG: 138 \u00b5m elastic, 277 \u00b5m of creep at \u03c6 2). Life preload (\u03c6 2, embedding, 10 \u00b0C day) **0.69 kN (69 %)**; \u03c6 1: 0.80 kN; without the disc springs 0.30 kN (30 %). No gap under the worst service wrench (32.6 N\u00b7m, 101 N) needs \u2265 0.69 kN \u2192 0.99\u00d7; bare 0.43\u00d7 (gaps)"
   },
   {
    "joint": "yaw flange \u2194 tube",
@@ -68,9 +80,9 @@
    "M": 32.59,
    "T": 2.1,
    "pose": "floor pick, x 0.50",
-   "margin": 1.16,
-   "verdict": true,
-   "text": "no gap up to 71 N\u00b7m; bolt 1.45 kN; contact 10.3 MPa (\u2264 12)",
+   "margin": 0.76,
+   "verdict": false,
+   "text": "no gap up to 32 N\u00b7m at the life preload; bolt 1.12 kN; contact 15.8 MPa fresh (\u2264 12)",
    "before": 1.48
   },
   {
@@ -80,9 +92,9 @@
    "M": 24.05,
    "T": 0.0,
    "pose": "yaw -45\u00b0, elbow -90\u00b0",
-   "margin": 1.27,
-   "verdict": true,
-   "text": "no gap up to 71 N\u00b7m; bolt 1.27 kN; contact 9.5 MPa (\u2264 12)",
+   "margin": 0.85,
+   "verdict": false,
+   "text": "no gap up to 32 N\u00b7m at the life preload; bolt 1.09 kN; contact 14.1 MPa fresh (\u2264 12)",
    "before": 1.99
   },
   {
@@ -92,9 +104,9 @@
    "M": 96.14,
    "T": 61.04,
    "pose": "abducted 90\u00b0, -Z",
-   "margin": 1.75,
+   "margin": 1.05,
    "verdict": true,
-   "text": "gaps; bolt 2.79 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (8.3 mm tapped) 11.3 kN (4.1\u00d7 the bolt, need 1.5\u00d7); contact 16.7 MPa (\u2264 40)",
+   "text": "gaps; bolt 3.01 kN vs proof 4.88 kN; thread strip (the weaker of the 6061-T6 flange (8.3 mm tapped, 7.8 effective) and the 12.9 screw) 9.0 kN (2.98\u00d7 the bolt, need 1.5\u00d7); contact 38.2 MPa (\u2264 40)",
    "before": 0.51
   },
   {
@@ -104,36 +116,78 @@
    "M": 98.58,
    "T": 149.55,
    "pose": "elbow stall, forward",
-   "margin": 1.72,
+   "margin": 1.03,
    "verdict": true,
-   "text": "gaps; bolt 2.84 kN vs proof 4.88 kN; thread strip in the 6061-T6 flange (8.3 mm tapped) 11.3 kN (4.0\u00d7 the bolt, need 1.5\u00d7); contact 17.0 MPa (\u2264 40)",
+   "text": "gaps; bolt 3.06 kN vs proof 4.88 kN; thread strip (the weaker of the 6061-T6 flange (8.3 mm tapped, 7.8 effective) and the 12.9 screw) 9.0 kN (2.93\u00d7 the bolt, need 1.5\u00d7); contact 38.7 MPa (\u2264 40)",
    "before": 0.5
   }
  ],
  "roll": [
   {
    "item": "M1 output boss \u2194 7075 adapter (torque path)",
-   "before": "128 N\u00b7m with 26 N\u00b7m of friction on a 4 kN preload: 1.25\u00d7 stall (review: \u2248 1.07\u00d7 with \u2264 1 kN)",
-   "after": "dowels alone 164 N\u00b7m = 1.60\u00d7 the 102.9 N\u00b7m stall (+ 10 N\u00b7m friction not counted)",
-   "ok": true,
-   "margin": 1.5953352769679299,
-   "basis": "3 \u00d7 \u00d84 m6 hardened dowels on r 14.25: single shear 5.65 kN each (ISO 8734 min double shear 11.3 kN) \u2192 242 N\u00b7m; bearing in the motor's output, 4 mm deep at 240 MPa (ESTIMATE: cast A380 \u03c3_y 160 MPa \u00d7 1.5; 6061-T6 F_bry 345 MPa, MMPDS, e/D 1.5; output material and dowel-hole depth to confirm with the seller) \u2192 164 N\u00b7m (governs); the 7075 adapter side is 7 mm deep. Friction (bonus): 3 \u00d7 M4 \u00d7 10 csk at an honest 1.5 kN (3.0 mm of M4 in Al strips at \u2248 5.5 kN, \u03c4 207 MPa; \u2248 1.2 N\u00b7m), \u03bc 0.15 \u2192 10 N\u00b7m"
+   "before": "dowels alone 164 N\u00b7m = 1.60\u00d7 stall at a 240 MPa bearing allowable, equal sharing assumed",
+   "after": "103 N\u00b7m = 1.00\u00d7 the 102.9 N\u00b7m stall, 2.9\u00d7 the 35.1 N\u00b7m drive limit (dowels bonded into the adapter; dry: 65 N\u00b7m = 0.64\u00d7)",
+   "ok": false,
+   "margin": 0.9995868460789363,
+   "basis": "bearing allowable 150 MPa (reverted from 240: cast A380-class \u03c3_y \u2248 160 MPa with no bearing factor, ESTIMATE until the seller names the boss material; a steel or wrought 6061-T6 boss would justify \u2248 240). 3 \u00d7 \u00d84 \u00d7 4 mm on r 14.25: 2.40 kN each; dowel stiffness 41 kN/mm (Huth, \u00d84 steel in 4 mm Al + 7 mm 7075); the first dowel takes k\u00b7\u03b4 before the others touch: \u03b4 8 \u00b5m (H7/m6 spread, ISO 286) when the dowels are bonded (Loctite 638) into \u00d84.1 adapter holes while seated in the motor (the adapter's hole positions drop out) \u2192 93 N\u00b7m; dry in jig-bored holes \u03b4 \u2248 40 \u00b5m (\u00b1 0.02 true position each side, ESTIMATE) \u2192 56 N\u00b7m (the review's \u2248 55 N\u00b7m); equal sharing 103 N\u00b7m. + 3 \u00d7 M4 \u00d7 10 csk at 1.5 kN, \u03bc 0.15, metal on metal (no creep): 10 N\u00b7m (strip of 2.65 mm effective M4 in the cast boss \u2248 3.9 kN). Dowel shear 242 N\u00b7m (ISO 8734). Criterion: stall is a fault, checked at a yield-level bearing allowable at \u2265 1.0\u00d7 (as bolts \u2264 proof); the 7075 adapter side is 7 mm deep"
   },
   {
-   "item": "M1 rear M4 engagement in the 3.5 mm housing threads (8 \u00d7)",
-   "before": "M4 \u00d7 18 under a 3.5 mm counterbore: 2.5 \u00b1 0.55 mm",
-   "after": "3.0 mm nominal (\u00b1 0.60 worst / \u00b1 0.39 RSS from stock parts) \u2192 shim picked at assembly: 3.0 \u00b1 0.2",
+   "item": "M1 rear mount: 8 \u00d7 M4 into the 3.5 mm housing threads",
+   "before": "8 \u00d7 M4 \u00d7 18 + washer + picked shim through 13.9 mm of PETG at 0.5 kN (4 \u00b5m of bolt stretch; friction 38 N\u00b7m at \u00d7 0.75 creep)",
+   "after": "metal clamp: M4 \u00d7 25 ISO 10642 10.9 (6) / ISO 4762 12.9 in the stop bushes (2) through a 3 mm 7075 rear plate and \u00d86/4.3 steel sleeves onto the motor at 1.6 kN \u2192 1.11 kN after embedding (no print in the stack); friction 56 N\u00b7m = 1.59\u00d7 the drive limit; engagement 3.0 \u00b1 0.49 (never bottoms in 3.5)",
+   "ok": false,
+   "margin": 1.5908621712977558,
+   "basis": "stack per screw: bolt 13 + sleeve 7 + plate 1 \u00b5m/kN, 5 metal interfaces \u00d7 2 \u00b5m embedding (VDI 2230, ESTIMATE) \u2192 69 % left, no creep term (the printed floor + cup ring are sandwiched between the plate and the motor face, sleeves -0.05 mm vs the print: located, not clamped). Friction \u03bc 0.15 steel/Al (ESTIMATE). Engagement 25 \u2212 22 = 3.0 mm, worst \u00b1 0.49 (screw length js15 \u00b1 0.42, ISO 4759-1; plate \u00b1 0.05, sleeve \u00b1 0.02): 2.51\u20133.49 in 3.5 mm, so no shim picking; strip at the shortest (2.16 mm effective) 3.2 kN vs the worst bolt 2.16 kN (1.5\u00d7; motor bearing 2325 N \u00d7 40 mm \u2192 94 N\u00b7m on the bolt circle, load factor 1). Stall reaction through the sleeves into the print: 2.7 MPa bearing (\u00d86 \u00d7 19 mm, 8 sleeves)"
+  },
+  {
+   "item": "M1 roll support: 61806 (rear) + the motor's output bearing",
+   "before": "61806 on a printed stub, located axially, 68 mm from the motor bearing: hyperstatic (review: binds or idles)",
+   "after": "61806 floats axially (\u00b1 0.3 mm on the stub) and is bonded into an oversize seat in situ; the misalignment preload is bounded by the printed support's radial stiffness: \u2264 800 N (worst) / 240 N (RSS). 61806 s0 2.2 service / 1.0 fault (need 1.5 / 1.0); the motor bearing needs \u2265 1412 N radial in service, 3125 N at a fault",
    "ok": true,
-   "margin": null,
-   "basis": "M4 \u00d7 18 ISO 4762 12.9 (length js15 \u00b1 0.35, ISO 4759-1) + ISO 7089 M4 washer 0.8 (\u00b1 0.1) + one DIN 988 shim 0.3 (pick 0 / 0.3 / 0.5 after measuring the protrusion with a depth gauge, motor off) in a \u00d89.6 \u00d7 5.1 counterbore; printed grip 13.9 \u00b1 0.15 (ESTIMATE). Preload 0.5 kN (\u2248 0.45 N\u00b7m; \u2248 10 MPa under the washer): friction 8 \u00d7 \u03bc 0.3 \u00d7 0.75 at r 42 = 38 N\u00b7m vs the 35.1 N\u00b7m drive limit, then the screws bear in 19 mm of print; strip of 3.0 mm of M4 in Al \u2248 5.5 kN"
+   "margin": 1.0427528675703859,
+   "basis": "reactions from the twin wrench of the roll output (the static roll stage taken off) on supports -31.5 / 37.5 mm (69 mm apart): service (basket, hug \u00d7 1.5) 61806 526 N, motor 612 N; fault (bump, stall) 1981 / 2325 N. Misalignment: the stub and the cup's driver pilot are one print (\u00d875.2 pilot on the \u00d875 driver, 0.1 radial) \u2192 static offset \u2264 0.25 worst / 0.15 RSS mm (pilot fit + print coaxiality 0.1 + motor 0.05, ESTIMATE); the rotating seat's own error (the clevis/arm print loop) is taken out by bonding the outer race (Loctite 660, 0.3 mm radial gap) with the arm bolted at mid-travel. Radial stiffness of the printed rear support 1.6\u20133.2 kN/mm (fea.md: stub 288 N \u2192 0.13 mm, rear arm 525 N \u2192 0.09 mm, in series; \u00d7 2 upper bound, ESTIMATE). The extra 61806 friction at 800 N is 18 mN\u00b7m (SKF \u03bc 0.0015): it does not bind or blind the collision observer. **Deleting the 61806** (the review's option) needs the motor's output bearing to carry 117 N radial + 36.3 N\u00b7m tilting in service and 345 N + 137 N\u00b7m at a fault (about its own centre): only a crossed-roller or a preloaded pair with M0 \u2265 137 N\u00b7m qualifies. Seller question still open (output bearing type, C0, M0) \u2014 until then the 61806 stays"
   },
   {
    "item": "M1 roll hard stops (both ends)",
-   "before": "printed \u00d88 lugs at r 44: \u2248 17 MPa at the 35 N\u00b7m limit vs 12 MPa (0.72\u00d7)",
-   "after": "steel \u00d810 pins at r 43: seat 10.1 MPa at the limit (1.18\u00d7), 30 MPa at stall (1.35\u00d7 of 40)",
+   "before": "\u00d810 pins at r 43 'pressed 18.5 mm into the floor + cup ring': the cup ring is r 38\u201348, so the seat had 0 mm of wall to the driver bore and 0 mm outside (and the pins were not in the CAD); 30 MPa at stall in that seat (1.35\u00d7 of 40)",
+   "after": "steel stop bushes (\u00d810 \u00d7 8 proud) on two of the 8 rear M4, clamped to the motor housing through the rear plate: at stall print 13.7 MPa, bush 415 MPa, plate 115 MPa, pad 15 MPa \u2192 1.81\u00d7 (worst of the six)",
    "ok": true,
-   "margin": 1.1838511814982404,
-   "basis": "F = \u03c4 / r: 816 N at 35.1 N\u00b7m, 2393 N at stall. ISO 8734 \u00d810 \u00d7 28 hardened dowel pressed 18.5 mm into the floor + cup ring, contact 4 mm off the face: seat pressure F/(d\u00b7L) + 6\u00b7F\u00b7a/(d\u00b7L\u00b2); pin bending at stall 98 MPa (hardened); 20 \u00d7 8 \u00d7 1.5 stainless wear strip bonded flush in each roll_arm_rear edge: 5.1 / 15.0 MPa on the print (limit / stall)"
+   "margin": 1.805539408377857,
+   "basis": "F = \u03c4 / r: 836 N at 35.1 N\u00b7m, 2450 N at stall, contact 4 mm off the plate. The bushes sit on the screw circle (r 42) at -68.75\u00b0 / 156.25\u00b0 (REAR_ANG0 21.25\u00b0, rear arm half-width 28.21: contact at -16.5\u00b0 / 104\u00b0). Load path: bush \u2192 plate (\u00d810 \u00d7 3 fitted, 3.44 kN, 115 MPa vs 7075-T6 \u03c3_y 435) \u2192 the 6 csk screws (cone seats) \u2192 the motor housing: the stall torque closes housing \u2194 output in metal; the print sees only the bush's \u00d87 \u00d7 19 mm tail as a foundation (rigid bush on the plate pivot, linear pressure: 13.7 MPa at stall, 4.7 at the limit). Bush 42CrMo4+QT (R_p0.2 \u2265 750, EN 10083-3): 415 MPa in the \u00d87/4.3 tail at the plate, 137 MPa in the \u00d810/7.2 head. Edge distances: plate ring r 35\u201348: 1 mm outside the \u00d810 hole, load along the ring (end distance \u2265 3 d to the next screw); print: 0.9 mm from the tail to the driver pilot (load tangential). Wear strip 20 \u00d7 8 \u00d7 1.5 stainless bonded in each roll_arm_rear edge: 5.2 / 15.3 MPa on the print"
   }
- ]
+ ],
+ "roll_bearings": {
+  "basket \u00d7 1.5": {
+   "R1": 526.4,
+   "R2": 612.0,
+   "F": 116.5,
+   "Mm": 36.3,
+   "T": 3.0,
+   "note": "set on a bed (0.55 m), x 0.50"
+  },
+  "hug \u00d7 1.5": {
+   "R1": 412.2,
+   "R2": 402.0,
+   "F": 117.2,
+   "Mm": 28.4,
+   "T": 17.0,
+   "note": "yaw 0\u00b0, elbow -90\u00b0"
+  },
+  "bump 140 N": {
+   "R1": 1634.7,
+   "R2": 1634.7,
+   "F": 173.6,
+   "Mm": 112.8,
+   "T": 112.8,
+   "note": "forward, -Z"
+  },
+  "stall (pitch 63 / roll 103 / elbow 63 N\u00b7m)": {
+   "R1": 1981.1,
+   "R2": 2324.6,
+   "F": 344.6,
+   "Mm": 136.7,
+   "T": 112.7,
+   "note": "roll stall, elbow 90\u00b0"
+  }
+ }
 }

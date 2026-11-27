@@ -34,21 +34,25 @@ ROLL_Y = _D.arm.roll_offset_y * 1000                 # loop 10: 50 → 75 (the �
 # Output-bearing radial rating: not on the drawing (open seller question). Boss protrusion 1.0 ESTIMATE.
 MOT36 = dict(od=96.0, drv_d=75.0, drv_h=12.5, body_h=29.0, step=((60.0, 10.0), (42.0, 5.5)), boss_d=30.0, boss_h=1.0,
              rear_n=8, rear_pcd=84.0, rear_tap=3.5, out_n=3, out_pcd=28.5, out_tap=4.0, dowel_n=3, dowel_d=4.0, dowel_l=4.0, out_brg=8.0)
-REAR_ANG0 = 0.0                                                    # first of the 8 rear M4 (≥ 9 mm from the hard-stop lugs)
+REAR_ANG0 = 0.0                                                    # first of the 8 rear M4: set below from the hard-stop geometry (two stop bushes sit on two of them)
 MOT36["h"] = MOT36["body_h"] + sum(h for _, h in MOT36["step"])   # body rear face → output step face (44.5); + the driver = 57
 CUP_H = MOT36["drv_h"] + 0.5                                       # roll-link cup ring around the driver section
+CUP_R = MOT36["drv_d"] / 2 + 0.1                                   # Neon 6c: the cup bore is the motor's radial pilot (was + 0.5): Ø75.2 printed, sanded to a slip fit
 # M1 (Fable review 2026-11-27): the housing's M4 are tapped only 3.5 deep; wave 2's M4 × 18 under a 3.5 mm counterbore
-# engaged 2.5 ± 0.55 mm (under 3 threads, or bottoming). Now: M4 × 18 ISO 4762 12.9 + ISO 7089 washer (0.8) + one DIN 988
-# shim (0.3 nominal, chosen from 0 / 0.3 / 0.5 at assembly) under the head in a Ø9.6 × 5.1 counterbore (head flush): the
-# printed grip is 13.9, the engagement 18 − 13.9 − 0.8 − 0.3 = 3.0 mm. Stack: screw length js15 ±0.35 (ISO 4759-1),
-# printed grip ±0.15 (ESTIMATE), washer ±0.1 (ISO 7089) → ±0.6 worst case; so each screw's protrusion past the cup's
-# motor face is measured with the washer + shim seated (depth gauge, motor off) and the shim picked to land 3.0 ± 0.15
-# (+ gauge ± 0.05): 2.8–3.2 mm, never bottoming (3.5). Preload 0.5 kN (≈ 0.45 N·m, ≈ 10 MPa under the washer on the
-# PETG). Rows: rnd/joints.py. Alternative (the review's): Loctited M4 studs bottomed then backed off ¼ turn + nuts.
-REAR_SCREW = dict(size="M4 × 18 ISO 4762 12.9", L=18.0, L_tol=0.35, washer=0.8, washer_tol=0.1, shim=0.3, shims=(0.0, 0.3, 0.5),
-                  cb_depth=4.0 + 0.8 + 0.3, cb_d=9.6, grip_tol=0.15, preload=500.0, engage=None, grip=None)
-REAR_SCREW["grip"] = CUP_H + 6.0 - REAR_SCREW["cb_depth"] + REAR_SCREW["washer"] + REAR_SCREW["shim"]   # 15.0 under the head
-REAR_SCREW["engage"] = REAR_SCREW["L"] - REAR_SCREW["grip"]       # 3.0 mm into the 3.5 mm tapped holes
+# engaged 2.5 ± 0.55 mm. Wave 3 shimmed it to 3.0 ± 0.2 but still clamped 13.9 mm of PETG at 0.5 kN (4 µm of screw
+# stretch): any creep of the print emptied the joint (Neon review 2026-11-27, finding 6b).
+# Now a metal clamp: a 3 mm 7075-T6 rear plate (ring r 35–48, waterjet) on the roll link's −X face, 6 × M4 × 25 ISO 10642
+# 10.9 countersunk flush in it and 2 × M4 × 25 ISO 4762 12.9 inside the two stop bushes, each through a steel sleeve
+# (Ø6 / Ø4.3, or the bush's Ø7 tail) that runs through the printed floor + cup ring onto the motor's rear face. The stack
+# head → plate (or bush) → sleeve → motor is all metal, so the 1.6 kN preload only loses its embedding; the print is
+# sandwiched between the plate and the motor face (sleeves 0.05 under the print: located, lightly squeezed, not the
+# spring). Engagement 25 − 22 = 3.0 ± 0.47 from stock tolerances (2.53–3.47 in the 3.5 mm holes): no shim picking.
+# The whole motor stack moves 3 mm toward +X (the plate takes the 2.5 mm gap's place). Rows: rnd/joints.py.
+REAR_SCREW = dict(size="M4 × 25 ISO 10642 10.9 (6) / ISO 4762 12.9 in the stop bushes (2)", n=8, L=25.0, L_tol=0.42, plate_t=3.0, plate_tol=0.05,
+                  sleeve_od=6.0, sleeve_id=4.3, sleeve_tol=0.02, sleeve_fit=-0.05, preload=1600.0, mu=0.15, tap=MOT36["rear_tap"], floor_t=6.0)
+REAR_SCREW["grip"] = REAR_SCREW["plate_t"] + REAR_SCREW["floor_t"] + CUP_H         # 22: csk head top → the motor's rear face
+REAR_SCREW["engage"] = REAR_SCREW["L"] - REAR_SCREW["grip"]                         # 3.0 mm into the 3.5 mm tapped holes
+PLATE_R = (35.0, 48.0)                                             # rear plate ring radii (inside: the 61806 stub's floor stays printed)
 # Metal output adapter (7075-T6, Ø76 × 7, ESTIMATE): 3 × M4 × 10 countersunk (ISO 10642; 3.0 mm into the 4 mm tapped holes)
 # + 3 × Ø4 m6 hardened dowels in the H7 holes into the Ø30 boss, Ø30 pilot; 8 × M5 tapped on PCD 64 take the printed clevis
 # arm (bolted from +X through a steel clamp ring: M5 × 16 low-head, 6 mm into the adapter).
@@ -323,14 +327,36 @@ STUB_RELIEF = 0.5                      # the Ø30 stub's −X end stops this far
 # bearing path behind the friction. Capacities: drive_capacity().
 OUT_CLAMP = dict(arm_t=14.0, ring=(26.0, 40.0, 2.0), head_h=3.5, preload=1500.0, creep=0.75, mu=0.25)
 R_ARM = 42.0                           # clevis-arm boss radius about the roll axis (covers the Ø76 adapter and the ring)
-R_ARM_REAR = 36.0                      # roll_arm_rear boss radius (61806 seat): inside the hard-stop pins (r 43 − 5)
-STOP_R, STOP_LUG_R = 43.0, 5.0          # M1: steel Ø10 stop pins (were printed Ø8 lugs at r 44)
-STOP_PIN = dict(d=10.0, seat=6.0 + CUP_H - 0.5, proud=8.0, strip=(20.0, 8.0, 1.5))
+R_ARM_REAR = 35.5                      # roll_arm_rear boss radius (61806 seat): 1.5 mm inside the stop bushes (r 42 − 5)
+# Hard stops (Neon review 2026-11-27, finding 6d): wave 3's Ø10 pins at r 43 were to be pressed into the floor + the cup
+# ring, but the cup ring is r 38–48: no wall either side of a Ø10 seat, and 2.4 kN at stall on it (they were not drawn;
+# printed lugs stood in). Now each stop is a steel bush (42CrMo4+QT, STOP_BUSH) on one of the 8 rear M4: Ø10 standing
+# 8 mm proud of the rear plate, fitted in the plate, its Ø7 tail through the print to the motor face, clamped by its M4
+# (head inside its Ø7.2 bore). The stall load goes bush → plate → the countersunk screws → the motor housing: the
+# housing ↔ output loop closes in metal. Putting both bushes on the screw circle (r 42) needs them 5 screw pitches
+# apart: the rear arm's half-width (26 → ARM_HW) and REAR_ANG0 follow from the contact angles. Rows: rnd/joints.py.
+STOP_R, STOP_LUG_R = MOT36["rear_pcd"] / 2, 5.0
+STOP_BUSH = dict(d=10.0, bore=7.2, d_thru=7.0, bore_lo=4.3, proud=8.0, a=4.0, mat="42CrMo4+QT", Rp=750.0, plate_Rp=435.0, strip=(20.0, 8.0, 1.5))
 STOP_AT = (ROLL_MIN - 1.5, 100 + 4)    # hard-stop contact angles (deg). −16.5°: at −19° the yaw band ran 2.5 mm into the arm-side ferrule (contact from ≈ −17°, ferrule_sweep_gap)
+STOP_PITCHES = 5                       # screw pitches between the two stop bushes
+_DSTOP = (STOP_PITCHES * 360.0 / MOT36["rear_n"] - (STOP_AT[1] - STOP_AT[0])) / 2      # 52.25°: bush centre ↔ contact angle
+ARM_HW = round(STOP_R * math.sin(math.radians(_DSTOP)) - STOP_LUG_R, 2)              # 28.22: roll_arm_rear half-width (edge ↔ bush contact)
+REAR_ANG0 = math.radians((STOP_AT[0] - _DSTOP - 90.0) % (360.0 / MOT36["rear_n"]))     # 21.25°: screws (y, z) = r(cos a, sin a), roll angle = a + 90°
+STOP_K = tuple(k for k in range(MOT36["rear_n"])
+               if min(abs((math.degrees(2 * math.pi * k / MOT36["rear_n"] + REAR_ANG0) + 90 - c + 180) % 360 - 180) for c in (STOP_AT[0] - _DSTOP, STOP_AT[1] + _DSTOP)) < 0.01)
+# Neon review finding 6c (hyperstatic pair): the 61806 inner race slides on the printed stub (± float mm between the
+# shoulder and a DIN 471 Ø30 ring: no axial preload into the motor's bearing, which locates the output axially); the
+# outer race sits in a seat SEAT_GAP oversize in roll_arm_rear and is bonded there (Loctite 660) with the motor mounted
+# and the arm bolted to the output at mid-travel, so the printed arm loop's run-out drops out; the cup pilot (CUP_R) and
+# the stub are one print. Left over: the static offset e (ESTIMATE) against the printed support's radial stiffness k_r
+# (fea.md, ESTIMATE) → the misalignment preload. Rows: rnd/joints.py.
+SEAT_GAP = 0.3
+ROLL_SUPPORT = dict(float=0.3, e_worst=0.25, e_rss=0.15, k_r=(1.6e3, 3.2e3))
 if INLINE:
     _ycx = max(p.bounding_box().max.X for _, p, _c in _stage(YAW_T, 20) if p.bounding_box().max.Z > P1[1])
     X_ARM_R = (math.ceil((_ycx + 1.2) * 2) / 2, math.ceil((_ycx + 1.2) * 2) / 2 + 8.0)   # 1.2 mm past the yaw cartridge (its can, D24)
-    X_FLOOR = (X_ARM_R[1] + 2.5, X_ARM_R[1] + 2.5 + 6.0)
+    X_PLATE = (X_ARM_R[1] + 2.5, X_ARM_R[1] + 2.5 + REAR_SCREW["plate_t"])      # Neon 6b/6d: the 7075 rear plate
+    X_FLOOR = (X_PLATE[0], X_PLATE[1] + REAR_SCREW["floor_t"])     # floor span incl. the plate (its −X face is the plate's: the screw heads)
     X_CUP = (X_FLOOR[1], X_FLOOR[1] + CUP_H)                        # ring around the motor's driver section
     X_MOT = (X_CUP[1], X_CUP[1] + MOT36["h"])                       # Ø96 body rear face → output step face
     X_ADAPT = (X_MOT[1] + MOT36["boss_h"], X_MOT[1] + MOT36["boss_h"] + ADAPT["t"])   # on the Ø30 boss face; clears the step by boss_h
@@ -359,14 +385,15 @@ def roll_link_inline() -> Part:
     sx1 = ROLL_SPR_X[1] + 1.6
     p += _plate_x(xf0, sx1, 8, 18, zlo, zhi, 6) - Pos(0, 13, 0) * Rot(-90, 0, 0) * Cylinder(32.3, 12)            # frame around the spigot
     p += Pos(xf0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, xf1 - xf0, align=MIN)                            # floor
-    p += Pos(xf1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(R_MOT, CUP_H, align=MIN) - Cylinder(MOT36["drv_d"] / 2 + 0.5, CUP_H, align=MIN))   # cup around the driver
+    p += Pos(xf1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(R_MOT, CUP_H, align=MIN) - Cylinder(CUP_R, CUP_H, align=MIN))   # cup around the driver (its pilot)
     p += _plate_x(xf0, xf1, 8, ROLL_Y, zlo, zhi, 4)                                                             # floor ↔ frame web
     p += side_block()                                                                                          # R2b: floor + cup ↔ frame, beside the motor body
     for k in range(MOT36["rear_n"]):
         a = 2 * math.pi * k / MOT36["rear_n"] + REAR_ANG0
         y, z = ROLL_Y + MOT36["rear_pcd"] / 2 * math.cos(a), MOT36["rear_pcd"] / 2 * math.sin(a)
         p -= Pos(0, y, z) * Rot(0, 90, 0) * Cylinder(2.25, 400)
-        p -= Pos(xf0, y, z) * Rot(0, 90, 0) * Cylinder(REAR_SCREW["cb_d"] / 2, REAR_SCREW["cb_depth"], align=MIN)   # M1: head + washer + shim; M4 × 18 engages 3.0 of 3.5
+        d = STOP_BUSH["d_thru"] if k in STOP_K else REAR_SCREW["sleeve_od"]
+        p -= Pos(xf0, y, z) * Rot(0, 90, 0) * Cylinder(d / 2 + 0.1, X_CUP[1] - xf0, align=MIN)   # Neon 6b: steel sleeve (or the stop bush's tail) to the motor face
     p -= Pos(xf1 - 2.5, (ROLL_Y + 8) / 2, 0) * Box(5, ROLL_Y - 8, 10)                                           # motor-lead groove to the frame
     # wave 5 (rnd.swept: 1.7 mm vs the 2 mm target): the yaw can's rear ring (r 43.3, its top 6 mm; the sleeve below is
     # r 42.55) passed 1.7 mm off the stub's −X end at every roll angle. The stub now stops STUB_RELIEF short of the 61806's
@@ -375,13 +402,10 @@ def roll_link_inline() -> Part:
     x_st = W1[0] + STUB_RELIEF
     p += Pos(x_st, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(BRG_R["d"] / 2, xf0 - x_st, align=MIN) - Cylinder(9, xf0 - x_st, align=MIN))
     p += Pos(W1[1] + 0.3, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(17, xf0 - W1[1] - 0.3, align=MIN) - Cylinder(9, 20, align=MIN))   # inner-race shoulder
-    for deg in STOP_LUG_ANG:
-        y, z = _ang(deg, STOP_R)
-        p += Pos(X_ARM_R[0] + 2.5, y, z) * Rot(0, 90, 0) * Cylinder(STOP_LUG_R, xf0 - X_ARM_R[0] - 2.5, align=MIN)
     x0, x1 = ROLL_SPR_X
     r1 = ROLL_SPR[1]
     p += Pos((x0 + 1 + x1 + 1.6) / 2, (12 + ROLL_Y - r1) / 2, 0) * Box(x1 + 1.6 - x0 - 1, ROLL_Y - r1 - 12 + 1, 14)   # spring bar
-    return p
+    return p - Pos(xf0 - 1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(PLATE_R[1] + 0.5, X_PLATE[1] - xf0 + 1, align=MIN) - Cylinder(PLATE_R[0] - 0.2, 20, align=MIN))   # Neon 6b: rear plate seat
 
 
 # R2b (2026-11-27, rnd/stiffness.py): the 1 kg straight-out moment (16.1 N·m static about the pitch axis) reaches the
@@ -399,16 +423,16 @@ def side_block() -> Part:
     b = SIDE_BLOCK
     x0, x1 = X_FLOOR[0], X_MOT[0] + MOT36["body_h"]
     blk = _plate_x(x0, x1, 8, ROLL_Y, b["zlo"], b["zhi"], 4)
-    blk -= Pos(X_FLOOR[1], ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(MOT36["drv_d"] / 2 + 0.5, 200, align=MIN)   # the cup's driver bore
+    blk -= Pos(X_FLOOR[1], ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(CUP_R, 200, align=MIN)   # the cup's driver bore (pilot)
     blk -= Pos(X_MOT[0], ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT + b["r_body"], 200, align=MIN)          # round the motor body
     blk -= Pos(0, 13, 0) * Rot(-90, 0, 0) * Cylinder(32.3, 12)                                              # ferrule spigot
     return blk
 
 
 def _stop_lug_angles():
-    """Lug centre angles: roll_arm_rear's straight edges (±26 from its centre line) touch a lug of radius STOP_LUG_R at
-    radius STOP_R when sin(Δ) = (26 + r_lug) / r."""
-    d = math.degrees(math.asin((26.0 + STOP_LUG_R) / STOP_R))
+    """Stop-bush centre angles: roll_arm_rear's straight edges (±ARM_HW from its centre line) touch a bush of radius
+    STOP_LUG_R at radius STOP_R when sin(Δ) = (ARM_HW + r) / R (= the screw angles STOP_K by construction)."""
+    d = math.degrees(math.asin((ARM_HW + STOP_LUG_R) / STOP_R))
     return (STOP_AT[0] - d, STOP_AT[1] + d)
 
 
@@ -416,12 +440,13 @@ STOP_LUG_ANG = _stop_lug_angles()
 
 
 def roll_arm_rear() -> Part:
-    """−X clevis arm (separate print): R 34 boss with the 61806 seat (outer-race lip on the +X side), a ±26 plate down to a
-    foot on the top yaw plate (2 × M5). (D24: the yaw cartridge's torque fork is gone; its flange screws carry the torque.)"""
+    """−X clevis arm (separate print): R 35.5 boss with the 61806 seat (outer-race lip on the +X side; SEAT_GAP oversize, the
+    race bonded in situ), a ±ARM_HW plate (its edges meet the stop bushes) down to a foot on the top yaw plate (2 × M5).
+    (D24: the yaw cartridge's torque fork is gone; its flange screws carry the torque.)"""
     x0, x1 = X_ARM_R
-    a = _plate_x(x0, x1, ROLL_Y - 26, ROLL_Y + 26, P1[1], 0, 10) + Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_ARM_REAR, x1 - x0, align=MIN)
+    a = _plate_x(x0, x1, ROLL_Y - ARM_HW, ROLL_Y + ARM_HW, P1[1], 0, 10) + Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_ARM_REAR, x1 - x0, align=MIN)
     a += _plate_x(x0 - 10, x1, ROLL_Y - 26, ROLL_Y + 26, P1[1], P1[1] + 5, 4)                                    # foot
-    a -= Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(BRG_R["D"] / 2, W1[1] - x0, align=MIN)                     # 61806 seat
+    a -= Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(BRG_R["D"] / 2 + SEAT_GAP, W1[1] - x0, align=MIN)          # 61806 seat (bond gap)
     a -= Pos(0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(BRG_R["D"] / 2 - 2.0, 400)                                 # lip bore
     for yy in (ROLL_Y - 16, ROLL_Y + 16):
         a -= Pos(x0 - 5, yy, P1[1]) * Cylinder(2.75, 12, align=MIN)
@@ -438,7 +463,28 @@ def roll_motor_housing() -> Part:
     for d, l in m["step"]:
         h += Pos(x, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(d / 2, l, align=MIN)
         x += l
-    return h
+    return h + rear_metal()
+
+
+def rear_metal() -> Part:
+    """Neon 6b/6d: the metal bolted to the housing's rear face (one CAD part with the housing): the 7075 rear plate, the 6
+    steel sleeves and the 2 stop bushes (Ø10 × 8 proud + Ø7 tail, Ø7.2 head bore)."""
+    x0, x1 = X_PLATE
+    pl = Pos(x0, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(PLATE_R[1], x1 - x0, align=MIN) - Cylinder(PLATE_R[0], x1 - x0, align=MIN))
+    rs, sb = REAR_SCREW, STOP_BUSH
+    for k in range(MOT36["rear_n"]):
+        a = 2 * math.pi * k / MOT36["rear_n"] + REAR_ANG0
+        y, z = ROLL_Y + MOT36["rear_pcd"] / 2 * math.cos(a), MOT36["rear_pcd"] / 2 * math.sin(a)
+        at = lambda x, r, L: Pos(x, y, z) * Rot(0, 90, 0) * Cylinder(r, L, align=MIN)
+        if k in STOP_K:
+            pl -= at(x0, sb["d"] / 2, x1 - x0)
+            b = at(x0 - sb["proud"], sb["d"] / 2, sb["proud"] + x1 - x0) + at(x1, sb["d_thru"] / 2, X_CUP[1] - x1)
+            b -= at(x0 - sb["proud"], sb["bore"] / 2, sb["proud"]) + at(x0 - sb["proud"], sb["bore_lo"] / 2, 100)
+            pl += b
+        else:
+            pl -= at(x0, 2.2, x1 - x0)
+            pl += at(x1, rs["sleeve_od"] / 2, X_CUP[1] - x1 + rs["sleeve_fit"]) - at(x1, rs["sleeve_id"] / 2, 100)
+    return pl
 
 
 def roll_outflange() -> Part:
@@ -676,9 +722,16 @@ def yaw_shaft() -> Part:
 # (compression) → shoulder → bearing B, and the tube's bending at bearing B is prestressed. Screws at the hex corners
 # (r 11, 30° + k·60°). Tightened from above before the yaw block goes onto the roll output. Capacity: rnd/joints.py.
 YF = dict(hex_af=24.0, hex_h=8.0, bore_r=8.0, spigot_r_in=8.0)
+# Neon review 2026-11-27 (finding 3): the 37.7 mm printed tube creeps under the 9.5 MPa clamp; 36 µm of screw stretch
+# and ≈ 0.14 mm of the print's own squeeze were the only springs (≈ 30 % of the preload left at a creep coefficient of
+# 2, and the joint then gaps under the basket wrench). Each head now sits on 3 × DIN 6796-M3 in series (≈ 0.53 mm of
+# travel at 1.0 kN; they go flat at 1.32 kN, beyond which the screw carries alone): life preload ≈ 70 %. The counterbore
+# is deeper by the stack, the heads stay where they were (same screw, same engagement). Rows: rnd/joints.py.
 YAW_TIE = dict(n=6, r=11.0, ang0=30.0, d=3.0, pitch=0.5, As=5.03, hole=3.4, tap=2.5, grade="12.9", proof=970.0, preload=1000.0,
-               creep=0.75, ring=(8.5, 16.8, 2.0), cb_r=17.0, head_h=3.0, top_gap=0.5, L=40.0, tau_flange=207.0)   # M3 (encoder): L 45 → 40 with the tube top 2.5 mm lower
-YAW_TIE["cb_depth"] = YAW_TIE["ring"][2] + YAW_TIE["head_h"] + YAW_TIE["top_gap"]    # 5.5 mm
+               ring=(8.5, 16.8, 2.0), cb_r=17.0, head_h=3.0, top_gap=0.5, L=40.0, tau_flange=207.0, bell="M3", n_bell=3)   # M3 (encoder): L 45 → 40 with the tube top 2.5 mm lower
+from .shoulder import _stack_h
+YAW_TIE["stack_h"] = _stack_h(YAW_TIE["bell"], YAW_TIE["n_bell"], YAW_TIE["preload"])
+YAW_TIE["cb_depth"] = YAW_TIE["ring"][2] + YAW_TIE["stack_h"] + YAW_TIE["head_h"] + YAW_TIE["top_gap"]    # 7.5 mm (was 5.5)
 
 
 def _yaw_tie_angles():
@@ -690,7 +743,7 @@ def yaw_tie_levels():
     t = YAW_TIE
     top = YAW_TOP
     seat = top - t["cb_depth"]
-    head = seat + t["ring"][2]
+    head = seat + t["ring"][2] + t["stack_h"]
     tip = head - t["L"]
     spigot_top = FL_TOP - FL_REC + YF["hex_h"]
     return dict(seat=seat, head=head, tip=tip, engaged=spigot_top - tip, tip_to_face=tip + YAW_DROP)
@@ -838,6 +891,13 @@ def module():
     return out + _enc_static()                                                    # M3: AS5048A boards (rnd/parts/encoder.py)
 
 
+def _rear_metal_mass():
+    """kg: the rear plate (7075) + sleeves and stop bushes (steel), from the CAD volumes."""
+    x0, x1 = X_PLATE
+    plate = math.pi * (PLATE_R[1] ** 2 - PLATE_R[0] ** 2) * (x1 - x0) * 2.81e-6
+    return round(plate + (rear_metal().volume - plate / 2.81e-6) * 7.85e-6, 4)
+
+
 def masses(density=1.27, split=False):
     """CAD roll-up (loop 40). Printed parts at 60–80 % fill; D13 standard parts by material (steel shaft, aluminium
     pulley, 6801 at 60 % of solid steel). split=True → (roll-body mass, yaw-stage mass) for params.
@@ -851,10 +911,11 @@ def masses(density=1.27, split=False):
             + (cm.can_bolted().volume + cm.can_cap_bolted().volume - cm.can().volume) * density * 0.8e-3) / 1e3 + 0.006   # + 6 × M4 csk, inserts
     pr = lambda v, f: v * f / 1e6 * density
     if INLINE:      # the GIM8108-36 itself (1.0 kg) is the roll actuator mass in params.arm.joints, not counted here
-        roll = {"roll link: ferrule boss, frame, motor floor, support stub, stop lugs, spring bar (printed)": pr(roll_link().volume, 0.6),
+        roll = {"roll link: ferrule boss, frame, motor floor, support stub, spring bar (printed)": pr(roll_link().volume, 0.6),
                 "roll_arm_rear (printed)": pr(roll_arm_rear().volume, 0.6),
                 "roll spring hub + ring (printed)": pr(roll_spring_hub().volume + roll_spring_ring().volume, 0.8),
-                "61806 + 12 × M4 + 2 × M5 + end washer (ESTIMATE)": 0.045,
+                "Neon 6b/6d: 7075 rear plate + 6 steel sleeves + 2 × 42CrMo4 stop bushes (CAD)": _rear_metal_mass(),
+                "61806 + 12 × M4 + 2 × M5 + DIN 471 ring (ESTIMATE)": 0.045,
                 "male ferrule (printed) + dowels + screws + ribbon (ESTIMATE)": pr(67213, 0.7) + 0.04}
     else:
         roll = {"roll link + seat caps + spring ring/bar (printed)": pr(roll_link().volume + roll_seat_cap(W1).volume + roll_seat_cap(W2).volume, 0.6) + pr(roll_spring_ring().volume, 0.8),
@@ -863,7 +924,8 @@ def masses(density=1.27, split=False):
     caps = 0.0 if INLINE else roll_clevis_cap(0).volume + roll_clevis_cap(1).volume
     yaw = {"clevis + caps + yaw block plates + posts (printed)": pr(clevis_and_yaw_block().volume + caps + yaw_plate_bot().volume, 0.6),
            "yaw shaft + 40T + spring hub (one piece), spring ring (printed)": pr(yaw_shaft().volume, 0.7) + pr(yaw_spring_ring().volume, 0.8),
-           "C1 yaw flange (6061-T6) + steel clamp ring + 6 × M3 × 40 12.9": yaw_flange().volume * 2.7e-6 + yaw_tie_ring().volume * 7.85e-6 + 6 * (5.03 * YAW_TIE["L"] + 45) * 7.85e-6,
+           "C1 yaw flange (6061-T6) + steel clamp ring + 6 × M3 × 40 12.9 + 18 × DIN 6796-M3": yaw_flange().volume * 2.7e-6 + yaw_tie_ring().volume * 7.85e-6
+           + 6 * (5.03 * YAW_TIE["L"] + 45) * 7.85e-6 + YAW_TIE["n"] * YAW_TIE["n_bell"] * 0.13e-3,
            "yaw D13 v3 stage + Oldham + bolted can flange/nose/cap": d13 + sock, "2 × 61808 + stop pin + belt + screws + ribbon (ESTIMATE)": 0.075}
     if split:
         return sum(roll.values()), sum(yaw.values())
@@ -883,14 +945,14 @@ def drive_capacity():
         M, A, o = MOT36, ADAPT, OUT_CLAMP
         r0, r1 = M["out_pcd"] / 2000, A["pcd"] / 2000
         # (a) motor output → metal adapter. M1 (Fable review 2026-11-27): wave 2 counted 26 N·m of friction from a 4 kN preload
-        # that 3 mm of M4 in aluminium can't hold. Now the dowels alone carry the torque (rnd/joints.py roll_rows, same numbers)
-        t_sh = M["dowel_n"] * math.pi * 2.0 ** 2 * 450.0 * r0                             # ISO 8734 Ø4: min double shear 11.3 kN → single 5.65 kN
-        t_bb = M["dowel_n"] * M["dowel_d"] * M["dowel_l"] * 240.0 * r0                   # bearing yield in the motor's output, 4 mm deep (ESTIMATE 240 MPa)
-        t_m4 = M["out_n"] * 1500.0 * 0.15 * r0                                           # bonus, not counted: 1.5 kN per M4 (3.0 mm of thread in Al)
-        basis0 = (f"{M['dowel_n']} × Ø4 m6 hardened dowels in H7: shear {t_sh:.0f} N·m (ISO 8734), bearing in the motor's output {t_bb:.0f} N·m (240 MPa bearing yield, "
-                  f"4 mm deep, ESTIMATE: cast A380 / 6061-T6; governs); the 3 × M4 × 10 csk friction ({t_m4:.0f} N·m at an honest 1.5 kN) is not counted")
-        rows.append(("roll (inline)", "motor output ↔ 7075 adapter (dowels only) vs the drive limit (35.1)", min(t_sh, t_bb), m["rated"], basis0))
-        rows.append(("roll (inline)", "motor output ↔ 7075 adapter (dowels only) vs stall", min(t_sh, t_bb), m["peak"], basis0 + f"; stall {m['peak']:.1f} N·m (actuators.yaml)"))
+        # that 3 mm of M4 in aluminium can't hold. Neon review (finding 6a): bearing allowable back to 150 MPa (unconfirmed
+        # cast boss) and the first dowel to touch carries more (rnd/joints.py roll_rows, same numbers)
+        from .. import joints as _j
+        row = [r for r in _j.roll_rows() if r["item"].startswith("M1 output boss")][0]
+        cap = row["margin"] * m["peak"]
+        basis0 = row["basis"]
+        rows.append(("roll (inline)", "motor output ↔ 7075 adapter (dowels, load sharing, + 3 × M4 friction) vs the drive limit (35.1)", cap, m["rated"], basis0))
+        rows.append(("roll (inline)", "motor output ↔ 7075 adapter (dowels, load sharing, + 3 × M4 friction) vs stall", cap, m["peak"], basis0 + f"; stall {m['peak']:.1f} N·m (actuators.yaml)"))
         # (b) metal adapter → printed clevis arm
         F = A["n"] * o["preload"] * o["creep"]
         t_fr = o["mu"] * F * r1
@@ -917,12 +979,12 @@ def drive_capacity():
     rm, tw = (ro + ri) / 2, ro - ri
     t_root = 12.0 * 2 * math.pi * rm ** 2 * tw / 1000                                            # root torsion on a layer plane (12 MPa)
     t = YAW_TIE
-    t_cl = t["n"] * t["preload"] * t["creep"] * 0.30 * t["r"] / 1000
+    from .. import joints
+    J = joints.joint_models()["yaw flange ↔ tube"]
+    t_cl = t["n"] * J["F_life"] * 0.30 * t["r"] / 1000
     rows.append(("yaw", "tube ↔ flange, hex spigot AF 24 × 8 (form)", min(t_hex, t_root), T_yaw,
                  f"flats {t_hex:.0f} N·m (3 mm strips at 25 MPa in-layer), spigot root {t_root:.0f} N·m (torsion at 12 MPa across layers); "
                  f"+ {t_cl:.0f} N·m clamp friction from the YAW_TIE (μ 0.3) not counted; demand = GIM6010-8 peak × 2 × 0.95"))
-    from .. import joints
-    J = joints.joint_models()["yaw flange ↔ tube"]
     try:
         import json as _json
         dem = _json.loads((joints.DOCS / "joints.json").read_text())
@@ -932,6 +994,6 @@ def drive_capacity():
         dem, src = 20.7 * 1.5, "20.7 N·m × 1.5, rnd/basket.py worst shoulder-pitch torque (run python -m rnd.joints for the twin value)"
     mg = min(m.m_gap(0.0) for m in J["models"])
     rows.append(("yaw", "tube ↔ flange, C1 tie (6 × M3 12.9 into the 6061 flange): moment before the joint gaps vs the service bending", mg, dem,
-                 f"clamp model (rnd/joints.py): {t['n']} × {t['preload'] / 1e3:.1f} kN × {t['creep']} creep on the r 14.1–20 tube end; demand {src}; "
+                 f"clamp model (rnd/joints.py): {t['n']} × {J['F_life'] / 1e3:.2f} kN life preload (DIN 6796 stacks, creep φ {joints.CREEP['phi']:.0f}) on the r 14.1–20 tube end; demand {src}; "
                  "fault cases (140 N bump, stalls) in docs/rnd/joints.md"))
     return [dict(joint=j, path=pth, cap=round(c, 1), demand=round(dm, 1), ratio=round(c / dm, 2), basis=b) for j, pth, c, dm, b in rows]
