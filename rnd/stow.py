@@ -55,7 +55,37 @@ PAD_GEOM = {"fore_wrist": 0.015}
 
 ARM_J = ("pitch", "roll", "yaw", "elbow", "wpitch", "wroll")
 MIRROR = {"pitch": 1, "roll": 1, "yaw": -1, "elbow": 1, "wpitch": 1, "wroll": -1}   # left = mirror of right (rnd/tip.py)
+GATE = "cross"                   # pair class gated at GAP_OPEN in the search (None: all pairs, incl. roll body × torso)
 SV_MARGIN = 3.0                  # deg, sw/safety.py Supervisor margin_deg
+
+
+SH_Y0 = 0.200                    # the shoulder_y the cached collision hulls were exported for (rnd/out/collision_*)
+
+
+def design_xml(d, build=None):
+    """twin.build_xml(d), with the torso narrowed to follow a smaller shoulder_y: the torso-side pitch-module hulls are
+    exported once for the baseline (rnd/parts/collision.py, shared rnd/out cache, not re-exported here), so they are shifted
+    in by the same amount, and the torso box (390 mm shell) narrows with them."""
+    from . import twin
+    x = (build or twin.build_xml)(d)
+    dy = SH_Y0 - d.arm.shoulder_y
+    if abs(dy) < 1e-9:
+        return x
+    for s, sg in (("l", -1), ("r", 1)):
+        x = x.replace(f'mesh="torso_pitchmod_{s}"', f'mesh="torso_pitchmod_{s}" pos="0 {sg * dy} 0"')
+    return x.replace('size="0.115 0.195 0.105"', f'size="0.115 {0.195 - dy} 0.105"')
+
+
+def r1_outer(d, ys=(-0.40, -0.325)):
+    """R1 coverage (rnd/twin.ik_study, 2 random seeds) on the outer y columns only, where moving the shoulders in costs reach."""
+    from . import twin
+    orig = twin.build_xml
+    twin.build_xml = lambda dd, geometry=None: design_xml(dd, orig) if geometry is None else orig(dd, geometry)
+    try:
+        r = twin.ik_study(d, {"x": twin.support_polygon("xdrive", d.base.wheel_radius_pos, 0)}, ys=np.array(ys), seeds=2)
+    finally:
+        twin.build_xml = orig
+    return {k: v["coverage"] for k, v in r.items() if not v.get("info")}
 
 
 class Twin:
@@ -65,10 +95,9 @@ class Twin:
     def __init__(self, d=None):
         import mujoco
         from .params import BASELINE
-        from .twin import build_xml
         self.mj = mujoco
         self.design = d or BASELINE
-        m = self.m = mujoco.MjModel.from_xml_string(build_xml(self.design))
+        m = self.m = mujoco.MjModel.from_xml_string(design_xml(self.design))
         self.d = mujoco.MjData(m)
         bid = lambda n: mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n)
         for s in "rl":
@@ -137,7 +166,10 @@ class Twin:
                     continue
                 if b2 not in self.arm_side and b2 != robot_root and b2 != bid("torso"):
                     continue
-                self.pairs.append((g1, g2, self.pad[i] + self.pad[k]))
+                # roll body × torso (torso shell / torso-side pitch module): a pitch + roll pair that rnd/pinch.py sweeps
+                # (its roll rows "roll_* × torso_shell"); kept apart so it can be reported against pinch.py, not gated twice
+                cls = "shoulder" if (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, b1).startswith("roll_") and b2 == bid("torso")) else "cross"
+                self.pairs.append((g1, g2, self.pad[i] + self.pad[k], cls))
         self.robot = robot_root
 
     def _local_pts(self, g):
@@ -195,18 +227,20 @@ class Twin:
     def zmax(self):
         return max(float(P[:, 2].max()) + p for P, p in zip(self.points(), self.pad))
 
-    def gaps(self, distmax=0.06):
-        """Smallest cross-body gaps after the cover allowance: [(gap m, geom a, geom b)], sorted."""
+    def gaps(self, distmax=0.06, cls=None):
+        """Smallest gaps after the cover allowance: [(gap m, geom a, geom b, class)], sorted. cls: only that pair class."""
         out = []
         ft = np.zeros(6)
-        for g1, g2, pad in self.pairs:
+        for g1, g2, pad, c in self.pairs:
+            if cls and c != cls:
+                continue
             dist = self.mj.mj_geomDistance(self.m, self.d, g1, g2, distmax, ft)
             if dist < distmax:
-                out.append((float(dist) - pad, self.gname[g1], self.gname[g2]))
+                out.append((float(dist) - pad, self.gname[g1], self.gname[g2], c))
         return sorted(out)
 
-    def min_gap(self, distmax=0.06):
-        g = self.gaps(distmax)
+    def min_gap(self, distmax=0.06, cls="gate"):
+        g = self.gaps(distmax, GATE if cls == "gate" else cls)
         return g[0][0] if g else distmax
 
     def com(self):
@@ -379,23 +413,171 @@ def main(argv=None):
     T.set(mirror)
     w135 = float(T.widths([135.0])[0])
 
-    # 3. geometry: forward width floor and what would close it
+    S["W_band"] = {str(k): float(S["W"][int(k)]) for k in (35, 40, 45, 50, 55)}
+    T.set(q)
+    shoulder_gaps = dict(stow=[list(x) for x in T.gaps(cls="shoulder")[:1]])
+    T.set(tk)
+    shoulder_gaps["tuck"] = [list(x) for x in T.gaps(cls="shoulder")[:1]]
+
+    # 3. geometry: the forward floor, the shoulder_y it would take, and a narrower shoulder re-searched at 45° + its R1 cost
+    import dataclasses
+    need_dy = (floor0 - W_MAX) / 2
+    geo = [dict(shoulder_y=BASELINE.arm.shoulder_y, floor_w0=floor0, w45=S["w"], ok=S["ok"], r1=r1_outer(BASELINE))]
+    for sy in (0.175,):
+        dd = dataclasses.replace(BASELINE, arm=dataclasses.replace(BASELINE.arm, shoulder_y=sy))
+        T2 = Twin(dd)
+        T2.set(np.array(SEEDS["hanging"]))
+        b2 = search(T2, 45.0, True, True, {k: SEEDS[k] for k in ("tuck (twin.TUCK)", "left fwd, right back")})
+        geo.append(dict(shoulder_y=sy, floor_w0=shoulder_floor(T2), w45=b2["w"], ok=b2["ok"], r1=r1_outer(dd)))
     ok45 = S["ok"] and S["w"] <= W_MAX
-    out = dict(clear=CLEAR, clear_literal=CLEAR_LITERAL, margin=MARGIN, w_max=W_MAX, door_h=DOOR_H, pad=PAD,
-               baseline=base_rows, shoulder_floor_w0=floor0, stow={str(k): v for k, v in res.items()},
+    out = dict(clear=CLEAR, clear_literal=CLEAR_LITERAL, frame_clear=DOOR_FRAME_CLEAR, leaf=DOOR_LEAF, margin=MARGIN, w_max=W_MAX,
+               door_h=DOOR_H, pad=PAD, gap_open=GAP_OPEN, floor_min=FLOOR_MIN, shoulder_y=BASELINE.arm.shoulder_y,
+               roll_offset_y=BASELINE.arm.roll_offset_y,
+               baseline=base_rows, shoulder_floor_w0=floor0, need_dy_fwd=need_dy, geometry=geo,
+               stow={str(k): {kk: vv for kk, vv in v.items() if kk != "W"} for k, v in res.items()},
+               W_curve={str(k): v["W"] for k, v in res.items() if "W" in v},
                approach_linear=dict(gap=ap_lin[0], zmin=ap_lin[1], at=ap_lin[2]), approach_staged=dict(gap=st[0], zmin=st[1]),
-               tip=tipr, pinch_near=pin, mirror_q=mirror.tolist(), w135_mirror=w135, ok=bool(ok45))
-    for k in ("W",):
-        for v in out["stow"].values():
-            v.pop(k, None) if False else None
+               shoulder_gaps=shoulder_gaps, tip=tipr, pinch_near=pin, mirror_q=mirror.tolist(), w135_mirror=w135, ok=bool(ok45))
     (DOCS / "stow.json").write_text(json.dumps(out, indent=1, default=float))
-    (DOCS / "stow.md").write_text(report(out, T))
+    (DOCS / "stow.md").write_text(report(out))
     print(f"stow: W(45°) {S['w'] * 1000:.0f} mm (≤ {W_MAX * 1000:.0f}), gap {S['gap'] * 1000:.0f} mm, ok={ok45}")
     return out
 
 
-def report(o, T):
-    return "TODO"
+def scorecard_rows(path=None):
+    """Rows for rnd/run_all.py's scorecard: [(label, value, target, pass)]."""
+    f = Path(path or DOCS / "stow.json")
+    lbl = ("R5 door stow (rnd/stow.py): whole-robot width across a 45° threshold crossing (D2b), both arms stowed, "
+           "collision-free, cross-body gaps ≥ 25 mm, valid with people near (roll ≥ +8°)")
+    if not f.exists():
+        return [(lbl, "not run (`python -m rnd.stow`)", "≤ 570 mm, tip ≥ 30 mm", False)]
+    o = json.loads(f.read_text())
+    s = o["stow"]["45.0"]
+    rows = [r for r in o["tip"]["rows"] if "static" not in r["case"]]
+    tip_ok = all(r["reserve"] >= r["need"] for r in o["tip"]["rows"])
+    return [(lbl, f"{s['w'] * 1000:.0f} mm (clear {o['clear'] * 1000:.0f} − 2 × {o['margin'] * 1000:.0f}), tip ≥ "
+             f"{min(r['reserve'] for r in rows) * 1000:.0f} mm", f"≤ {o['w_max'] * 1000:.0f} mm, tip ≥ 30 mm", bool(o["ok"] and tip_ok))]
+
+
+def _deg(v):
+    return f"{v:+.0f}°"
+
+
+def report(o):
+    S, S90, S0, Sn = o["stow"]["45.0"], o["stow"]["90.0"], o["stow"]["0.0"], o["stow"]["45n"]
+    q = S["q"]
+    mm = lambda v: f"{v * 1000:.0f}"
+    ok = lambda b: "✅" if b else "❌"
+    tip_min = min(r["reserve"] for r in o["tip"]["rows"] if "static" not in r["case"])
+    L = ["# Door stow pose, R5 (generated by `python -m rnd.stow`)", "", __doc__.split("\n\n", 1)[1].strip(), "",
+         f"**Result: {'a door stow exists' if o['ok'] else 'no stow fits'}.** Driving through at the D2b threshold heading (45° to "
+         f"the wheels) the stowed robot is **{mm(S['w'])} mm** wide (≤ {mm(o['w_max'])} mm = {mm(o['clear'])} mm clear − 2 × "
+         f"{mm(o['margin'])} mm: {mm((o['clear'] - S['w']) / 2)} mm a side in a {mm(o['clear'])} mm opening, "
+         f"{mm((o['clear_literal'] - S['w']) / 2)} mm in a literal 700 mm one), collision-free with every cross-body gap ≥ "
+         f"{mm(S['gap'])} mm after the cover allowance, arm parts ≥ {mm(S['zf'])} mm off the floor, inside the supervisor bounds in both "
+         f"modes, tip reserve ≥ {mm(tip_min)} mm. Sideways (90°, doors without a threshold) the arms fold inside the base: "
+         f"**{mm(S90['w'])} mm** (the Ø500 shell). **Facing the door (0°) no pose fits:** the shoulder roll motors alone span "
+         f"{mm(o['shoulder_floor_w0'])} mm whatever the joints do (best found {mm(S0['w'])} mm).", ""]
+    L += ["## Door", "", "| | mm | source |", "|---|---|---|",
+          "| R5 text | 700 | \"fits 70 cm doors with arms folded\" (RND_PLAN §2): no clear width, no source |",
+          f"| door leaf (70 cm class) | {mm(o['leaf'])} | DIN 18101 nominal 750 (leaf 735 × 1985); UK 686, US 28\" 711 |",
+          f"| between the frame jambs | {mm(o['frame_clear'])} | DIN 18101 tables (sanier.de \"Türen richtig planen\", baunetzwissen.de) |",
+          f"| **clear width used** | **{mm(o['clear'])}** | jambs less the open leaf (≈ 40 mm), measured as ADA 2010 §404.2.3 does (door open 90°, face of the door to the stop); ESTIMATE |",
+          f"| margin a side | {mm(o['margin'])} | base planner centring + sway (ESTIMATE) |",
+          f"| **width allowed** | **{mm(o['w_max'])}** | |",
+          f"| head-jamb height | {o['door_h'] * 1000:.0f} | DIN leaf 1985 (ESTIMATE); robot top in the stow {mm(S['zmax'])} {ok(S['zmax'] < o['door_h'])} |", ""]
+    L += ["## Today's park poses (mirror-symmetric, lift 0.70 m)", "",
+          "Width across the travel direction, whole robot with the cover allowance.", "",
+          "| Pose | W(0°) forward | W(45°) threshold | W(90°) sideways | narrowest (heading) | min cross-body gap |", "|---|---|---|---|---|---|"]
+    for r in o["baseline"]:
+        L.append(f"| {r['name']} | {mm(r['w0'])} | {mm(r['w45'])} | {mm(r['w90'])} | {mm(r['wmin'])} ({r['at']:.0f}°) | {mm(r['gap'])} |")
+    L += ["", f"Forward floor: the pitch body (the GIM8108-36 roll motor, Ø96 on the roll axis {mm(o['roll_offset_y'])} mm outboard of "
+          f"the shoulder at y ±{mm(o['shoulder_y'])}; its spring ring and roll link) only turns about Y, so its |y| is fixed: "
+          f"{mm(o['shoulder_floor_w0'])} mm with the cover allowance. The tip-over track's 0.70–0.78 m is this, measured facing forward.", ""]
+    L += ["## The door stow (ψ = 45°, valid in both supervisor modes)", "",
+          f"Search: Powell from {len(SEEDS)} seeds over the lift + 12 arm joints inside the supervisor target bounds (limits less 3°, "
+          f"roll ≥ +5° + 3°); cost = W(45°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a "
+          f"centred COM and a low lift). Seed kept: *{S['seed']}*.", "",
+          "| Joint | Right arm | Left arm (twin sign) |", "|---|---|---|"]
+    for i, j in enumerate(ARM_J):
+        L.append(f"| {j} | {_deg(q[1 + i])} | {_deg(q[7 + i] * MIRROR[j])} |")
+    L += [f"| lift (shoulder height) | {q[0]:.2f} m | |", "",
+          f"In words: the **right arm swings back** (pitch {_deg(q[1])}, elbow {_deg(q[4])}); the **left arm points forward** (pitch "
+          f"{_deg(q[7])}, elbow {_deg(q[10])}). Along the crossing diagonal the right shoulder leads and the left trails, so each arm "
+          "goes to where the diagonal is short: ahead on the left, behind on the right.", "",
+          "- W(ψ) round the crossing heading: " + ", ".join(f"{k}° {mm(v)}" for k, v in S["W_band"].items()) + " mm.",
+          f"- Set by: {S['extremes'][0][0]} (+{mm(S['extremes'][0][1])} mm) and {S['extremes'][1][0]} ({mm(S['extremes'][1][1])} mm) "
+          "along the normal to the travel direction.",
+          f"- Crossing at 135° instead: the mirror pose (left ↔ right), {mm(o['w135_mirror'])} mm.",
+          "- Smallest cross-body gaps (after the cover allowance): " + "; ".join(f"{g[1]} × {g[2]} {mm(g[0])} mm" for g in S["gaps"][:3]) + ".",
+          f"- Normal mode only (roll down to −12°): {mm(Sn['w'])} mm (the people-near bound costs {mm(Sn['w'] - S['w'])} mm here).", ""]
+    L += ["## Sideways stow (ψ = 90°, doors without a threshold)", "",
+          f"{mm(S90['w'])} mm (seed *{S90['seed']}*), set by {S90['extremes'][0][0]} / {S90['extremes'][1][0]}. Joints (right / left, twin "
+          "sign): " + ", ".join(f"{j} {_deg(S90['q'][1 + i])} / {_deg(S90['q'][7 + i] * MIRROR[j])}" for i, j in enumerate(ARM_J)) +
+          f", lift {S90['q'][0]:.2f} m. Straight at a wheel, so only where there is no threshold (rnd/threshold.py: 0° fails at 15 mm).", ""]
+    t = o["tip"]
+    al, ast = o["approach_linear"], o["approach_staged"]
+    L += ["## Checks in the stow", "", "| Check | Value | Need | |", "|---|---|---|---|"]
+    for r in t["rows"]:
+        L.append(f"| tip (rnd/tip.py reserve): {r['case']} | {mm(r['reserve'])} mm (worst heading {r['at']:.0f}°) | ≥ {mm(r['need'])} mm | {ok(r['reserve'] >= r['need'])} |")
+    L += [f"| COM | x {mm(t['com'][0])}, y {mm(t['com'][1])}, h {mm(t['com'][2])} mm ({t['M']:.1f} kg) | | |",
+          f"| cross-body gaps in the pose | ≥ {mm(S['gap'])} mm | ≥ 25 mm (R17) | {ok(S['gap'] >= o['gap_open'] - 1e-4)} |",
+          f"| arm parts above the floor | ≥ {mm(S['zf'])} mm | ≥ 50 mm | {ok(S['zf'] >= o['floor_min'] - 1e-4)} |",
+          f"| into the stow from twin.TUCK, all joints together | gap ≥ {mm(al['gap'])} mm, ≥ {mm(al['zmin'])} mm off the floor | ≥ 25 / 50 mm | {ok(al['gap'] >= o['gap_open'] - 1e-4 and al['zmin'] >= o['floor_min'] - 1e-4)} |",
+          f"| into the stow, one joint group at a time (better of two orders) | gap ≥ {mm(ast['gap'])} mm, ≥ {mm(ast['zmin'])} mm | ≥ 25 / 50 mm | {ok(ast['gap'] >= o['gap_open'] - 1e-4 and ast['zmin'] >= o['floor_min'] - 1e-4)} |"]
+    sg = o["shoulder_gaps"]
+    if sg["stow"]:
+        g, gt = sg["stow"][0], (sg["tuck"][0] if sg["tuck"] else None)
+        L += ["", f"**Not gated here: the roll output × torso wedge** ({g[1]} × {g[2]}: {mm(g[0])} mm in the stow"
+              + (f", {mm(gt[0])} mm in twin.TUCK" if gt else "") + "). It is a pitch + roll pair that rnd/pinch.py already sweeps "
+              "(rows roll_cover_yaw / roll_yaw_band × torso_shell; 17 mm at +15° with people near), it sits in the 8–25 mm band in every "
+              "arms-down pose, and only a cover change closes it (a torso-side skirt that keeps it ≤ 8 mm, or a hood that keeps ≥ 25 mm). "
+              "The stow is no worse than the park pose."]
+    if o["pinch_near"]:
+        L += ["", "rnd/pinch.py single-joint rows (docs/rnd/pinch.json, tier 1) that fail within 15° of a stow angle. They fail over "
+              "the sweep whichever pose is used; listed so the pose owner knows which ones it sits near:", "",
+              "| Sweep | Joint | Moving × static | min gap | worst at | stow within |", "|---|---|---|---|---|---|"]
+        seen = set()
+        for r in o["pinch_near"]:
+            k = (r["joint"], r["moving"], r["static"])
+            if k not in seen:
+                seen.add(k)
+                L.append(f"| {r['src']} | {r['joint']} | {r['moving']} × {r['static']} | {r['min']:.1f} mm | {r['at']:.0f}° | {r['stow']:.0f}° |")
+    g0 = o["geometry"][0]
+    L += ["", "## Facing the door (0°): the floor and the geometry it would take", "",
+          f"W(0°) ≥ {mm(o['shoulder_floor_w0'])} mm in any pose. To fit {mm(o['w_max'])} mm facing the door the roll motors' outboard "
+          f"faces must come in {mm(o['need_dy_fwd'])} mm a side: shoulder_y {o['shoulder_y']:.3f} → {o['shoulder_y'] - o['need_dy_fwd']:.3f} m, "
+          f"or roll_offset_y {mm(o['roll_offset_y'])} → {mm(o['roll_offset_y'] - o['need_dy_fwd'])} mm (the Ø96 GIM8108-36 sits on the roll "
+          "axis, so that means a smaller roll motor or the belt roll back), or a mix. The torso-side pitch modules (135 mm deep in y, "
+          "rnd/parts/collision.py) end at y ±60 mm against the 60 mm mast (±30 mm): the shoulders can come in ≈ 25 mm before the "
+          "modules meet the mast, which is not enough on its own.", "",
+          "| shoulder_y | W(0°) floor | W(45°) stow | R1 coverage, outer columns y −0.40 / −0.325 m (twin IK, 2 seeds) |", "|---|---|---|---|"]
+    for g in o["geometry"]:
+        r1 = "; ".join(f"{k.split(' (')[0]} {v:.0%}" for k, v in g["r1"].items())
+        L.append(f"| {g['shoulder_y']:.3f}{' (today)' if g is g0 else f' (torso shell 390 → {390 - 2 * (o['shoulder_y'] - g['shoulder_y']) * 1000:.0f} mm)'} "
+                 f"| {mm(g['floor_w0'])} | {mm(g['w45'])}{'' if g['ok'] else ' (gaps ❌)'} | {r1} |")
+    L += ["", "R16 (rnd/dexterity.py) is computed on the bench arm in its own frame (sw/bench_env.py has no shoulder_y), so it does not "
+          "change. The narrower torso is hull-level only (pitch-module hulls shifted, torso box narrowed; ESTIMATE).", "",
+          "Not recommended: the 45° crossing fits with the shipped geometry, and 25 mm off the torso costs tray width and still "
+          "does not fit facing the door.", ""]
+    L += ["## Planner / supervisor (\"door mode\")", "",
+          "For the software owner. A door is a map feature with a clear width c and a threshold flag.", "",
+          "1. `planner.door_mode(door)`: crossing heading ψ = 45° or 135° (the mirror stow; whichever needs less base rotation) when "
+          "the door has a threshold, ψ = 90° (sideways stow) otherwise; refuse the door and report it if c − W(ψ) < 2 × 40 mm "
+          "(W from docs/rnd/stow.json).",
+          "2. Stop ≥ 0.5 m before the door; lift first, then the arms into the stow (paths checked above); pan the head to the travel "
+          "direction; centre on the door axis (lateral error ≤ (c − W) / 2); cross at ≤ 0.12 m/s (SW-T4, D2b); back to the park pose.",
+          "3. Supervisor: the stow puts the hands outside the hand workspace box (ws_lo / ws_hi: x ≥ 0.10 m, z ≥ 0.76 m), so the fk "
+          "workspace check would reject it. Proposed `Supervisor.set_door_stow(q_stow | None)`: while set, arm targets must lie within "
+          "±3° of the stow path (anything else rejected) in place of the workspace box; base_accel_limit() unchanged; refused when "
+          "payload > LOAD_KG (no door crossing with a load in this pose). The stow is inside the people-near bounds, so "
+          "set_people_near() never has to walk it out.", ""]
+    L += ["## Scorecard row (for rnd/run_all.py)", "", "```python", "from . import stow",
+          "rows += stow.scorecard_rows()   # [(label, value, target, pass)] from docs/rnd/stow.json", "```", "",
+          "Assumptions (ESTIMATE): the clear width; 40 mm a side; the 5.2 mm cover allowance on every arm hull (15 mm on the wrist-boot "
+          "hull) and none on the torso box / base shell (they are the shells); gaps are hull distances (mj_geomDistance); the twin's "
+          "joint spheres are left out (mass placeholders inside the hulls)."]
+    return "\n".join(L) + "\n"
 
 
 if __name__ == "__main__":
