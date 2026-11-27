@@ -26,7 +26,7 @@ MATE = [("can", "motor"), ("collar", "hub"), ("hub", "shaft"), ("shaft", "wheel"
         ("deck", "deck"), ("deck", "rim"), ("deck", "coupling"), ("skirt", "skirt"), ("skirt", "bumper"), ("coupling", "plug"),
         ("mast", "ratchet"), ("mast", "lift_mount"), ("mast", "carriage"), ("mast", "head_bracket"), ("lift_pulley", "lift_belt"),
         ("lift_mount", "lift_cover"), ("torso_shell", "estop"), ("torso_shell", "chest_light"), ("torso_shell", "ai_bay"),
-        ("e_tray", "e_"), ("head_bracket", "handle"), ("head_bracket", "pan_sleeve"), ("yoke", "tilt_sleeve"), ("yoke", "tilt_bearing"), ("head_shell", "head_pivot_stub"), ("head_shell", "head_drive_stub"), ("tilt_bearing", "head_pivot_stub"), ("head_shell", "visor"),
+        ("e_tray", "e_"), ("head_bracket", "handle"), ("head_bracket", "pan_sleeve"), ("yoke", "tilt_sleeve"), ("yoke", "tilt_bearing"), ("head_shell", "head_pivot_stub"), ("head_shell", "head_drive_stub"), ("tilt_bearing", "head_pivot_stub"), ("head_shell", "visor"), ("head_shell", "neck_boot"),
         ("visor", "head_screen"), ("visor", "head_cam"), ("head_screen", "eye"), ("upper_bone", "bone_cap"), ("upper_bone", "cf_neck"),
         ("forearm", "cf_fore"), ("wrist_can", "wrist_motor"), ("wrist_motor", "wrist_adapter"), ("wrist_adapter", "wp_hub"),
         ("wrist_adapter", "wp_collar"), ("wp_hub", "palm"), ("palm", "wr_sleeve"), ("gr_hub", "grip_base"), ("grip_base", "grip_servo"),

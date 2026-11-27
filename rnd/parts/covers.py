@@ -11,7 +11,8 @@ come from the CAD of the parts they cover (bounding boxes and the module constan
 re-run rnd/pinch.py after any change.
 
 Status (loop of 2026-11-27): elbow + forearm, wrist boot, lift (torso collars, spine pod, belt duct, mast cap; the
-closed lift cover is upper.lift_cover) and base (belly pan, wheel-well liners) are printable. The shoulder dome and
+closed lift cover is upper.lift_cover, the head's TPU neck boot is upper.neck_boot) and base (belly pan, wheel-well
+liners) are printable. The shoulder dome and
 yaw sleeve (pitch_frame / roll_frame) are still the render-only concept (see the note there). The elbow dome's 4 M3
 need heat-set inserts in the housing wall (rnd/parts/arm.py, next arm edit).
 """
@@ -96,8 +97,12 @@ def _split_cover(shell, axis, at, pts, h=8.0):
 # joint, best drawn on the D24 inline-roll layout that is replacing this stage.
 def pitch_frame():
     """Concept: rides on the pitch body (static w.r.t. roll): a dome over the roll link, the roll cartridge, the 80T
-    pulley and its belt, down to just above the roll axis; open underneath where the yaw block swings out."""
+    pulley and its belt, down to just above the roll axis; open underneath where the yaw block swings out.
+    Belt roll only: on the D24 inline roll (default) there is no roll belt, and this dome sat across the yaw cartridge
+    (≈ 6 cm³ of overlap); the inline roll's static cover belongs with the shoulder boot (open, see roll_frame)."""
     from . import roll
+    if roll.INLINE:
+        return []
     x0, x1, y0, y1, z0, z1 = -122.0, 62.0, 4.0, roll.ROLL_Y + 72, -30.0, roll.ROLL_C + 78
     d = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 46, 34, 2.2)
     d -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 - 6, y1 - y0 - 6, 8)
@@ -105,10 +110,51 @@ def pitch_frame():
     return [("cover_shoulder", d, "white")]
 
 
+_HOOD = []
+_GROW = [(0, 0, 0)] + [tuple(s * 1.5 * (i == k) for i in range(3)) for k in range(3) for s in (1, -1)]   # ≈ 1.5 mm growth
+
+
+def _yaw_hood():
+    """D24 inline roll (2026-11-27): rides on the roll output. A 2.2 mm hood 3 mm round the bolted yaw cartridge (can +
+    rear cap), standing on the yaw block's top plate (the yaw belt is already inside the yaw band). Cut clear of the
+    static roll link, motor housing, ferrule and spring ring swept over the roll range (3° steps, ±1.5 mm on each axis), and 1.5 mm
+    off the roll output's rear arm; it stops 1.5 mm behind the roll link (x −46.5), leaving the can's front 10 mm open. Concept (render + pinch), not yet a print: the cut leaves it open toward the roll
+    link, which is where the TPU shoulder boot has to close the joint."""
+    if not _HOOD:
+        from . import roll
+        from .. import swept
+        mv, st, o, _, (lo, hi) = swept.joints()["roll"]
+        can = [p for n, p, _ in roll.module() if n == "yaw_can"][0].bounding_box()
+        t, g = WALL, 3.0
+        x0, x1, y0, y1 = can.min.X - g - t, can.max.X + g + t, can.min.Y - g - t, can.max.Y + g + t
+        z0, z1 = roll.ZF + 0.5, can.max.Z + g + t
+        h = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 14, 8, t)
+        h -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 - 2 * t, y1 - y0 - 2 * t, 2 * t + 1)
+        R = lambda a: Pos(0, o[1], o[2]) * Rot(a, 0, 0) * Pos(0, -o[1], -o[2])
+        hx = h.bounding_box().max.X
+        for a in range(int(lo) - 3, int(hi) + 4, 3):
+            for _, p in st:
+                for d in _GROW:
+                    q = Pos(*d) * (R(-a) * p)
+                    if q.bounding_box().min.X <= hx:
+                        h -= q
+        for n, p in mv:
+            if n == "roll_arm_rear":
+                for d in _GROW:
+                    h -= Pos(*d) * p
+        h -= Pos(-46.5 + 100, 0, 0) * Box(200, 600, 600)                       # stop 1.5 mm behind the roll link / rear arm (x −45)
+        _HOOD.append(_main(h))
+    return _HOOD[0]
+
+
 def roll_frame():
     """Concept: rides on the roll output: a sleeve round the whole yaw block (both plates, the belt, the yaw
-    cartridge, its KX collar and torque fork), open at the top (the clevis arms) and the bottom (the yaw flange)."""
+    cartridge, its KX collar and torque fork), open at the top (the clevis arms) and the bottom (the yaw flange).
+    Inline roll (default): the yaw-cartridge hood (_yaw_hood); the old sleeve's top followed ZF + ZC and it engulfed the
+    roll link and motor (≈ 30 cm³ of overlap)."""
     from . import roll
+    if roll.INLINE:
+        return [("cover_yaw", _yaw_hood(), "white")]
     z0, z1 = roll.P2[0] - 4, roll.ZF + roll.ZC + 14
     c = Pos(-38, roll.ROLL_Y, (z0 + z1) / 2) * soft_shell(198, 122, z1 - z0, 46, 18, 2.2)
     c -= Pos(-38, roll.ROLL_Y, z0) * Box(194, 118, 6)
@@ -185,7 +231,7 @@ SLOT = 7.0                       # belt-clamp slot in the duct (≤ 8 mm, R17)
 
 def _belt_xy():
     from . import upper
-    return upper.MAST_X - upper.W / 2 - 50 + 16, -2.0, 3.6, 15.0     # strand centre x, y; thickness, width (upper.lift_drive)
+    return upper.lift_belt_xy()      # strand centre x, y; size along x, size along y (lift v2: belt in the YZ plane, 15 mm along x)
 
 
 def belt_duct():
@@ -194,7 +240,7 @@ def belt_duct():
     (≤ 200 mm), spigot joints, M3 into the mast's rear face. Returned whole (one solid) for the checks."""
     from . import upper
     xb, yb, tb, wb = _belt_xy()
-    z0, z1 = upper.LIFT_COVER_TOP - 2, upper.Z_TOP - 30 + 4
+    z0, z1 = upper.LIFT_COVER_TOP, upper.Z_TOP - 30 + 4                       # stands on the lift cover's chimney (same footprint)
     ix, iy = tb + 8, wb + 8
     d = Pos(xb, yb, (z0 + z1) / 2) * (Box(ix + 2 * WALL, iy + 2 * WALL, z1 - z0) - Box(ix, iy, z1 - z0 + 2))
     d -= Pos(xb + ix / 2 + WALL / 2, yb, (z0 + z1) / 2) * Box(WALL + 2, SLOT, z1 - z0 + 2)
@@ -234,7 +280,7 @@ def torso_frame(lift_mm):
         xa = xr if n == "collar_top" else upper.MAST_X - pas / 2 - 10
         c = Pos((xa + xf) / 2, 0, z + WALL / 2) * soft_box(xf - xa, yw, WALL, 6, 0.6)
         c -= Pos(upper.MAST_X, 0, z) * Box(upper.W + 10, upper.W + 10, 20)
-        c -= Pos(upper.MAST_X - upper.W / 2 - 3, 23, z) * Box(16, 24, 20)            # ratchet strip + 5 mm
+        c -= Pos(upper.MAST_X - upper.W / 2 - 5, upper.RACK["y"], z) * Box(20, upper.RACK["w"] + 10, 20)   # steel rack (A15) + 5 mm
         c -= _duct_hole(z)
         for sx, sy in ((xf - 8, yw / 2 - 8), (xf - 8, -yw / 2 + 8), (xt + 8, yw / 2 - 8), (xt + 8, -yw / 2 + 8)):
             c -= Pos(sx, sy, z) * Cylinder(M3_CLEAR / 2, 20)
@@ -244,10 +290,11 @@ def torso_frame(lift_mm):
     pod -= Pos((xr + WALL + xt + 2) / 2, 0, (zp + WALL + zt) / 2 + 1) * Box(xt + 2 - xr - WALL, yw - 2 * WALL, zt - zp - WALL + 2)
     pod -= _duct_hole(zp)
     car = upper.carriage(lift_mm)
-    out.append(("spine_pod", _main(pod - car), "white"))
+    rack = Pos(upper.MAST_X - upper.W / 2 - 5, upper.RACK["y"], (zb + zt) / 2) * Box(20, upper.RACK["w"] + 10, zt - zb + 40)   # rack + 5 mm
+    out.append(("spine_pod", _main(pod - car - rack), "white"))
     # the mast passage also cuts the torso's back wall: close that slot below the pod
     bp = Pos(xt - WALL / 2, 0, (zb + zp + WALL) / 2) * Box(WALL, pas + 4, zp + WALL - zb)
-    out.append(("back_plate", _main(bp - car), "white"))
+    out.append(("back_plate", _main(bp - car - rack), "white"))
     return out
 
 
@@ -264,7 +311,7 @@ def mast_cap():
     z0, z1 = upper.Z_TOP - 30, upper.Z_TOP + 24
     c = Pos((x0 + x1) / 2, 0, (z0 + z1) / 2) * soft_shell(x1 - x0 + 2 * WALL, y1 - y0 + 2 * WALL, z1 - z0, 8, 1, WALL)
     c -= Pos(upper.MAST_X, 0, z0) * Box(upper.W + 2, upper.W + 2, 2 * WALL + 1)        # mast (1 mm, static)
-    c -= Pos(upper.MAST_X - upper.W / 2 - 3, 23, z0) * Box(8, 16, 2 * WALL + 1)        # ratchet strip
+    # (lift v2: the steel rack ends at z 1095, below the cap, so its floor is closed there)
     c -= Pos(xb, yb, z0) * Box(tb + 8 + 2 * WALL + 1, wb + 8 + 2 * WALL + 1, 2 * WALL + 1)   # duct
     c -= Pos(upper.MAST_X, 0, z1) * Box(upper.W + 16.8, upper.W + 16.8, 2 * WALL + 1)  # bracket top stays bare (pan sleeve)
     hd = {n: p for n, p, _ in upper.head()}
@@ -305,10 +352,10 @@ def base_frame():
                 liner += Pos(px, py, zf + (zd - zf) / 2) * Box(sx_, sy_, zd - zf)
             sh = parts[n.replace("_wheel", "_shaft")]
             sx0, sx1, sy0, sy1, sz0, sz1 = _bb(sh)
-            ax = "x" if (sx1 - sx0) > (sy1 - sy0) else "y"
+            ax = "x" if abs(ux) > 0.5 else "y"                                          # the shaft is radial (its flange makes the box wider than long)
             r = (sz1 - sz0) / 2 + 3
             c = ((sx0 + sx1) / 2, (sy0 + sy1) / 2, (sz0 + sz1) / 2)
-            liner -= Pos(*c) * (Rot(0, 90, 0) if ax == "x" else Rot(90, 0, 0)) * Cylinder(r, 400)
+            liner -= Pos(*c) * (Rot(0, 90, 0) if ax == "x" else Rot(90, 0, 0)) * Cylinder(r, (sx1 - sx0 if ax == "x" else sy1 - sy0) + 40)   # R17: through the inner wall only (was 400 mm along the tangent: a Ø66 hole through both side walls and the inner wall, the probe's way into the base)
             ang = math.degrees(math.atan2((y0 + y1) / 2, (x0 + x1) / 2))
             wy = (y1 - y0) if ax == "x" else (x1 - x0)                                  # wheel diameter (tangential)
             liner -= Rot(0, 0, ang) * Pos(base.R_SHELL, 0, zf + (z1 - zf) / 2) * Box(40, wy + 12, z1 - zf)   # window where the wheel leaves the skirt

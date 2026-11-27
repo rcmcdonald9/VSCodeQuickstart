@@ -23,7 +23,7 @@ into structure within 3.2 mm (an insert or clearance hole in a wall, or a wall n
 | torque pin | w90_can | ✅ | w90_torque_hanger |
 | torque pin | w180_can | ✅ | w180_torque_hanger |
 | torque pin | w270_can | ✅ | w270_torque_hanger |
-| torque pin | lift_can | ✅ | lift_mount |
+| bolted flange (D24) | lift_can | ✅ | 6/6 screws (M4 into the flange inserts) land in structure |
 | torque pin | pan_sleeve | ✅ | head_bracket |
 | torque pin | tilt_sleeve | ✅ | yoke |
 | bolted flange (D24) | l_sh_can | ✅ | 6/6 screws (M4 into the flange inserts) land in structure |
@@ -39,7 +39,17 @@ into structure within 3.2 mm (an insert or clearance hole in a wall, or a wall n
 | torque pin | r_arm_hand_wr_sleeve | ✅ | r_arm_hand_palm |
 | torque pin | r_arm_hand_grip_servo_sleeve | ✅ | no pin by design: sleeve screwed into grip_base, rectangular servo pocket |
 
-## Clashes inside modules: 0
+## Clashes inside modules: 10
 
 | Module | Part A | Part B | Overlap (mm³) |
 |---|---|---|---|
+| arm | hand_jaw_fixed | hand_finger_hook | 1040 |
+| upper (mast, lift, torso, head) | lift_al_pulley | lift_belt | 75 |
+| upper (mast, lift, torso, head) | head_shell | head_pivot_stub | 848 |
+| upper (mast, lift, torso, head) | head_shell | head_drive_stub | 849 |
+| head tilt -10° | yoke | neck_boot | 2444 |
+| head tilt -10° | head_shell | head_pivot_stub | 848 |
+| head tilt -10° | head_shell | head_drive_stub | 849 |
+| head tilt +30° | yoke | neck_boot | 1706 |
+| head tilt +30° | head_shell | head_pivot_stub | 848 |
+| head tilt +30° | head_shell | head_drive_stub | 849 |

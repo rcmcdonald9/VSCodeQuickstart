@@ -35,9 +35,9 @@ def printed_parts():
               "cartridge M can (bolted, D24)": cm.can_bolted(arm.MOT), "cartridge M rear cap (D24)": cm.can_cap_bolted(arm.MOT),
               "cartridge M Oldham adapter (D24)": cm.motor_adapter_bolted(arm.MOT), "elbow cassette plate A": arm.cassette_plate("A"), "ferrule (arm side)": shoulder.ferrule(True),
               **roll.printed_parts(),                     # roll link, roll shaft or rear arm (D24 inline), clevis + yaw block, yaw shaft
-              "carriage": upper.carriage(750), "ratchet strip": upper.ratchet_strip(),
+              "carriage": upper.carriage(750), "lift bracket (D13 stage walls)": upper.lift_mount(),
               **{n: p for n, p, c in upper.torso(750) if n in ("torso_shell", "e_tray")},
-              **{n: p for n, p, c in upper.head() if n in ("head_bracket", "handle", "yoke", "head_shell", "visor", "head_pivot_stub", "head_drive_stub")},
+              **{n: p for n, p, c in upper.head() if n in ("head_bracket", "handle", "yoke", "head_shell", "visor", "head_pivot_stub", "head_drive_stub", "neck_boot")},
               "deck quarter": base.deck_quarter(0), "skirt quarter": base.skirt_quarter(0), "wheel pod": base.pod(),
               "wheel shaft": base.wheel_shaft(), **{n: p for n, p, c in __import__("rnd.parts.dock", fromlist=["parts"]).parts() if n in ("dock_wing_l", "dock_tower")}, "torque hanger (wheel)": base.torque_hanger_pose(0), "mast coupling": base.coupling()[0]})
     from .parts import covers                                          # D23 / R17 printable covers + the lift cover
