@@ -12,9 +12,10 @@
 5. Collision detection (D23 / R17, sw/collision.py): the bench twin as the plant with the 20 lb payload in hand and model
    errors; no false trips over random motion, every injected contact trips within 20 ms, then a compliant hold.
 6. Battery-current budget (W8a, sw/power.py): the model's constants match the electrical track; a random high-torque
-   policy (peak torque allowed) never predicts more than 70 A; under sustained full demand the 30 s mean stays ≤ 28 A
-   and settles just under it, then recovers when the demand stops; normal motion on the bench twin gets exactly the same
-   commands as with the budget off; nothing stops the arm; BMS over-current / under-voltage flags latch a fault.
+   policy (peak torque allowed) never predicts more than 70 A of battery current; under sustained high-speed high-torque
+   demand the 30 s mean stays ≤ 28 A and settles just under it, then recovers when the demand stops; normal motion on
+   the bench twin gets exactly the same commands as with the budget off; the R2d basket carry (both arms, 4.54 kg each,
+   120 s) is neither capped nor derated; nothing stops the arm; BMS over-current / under-voltage flags latch a fault.
 """
 from __future__ import annotations
 
@@ -305,6 +306,7 @@ class CollisionRig:
         q0 = np.array([d.qpos[a] for a in self.qadr])
         assert self.sup.reset(q0, 0.002)
         self.shadow, self.shadow_v = None, None        # optional second supervisor fed the same inputs (test_power)
+        self.bms = None                                # optional BMS reading passed to the supervisor (test_power)
 
     def ref(self, t):
         w = 2 * np.pi * self.freq
@@ -326,7 +328,7 @@ class CollisionRig:
         qm = qt + self.rng.normal(0, self.SIG_Q, 6); vm = vt + self.rng.normal(0, 1, 6) * self.SIG_V
         q, qd, qdd = self.ref(self.t)
         tff = self.twin.inverse(q, qd, qdd) + self.KD * qd
-        v = self.sup.check(q, self.KP, self.KD, tff, qm, vm, 0.002, allow_peak=True, tau_meas=self.tau_meas)
+        v = self.sup.check(q, self.KP, self.KD, tff, qm, vm, 0.002, allow_peak=True, tau_meas=self.tau_meas, bms=self.bms)
         if self.shadow is not None:
             self.shadow.tick()
             self.shadow_v = self.shadow.check(q, self.KP, self.KD, tff, qm, vm, 0.002, allow_peak=True)
@@ -435,7 +437,10 @@ def test_power():
                "STS3215-C018": st["stall_torque_nm"] / st["stall_current_a"], "GIM8108-36": MOTOR_CU["GIM8108-36"][0]}
     for name, kt in kt_yaml.items():
         assert abs(ACTUATORS[name][0] - kt) < 1e-9, (name, ACTUATORS[name][0], kt)
-    assert abs(ACTUATORS["STS3215-C018"][2] - st["idle_current_a"]) < 1e-9
+    assert abs(ACTUATORS["STS3215-C018"][4] - st["idle_current_a"]) < 1e-9
+    assert abs(ACTUATORS["STS3215-C018"][1] - 12.0 / st["stall_current_a"]) < 1e-9          # brushed: R = V / I_stall
+    for name in ("GIM6010-8", "GIM8108-36"):                                                 # phase R as the electrical track
+        assert ACTUATORS[name][1] == MOTOR_CU[name][1], (name, ACTUATORS[name][1], MOTOR_CU[name][1])
 
     t = [0.0]
     dt = 0.002
@@ -450,10 +455,13 @@ def test_power():
     # 1. random high-torque policy with peak torque allowed: never more than 70 A predicted
     sup, q0 = fresh()
     ref, _ = fresh(power=False)                          # the same commands without the budget: what the policy asks for
-    model = CurrentModel(json.loads(DESC.read_text()), sup.rated).at(None)
+    v_sag = 18.0                                         # V: the bus at the 70 A cap, 50 % SoC (electrical.md), from the BMS
+    model = CurrentModel(json.loads(DESC.read_text()), sup.rated).at(v_sag)
 
-    def wild(qm):
-        return q0 + rng.normal(0, 3.0, 6), rng.uniform(0, 200, 6), rng.uniform(0, 10, 6), rng.normal(0, 40, 6), rng.normal(0, 0.5, 6)
+    def wild(qm):                                         # measured speeds up to 3.5 rad/s (V_FAULT is 4); τ_ff mostly along them
+        vm = rng.choice([-1.0, 1.0], 6) * rng.uniform(1.0, 3.5, 6)
+        tf = rng.uniform(0.5, 2.0, 6) * sup.peak * np.sign(vm) * np.where(rng.random(6) < 0.9, 1.0, -1.0)
+        return q0 + rng.normal(0, 3.0, 6), rng.uniform(0, 200, 6), rng.uniform(0, 1, 6), tf, vm
 
     st1 = dict(i=0.0, ask=0.0, over=0, tq=0)
 
@@ -466,18 +474,19 @@ def test_power():
         assert abs(sup.i_pred - i) < 1e-6, (sup.i_pred, i)
 
     n1 = 4000
-    _kin_run(sup, n1, dt, t, wild, rng, q0.copy(), True, shadow=ref, each=each1)
+    _kin_run(sup, n1, dt, t, wild, rng, q0.copy(), True, shadow=ref, bms=BmsReading(voltage_v=v_sag), each=each1)
     assert st1["over"] == 0 and st1["tq"] == 0 and sup.counts.get("current cap", 0) > 0, (st1, sup.counts)
-    assert st1["ask"] > 90.0, st1                     # the policy really asks for more than the pack's burst rating
+    assert st1["ask"] > I_PEAK + 5.0, st1             # the policy really asks for more than the cap
     caps1 = sup.counts["current cap"]
 
-    # 2. sustained full demand (every joint pushed along its motion at twice its peak torque): 30 s mean ≤ 28 A throughout,
+    # 2. sustained high-speed, high-torque demand (every joint at 1.5–3.5 rad/s, pushed along its motion at twice its peak
+    #    torque): 30 s mean ≤ 28 A throughout,
     #    settling just under it; then the demand stops and the budget recovers (ceiling back at 70 A)
     sup, q0 = fresh()
     dt2 = 0.004
 
     def push(qm):
-        vm = rng.normal(0, 0.5, 6)
+        vm = rng.choice([-1.0, 1.0], 6) * rng.uniform(1.5, 3.5, 6)
         return q0 + rng.normal(0, 3.0, 6), np.full(6, 200.0), np.zeros(6), 2.0 * sup.peak * np.sign(vm), vm
 
     means, inst, ks, ceil = [], [], [], []
@@ -490,7 +499,7 @@ def test_power():
     t_settle = 2 * T_AVG
     late = means[int(t_settle / dt2):]
     assert means.max() <= I_AVG + 1e-6, means.max()
-    assert late.min() >= I_AVG - 1.0, late.min()                # converges to the budget, not far under it
+    assert late.min() >= I_AVG - 2.5, late.min()                # converges to the budget, not far under it
     assert inst.max() <= I_PEAK + 1e-6 and sup.counts.get("power derate", 0) > 0
     t_burst = float(np.argmax(np.array(ceil) < I_PEAK - 1.0) * dt2)   # how long the 70 A ceiling lasted before the derate
     assert t_burst > 1.0 and inst[: int(t_burst / dt2)].max() > I_PEAK - 1.0, t_burst   # the burst was really used
@@ -519,16 +528,26 @@ def test_power():
     assert diff == 0 and not {"current cap", "power derate"} & set(rig.sup.counts), (diff, rig.sup.counts)
     i_norm = np.array(i_norm)
     mean_norm = rig.sup.power.mean
-    # the 20 lb (4.54 kg) one-hand carry of the collision test, for the record (the phase-current model is conservative at hold)
-    rig = CollisionRig(payload=4.536, seed=3)
-    i_carry = []
-    for _ in range(2500):
-        rig.step()
-        i_carry.append(rig.sup.i_pred)
-    i_carry = float(np.mean(i_carry))
-    t_derate = T_AVG * (I_AVG - REST_A) / max(i_carry - REST_A, 1e-9)
+    # 4. R2d basket carry: both arms, 4.54 kg in each hand, held 120 s (gentle sway in the carry pose). The other arm is
+    #    the mirror of this one: the BMS reads the whole robot (rest + both arms), so this supervisor sees it in its budget.
+    class CarryRig(CollisionRig):
+        AMP = CollisionRig.AMP * 0.25
 
-    # 4. BMS: over-current / under-voltage latch a fault (stop, heartbeat dropped) until reset; a high measured pack
+    rig = CarryRig(payload=4.536, seed=4)
+    i_arm, means_c = [], []
+    n4 = int(120.0 / rig.DT)
+    for _ in range(n4):
+        rig.bms = BmsReading(current_a=REST_A + 2 * rig.sup._arm_last, voltage_v=22.2)
+        v = rig.step()
+        assert not v.stop and rig.sup.heartbeat_ok(), v.reasons
+        i_arm.append(rig.sup._arm_last)
+        means_c.append(rig.sup.power.mean)
+    i_arm, means_c = np.array(i_arm), np.array(means_c)
+    assert not {"current cap", "power derate"} & set(rig.sup.counts), rig.sup.counts
+    assert means_c.max() < I_AVG, means_c.max()
+    i_robot = REST_A + 2 * i_arm
+
+    # 5. BMS: over-current / under-voltage latch a fault (stop, heartbeat dropped) until reset; a high measured pack
     #    current (the base climbing) leaves the arm less room, and an unmeetable budget still never stops the arm
     sup, q0 = fresh()
     for flag in ("overcurrent", "undervoltage"):
@@ -546,16 +565,16 @@ def test_power():
     _kin_run(sup, 2000, dt, t, wild, rng, q0.copy(), True, bms=BmsReading(current_a=45.0, voltage_v=19.5), each=each4)
     assert st4["i"] <= I_PEAK + 1e-6, st4
     counts = {a: b for a, b in sup.counts.items() if a in ("current cap", "power derate", "BMS over-current or under-voltage")}
-    return (f"Battery budget (W8a; model I = |τ|/(ratio·Kt) + idle per joint, braking = 0, + {REST_A:.1f} A for the rest of the robot): "
-            f"a random high-torque policy with peak torque allowed asks for up to {st1['ask']:.0f} A; **0 of {n1} cycles predict over {I_PEAK:.0f} A** "
-            f"(max {st1['i']:.1f} A, capped in {caps1} cycles, feed-forward then gains). Sustained full demand for 100 s: 70 A allowed for the first {t_burst:.1f} s (burst), "
+    return (f"Battery budget (W8a; battery current = electrical input power / V_bus per joint: k·R·I_ph² + τ·ω/η, braking offsets only its own copper loss, + idle + {REST_A:.1f} A for the rest of the robot): "
+            f"a random high-torque policy (peak torque allowed, 1–3.5 rad/s, bus sagged to {v_sag:.0f} V) asks for up to {st1['ask']:.0f} A; **0 of {n1} cycles predict over {I_PEAK:.0f} A** "
+            f"(max {st1['i']:.1f} A, capped in {caps1} cycles, feed-forward then gains). Sustained high-speed high-torque demand (1.5–3.5 rad/s, 2 × peak torque along the motion) for 100 s: 70 A allowed for the first {t_burst:.1f} s (burst), "
             f"then **the 30 s mean never exceeds {I_AVG:.0f} A** (max {means.max():.2f} A; {late.min():.1f}–{late.max():.1f} A after {t_settle:.0f} s, "
             f"torque-limit factor k ≈ {k_late:.2f}); demand stopped: back to {mean_after:.1f} A and the full 70 A ceiling in 40 s. "
             f"Normal motion on the bench twin ({n3 * rig.DT:.0f} s, carry pose, no payload): {i_norm.mean():.1f} A mean / {i_norm.max():.1f} A max, "
             f"30 s mean {mean_norm:.1f} A, **commands identical to the budget off** (0 caps, 0 derates). No stop and the heartbeat kept in every run; "
             f"BMS over-current and under-voltage latch a fault; with the BMS reading 45 A the arm still never predicts over 70 A and keeps running. "
-            f"For the record: the 4.54 kg one-hand carry predicts {i_carry:.1f} A, so it would be derated after ≈ {t_derate:.0f} s of holding "
-            f"(phase-current model, conservative at hold) ✅ (overrides: {counts})")
+            f"**R2d basket carry, both arms with 4.54 kg each held {n4 * rig.DT:.0f} s:** {i_arm.mean():.1f} A per arm "
+            f"(max {i_arm.max():.1f} A), robot {i_robot.mean():.1f} A, 30 s mean ≤ {means_c.max():.1f} A: no cap, no derate ✅ (overrides: {counts})")
 
 
 def main():

@@ -2,33 +2,45 @@
 
 The pack (6S2P FPV pack) is rated 35 A continuous / 90 A burst, so the whole robot gets a software cap of **70 A peak** and
 **28 A over a 30 s rolling mean** (rnd/electrical.SW_PACK). The supervisor (sw/safety.py) predicts every cycle what its
-drives will draw and keeps the total under both, without ever stopping the arm (a power budget, not a fault).
+drives will draw from the battery and keeps the total under both, without ever stopping the arm (a power budget, not a fault).
 
-Current model, per joint: I = |τ_joint| / (ratio · Kt) + idle, where τ_joint is the drive torque the verdict will produce
-(kp·e − kd·ė + τ_ff at the measured state), ratio the belt/stage ratio outside the actuator (joints.json) and Kt the
-actuator's torque constant at its output (actuators.yaml: rated torque / rated current, the lower of rated and peak where
-both exist). This is the *phase* current; with the drive's output voltage below the bus voltage the bus current is at most
-that (P_elec = I_ph · V_ph ≤ I_ph · V_bus), so the model is an upper bound (several times high when holding still, where
-only the copper loss is drawn). A joint whose torque opposes its measured motion (τ·ω < 0, |ω| > W_REGEN) is braking: regen counts
-as zero draw (not as a credit for the other joints). The STS3215 wrist roll runs from the elbow node's 12 V buck: its
-12 V current is referred to the bus by 12 / (V_bus · η). Every drive also draws its logic idle current.
+Battery-current model (a PWM drive draws its electrical input power from the bus, not its phase current), per joint:
+    I_ph  = |τ| / (ratio · Kt)                       phase current (τ: the drive torque the verdict will produce, at the joint)
+    P_cu  = k_cu · R · I_ph²                         copper loss
+    P_m   = τ · ω                                    mechanical power at the measured joint speed
+    P_in  = P_cu + P_m / η            if P_m ≥ 0      (motoring)
+          = max(0, P_cu − η · |P_m|)  if P_m < 0      (braking: regen offsets that joint's own copper loss, never counted
+                                                      as a credit for the other joints or the rest of the robot)
+    I_bat = P_in / (V_bus · η_conv) + idle
+so a still hold draws only its copper loss (a few amps), not the full phase current. Kt (actuator output, N·m/A) from
+rnd/specs/actuators.yaml (rated torque / rated current, the lower of rated and peak where both exist; GIM8108-36 from the
+SDC303 reseller tables in rnd/electrical.MOTOR_CU); ratio = the belt/stage ratio outside the actuator (joints.json).
+R (Ω, per phase) is in neither the yaml nor a datasheet we hold: ESTIMATEs in ACTUATORS with their ranges; k_cu = 1.0 as
+in the electrical track's gim_bus_current (rnd/electrical.py). The convention is open until sysid: with I_ph the
+peak-amplitude (Iq) current, k_cu = 1.5 for a line-to-neutral R and 0.75 for a terminal-to-terminal R, so 0.75–1.5;
+the brushed STS3215 is 1.0. η = 0.85 (ESTIMATE). V_bus: the BMS's measured voltage when
+there is one, else 24 V nominal. The STS3215 wrist roll runs from the elbow node's 12 V buck (η_conv = 0.90). Every drive
+also draws its logic idle current.
 To this the supervisor adds a fixed allowance for the rest of the robot, REST_A: the sustained column of every non-arm
 branch in electrical.md (base wheels 2.2 + lift 2.0 + 12 V servos 2.9 + 5 V compute/sensors 2.0 + AI reserve 0.8 = 9.9 A).
-With a BMS reading, the rest of the robot is max(REST_A, measured pack current − this arm's model draw), so the base and
-the lift keep priority when they really draw more, and the rolling mean uses the larger of model and measurement.
+With a BMS reading, the measurement overrides the model where it is higher: the rest of the robot is max(REST_A, measured
+pack current − this arm's model draw) (so the base and the lift keep priority), and the rolling mean records the larger of
+model and measurement.
 The budget covers the drives of one Supervisor. On the two-arm robot either one supervisor runs both arms' drives, or
-each arm's supervisor gets the other arm's share in `rest_a` (Supervisor(rest_a=...)); two supervisors that each assume
-the whole budget would allow twice the arm current.
+each arm's supervisor sees the other arm's draw through the BMS reading or gets its share in `rest_a`; two supervisors
+that each assume the whole budget would allow twice the arm current.
 
-Two limits (sw/safety.py Supervisor.check, after the per-joint torque bound):
-1. **Peak (70 A):** if the predicted total exceeds I_PEAK, every motoring joint's torque bound is lowered to s·|τ| (the
-   same s for all, so the arm's draw fits exactly) and the command is trimmed the way the per-joint torque bound trims it:
-   feed-forward first, then kp, then kd. Counted as "current cap".
+Two limits (sw/safety.py Supervisor.check, after the per-joint torque bound). I_bat is monotone in |τ| at a given speed, so
+each limit is the largest common factor x (bisection, fit_factor) that fits the budget with every motoring joint's |τ|
+bounded by min(|τ|, x · ref); braking joints keep their command (they stay braking, their draw is unchanged):
+1. **Peak (70 A):** ref = |τ| (x ≤ 1 scales the motoring joints' torque bounds). Trimmed the way the per-joint torque bound
+   trims: feed-forward first, then kp, then kd. Counted as "current cap".
 2. **Mean (28 A over 30 s), thermal-style derate:** PackBudget gives a ceiling on the pack current for the cycle (I_PEAK
    while the window has room; it falls towards I_AVG as the room is used up, and to I_AVG · I_AVG / mean if the mean is
-   ever over, i.e. lower the further it is over). Over the ceiling, the per-joint torque limits become k · rated, the
-   same k for every motoring joint (derate_factor: the largest k that fits), trimmed in the same order; braking joints
-   keep theirs. k ≥ K_MIN so the arm keeps holding itself. Counted as "power derate" (cycles).
+   ever over, i.e. lower the further it is over). Over the ceiling, ref = rated: the per-joint torque limits become
+   k · rated, the same k for every motoring joint, never below a floor: K_MIN · rated, and 1.25 × the twin's gravity
+   torque when the supervisor has one (collision detector), so a derate never lets the arm fall into a tracking fault.
+   Counted as "power derate".
 Neither stops the arm or drops the heartbeat: it is a power budget, not a fault. A BMS over-current or under-voltage flag
 (BmsReading) is a fault: Supervisor.check latches it.
 The window starts full of REST_A (the robot idles before the first command).
@@ -42,20 +54,20 @@ import numpy as np
 
 I_PEAK, I_AVG, T_AVG = 70.0, 28.0, 30.0       # A, A, s (rnd/electrical.SW_PACK; electrical.md *Pack and BMS*)
 REST_A = 2.2 + 2.0 + 2.9 + 2.0 + 0.8          # A: base + lift + 12 V servos + 5 V compute/sensors + AI reserve (electrical.md branch table, sustained)
-V_MIN, BUCK_EFF = 20.0, 0.90                   # 6S cut-off (3.33 V/cell) when no BMS voltage; 24 → 12 V buck efficiency (ESTIMATE, rnd/electrical.py)
+V_NOM, BUCK_EFF = 24.0, 0.90                   # V bus when no BMS voltage; 24 → 12 V buck efficiency (ESTIMATE, rnd/electrical.py)
+ETA = 0.85                                     # motor + drive efficiency, motoring and regenerating (ESTIMATE)
+K_CU3 = 1.0                                    # copper-loss factor of a three-phase drive (ESTIMATE, 0.75–1.5 by R / current convention)
 I_IDLE_DRIVE = 0.04                            # A per CAN drive, logic only (ESTIMATE, rnd/electrical.I_IDLE_DRIVER)
-W_REGEN = 0.05                                 # rad/s: below this the sign of the measured speed is noise, so no regen credit
 K_MIN = 0.25                                   # derate floor (fraction of rated torque): the arm keeps holding itself
 BIN, H_BURST, PLAN_MARGIN = 0.1, 1.0, 0.1      # s window bins; s burst horizon of the plan; A kept under I_AVG by the plan
 
-# actuator → (Kt at the actuator output in N·m/A, supply voltage, idle A at that supply). Kt from rnd/specs/actuators.yaml
-# (rated torque / rated current; the lower of rated and peak where both are listed); GIM8108-36 has no current in the yaml:
-# 3.86 N·m/A from the SDC303 reseller tables (rnd/electrical.MOTOR_CU). sw.test_s1 checks these against the yaml.
+# actuator → (Kt at the actuator output N·m/A, R Ω per phase, k_cu, supply V, idle A at that supply, supply converter η).
+# Kt: rnd/specs/actuators.yaml (sw.test_s1 checks it). R: ESTIMATEs (no figure in the yaml), range in the comment.
 ACTUATORS = {
-    "GIM6010-8": (5.0 / 10.5, 24.0, I_IDLE_DRIVE),            # 5 N·m rated at 10.5 A continuous
-    "GIM8108-36": (3.86, 24.0, I_IDLE_DRIVE),                 # SDC303 (24 V)
-    "DM-J4310-2EC_V1.1": (min(3.0 / 2.5, 7.0 / 7.5), 24.0, I_IDLE_DRIVE),   # 3 N·m @ 2.5 A, 7 N·m @ 7.5 A → 0.93
-    "STS3215-C018": (2.94 / 2.7, 12.0, 0.18),                 # stall 2.94 N·m @ 2.7 A at 12 V; idle 0.18 A
+    "GIM6010-8": (5.0 / 10.5, 0.35, K_CU3, 24.0, I_IDLE_DRIVE, 1.0),         # 5 N·m @ 10.5 A; R 0.35 (0.25–0.50) as rnd/electrical
+    "GIM8108-36": (3.86, 0.22, K_CU3, 24.0, I_IDLE_DRIVE, 1.0),              # SDC303 3.86 N·m/A; R 0.22 reseller tables (0.15–0.30)
+    "DM-J4310-2EC_V1.1": (min(3.0 / 2.5, 7.0 / 7.5), 1.0, K_CU3, 24.0, I_IDLE_DRIVE, 1.0),   # 0.93 N·m/A; R 1.0 (0.5–1.5)
+    "STS3215-C018": (2.94 / 2.7, 12.0 / 2.7, 1.0, 12.0, 0.18, BUCK_EFF),     # stall 2.94 N·m @ 2.7 A at 12 V → R = 4.4 Ω (3.5–5)
 }
 
 
@@ -73,9 +85,8 @@ class BmsReading:
 
 
 class CurrentModel:
-    """Per-joint bus-current model for one set of joints (rows of joints.json); `rated` (N·m) for the derate floor.
-    Call at(v_bus) once per cycle (cached): it sets a (A per N·m at the bus, per joint), idle (A) and full_rated (A, the
-    dynamic draw with every joint at its rated torque)."""
+    """Per-joint battery-current model for one set of joints (rows of joints.json). Call at(v_bus) once per cycle (cached;
+    sets idle, A)."""
 
     def __init__(self, joints, rated):
         try:
@@ -83,30 +94,52 @@ class CurrentModel:
         except KeyError as ex:
             raise KeyError(f"no current model for actuator {ex} (sw/power.ACTUATORS)") from None
         self.kt = np.array([x[0] * j["ratio"] for x, j in zip(a, joints)])       # N·m/A at the joint
-        self.v_supply = np.array([x[1] for x in a])
-        self.idle_supply = np.array([x[2] for x in a])
+        self.rk = np.array([x[1] * x[2] for x in a])                             # k_cu · R
+        self.v_supply = np.array([x[3] for x in a])
+        self.idle_supply = np.array([x[4] for x in a])
+        self.eta_conv = np.array([x[5] for x in a])
         self.rated = np.asarray(rated, float)
-        self._v = object()
+        self._v = None
         self.at(None)
 
     def at(self, v_bus):
-        v = V_MIN if v_bus is None or not math.isfinite(v_bus) or v_bus <= 0 else round(float(v_bus), 1)
+        v = V_NOM if v_bus is None or not math.isfinite(v_bus) or v_bus <= 0 else round(float(v_bus), 2)
         if v != self._v:
             self._v = v
-            to_bus = np.where(self.v_supply < 20.0, self.v_supply / (v * BUCK_EFF), 1.0)   # buck-fed servos referred to the bus
-            self.a = to_bus / self.kt
-            self.idle = float(np.sum(self.idle_supply * to_bus))
-            self.full_rated = float(np.sum(self.rated * self.a))
+            self.inv = 1.0 / (v * self.eta_conv)                                  # A per W at the bus
+            self.idle = float(np.sum(self.idle_supply * self.v_supply * self.inv))
         return self
 
     def dynamic(self, tau, w):
-        """Per-joint bus current above idle (A) for joint torques tau and measured speeds w; braking joints draw 0."""
-        braking = (tau * w < 0) & (np.abs(w) > W_REGEN)
-        return np.where(braking, 0.0, np.abs(tau) * self.a)
+        """Per-joint battery current above idle (A) for joint torques tau and measured speeds w."""
+        cu = self.rk * (tau / self.kt) ** 2
+        pm = tau * w
+        p = np.where(pm >= 0, cu + pm / ETA, np.maximum(cu + pm * ETA, 0.0))
+        return p * self.inv
+
+    def bound(self, tabs, w):
+        """Per-joint battery current (A) with |τ| = tabs driving along the motion (the worst sign); monotone in tabs."""
+        return (self.rk * (tabs / self.kt) ** 2 + tabs * np.abs(w) / ETA) * self.inv
 
     def total(self, tau, w):
-        """The set's bus current (A): idle + dynamic."""
+        """The set's battery current (A): idle + dynamic."""
         return self.idle + float(np.sum(self.dynamic(np.asarray(tau, float), np.asarray(w, float))))
+
+
+def fit_factor(model, budget, tabs, ref, w, mask, lo=0.0, floor=0.0, iters=40):
+    """Largest x in [lo, 1] with Σ_mask model.bound(min(tabs, max(x·ref, floor)), w) ≤ budget (lo if even that does not
+    fit; the floor (N·m, per joint) is never cut)."""
+    def f(x):
+        return float(np.sum(np.where(mask, model.bound(np.minimum(tabs, np.maximum(x * ref, floor)), w), 0.0)))
+    if f(1.0) <= budget:
+        return 1.0
+    if f(lo) > budget:
+        return lo
+    a, b = lo, 1.0
+    for _ in range(iters):
+        m = 0.5 * (a + b)
+        a, b = (m, b) if f(m) <= budget else (a, m)
+    return a
 
 
 class PackBudget:
@@ -120,7 +153,7 @@ class PackBudget:
       from below.
     - reactive (above I_AVG): I_AVG · I_AVG / mean, lower the further the measured mean is over (e.g. the BMS reads
       more than the model, or the K_MIN floor bound).
-    Supervisor.check turns the ceiling into a common factor k on the per-joint torque limits (derate_factor)."""
+    Supervisor.check turns the ceiling into a common factor k on the per-joint torque limits (fit_factor)."""
 
     def __init__(self, rest_a=REST_A, i_peak=I_PEAK, i_avg=I_AVG, t_avg=T_AVG):
         self.rest_a, self.i_peak, self.i_avg, self.t_avg = float(rest_a), float(i_peak), float(i_avg), float(t_avg)
@@ -195,25 +228,3 @@ class PackBudget:
         lo = min(float(i_low), ia)
         c = np.where(pre, (S + L) / np.maximum(h, 1e-9), (S + L - lo * (h - H_BURST)) / H_BURST)
         return float(np.min(c[h > 1e-9])) if np.any(h > 1e-9) else self.i_peak
-
-
-def derate_factor(budget, a, terms, rated):
-    """Largest k (≤ 1) with Σ a_j · min(terms_j, k · rated_j) ≤ budget: a common per-joint torque-limit factor that
-    keeps the arm's draw under `budget` A whatever the command does under the limit (a_j: A per N·m at the bus, terms_j:
-    |τ_ff| + kp·e + kd·|ė| already allowed, rated_j: N·m). Never below K_MIN (the arm keeps holding itself)."""
-    a, t, r = (np.asarray(x, float) for x in (a, terms, rated))
-    b = np.where(r > 0, t / np.maximum(r, 1e-12), np.inf)         # breakpoints: joint j saturates at k = b_j
-    if np.sum(a * np.minimum(t, r)) <= budget:
-        return 1.0
-    k = 0.0
-    for kb in np.sort(np.unique(np.concatenate([[0.0], b[np.isfinite(b)]]))):
-        if kb >= 1.0 or np.sum(a * np.minimum(t, kb * r)) > budget:
-            break
-        k = kb
-    # f is linear on [k, next breakpoint]: f(x) = fixed + x · slope
-    sat = b <= k
-    fixed = float(np.sum((a * t)[sat]))
-    slope = float(np.sum((a * r)[~sat]))
-    if slope > 0:
-        k = max(k, (budget - fixed) / slope)
-    return float(min(max(k, K_MIN), 1.0))
