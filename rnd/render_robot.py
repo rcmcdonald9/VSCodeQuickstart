@@ -1,4 +1,4 @@
-# Blender: render the whole-robot assembly.  blender -b --factory-startup --python rnd/render_robot.py -- out.png [samples] [list] [cam az deg]
+# Blender: render the whole-robot assembly.  blender -b --factory-startup --python rnd/render_robot.py -- out.png [samples] [list] [cam az deg] [elev m] [tgt x,y,z m] [dist m] [res WxH]
 import bpy, sys, math
 from pathlib import Path
 from mathutils import Vector
@@ -39,16 +39,17 @@ def area(loc, tgt, size, e):
     o.rotation_euler = (Vector(tgt) - Vector(loc)).to_track_quat("-Z", "Y").to_euler()
 
 
-tgt = Vector((0.10, 0, 0.64))
+tgt = Vector(tuple(float(v) for v in argv[5].split(","))) if len(argv) > 5 else Vector((0.10, 0, 0.64))
 area((2.2, -1.6, 2.6), tgt, 2.5, 380); area((-1.8, -1.2, 1.6), tgt, 2.5, 110); area((0.2, 2.2, 2.0), tgt, 2.0, 140)
 scn.world = bpy.data.worlds.new("w"); scn.world.use_nodes = True
 bg = scn.world.node_tree.nodes["Background"]; bg.inputs["Color"].default_value = (0.86, 0.88, 0.91, 1); bg.inputs["Strength"].default_value = 0.25
 cam = bpy.data.cameras.new("c"); cam.lens = 50; co = bpy.data.objects.new("c", cam); bpy.context.collection.objects.link(co)
-dist = 2.35
+dist = float(argv[6]) if len(argv) > 6 else 2.35
 ELEV = float(argv[4]) if len(argv) > 4 else 0.55
 co.location = tgt + Vector((dist * math.cos(AZ), dist * math.sin(AZ), ELEV))
 co.rotation_euler = (tgt - co.location).to_track_quat("-Z", "Y").to_euler()
 scn.camera = co; scn.render.engine = "CYCLES"; scn.cycles.samples = SAMPLES; scn.cycles.use_denoising = False
-scn.render.resolution_x, scn.render.resolution_y = 1100, 1400
+scn.render.resolution_x, scn.render.resolution_y = (tuple(int(v) for v in argv[7].split("x")) if len(argv) > 7 else (1100, 1400))
+scn.cycles.use_denoising = True
 scn.view_settings.view_transform = "AgX"; scn.render.filepath = OUT
 bpy.ops.render.render(write_still=True)
