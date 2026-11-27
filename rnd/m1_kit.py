@@ -45,8 +45,16 @@ OLDHAM = (67.19 + 36.45, "Zoro: Ruland MOCC51-12-A clamp hub (12 mm bore, 4 mm k
                          "(2026-11-27 search snapshots); disc torque rating to read off Ruland's datasheet (the RS '9.5 N·m' is the clamp-screw seating torque)")
 OLDHAM_MOTOR_HUB = (15.0, "ESTIMATE: 6061-T6 from the drive_adapter STEP (Ø50 × 4 flange + tenon, 4 × Ø3.4 + c'bore on PCD 34), JLCCNC / PCBWay-class "
                           "instant quote at qty 8; reworking a 2nd bought hub is a $54.19 MOCT51-12-A (Zoro) + lathe time")
-OLDHAM_ALT = (25.0 * 2 + 12.0, "Huco 452H50.35 Ø50 12 mm keyed hub £19.43–20.21 ex VAT at RS UK (€23.37 RS IE; check clamp vs set-screw variant) × 2 + "
-                               "Huco disc ≈ $12 ESTIMATE (not listed separately)")
+# Cheapest credible alternatives (owner decision on the $5,500 limit; rnd/bom.py drivers()):
+OLDHAM_ALT = (25.0 + 12.0, "Huco 452H50.35 Ø50 hub, 12 mm bore with keyway, £19.43–20.21 ex VAT at RS UK (€23.37 RS IE, A$45.79 RS AU; confirm the clamp "
+                           "variant and its torque rating) + Huco acetal disc ≈ $12 ESTIMATE (sold separately, not listed); the motor-side hub stays the 6061 CNC part")
+SLEEVE_ALT = (2.5, "ESTIMATE: Misumi configurable steel collars (length in 0.1 mm steps, precision class to ± 0.01; bores in 0.5 mm steps → Ø4.5 / 3.5 / 5.5), "
+                   "price not visible (Misumi host not reachable from this session); needs the collar steel's yield ≥ the 352 MPa sleeve stress (joints.md) "
+                   "and the print lengths rounded to 0.1 mm")
+BALL_ALT = (29.75, "Penn Tool: Hudson BT-1-1/2 CS 1-1/2\" carbon-steel ball transfer, 250 lb, $29.75 ($20.67 eBay; 2026-11-27): a Ø38.1 ball still meets a "
+                   "15 mm threshold below its equator (19 mm) but climbs harder; rnd/tip.py + threshold.py to re-run")
+BALLAST_ALT = (15.0, "ESTIMATE: two saw-cut drops of 1-3/4 × 3\" A36 flat bar from a local steel yard (≈ $1.5 / lb); 44.5 × 76 mm section, so the "
+                     "102 mm block is 2.71 kg (cut it 92 mm for 2.44 kg) and the cradle widens 1.5 / 5 mm; Zoro cut pieces are $103–113 each (no saving)")
 D63_SET = (130.0, "ESTIMATE: D63 shaft-side M5 clamp hub 12 H7 + 4 mm keyway + acetal disc, ≥ 25 N·m; scaled from the Ruland Ø50.8 hub + disc $103.64 "
                   "(Zoro); Ondrives 2-1/4\" clamp Oldham $84–157 (2026-11-27 search)")
 D63_MOTOR_HUB = (18.0, "ESTIMATE: 6061-T6 D63 × 4 flange + tenon, 4 × Ø3.4 + c'bore on PCD 30 (CNC, as the D50 hub)")
