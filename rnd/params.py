@@ -145,6 +145,16 @@ class Base:
     coupling_mass: float = 0.25    # upper/base coupling + cam lever + connector
     battery_mass: float = 1.10     # loop 13: Lumenier NAV-class 6S 10 Ah 21700 pack 975 g + 30 A BMS + printed sleeve (was 1.5 ESTIMATE)
     battery_wh: float = 222.0
+    # A10 v2 (2026-11-27, review finding 4: tip-over; rnd/tip.py). Mass moved / added low in the base:
+    power_board_mass: float = 0.75 # ESTIMATE: the A5 v2 power stage (K1 contactor ≈ 0.32, Al clamp plate 150×100×5 = 0.20 FROM volume, 3 RH-50 + 3 IRFB7530 + driver ≈ 0.10, bulk cap ≈ 0.05, K2 / fuses / 10 AWG ≈ 0.08) was in no mass budget; it now sits on the belly next to the battery (rnd/parts/base.py power_board)
+    caster_r: float = 0.205        # D18b ball contact radius at the 4 diagonals (FROM CAD: the housing clears the skirt and the 45° dock-pad carrier)
+    caster_float: float = 0.022    # D18b free stroke when released: clears a 15 mm threshold + 7 mm of pile (R4)
+    caster_take_up: float = 0.001  # ESTIMATE: travel before a locked caster carries load (rod-lock bite ≈ 0.5 mm + printed guide ≈ 0.5 mm); bench-test
+    caster_mass: float = 0.15      # each, ESTIMATE: D18b lockable caster (2" steel ball transfer ≈ 0.09, printed guide + spring, one-way rod lock + pull solenoid ≈ 0.06)
+    ballast_mass: float = 4.9      # FROM CAD (rnd/parts/base.py ballast(): 2 × 102 × 43 × 71 mm steel, 7.85 g/cm³ = 2 × 2.44 kg): removable, lifts out through two deck hatches; carried as its own pieces (R3)
+    ballast_on: bool = True        # False = the robot without its ballast blocks (tip.py compares both)
+    ballast_xyz: tuple = (-0.100, 0.085, 0.0665)  # FROM CAD (base.BAL_X/Y/Z): centroid of the left block (the right one mirrors y), m from the base centre / floor
+    power_board_xyz: tuple = (0.095, -0.076, 0.0525)  # FROM CAD (base.PB_X/Y/Z): power_board envelope centroid (front-right sector, 315°)
 
 
 @dataclass

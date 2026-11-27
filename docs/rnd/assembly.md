@@ -5,12 +5,12 @@
 | Piece | Best-fit size (mm) | Volume (cm³) | Fits |
 |---|---|---|---|
 | skirt quarter | 124 × 250 × 250 | 96 | ✅ |
-| deck quarter | 6 × 246 × 246 | 269 | ✅ |
-| cover belly_2 | 2 × 246 × 246 | 81 | ✅ |
-| cover belly_0 | 2 × 246 × 246 | 81 | ✅ |
-| cover belly_1 | 2 × 246 × 246 | 81 | ✅ |
-| cover belly_3 | 2 × 246 × 246 | 81 | ✅ |
-| head_shell | 184 × 243 × 243 | 307 | ✅ |
+| deck quarter | 6 × 246 × 246 | 259 | ✅ |
+| cover belly_2 | 2 × 246 × 246 | 74 | ✅ |
+| cover belly_0 | 2 × 246 × 246 | 74 | ✅ |
+| cover belly_1 | 2 × 246 × 246 | 74 | ✅ |
+| cover belly_3 | 2 × 246 × 246 | 74 | ✅ |
+| head_shell | 184 × 243 × 243 | 294 | ✅ |
 | upper bone | 98 × 112 × 233 | 280 | ✅ |
 | torso_shell [1] | 180 × 195 × 230 | 293 | ✅ |
 | torso_shell [2] | 180 × 195 × 230 | 293 | ✅ |
@@ -23,7 +23,7 @@
 | cover belt_duct [2/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [4/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [5/5] | 16 × 27 × 188 | 29 | ✅ |
-| neck_boot | 116 × 164 × 188 | 98 | ✅ |
+| neck_boot | 116 × 164 × 188 | 97 | ✅ |
 | yaw plate bottom | 8 × 185 × 185 | 72 | ✅ |
 | cover spine_pod | 55 × 110 × 167 | 89 | ✅ |
 | visor | 120 × 166 × 166 | 82 | ✅ |
@@ -114,8 +114,8 @@
 
 | Piece | kg |
 |---|---|
-| base | 6.31 |
+| base | 7.66 |
 | upper core | 8.50 |
 | arm (each) | 4.68 |
 | battery | 1.10 |
-| total robot | 25.26 |
+| total robot | 26.61 |
