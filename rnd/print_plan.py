@@ -23,15 +23,15 @@ WORKERS = 2
 
 # (part key in assembly_check.printed_parts() or EXTRA below, quantity, note). Wave-1 design (2026-11-27): D24 bolted arm
 # cartridges (no KX socket on the arm; D15 retired there), D19 one-piece shaft-pulleys with capped seats, D16 wrist spindle.
-# Default roll drive (belt); the inline-roll option changes the roll rows (see INLINE_DELTA).
+# W10 (2026-11-27): the inline roll is the default (owner OK; the belt-roll rows apply with PIP_ROLL_DRIVE=belt, BELT_ROLL
+# below), the lift is a bolted D13/D24 stage (lift v2: no KX74 socket or hub), and the printed ASA Oldham motor tongue is
+# gone (W8b: rejected at 0.74× friction; the motor-side hub is 6061, a BOM line).
 QTY = {
-    "cartridge M can (bolted, D24)": (8, "pitch, roll, yaw, elbow × 2 arms: Ø86.6 sleeve + Ø68 flange, 6 × M4 heat-set inserts (ASA, A6)"),
-    "cartridge M rear cap (D24)": (8, "carries the motor (3 × M3), 3 radial M3 into the sleeve"),
-    "cartridge M Oldham adapter (D24)": (8, "tongue adapter on the motor output (4 × M3); the clamp hub and disc are bought"),
-    "cartridge M can": (5, "KX cartridges: 4 wheels + lift"), "cartridge M adapter": (5, "KX74 male face (wheels + lift)"),
-    "KX74 hub": (4, "wheel hubs, bolted to the GIM output (D17)"), "KX74 collar": (1, "lift only (the wheels have none, D17; the arm bolts, D24)"),
-    "D13 KX74 hub v2 (lift)": (1, "lift stage: KX74 hub over the flange coupling"),
-    "eccentric bushing": (18, "2 per D13 stage: 8 arm + lift (belt tension)"),
+    "cartridge M can (bolted, D24)": (7, "pitch, yaw, elbow × 2 arms + the lift: Ø86.6 sleeve + flange with 4 ear lobes per site (cartridge_m.EAR_SITES; one is sliced) (ASA, A6)"),
+    "cartridge M rear cap (D24)": (7, "carries the motor (3 × M3), 3 radial M3 into the sleeve"),
+    "cartridge M can": (4, "KX cartridges: the 4 wheels"), "cartridge M adapter": (4, "KX74 male face (wheels)"),
+    "KX74 hub": (4, "wheel hubs, bolted to the GIM output (D17)"),
+    "eccentric bushing": (14, "2 per D13 stage: 6 arm + lift (belt tension)"),
     "cartridge D can": (2, "wrist pitch DM-J4310, bolted flange (D24: the KX56 went)"), "cartridge D adapter": (2, ""),
     "KX44 hub": (2, "head pan + tilt (D16: the wrist roll lost its KX44)"), "KX44 collar": (2, ""),
     "cartridge S sleeve": (4, "wrist roll × 2, head pan + tilt"), "cartridge S horn adapter": (4, ""),
@@ -42,8 +42,7 @@ QTY = {
     "palm": (2, ""), "gripper grip_base": (2, ""), "gripper grip_servo_sleeve": (2, ""), "gripper jaw_moving": (2, ""), "gripper jaw_fixed": (2, ""),
     "shoulder bracket body": (2, "mirror for the right arm"), "shoulder bracket outer wall": (2, "bolted print (D19: the pitch shaft drops in)"),
     "pitch shaft (integral 60T)": (2, "D19 one piece: Ø40 tube + 60T"), "pitch hub (balancer disc + ferrule)": (2, "bolted to the shaft end"),
-    "ferrule (arm side)": (2, ""), "roll link": (2, ""), "roll shaft + 80T (one piece)": (2, "D19"), "roll seat cap": (4, "2 per arm"),
-    "clevis cap + yaw torque fork": (4, "inner + outer clevis caps, pinch bolt (the inner one stands in for both)"),
+    "ferrule (arm side)": (2, ""), "roll link": (2, "inline roll link (GIM8108-36 seat, D24)"), "roll arm rear": (2, "inline roll rear support arm (61806 seat, W8c stop bushes)"),
     "clevis + yaw block": (2, ""), "yaw shaft": (2, "one-piece tube + 40T"), "yaw flange": (2, "bolted to the yaw tube (4 × M4)"),
     "yaw plate bottom": (2, "separate bolted print (loop 44)"), "roll spring ring": (2, ""),
     "carriage": (1, ""), "ratchet strip": (1, "4 segments"), "torso_shell": (1, "2 halves"), "e_tray": (1, ""),
@@ -55,16 +54,31 @@ QTY = {
     "fin-ray finger": (4, "TPU 95A, 2 per gripper"),
     "deck quarter": (4, ""), "skirt quarter": (4, ""), "wheel pod": (4, ""), "wheel shaft": (4, ""), "dock_wing_l": (2, "self-docking charger: left + mirrored right wing"), "dock_tower": (1, "dock contact tower"), "torque hanger (wheel)": (4, "standard torque-reaction part, screws under the deck"), "mast coupling": (1, ""),
 }
+# Belt-roll fallback (PIP_ROLL_DRIVE=belt): its roll rows, swapped in for the inline ones at import.
+BELT_ROLL = {"cartridge M can (bolted, D24)": (9, "pitch, roll, yaw, elbow × 2 arms + the lift"), "cartridge M rear cap (D24)": (9, ""),
+             "eccentric bushing": (18, "2 per D13 stage: 8 arm + lift"), "roll link": (2, ""), "roll shaft + 80T (one piece)": (2, "D19"),
+             "roll seat cap": (4, "2 per arm"), "clevis cap": (4, "inner + outer clevis caps, pinch bolt (the inner one stands in for both)")}
 # Printed parts the wave-1 design retired from the arm (the print plan before D24/D19 had them): what the build drops.
-RETIRED = {"KX74 collar": 8, "KX56 hub": 2, "KX56 collar": 2, "cartridge M can": 8, "cartridge M adapter": 8, "small-pulley hub": 9,
-           "shoulder bracket": 2, "pitch shaft": 2, "roll shaft": 2}
+# W10: the 8 printed ASA Oldham tongue adapters (W8b), the lift's KX74 collar + D13 KX74 hub v2 and its KX can/adapter (lift v2).
+RETIRED = {"KX74 collar": 9, "KX56 hub": 2, "KX56 collar": 2, "cartridge M can": 9, "cartridge M adapter": 9, "small-pulley hub": 9,
+           "shoulder bracket": 2, "pitch shaft": 2, "roll shaft": 2, "cartridge M Oldham adapter (D24)": 8, "D13 KX74 hub v2 (lift)": 1}
+
+
+def _roll_rows():
+    from .parts import roll
+    if not roll.INLINE:
+        QTY.pop("roll arm rear", None)
+        QTY.update(BELT_ROLL)
+
+
+_roll_rows()
 # Inline roll (D24 option, PIP_ROLL_DRIVE=inline): per arm, the roll cartridge (bolted can + cap + adapter), the roll
 # shaft + 80T, its seat caps and the clevis caps go; the inline roll link and the rear roll arm come in (roll.printed_parts).
-INLINE_DELTA = "−2 bolted cans/caps/adapters, −2 roll shafts, −4 roll seat caps, −4 clevis caps; + 2 rear roll arms (inline roll link)"
+INLINE_DELTA = "−2 bolted cans/caps, −2 roll shafts, −4 roll seat caps, −4 clevis caps, −4 eccentric bushings; + 2 rear roll arms (inline roll link)"
 
 
 # printed parts of the two arms (incl. the torso-side pitch modules): the M1 bench arm prints half of these
-ARM_KEYS = {"cartridge M can (bolted, D24)", "cartridge M rear cap (D24)", "cartridge M Oldham adapter (D24)", "eccentric bushing",
+ARM_KEYS = {"cartridge M can (bolted, D24)", "cartridge M rear cap (D24)", "eccentric bushing", "roll arm rear", "clevis cap",
             "cartridge D can", "cartridge D adapter", "cartridge S sleeve", "cartridge S horn adapter", "upper bone", "upper bone cap",
             "elbow seat cap A (+Y)", "elbow seat cap B (−Y)", "elbow cassette plate", "elbow cassette plate A", "elbow cassette spacer",
             "forearm (ends)", "elbow pulley hub", "palm", "gripper grip_base", "gripper grip_servo_sleeve", "gripper jaw_moving",
@@ -76,10 +90,9 @@ ARM_KEYS = {"cartridge M can (bolted, D24)", "cartridge M rear cap (D24)", "cart
 
 def extra_parts():
     """Printed parts the assembly-check dict doesn't list (seat caps, yaw flange / bottom plate, spring ring, lift hub)."""
-    from .parts import arm, belt_stage as bs, roll
+    from .parts import arm, roll
     return {"elbow seat cap A (+Y)": arm.elbow_seat_cap("+"), "elbow seat cap B (−Y)": arm.elbow_seat_cap("-"),
-            "yaw flange": roll.yaw_flange(), "yaw plate bottom": roll.yaw_plate_bot(), "roll spring ring": roll.roll_spring_ring(),
-            "D13 KX74 hub v2 (lift)": bs.kx_hub_v2()}
+            "yaw flange": roll.yaw_flange(), "yaw plate bottom": roll.yaw_plate_bot(), "roll spring ring": roll.roll_spring_ring()}
 
 
 def export():
@@ -160,15 +173,18 @@ def main():
               + (f"; one arm {prev['arm_hours_p2s']:.0f} → {arm_h * P2S_FACTOR:.0f} h" if prev.get("arm_hours_p2s") else "") + ".", ""]
     L += ["**Wave 1 (D24 bolted cartridges, D19 one-piece shafts):** the arm no longer prints KX74/KX56 hubs + collars or the KX "
           "cartridge adapters (8 KX74 collars, 2 KX56 sockets, 8 KX cans/adapters retired from the arm), nor split pulleys; it prints "
-          "8 bolted cans + rear caps + Oldham tongue adapters, the one-piece pitch/roll/yaw/elbow shaft-pulleys and the D19 seat caps. "
-          f"Inline-roll option (D24, pending): {INLINE_DELTA}.", "",
+          "bolted cans + rear caps, the one-piece pitch/roll/yaw/elbow shaft-pulleys and the D19 seat caps. "
+          f"Inline roll (D24, the default since the owner's OK): {INLINE_DELTA}. **W10 (2026-11-27):** the 8 printed ASA Oldham tongue adapters are gone "
+          "(W8b: 0.74× friction at the peak; the motor-side hub is 6061, a BOM line) and the lift is a bolted D13/D24 stage (lift v2: its KX74 collar, "
+          "KX74 hub v2 and KX can/adapter go, a bolted can + cap come in).", "",
           "| Part | Qty | Filament (g, all) | Generic time (h, all) | Note |", "|---|---|---|---|---|"]
     for name, a in sorted(per.items(), key=lambda kv: -kv[1]["h"]):
         L.append(f"| {name} | {a['q']} | {a['g']:.0f} | {a['h']:.1f} | {a['note']} |")
     md = "\n".join(L)
     (DOCS / "print_plan.md").write_text(md)
     (DOCS / "print_plan.json").write_text(json.dumps({"kg": tot_g / 1000, "hours_generic": tot_h, "hours_p2s": tot_h * P2S_FACTOR,
-                                                         "arm_kg": arm_g / 1000, "arm_hours_p2s": arm_h * P2S_FACTOR}))
+                                                         "arm_kg": arm_g / 1000, "arm_hours_p2s": arm_h * P2S_FACTOR,
+                                                         "covers_kg": sum(a["g"] for n, a in per.items() if n.startswith(("cover ", "lift cover"))) / 1000}))
     print(md)
 
 

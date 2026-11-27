@@ -2,8 +2,9 @@
 python -m rnd.m1_kit
 
 - **Step 1: prove the GIM protocol and the safety chain on ONE joint.** One GIM6010-8 (the yaw motor later), the DM-J4310,
-  the CAN adapters, the bench supply and the whole safety board, a test lever bolted straight to the GIM output, one keyed
-  D50 Oldham for the tongue coupon, thermistors, inserts and screws for the coupons, filament. Nothing in it waits on a
+  the CAN adapters, the bench supply and the whole safety board, a test lever bolted straight to the GIM output, the
+  joint's keyed D50 Oldham with its metal (6061) motor-side hub for the Oldham coupon, thermistors, inserts and screws for
+  the coupons, filament. Nothing in it waits on a
   seller answer or a CAD fix, and every part is reused in the arm (except the bench tools). Neon review #2 finding 15
   (2026-11-27): the D40 Oldham / plain Ø12 / set-screw pulley / 315 belt stage (belts.md: 0.86× / 0.65× at the motor peak,
   yaw centre 93 % of its adjuster), the unverified CNC rear cap (seller question 6) and the two STS3215 (no 12 V rail
@@ -36,7 +37,39 @@ GIM8108_36 = (240.0, "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) dri
 GIM8108_36_HI = 306.99
 BELT = (9.0, "Bestorq 400-5M-15 $7.67 at MROSupply (loop 14); Gates ≈ $20–28")
 AL_PULLEY = (7.0, E)
-OLDHAM = (20.0, "ESTIMATE generic D50 clamp-hub Oldham, 12 H7 + 4 mm keyway (cartridge_m.parts_list; the D40 failed belts.md 0.86×); Ruland MOCT41-12-A was $55.20 at Motion")
+# W10 BOM consolidation (2026-11-27): the W8b cartridge parts (cartridge_m.parts_list), W8c load path, W8d tip parts.
+# Oldham D50 per GIM6010 stage = the shaft-side keyed clamp hub + the acetal disc (sold separately) + the metal motor-side
+# hub (the printed ASA tongue was rejected in W8b: 0.74× friction at the peak). The generic $20 set of the earlier lists
+# had no source, no keyway and no torque rating; AliExpress could not be reached from this session (host not allowed).
+OLDHAM = (67.19 + 36.45, "Zoro: Ruland MOCC51-12-A clamp hub (12 mm bore, 4 mm keyway, Ø50.8, aluminium) $67.19 + OD32/51-AT acetal disc $36.45 "
+                         "(2026-11-27 search snapshots); disc torque rating to read off Ruland's datasheet (the RS '9.5 N·m' is the clamp-screw seating torque)")
+OLDHAM_MOTOR_HUB = (15.0, "ESTIMATE: 6061-T6 from the drive_adapter STEP (Ø50 × 4 flange + tenon, 4 × Ø3.4 + c'bore on PCD 34), JLCCNC / PCBWay-class "
+                          "instant quote at qty 8; reworking a 2nd bought hub is a $54.19 MOCT51-12-A (Zoro) + lathe time")
+# Cheapest credible alternatives (owner decision on the $5,500 limit; rnd/bom.py drivers()):
+OLDHAM_ALT = (25.0 + 12.0, "Huco 452H50.35 Ø50 hub, 12 mm bore with keyway, £19.43–20.21 ex VAT at RS UK (€23.37 RS IE, A$45.79 RS AU; confirm the clamp "
+                           "variant and its torque rating) + Huco acetal disc ≈ $12 ESTIMATE (sold separately, not listed); the motor-side hub stays the 6061 CNC part")
+SLEEVE_ALT = (2.5, "ESTIMATE: Misumi configurable steel collars (length in 0.1 mm steps, precision class to ± 0.01; bores in 0.5 mm steps → Ø4.5 / 3.5 / 5.5), "
+                   "price not visible (Misumi host not reachable from this session); needs the collar steel's yield ≥ the 352 MPa sleeve stress (joints.md) "
+                   "and the print lengths rounded to 0.1 mm")
+BALL_ALT = (29.75, "Penn Tool: Hudson BT-1-1/2 CS 1-1/2\" carbon-steel ball transfer, 250 lb, $29.75 ($20.67 eBay; 2026-11-27): a Ø38.1 ball still meets a "
+                   "15 mm threshold below its equator (19 mm) but climbs harder; rnd/tip.py + threshold.py to re-run")
+BALLAST_ALT = (15.0, "ESTIMATE: two saw-cut drops of 1-3/4 × 3\" A36 flat bar from a local steel yard (≈ $1.5 / lb); 44.5 × 76 mm section, so the "
+                     "102 mm block is 2.71 kg (cut it 92 mm for 2.44 kg) and the cradle widens 1.5 / 5 mm; Zoro cut pieces are $103–113 each (no saving)")
+D63_SET = (130.0, "ESTIMATE: D63 shaft-side M5 clamp hub 12 H7 + 4 mm keyway + acetal disc, ≥ 25 N·m; scaled from the Ruland Ø50.8 hub + disc $103.64 "
+                  "(Zoro); Ondrives 2-1/4\" clamp Oldham $84–157 (2026-11-27 search)")
+D63_MOTOR_HUB = (18.0, "ESTIMATE: 6061-T6 D63 × 4 flange + tenon, 4 × Ø3.4 + c'bore on PCD 30 (CNC, as the D50 hub)")
+M3X6_PACK = (10.0, "ESTIMATE: DIN 7984 M3 × 6 8.8 zinc, 100-pack (4 per Oldham motor hub)")
+SLEEVE = (7.0, "ESTIMATE: turned 42CrMo4+QT, Ø ± 0.02, length = print − 0.05; JLCCNC lists CNC turning from $5.00 a part (jlccnc.com, "
+               "2026-11-27 search), + ≈ $2 for the QT bar and the length tolerance; US instant-quote shops (Xometry / Hubs class) cost several times this")
+STOP_BUSH_P = (10.0, "ESTIMATE: stepped Ø10 / Ø7 bush, Ø7.2 / Ø4.3 bores, 42CrMo4+QT, turned (basis as the sleeves)")
+PLATE_RING = (10.0, "ESTIMATE: 3 mm 7075-T6 ring Ø96 / 70 + 8 holes, SendCutSend 7075-T6 .125\" (their .25\" aluminium 4 × 2\" example $13.33 at 1, $5.30 at 10)")
+LOCTITE = (28.99 + 20.44, "Loctite 660 50 ml $28.99 (Walmart, 'Press Fit Repair 660'; Ellsworth $59.82) + Loctite 638 10 ml $20.44 (Hisco / TestEquity), 2026-11-27")
+ELBOW_TUBE = (15.0, "ESTIMATE: 6061-T6 Ø30 × 1.5 metric tube, 0.5 m (Zoro 6061 1.5\" × 0.083\" is $100.99 / 6 ft ≈ $17 / ft, the imperial reference)")
+EPOXY = (25.0, "ESTIMATE: structural epoxy, Loctite EA 9466 / 3M DP420 class 50 ml cartridge + nozzles")
+BALL2 = (45.0, "ESTIMATE: 2\" (Ø50.8) steel-ball transfer unit; 2\" units are heavy-duty industrial lines (Motion: General Bearing 41200 series, quote "
+               "required); 1-1/2\" Hudson BT-1-1/2 CS is $29.75 at Penn Tool, $20.67 on eBay (2026-11-27 search)")
+SOLENOID = (12.99, "Walmart: JF-1039 24 V 400 mA, 10 mm stroke, 25 N push-pull solenoid $12.99; Fielect JF-1039-24V $67.99 elsewhere (2026-11-27 search)")
+BALLAST_PLATE = (7.0, "SendCutSend mild steel: their .25\" HRP&O 4.9 × 2\" example is $19.89 at 1, $7.02 at 10, $4.89 at 100 (2026-11-27 search); ours 4.0 × 2.8\", 14 off")
 KEYED_SHAFT = (15.0, "ESTIMATE: Ø12 h6 C45 ground rod 300 mm with a 4 × 2.5 DIN 6885 keyway (cartridge_m.parts_list)")
 KEYS = (5.0, "ESTIMATE: DIN 6885 A 4 × 4 key assortment (16 + 11 mm per stage)")
 KEYED_PULLEY = (12.0, "ESTIMATE: aluminium HTD 5M 20T, 15 mm belt, 12 H7 bore + 4 mm keyway, set screw on the key (belts.md 1.41×)")
@@ -86,8 +119,13 @@ def step1():
         ("Step-1 rig", "Test lever: 6061 flat bar 40 × 6 × 300 mm, drilled on arrival to the GIM6010-8's measured output pattern and bolted straight to it "
          "+ 1 kg and 2 kg weights + luggage scale", 1, 25.0,
          "protocol, torque constant, friction, the drive's torque limit, the catch, the collision trip on one joint: no belt stage needed (Neon #2 F15)", E),
-        ("Coupons (D24)", "Oldham coupling **D50**, 12 H7 clamp hub + 4 mm keyway, acetal disc (the yaw stage's, reused in Step 2)", 1, *OLDHAM[:1],
-         "the printed ASA tongue adapter's torque coupon against a real disc (COUPONS.md); D40 dropped (belts.md 0.86×)", OLDHAM[1]),
+        ("Drive (D24 v2, W8b)", "Oldham **D50** for the Step-1 GIM6010 joint: shaft-side clamp hub 12 H7 + 4 mm DIN 6885 keyway + acetal disc, ≥ 14 N·m "
+         "(Ruland MOCC51-12-A + OD32/51-AT)", 1, *OLDHAM[:1],
+         "the yaw stage's coupling, reused in Step 2; now the Oldham coupon: the metal motor hub against the disc to 1.5 × the 11 N·m peak (COUPONS.md); D40 dropped (belts.md 0.86×)", OLDHAM[1]),
+        ("Drive (D24 v2, W8b)", "Oldham motor-side hub, **6061-T6** (the printed ASA tongue was rejected, W8b): D50 × 4 mm flange behind the tenon, 4 × Ø3.4 + Ø6 × 2.2 c'bore "
+         "on PCD 34 at 45° to the tenon; CNC from the drive_adapter STEP, or the set's 2nd hub reworked", 1, *OLDHAM_MOTOR_HUB[:1],
+         "bolted to the GIM output with 4 × DIN 7984 M3 × 6 8.8 + Loctite 243 (cartridge_m.MOTOR_HUB); drill on the measured output PCD", OLDHAM_MOTOR_HUB[1]),
+        ("Fasteners (W8b)", "DIN 7984 M3 × 6 8.8, 100-pack", 1, *M3X6_PACK[:1], "4 per Oldham motor hub: the Step-1 hub now, the arm's others in Step 2", M3X6_PACK[1]),
         ("Thermal (M7)", "10 × 10 k NTC thermistors (epoxy bead) + Kapton tape", 1, 6.0, "motor case and winding-side temperatures from day 1 (thermal.md)", E),
         ("Fasteners (coupons)", "M4 brass heat-set inserts, **short** (Ø5.6 hole × 5.7 mm), 100-pack", 1, 15.93,
          "coupons first (insert pull-out, Fable C1/C3), then the arm", "Newark $15.93 / 100 (M4 × 8.1 Heat-Sert class; short variant ESTIMATE)"),
@@ -95,7 +133,7 @@ def step1():
         ("Fasteners (coupons)", "Stainless screw kit: M4 × 12 countersunk + button heads (Fable minor), M4 / M3 SHCS assortment, M5 × 30 + nylocs",
          1, 25.0, "Step-1 rig, coupons, later the cartridge flanges", E),
         ("Consumables", "Epoxy (CF bonds), grease, thread locker 243 / 270, PTFE washers", 1, 15.0, "", E),
-        ("Filament (A6)", "PETG 3 kg + ASA 1 kg (coupons, Oldham tongue adapters, a sleeve coupon) + TPU 95A 0.25 kg", 1, 90.0,
+        ("Filament (A6)", "PETG 3 kg + ASA 1 kg (coupons, a sleeve coupon, the first cartridge can + cap) + TPU 95A 0.25 kg", 1, 90.0,
          "coupons now, the arm in Step 2 (print_plan.md)", E),
     ]
 
@@ -112,6 +150,14 @@ def step2_common():
         ("Joints (C1/M1 fixes)", "Machined 6061-T6 yaw flange (hex spigot, M3 tapped at the hex corners)", 1, 25.0, "Fable C1 (C1/M1 track ESTIMATE)", E),
         ("Joints (C1/M1 fixes)", "7075-T6 balancer crank Ø44 × 4 with a pressed Ø6 pin, tapped for the tie-rod studs", 1, 20.0,
          "custom metal part missing from the kit (Fable minor)", E),
+        ("Joints (C1, W8c)", "Steel crush sleeves, turned 42CrMo4+QT: pitch tie-rods 8 × Ø7 / 4.3 (4 × 49.75 + 4 × 19.75 mm) + yaw flange 6 × Ø4.6 / 3.2 × 29.65 mm "
+         "(ends faced, length = the measured print − 0.05)", 14, *SLEEVE[:1],
+         "Neon #2 F3: printed clamps kept ≈ 30 % preload; sleeved 88 / 87 % over life (rnd/joints.py); no Belleville stacks", SLEEVE[1]),
+        ("Structure (W8b)", "D19 elbow shaft core: 6061-T6 tube Ø30 × 1.5, one piece cut to 139.5 mm", 1, 10.0,
+         "Neon #2 F7: the bonded core takes ≈ 85 % of the bending (print 5.0 / 14 → 0.7 / 2.0 MPa)", "ESTIMATE: 0.25 m of a metric 6061 tube (" + ELBOW_TUBE[1].split("(", 1)[1]),
+        ("Consumables (W8b)", "Structural epoxy (Loctite EA 9466 / 3M DP420 class, 50 ml + nozzles)", 1, *EPOXY[:1], "elbow core tube bond; the CF tube bonds", EPOXY[1]),
+        ("Fasteners (W8b)", "Flange ears, 3 GIM6010 stages × 4: 10 × ISO 4762 M4 × 12 + 2 × M4 × 16 (pitch, reversed from the pulley side), 12 × ISO 4032 M4 nuts, "
+         "12 × ISO 7089 washers", 1, 4.0, "Neon #2 F2: 4 ears per site (yaw side-fed nuts, pitch4 rear pair reversed); tipping ≥ 10× at 30 % preload", E),
         ("Fasteners", "Hardened dowels Ø6 × 10 (yaw hard-stop pin) + Ø6 × 12 (3 × KX-V ferrule dowels)", 1, 6.0, "yaw stops ±155°, arm detach ferrule", E),
         ("Structure", "Carbon tubes Ø40×1 + Ø30×1 (one arm)", 1, 40.0, "upper-arm neck (bond ≈ 55 mm), forearm link (30 mm into each socket)", E),
         ("Structure", '3" quick-release squeeze tri-clamp, 304 SS', 1, 25.0, "KX-V ferrule at the shoulder (arm detach)", "hosewarehouse (Dixon 13MHHM-Q300)"),
@@ -147,22 +193,25 @@ HOLD_A = dict(
           "and the D20 drive redesign (Fable M6)",
     yes=[("Actuators", "SteadyWin GIM8108-8, **24 V-capable driver version** (confirm which: SDC104 / GDZ468 / GDS68)", 2, GIM8108_8[0],
           "shoulder pitch (3:1) + elbow (3:1, 20T:60T): 1.8× rated on the 20 lb hug (R2c)", GIM8108_8[1]),
-         ("Drive (D20, M6)", "Oldham coupling **Ø50**, 15 mm clamp hub, rated ≥ 25 N·m", 2, 22.0, "pitch + elbow (cartridge_m D20: Ø50 at pitch and elbow)", E_D20),
-         ("Drive (D20, M6)", "Steel rod Ø15 h6, 300 mm + 2 × 5 mm parallel keys (keyway machined)", 1, 18.0,
-          "a Ø15 keyed stage: 22 N·m at the 20T pulley is 3.7 kN at a Ø12 clamp (Fable M6)", E_D20),
-         ("Drive (D20, M6)", "Aluminium HTD 5M pulley, 20T, **25 mm** belt, Ø15 keyed bore", 2, 14.0, "pitch + elbow small pulleys", E_D20),
-         ("Drive (D20, M6)", "61902 (15×28×7) bearings, C0 ≈ 2.3 kN", 4, 2.5, "2 per stage: 0.7 kN each at the 1.38 kN peak pull (a 6801 has C0 ≈ 1.0 kN)", E_D20),
-         ("Drive (D20, M6)", "HTD 5M **25 mm** closed belts: pitch (20T:60T) + elbow (20T:60T, length from the D20 CAD), or steel-cord", 2, 14.0,
-          "1382 N peak pull at 22 N·m is 2.8× a 15 mm belt's ultimate/3 (belts.py D20)", E_D20),
+         ("Drive (D20, W8b)", "Oldham **D63** set, rated ≥ 25 N·m: shaft-side **M5 clamp** hub 12 H7 + 4 mm DIN 6885 keyway + acetal disc", 2, D63_SET[0],
+          "pitch + elbow (cartridge_m.parts_list(MOTOR_8108): D63 disc 1.3× at the 18 N·m flash limit; a D50 would be 0.67×)", D63_SET[1]),
+         ("Drive (D20, W8b)", "Oldham motor-side hub, 6061-T6, D63 × 4 mm flange, 4 × Ø3.4 + c'bore on PCD 30 + **2 × ISO 8734 Ø3 m6 dowels** each", 2, D63_MOTOR_HUB[0] + 1.0,
+          "22 N·m stall on the GIM8108-8 output; 4 × DIN 7984 M3 × 6 from the Step-1 pack", D63_MOTOR_HUB[1] + "; dowels ≈ $0.50 each (ESTIMATE)"),
+         ("Drive (D20, W8b)", "Steel C45 HTD 5M 20T, 15 mm belt, 12 H7 + 4 mm keyway (key 4 × 4 × 20 / × 16 on the hub; shafts from the common keyed rod, 6801s from the 10-pack)", 2, 18.0,
+          "the shared Ø12 keyed stage (belt_stage.AL_PULLEY note: steel 20T for 22 N·m)", E),
+         ("Drive (D20, W8b)", "HTD 5M 15 mm **PU steel-cord** closed belts 355-5M (pitch) + 380-5M (elbow)", 2, 15.0,
+          "cartridge_m.parts_list(MOTOR_8108) (Fable M6: a rubber 15 mm belt is 2.8× over ultimate/3 at 22 N·m)", E),
          ("Thermal (M7)", "Aluminium finned rear caps, Ø96 class", 2, 18.0, "pitch + elbow GIM8108-8 cartridges", E)],
     no=[("Actuators", "SteadyWin GIM6010-8 24 V SDC104", 2, GIM6010[0], "pitch + elbow as today (bench-valid at 1 kg; 0.6–0.8× on the 20 lb hug)", GIM6010[1]),
-        ("Drive (D24 v2)", "Oldham coupling D50, 12 H7 clamp hub + 4 mm keyway, acetal disc", 2, OLDHAM[0], "pitch + elbow (belts.md 1.35×; the D40 was 0.86×)", OLDHAM[1]),
+        ("Drive (D24 v2)", "Oldham D50: shaft-side clamp hub 12 H7 + 4 mm keyway + acetal disc, ≥ 14 N·m", 2, OLDHAM[0], "pitch + elbow (belts.md 1.35×; the D40 was 0.86×)", OLDHAM[1]),
+        ("Drive (D24 v2, W8b)", "Oldham motor-side hub, 6061-T6 (CNC or the set's 2nd hub reworked), 4 × DIN 7984 M3 × 6 from the Step-1 pack", 2, OLDHAM_MOTOR_HUB[0],
+         "pitch + elbow (the printed ASA tongue was rejected)", OLDHAM_MOTOR_HUB[1]),
         ("Drive (D24 v2)", "Aluminium HTD 5M 20T, 15 mm belt, 12 H7 + 4 mm keyway (+ keys; shafts from the common keyed rod)", 2, KEYED_PULLEY[0] + 2.5, "pitch + elbow small pulleys", KEYED_PULLEY[1]),
         ("Drive", "HTD 5M-15 closed belts 355 (pitch, 20T:60T) + 295 (elbow, 20T:40T) mm", 2, BELT[0], "pitch + elbow", BELT[1]),
         ("Thermal (M7)", "Aluminium finned rear caps, Ø86 class", 2, AL_CAP[0], "pitch + elbow GIM6010 cartridges", AL_CAP[1])],
-    note="Fable M6: the D20 swap is a drive redesign, not a motor swap. With 22 N·m at the 20T pulley the repo's own check gives 1382 N "
-         "peak belt pull (2.8× a 15 mm belt's ultimate/3), ≈ 0.7 kN on each 6801 (C0 ≈ 1.0 kN) and 3.7 kN at a Ø12 clamp and set screws; "
-         "the cartridge needs Ø50 Oldhams (cartridge_m.py). The D20 lines are ESTIMATE until the cartridge track's D20 parts list lands. "
+    note="Fable M6: the D20 swap is a drive redesign, not a motor swap. The cartridge track's D20 list (cartridge_m.parts_list(MOTOR_8108), W8b) "
+         "keeps the shared Ø12 keyed stage with a steel 20T, PU steel-cord 15 mm belts and an 18 N·m flash torque limit, and puts a D63 Oldham "
+         "(≥ 25 N·m, M5 clamp) with a doweled 6061 motor hub on each stage; the Ø15 stage, 25 mm belts and 61902s of the earlier hold-A list are gone. "
          "The 24 V question is the other gate: most GIM8108-8 listings are 48 V nominal.",
     hi=lambda: 2 * (GIM8108_8_HI - GIM8108_8[0]) + line_sum(HOLD_A["yes"]) - line_sum(HOLD_A["no"]),
 )
@@ -180,11 +229,19 @@ HOLD_B = dict(
           "ESTIMATE: JLCCNC / PCBWay-class instant quote ≈ $20–25 each at qty 2 + shipping share"),
          ("Drive (D24 inline)", "Ø80/Ø52 × 2 steel clamp ring + 8 × M5×16 DIN 7984 10.9, 3 × M4×10 ISO 10642, 3 × Ø4 m6 dowels", 1, 9.0,
           "adapter ↔ clevis arm clamp, boss ↔ adapter", E),
-         ("Drive (D24 inline, M1)", "Rear mount: 8 × M4 studs (Loctite 270) + nuts instead of M4 × 18 into 3.5 mm threads; 2 × hardened Ø10 × 28 stop pins + stainless wear strips",
-          1, 8.0, "Fable M1: printed Ø8 stops saw 16 MPa at the limit, 2.3 kN at stall; no stripped $240 motor", E)],
+         ("Drive (D24 inline, W8c)", "Crush sleeves, turned 42CrMo4+QT: clevis-arm M5 8 × Ø8 / 5.3 + rear mount 6 × Ø6 / 4.3 × 18.95 mm", 14, SLEEVE[0],
+          "Neon #2 F3/F6: the 8.5 mm PETG clevis clamp kept ≈ 12 % of its preload; the rear stack is now metal (plate + sleeves + motor), 69 % left after embedding", SLEEVE[1]),
+         ("Drive (D24 inline, W8c)", "Stepped hard-stop bushes, 42CrMo4+QT (Ø10 × 8 proud / Ø7 tail), on 2 of the 8 rear M4", 2, STOP_BUSH_P[0],
+          "Neon #2 F6d: the Ø10 stop pins had no seat wall; bush → plate → screws → housing closes in metal (1.81×)", STOP_BUSH_P[1]),
+         ("Drive (D24 inline, W8c)", "Rear plate ring, 7075-T6 3 mm, Ø96 / 70", 1, PLATE_RING[0], "all-metal rear clamp (engagement 2.5–3.5 mm, no shim picking)", PLATE_RING[1]),
+         ("Drive (D24 inline, W8c)", "Rear screws 6 × M4 × 25 ISO 10642 10.9 + 2 × M4 × 25 ISO 4762 12.9 (in the stop bushes) + 1 × DIN 471 Ø30 ring (61806 on the stub)",
+          1, 5.0, "replace 8 × M4 × 18 + washers + DIN 988 shims and the 2 × Ø10 × 28 stop dowels", E),
+         ("Drive (D24 inline, W8c)", "Loctite 660 (61806 outer race, 0.3 mm gap) + Loctite 638 (output dowels into Ø4.1 adapter holes)", 1, LOCTITE[0],
+          "the 61806 floats ± 0.3 mm (forced load ≤ 800 N); dowels bonded seated in the motor's holes (150 MPa with load sharing)", LOCTITE[1])],
     no=[("Actuators", "SteadyWin GIM6010-8 24 V SDC104", 1, GIM6010[0], "shoulder roll on the 18T:80T belt (4.44:1)", GIM6010[1]),
         ("Drive (D24 v2)", "Aluminium HTD 5M 18T, 15 mm, 12 H7 + 4 mm keyway (+ keys)", 1, KEYED_PULLEY[0] + 2.5, "roll small pulley", KEYED_PULLEY[1]),
-        ("Drive (D24 v2)", "Oldham coupling D50, 12 H7 clamp hub + 4 mm keyway, acetal disc", 1, OLDHAM[0], "roll stage", OLDHAM[1]),
+        ("Drive (D24 v2)", "Oldham D50: shaft-side clamp hub 12 H7 + 4 mm keyway + acetal disc, ≥ 14 N·m", 1, OLDHAM[0], "roll stage", OLDHAM[1]),
+        ("Drive (D24 v2, W8b)", "Oldham motor-side hub, 6061-T6", 1, OLDHAM_MOTOR_HUB[0], "roll stage", OLDHAM_MOTOR_HUB[1]),
         ("Drive", "HTD 5M-15 closed belt 475 mm", 1, BELT[0], "roll (80T)", BELT[1]),
         ("Bearings", "61808 (40×52×7)", 2, B61808[0], "roll one-piece shaft (D19)", B61808[1]),
         ("Thermal (M7)", "Aluminium finned rear cap, Ø86 class", 1, AL_CAP[0], "roll GIM6010 cartridge", AL_CAP[1])],
@@ -232,6 +289,13 @@ def items():
 
 
 CHANGES = [
+    "**W10 BOM consolidation (2026-11-27; W8b cartridge, W8c load path):** the D50 Oldham is priced as sourced parts (Ruland MOCC51-12-A keyed clamp hub "
+    "$67.19 + OD32/51-AT disc $36.45, Zoro) instead of a $20 generic ESTIMATE, plus a 6061 motor-side hub (the printed ASA tongue was rejected: "
+    "0.74× friction at the peak) and DIN 7984 M3 × 6 screws; Step 1 has the one set + hub for its GIM6010, hold A *no* / hold B *no* the others, "
+    "hold A *yes* D63 sets (≥ 25 N·m, M5 clamp, doweled hubs) on the shared Ø12 keyed stage with steel 20T and PU steel-cord belts "
+    "(cartridge_m.parts_list(MOTOR_8108)). Step 2 adds the C1 crush sleeves (pitch 8, yaw 6), the 6061 elbow core tube + structural epoxy and the "
+    "4-ear flange screws; hold B *yes* the inline roll's clevis + rear sleeves, 2 steel stop bushes, the 7075 rear plate ring, M4 × 25 rear screws, a "
+    "DIN 471 ring and Loctite 660 / 638 (the M4 × 18 + shims and the Ø10 stop dowels go). No Belleville springs.",
     "**Neon review #2 finding 15 (2026-11-27):** Step 1 no longer buys the D40 Oldham, plain Ø12 rod, set-screw pulley, 315 belt and stage bearings "
     "(belts.md: D40 disc 0.86×, plain clamp hub 0.65× at the 11 N·m peak; the yaw centre uses 93 % of its adjuster) nor the CNC rear cap (seller question 6 "
     "is open) nor the two STS3215 + USB-TTL (the only 12 V in Step 1 would have been the safety board's 1 A logic buck): the GIM is tested on a lever bolted "
@@ -259,7 +323,9 @@ CHECKS = [
     "SE-1000-24: the 24 V model (not -12 / -48); check the overload mode on its datasheet (constant-current limiting) and set 24.0–25.2 V.",
     "Aluminium HTD 5M pulleys (Step 2): 15 mm belt, **12 H7 bore with a 4 mm keyway**, set screw on the key.",
     "Oldham coupling: **D50, 12 mm clamp-style hub with a 4 mm keyway**, OD ≤ the D50 nose bore (cartridge_m MOTOR['nose']); measure the disc (thickness, slot width and "
-    "depth) and set `OLDHAM` in rnd/parts/cartridge_m.py before printing the tongue adapters.",
+    "depth) and set `OLDHAM` in rnd/parts/cartridge_m.py before ordering the 6061 motor-side hubs and printing the cans; read the disc's rated torque (≥ 14 N·m) "
+    "off the maker's datasheet (the '9.5 N·m' in some listings is the clamp-screw seating torque).",
+    "Crush sleeves (W8c): measure each printed stack and order / face the sleeves to print − 0.05 mm; 42CrMo4+QT (R_p0.2 ≥ 750 MPa) on the certificate.",
     "Vishay NH-50 (not RH-50) for the three clamp resistors: the part number starts NH050; the pre-charge and dummy-load resistors stay RH-50.",
     "Heat-set inserts: the short M4 (5.7 mm) the flange calls for; the long 8.1 mm ones don't fit the 6 mm flange.",
 ]
@@ -313,7 +379,7 @@ def main():
          "**What Step 1 proves on hardware:** the SDC104's CAN protocol (`python -m sw.gim_discover`: MIT / impedance mode or not), enable, zero-gain "
          "and impedance control, the drive's torque limit in flash and its CAN timeout; the safety board (pre-charge, one-shot discharge, clamp, "
          "contactor, watchdog at 25 ms, e-stop → no torque ≤ 50 ms) with a real drive; torque constant and friction on a lever bolted to the output; the collision "
-         "trip on one joint; the motor case temperature rise at rated torque on the lever; insert pull-out, the bolted-flange and the D50 Oldham-tongue coupons.", "",
+         "trip on one joint; the motor case temperature rise at rated torque on the lever; insert pull-out, the bolted-flange coupon and the D50 Oldham coupon (metal motor hub on the GIM output against the disc).", "",
          '**Step-1 exit criterion added 2026-11-27 (software track: determinism, the Asimov sim2real lessons): soak test.** `python -m sw.soak --joints yaw,wpitch --hours 2` on the Step-1 rig. A sysid fit at the start (bring-up step `sysid`, sw/sysid.py: Coulomb + viscous friction, effective torque constant, backlash, command → response latency → sw/config/actuators_<serial>.yaml), then 2 h of 0.25 Hz cyclic motion at ≈ 50 % rated torque (2 kg at the 0.3 m lever end on the yaw stage, 0.5 kg at the wrist), then the sysid fit again with the drives hot. **Pass:** Coulomb drift ≤ 20 %, viscous ≤ 25 %, torque constant ≤ 5 %, backlash growth ≤ 0.1°, latency mean ≤ +0.5 ms and p95 ≤ +2 ms; no supervisor stop, no CAN bus-off, no new Pi throttle / under-voltage flag (`vcgencmd get_throttled`), zero implausible (corrupted) CAN frames, loop jitter p99 < 1 ms, CPU < 80 °C (rehearsed on the virtual bench: a stable drive passes, a drive whose friction drifts with temperature fails; docs/sw/sim2real_bench.md). The lever measurements of the torque constant and friction above are this step. **Proposed Step-1 line (lead to add in rnd/m1_kit.py):** one Waveshare 2-CH CAN FD HAT ($46.99) to measure SPI-CAN (MCP2518FD) against the two gs_usb adapters on the same bus ([can_interface_note.md](sw/can_interface_note.md)).', "",
          "**What Step 2 proves:** the whole arm: belts and the D13 v3 stages, the bolted cartridges, the balancer (A9), the inline roll, hand "
          "sag (R2b) and, if the encoder mounts and node firmware exist by then (Fable M3), hand accuracy; the fin-ray grasp; CAN timing (SW1).", "",
@@ -337,7 +403,7 @@ def main():
           "## What changed since the loop-47 list", ""] + [f"- {x}" for x in CHANGES] + [
           "", "## Check before paying / on arrival", ""] + [f"- {x}" for x in CHECKS] + [
           "", "**Order of work:** build and test the safety board (electrical.md, bench tests before any motor) → protocol discovery on the "
-          "GIM6010-8 → bring-up on the Step-1 rig (`--joints yaw,wpitch`) → coupons (insert pull-out, bolted flange + Oldham tongue: "
+          "GIM6010-8 → bring-up on the Step-1 rig (`--joints yaw,wpitch`) → coupons (insert pull-out, bolted flange + Oldham coupon: "
           "[COUPONS.md](COUPONS.md)) → Step 2. Readiness and the go / no-go per step: [M1_READINESS.md](M1_READINESS.md). Buying is the owner's decision."]
     (DOCS / "M1_BENCH_ARM.md").write_text("\n".join(L) + "\n")
     print("\n".join(L[2:10]))

@@ -9,6 +9,7 @@ import json
 import math
 from pathlib import Path
 
+from . import m1_kit as K
 from .belts import STAGES, stage
 from .budget import actuator_cost
 from .params import BASELINE, act
@@ -73,7 +74,7 @@ def items(d=BASELINE):
       "ESTIMATE (TPU 95A ≈ $20–25 / kg)")
     A("Bearings", "6808-2RS (40×52×7), no-name 10-pack (check the 2RS variant): 2 per wheel + 2 per arm belt stage", 8 + 2 * ns, 2.02, "AliExpress MOCHU snapshot (loop 14); Zoro generic $4.71")
     A("Bearings", "6804-2RS (20×32×7): lift small hub + D16 wrist-roll spindles", 6, 0.92, "AliExpress MOCHU snapshot; Zoro $4.69")
-    A("Bearings", f"6801-2RS (12×21×5): D13 stage shafts, 2 per stage × {ns} stages", 2 * ns, 0.9, "ESTIMATE")
+    A("Bearings", f"6801-2RS (12×21×5): D13 stage shafts, 2 per stage × {ns + 1} stages (the arm belt stages + the lift, lift v2)", 2 * (ns + 1), 0.9, "ESTIMATE")
     A("Bearings", "6805-2RS (25×37×7): head tilt passive pivot (A4)", 4, 1.15, "AliExpress snapshot; Zoro $5.69")
     A("Bearings", "U604ZZ grooved pulley bearings (A9 balancers: pulley A + tackle pulley)", 4, 1.5, "ESTIMATE")
     A("Bearings", "625ZZ (carriage, idlers)", 10, 0.25, "Walmart 40-pack")
@@ -92,16 +93,35 @@ def items(d=BASELINE):
     A("KX interfaces (3 sockets)", "D15 preload: 6 coil springs Ø4 × 8 per socket (assortment) + PTFE washer; 3 × M3 retainer screws + inserts", 3, 1.2, "ESTIMATE")
     A("KX interfaces (3 sockets)", "Torque pins Ø6/Ø5/Ø4 + magnet index (KX cartridges: 4 wheels, lift, head ×2)", 7, 0.4)
     A("Drive & structure", "Dowels Ø6 × 10–12: yaw hard-stop pins + KX-V ferrule dowels (3 per arm)", 1, 6.0, "ESTIMATE")
-    A("Drive & structure", f"D13 v3 small stages ×{ns}, keyed (belts.md: a plain Ø12 clamp hub is 0.65× at the 11 N·m peak): Ø12 h6 rod with a 4 × 2.5 keyway (share of 2 × 300 mm), "
-      "aluminium HTD 5M 15 mm 20T pulley 12 H7 + keyway, DIN 6885 4 × 4 keys", ns, 19.5, "ESTIMATE (m1_kit KEYED_* lines)")
-    A("Drive & structure", "D24 Oldham couplings: **D50**, 12 H7 clamp hub + 4 mm keyway, acetal disc (one per arm belt stage; the D40 disc was 0.86×, belts.md; the motor-side tongue adapter is printed)", ns, 20.0,
-      "ESTIMATE generic D50 (m1_kit OLDHAM); Ruland MOCT41-12-A (D41) was $55.20 at Motion")
+    A("Drive & structure", f"D13 v3 small stages ×{ns + 1} ({ns} arm belt stages + the lift, a D13/D24 stage since lift v2), keyed (belts.md: a plain Ø12 clamp hub is 0.65× at the 11 N·m peak): "
+      "Ø12 h6 rod with a 4 × 2.5 keyway (share of 2 × 300 mm), aluminium HTD 5M 15 mm 20T pulley 12 H7 + keyway, DIN 6885 4 × 4 keys", ns + 1, 19.5, "ESTIMATE (m1_kit KEYED_* lines)")
+    # W8b (Neon #2 F2): one D50 3-piece Oldham per GIM6010 stage (6 arm belt stages + the lift = 7) with a metal motor-side hub
+    A("Drive & structure", f"D24 v2 Oldham **D50** per GIM6010 stage (×{ns + 1}: the arm belt stages + the lift): shaft-side clamp hub 12 H7 + 4 mm DIN 6885 keyway "
+      "(Ruland MOCC51-12-A) + acetal disc (OD32/51-AT), ≥ 14 N·m (the D40 disc was 0.86×, belts.md)", ns + 1, K.OLDHAM[0], K.OLDHAM[1])
+    A("Drive & structure", "Oldham motor-side hub, **6061-T6** (W8b: the printed ASA tongue was rejected, 0.74× friction at the peak): D50 × 4 mm flange behind the tenon, "
+      "4 × Ø3.4 + c'bore on PCD 34; CNC from the drive_adapter STEP, or the set's 2nd hub reworked", ns + 1, *K.OLDHAM_MOTOR_HUB)
+    A("Drive & structure", f"Oldham hub screws: DIN 7984 M3 × 6 8.8 (4 per hub, {4 * (ns + 1)}), 100-pack; Loctite 243 from the fasteners line", 1, *K.M3X6_PACK)
+    A("Drive & structure", "Spare D50 acetal Oldham discs (wear part: the disc slides under the ±1 mm eccentric offset)", 2, 36.45, "Zoro: Ruland OD32/51-AT $36.45 (2026-11-27)")
+    A("Drive & structure", "D19 elbow shaft core (W8b, Neon #2 F7): 6061-T6 tube Ø30 × 1.5, 2 × 139.5 mm, bonded (takes ≈ 85 % of the bending)", 1, *K.ELBOW_TUBE)
+    A("Drive & structure", "Structural epoxy for the elbow core tubes (and the CF bonds): Loctite EA 9466 / 3M DP420 class, 50 ml + nozzles", 1, *K.EPOXY)
     A("Drive & structure", "D24/D19 heat-set inserts: 2 × 100 M4 short (≈ 51 per arm: flanges 6 each, seat caps, yaw flange + plate, outer wall, pitch hub) + 100 M3 (≈ 45 per arm: cap rims, forearm rim, palm, bone cap)", 1, 2 * 15.93 + 12.0,
       "Newark M4 brass $15.93 / 100; M3 ESTIMATE")
-    A("Drive & structure", "D24 flange screws: 70 × M4 × 12 countersunk ISO 10642 (6 per bolted cartridge × 10 + spares)", 1, 10.0, "ESTIMATE")
+    A("Drive & structure", f"D24 v2 flange ears (W8b, Neon #2 F2: 4 ears per stage × {ns + 1}): 24 × ISO 4762 M4 × 12 + 4 × M4 × 16 (pitch rear pair, from the pulley side), "
+      "28 × ISO 4032 M4 nuts, 28 × ISO 7089 washers (the 70 countersunk M4 × 12 of the D24 v1 flange go)", 1, 9.0, "ESTIMATE")
+    # C1 joints (Fable C1 + W8c / Neon #2 F3): the hardware lines are the M1 kit's (Step 2 common), per arm
+    for g, n, q, u, w, src in K.step2_common():
+        if g.startswith("Joints"):
+            A("Drive & structure", f"C1 joint, both arms (M1 kit line × 2): {n}", 2 * q, u, src)
     A("Drive & structure", "Wheel hubs bolted to the GIM output (D17/A11: no KX on the wheels): 4 × M4 per wheel", 4, 0.8, "ESTIMATE")
     A("Drive & structure", "Chassis ring (A11): 3 mm 6061 laser-cut ring tying the 4 deck quarters", 1, 40.0, "ESTIMATE (SendCutSend class)")
-    A("Drive & structure", "Anti-tip casters (D18/A10): spring-loaded ball transfer units at the 4 diagonals", 4, 4.0, "ESTIMATE")
+    # W8d (Neon #2 F4, A10 v2): D18b lockable casters + removable rear ballast (rnd/parts/base.py)
+    A("Drive & structure", "D18b casters: 2\" (Ø50.8) steel-ball transfer unit at r 205 on the 4 diagonals (22 mm float; a 15 mm threshold meets the ball below its equator)", 4, *K.BALL2)
+    A("Drive & structure", "D18b caster mechanics: 2 × Ø8 h6 guide rods (≈ 90 mm), spring-applied one-way rod lock plate (caulk-gun type), 5 N spring, steel top plate", 4, 8.0,
+      "ESTIMATE (8 mm linear rod ≈ $6 / 300 mm; plates on the SendCutSend order)")
+    A("Drive & structure", "D18b lock release: 24 V pull solenoid (spring-applied lock: e-stop / power loss = locked)", 4, *K.SOLENOID)
+    A("Drive & structure", "D18b solenoid drivers: 4 × logic-level MOSFET + flyback diode + JST, on the power board (SW-T2 caster-lock output)", 1, 6.0, "ESTIMATE")
+    A("Drive & structure", "A10 v2 rear ballast: 2 × 2.44 kg removable S235 blocks 102 × 43 × 71 mm, each a stack of 7 laser-cut 1/4\" plates", 14, *K.BALLAST_PLATE)
+    A("Drive & structure", "Ballast stack bolts: 4 × M6 × 50 + nuts", 1, 2.0, "ESTIMATE")
     A("Drive & structure", "Clock-spring ribbon stock (A3, Neon #2 F10): 16 AWG high-flex ETFE/FEP pairs (was 20 AWG silicone), 26 AWG twisted pairs, shielded slim USB, PET/Kapton carrier + PTFE tape liners", 1, 40.0, "ESTIMATE")
     A("Drive & structure", "HTD 5M 15 mm closed belts (" + ", ".join(f"{j} {l} mm" for j, l in belts) + ") × 2 arms", 2 * len(belts), 9.0, "Bestorq 400-5M-15 $7.67 at MROSupply (loop 14); Gates ≈ $20–28")
     A("Drive & structure", "HTD 5M 15 mm open belt for the lift (2.4 m at $8.32/m) + 2 clamps", 1, 25.0, "Acorn listing")
@@ -109,17 +129,23 @@ def items(d=BASELINE):
         A("Bearings", "61806-2RS (30×42×7): inline roll rear support on the roll link's stub", 2, 3.0, "ESTIMATE (m1_kit Hold B)")
         A("Drive & structure", "Inline roll output adapter: 7075-T6 Ø76 × 7, Ø30 pilot, 3 × Ø4 H7 reamed + 3 × M4 csk, 8 × M5 tapped on PCD 64 (CNC, qty 2)", 2, 30.0,
           "ESTIMATE: JLCCNC / PCBWay-class instant quote for a 3-axis Ø76 × 7 part ≈ $20–25 each at qty 2 + shipping share; a printed adapter fails (3 × M4 into PETG ≈ 85 N·m < 103 N·m stall, roll.py)")
-        A("Drive & structure", "Inline roll hardware: Ø80/Ø52 × 2 steel clamp ring (laser-cut, rides on the chassis-ring order), 8 × M5×16 DIN 7984 10.9, 8 × M4×18 ISO 4762, "
-          "3 × M4×10 ISO 10642, 3 × Ø4 m6 dowels, end washer + M5", 2, 11.0, "ESTIMATE (ring ≈ $5 SendCutSend class; screws/dowels ≈ $6)")
+        A("Drive & structure", "Inline roll hardware: Ø80/Ø52 × 2 steel clamp ring (laser-cut, rides on the chassis-ring order), 8 × M5×16 DIN 7984 10.9, "
+          "3 × M4×10 ISO 10642, 3 × Ø4 m6 dowels, end washer + M5 (W8c: the 8 × M4×18 + washers + DIN 988 shims are replaced by the rear-mount lines below)", 2, 9.0,
+          "ESTIMATE (ring ≈ $5 SendCutSend class; screws/dowels ≈ $4)")
+        for g, n, q, u, w, src in K.HOLD_B["yes"]:               # W8c rear mount + clevis (Neon #2 F3/F6), per arm; the Loctite is one buy
+            if "W8c" in g:
+                A("Drive & structure", f"Inline roll (W8c{'' if n.startswith('Loctite') else ', both arms'}): {n}", q if n.startswith("Loctite") else 2 * q, u, src)
     A("Drive & structure", "Al square tube 60×60×2, 1.1 m (mast), black anodised", 1, 45.0, "no US listing found: ESTIMATE")
     A("Drive & structure", "Carbon tubes Ø40×38 (0.5 m) + Ø30×28 (1 m), roll-wrapped", 1, 70.0, "eBay / Carbonwebshop listings")
     A("Drive & structure", '3" quick-release squeeze tri-clamp, 304 SS (arm detach; flange OD 90.9 mm confirmed)', 2, 25.0, "hosewarehouse (Dixon 13MHHM-Q300)")
     A("Drive & structure", "Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards", 1, 35.0, "ESTIMATE")
     A("Drive & structure", "Balancers (A9): ISO 10243 green die spring Ø25/Ø12.5 × 115, 18.7 N/mm (Berger Tools V25-115 / Accu TJL25-115) + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
     A("Drive & structure", "Fasteners (other), heat-set inserts (base, torso, head), epoxy, grease", 1, 60.0)
-    kg = pp["kg"] + COVERS_KG                                   # print plan + the D23 rigid covers (not in print_plan.md)
+    cov = pp.get("covers_kg", 0.0)                              # W10: the print plan now slices the D23 / R17 covers itself
+    kg = pp["kg"] + (0.0 if cov else COVERS_KG)
     n10 = math.ceil(kg * 1.2 / 10)                              # loop 47: 10 kg bundles instead of $20/kg single spools
-    A("Printed parts", f"PETG {pp['kg']:.1f} kg (print_plan.md) + {COVERS_KG} kg D23 covers + 20 % spare = {kg * 1.2:.1f} kg: {n10} × Elegoo PETG Pro 10 kg bundle", n10, 109.99,
+    what = f"PETG {pp['kg']:.1f} kg (print_plan.md, the {cov:.1f} kg of D23 / R17 covers included)" if cov else f"PETG {pp['kg']:.1f} kg (print_plan.md) + {COVERS_KG} kg D23 covers"
+    A("Printed parts", f"{what} + 20 % spare = {kg * 1.2:.1f} kg: {n10} × Elegoo PETG Pro 10 kg bundle", n10, 109.99,
       "us.elegoo.com PETG Pro 10 kg $109.99 (2026-11; list $140)")
     A("Printed parts", "ASA 2 kg (A6: motor cans, KX hubs/collars and D13 hubs near motors)", 1, 40.0)
     return I
@@ -139,7 +165,37 @@ WAVE1_AFTER = 5013.0    # after wave 1 (RND_LOG, buy-list track)
 WAVE2_BEFORE = 5199.0   # after the owner's inline-roll OK, before the wave-2 cost pass
 WAVE2_AFTER = 5308.0    # after the wave-2 cost pass (before the Fable-review fixes)
 NEON2_BEFORE = 5485.0   # bom.json before the Neon review #2 electrical / harness / dock / keyed-drive fixes (2026-11-27)
+W8_BEFORE = 5845.0      # bom.json before the W10 consolidation of the W8b / W8c / W8d hardware (2026-11-27)
+OLD_LINES = dict(oldham=6 * 20.0, casters=4 * 4.0, inline_hw=2 * 2.0, flange_screws=10.0)   # the $5,845 list's lines that W10 replaced
 HOLDS = {}
+
+
+def drivers(d=BASELINE):
+    """Today's added cost (W8b / W8c / W8d + the C1 hardware the BOM still lacked), landed, ranked, each with the cheapest
+    credible alternative and its landed saving (prices: rnd/m1_kit.py constants)."""
+    c = 1 + CONTINGENCY
+    I = items(d)
+    n_ol = sum(q for _, n, q, _, _ in I if n.startswith("D24 v2 Oldham"))
+    n_sl = sum(q for _, n, q, _, _ in I if "rush sleeves" in n)
+    g = lambda f: sum(q * u for _, n, q, u, _ in I if f(n))
+    rows = [
+        ("D50 Oldham per GIM6010 stage as sourced parts (keyed Ruland clamp hub + acetal disc) + 6061 motor hubs + M3 × 6 + 2 spare discs; 7 stages (the lift's was missing)",
+         g(lambda n: "Oldham" in n) - OLD_LINES["oldham"], "Huco 452H50.35 Ø50 keyed 12 mm hub £19.43–20.21 ex VAT (RS UK) + Huco disc ≈ $12 ESTIMATE, the CNC motor hub kept; confirm the clamp variant and the disc's rating",
+         n_ol * (K.OLDHAM[0] - K.OLDHAM_ALT[0]) + 2 * (36.45 - 12.0)),
+        ("Turned 42CrMo4 crush sleeves (56) + stop bushes (4), W8c", g(lambda n: "rush sleeves" in n or "hard-stop bushes" in n),
+         "Misumi configurable steel collars ≈ $2.5 (ESTIMATE, host blocked here): bores in 0.5 mm steps (Ø4.5 / 3.5 / 5.5), lengths to 0.1 mm; collar steel must yield above the 352 MPa sleeve stress (joints.md)", n_sl * (K.SLEEVE[0] - K.SLEEVE_ALT[0])),
+        ("D18b lockable casters: 2\" ball transfers, rods + lock, 24 V solenoids, drivers (W8d)", g(lambda n: n.startswith("D18b")) - OLD_LINES["casters"],
+         "1-1/2\" Hudson BT-1-1/2 CS $29.75 (Penn Tool; $20.67 eBay): the Ø38.1 ball still meets a 15 mm threshold below its equator; re-run tip.py / threshold.py", 4 * (K.BALL2[0] - K.BALL_ALT[0])),
+        ("C1 joint hardware both arms (tie-rods, 6061 yaw flange, 7075 crank): in the M1 kit, never added to the BOM", g(lambda n: n.startswith("C1 joint") and "sleeves" not in n),
+         "none: the printed joints are what failed (Fable C1)", 0.0),
+        ("Rear ballast 2 × 2.44 kg, laser-cut 1/4\" plate stacks (W8d)", g(lambda n: "allast" in n), "saw-cut drops of 1-3/4 × 3\" A36 bar from a local yard ≈ $15 (ESTIMATE): 92 mm long for 2.44 kg, cradle 1.5 / 5 mm wider", 100.0 - K.BALLAST_ALT[0]),
+        ("Inline roll rear mount: 7075 plate rings, M4 × 25 screws, DIN 471, Loctite 660 + 638 (W8c), less the M4 × 18 + shims",
+         g(lambda n: n.startswith("Inline roll (W8c") and "sleeves" not in n and "hard-stop bushes" not in n) - OLD_LINES["inline_hw"],
+         "Loctite 660 at the $28.99 retail pack already; none cheaper sourced", 0.0),
+        ("Elbow 6061 core tubes + structural epoxy (W8b)", g(lambda n: "elbow shaft core" in n or n.startswith("Structural epoxy")), "none (Neon #2 F7 fix)", 0.0),
+        ("Lift keyed D13 stage + 2 × 6801 (lift v2 is a bolted stage)", 19.5 + 2 * 0.9, "none", 0.0),
+    ]
+    return sorted([(w, a * c, alt, s * c) for w, a, alt, s in rows], key=lambda r: -r[1])
 
 
 def _sd(x):
@@ -178,14 +234,28 @@ def report(d=BASELINE):
          "screws ($10), Ø6 dowels for the yaw stops and ferrules ($6); the D13 flange couplings go (−$24); D14 buck 3 → 6 A (+$4); PETG from the "
          "re-sliced print plan. +$13 against the $5,000 limit at the time. The owner's OK for the inline GIM8108-36 roll then put two GIM8108-36 "
          f"in place of two GIM6010-8 (at the yaml's $171): ${WAVE2_BEFORE:,.0f}.", "",
-         f"**Fable review fixes (2026-11-27, M2 + M7): ${WAVE2_AFTER:,.0f} → ${tot:,.0f} landed ({_sd(tot - WAVE2_AFTER)}).** A third clamp resistor + MOSFET "
+         f"**Fable review fixes (2026-11-27, M2 + M7): ${WAVE2_AFTER:,.0f} → ${NEON2_BEFORE:,.0f} landed ({_sd(NEON2_BEFORE - WAVE2_AFTER)}).** A third clamp resistor + MOSFET "
          "(the inline roll raised the robot's peak regen to 2.8 kW), the safety-board logic the netlist needs (one-shot discharge, latch, comparators), and "
          "aluminium finned rear caps + thermistors on the six arm GIM6010 cartridges (a closed ASA sleeve allows only 0.65 × rated continuous). The C1/M1 "
-         "joint hardware (tie-rods, 6061 yaw flange, 7075 crank, steel stop pins) is in the M1 kit and is added here by its own track.", "",
-         f"**Neon review #2 fixes (2026-11-27; findings 1, 10, 11, 12 and the keyed D50 drive of 2/15): ${NEON2_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - NEON2_BEFORE)}).** "
+         "joint hardware (tie-rods, 6061 yaw flange, 7075 crank) was in the M1 kit only until W10 (below).", "",
+         f"**Neon review #2 fixes (2026-11-27; findings 1, 10, 11, 12 and the keyed D50 drive of 2/15): ${NEON2_BEFORE:,.0f} → ${W8_BEFORE:,.0f} landed ({_sd(W8_BEFORE - NEON2_BEFORE)}).** "
          "NH-50 clamp resistors + freewheel Schottkys (+$51), a 200 A BMS for the 40 A class (+$50), a steel battery box (+$20), 60 A main fuse (+$10), XT90 / XT60 / USB pogo "
          "connectors (+$12), the lift umbilical (+$30), 16 AWG fluoropolymer ribbon wire (+$10), the dock baseplate and taller pads instead of floor screws (+$14), "
          "keyed stages and D50 Oldhams instead of plain shafts and D40s (+$111), the netlist-v3 logic (+$5); plus contingency.", "",
+         f"**W10 consolidation of the wave-8 hardware (2026-11-27; W8b cartridge, W8c load path, W8d tip): ${W8_BEFORE:,.0f} → ${tot:,.0f} landed "
+         f"({_sd(tot - W8_BEFORE)}), {_sd(tot - 5500)} against the $5,500 limit.** The D50 Oldham was a $20 generic ESTIMATE with no source, keyway or torque "
+         "rating; it is now priced as the parts the cartridge calls for (Ruland MOCC51-12-A keyed clamp hub $67.19 + OD32/51-AT acetal disc $36.45 at Zoro) with a "
+         "6061 motor-side hub (the printed ASA tongue was rejected) on all 7 GIM6010 stages (the lift's was missing), 2 spare discs; 4-ear flange screws with nuts "
+         "replace the countersunk M4s; turned 42CrMo4 crush sleeves at every C1 tie / clevis / rear-mount bolt + 2 stop bushes, the 7075 rear plate, M4 × 25 rear "
+         "screws and Loctite 660 / 638 (no Belleville springs; the M4 × 18 + shims and the Ø10 stop dowels go); the elbow's 6061 core tube; D18b lockable 2\" casters "
+         "with solenoid release and the 2 × 2.44 kg ballast (W8d's ≈ $80 ESTIMATE was ≈ $410 of lines priced); and the C1 joint hardware (tie-rods, 6061 yaw "
+         "flange, 7075 crank) that was in the M1 kit only. Largest drivers and the cheapest credible alternative for each:", "",
+         "| Added today (landed, with contingency) | $ | Cheapest credible alternative | Saves |", "|---|---|---|---|"]
+    DR = drivers(d)
+    L += [f"| {w} | {a:,.0f} | {alt} | {s:,.0f} |" if s else f"| {w} | {a:,.0f} | {alt} | — |" for w, a, alt, s in DR]
+    sv = sum(r[3] for r in DR)
+    L += ["", f"All four alternatives together: −${sv:,.0f} → ${tot - sv:,.0f}, still {_sd(tot - sv - 5500)} against the $5,500 limit: the limit needs a "
+          "motor, sensor or structure choice reopened (owner decision), not only cheaper hardware.", "",
          f"**Wave-2 cost pass (2026-11-27; motor choices and safety items unchanged): ${WAVE2_BEFORE:,.0f} → ${WAVE2_AFTER:,.0f} landed ({_sd(WAVE2_AFTER - WAVE2_BEFORE)}).** "
          "The inline roll was carried as a bare motor with the belt-roll parts still in the list, so corrections come first (lines, before contingency):",
          "- GIM8108-36 $171 → **$240** with its 24 V driver (SteadyWin store $239.80 GDM810 = SDC303; aifitlab $240 GDK810; $190 is the bare motor): +$138.",

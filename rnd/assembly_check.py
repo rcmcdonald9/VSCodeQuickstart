@@ -33,7 +33,7 @@ def printed_parts():
               "shoulder bracket body": shoulder.bracket_body(), "shoulder bracket outer wall": shoulder.bracket_wall_out(),
               "pitch shaft (integral 60T)": shoulder.pitch_shaft(), "pitch hub (balancer disc + ferrule)": shoulder.pitch_hub(),
               "cartridge M can (bolted, D24)": cm.can_bolted(arm.MOT), "cartridge M rear cap (D24)": cm.can_cap_bolted(arm.MOT),
-              "cartridge M Oldham adapter (D24)": cm.motor_adapter_bolted(arm.MOT), "elbow cassette plate A": arm.cassette_plate("A"), "ferrule (arm side)": shoulder.ferrule(True),
+              "elbow cassette plate A": arm.cassette_plate("A"), "ferrule (arm side)": shoulder.ferrule(True),   # W8b: the Oldham motor hub is 6061 (bought), not printed
               **roll.printed_parts(),                     # roll link, roll shaft or rear arm (D24 inline), clevis + yaw block, yaw shaft
               "carriage": upper.carriage(750), "lift bracket (D13 stage walls)": upper.lift_mount(),
               **{n: p for n, p, c in upper.torso(750) if n in ("torso_shell", "e_tray")},
