@@ -38,11 +38,16 @@ def act(name: str) -> dict:
 # roll_offset_y / yaw_drop drift from the geometry it derives.
 ROLL_DRIVE = os.environ.get("PIP_ROLL_DRIVE", "belt")
 ROLL_DRIVES = {
-    "belt": dict(roll_offset_y=0.083, yaw_drop=0.1160, shoulder_roll=("GIM6010-8", 80 / 18), roll_stage_mass=0.72, yaw_stage_mass=0.57),   # D19 caps: +10 g; yaw_drop 113.4 → 116.0: the yaw clock-spring cavity 8.7 → 11.3 mm (A14 ribbon 9.8 wide)
+    # 2026-11-27 (wave 2, roll track): both roll-side stages on D24 bolted cartridges (roll 0.72 → 0.68: −65 g KX74 sockets/forks,
+    # +20 g M5 clevis clamps and solid shaft ends; yaw 0.57 → 0.56); yaw_drop 116.0 → 113.4: the upper-arm flange sits in a
+    # 2.2 mm pocket in the bottom yaw plate and the spring-ring gap is 0.4 (cavity still 11.3 mm). bone_upper_dm: the upper
+    # bone's neck (CF tube + printed sleeve, ≈ 0.69 g/mm, rnd/parts/arm.py) is l_upper − yaw_drop long, so the inline roll's
+    # 12.1 mm shorter yaw drop makes it 12.1 mm longer: + 8 g (belt = the 0.79 kg reference).
+    "belt": dict(roll_offset_y=0.083, yaw_drop=0.1134, shoulder_roll=("GIM6010-8", 80 / 18), roll_stage_mass=0.68, yaw_stage_mass=0.56, bone_upper_dm=0.0),
     # FROM CAD (rnd/parts/roll.py, inline): ROLL_Y = ferrule face 18 + 2 + motor r 50 (Ø100 ESTIMATE); the top yaw plate
-    # clears the motor (r 50 + 4) instead of the Ø127 80T pulley (yaw_drop 116.0 → 103.9); masses = roll.masses(split=True), the motor (1.0 kg) is the
+    # clears the motor (r 50 + 4) instead of the Ø127 80T pulley (yaw_drop 116.0 → 103.9; wave 2: 101.3, the flange pocket); masses = roll.masses(split=True), the motor (1.0 kg) is the
     # roll actuator mass.
-    "inline": dict(roll_offset_y=0.070, yaw_drop=0.1039, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.28, yaw_stage_mass=0.55),
+    "inline": dict(roll_offset_y=0.070, yaw_drop=0.1013, shoulder_roll=("GIM8108-36", 1.0), roll_stage_mass=0.27, yaw_stage_mass=0.54, bone_upper_dm=0.008),
 }
 assert ROLL_DRIVE in ROLL_DRIVES, f"PIP_ROLL_DRIVE must be one of {list(ROLL_DRIVES)}"
 _RD = ROLL_DRIVES[ROLL_DRIVE]
@@ -70,7 +75,7 @@ class Arm:
     })
     spring_k_nm: float = 4.5       # shoulder balancer torque at the horizontal arm, τ = K·sin(pitch). Loop 5 (rnd/spring.py):
                                    # replaces the "85 % everywhere" assumption; K tuned for a 0.5 kg typical payload
-    bone_mass_upper: float = 0.79  # D24/D19 (2026-11-27, rnd/parts/arm.py masses): 98 mm housing, no elbow KX74 socket / torque arm, Oldham drive + bolted-can nose/flange/cap, integral 40T = −0.06; + 0.10 for the D13 elbow stage metal (steel shaft, alu pulley, 6801s) the loop-38 roll-up never counted. Loop 40: +98 g housing stiffener (A8, P2 FEA; rnd/parts/arm.py housing_stiffener). FROM CAD (loop 23 roll-up: shell + cap + torque arm 216 g, cassette 52 g, CF neck 10 g, 40T hub 92 g, elbow small hub + KX74 108 g, bearings 90 g, hardware 70 g ESTIMATE = 0.638 kg; +9 g for the 110 mm housing = 0.647), rounded up
+    bone_mass_upper: float = 0.79 + _RD["bone_upper_dm"]  # roll drive: ROLL_DRIVES bone_upper_dm (inline: longer neck). D24/D19 (2026-11-27, rnd/parts/arm.py masses): 98 mm housing, no elbow KX74 socket / torque arm, Oldham drive + bolted-can nose/flange/cap, integral 40T = −0.06; + 0.10 for the D13 elbow stage metal (steel shaft, alu pulley, 6801s) the loop-38 roll-up never counted. Loop 40: +98 g housing stiffener (A8, P2 FEA; rnd/parts/arm.py housing_stiffener). FROM CAD (loop 23 roll-up: shell + cap + torque arm 216 g, cassette 52 g, CF neck 10 g, 40T hub 92 g, elbow small hub + KX74 108 g, bearings 90 g, hardware 70 g ESTIMATE = 0.638 kg; +9 g for the 110 mm housing = 0.647), rounded up
     bone_mass_fore: float = 0.28   # D24 (2026-11-27): wrist KX56 socket (57 g) → bolted output flange + can flange + forearm rim (+23 g). FROM CAD (loop 9): side link with CF Ø30 tube + wrist KX56 socket + bearings + fasteners
     bone_wall_mm: float = 1.2      # printed shell wall (rnd/bones.py: strength is never binding)
     cf_tubes: bool = True          # carbon-tube neck + forearm (loop 9: bone-bending sag at the hand 4.1 → 1.5 mm)
@@ -155,4 +160,5 @@ def with_roll_drive(d: Design, drive: str) -> Design:
     j = dict(d.arm.joints)
     j["shoulder_roll"] = v["shoulder_roll"]
     keep = {k: v[k] for k in ("roll_offset_y", "yaw_drop", "roll_stage_mass", "yaw_stage_mass")}
+    keep["bone_mass_upper"] = d.arm.bone_mass_upper - ROLL_DRIVES[d.arm.roll_drive]["bone_upper_dm"] + v["bone_upper_dm"]
     return replace(d, arm=replace(d.arm, roll_drive=drive, joints=j, **keep))

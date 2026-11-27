@@ -26,6 +26,11 @@ def arm_sh_y():
     return BASELINE.arm.shoulder_y * 1000
 
 
+def _cap_belt():
+    x0, z1, y1 = roll.XF - roll.ZC - roll.CAP_GAP[0], roll.ROLL_C + roll.CAP_GAP[1] - 12, roll.ROLL_Y + roll.CAP_GAP[2]
+    return Pos((x0 + 33) / 2, (10 + y1) / 2, (38 + z1) / 2) * Box(33 - x0, y1 - 10, z1 - 38)
+
+
 def _sh_inline():
     """D24 inline roll, static side (pitch-body frame): GIM8108-36 + floor, the roll-link frame, the spring ring."""
     x0, x1 = roll.X_FLOOR[0], roll.ROLL_SPR_X[1] + 1.6
@@ -38,8 +43,9 @@ def _roll_inline():
     """D24 inline roll, roll body (origin on the roll axis): yaw block + band, the yaw cartridge + rear arm + fork, the +X arm."""
     x1 = roll.X_PL1 + 8
     zt = roll.P1[1] + 1.5
+    zc = roll.ZF + roll.ZC + 2.0                   # D24 bolted yaw cartridge: rear cap top (was 36 with the KX74 can)
     return {"yawblock": Pos((-130 + x1) / 2, 0, (-roll.YAW_DROP + zt) / 2) * Box(x1 + 130, 100, zt + roll.YAW_DROP),
-            "yawcart": Pos((-132 + roll.X_ARM_R[1]) / 2, 0, (zt + 36) / 2) * Box(roll.X_ARM_R[1] + 132, 106, 36 - zt),
+            "yawcart": Pos((-132 + roll.X_ARM_R[1]) / 2, 0, (zt + zc) / 2) * Box(roll.X_ARM_R[1] + 132, 106, zc - zt),
             "xarm": Pos(sum(roll.X_ARM_F) / 2, 0, (zt + roll.R_ARM) / 2) * Box(roll.X_ARM_F[1] - roll.X_ARM_F[0], 2 * roll.R_ARM, roll.R_ARM - zt)}
 
 
@@ -51,7 +57,9 @@ def pieces():
     wy = arm.J4310["h"] + 4 + 6
     return {
         "upper": {
-            "neck": Pos(0, 0, h["z1"] - 2) * Cylinder(36, 104 - 6 + 2, align=arm.MIN) + Pos(0, 0, -6) * Cylinder(45, 6, align=arm.MIN),
+            # neck from the housing top to the yaw flange (it follows yaw_drop: the inline roll's bone is 12 mm longer); it
+            # was a fixed 100 mm that reached ≈ 40 mm above the yaw joint into the roll body
+            "neck": Pos(0, 0, h["z1"] - 2) * Cylinder(36, -6 - (h["z1"] - 2), align=arm.MIN) + Pos(0, 0, -6) * Cylinder(45, 6, align=arm.MIN),
             "housing": Pos(0, 0, (h["z0"] + h["z1"]) / 2) * Box(h["x"], h["y"] + 16, h["z1"] - h["z0"]),
             "elbow_cart": Pos(0, y0 - cart_len / 2, -arm.ELBOW_Z + arm.BELT_C) * Rot(90, 0, 0) * Cylinder(cm.MOTOR["od"] / 2 + 3.3, cart_len),
         },
@@ -67,8 +75,8 @@ def pieces():
         # pitch body ("sh", frame = detach plane at y 0): roll link + roll cartridge
         "sh": _sh_inline() if roll.INLINE else {
             "rolllink": Pos(0, 61, 38) * Box(92, 106, 168),
-            "rollcart": Pos(-50, roll.ROLL_Y, roll.ROLL_C) * Box(66, 106, 102),
-            "cap": Pos(-34, 75, 95) * Box(134, 130, 114),                       # looks-pass shoulder cap
+            "rollcart": Pos(roll.XF - roll.ZC / 2, roll.ROLL_Y, roll.ROLL_C) * Box(roll.ZC, 2 * roll.R_CAN + 6, 2 * roll.R_CAN + 6),   # D24 bolted roll cartridge
+            "cap": _cap_belt(),                                                  # looks-pass shoulder cap (roll.shoulder_cap, D24 size)
         },
         # roll body (origin on the roll axis): clevis + yaw block + yaw cartridge
         "roll": _roll_inline() if roll.INLINE else {

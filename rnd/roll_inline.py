@@ -1,7 +1,7 @@
 """D24 inline shoulder roll (GIM8108-36) vs the belt roll: the checks for both drives, side by side.
 
     python -m rnd.roll_inline dome                              # belt dome (the default drive)
-    PIP_ROLL_DRIVE=inline python -m rnd.roll_inline <check>     # check ∈ dome, assembly_seq, spacing, swept, dexterity, basket
+    PIP_ROLL_DRIVE=inline python -m rnd.roll_inline <check>     # check ∈ dome, drive, assembly_seq, spacing, swept, dexterity, basket
 
 The CAD and the twin read params.ROLL_DRIVE at import, so each drive is a separate run. Results go to
 docs/rnd/roll_inline.json (one entry per drive and check) and docs/rnd/roll_inline.md; the baseline reports
@@ -74,6 +74,9 @@ def check(name):
         return dict(ok=ok, worst=round(min((r["worst"] for r in sel if r["t"] is not None), default=0), 2),
                     roll_peak_margin=round(min((r["use"]["roll"] for r in sel if r["t"] is not None), default=0), 2),
                     no_ik=sum(r["t"] is None for r in sel), cap={j: [round(x, 1) for x in c[2:4]] for j, c in cap.items()})
+    if name == "drive":
+        from .parts import roll
+        return dict(rows=roll.drive_capacity())
     raise SystemExit(f"unknown check {name}")
 
 
@@ -95,6 +98,14 @@ def report(res):
     row("R16 dexterity: top-down / 45° / side / across", "dexterity",
         lambda r: " / ".join(f"{r[k]:.0%}" for k in ("top-down", "45° angled", "side (horizontal)", "side, across the body")) + (" ✅" if r["ok"] else " ❌"))
     row("R2d basket: worst duty margin; roll peak margin", "basket", lambda r: f"{r['worst']:.2f}; {r['roll_peak_margin']:.1f}× {'✅' if r['ok'] else '❌'}")
+    row("Shaft → link drive: worst capacity / joint peak (drive_capacity)", "drive",
+        lambda r: f"{min(x['ratio'] for x in r['rows']):.2f}× " + ("✅" if min(x["ratio"] for x in r["rows"]) >= 1.0 else "❌ (see below)"))
+    for d in ("belt", "inline"):
+        s = g(d, "drive")
+        if s:
+            L += ["", f"Shaft → link torque paths ({d}; Astra #2b finding 2; hand calculations, ESTIMATE inputs as listed):", "",
+                  "| Joint | Path | Capacity | Demand | Ratio | Basis |", "|---|---|---|---|---|---|"]
+            L += [f"| {x['joint']} | {x['path']} | {x['cap']:g} | {x['demand']:g} | {x['ratio']:.2f}× {'✅' if x['ratio'] >= 1.0 else '❌'} | {x['basis']} |" for x in s["rows"]]
     for d in ("belt", "inline"):
         s = g(d, "swept")
         if s and s["rows"]:
