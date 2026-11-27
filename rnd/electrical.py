@@ -90,10 +90,28 @@ MOTOR_CU = {"GIM6010-8": (5.0 / 10.5, 0.35),        # output Kt (N·m/A), phase 
             "GIM8108-36": (3.86, 0.22)}             # SDC303: 3.86 N·m/A at the output, 9.2 A nominal, 34.1 A stall, 0.22 Ω (reseller spec tables, 2026-11-27 search)
 COVER_KG = 0.5                       # D23 joint covers per arm (ESTIMATE, D23)
 INERTIA_MARGIN = 1.15                # distributed-body inertia on top of the point masses (ESTIMATE)
-# Clamp resistor: Vishay Dale RH-50 aluminium-housed wirewound, 50 W on its reference heatsink, short-time overload
-# 5 × rated power for 5 s (Vishay RH datasheet; Mouser / eeworld copies). Two 0.56 Ω in parallel.
-RH50 = dict(p_rated=50.0, overload=5.0, t_overload=5.0, price=15.0)   # price: RS £59.90 / 5 pcs (RH050 family) ≈ $15 each
-CLAMP = dict(v_on=26.5, v_tol=0.01, hyst=0.4, n_res=3, r_each=0.56, adiabatic=0.25,
+# Clamp resistor. Was 3 × Vishay Dale RH-50 (aluminium-housed WIREWOUND: inductive, a few µH; Neon review #2 finding 1).
+# Now 3 × Vishay Dale NH-50, the same housing with an Ayrton-Perry non-inductive winding; Vishay: the NH versions "have the
+# same physical and electrical specifications" as the RH (50 W on the reference heatsink, short-time overload 5 × rated
+# for 5 s; RH/NH datasheet 30201, Mouser RH/NH product page; resistance range down to 0.05 Ω, so 0.56 Ω exists).
+# Price ESTIMATE: no 0.56 Ω NH-50 listing seen; IBS NH05050R00FE02 $15.01 (10-wk lead), Future NH05025R00FE02 $42.30
+# (2026-11-27 search snapshots) → $30.
+NH50 = dict(p_rated=50.0, overload=5.0, t_overload=5.0, price=30.0, L=1.0e-6)   # L: non-inductive winding + leads, ESTIMATE
+RH50 = dict(p_rated=50.0, overload=5.0, t_overload=5.0, price=15.0, L=5.0e-6)   # RH: still the pre-charge R3 + dummy load (relay-switched); L ESTIMATE (2–5 µH, not published)
+# Freewheel path (finding 1): a Schottky across each clamp resistor carries the winding + lead current when the MOSFET
+# turns off, so the drain sees V_bus + V_F + L_loop·di/dt instead of L_res·di/dt.
+FREEWHEEL = dict(name="Vishay VS-40CPQ060-N3 (60 V, 2 × 20 A common-cathode Schottky, TO-247AC, both legs in parallel)",
+                 ifsm=3200.0, vf=0.6, price=1.9,
+                 src="Vishay datasheet (IFSM 3200 A at 5 µs sine, VF 0.49 V at 20 A per leg); RS UK £37.00 per tube of 25 (2026-11-27 search)")
+# Comparator (finding 1): the TLV3702 is a nanopower part, 36 µs propagation delay (TI product page); the TLV3202 is 40 ns
+# typical, 55 ns max over −40…125 °C at 5 V / 15 pF (TI SBOS561C), push-pull, 2.7–5.5 V. Same dual pinout class.
+COMP = dict(name="TI TLV3202 dual push-pull comparator (40 ns typ, 55 ns max)", t_pd=55e-9, src="TI SBOS561C")
+COMP_OLD = dict(name="TI TLV3702 (nanopower)", t_pd=36e-6, src="TI TLV3702 product page: 36 µs")
+T_SW, L_LOOP = 0.3e-6, 30e-9         # gate-resistor-set MOSFET switching time; MOSFET–diode–film-cap loop inductance (ESTIMATE: tight layout)
+IRFB7530_VDS = 60.0
+# Thresholds (finding 1 asked for ~0.8 V of hysteresis): with ± 1 % on the threshold, 0.8 V cannot satisfy both "off above a full
+# pack" (v_on·0.99 − h > 25.2 V) and "peak ≤ 28 − 0.5 V" (v_on·1.01 + h ≤ 27.5 V): those need h ≤ 0.6 V. So 26.4 V / 0.6 V.
+CLAMP = dict(v_on=26.4, v_tol=0.01, hyst=0.6, n_res=3, r_each=0.56, adiabatic=0.25,
              mosfet="3 × Infineon IRFB7530PbF (60 V, 2.0 mΩ max, 195 A package limit; one per resistor)")
 N_DRIVERS = {"robot": 15, "M1": 5}   # 13 GIM + 2 DM-J4310; M1: 4 GIM + 1 DM-J4310
 C_BULK, C_DRIVER = 4700e-6, 470e-6   # the bus capacitor + per-driver input capacitance (ESTIMATE, not published)
@@ -116,12 +134,31 @@ R_PRE, T_PRE_TIMEOUT = 3.3, 1.0      # switched pre-charge: RH-50 3.3 Ω through
 T_FORCE = 0.100                      # forced bus discharge: a one-shot this long on the contactor's opening edge (not a level)
 R_BLEED = 1000.0                     # permanent bus bleeder, 1 kΩ 3 W: bus to < 10 V in ≈ 7 s after any stop (no one-shot needed)
 # Bench supply (Fable M2: the 10 A CC supply was a third of the arm's own peak). Mean Well SE-1000-24: 24 V 41.7 A, output
-# adjustable (set 24.0–25.2 V), overload by constant-current limiting per the datasheet (confirm on arrival). Prices:
-# Bravo Electro $174.80, Master Electronics $170.13 (2026-11-27 search snapshots).
-BENCH_PSU = dict(name="Mean Well SE-1000-24 (24 V 41.7 A, 1 kW)", i_max=41.7, price=174.80,
+# adjustable (set 24.0–25.2 V). Overload (Neon review #2 check, 2026-11-27): the SE-1000 spec gives 105–125 % of rated power
+# with "shut down o/p voltage, re-power on to recover" (Mean Well SE-1000 catalogue excerpt; the SE-1000-12 test report
+# shows the shutdown at 116 %): a LATCHED shutdown, not constant-current limiting as this file said before.
+# Prices: Bravo Electro $174.80, Master Electronics $170.13 (2026-11-27 search snapshots).
+BENCH_PSU = dict(name="Mean Well SE-1000-24 (24 V 41.7 A, 1 kW)", i_max=41.7, trip=(1.05, 1.25), price=174.80,
                  src="Bravo Electro $174.80; Master Electronics $170.13 (2026-11-27 search snapshots)")
 CC_PSU = dict(name="adjustable 0–30 V / 10 A CC/CV bench supply", i_max=10.0, price=65.71, src="Newegg generic 30 V 10 A CC/CV $65.71 (2026-11-27)")
-BENCH_FUSE = 20                      # A, slow-blow ATO on the arm lead (14 AWG silicone); main 40 A at the PSU output
+BENCH_FUSE = 20                      # A, ATO on the arm lead (14 AWG silicone)
+# Main fuse F1 (finding 1: a 40 A ATO carries 41.7 A, 104 %, indefinitely: Littelfuse ATO 110 % = 100 h minimum, 135 % =
+# 0.75–600 s, 200 % = 0.15–5 s, 350 % = 0.08–0.5 s). Sized for the ROBOT pack now: ≥ 1.25 × the pack's worst sustained,
+# carries the 74 A peak, and backs up the BMS's short-circuit trip. On the bench no fuse can operate before the supply's own
+# latched shutdown (≤ 52 A), so the supply is the bench over-current device and the wiring is sized for its trip current.
+MAIN_FUSE = dict(name="60 A MIDI bolt-down slow-blow (Littelfuse 498 class) + holder", rating=60, price=13.0, src="ESTIMATE")
+ATO_CURVE = {1.10: (360000, None), 1.35: (0.75, 600), 2.00: (0.15, 5), 3.50: (0.08, 0.5)}   # Littelfuse ATO 3–40 A (s)
+# Pack + BMS (Neon review #2 finding 11). The Lumenier NAV 6S 10 Ah 21700 (6S2P, XT60) is an FPV pack with no BMS: 35 A
+# continuous at an 80 °C cut-off (20 A without one), 90 A burst (RaceDayQuads / GetFPV listings, 2026-11-27 search). The
+# old external BMS was a "40 A JK class" ESTIMATE (trips on the 74 A peak). Now JK-B2A8S20P-HC: 4–8S, 200 A continuous,
+# 350 A peak, 2 A active balance, CAN + RS485, two NTC inputs (nkon.nl €83.95; 18650batterystore $145, sold out).
+PACK = dict(name="Lumenier NAV 6S 10 Ah 21700 (6S2P, no BMS)", cont=35.0, cont_nocut=20.0, burst=90.0, cells_p=2,
+            dcir_cell=0.015, ocv50=3.65, price=150.0, src="racedayquads.com / getfpv.com listings (35 A cont. with 80 °C cut-off, 90 A burst)")
+BMS = dict(name="JK-B2A8S20P-HC smart BMS (4–8S, 200 A cont. / 350 A peak, 2 A active balance, CAN + RS485, 2 × NTC)",
+           cont=200.0, peak=350.0, price=95.0, src="nkon.nl €83.95 (≈ $95 incl. shipping share, ESTIMATE); 18650batterystore $145 (sold out)")
+R_PATH = 0.010                       # BMS MOSFETs + XT90 + 10 AWG pack leads (Ω, ESTIMATE)
+# Software pack-current budget (the supervisor sums the drives' estimated bus currents and scales the torque limits):
+SW_PACK = dict(i_peak=70.0, i_avg=28.0, t_avg=30.0, t_cell_max=60.0)   # A instantaneous; A over a 30 s rolling mean; °C cell (BMS NTC)
 V_UVLO = 10.0                        # driver under-voltage lockout: ESTIMATE (GIM range starts at 12 V)
 
 
@@ -185,17 +222,45 @@ def regen_budget(d=BASELINE, payload=PAYLOAD_20LB, arms=2, lift=True):
     return out
 
 
-def clamp_check(rb):
+def clamp_check(rb, m1=None):
+    """Regen clamp: sink power, pulse energy, thresholds, and (Neon review #2 finding 1) the switching behaviour: comparator
+    delay, hysteretic switching frequency, MOSFET turn-off overshoot with and without the freewheel diode."""
     c = CLAMP
     R = c["r_each"] / c["n_res"]
     v_lo = c["v_on"] * (1 - c["v_tol"])
     v_hi = c["v_on"] * (1 + c["v_tol"]) + c["hyst"]
     P_cap = v_lo ** 2 / R                                            # sink power at the lowest threshold
-    e_rating = RH50["overload"] * RH50["p_rated"] * RH50["t_overload"]   # 1,250 J per resistor (5 × 50 W for 5 s)
-    e_allow = c["adiabatic"] * e_rating * c["n_res"]
-    return dict(R=R, v_lo=v_lo, v_hi=v_hi, I_pk=v_hi / R, P_cap=P_cap, e_rating=e_rating, e_allow=e_allow,
-                ok_P=P_cap >= rb["P"], ok_E=rb["E"] <= e_allow, ok_V=v_hi + 0.5 <= V_DRIVE_MAX, ok_off=v_lo - c["hyst"] > V_FULL,
-                cont=c["n_res"] * RH50["p_rated"])
+    e_rating = NH50["overload"] * NH50["p_rated"] * NH50["t_overload"]   # 1,250 J per resistor (5 × 50 W for 5 s)
+    t_pulse = max(r[6] for r in rb["rows"])                          # longest joint stop at peak torque (s)
+    e_sqrt = e_rating * math.sqrt(min(t_pulse, NH50["t_overload"]) / NH50["t_overload"])   # heat penetration ∝ √t below 5 s (ESTIMATE)
+    e_each_allow = min(c["adiabatic"] * e_rating, e_sqrt)
+    e_allow = e_each_allow * c["n_res"]
+    e_each = rb["E"] / c["n_res"]
+    I_each = v_hi / c["r_each"]
+    sw = {}
+    for which, P in (("robot", rb["P"]), ("M1", (m1 or rb)["P"])):
+        C = c_bus(which)
+        i_reg = P / c["v_on"]                                         # worst regen current into the bus
+        rise = i_reg / C                                              # V/s with the clamp off
+        fall = v_hi / R / C                                           # V/s with the clamp on and no regen (worst undershoot)
+        f_max = (v_hi / R) / (4 * C * c["hyst"])                       # hysteretic chopper, worst at i_reg = I_clamp / 2
+        sw[which] = dict(C=C, i_reg=i_reg, f_max=f_max,
+                         over_new=rise * COMP["t_pd"], over_old=rise * COMP_OLD["t_pd"],
+                         under_new=fall * COMP["t_pd"], under_old=fall * COMP_OLD["t_pd"],
+                         p_sw=c["v_on"] * I_each * T_SW * f_max)       # MOSFET switching loss at f_max (each)
+    v_peak = v_hi + max(x["over_new"] for x in sw.values())
+    v_ds_diode = v_peak + FREEWHEEL["vf"] + L_LOOP * I_each / T_SW
+    v_ds_rh = v_peak + RH50["L"] * I_each / T_SW                     # no freewheel path: the winding's L·di/dt lands on the drain
+    v_ds_nh = v_peak + NH50["L"] * I_each / T_SW
+    tau_fw = NH50["L"] / c["r_each"]
+    return dict(R=R, v_lo=v_lo, v_hi=v_hi, v_peak=v_peak, I_pk=v_hi / R, I_each=I_each, P_cap=P_cap, e_rating=e_rating,
+                e_allow=e_allow, e_each=e_each, e_each_allow=e_each_allow, e_sqrt=e_sqrt, t_pulse=t_pulse, p_avg_each=e_each / t_pulse,
+                ok_P=P_cap >= rb["P"], ok_E=rb["E"] <= e_allow, ok_V=v_peak + 0.5 <= V_DRIVE_MAX, ok_off=v_lo - c["hyst"] > V_FULL,
+                v_off_min=v_lo - c["hyst"] - max(x["under_new"] for x in sw.values()),
+                v_off_min_old=26.5 * 0.99 - 0.4 - max(x["under_old"] for x in sw.values()),
+                cont=c["n_res"] * NH50["p_rated"], sw=sw, v_ds_diode=v_ds_diode, v_ds_rh=v_ds_rh, v_ds_nh=v_ds_nh,
+                tau_fw=tau_fw, i_fw=I_each, ok_ds=v_ds_diode <= 0.8 * IRFB7530_VDS, ok_fw=I_each <= FREEWHEEL["ifsm"] / 10,
+                e_avalanche=0.5 * RH50["L"] * I_each ** 2)
 
 
 def c_bus(which="robot"):
@@ -229,7 +294,7 @@ def precharge(which="robot"):
     tau_dis = R_cl * C
     return dict(C=C, tau=tau, t95=3 * tau, i_in=V_FULL / R_PRE, p_in=V_FULL ** 2 / R_PRE, E=0.5 * C * V_FULL ** 2,
                 droop=N_DRIVERS[which] * I_IDLE_DRIVER * R_PRE, e_fault=V_FULL ** 2 / R_PRE * T_PRE_TIMEOUT,
-                e_rating=RH50["overload"] * RH50["p_rated"] * RH50["t_overload"],
+                e_rating=RH50["overload"] * RH50["p_rated"] * RH50["t_overload"],   # R3 stays an RH-50 (relay-switched, no fast edge)
                 R_clamp=R_cl, v_fight=V_FULL * R_cl / (R_cl + R_PRE), tau_dis=tau_dis, n_tau_force=T_FORCE / tau_dis,
                 E_dis=0.5 * C * V_FULL ** 2, t_bleed=R_BLEED * C * math.log(V_FULL / 10.0), i_bleed=V_FULL / R_BLEED,
                 droop_bleed=V_FULL / R_BLEED * R_PRE)
@@ -289,100 +354,125 @@ def bench_supply_lines(d=BASELINE):
     ok = lambda b: "✅" if b else "❌"
     a = arm_currents(d, servos=True)
     a20 = arm_currents(d, D20, servos=True)
-    s1_motors = {"shoulder_pitch": ("GIM6010-8", 1.0)}          # Step 1: one GIM6010-8 + the DM-J4310 + the servos
     g = act("GIM6010-8")
-    s1_rated = gim_bus_current(g["rated"], g["speed"]) + J4310["i_nom"] * 24 / V_MIN + a["servos"]
-    s1_peak = gim_bus_current(g["peak"], 0.0) + J4310["i_peak"] * 24 / V_MIN * 0.5 + a["servos"]
+    s1_servo = 0.0                                                # Neon #2 finding 15: the STS3215s moved to Step 2 (no 12 V rail in Step 1)
+    s1_rated = gim_bus_current(g["rated"], g["speed"]) + J4310["i_nom"] * 24 / V_MIN + s1_servo
+    s1_peak = gim_bus_current(g["peak"], 0.0) + J4310["i_peak"] * 24 / V_MIN * 0.5 + s1_servo
     P, CC = BENCH_PSU, CC_PSU
-    L = ["### Bench supply (Fable M2)",
+    trip_lo, trip_hi = P["i_max"] * P["trip"][0], P["i_max"] * P["trip"][1]
+    L = ["### Bench supply (Fable M2; overload behaviour corrected after Neon review #2)",
          f"The kit had an {CC['name']} and a 15 A fuse against the arm's own 11.4 A sustained / 33.3 A peak (then with four GIM6010s): in CC mode a peak "
          "folds the bus back on 7 mF in milliseconds (a brown-out), and the fuse could never blow. The arm's currents with the real motor set "
          "(inline GIM8108-36 roll; the two STS3215 on the elbow node's 12 V buck, which hangs on the arm lead on the bench):", "",
-         "| Case (bus current at the 20 V minimum) | Default arm (3 × GIM6010-8 + GIM8108-36) | D20 (hold A) | Step 1 (one GIM6010-8 + DM-J4310 + 2 × STS3215) |",
+         "| Case (bus current at the 20 V minimum) | Default arm (3 × GIM6010-8 + GIM8108-36) | D20 (hold A) | Step 1 (one GIM6010-8 + DM-J4310; servos in Step 2) |",
          "|---|---|---|---|",
          f"| Sustained (big joints 50 % of rated run, wrist nominal, servos 30 %) | {a['cont']:.1f} A | {a20['cont']:.1f} A | – |",
          f"| Peak, drive limit = **rated** (bring-up default `limit: rated`): every joint at rated torque and speed at once, servos stalled | {a['peak_rated']:.1f} A | {a20['peak_rated']:.1f} A | {s1_rated:.1f} A |",
          f"| Peak, drive limit = peak: two joints stalled at peak + the rest at rated run + wrist peak + servos stalled | {a['peak']:.1f} A | {a20['peak']:.1f} A | {s1_peak:.1f} A |", "",
-         f"**Supply: {P['name']}** (${P['price']:.2f}; {P['src']}), set to 24.0–25.2 V, overload by constant-current limiting (datasheet: confirm on arrival). "
+         f"**Supply: {P['name']}** (${P['price']:.2f}; {P['src']}), set to 24.0–25.2 V. **Overload is a latched shutdown, not current limiting:** the SE-1000 spec gives "
+         f"{P['trip'][0]:.0%}–{P['trip'][1]:.0%} of rated power ({trip_lo:.1f}–{trip_hi:.1f} A) with \"shut down o/p voltage, re-power on to recover\" (the SE-1000-12 test report "
+         "trips at 116 %). Earlier text said constant-current limiting; that was wrong. Consequences: a peak over the trip collapses the bus (the drives brown out: a "
+         "category-0 drop the catch cradle covers), the safety-board logic loses power and **must power up disarmed** (power-on reset on the latch, netlist below), and "
+         f"the bench wiring only has to carry {trip_hi:.0f} A for the moment the supply needs to trip. "
          f"The {CC['name']} stays for the 1 A current-limited first power-up only (drives disabled).", "",
          "| Check | Value | Limit | |", "|---|---|---|---|",
          f"| Sustained, default arm | {a['cont']:.1f} A | ≤ {P['i_max']:.1f} A / 2 (continuous derating) | {ok(a['cont'] <= P['i_max'] / 2)} |",
-         f"| Peak with the drive limits at rated (how bring-up runs) | {a['peak_rated']:.1f} A | ≤ {P['i_max']:.1f} A ({P['i_max'] / a['peak_rated']:.2f}×) | {ok(a['peak_rated'] <= P['i_max'])} |",
-         f"| Peak with the drive limits at peak (strength tests) | {a['peak']:.1f} A | ≤ {P['i_max']:.1f} A ({P['i_max'] / a['peak']:.2f}×) | "
-         f"{'✅' if a['peak'] <= P['i_max'] * 0.9 else '⚠️ no margin: peak-limit tests one joint at a time'} |",
-         f"| Step 1 peak (one GIM at peak, wrist peak, servos stalled) | {s1_peak:.1f} A | ≤ {P['i_max']:.1f} A | {ok(s1_peak <= P['i_max'])} |",
-         f"| Arm-lead fuse (slow-blow ATO, 14 AWG silicone) | {BENCH_FUSE} A | ≥ 1.25 × sustained {a['cont']:.1f} A, < the supply's {P['i_max']:.0f} A | "
-         f"{ok(1.25 * a['cont'] <= BENCH_FUSE < P['i_max'])} |", "",
+         f"| Peak with the drive limits at rated (how bring-up runs) | {a['peak_rated']:.1f} A | ≤ {trip_lo:.1f} A, the lowest trip ({trip_lo / a['peak_rated']:.2f}×) | {ok(a['peak_rated'] <= trip_lo)} |",
+         f"| Peak with the drive limits at peak (strength tests) | {a['peak']:.1f} A | ≤ {trip_lo:.1f} A ({trip_lo / a['peak']:.2f}×) | "
+         f"{'✅' if a['peak'] <= trip_lo * 0.9 else '⚠️ no margin: peak-limit tests one joint at a time'} |",
+         f"| Step 1 peak (one GIM at peak, wrist peak) | {s1_peak:.1f} A | ≤ {trip_lo:.1f} A | {ok(s1_peak <= trip_lo)} |",
+         f"| Arm-lead fuse F3 (ATO, 14 AWG silicone) | {BENCH_FUSE} A | ≥ 1.25 × sustained {a['cont']:.1f} A | {ok(1.25 * a['cont'] <= BENCH_FUSE)} |",
+         f"| Can any fuse clear a bench fault before the supply trips? | no: F3 at {trip_hi:.0f} A is {trip_hi / BENCH_FUSE:.1f}× (ATO opens in 0.15–5 s at 2×); the supply trips in ms | "
+         "the supply is the bench over-current device; fuses protect the robot | ✅ (by design) |",
+         f"| Supply → board wiring (10 AWG silicone, 5.3 mm²) | carries {trip_hi:.0f} A until the trip | ≥ {trip_hi:.0f} A short-time | ✅ |", "",
          "Rule for the bench: the drive torque limits stay at **rated** (bring-up's default) except in a strength test, which runs **one joint at a time**. "
-         f"The bulk capacitance ({c_bus('M1') * 1e3:.1f} mF with the drivers') only rides through edges: 10 A over the supply limit drains it "
+         f"The bulk capacitance ({c_bus('M1') * 1e3:.1f} mF with the drivers') only rides through edges: 10 A over the supply rating drains it "
          f"{10 / c_bus('M1') / 1000:.1f} V per ms, so it is not a substitute for supply current. Regen into the supply is blocked by the ideal-diode stage and dumped by the clamp. "
-         "On the robot the 6S pack's BMS sets the limit (Pack row above); the bench never needs it.", ""]
+         "On the robot the pack, its BMS and the software pack-current budget set the limit (*Pack and BMS* above).", ""]
     return L
 
 
 def safety_board_lines():
-    """Fable M2: the mandatory bench safety board as a netlist + block diagram + state sequence (e-stop, contactor,
-    pre-charge, clamp, watchdog, ideal diode). Part numbers are suggestions; values follow from the checks above."""
+    """Fable M2 + Neon review #2 finding 1: the mandatory bench safety board as a netlist + block diagram + state sequence
+    (e-stop, contactor, pre-charge, clamp, watchdog, ideal diode). Part numbers are suggestions; values follow from the checks above."""
     t_wd = WATCHDOG["t_nom"]
     r_wd = t_wd / 100e-9                 # SN74LVC1G123: t_w ≈ K·R·C, K ≈ 1 (TI SLVA720), C = 100 nF C0G
     r_os = T_FORCE / 1e-6                # discharge one-shot: C = 1 µF C0G/film
     art = [
         "```",
-        "PSU+ ─F1 40A─┬─[U1 LM74700 + Q6 IRFB7530: ideal diode]─ VIN ──┬───────────── K1 main (ALEV100) ─────────────┬─ VBUS ─F3 20A─► arm lead",
-        "             │                                               └─ K2 contact ─ R3 3.3Ω RH-50 (pre-charge) ───┤",
-        "             │                                                                                             ├─ C1 4.7mF 35V ┬ C2 10µF film ┬ D3 SMDJ33A (edge snubber)",
-        "             │                                                                                             ├─ R6 1kΩ 3W bleeder (permanent)",
-        "             │                                                                                             ├─ R1–R3 0.56Ω RH-50 ── Q1–Q3 IRFB7530 ── GND (clamp / discharge)",
-        "             │                                                                                             └─ divider ─► U4 comparator: OV (26.5V, 0.4V hyst) and PRE_OK (VBUS ≥ VIN−3V)",
-        "             └─F2 1A─ U2 24→12V buck ─ U3 3.3V LDO (watchdog / logic only)",
+        "PSU+ ─F1 60A MIDI─┬─[U1 LM74700 + Q6 IRFB7530: ideal diode]─ VIN ──┬───────────── K1 main (ALEV100) ─────────────┬─ VBUS ─F3 20A─► arm lead",
+        "                  │                                               └─ K2 contact ─ R3 3.3Ω RH-50 (pre-charge) ───┤",
+        "                  │                                                                                             ├─ C1 4.7mF 35V ┬ C2 10µF film ┬ D3 SMDJ33A (edge snubber)",
+        "                  │                                                                                             ├─ R6 1kΩ 3W bleeder (permanent)",
+        "                  │                                                                                             ├─ R1–R3 0.56Ω NH-50 ∥ D4–D6 VS-40CPQ060 ── Q1–Q3 IRFB7530 (R_G) ── GND",
+        "                  │                                                                                             └─ divider ─► U4 TLV3202: OV (26.4V, 0.6V hyst) and PRE_OK (VBUS ≥ VIN−3V)",
+        "                  └─F2 1A─ U2 24→12V buck ─ U3 3.3V LDO (watchdog / logic only)",
         "",
-        "Coil loop (hardware only):  +24V_L ─ S1a NC ─ S2a NC ─ K1 coil (D1 + Z1 suppression) ─ Q4 drain;  Q4 gate = U8: LATCH ∧ WD_OK ∧ PRE_OK",
-        "K_PRE:                      +24V_L ─ S1a/S2a (same chain) ─ K2 coil ─ Q5;  Q5 gate = LATCH ∧ ¬AUX ∧ ¬PRE_TIMEOUT",
-        "Clamp gate:                 U7 OR( OV , FORCE ) → U9 UCC27524 → Q1–Q3;   FORCE = U6 one-shot(AUX falling edge, 100 ms) ∧ ¬K2_DRIVE",
-        "Watchdog:                   GPIO17 heartbeat ─ U5a 74LVC1G17 ─ U5 SN74LVC1G123 (retriggerable, R4·C3) → WD_OK",
-        "Monitored reset:            SB1 ARM (NO) → U10 SN74LVC1G74 D-FF set only if S1b, S2b closed ∧ WD_OK; cleared by any stop, the thermal switch TH1 or PRE_TIMEOUT (U11, 1 s)",
-        "Feedback to the Pi:         K1 aux (NO) ─ U12 PC817 ─ GPIO27 (AUX_OK);  S1b/S2b ch2 ─ U13 PC817 ─ GPIO22 (ESTOP_SENSE)",
+        "Coil loop (hardware only):  +24V_L ─ S1a NC ─ S2a NC ─ K1 coil (D1 + Z1 suppression) ─ Q4 drain;  Q4 gate = U8: LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX)",
+        "K_PRE:                      +24V_L ─ S1a/S2a (same chain) ─ K2 coil ─ Q5;  Q5 gate = K2_DRIVE = LATCH ∧ ¬AUX ∧ ¬PRE_TIMEOUT",
+        "Clamp gate:                 U7 OR( OV , FORCE ) → U9 UCC27524 → R_G → Q1–Q3;   FORCE = U6 one-shot, Ā = AUX (falling edge), B = 3V3, CLR̄ = ¬K2_DRIVE (U15)",
+        "Watchdog:                   GPIO17 heartbeat ─ U5a 74LVC1G17 ─ U5 SN74LVC1G123 B (rising edge), Ā = GND, CLR̄ = 3V3 (R4·C3) → WD_OK",
+        "Monitored reset:            SB1 ARM (NO) → U10 SN74LVC1G74 D-FF set only if S1b, S2b closed ∧ WD_OK; CLR̄ low on any STOP, FORCE (any K1 opening), TH1, PRE_TIMEOUT, power-on (R9·C9)",
+        "Feedback to the Pi:         K1 aux (NO) ─ U12 PC817 ─ AUX (logic, high = closed) + GPIO27 (AUX_OK);  S1b/S2b ch2 ─ U13 PC817 ─ GPIO22 (ESTOP_SENSE)",
         "```"]
     nets = [
-        ("F1", "40 A ATO/MIDI fuse", "PSU+ → F1_OUT", "supply wiring protection (SE-1000-24 limit 41.7 A)"),
+        ("F1", MAIN_FUSE["name"], "PSU+ / pack+ → F1_OUT", "sized for the robot pack (≥ 1.25 × 37 A sustained, carries the 74 A peak, backs up the BMS short-circuit trip); "
+                                                         "on the bench the SE-1000-24's latched shutdown (43.8–52 A) acts first"),
         ("U1, Q6", "LM74700-Q1 ideal-diode controller + IRFB7530 (60 V, 2 mΩ)", "F1_OUT → VIN", "blocks regen into the PSU (a PSU cannot sink)"),
         ("K1", "TE Kilovac ALEV100, 24 V coil, 100 A, 1 Form A aux", "VIN ↔ VBUS; coil COIL+ / COIL−; aux AUX_A / AUX_B", "main contactor (category-0 stop)"),
         ("D1, Z1", "1N4007 + 24 V Zener (e.g. 1N5359B) in series across the K1 coil", "COIL+ / COIL−", "coil suppression that keeps the release time short (diode alone slows it)"),
-        ("Q4", "IRLB8721 logic-level N-MOSFET", "COIL− → GND, gate U8_OUT", "coil driver: closed only while LATCH ∧ WD_OK ∧ PRE_OK"),
+        ("Q4", "IRLB8721 logic-level N-MOSFET", "COIL− → GND, gate U8_OUT", "coil driver: closes on LATCH ∧ WD_OK ∧ PRE_OK, then holds on AUX (finding 1: PRE_OK alone in the hold term)"),
+        ("U8", "SN74LVC1G11 3-input AND + SN74LVC1G32 OR (PRE_OK ∨ AUX)", "LATCH, WD_OK, PRE_OK, AUX → Q4 gate", "close on a charged bus, hold on the aux contact"),
         ("S1, S2", "2 × two-channel latching mushroom, 2 NC each", "S1a/S2a: +24V_L → COIL+ (series); S1b/S2b: 3V3 → U10 / U13", "ch1 opens the coil loop directly; ch2 tells the logic and the Pi"),
         ("SB1", "ARM / reset pushbutton, NO", "3V3 → U10 CLK", "monitored manual reset (never re-closes on its own)"),
-        ("U10", "SN74LVC1G74 D flip-flop", "D = S1b ∧ S2b ∧ WD_OK, CLK = SB1, CLR = STOP", "LATCH: armed state"),
-        ("K2, Q5", "10 A / 30 VDC relay (24 V coil, e.g. Omron G5LE-1) + IRLML6344", "VIN → K2_C → R3 → VBUS; gate = LATCH ∧ ¬AUX ∧ ¬PRE_TIMEOUT", "pre-charge, opens as soon as K1's aux closes"),
-        ("R3", f"Vishay RH-50 {R_PRE} Ω", "K2_C → VBUS", f"pre-charge resistor (τ {R_PRE * c_bus('M1') * 1e3:.0f} ms on the M1 bus)"),
+        ("U10", "SN74LVC1G74 D flip-flop", "D = S1b ∧ S2b ∧ WD_OK, CLK = SB1, CLR̄ = ¬(STOP ∨ FORCE ∨ POR)", "LATCH: armed state; **any K1 opening clears it** (FORCE fires on every aux falling edge), so K2 cannot re-close by itself"),
+        ("R9, C9", "100 kΩ + 1 µF (τ 0.1 s) on U10 CLR̄", "3V3 → CLR̄", "power-on reset: after a supply trip the board powers up disarmed"),
+        ("K2, Q5", "10 A / 30 VDC relay (24 V coil, e.g. Omron G5LE-1) + IRLML6344", "VIN → K2_C → R3 → VBUS; gate = K2_DRIVE", "pre-charge, opens as soon as K1's aux closes"),
+        ("R3", f"Vishay RH-50 {R_PRE} Ω (relay-switched: no fast edge, wirewound is fine)", "K2_C → VBUS", f"pre-charge resistor (τ {R_PRE * c_bus('M1') * 1e3:.0f} ms on the M1 bus)"),
         ("U11", "RC + comparator (or a third LVC1G123), 1 s", "starts on LATCH ↑, output PRE_TIMEOUT clears U10 if AUX is still open", "pre-charge timeout (latched fault)"),
-        ("U4", "TLV3702 dual comparator + TL431 reference", "VBUS divider → OV (26.5 V, 0.4 V hysteresis) and PRE_OK (VBUS ≥ VIN − 3 V)", "clamp threshold; closes K1 only on a charged bus"),
-        ("U6", f"SN74LVC1G123 one-shot, R {r_os / 1e3:.0f} kΩ, C 1 µF", "B = AUX_OK falling edge (K1 opened), CLR = K2_DRIVE", f"FORCE: {T_FORCE * 1e3:.0f} ms forced discharge on the opening edge only, never during pre-charge"),
-        ("U7, U9", "SN74LVC1G32 OR + UCC27524 gate driver (12 V)", "OV ∨ FORCE → Q1–Q3 gates", "clamp gate"),
-        ("Q1–Q3 / R1–R3", "3 × IRFB7530 / 3 × Vishay RH-50 0.56 Ω on an Al plate, 10 AWG leads", "VBUS → R → Q → GND", "regen clamp + bus discharge (0.19 Ω; a third resistor since the inline roll: robot peak regen 2.8 kW)"),
+        ("U4", f"{COMP['name']} + TL431B reference", "VBUS divider (0.1 % resistors) → OV (26.4 V, 0.6 V hysteresis by positive feedback) and PRE_OK (VBUS ≥ VIN − 3 V)",
+         "clamp threshold; closes K1 only on a charged bus (was the 36 µs TLV3702)"),
+        ("U6", f"SN74LVC1G123 one-shot, R {r_os / 1e3:.0f} kΩ, C 1 µF", "**Ā = AUX** (falling edge = K1 opened), B = 3V3, CLR̄ = ¬K2_DRIVE",
+         f"FORCE: {T_FORCE * 1e3:.0f} ms forced discharge on the opening edge only (B is the rising-edge input: finding 1), never during pre-charge"),
+        ("U15", "SN74LVC1G04 inverter", "K2_DRIVE → U6 CLR̄", "the old netlist tied CLR̄ to K2_DRIVE itself, which held the one-shot cleared whenever K2 was off: FORCE could never fire"),
+        ("U7, U9", "SN74LVC1G32 OR + UCC27524 gate driver (12 V)", "OV ∨ FORCE → R_G → Q1–Q3 gates", "clamp gate"),
+        ("R_G", f"gate resistors (≈ 10–22 Ω, set on the scope for ≈ {T_SW * 1e6:.1f} µs edges)", "U9 → Q1–Q3", "limits di/dt: drain overshoot ≈ 5 V with the 30 nH loop"),
+        ("Q1–Q3 / R1–R3", "3 × IRFB7530 / 3 × **Vishay NH-50 0.56 Ω** on an Al plate, 10 AWG leads", "VBUS → R → Q → GND", "regen clamp + bus discharge (0.19 Ω; robot peak regen 2.8 kW)"),
+        ("D4–D6", FREEWHEEL["name"], "anode at Q drain, cathode at VBUS (across each resistor)", "freewheel path for the resistor + lead inductance at every turn-off (finding 1)"),
         ("TH1", "85 °C NC thermal switch on the resistor plate", "in series with U10 D (opens → STOP)", "clamp over-temperature latches a stop"),
         ("R6", f"{R_BLEED / 1000:.0f} kΩ 3 W", "VBUS → GND", "permanent bleeder (bus < 10 V within ≈ 7–11 s after any stop, M1 / robot)"),
         ("C1, C2, D3", "4.7 mF 35 V electrolytic + 10 µF film at Q1–Q3 + SMDJ33A TVS", "VBUS → GND", "bulk, switching overshoot, edge snubber only (not the clamp)"),
-        ("U5", f"SN74LVC1G123, R4 {r_wd / 1e3:.0f} kΩ 1 %, C3 100 nF C0G", "B = heartbeat (GPIO17 via 74LVC1G17), Q = WD_OK", f"hardware watchdog, {t_wd * 1e3:.0f} ms (bringup.yaml watchdog_s)"),
-        ("U2, U3", "24 → 12 V 1 A buck + 3.3 V LDO (e.g. MCP1703A-3302)", "F2 (1 A) from VIN", "logic supply of its own (the watchdog must not share the Pi's rail)"),
-        ("U12, U13", "2 × PC817 opto", "K1 aux → GPIO27 (AUX_OK); S1b/S2b → GPIO22 (ESTOP_SENSE)", "sw/bringup.py `--estop gpiod:gpiochip0:17:27`; 22 for the button sense"),
-        ("F3", f"{BENCH_FUSE} A slow-blow ATO", "VBUS → arm lead (14 AWG)", "arm branch (sustained ≈ 15 A, Bench supply above)"),
+        ("U5", f"SN74LVC1G123, R4 {r_wd / 1e3:.0f} kΩ 1 %, C3 100 nF C0G", "B = heartbeat (rising edges; GPIO17 via 74LVC1G17), Ā = GND, Q = WD_OK",
+         f"hardware watchdog, {t_wd * 1e3:.0f} ms (bringup.yaml watchdog_s): needs ≥ 1 rising edge per timeout (a 500 Hz toggle gives one every 4 ms)"),
+        ("U2, U3", "24 → 12 V 1 A buck + 3.3 V LDO (e.g. MCP1703A-3302)", "F2 (1 A) from VIN", "logic supply of its own (the watchdog must not share the Pi's rail); nothing else may hang on it"),
+        ("U12, U13", "2 × PC817 opto", "K1 aux → AUX (to U6 / U8 / U11) and GPIO27 (AUX_OK); S1b/S2b → GPIO22 (ESTOP_SENSE)", "sw/bringup.py `--estop gpiod:gpiochip0:17:27`; 22 for the button sense"),
+        ("F3", f"{BENCH_FUSE} A ATO", "VBUS → arm lead (14 AWG)", "arm branch (sustained ≈ 15 A, Bench supply above)"),
     ]
     seq = [
-        ("OFF / STOPPED", "K1 open, K2 open, LATCH 0", "after any stop: FORCE fires once for 100 ms, then the bleeder holds VBUS near 0 V"),
+        ("OFF / STOPPED", "K1 open, K2 open, LATCH 0 (also after power-up: R9·C9)", "after any stop: FORCE fires once for 100 ms, then the bleeder holds VBUS near 0 V"),
         ("ARM pressed", "needs both mushrooms released (S1b, S2b), WD_OK (the Pi already toggles the heartbeat), TH1 closed", "LATCH ← 1; K2 closes; U11 timer starts"),
-        ("PRE-CHARGE", f"VBUS rises through {R_PRE} Ω, τ ≈ {R_PRE * c_bus('M1') * 1e3:.0f} ms (M1)", "FORCE inhibited (no edge, and ∧ ¬K2); OV never trips below 26.2 V"),
-        ("RUN", "PRE_OK → Q4 on → K1 closes; aux closes → K2 drops out", "drives powered; the bring-up enables them only after this"),
-        ("STOP (any)", "mushroom, WD_OK low, TH1, PRE_TIMEOUT, or the Pi (stops the heartbeat)", "Q4 off → K1 opens (≤ 10 ms) → aux opens → FORCE 100 ms → bus < UVLO in ≈ 2 ms"),
+        ("PRE-CHARGE", f"VBUS rises through {R_PRE} Ω, τ ≈ {R_PRE * c_bus('M1') * 1e3:.0f} ms (M1)", "FORCE inhibited (no aux edge, and CLR̄ held low while K2 is driven); OV never trips below 26.1 V"),
+        ("RUN", "PRE_OK → Q4 on → K1 closes; aux closes → K2 drops out; Q4 now holds on AUX", "drives powered; a bus sag cannot open K1 (PRE_OK has left the hold term), the bring-up enables the drives only after this"),
+        ("STOP (any)", "mushroom, WD_OK low, TH1, PRE_TIMEOUT, the Pi (stops the heartbeat), or K1 dropping out for any other reason (coil dip, shock)",
+         "Q4 off → K1 opens (≤ 10 ms) → aux falls → FORCE 100 ms (bus < UVLO in ≈ 2 ms) **and LATCH cleared** → K2 stays open; only SB1 re-arms"),
     ]
-    L = ["### Safety board (Fable M2: e-stop, contactor, pre-charge, clamp, watchdog)",
+    L = ["### Safety board (Fable M2; Neon review #2 finding 1 fixes)",
          "Block diagram and netlist of the mandatory bench board. It is a design to be built and reviewed on perfboard / a 2-layer board, not a certified "
-         "safety function; part numbers are suggestions with the ratings the checks above need.", ""] + art + [
+         "safety function; part numbers are suggestions with the ratings the checks above need. **Draw it in KiCad and simulate the clamp loop before ordering the board parts** "
+         "(M1_READINESS Step 1 gate).", "",
+         "**Neon review #2, finding 1, checked against this netlist:** (a) RH-50 is wirewound and there was no freewheel path: **confirmed** (NH-50 + Schottky, table above); "
+         "(b) TLV3702 delay: **confirmed** (36 µs; now TLV3202, 55 ns max); the \"10 kHz banging\" is ordinary hysteretic chopping once the diodes are in; "
+         "(c) chatter from PRE_OK on a bus sag: **not as described** (PRE_OK compares VBUS with VIN, and with K1 closed they are the same node, so a sag moves both), but the "
+         "logic had a real hole: if K1 dropped out for any reason with LATCH still high, K2 re-closed and the board **re-armed itself** without the reset button: now K1 holds on "
+         "AUX and any opening clears LATCH; (d) U6 on pin B: **confirmed** (B is rising-edge, Ā falling-edge, TI SCES586; now Ā), and U6's CLR̄ polarity was also inverted "
+         "(U15); (e) the 40 A fuse: **confirmed** that it cannot clear 41.7 A, and the SE-1000-24 does not current-limit at all: it shuts down at 105–125 % (*Bench supply* above).", ""] + art + [
          "", "| Ref | Part | Nets | Function |", "|---|---|---|---|"] + [f"| {a} | {b} | {c} | {d} |" for a, b, c, d in nets] + [
          "", "| State | Condition | Effect |", "|---|---|---|"] + [f"| {a} | {b} | {c} |" for a, b, c in seq] + [
          "", "Bench tests of the board before any motor (bring-up step 0): ARM refused with a mushroom pressed or without a heartbeat; pre-charge "
          "reaches VIN − 3 V and K1 closes; a 10 Ω RH-50 dummy load across VBUS holds it under VIN − 3 V and trips PRE_TIMEOUT; heartbeat stopped → K1 opens within "
-         f"{t_wd * 1.2 * 1e3:.0f} ms; FORCE pulse seen on the scope at every opening and never during pre-charge; clamp at 26.5 V from a lab supply "
-         "through 1 Ω.", ""]
+         f"{t_wd * 1.2 * 1e3:.0f} ms; FORCE pulse seen on the scope at every opening and never during pre-charge; **K1 coil interrupted by hand while armed → LATCH clears and "
+         "K2 stays open** (no self re-arm); supply switched off and on → board comes up disarmed; clamp at 26.4 V from a lab supply through 1 Ω with the drain voltage "
+         "on the scope (≤ 48 V).", ""]
     return L
 
 
@@ -404,8 +494,8 @@ def drop_catch(d=BASELINE, payload_hand=1.0, gap=0.05):
 
 def a5v2_section(d=BASELINE):
     rb = regen_budget(d)
-    cc = clamp_check(rb)
     m1 = regen_budget(d, payload=2.0, arms=1, lift=False)
+    cc = clamp_check(rb, m1)
     st, st1 = stop_timing("robot"), stop_timing("M1")
     pc = precharge("robot")
     dc_m1, dc_r = drop_catch(d, 1.0), drop_catch(d, PAYLOAD_20LB / 2)
@@ -424,21 +514,40 @@ def a5v2_section(d=BASELINE):
           f"| **Robot total (2 arms + lift)** | | | | **{rb['E']:.0f} J** | **{rb['P']:.0f} W** | |",
           f"| M1 bench (one arm, 2 kg in hand, D20 motors) | | | | {m1['E']:.0f} J | {m1['P']:.0f} W | |", "",
           f"Continuous regen: lowering the torso at full speed returns {rb['P_lower']:.0f} W, at the rated {act(d.upper.lift_motor)['speed'] * 0.0159:.2f} m/s {rb['P_lower_rated']:.0f} W. "
-          f"The clamp's continuous rating is {cc['cont']:.0f} W ({CLAMP["n_res"]} RH-50 on their reference heatsink), so **lowering is capped at the rated speed whenever the pack is full or the "
+          f"The clamp's continuous rating is {cc['cont']:.0f} W ({CLAMP["n_res"]} NH-50 on their reference heatsink), so **lowering is capped at the rated speed whenever the pack is full or the "
           "supply is a bench PSU** (planner rule; the clamp's thermal switch latches a fault if it is ignored).", "",
-          f"**Part:** {CLAMP['n_res']} × **Vishay Dale RH-50, {CLAMP['r_each']} Ω** (aluminium-housed wirewound, 50 W on its heatsink; datasheet short-time overload "
-          f"{RH50['overload']:.0f} × rated for {RH50['t_overload']:.0f} s = **{cc['e_rating']:.0f} J per resistor**) in parallel = {cc['R']:.2f} Ω, switched by {CLAMP['mosfet']}, "
-          "a comparator with its own reference (threshold 26.5 V ± 1 %, 0.4 V hysteresis), a gate driver, 10 µF film capacitors at the MOSFETs (switching overshoot), "
-          "and an 85 °C NC thermal switch on the resistor plate. **Mandatory on the M1 bench** (a bench PSU cannot sink current). The 33 V TVS stays only as an edge snubber: a TVS that does not conduct at 25.2 V "
+          f"**Part (Neon review #2 finding 1):** {CLAMP['n_res']} × **Vishay Dale NH-50, {CLAMP['r_each']} Ω** (the RH-50's housing with a non-inductive Ayrton-Perry winding: "
+          f"Vishay gives the NH the same ratings as the RH, 50 W on its heatsink, short-time overload {NH50['overload']:.0f} × rated for {NH50['t_overload']:.0f} s = "
+          f"**{cc['e_rating']:.0f} J per resistor**) in parallel = {cc['R']:.2f} Ω, switched by {CLAMP['mosfet']}, **each resistor with a {FREEWHEEL['name']} across it** "
+          f"(freewheel path), a {COMP['name']} with a TL431B reference (threshold {CLAMP['v_on']} V ± 1 %, {CLAMP['hyst']} V hysteresis), a UCC27524 gate driver with gate resistors "
+          f"that set ≈ {T_SW * 1e6:.1f} µs switching edges, 10 µF film capacitors at the MOSFETs, and an 85 °C NC thermal switch on the resistor plate. "
+          "**Mandatory on the M1 bench** (a bench PSU cannot sink current). The 33 V TVS stays only as an edge snubber: a TVS that does not conduct at 25.2 V "
           "clamps far above 28 V at current, so it cannot enforce the drive limit (Astra 17). On the bench, an ideal-diode stage stops regen reaching the PSU.", "",
           "| Check | Value | Limit | |", "|---|---|---|---|",
           f"| Sink power at the lowest threshold ({cc['v_lo']:.2f} V² / {cc['R']:.2f} Ω) | {cc['P_cap']:.0f} W | ≥ worst-case peak {rb['P']:.0f} W | {ok(cc['ok_P'])} |",
-          f"| Pulse energy | {rb['E']:.0f} J | ≤ 25 % of the 5 s overload rating for a < 0.5 s pulse (adiabatic allowance, ESTIMATE): {cc['e_allow']:.0f} J | {ok(cc['ok_E'])} |",
-          f"| Highest bus voltage while clamping (+1 % tol. + hysteresis) | {cc['v_hi']:.2f} V | ≤ {V_DRIVE_MAX:.0f} V − 0.5 V | {ok(cc['ok_V'])} |",
-          f"| Clamp off at a full pack (lowest threshold − hysteresis) | {cc['v_lo'] - CLAMP['hyst']:.2f} V | > {V_FULL} V | {ok(cc['ok_off'])} |",
-          f"| Peak current (MOSFETs, wiring) | {cc['I_pk']:.0f} A ({cc["I_pk"] / CLAMP["n_res"]:.0f} A per MOSFET) | 195 A package limit each | ✅ |", "",
-          "Check on the restrained rig (Astra 17): a dummy capacitive energy source first, then one axis; scope the bus **at the drive** for a simultaneous stop, a PSU trip and a contactor opening. "
-          "Confirm the RH-50 pulse curve for a 20× / 0.3 s pulse with Vishay; the 5 s rating alone doesn't prove it.", "",
+          f"| Pulse energy per resistor ({rb['E']:.0f} J / {CLAMP['n_res']}) over the longest stop ({cc['t_pulse']:.2f} s; mean {cc['p_avg_each']:.0f} W = "
+          f"{cc['p_avg_each'] / NH50['p_rated']:.1f} × rated) | {cc['e_each']:.0f} J | ≤ min(25 % of the 5 s rating, rating × √(t / 5 s)) = {cc['e_each_allow']:.0f} J (ESTIMATE; "
+          f"{cc['e_each_allow'] / cc['e_each']:.1f}×) | {ok(cc['ok_E'])} |",
+          f"| Highest bus voltage while clamping (+1 % tol. + hysteresis + comparator delay × dV/dt) | {cc['v_peak']:.2f} V | ≤ {V_DRIVE_MAX:.0f} V − 0.5 V | {ok(cc['ok_V'])} |",
+          f"| Clamp off at a full pack (lowest threshold − hysteresis) | {cc['v_lo'] - CLAMP['hyst']:.2f} V (with the comparator delay {cc['v_off_min']:.2f} V) | > {V_FULL} V | {ok(cc['ok_off'] and cc['v_off_min'] > V_FULL)} |",
+          f"| Peak current (MOSFETs, wiring) | {cc['I_pk']:.0f} A ({cc['I_each']:.0f} A per MOSFET) | 195 A package limit each | ✅ |",
+          f"| MOSFET drain at turn-off, **RH-50 without a freewheel diode** (L ≈ {RH50['L'] * 1e6:.0f} µH × {cc['I_each']:.0f} A / {T_SW * 1e6:.1f} µs) | {cc['v_ds_rh']:.0f} V "
+          f"(avalanche, {cc['e_avalanche'] * 1e3:.1f} mJ per edge, thousands of edges per second) | ≤ {0.8 * IRFB7530_VDS:.0f} V (80 % of 60 V) | ❌ (the old design) |",
+          f"| MOSFET drain at turn-off, NH-50 + freewheel Schottky (V_bus + V_F + {L_LOOP * 1e9:.0f} nH loop × di/dt) | {cc['v_ds_diode']:.1f} V | ≤ {0.8 * IRFB7530_VDS:.0f} V | {ok(cc['ok_ds'])} |",
+          f"| Freewheel pulse per diode | {cc['i_fw']:.0f} A decaying with L/R ≈ {cc['tau_fw'] * 1e6:.1f} µs (NH-50 L ESTIMATE) | IFSM {FREEWHEEL['ifsm']:.0f} A (5 µs); ≥ 10× | {ok(cc['ok_fw'])} |", "",
+          "**Comparator speed and switching (finding 1, re-derived):** the clamp is a hysteretic brake chopper: it switches on at the upper threshold, "
+          "discharges the bus by the hysteresis, switches off, and repeats while regen lasts; switching at kHz rates is normal for a chopper, the failure was the "
+          "missing freewheel path. Worst-case frequency is at a regen current of half the clamp current: f = I_clamp / (4 · C · ΔV).", "",
+          "| Bus | C | Worst regen current | Overshoot from the comparator delay (TLV3702 → TLV3202) | Undershoot after switch-off (TLV3702 → TLV3202) | f_sw max | MOSFET switching loss at f_max (each) |",
+          "|---|---|---|---|---|---|---|"] + [
+          f"| {w} | {x['C'] * 1e3:.1f} mF | {x['i_reg']:.0f} A | {x['over_old'] * 1e3:.0f} → {x['over_new'] * 1e3:.1f} mV | {x['under_old'] * 1e3:.0f} → {x['under_new'] * 1e3:.1f} mV | "
+          f"{x['f_max'] / 1e3:.1f} kHz | {x['p_sw']:.1f} W |" for w, x in cc["sw"].items()] + ["",
+          f"With the TLV3702's 36 µs the old thresholds (26.5 V, 0.4 V) would have dipped to {cc['v_off_min_old']:.2f} V, under a full pack (the clamp then drains the supply / pack), "
+          f"and overshot by up to {max(x['over_old'] for x in cc['sw'].values()):.2f} V; with the TLV3202 both are negligible. 0.8 V of hysteresis (the review's suggestion) "
+          f"does not fit inside 25.2 … 27.5 V with a ± 1 % threshold, so {CLAMP['hyst']} V; no minimum-on-time monostable is needed at these frequencies.", "",
+          "Check on the restrained rig (Astra 17): a dummy capacitive energy source first, then one axis; scope the bus **at the drive** and the **MOSFET drains** for a simultaneous stop, "
+          "a PSU trip and a contactor opening. Confirm the NH-50 pulse capability for a ≈ 5× / 0.4 s pulse with Vishay (the 5 s rating and the √t scaling are not a pulse curve), "
+          "and simulate the clamp loop (LTspice: bus C, NH-50 + lead L, diode, MOSFET, gate R) before ordering the board.", "",
           "### Pre-charge, switched (not in parallel), and the forced discharge as a one-shot",
           f"The loop-40 diagram drew 22 Ω permanently across the contactor: it would keep feeding ≈ 1 A into a stopped bus. Now a relay **K_PRE** (10 A / 30 VDC) in series "
           f"with a {R_PRE} Ω RH-50 closes only when both mushrooms are released, the watchdog is healthy and reset is pressed; the main contactor closes when the bus reaches "
