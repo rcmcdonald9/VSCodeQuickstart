@@ -102,7 +102,7 @@ def step2_common():
         ("Bearings", "61808 (40×52×7)", 4, *B61808[:1], "pitch and elbow one-piece shafts (D19), 2 each", B61808[1]),
         ("Bearings", "6708 (40×50×6) thin", 2, 2.5, "elbow belt cassette", E),
         ("Bearings", "61804 (20×32×7)", 2, 0.92, "D16 wrist-roll spindle", "AliExpress MOCHU snapshot; Zoro $4.69"),
-        ("Bearings (M8)", "608-class grooved pulley bearing (U608ZZ)", 2, 2.5, "A9 balancer pulley A + tackle pulley (Fable M8: a U604 carries 634–748 N on C0 ≈ 0.35 kN)", E),
+        ("Bearings (M8)", "608-2Z bearings (C0 1.37 kN) with printed POM tyres on a Ø8 axle fork", 2, 2.5, "A9 balancer pulley A + tackle pulley (Fable M8: a U604 carried 634–748 N on C0 ≈ 0.3 kN; M8 track 3220161)", E),
         ("Joints (C1/M1 fixes)", "Pitch-hub tie-rod: 4 × M4 class 10.9 studs (DIN 976-1) + M4 nuts + 6061 clamp ring; yaw flange 6 × M3 × 45 12.9 + steel clamp ring",
          1, 12.0, "the arm hung from M3 inserts in pull-out (Fable C1; rnd/joints.py on the C1/M1 track)", E),
         ("Joints (C1/M1 fixes)", "Machined 6061-T6 yaw flange (hex spigot, M3 tapped at the hex corners)", 1, 25.0, "Fable C1 (C1/M1 track ESTIMATE)", E),

@@ -61,7 +61,7 @@ Hold A (D20) costs **+$147** against the GIM6010 lines (up to +$375 at the deare
 | Bearings | 61808 (40×52×7) | 4 | 2.02 | 8 | pitch and elbow one-piece shafts (D19), 2 each | AliExpress MOCHU 10-pack snapshot (loop 14) |
 | Bearings | 6708 (40×50×6) thin | 2 | 2.50 | 5 | elbow belt cassette | ESTIMATE |
 | Bearings | 61804 (20×32×7) | 2 | 0.92 | 2 | D16 wrist-roll spindle | AliExpress MOCHU snapshot; Zoro $4.69 |
-| Bearings (M8) | 608-class grooved pulley bearing (U608ZZ) | 2 | 2.50 | 5 | A9 balancer pulley A + tackle pulley (Fable M8: a U604 carries 634–748 N on C0 ≈ 0.35 kN) | ESTIMATE |
+| Bearings (M8) | 608-2Z bearings (C0 1.37 kN) with printed POM tyres on a Ø8 axle fork | 2 | 2.50 | 5 | A9 balancer pulley A + tackle pulley (Fable M8: a U604 carried 634–748 N on C0 ≈ 0.3 kN; M8 track 3220161) | ESTIMATE |
 | Joints (C1/M1 fixes) | Pitch-hub tie-rod: 4 × M4 class 10.9 studs (DIN 976-1) + M4 nuts + 6061 clamp ring; yaw flange 6 × M3 × 45 12.9 + steel clamp ring | 1 | 12.00 | 12 | the arm hung from M3 inserts in pull-out (Fable C1; rnd/joints.py on the C1/M1 track) | ESTIMATE |
 | Joints (C1/M1 fixes) | Machined 6061-T6 yaw flange (hex spigot, M3 tapped at the hex corners) | 1 | 25.00 | 25 | Fable C1 (C1/M1 track ESTIMATE) | ESTIMATE |
 | Joints (C1/M1 fixes) | 7075-T6 balancer crank Ø44 × 4 with a pressed Ø6 pin, tapped for the tie-rod studs | 1 | 20.00 | 20 | custom metal part missing from the kit (Fable minor) | ESTIMATE |
