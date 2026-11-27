@@ -1168,3 +1168,8 @@ One long push instead of half-hour runs. In order:
 - Lift (GIM6010, 20T): 20 lb moves at 0.3 m/s² need 1.41× rated / 3.1× peak; the pawl holds at 0 W → OK for short moves, no lift motor change.
 - Base: 15 mm threshold margin 2.19× → 1.72× (rule 1.5×) ✅. Static tip with the hug load at 45°: ≈ 55 mm, ≈ 32 mm while braking at 0.3 m/s² ✅ (planner rules stay).
 - So R2c only changes shoulder pitch + elbow (D20), pending the GIM8108-8 24 V answer.
+
+## 2026-11-27: R2d laundry basket (owner) — rnd/basket.py
+
+- 20 lb basket, hands hooked down into the end handles, full 3D twin statics with the D20 motors: floor pick, carry and bed set-down pass with the basket centre ≤ 0.45 m out (shoulder ≤ 21 N·m: ≥ 3× peak, +10 K over a 2-min carry; tip ≥ 31 mm toward a wheel). Washer/counter top not reachable with this grasp.
+- D21: rigid fingertip hooks + wrist-pitch outboard support (the KX56 would see ≈ 2.4 N·m bending vs ≈ 1.5 N·m lift-off).
