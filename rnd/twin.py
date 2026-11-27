@@ -95,6 +95,10 @@ def build_xml(d: Design, geometry: str | None = None) -> str:
                        if f.stem.startswith(body + "_") and f.stem.endswith("_" + side))
     mb = mass_budget(d)
     base_m = sum(m for _, m in mb["base"])
+    bal = mb.get("ballast (2 removable blocks)", [])        # A10 v2 (rnd/tip.py): removable steel blocks low in the rear sectors
+    bx, by, bz = b.ballast_xyz
+    ballast_xml = "".join(f'<geom type="box" size="0.05 0.03 0.026" pos="{bx} {s * by} {bz}" mass="{m}" rgba=".35 .35 .38 1" contype="0" conaffinity="0"/>'
+                          for (_, m), s in zip(bal, (1, -1)))
     m = {j: act(n)["mass"] for j, (n, _) in a.joints.items()}
 
     def arm(side):
@@ -160,7 +164,7 @@ def build_xml(d: Design, geometry: str | None = None) -> str:
     <geom name="table" type="box" pos="0.75 -0.15 0.37" size="0.15 0.3 0.375" rgba=".6 .45 .3 .35" contype="0" conaffinity="0"/>
     <body name="robot">
       <geom type="cylinder" size="{b.radius} {b.height/2}" pos="0 0 {b.clearance + b.height/2}" mass="{base_m}" rgba=".92 .92 .92 1"/>
-      <geom type="box" size="0.07 0.05 0.03" pos="-0.03 0 {b.clearance+0.035}" mass="{b.battery_mass}" rgba=".2 .3 .7 1"/>
+      <geom type="box" size="0.07 0.05 0.03" pos="-0.03 0 {b.clearance+0.035}" mass="{b.battery_mass}" rgba=".2 .3 .7 1"/>{ballast_xml}
       <geom type="box" size="{u.mast_w/2} {u.mast_w/2} {u.spine_len/2}" pos="-0.06 0 {b.clearance + b.height + u.spine_len/2}" mass="{spine_m}" rgba=".6 .62 .65 1"/>
       <geom type="box" size="0.05 0.05 0.05" pos="-0.06 0 {b.clearance + b.height + 0.06}" mass="{u.lift_motor_mass}" rgba=".2 .2 .2 1"/>
       {head_xml(head_z) if u.head_on_mast else ""}
