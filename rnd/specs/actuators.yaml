@@ -14,6 +14,10 @@ GIM6010-8:
   outer_diameter_mm: 80    # retailer description; confirm with installation drawing (ESTIMATE until drawing checked)
   interface: "CAN + USB-C (SDC104 driver), integrated driver + encoder"
   continuous_current_a: 10.5
+  stages: 1                  # single-stage planetary (8:1)
+  backlash_arcmin: 12        # = rnd/accuracy.py GIM_BACKLASH 0.20° at the output (ESTIMATE)
+  encoder: "single, motor side (14-bit)"
+  rotor_inertia_kgm2: 2.4e-5 # ESTIMATE: 60-class rotor, the AK80-9's 579 g·cm² scaled by (33/44)³ (rotor radius, ring mass ∝ r²)
   price_usd: [90, 94]      # loop 14 verified with driver: aifitlab $90 (GDS68), SteadyWin store $93.88; bare motor $70.35
   notes: >
     Some Amazon variants differ (48 V/4.6 N·m/17.9 N·m locking). Buy the 24 V SDC104 version and verify on arrival.
@@ -34,6 +38,10 @@ GIM8108-8:
   rated_speed_rpm: 60        # ESTIMATE at 24 V (listings give ~120 rpm class at 48 V)
   mass_g: 396                # with driver (GDZ468); 375 g motor only
   outer_diameter_mm: 96      # ESTIMATE (8108 stator class); confirm with the drawing
+  stages: 1
+  backlash_arcmin: 12        # ESTIMATE (as the GIM6010-8)
+  encoder: "single, motor side (14-bit)"
+  rotor_inertia_kgm2: 6.0e-5 # ESTIMATE (as the GIM8108-36: same motor)
   price_usd: [85, 110]       # $85 without driver (backordered at one seller); driver version ESTIMATE
   notes: "Reseller data only, no official datasheet found (2026-11-27). Voltage ranges conflict between listings."
   sources:
@@ -58,6 +66,11 @@ GIM8108-36:
   driver_face: "Ø75 section, 6 × M2 through on Ø70, 3 × M2 tapped 3 deep on Ø56 (drawing)"
   output_bearing_radial_n: null   # not on the drawing: open seller question
   price_usd: [152, 190]
+  # inline-arm study (2026-11-28, rnd/inline_study.py): fields for the back-drive, collision and accuracy rows
+  stages: 2                  # two-stage planetary (36:1)
+  backlash_arcmin: 15        # reseller spec tables (openelab / rcdrone, 2026-11-27 snapshots; rnd/accuracy.py); ESTIMATE until benched
+  encoder: "single, motor side (14-bit); output angle = motor angle / 36, so the reducer backlash is outside the loop"
+  rotor_inertia_kgm2: 6.0e-5 # ESTIMATE: 80-class outrunner rotor, scaled from the CubeMars AK80-9 listing (579 g·cm², aifitlab spec table via search snippet 2026-11-28)
   sources:
     - https://aifitlab.com/products/steadywin-gim8108-36-planetary-reducer-servo-motor
     - https://openelab.com/products/steadywin-gim8108-36-robot-actuator
@@ -77,6 +90,9 @@ DM-J4310-2EC_V1.1:
   dimensions_mm: {diameter: 56-57, height: 46}
   interface: "CAN 1 Mbps (MIT/position/speed modes), UART config, dual encoder (output-absolute)"
   current_a: {nominal: 2.5, peak: 7.5}
+  stages: 1
+  backlash_arcmin: 12        # ESTIMATE
+  rotor_inertia_kgm2: 6.0e-6 # ESTIMATE (43-class rotor, shorter stack than the J4340)
   price_usd: [125, 179]
   notes: "V1.2 torque figures conflict between sellers (3.5/12.5 N·m likely = J4310P). Use V1.1 numbers."
   sources:
@@ -84,6 +100,77 @@ DM-J4310-2EC_V1.1:
     - https://www.roboticscenter.ai/store/product/damiao-dm-j4310-2ec-v11
     - https://aifitlab.com/products/damiao-dm-j4310-2ec-v1-1-servo-motor
     - https://openelab.com/products/damiao-brushless-servo-dm-j4310
+
+GIM6010-48:
+  role: "inline upper-arm yaw candidate (inline-arm study I1, 2026-11-28; rnd/inline_study.py)"
+  maker: SteadyWin
+  gear_ratio: 48
+  stages: 2                  # two-stage planetary, steel gears (rcdrone listing)
+  voltage_nominal_v: 24      # 12–56 V range (rcdrone / Robotics Center listings)
+  rated_torque_nm: 30        # "nominal 30 N·m" (aifitlab, Robotics Center). = the GIM6010-8's 5 N·m / 8 × 48 at 100 % gearbox efficiency;
+                             # at a two-stage η ≈ 0.86 (ESTIMATE) ≈ 26 N·m. The yaw needs ≤ 4 N·m p95, so the conflict does not decide anything.
+  peak_torque_nm: 66         # stall 66 N·m (Robotics Center: = 11 / 8 × 48). CONFLICT: openelab titles it "88 N·m" (likely another driver / 48 V).
+                             # Design to 66 until the seller's datasheet.
+  rated_speed_rpm: 20        # nominal 20 rpm, max 70 rpm after reduction (GDS68 driver, 24 V listing): 3× slower than today's yaw (60 rpm)
+  max_speed_rpm: 70
+  mass_g: 777                # 776.9 g with driver, 758.9 g without (Robotics Center); one listing gives 1 kg net
+  outer_diameter_mm: 80
+  length_mm: 67.5            # 56.5 without the driver (Robotics Center)
+  backlash_arcmin: 15        # rcdrone listing ("15 arcmin")
+  encoder: "single, motor side (14-bit; one variant column lists 16-bit); no output encoder listed"
+  rotor_inertia_kgm2: 2.4e-5 # ESTIMATE: as the GIM6010-8 (same motor)
+  price_usd: [135, 156]      # aifitlab $135 (backordered), $156 regular (sold out) (2026-11-28 search snippets; pages not reachable from this session)
+  notes: "Reseller data only; driver pairing (SDC104 / SDC215 / GDS68) and speed conflict between listings. Mounting pattern not found."
+  sources:
+    - https://www.roboticscenter.ai/store/product/steadywin-gim6010-48-planetary-reducer-servo-motor/
+    - https://rcdrone.top/products/steadywin-gim6010-48-planetary-reducer-servo-motor
+    - https://aifitlab.com/products/steadywin-gim6010-48-planetary-reducer-servo-motor
+    - https://openelab.io/products/steadywin-gim6010-48-robot-joint-motor-88nm-planetary-gear-servo
+
+DM-J4340-2EC:
+  role: "inline upper-arm yaw candidate (inline-arm study I2, 2026-11-28)"
+  maker: Damiao
+  gear_ratio: 40
+  stages: 2                  # ESTIMATE (40:1 planetary in a Ø57 frame)
+  voltage_nominal_v: 24      # 24 V and 48 V variants
+  rated_torque_nm: 9         # openelab / rcdrone / Damiao 2025 selection handbook (24 V); one Robotics Center page shows 12 / 40 (another model)
+  peak_torque_nm: 27
+  rated_speed_rpm: 36
+  no_load_speed_rpm: 52      # 24 V (DM-J4340P entry; 100 @ 48 V)
+  mass_g: 362
+  dimensions_mm: {diameter: 57, height: 56}   # ESTIMATE (J4310 frame Ø56 × 46 + a longer reducer): no drawing reached from this session
+  current_a: {peak: 8}
+  backlash_arcmin: 15        # ESTIMATE: not published; two-stage planetaries of this class are 10–20 arcmin (rnd/accuracy.py note)
+  encoder: "dual 14-bit single-turn magnetic: motor side + output side (absolute output position)"
+  rotor_inertia_kgm2: 8.0e-6 # ESTIMATE: 43-class rotor (AK80-9 579 g·cm² × (21/44)³ ≈ 6.3e-6, + a longer stack)
+  price_usd: [155, 215]      # rcdrone $154.99 (sold out), aifitlab $155 (backordered), Robotics Center $215 (24 V) (2026-11-28 search snippets)
+  sources:
+    - https://openelab.com/products/damiao-brushless-servo-dm-j4340
+    - https://rcdrone.top/products/damiao-dm-j4340-2ec-servo-motor
+    - https://aifitlab.com/products/damiao-dm-j4340-2ec-servo-motor
+    - https://www.roboticscenter.ai/store/product/damiaoj434024v
+    - "Damiao 2025 selection handbook (worldrobotconference.com download, 2025-06-30): 9 N·m rated / 27 N·m peak at 24 V (owner-supplied; host not reachable from this session)"
+
+DM-J8009-2EC:
+  role: "inline elbow candidate (inline-arm study I2b, 2026-11-28)"
+  maker: Damiao
+  gear_ratio: 9
+  stages: 1                  # single-stage planetary
+  voltage_nominal_v: 24      # 24–48 V wide-voltage version
+  rated_torque_nm: 20
+  peak_torque_nm: 40
+  rated_speed_rpm: 100       # ESTIMATE at 24 V (as the J8009P entry)
+  mass_g: 896                # Damiao manual (aifitlab wiki): ~896 g; the P variant 930 g
+  dimensions_mm: {width: 98, depth: 98, height: 61.7}   # Damiao manual (aifitlab wiki)
+  backlash_arcmin: 10        # ESTIMATE: single stage, not published
+  encoder: "dual: motor side + output side (2EC)"
+  rotor_inertia_kgm2: 6.5e-5 # ESTIMATE: 80-class rotor as the GIM8108
+  price_usd: [385, 480]      # aifitlab $470 (backordered); P variant $394.99 (rcdrone, sold out) – $480 (2026-11-28 search snippets)
+  sources:
+    - https://aifitlab-wiki.super.site/damiao-docs/dm-j8009-2ec-motor-instruction-manual
+    - https://aifitlab.com/products/damiao-dm-j8009-2ec-servo-motor
+    - https://www.roboticscenter.ai/store/product/damiao-8009
+    - https://rcdrone.top/products/damiao-dm-j8009p-2ec-servo-motor
 
 DM-J4340P-2EC:
   role: high-ratio option (shoulder pitch / elbow if GIM6010 margin is short)

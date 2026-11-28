@@ -77,6 +77,24 @@ ARM_MOTOR_SETS = {
     # Ø50 Oldham + Ø102.6 can +68 g), shoulder.masses() 0.758 → 0.824 kg (+0.07, Ø50 Oldham + can). Motor +8 g via act().
     "d20": dict(shoulder_pitch=("GIM8108-8", 3.0), elbow=("GIM8108-8", 3.0), elbow_teeth=60, elbow_belt_c=0.08414,
                 bone_mass_upper=0.93, pitch_module_mass=0.95),   # D26: no D63 Oldham (CAD −90 g arm, −78 g pitch module)   # merged: + Neon F3 crush sleeves (+0.05) + metal pitch Oldham hub (+0.017)   # Neon #2: + core tube 51 g + metal D63 motor hub (+26 g) = 0.94 → 1.02    # merged: + C1/M8 (+0.05)    # D24 v2 / Fable M6: D63 Oldham (+48 g per stage over the D50) + the elbow encoder (+12 g): 0.88 → 0.94, 0.86 → 0.91; incl. the 5.5 mm +Y face (+35 g; no side layer beside the can); yaw KX74 socket dropped (−88 g)
+    # All-inline arm study (owner 2026-11-28: "would a more motor-based design help, and what would it cost?";
+    # rnd/inline_study.py, docs/rnd/inline_study.md). Every big joint driven by a geared actuator on its own axis, no
+    # belt / pulley / stub / idler. PARAMS-LEVEL ONLY: there is no inline CAD for pitch / yaw / elbow (rnd/parts/arm.py and
+    # shoulder.py do not follow these sets; do not set PIP_ARM_MOTORS=inline for CAD runs). Ratio 1.0 = direct (no belt
+    # efficiency in arm_sizing.capacity). elbow_teeth / elbow_belt_c are placeholders (no elbow belt; rnd/belts.py STAGES
+    # would read them only under the env var). Masses = the gim6010 CAD roll-ups ± the line items in
+    # rnd/inline_study.py MASS_LINES (FROM CAD removals, ESTIMATE additions); the study asserts these numbers match them.
+    # Optional keys (absent = today's yaw): upper_yaw, yaw_stage_dm (kg added to the roll drive's yaw_stage_mass),
+    # yaw_drop_dm (m added to the roll drive's yaw_drop; the coaxial yaw motor sits under the roll motor).
+    # I1 all SteadyWin: GIM8108-36 at pitch + elbow, GIM6010-48 at yaw.
+    "inline": dict(shoulder_pitch=("GIM8108-36", 1.0), elbow=("GIM8108-36", 1.0), upper_yaw=("GIM6010-48", 1.0), elbow_teeth=20,
+                   elbow_belt_c=0.07095, bone_mass_upper=0.52, pitch_module_mass=0.80, yaw_stage_dm=-0.26, yaw_drop_dm=0.025),
+    # I2a mixed: as I1 with a dual-encoder DM-J4340-2EC at yaw (40:1, 9 / 27 N·m).
+    "inline_dm": dict(shoulder_pitch=("GIM8108-36", 1.0), elbow=("GIM8108-36", 1.0), upper_yaw=("DM-J4340-2EC", 1.0), elbow_teeth=20,
+                      elbow_belt_c=0.07095, bone_mass_upper=0.53, pitch_module_mass=0.80, yaw_stage_dm=-0.28, yaw_drop_dm=0.015),
+    # I2b mixed: as I2a with a dual-encoder DM-J8009-2EC at the elbow (9:1 single stage, 20 / 40 N·m).
+    "inline_dm8009": dict(shoulder_pitch=("GIM8108-36", 1.0), elbow=("DM-J8009-2EC", 1.0), upper_yaw=("DM-J4340-2EC", 1.0), elbow_teeth=20,
+                          elbow_belt_c=0.07095, bone_mass_upper=0.52, pitch_module_mass=0.80, yaw_stage_dm=-0.28, yaw_drop_dm=0.015),
 }
 assert ARM_MOTORS in ARM_MOTOR_SETS, f"PIP_ARM_MOTORS must be one of {list(ARM_MOTOR_SETS)}"
 _AM = ARM_MOTOR_SETS[ARM_MOTORS]
@@ -94,12 +112,12 @@ class Arm:
     elbow_teeth: int = _AM["elbow_teeth"]        # elbow big pulley (20T small): 40 → 2:1, 60 → 3:1
     elbow_belt_c: float = _AM["elbow_belt_c"]    # elbow belt centre distance (m), = arm.BELT_C
     roll_offset_y: float = _RD["roll_offset_y"]   # roll axis outboard of the pitch body / detach plane (belt: loop 10 roll CAD: 0.05 → 0.075, the 72T pulley; loop 40: 0.083, the 80T pulley; inline 0.070)
-    yaw_drop: float = _RD["yaw_drop"]       # belt: roll axis → upper-arm yaw interface (loop 10 roll CAD: 0.07 → 0.10; loop 40 D13 yaw stage + 80T roll pulley: 0.113 = roll.YAW_DROP); the upper bone shortens to keep l_upper
+    yaw_drop: float = _RD["yaw_drop"] + _AM.get("yaw_drop_dm", 0.0)       # (+ ARM_MOTOR_SETS yaw_drop_dm: inline-yaw sets only) # belt: roll axis → upper-arm yaw interface (loop 10 roll CAD: 0.07 → 0.10; loop 40 D13 yaw stage + 80T roll pulley: 0.113 = roll.YAW_DROP); the upper bone shortens to keep l_upper
     # actuator choice per joint and belt/linkage reduction in the bone
     joints: dict = field(default_factory=lambda: {
         "shoulder_pitch": _AM["shoulder_pitch"],   # ARM_MOTOR_SETS (D20). GIM6010: loop 10: 2.5 → 3 (20T:60T) after the hand CAD added 0.2 kg at the tip
         "shoulder_roll":  _RD["shoulder_roll"],   # inline: GIM8108-36 direct. Belt: loop 40: 4.0 → 4.44 (18T:80T, D13 mass); loop 10: 3.5 → 4 (18T:72T); loop 5: 3 → 3.5
-        "upper_yaw":      ("GIM6010-8", 2.0),   # loop 5: DM-J4310 direct was under-rated over the workspace (p95 4.6 N·m vs 3 rated)
+        "upper_yaw":      _AM.get("upper_yaw", ("GIM6010-8", 2.0)),   # ARM_MOTOR_SETS inline sets only; else   # loop 5: DM-J4310 direct was under-rated over the workspace (p95 4.6 N·m vs 3 rated)
         "elbow":          _AM["elbow"],          # ARM_MOTOR_SETS (D20): GIM6010-8 2:1 or GIM8108-8 3:1
         "wrist_pitch":    ("DM-J4310-2EC_V1.1", 1.0),
         "wrist_roll":     ("STS3215-C018", 1.0),
@@ -121,7 +139,7 @@ class Arm:
     pitch_module_mass: float = _AM["pitch_module_mass"]    # ARM_MOTOR_SETS (D20). GIM6010: D24/D19 (2026-11-27, shoulder.masses 0.758 → 0.729): bolted cartridge + Oldham, no KX74 socket / torque fork, integral 60T, bolted pitch hub + outer wall. FROM CAD (loop 7; loop 8 lightening 0.81 → 0.76; loop 10 60T pulley 0.79, rnd/parts/shoulder.py): bracket, pitch shaft + 50T pulley + balancer lever +
                                        # KX-V ferrule, small hub + KX74 socket, bearings, spring/cable/pulley A, V-band clamp. Torso side.
     roll_stage_mass: float = _RD["roll_stage_mass"]      # inline: ROLL_DRIVES. Belt: FROM CAD (loop 40, rnd/parts/roll.py masses(split=True)): ferrule, roll link + spring ring, roll shaft + split 72T + spring hub, D13 stage + KX74 socket, 2×61808. Loop 10: 0.58
-    yaw_stage_mass: float = _RD["yaw_stage_mass"]       # inline: ROLL_DRIVES. Belt: FROM CAD (loop 40, incl. the A8 box walls): clevis + yaw block, yaw shaft + flange + split 40T + spring ring, D13 stage + KX74 socket, 2×61808. Loop 10: 0.47
+    yaw_stage_mass: float = _RD["yaw_stage_mass"] + _AM.get("yaw_stage_dm", 0.0)       # (+ ARM_MOTOR_SETS yaw_stage_dm: inline-yaw sets only) # inline: ROLL_DRIVES. Belt: FROM CAD (loop 40, incl. the A8 box walls): clevis + yaw block, yaw shaft + flange + split 40T + spring ring, D13 stage + KX74 socket, 2×61808. Loop 10: 0.47
     elbow_hub_mass: float = 0.12   # big pulley + hub + 2×61808 + tensioner when the motor is remote (ESTIMATE)
     wrist_pitch_range_deg: float = 120.0   # ±140 folded the hand into the forearm (collision study); ±120 is realistic and reaches more
     # Wrist roll ± range (2026-11-27, harness track finding): ±180° needs 432° of clock-spring capacity (× 1.2) and the 14–24 mm
@@ -210,6 +228,9 @@ def with_roll_drive(d: Design, drive: str) -> Design:
     j = dict(d.arm.joints)
     j["shoulder_roll"] = v["shoulder_roll"]
     keep = {k: v[k] for k in ("roll_offset_y", "yaw_drop", "roll_stage_mass", "yaw_stage_mass")}
+    am = ARM_MOTOR_SETS[d.arm.arm_motors]                                   # inline-yaw sets: keep their yaw deltas
+    keep["yaw_drop"] += am.get("yaw_drop_dm", 0.0)
+    keep["yaw_stage_mass"] += am.get("yaw_stage_dm", 0.0)
     keep["bone_mass_upper"] = d.arm.bone_mass_upper - ROLL_DRIVES[d.arm.roll_drive]["bone_upper_dm"] + v["bone_upper_dm"]
     return replace(d, arm=replace(d.arm, roll_drive=drive, joints=j, **keep))
 
@@ -221,4 +242,8 @@ def with_arm_motors(d: Design, name: str) -> Design:
     j = dict(d.arm.joints)
     j["shoulder_pitch"], j["elbow"] = v["shoulder_pitch"], v["elbow"]
     keep = {k: v[k] for k in ("elbow_teeth", "elbow_belt_c", "bone_mass_upper", "pitch_module_mass")}
+    old = ARM_MOTOR_SETS[d.arm.arm_motors]                                   # inline-yaw sets (inline study): yaw actuator + deltas
+    j["upper_yaw"] = v.get("upper_yaw") or (("GIM6010-8", 2.0) if "upper_yaw" in old else d.arm.joints["upper_yaw"])
+    keep["yaw_stage_mass"] = d.arm.yaw_stage_mass - old.get("yaw_stage_dm", 0.0) + v.get("yaw_stage_dm", 0.0)
+    keep["yaw_drop"] = d.arm.yaw_drop - old.get("yaw_drop_dm", 0.0) + v.get("yaw_drop_dm", 0.0)
     return replace(d, arm=replace(d.arm, arm_motors=name, joints=j, **keep))
