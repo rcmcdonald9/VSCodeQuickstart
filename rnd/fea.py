@@ -321,7 +321,7 @@ def _ancestors(m, b):
 
 
 def carriage_case():
-    """C3 follow-up (wave 4, D20 only): the lift carriage with its side walls thinned 12 → 8 mm over the slot under the
+    """C3 follow-up (wave 4, D20 only; D26: 4 mm walls): the lift carriage with its side walls thinned 12 → 4 mm over the slot under the
     D20 pitch cans (rnd/parts/upper.py carriage, read here with arm_motors = d20 whatever the run's motor set). Held at
     the inner faces of the 8 × 625 bearing bosses (all DOF: the belt clamp / pawl's vertical reaction is taken there
     too, ESTIMATE). Each side face (|y| = W/2 + 13, outside the slot and the bosses) takes one arm's wrench
@@ -369,7 +369,7 @@ def carriage_case():
                   (lambda x, s=s: on(x, s) & (x[0] > cx), (0, k * hf, gf)), (lambda x, s=s: on(x, s) & (x[0] <= cx), (0, -k * hf, -gf))]
     hw = upper.W / 2
     fixed = lambda x: (((np.abs(np.abs(x[0] - xm) - hw) < 0.3) & (np.abs(x[1]) < 15.2)) | ((np.abs(np.abs(x[1]) - hw) < 0.3) & (np.abs(x[0] - xm) < 15.2)))
-    return (f"Lift carriage (D20 slot, side walls 8 mm): one arm per side, F ({F[0]:.0f}, {F[1]:.0f}, {F[2]:.0f}) N, "
+    return (f"Lift carriage (D20 slot, side walls 4 mm): one arm per side, F ({F[0]:.0f}, {F[1]:.0f}, {F[2]:.0f}) N, "
             f"M ({M[0]:.0f}, {M[1]:.0f}, {M[2]:.0f}) N·m × 1.5 ({pose})", part, 3.0, fixed, loads)
 
 

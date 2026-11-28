@@ -120,6 +120,21 @@ def pitch_frame():
 
 
 _HOOD = []
+_FUZZ = 1e-5          # mm
+
+
+def _cut_main(h, q):
+    """h − q as a fuzzy boolean (1e-5 mm), keeping only the largest solid. The ≈ 820 swept cuts of the yaw hood used to run
+    as plain `h -= q`: one cut near roll −12° left an edge tolerance of ≈ 1e140, the ≈ 200 slivers were carried into
+    every later cut, and the cuts after roll 0° doubled in time and memory until rnd.assembly_check ran out of memory
+    (12 GB, D26). Fuzzy + main solid: ≈ 2 min, 0.6 GB, tolerance ≤ 1e-4, one solid (the slivers were dropped at the end
+    anyway, _main)."""
+    from OCP.BRepAlgoAPI import BRepAlgoAPI_Cut
+    op = BRepAlgoAPI_Cut()
+    op.SetFuzzyValue(_FUZZ)
+    r = h._bool_op((h,), (q,), op)
+    sols = r.solids()
+    return max(sols, key=lambda x: x.volume) if len(sols) > 1 else r
 _GROW = [(0, 0, 0)] + [tuple(s * 1.5 * (i == k) for i in range(3)) for k in range(3) for s in (1, -1)]   # ≈ 1.5 mm growth
 
 
@@ -149,11 +164,11 @@ def _yaw_hood():
                 for d in _GROW:
                     q = Pos(*d) * (R(-a) * p)
                     if q.bounding_box().min.X <= hx:
-                        h -= q
+                        h = _cut_main(h, q)
         for n, p in mv:
             if n == "roll_arm_rear":
                 for d in _GROW:
-                    h -= Pos(*d) * p
+                    h = _cut_main(h, Pos(*d) * p)
         # R17 (2026-11-27, wave 5): the hood used to stop at x −46.5 (1.5 mm behind the roll link), which left its
         # front corners (box round a round can) open and the probe reached the can's pigtail window (12 × 16) and the
         # motor through them. It now runs on over the can's front 10 mm to 5.2 mm past the can (its own box end),
