@@ -103,17 +103,17 @@
    [
     "loop period (SW1: p99 |period \u2212 2 ms| < 1 ms)",
     "\u2139\ufe0f",
-    "p50 0.52, p99.9 1.60, max 61.06 ms; jitter p99 1.57 ms; > 8 ms: 8 \u2014 virtual run: compute time per cycle, not a real-time measurement"
-   ],
-   [
-    "CAN B1 controller health",
-    "\u2705",
-    "state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +0, RX dropped +0"
+    "p50 0.42, p99.9 1.46, max 6.03 ms; jitter p99 1.72 ms; > 8 ms: 0 \u2014 virtual run: compute time per cycle, not a real-time measurement"
    ],
    [
     "CAN B2 controller health",
     "\u26a0\ufe0f",
     "state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +3, RX dropped +0"
+   ],
+   [
+    "CAN B1 controller health",
+    "\u2705",
+    "state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +0, RX dropped +0"
    ]
   ],
   "loop": {
@@ -134,40 +134,40 @@
     "> 25"
    ],
    "counts": [
-    54770,
-    307,
-    21,
-    5,
-    5,
-    8,
+    54955,
+    137,
+    25,
+    4,
+    4,
+    4,
     6,
-    7,
-    3,
+    4,
     1,
-    3,
-    4
+    0,
+    0,
+    0
    ],
    "interval_ms": {
-    "p50": 0.519,
-    "p99": 0.966,
-    "p999": 1.604,
-    "p9999": 20.527,
-    "max": 61.059
+    "p50": 0.423,
+    "p99": 0.873,
+    "p999": 1.456,
+    "p9999": 3.612,
+    "max": 6.03
    },
    "jitter_ms": {
-    "p99": 1.574,
-    "p999": 1.597,
-    "max": 59.059
+    "p99": 1.716,
+    "p999": 1.727,
+    "max": 4.03
    },
    "over_ms": {
-    "3": 24,
-    "4": 18,
-    "6": 11,
-    "8": 8,
-    "10": 7,
-    "15": 7,
-    "20": 7,
-    "25": 4
+    "3": 11,
+    "4": 5,
+    "6": 1,
+    "8": 0,
+    "10": 0,
+    "15": 0,
+    "20": 0,
+    "25": 0
    }
   },
   "samples": [
@@ -217,9 +217,9 @@
     },
     "cpus": 4,
     "loadavg": [
-     3.10205078125,
-     5.28271484375,
-     6.84033203125
+     1.0791015625,
+     1.1904296875,
+     0.87109375
     ],
     "drive_temp_c": {
      "wpitch": 34
@@ -272,9 +272,9 @@
     },
     "cpus": 4,
     "loadavg": [
-     3.33447265625,
-     5.294921875,
-     6.83544921875
+     1.07275390625,
+     1.18701171875,
+     0.8720703125
     ],
     "drive_temp_c": {
      "wpitch": 34
@@ -327,9 +327,9 @@
     },
     "cpus": 4,
     "loadavg": [
-     3.33447265625,
-     5.294921875,
-     6.83544921875
+     1.07275390625,
+     1.18701171875,
+     0.8720703125
     ],
     "drive_temp_c": {
      "wpitch": 35
@@ -382,9 +382,9 @@
     },
     "cpus": 4,
     "loadavg": [
-     3.3076171875,
-     5.25634765625,
-     6.814453125
+     1.06689453125,
+     1.18359375,
+     0.873046875
     ],
     "drive_temp_c": {
      "wpitch": 35
@@ -438,9 +438,9 @@
    },
    "cpus": 4,
    "loadavg": [
-    3.29052734375,
-    5.474609375,
-    6.935546875
+    1.1025390625,
+    1.20068359375,
+    0.8681640625
    ]
   },
   "end": {
@@ -489,9 +489,9 @@
    },
    "cpus": 4,
    "loadavg": [
-    3.08935546875,
-    5.07763671875,
-    6.7216796875
+    1.05126953125,
+    1.17333984375,
+    0.8759765625
    ]
   }
  },

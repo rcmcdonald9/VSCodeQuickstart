@@ -16,7 +16,10 @@
    them within tolerance; actuators_<serial>.yaml is loaded back by rnd/twin.py and sw/virtual_arm.py.
 7. Soak test: sysid before and after cyclic motion; a stable drive passes, a drive whose friction drifts fails.
 8. Teleop (sw/teleop_sim.py): 5 scripted-leader episodes through the supervisor recorded as LeRobot v3.0 and reloaded
-   with the official loader; an extra episode with an e-stop is discarded and the arm stops.
+   with the official loader; an extra episode with an e-stop is discarded and the arm stops. No other episode may end
+   on a supervisor stop (W14a: seed 3 used to end on a tracking-error stop: a teleop IK / workspace bug, not a
+   supervisor one), and the motion after the stop must be a coast (stop category 0: torque off, no hold; the twin is
+   gravity compensated, so drift here is momentum only: drift / speed at the stop ≤ 0.12 s).
 """
 from __future__ import annotations
 
@@ -449,7 +452,13 @@ def test_teleop():
     res = record(5, root, img=64, estop_episode=1, log=_quiet)
     assert res["kept"] == 5 and res["discarded"] == 1, res
     stopped = [e for e in res["episodes"] if e["stop"]]
-    assert stopped[0]["stop"] == ["e-stop"] and stopped[0]["drift_after_stop_rad"] < 0.15, stopped        # torque off: it coasts (gravcomp twin)
+    assert [e["stop"] for e in stopped] == [["e-stop"]], stopped                  # only the injected e-stop stops an episode
+    st = stopped[0]
+    # stop category 0 (electrical.md): torque off, no hold or brake; the gravcomp twin has no sag, so the drift is the
+    # coast of the speed at the stop (≈ 0.07–0.08 s × speed with the joint damping, both for this e-stop and for the old
+    # seed-3 tracking stop: 0.176 rad at 2.2 rad/s)
+    assert st["drift_after_stop_rad"] < 0.15 and st["drift_after_stop_rad"] <= 0.12 * st["speed_at_stop_rad_s"] + 0.005, st
+    assert res["success"] >= 4, res
     rl = verify(root, 5)
     assert rl["frames"] == res["frames"] and rl["codebase"] == "v3.0", (rl, res)
     return (f"Teleop (scripted leader → EEF delta → IK → supervisor at 500 Hz → MIT law on the twin): 5 episodes recorded "

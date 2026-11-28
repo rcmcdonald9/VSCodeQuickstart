@@ -154,6 +154,56 @@ class BenchEnv:
                 d2.qpos[a] = q[k]
         return q
 
+    def _pose_err(self, q, p_t, R_t):
+        d2 = self._d2
+        for k, a in enumerate(self.qadr):
+            d2.qpos[a] = q[k]
+        mujoco.mj_kinematics(self.m, d2); mujoco.mj_comPos(self.m, d2)
+        p = d2.site_xpos[self.site]; R = d2.site_xmat[self.site].reshape(3, 3)
+        er = 0.5 * (np.cross(R[:, 0], R_t[:, 0]) + np.cross(R[:, 1], R_t[:, 1]) + np.cross(R[:, 2], R_t[:, 2]))
+        e = np.concatenate([p_t - p, 0.3 * er])
+        return e, float(e @ e)
+
+    def _ik_continuous(self, q0, p_t, R_t, iters=30):
+        """Teleop IK (sw/teleop_sim.py): _ik_from's DLS (same weighted pose error, same damping, warm start, no re-seeding:
+        a teleop target must not jump branch) with two changes. (1) Active set: a joint at its limit that the step would
+        push further out is taken out of the Jacobian for that iteration, so the other joints make up for it instead of
+        the clip throwing the step away. (2) The best iterate is returned (q0 included), never a worse one.
+        Why (W14a): plain DLS with the joint clip diverges against a limit. Teleop seed 3's hand-down pose needs the wrist
+        pitch at its 119° bound; its clipped iterates wandered 0.15–0.7 m off the target, so the joint target thrashed at
+        the 1.8 rad/s slew for the whole episode (on the pre-W13c masses it never left phase 0 in 260 steps; on W13c's the
+        hand left the workspace box and a 20° wrist-pitch lag ended it on a tracking-error stop). 40 seeds: 36 placed and
+        2 tracking-error stops with _ik_from → 39 placed, no stops."""
+        d2 = self._d2
+        d2.qpos[:] = self.d.qpos
+        lo, hi = self.jrange[:, 0], self.jrange[:, 1]
+        q = np.clip(np.array(q0, float), lo, hi)
+        e, c = self._pose_err(q, p_t, R_t)
+        best = (c, q.copy(), e)
+        jp, jr = np.zeros((3, self.m.nv)), np.zeros((3, self.m.nv))
+        for _ in range(iters):
+            if c < 1e-9:
+                break
+            mujoco.mj_jacSite(self.m, d2, jp, jr, self.site)          # d2 is at q (_pose_err)
+            J = np.vstack([jp[:, self.dadr], 0.3 * jr[:, self.dadr]])
+            free = np.ones(len(q), bool)
+            for _k in range(len(q)):
+                dq = np.zeros(len(q))
+                Jf = J[:, free]
+                dq[free] = Jf.T @ np.linalg.solve(Jf @ Jf.T + 1e-4 * np.eye(6), e)
+                out = free & (((q <= lo + 1e-9) & (dq < 0)) | ((q >= hi - 1e-9) & (dq > 0)))
+                if not out.any():
+                    break
+                free &= ~out
+            q = np.clip(q + dq, lo, hi)
+            e, c = self._pose_err(q, p_t, R_t)
+            if c < best[0]:
+                best = (c, q.copy(), e)
+        c, q, e = best
+        self._pose_err(q, p_t, R_t)
+        self._ik_err = float(np.linalg.norm(e[:3]))
+        return q
+
     def obs(self):
         p, R = self.eef()
         quat = np.zeros(4); mujoco.mju_mat2Quat(quat, R.flatten())

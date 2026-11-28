@@ -86,6 +86,16 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    latched fault drops the pin at once (the contactor feeds the solenoid, so K1 opening drops it in hardware too).
    While the pin may be in, the roll torque bound is LATCH_T_MAX (16 N·m: its guide's printed load path). ROLL_PARK_DEG:
    where the planner parks the roll when idle or before a planned power-down.
+17. **Base stop, category 1 (W13a finding, tip.md *E-stop / snag braking*; W14a):** the arm's stop is category 0 (torque
+   off at once), but a base that stops hard tips: the R2d basket at ≈ 1.0 m/s², 2.5 kg in the load box at ≈ 2.1 m/s², and
+   the wheels can brake harder (μ·g ≈ 5 m/s²). So any latched fault (e-stop, watchdog, feedback, …) starts a **base
+   ramp**: `limit_base()` brakes the command to 0 at `base_stop_decel()` = min(the decel limit in force when the stop began,
+   BASE_STOP_DECEL(payload): tip.md's 30 mm-reserve deceleration), and only then is base torque removed:
+   `base_torque_enabled()` goes False once the ramp is at 0 and the measured speed (if given) is under V_STOPPED, or
+   BASE_STOP_GRACE after the ramp's planned end whatever the wheels report (counted "base stop timeout"). It is a
+   separate output from `heartbeat_ok()`: `base_heartbeat_ok()` keeps toggling the base channel's watchdog line during
+   the ramp (the arm heartbeat drops at once), so the base branch must not hang off the arm's K1 (hardware note:
+   docs/sw/base_stop.md). A collision latch alone is a hold, not a stop: the base is ramped to 0 and stays powered.
 Every override is counted so a session log shows how often the policy was overruled.
 """
 from __future__ import annotations
@@ -137,6 +147,10 @@ ROLL_GUARD = os.environ.get("PIP_ROLL_GUARD", "none")   # "none" | "latch" (CAD:
 LATCH_RETRACT_S = 0.05            # s: solenoid pull-in + pin travel before the roll may go below +5° without a switch (ESTIMATE)
 ROLL_PARK_DEG = 8.0               # deg: the roll park angle (idle / planned power-down) above the latch
 LATCH_T_MAX = 16.0                # N·m: roll torque cap while the pin may be in (0.39 kN at r 41.5: the printed guide, ≈ 12 MPa; power_off.md)
+# 17. base stop category 1 (rnd/tip.py estop_rows → docs/rnd/tip.md "E-stop / snag braking": decel at which the tip reserve
+# falls to 30 mm, no push; tips at 1.70 / 2.08 / 1.01 m/s²). (payload kg up to, m/s²); past the table: ∝ 1/payload.
+BASE_STOP_DECEL = ((1.0, 1.20), (2.5, 1.56), (9.07, 0.52))
+BASE_STOP_GRACE = 0.3             # s after the ramp's planned end: torque off even if the wheels are not reported stopped
 DESC = Path(__file__).resolve().parent / "description" / "joints.json"
 
 
@@ -210,6 +224,9 @@ class Supervisor:
         self._caster, self._caster_reason, self._pulse_t0, self._locked_travel = "locked", None, None, 0.0
         self._v_base = np.zeros(2)
         self._a_moving = A_FREE
+        self._base_stop = None            # 17.: {"t0", "v0", "a", "t_end", "done"} while a latched fault ramps the base down
+        self._v_base_meas = None
+        self._a_last = A_FREE             # the accel / decel limit limit_base() applied last (the one in force at a stop)
         self.collision = collision
         self._anchor = None
         # D25 people-near ranges (rad, before the margin; ±inf where a joint has none) and the moving bound while exiting
@@ -475,11 +492,74 @@ class Supervisor:
         """SW-T4: the planner's D2b threshold crossing speed (m/s)."""
         return THRESHOLD_SPEED
 
-    def limit_base(self, v_want, dt):
+    # ---- base stop, category 1 (17.)
+    @staticmethod
+    def base_stop_decel_for(payload):
+        """BASE_STOP_DECEL for a payload (kg): the tip-limited e-stop deceleration (m/s²), ∝ 1/payload past the table."""
+        for kg, a in BASE_STOP_DECEL:
+            if payload <= kg + 1e-9:
+                return a
+        kg, a = BASE_STOP_DECEL[-1]
+        return a * kg / payload
+
+    def base_stop_decel(self):
+        """The ramp deceleration (m/s²): while a stop runs, the one fixed when it began; otherwise what a stop starting
+        now would use: min(the limit limit_base() was applying (the one it was moving or braking under),
+        BASE_STOP_DECEL(payload)). Never harder than the planner was allowed to brake, never past the tip table."""
+        if self._base_stop is not None:
+            return self._base_stop["a"]
+        return min(self._a_last, self.base_stop_decel_for(self.payload))
+
+    def _base_stop_tick(self):
+        if not self.latched:
+            self._base_stop = None
+            return
+        if self._base_stop is None:
+            a = self.base_stop_decel()
+            v0 = float(np.hypot(*self._v_base))
+            self._base_stop = dict(t0=self.clock(), v0=v0, a=a, t_end=v0 / a, done=False)
+            self._count("base stop ramp")
+
+    def base_torque_enabled(self, v_meas=None):
+        """17.: may the wheel drives keep torque? True when healthy or holding (collision latch only); after any other
+        latched fault, True only while the ramp runs: False once the commanded speed is 0 and the measured one (v_meas, m/s
+        planar, or the last value given to limit_base) is under V_STOPPED, or BASE_STOP_GRACE past the ramp's planned end."""
+        self._base_stop_tick()
+        if not self.latched or self.latched == ["collision"]:
+            return True
+        st = self._base_stop
+        if st["done"]:
+            return False
+        vm = v_meas if v_meas is not None else self._v_base_meas
+        stopped_cmd = float(np.hypot(*self._v_base)) <= 1e-9
+        stopped_meas = vm is None or float(np.hypot(*np.asarray(vm, float)[:2])) < V_STOPPED
+        if stopped_cmd and stopped_meas:
+            st["done"] = True
+        elif self.clock() - st["t0"] > st["t_end"] + BASE_STOP_GRACE:
+            st["done"] = True
+            self._count("base stop timeout")
+        return not st["done"]
+
+    def base_heartbeat_ok(self):
+        """The base channel's watchdog line (separate from heartbeat_ok(), which drops at once on a hard fault): toggled
+        while the base may keep torque, so the drives can finish the ramp; the hardware then removes base power."""
+        return self.base_torque_enabled()
+
+    def base_stop_state(self):
+        """For logs and the base driver: None (no stop) or the running stop (t0, v0 m/s, a m/s², t_end s, done)."""
+        self._base_stop_tick()
+        return None if self._base_stop is None else dict(self._base_stop)
+
+    def limit_base(self, v_want, dt, v_meas=None):
         """Clamp a base velocity command (vx, vy[, wz]; m/s, the planar part only) to base_speed_limit() and
-        base_accel_limit(). A speed above a newly lowered limit (a person appears, a fault, a re-lock) is braked at the
-        accel limit it was moving under. Also keeps the caster re-seat bookkeeping (pulse on stopping, every 0.3 m locked)."""
+        base_accel_limit(). A speed above a newly lowered limit (a person appears, a re-lock) is braked at the accel limit
+        it was moving under; a latched fault ramps it to 0 at base_stop_decel() (17.). v_meas: the measured planar base
+        speed, if the wheel odometry is available (base_torque_enabled() waits for it). Also keeps the caster re-seat
+        bookkeeping (pulse on stopping, every 0.3 m locked)."""
         self._caster_tick()
+        self._base_stop_tick()
+        if v_meas is not None:
+            self._v_base_meas = np.asarray(v_meas, float)[:2].copy()
         v = np.nan_to_num(np.array(v_want, float), nan=0.0, posinf=0.0, neginf=0.0)
         lin, last = v[:2].copy(), self._v_base
         vmax, amax = self.base_speed_limit(), self.base_accel_limit()
@@ -487,7 +567,11 @@ class Supervisor:
         if sp > vmax:
             lin *= vmax / sp
             self._count("base speed clamp")
-        a_ok = max(amax, self._a_moving) if np.hypot(*last) > vmax + 1e-9 else amax
+        if self._base_stop is not None:                                 # 17.: the stop ramp, never harder than it
+            a_ok = self._base_stop["a"]
+        else:
+            a_ok = max(amax, self._a_moving) if np.hypot(*last) > vmax + 1e-9 else amax
+            self._a_last = a_ok
         dv = lin - last
         n = float(np.hypot(*dv))
         if n > a_ok * dt:
@@ -586,6 +670,7 @@ class Supervisor:
             self.latched.append(why)
         self._count(why)
         self.healthy_cycle = False
+        self._base_stop_tick()                     # 17.: the base ramp starts with the fault, not at the next base command
 
     def heartbeat_ok(self):
         # A collision latch is a compliant hold (a controlled state): the hardware heartbeat must keep running, or the

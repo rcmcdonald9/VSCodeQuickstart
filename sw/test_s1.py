@@ -24,6 +24,13 @@
 8. SW-T2 caster lock + SW-T4 threshold speed: locked by default; released only on request for a threshold crossing
    (speed ≤ 0.12 m/s) or unloaded transit; refused / forced locked with a person near, a fault or too much payload;
    re-lock, every stop and every 0.3 m of locked travel give a 0.1 s re-seat pulse; accel ≤ 0.5 m/s² while not locked.
+12. Base stop category 1 (sw/safety.py 17., tip.md *E-stop / snag braking*): BASE_STOP_DECEL sits under tip.md's 30 mm
+   column for each payload; an e-stop or a watchdog fault ramps the base to 0 at min(the limit in force, the table), never
+   harder; the arm heartbeat drops at once while the base channel keeps its heartbeat until the ramp ends, then base
+   torque goes off; wheels still turning hold it on until stopped, but never past the ramp + BASE_STOP_GRACE; a
+   collision hold ramps the base and keeps it powered; a stationary base loses torque at once; reset re-enables it.
+13. Twin IK determinism (rnd/twin.py): a target solved, then another, then the first again, and on a fresh solver gives
+   identical solutions (the random restarts are seeded per call from the call's inputs, not from one shared RNG).
 """
 from __future__ import annotations
 
@@ -1014,9 +1021,137 @@ def test_roll_latch():
             f"e-stop drops the pin at once; the bound never pulls the arm up; roll torque {t_pin:.1f} ≤ {LATCH_T_MAX} N·m while the pin may be in ✅")
 
 
+def test_base_stop():
+    """12. Base stop category 1: payload-dependent ramp, then torque off (sw/safety.py 17.)."""
+    import re
+    from pathlib import Path
+    from sw.safety import BASE_STOP_DECEL, BASE_STOP_GRACE, V_STOPPED, Supervisor
+    # the table under tip.md's "E-stop / snag braking" rows (30 mm reserve column; tips at the last column)
+    md = Path("docs/rnd/tip.md").read_text().split("E-stop / snag braking", 1)[1]
+    rows = {m.group(1).strip(): (float(m.group(2)), float(m.group(3)))
+            for m in re.finditer(r"^\| ([^|]+?) \| ([0-9.]+) \| ([0-9.]+) \|$", md, re.M)}
+    key = {1.0: "≤ 1 kg", 2.5: "2.5 kg in the load box", 9.07: "R2d basket"}
+    for kg, a in BASE_STOP_DECEL:
+        r30, tip = next(v for k, v in rows.items() if k.startswith(key[kg]))
+        assert a <= r30 + 1e-9 and a < tip, (kg, a, r30, tip)
+    assert Supervisor.base_stop_decel_for(12.0) < BASE_STOP_DECEL[-1][1]
+    dt = 0.002
+
+    def rig(payload, release=None, clear=False):
+        t = [0.0]
+        s = Supervisor(clock=lambda: t[0], power=False)
+        q = np.clip(np.zeros(s.n), s.lo, s.hi)
+        assert s.reset(q, 0.002)
+        s.set_payload(payload)
+        s.set_area_clear(clear)
+        if release:
+            assert s.release_casters(release)
+        return s, t, q
+
+    def cruise(s, t, v, secs):
+        for _ in range(int(round(secs / dt))):
+            t[0] += dt
+            s.tick()
+            out = s.limit_base([v, 0.0], dt)
+        return float(np.hypot(*out[:2]))
+
+    def ramp(s, t, v, v_meas_fn=None, secs=4.0):
+        """Keep commanding v after the fault: (max decel, time to 0, time torque went off, distance, heartbeats)."""
+        last, amax, t_zero, t_off, dist, t0, hb = s.base_stop_state()["v0"], 0.0, None, None, 0.0, t[0], []
+        for _ in range(int(round(secs / dt))):
+            t[0] += dt
+            vm = None if v_meas_fn is None else v_meas_fn(t[0] - t0)
+            sp = float(np.hypot(*s.limit_base([v, 0.0], dt, v_meas=vm)[:2]))
+            amax, dist, last = max(amax, (last - sp) / dt), dist + sp * dt, sp
+            if sp <= 1e-9 and t_zero is None:
+                t_zero = t[0] - t0
+            on = s.base_torque_enabled()
+            hb.append((s.heartbeat_ok(), s.base_heartbeat_ok()))
+            if not on and t_off is None:
+                t_off = t[0] - t0
+        return amax, t_zero, t_off, dist, hb
+
+    out = []
+    # 1. e-stop at each payload's top speed: ramp at min(limit in force, table), heartbeat split, torque off at the end
+    for payload, release, clear, v in ((0.0, "transit", False, 0.8), (0.0, None, False, 0.3), (2.5, None, False, 0.3),
+                                       (9.07, None, True, 0.3)):
+        s, t, q = rig(payload, release, clear)
+        assert cruise(s, t, v, 3.0) > v - 1e-6, payload
+        a_force = s.base_accel_limit()
+        s.press_estop()
+        a = s.base_stop_state()["a"]
+        assert abs(a - min(a_force, Supervisor.base_stop_decel_for(payload))) < 1e-12, (payload, a, a_force)
+        amax, t_zero, t_off, dist, hb = ramp(s, t, v)
+        assert amax <= a + 1e-6, (payload, amax, a)
+        assert not any(h for h, _ in hb), "the arm heartbeat must drop at once"
+        assert all(b for _, b in hb[: int(0.9 * t_zero / dt)]), "the base heartbeat is kept during the ramp"
+        assert abs(t_zero - v / a) < 2 * dt and t_off is not None and t_off <= t_zero + 2 * dt, (payload, t_zero, t_off)
+        assert abs(dist - v * v / (2 * a)) < 0.01, (dist, v * v / (2 * a))
+        out.append(f"{payload:g} kg at {v} m/s → {a:.2f} m/s², 0 in {t_zero:.2f} s / {dist:.2f} m")
+    # 2. a watchdog fault (stalled arm loop) does the same
+    s, t, q = rig(0.0)
+    cruise(s, t, 0.3, 1.0)
+    t[0] += 0.1
+    s.check(q, np.zeros(s.n), np.zeros(s.n), None, q, np.zeros(s.n), 0.001)
+    assert s.latched == ["watchdog"] and s.base_stop_state()["a"] == min(1.0, BASE_STOP_DECEL[0][1]), s.latched
+    amax, t_zero, t_off, _, _ = ramp(s, t, 0.3)
+    assert amax <= 1.0 + 1e-6 and t_off is not None
+    # 3. wheels still turning hold torque on until they stop; wheels that never report stopping: off at the ramp + grace
+    s, t, q = rig(0.0)
+    cruise(s, t, 0.3, 1.0)
+    s.press_estop()
+    lag = 0.2                                                     # odometry 0.2 s behind the command
+    _, t_zero, t_off, _, _ = ramp(s, t, 0.3, lambda tt: [max(0.3 - 1.0 * max(tt - lag, 0.0), 0.0), 0.0])
+    assert t_zero + lag - 0.02 <= t_off <= t_zero + lag + 2 * dt, (t_zero, t_off)
+    s, t, q = rig(0.0)
+    cruise(s, t, 0.3, 1.0)
+    s.press_estop()
+    _, t_zero, t_off, _, _ = ramp(s, t, 0.3, lambda tt: [0.2, 0.0])
+    assert abs(t_off - (0.3 / 1.0 + BASE_STOP_GRACE)) < 2 * dt and s.counts.get("base stop timeout") == 1, t_off
+    # 4. collision hold: ramp to 0, base stays powered; a hard fault after it removes torque (already stopped)
+    s, t, q = rig(0.0)
+    cruise(s, t, 0.3, 1.0)
+    s._latch("collision")
+    _, t_zero, t_off, _, _ = ramp(s, t, 0.3, secs=1.0)
+    assert t_zero is not None and t_off is None and s.base_torque_enabled()
+    s.press_estop()
+    assert not s.base_torque_enabled() and not s.base_heartbeat_ok()
+    # 5. stationary base + fault: off at once; reset re-enables
+    s, t, q = rig(0.0)
+    s.press_estop()
+    assert not s.base_torque_enabled()
+    s.release_estop()
+    assert s.reset(q, 0.002) and s.base_torque_enabled() and s.base_stop_state() is None
+    return ("Base stop category 1: BASE_STOP_DECEL ≤ tip.md's 30 mm column (≤ 1 kg 1.20, 2.5 kg 1.56, basket 0.52 m/s²; tips at "
+            "1.70 / 2.08 / 1.01); an e-stop or watchdog fault ramps at min(limit in force, table): " + "; ".join(out)
+            + f"; the arm heartbeat drops at once, the base channel's stays up for the ramp, then base torque off (wheels "
+            f"still turning hold it until < {V_STOPPED} m/s, at most ramp + {BASE_STOP_GRACE} s); a collision hold keeps the "
+            "base powered at 0; a stationary base loses torque at once ✅")
+
+def test_twin_ik_determinism():
+    """13. rnd/twin.py IK: the random restarts are seeded per call from its inputs, so results don't depend on run order."""
+    import time
+    from rnd.params import BASELINE
+    from rnd.twin import Reacher, call_rng
+    t0 = time.time()
+    a, b = ((0.45, -0.20, 0.80), (0, 0, -1.0)), ((0.40, -0.30, 0.30), (1.0, 0, 0))
+    R = Reacher(BASELINE)
+    first = R.solve(*a, seeds=3)
+    R.solve(*b, seeds=3)                                      # another target in between (used to advance a shared RNG)
+    again = R.solve(*a, seeds=3)
+    fresh = Reacher(BASELINE).solve(*a, seeds=3)              # a new process / solver, nothing solved before
+    same = lambda x, y: len(x) == len(y) and all(np.array_equal(p, q) for p, q in zip(x, y))   # noqa: E731
+    assert first and same(first, again) and same(first, fresh), (len(first), len(again), len(fresh))
+    g1, g2, g3 = call_rng(1, a[0], a[1], 3), call_rng(1, a[0], a[1], 3), call_rng(1, b[0], b[1], 3)
+    x1, x2, x3 = g1.uniform(size=4), g2.uniform(size=4), g3.uniform(size=4)
+    assert np.array_equal(x1, x2) and not np.array_equal(x1, x3)
+    return (f"Twin IK (rnd/twin.py Reacher / BiReacher): restarts seeded per call from the inputs (call_rng); target A solved, "
+            f"then B, then A again and on a fresh solver: {len(first)} identical solutions each time ({time.time() - t0:.1f} s) ✅")
+
 def main():
     out = [test_mit(), test_driver(), test_supervisor(), test_people_near(), test_collision(), test_power(), test_person_reach(), test_casters(),
-           test_hand_speed(), test_person_approach(), test_roll_latch()]
+           test_hand_speed(), test_person_approach(), test_roll_latch(), test_base_stop(),
+           test_twin_ik_determinism()]
     from pathlib import Path
     Path("docs/sw").mkdir(parents=True, exist_ok=True)
     Path("docs/sw/s1_tests.md").write_text("# S1 software tests (generated by `python -m sw.test_s1`)\n\n" + __doc__.split("\n\n", 1)[1].strip()

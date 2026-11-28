@@ -378,8 +378,11 @@ class Reacher:
         tuck(self.m, self.d, "l")
         return c
 
-    def solve(self, target, axis, seeds=8, rng=np.random.default_rng(1)):
-        target, axis = np.asarray(target), np.asarray(axis)
+    def solve(self, target, axis, seeds=8, rng=None):
+        """rng: None (default) seeds the random restarts from this call's inputs (call_rng), so a target gets the same
+        solutions whatever was solved before it; pass a Generator to override."""
+        target, axis = np.asarray(target, float), np.asarray(axis, float)
+        rng = call_rng(1, target, axis, seeds) if rng is None else rng
 
         def res(q):
             p, a = self.fk(q)
@@ -409,6 +412,15 @@ class Reacher:
                 if ok(r2.x) and self._accept(r2.x):
                     sols.append(r2.x)
         return sols
+
+
+def call_rng(base, *inputs):
+    """A Generator seeded from a call's inputs (rounded to 1 µm / 1e-6), for the IK solvers' random restarts. They used to
+    share one module-level default Generator across calls (`rng=np.random.default_rng(1)` as a default argument), so a
+    target's solutions, and every study built on them (tip, basket, joints, fea, sim, the inline study), depended on what
+    had been solved before it in the same process."""
+    v = np.concatenate([np.atleast_1d(np.asarray(x, float)).ravel() for x in inputs])
+    return np.random.default_rng([int(base)] + [int(k) & 0xFFFFFFFF for k in np.round(v * 1e6).astype(np.int64)])
 
 
 def ik_study(d: Design, layouts, ys=np.arange(-0.40, -0.04, 0.075), seeds=3):
@@ -466,8 +478,9 @@ class BiReacher:
         self.site = {s: mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_SITE, f"grasp_{s}") for s in "rl"}
         self.hand = {s: mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, f"hand_{s}") for s in "rl"}
 
-    def solve(self, tr, ar, tl, al, seeds=10, rng=np.random.default_rng(3)):
-        tr, ar, tl, al = map(np.asarray, (tr, ar, tl, al))
+    def solve(self, tr, ar, tl, al, seeds=10, rng=None):
+        tr, ar, tl, al = (np.asarray(x, float) for x in (tr, ar, tl, al))
+        rng = call_rng(3, tr, ar, tl, al, seeds) if rng is None else rng     # per call (see Reacher.solve)
 
         def res(q):
             self.d.qpos[self.adr] = q; mujoco.mj_kinematics(self.m, self.d)
