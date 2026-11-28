@@ -466,7 +466,7 @@ def roll_link_inline() -> Part:
     p -= Pos(FRONT_FRAME["x"], 10, FRONT_FRAME["z_lo"]) * Box(100, 12, 100, align=(Align.MIN, Align.CENTER, Align.MAX))   # R17: as the frame (FRONT_FRAME)
     sx1 = ROLL_SPR_X[1] + 1.6
     xa = FRONT_FRAME["x"]                                                                                       # R17: frame front part raised (FRONT_FRAME)
-    p += _plate_x(xf0, xa, 8, 18, zlo, zhi, 6) + _plate_x(xa - 6, sx1, 8, 18, FRONT_FRAME["z_lo"], zhi, 6)
+    p += _plate_x(xf0, xa, 8, 18, zlo, zhi, 6) + _plate_x(xa - 6, sx1, 8, 18, FRONT_FRAME["z_lo"], FRONT_FRAME["z_hi"], 6)
     p -= Pos(0, 13, 0) * Rot(-90, 0, 0) * Cylinder(32.3, 12)                                                  # frame around the spigot
     p += Pos(xf0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, xf1 - xf0, align=MIN)                            # floor
     p += Pos(xf1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(R_MOT, CUP_H, align=MIN) - Cylinder(CUP_R, CUP_H, align=MIN))   # cup around the driver (its pilot)
@@ -497,12 +497,13 @@ def roll_link_inline() -> Part:
 # R17 roll-stage nips (2026-11-28, rnd/pinch.py): the +X clevis arm (x 48.5…62.5, its plate ±26 down to the yaw block)
 # swings to within 9.5–14 mm of the roll link's frame (y 8…18, z −28…40) at roll −15…+8° (yaw_block × roll_link), and
 # the yaw band's +X end to 13 mm of its lower corner. The frame only carries the clock-spring bar out there (the R2b load
-# path is the side block, x ≤ 25), so in front of FRONT_FRAME["x"] it starts at z_lo instead of −28: the arm's −Y edge
+# path is the side block, x ≤ 25), so in front of FRONT_FRAME["x"] it spans z_lo…z_hi instead of −28…40: the arm's −Y edge
 # then stays ≥ 26 mm from it over −16.5…104° (worst at the hard stop: edge segment vs the corner at (y 18, z_lo)). The
 # spring bar leaves the ring at SPR_BAR_ANG (was −90°, level with the roll axis) and meets the raised frame; it stays
-# ≥ 60° (≥ 45 mm) clear of the arm's sweep, 2.5 mm in front of the arm's +X face like the spring ring itself.
-FRONT_FRAME = dict(x=25.0, z_lo=14.0)   # x: the side block's front face (the motor body's)
-SPR_BAR_ANG = -115.0                    # deg, roll convention (0 = −Z, + toward +Y): the bar points up and inboard
+# ≈ 88° clear of the arm's sweep, 2.5 mm in front of the arm's +X face like the spring ring itself.
+FRONT_FRAME = dict(x=25.0, z_lo=14.0, z_hi=62.0)   # x: the side block's front face (the motor body's)
+SPR_BAR_ANG = -135.0                    # deg, roll convention (0 = −Z, + toward +Y): the bar points up and inboard, midway
+                                        # between two clevis M5 (PCD 64, every 45°) so their Ø12 driver path stays clear (R14 c)
 
 
 def inline_spring_bar(grow=0.0) -> Part:
