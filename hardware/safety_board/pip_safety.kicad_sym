@@ -1,0 +1,995 @@
+(kicad_symbol_lib (version 20220914) (generator rnd_kicad_board)
+(symbol "TLV3202"
+    (pin_names
+      (offset 0.127)
+    )
+    (in_bom yes)
+    (on_board yes)
+    (property "Reference" "U"
+      (at 3.81 3.81 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property "Value" "TLV3202"
+      (at 6.35 -3.81 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm393.pdf"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "ki_locked" ""
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property "ki_keywords" "cmp open collector"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "ki_description" "TI TLV3202 dual push-pull comparator, 40 ns typ / 55 ns max (SBOS561C); LM2903 pinout (1 OUTA, 2 INA-, 3 INA+, 4 V-, 5 INB+, 6 INB-, 7 OUTB, 8 V+)"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "ki_fp_filters" "SOIC*3.9x4.9mm*P1.27mm* DIP*W7.62mm* SOP*5.28x5.23mm*P1.27mm* VSSOP*3.0x3.0mm*P0.65mm* TSSOP*4.4x3mm*P0.65mm*"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (symbol "TLV3202_1_1"
+      (polyline
+        (pts
+          (xy -5.08 5.08)
+          (xy 5.08 0)
+          (xy -5.08 -5.08)
+          (xy -5.08 5.08)
+        )
+        (stroke
+          (width 0.254)
+          (type default)
+        )
+        (fill
+          (type background)
+        )
+      )
+      (polyline
+        (pts
+          (xy 3.302 -0.508)
+          (xy 2.794 -0.508)
+          (xy 3.302 0)
+          (xy 2.794 0.508)
+          (xy 2.286 0)
+          (xy 2.794 -0.508)
+          (xy 2.286 -0.508)
+        )
+        (stroke
+          (width 0.127)
+          (type default)
+        )
+        (fill
+          (type none)
+        )
+      )
+      (pin output line
+        (at 7.62 0 180)
+        (length 2.54)
+        (name "~"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "1"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin input line
+        (at -7.62 -2.54 0)
+        (length 2.54)
+        (name "-"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "2"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin input line
+        (at -7.62 2.54 0)
+        (length 2.54)
+        (name "+"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "3"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+    )
+    (symbol "TLV3202_2_1"
+      (polyline
+        (pts
+          (xy -5.08 5.08)
+          (xy 5.08 0)
+          (xy -5.08 -5.08)
+          (xy -5.08 5.08)
+        )
+        (stroke
+          (width 0.254)
+          (type default)
+        )
+        (fill
+          (type background)
+        )
+      )
+      (polyline
+        (pts
+          (xy 3.302 -0.508)
+          (xy 2.794 -0.508)
+          (xy 3.302 0)
+          (xy 2.794 0.508)
+          (xy 2.286 0)
+          (xy 2.794 -0.508)
+          (xy 2.286 -0.508)
+        )
+        (stroke
+          (width 0.127)
+          (type default)
+        )
+        (fill
+          (type none)
+        )
+      )
+      (pin input line
+        (at -7.62 2.54 0)
+        (length 2.54)
+        (name "+"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "5"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin input line
+        (at -7.62 -2.54 0)
+        (length 2.54)
+        (name "-"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "6"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin output line
+        (at 7.62 0 180)
+        (length 2.54)
+        (name "~"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "7"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+    )
+    (symbol "TLV3202_3_1"
+      (pin power_in line
+        (at -2.54 -7.62 90)
+        (length 3.81)
+        (name "V-"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "4"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin power_in line
+        (at -2.54 7.62 270)
+        (length 3.81)
+        (name "V+"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "8"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+    )
+  )
+(symbol "74LVC1G74"
+    (pin_names
+      (offset 1.016)
+    )
+    (in_bom yes)
+    (on_board yes)
+    (property "Reference" "U"
+      (at -5.08 10.16 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property "Value" "74LVC1G74"
+      (at 10.16 -10.16 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property "Footprint" "Package_SO:VSSOP-8_2.3x2mm_P0.5mm"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Datasheet" "http://www.ti.com/lit/sg/scyt129e/scyt129e.pdf"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "ki_keywords" "Single D Flip-Flop D CMOS"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "ki_description" "TI SN74LVC1G74DCU single D flip-flop with clear and preset (SCES431): 1 CLK, 2 D, 3 Qn, 4 GND, 5 Q, 6 CLRn, 7 PREn, 8 VCC"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "ki_fp_filters" "SSOP* VSSOP*"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (symbol "74LVC1G74_0_1"
+      (rectangle
+        (start -7.62 7.62)
+        (end 7.62 -7.62)
+        (stroke
+          (width 0.254)
+          (type default)
+        )
+        (fill
+          (type background)
+        )
+      )
+    )
+    (symbol "74LVC1G74_1_1"
+      (pin input clock
+        (at -12.7 -5.08 0)
+        (length 5.08)
+        (name "C"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "1"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin input line
+        (at -12.7 5.08 0)
+        (length 5.08)
+        (name "D"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "2"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin output line
+        (at 12.7 -5.08 180)
+        (length 5.08)
+        (name "~{Q}"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "3"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin power_in line
+        (at 2.54 -12.7 90)
+        (length 5.08)
+        (name "GND"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "4"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin output line
+        (at 12.7 5.08 180)
+        (length 5.08)
+        (name "Q"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "5"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin input line
+        (at -2.54 -12.7 90)
+        (length 5.08)
+        (name "~{CLR}"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "6"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin input line
+        (at -2.54 12.7 270)
+        (length 5.08)
+        (name "~{PRE}"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "7"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin power_in line
+        (at 2.54 12.7 270)
+        (length 5.08)
+        (name "VCC"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "8"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+    )
+  )
+(symbol "74LVC1G332"
+    (in_bom yes)
+    (on_board yes)
+    (property "Reference" "U"
+      (at -5.08 10.16 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property "Value" "74LVC1G332"
+      (at 0 -10.16 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+      )
+    )
+    (property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "Datasheet" "http://www.ti.com/lit/sg/scyt129e/scyt129e.pdf"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "ki_keywords" "Single Gate OR triple LVC CMOS"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "ki_description" "Single 3-input OR gate, SN74LVC1G332 (KiCad 7 library body; input pins moved 2 µm onto the 1.27 mm grid)"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (property "ki_fp_filters" "SOT* SG-*"
+      (at 0 0 0)
+      (effects
+        (font
+          (size 1.27 1.27)
+        )
+        hide
+      )
+    )
+    (symbol "74LVC1G332_0_1"
+      (arc
+        (start -7.62 -6.35)
+        (mid -5.321 0)
+        (end -7.62 6.35)
+        (stroke
+          (width 0.254)
+          (type default)
+        )
+        (fill
+          (type none)
+        )
+      )
+      (arc
+        (start 0 -6.35)
+        (mid 3.9978 -3.9978)
+        (end 6.35 0)
+        (stroke
+          (width 0.254)
+          (type default)
+        )
+        (fill
+          (type none)
+        )
+      )
+      (polyline
+        (pts
+          (xy 0 -6.35)
+          (xy -7.62 -6.35)
+        )
+        (stroke
+          (width 0.254)
+          (type default)
+        )
+        (fill
+          (type background)
+        )
+      )
+      (polyline
+        (pts
+          (xy 0 6.35)
+          (xy -7.62 6.35)
+        )
+        (stroke
+          (width 0.254)
+          (type default)
+        )
+        (fill
+          (type background)
+        )
+      )
+      (arc
+        (start 6.35 0)
+        (mid 3.9978 3.9978)
+        (end 0 6.35)
+        (stroke
+          (width 0.254)
+          (type default)
+        )
+        (fill
+          (type none)
+        )
+      )
+    )
+    (symbol "74LVC1G332_1_1"
+      (pin input line
+        (at -12.7 0 0)
+        (length 7.11)
+        (name "~"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "1"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin power_in line
+        (at 0 -10.16 90)
+        (length 3.81)
+        (name "GND"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "2"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin input line
+        (at -12.7 -5.08 0)
+        (length 5.84)
+        (name "~"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "3"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin output line
+        (at 12.7 0 180)
+        (length 6.35)
+        (name "~"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "4"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin power_in line
+        (at 0 10.16 270)
+        (length 3.81)
+        (name "VCC"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "5"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+      (pin input line
+        (at -12.7 5.08 0)
+        (length 5.84)
+        (name "~"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+        (number "6"
+          (effects
+            (font
+              (size 1.27 1.27)
+            )
+          )
+        )
+      )
+    )
+  )
+(symbol "TLV3012" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+(property "Reference" "U" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "TLV3012" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "TI TLV3012 nanopower open-drain comparator with 1.242 V reference, SOT-23-6 (1 OUT, 2 V-, 3 IN+, 4 IN-, 5 REF, 6 V+)" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_fp_filters" "SOT?23*" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "TLV3012_1_1"
+(rectangle (start -5.08 5.08) (end 5.08 -5.08) (stroke (width 0.254) (type default)) (fill (type background)))
+(pin input line (at -7.62 2.54 0) (length 2.54) (name "IN+" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+(pin input line (at -7.62 0 0) (length 2.54) (name "IN-" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
+(pin output line (at -7.62 -2.54 0) (length 2.54) (name "REF" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27)))))
+(pin open_collector line (at 7.62 2.54 180) (length 2.54) (name "OUT" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+(pin power_in line (at 0 7.62 270) (length 2.54) (name "V+" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27)))))
+(pin power_in line (at 0 -7.62 90) (length 2.54) (name "V-" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
+)
+)
+(symbol "UCC27524" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+(property "Reference" "U" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "UCC27524" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "TI UCC27524 dual 5 A low-side gate driver, SOIC-8 (1 ENA, 2 INA, 3 GND, 4 INB, 5 OUTB, 6 VDD, 7 OUTA, 8 ENB)" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_fp_filters" "SOIC*3.9x4.9mm*" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "UCC27524_1_1"
+(rectangle (start -7.62 7.62) (end 7.62 -7.62) (stroke (width 0.254) (type default)) (fill (type background)))
+(pin input line (at -10.16 5.08 0) (length 2.54) (name "ENA" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+(pin input line (at -10.16 2.54 0) (length 2.54) (name "INA" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
+(pin input line (at -10.16 -8.88178e-16 0) (length 2.54) (name "INB" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
+(pin input line (at -10.16 -2.54 0) (length 2.54) (name "ENB" (effects (font (size 1.27 1.27)))) (number "8" (effects (font (size 1.27 1.27)))))
+(pin output line (at 10.16 5.08 180) (length 2.54) (name "OUTA" (effects (font (size 1.27 1.27)))) (number "7" (effects (font (size 1.27 1.27)))))
+(pin output line (at 10.16 2.54 180) (length 2.54) (name "OUTB" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27)))))
+(pin power_in line (at 0 10.16 270) (length 2.54) (name "VDD" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27)))))
+(pin power_in line (at 0 -10.16 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+)
+)
+(symbol "UCC27517" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+(property "Reference" "U" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "UCC27517" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "TI UCC27517 single 4 A low-side gate driver, SOT-23-5 (1 VDD, 2 GND, 3 IN+, 4 IN-, 5 OUT)" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_fp_filters" "SOT?23*" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "UCC27517_1_1"
+(rectangle (start -5.08 5.08) (end 5.08 -5.08) (stroke (width 0.254) (type default)) (fill (type background)))
+(pin input line (at -7.62 2.54 0) (length 2.54) (name "IN+" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+(pin input line (at -7.62 0 0) (length 2.54) (name "IN-" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
+(pin output line (at 7.62 2.54 180) (length 2.54) (name "OUT" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27)))))
+(pin power_in line (at 0 7.62 270) (length 2.54) (name "VDD" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+(pin power_in line (at 0 -7.62 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
+)
+)
+(symbol "LM5069-1" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+(property "Reference" "U" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "LM5069-1" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "Package_SO:MSOP-10_3x3mm_P0.5mm" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "TI LM5069-1 positive hot-swap controller with power limiting, latch-off, MSOP-10 (1 SENSE, 2 VIN, 3 UVLO, 4 OVLO, 5 GND, 6 TIMER, 7 PWR, 8 PGD, 9 OUT, 10 GATE)" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_fp_filters" "MSOP*3x3mm*P0.5mm*" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "LM5069-1_1_1"
+(rectangle (start -7.62 10.16) (end 7.62 -10.16) (stroke (width 0.254) (type default)) (fill (type background)))
+(pin power_in line (at -10.16 7.62 0) (length 2.54) (name "VIN" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
+(pin input line (at -10.16 5.08 0) (length 2.54) (name "SENSE" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+(pin input line (at -10.16 2.54 0) (length 2.54) (name "UVLO" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+(pin input line (at -10.16 0 0) (length 2.54) (name "OVLO" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -10.16 -2.54 0) (length 2.54) (name "PWR" (effects (font (size 1.27 1.27)))) (number "7" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -10.16 -5.08 0) (length 2.54) (name "TIMER" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27)))))
+(pin output line (at 10.16 7.62 180) (length 2.54) (name "GATE" (effects (font (size 1.27 1.27)))) (number "10" (effects (font (size 1.27 1.27)))))
+(pin input line (at 10.16 5.08 180) (length 2.54) (name "OUT" (effects (font (size 1.27 1.27)))) (number "9" (effects (font (size 1.27 1.27)))))
+(pin open_collector line (at 10.16 2.54 180) (length 2.54) (name "PGD" (effects (font (size 1.27 1.27)))) (number "8" (effects (font (size 1.27 1.27)))))
+(pin power_in line (at 0 -12.7 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27)))))
+)
+)
+(symbol "AQV252G" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+(property "Reference" "U" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "AQV252G" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "Package_DIP:DIP-6_W7.62mm" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "Panasonic AQV252G PhotoMOS relay, 1 Form A, 60 V 2.5 A, DIP-6 (1 LED+, 2 LED-, 3 NC, 4 out, 5 out common, 6 out)" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_fp_filters" "DIP*W7.62mm*" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "AQV252G_1_1"
+(rectangle (start -7.62 5.08) (end 7.62 -5.08) (stroke (width 0.254) (type default)) (fill (type background)))
+(pin passive line (at -10.16 2.54 0) (length 2.54) (name "LED+" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -10.16 0 0) (length 2.54) (name "LED-" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
+(pin no_connect line (at -10.16 -2.54 0) (length 2.54) (name "NC" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 10.16 2.54 180) (length 2.54) (name "D" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 10.16 0 180) (length 2.54) (name "S" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 10.16 -2.54 180) (length 2.54) (name "D" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
+)
+)
+(symbol "ALEV100" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+(property "Reference" "K" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "ALEV100" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "TE Kilovac ALEV100 sealed DC contactor, 100 A, 24 V coil, 1 Form A aux (chassis mount; main A1 = +, polarity marked)" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "ALEV100_1_1"
+(rectangle (start -7.62 5.08) (end 7.62 -5.08) (stroke (width 0.254) (type default)) (fill (type background)))
+(pin passive line (at -10.16 2.54 0) (length 2.54) (name "MAIN+" (effects (font (size 1.27 1.27)))) (number "A1" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -10.16 0 0) (length 2.54) (name "COIL+" (effects (font (size 1.27 1.27)))) (number "X1" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -10.16 -2.54 0) (length 2.54) (name "AUX" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 10.16 2.54 180) (length 2.54) (name "MAIN" (effects (font (size 1.27 1.27)))) (number "A2" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 10.16 0 180) (length 2.54) (name "COIL-" (effects (font (size 1.27 1.27)))) (number "X2" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 10.16 -2.54 180) (length 2.54) (name "AUX" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
+)
+)
+(symbol "G9SA-321-T" (pin_names (offset 1.016)) (in_bom yes) (on_board yes)
+(property "Reference" "U" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "G9SA-321-T075" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "Omron G9SA-321-T075 AC/DC24 time-delay safety relay: dual-channel input, 3 NO instantaneous, 2 NO OFF-delay (set 2.0 s), 1 NC aux; DIN rail" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "G9SA-321-T_1_1"
+(rectangle (start -5.08 15.24) (end 5.08 -15.24) (stroke (width 0.254) (type default)) (fill (type background)))
+(pin passive line (at -7.62 12.7 0) (length 2.54) (name "A1" (effects (font (size 1.27 1.27)))) (number "A1" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -7.62 10.16 0) (length 2.54) (name "T11" (effects (font (size 1.27 1.27)))) (number "T11" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -7.62 7.62 0) (length 2.54) (name "T21" (effects (font (size 1.27 1.27)))) (number "T21" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -7.62 5.08 0) (length 2.54) (name "T31" (effects (font (size 1.27 1.27)))) (number "T31" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -7.62 2.54 0) (length 2.54) (name "T33" (effects (font (size 1.27 1.27)))) (number "T33" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -7.62 0 0) (length 2.54) (name "13" (effects (font (size 1.27 1.27)))) (number "13" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -7.62 -2.54 0) (length 2.54) (name "23" (effects (font (size 1.27 1.27)))) (number "23" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -7.62 -5.08 0) (length 2.54) (name "33" (effects (font (size 1.27 1.27)))) (number "33" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -7.62 -7.62 0) (length 2.54) (name "41" (effects (font (size 1.27 1.27)))) (number "41" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -7.62 -10.16 0) (length 2.54) (name "47" (effects (font (size 1.27 1.27)))) (number "47" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -7.62 -12.7 0) (length 2.54) (name "57" (effects (font (size 1.27 1.27)))) (number "57" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 7.62 12.7 180) (length 2.54) (name "A2" (effects (font (size 1.27 1.27)))) (number "A2" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 7.62 10.16 180) (length 2.54) (name "T12" (effects (font (size 1.27 1.27)))) (number "T12" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 7.62 7.62 180) (length 2.54) (name "T22" (effects (font (size 1.27 1.27)))) (number "T22" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 7.62 5.08 180) (length 2.54) (name "T32" (effects (font (size 1.27 1.27)))) (number "T32" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 7.62 0 180) (length 2.54) (name "14" (effects (font (size 1.27 1.27)))) (number "14" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 7.62 -2.54 180) (length 2.54) (name "24" (effects (font (size 1.27 1.27)))) (number "24" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 7.62 -5.08 180) (length 2.54) (name "34" (effects (font (size 1.27 1.27)))) (number "34" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 7.62 -7.62 180) (length 2.54) (name "42" (effects (font (size 1.27 1.27)))) (number "42" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 7.62 -10.16 180) (length 2.54) (name "48" (effects (font (size 1.27 1.27)))) (number "48" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 7.62 -12.7 180) (length 2.54) (name "58" (effects (font (size 1.27 1.27)))) (number "58" (effects (font (size 1.27 1.27)))))
+)
+)
+(symbol "MUSHROOM_4NC" (pin_names (offset 0) hide) (in_bom yes) (on_board no)
+(property "Reference" "S" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "E-stop 4NC" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "Two-channel latching mushroom e-stop with four NC contact blocks (a: coil chain, b: logic, c/d: U20 channels); panel mount" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "MUSHROOM_4NC_1_1"
+(circle (center -2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(circle (center 2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(polyline (pts (xy -1.524 0.254) (xy 2.54 -0.762)) (stroke (width 0.254) (type default)) (fill (type none)))
+(polyline (pts (xy 0 -0.508) (xy 0 2.032)) (stroke (width 0.254) (type dash)) (fill (type none)))
+(pin passive line (at -5.08 0 0) (length 2.54) (name "11" (effects (font (size 1.27 1.27)))) (number "11" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 5.08 0 180) (length 2.54) (name "12" (effects (font (size 1.27 1.27)))) (number "12" (effects (font (size 1.27 1.27)))))
+)
+(symbol "MUSHROOM_4NC_2_1"
+(circle (center -2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(circle (center 2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(polyline (pts (xy -1.524 0.254) (xy 2.54 -0.762)) (stroke (width 0.254) (type default)) (fill (type none)))
+(polyline (pts (xy 0 -0.508) (xy 0 2.032)) (stroke (width 0.254) (type dash)) (fill (type none)))
+(pin passive line (at -5.08 0 0) (length 2.54) (name "21" (effects (font (size 1.27 1.27)))) (number "21" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 5.08 0 180) (length 2.54) (name "22" (effects (font (size 1.27 1.27)))) (number "22" (effects (font (size 1.27 1.27)))))
+)
+(symbol "MUSHROOM_4NC_3_1"
+(circle (center -2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(circle (center 2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(polyline (pts (xy -1.524 0.254) (xy 2.54 -0.762)) (stroke (width 0.254) (type default)) (fill (type none)))
+(polyline (pts (xy 0 -0.508) (xy 0 2.032)) (stroke (width 0.254) (type dash)) (fill (type none)))
+(pin passive line (at -5.08 0 0) (length 2.54) (name "31" (effects (font (size 1.27 1.27)))) (number "31" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 5.08 0 180) (length 2.54) (name "32" (effects (font (size 1.27 1.27)))) (number "32" (effects (font (size 1.27 1.27)))))
+)
+(symbol "MUSHROOM_4NC_4_1"
+(circle (center -2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(circle (center 2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(polyline (pts (xy -1.524 0.254) (xy 2.54 -0.762)) (stroke (width 0.254) (type default)) (fill (type none)))
+(polyline (pts (xy 0 -0.508) (xy 0 2.032)) (stroke (width 0.254) (type dash)) (fill (type none)))
+(pin passive line (at -5.08 0 0) (length 2.54) (name "41" (effects (font (size 1.27 1.27)))) (number "41" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 5.08 0 180) (length 2.54) (name "42" (effects (font (size 1.27 1.27)))) (number "42" (effects (font (size 1.27 1.27)))))
+)
+)
+(symbol "PB_2NO" (pin_names (offset 0) hide) (in_bom yes) (on_board no)
+(property "Reference" "SB" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "ARM 2NO" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "ARM / reset pushbutton with two NO contact blocks (a: U10 clock, b: U20 reset); panel mount" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "PB_2NO_1_1"
+(circle (center -2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(circle (center 2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(polyline (pts (xy -1.524 0.254) (xy 2.54 1.778)) (stroke (width 0.254) (type default)) (fill (type none)))
+(polyline (pts (xy 0 1.016) (xy 0 3.048)) (stroke (width 0.254) (type dash)) (fill (type none)))
+(pin passive line (at -5.08 0 0) (length 2.54) (name "13" (effects (font (size 1.27 1.27)))) (number "13" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 5.08 0 180) (length 2.54) (name "14" (effects (font (size 1.27 1.27)))) (number "14" (effects (font (size 1.27 1.27)))))
+)
+(symbol "PB_2NO_2_1"
+(circle (center -2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(circle (center 2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(polyline (pts (xy -1.524 0.254) (xy 2.54 1.778)) (stroke (width 0.254) (type default)) (fill (type none)))
+(polyline (pts (xy 0 1.016) (xy 0 3.048)) (stroke (width 0.254) (type dash)) (fill (type none)))
+(pin passive line (at -5.08 0 0) (length 2.54) (name "23" (effects (font (size 1.27 1.27)))) (number "23" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 5.08 0 180) (length 2.54) (name "24" (effects (font (size 1.27 1.27)))) (number "24" (effects (font (size 1.27 1.27)))))
+)
+)
+(symbol "THERMO_NC" (pin_names (offset 0) hide) (in_bom yes) (on_board no)
+(property "Reference" "TH" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "85C NC" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "Bimetal thermal switch, normally closed, opens at 85 C (KSD301 class), bolted to the resistor plate" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "THERMO_NC_1_1"
+(circle (center -2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(circle (center 2.032 0) (radius 0.508) (stroke (width 0) (type default)) (fill (type none)))
+(polyline (pts (xy -1.524 0.254) (xy 2.54 -0.762)) (stroke (width 0.254) (type default)) (fill (type none)))
+(polyline (pts (xy 0 -0.508) (xy 0 2.032)) (stroke (width 0.254) (type dash)) (fill (type none)))
+(pin passive line (at -5.08 0 0) (length 2.54) (name "1" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 5.08 0 180) (length 2.54) (name "2" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
+)
+)
+(symbol "VS-40CPQ060" (pin_names (offset 1.016) hide) (in_bom yes) (on_board yes)
+(property "Reference" "D" (at 0 1.27 0) (effects (font (size 1.27 1.27))))
+(property "Value" "VS-40CPQ060" (at 0 -1.27 0) (effects (font (size 1.27 1.27))))
+(property "Footprint" "Package_TO_SOT_THT:TO-247-3_Vertical" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_description" "Vishay VS-40CPQ060-N3, 60 V 2x20 A common-cathode Schottky, TO-247AC; both anodes in parallel (pin 1, 3 = A, 2 + tab = K)" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_keywords" "schottky dual common cathode" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(property "ki_fp_filters" "TO?247*" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+(symbol "VS-40CPQ060_0_1"
+(polyline (pts (xy -1.27 1.27) (xy -1.27 -1.27) (xy 1.27 0) (xy -1.27 1.27)) (stroke (width 0.254) (type default)) (fill (type none)))
+(polyline (pts (xy 1.905 1.27) (xy 1.905 1.778) (xy 1.27 1.778) (xy 1.27 -1.778) (xy 0.635 -1.778) (xy 0.635 -1.27)) (stroke (width 0.254) (type default)) (fill (type none)))
+(polyline (pts (xy -2.54 2.54) (xy -2.54 -2.54)) (stroke (width 0) (type default)) (fill (type none)))
+(polyline (pts (xy -2.54 0) (xy -1.27 0)) (stroke (width 0) (type default)) (fill (type none)))
+(polyline (pts (xy 1.27 0) (xy 2.54 0)) (stroke (width 0) (type default)) (fill (type none)))
+)
+(symbol "VS-40CPQ060_1_1"
+(pin passive line (at -5.08 2.54 0) (length 2.54) (name "A" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+(pin passive line (at -5.08 -2.54 0) (length 2.54) (name "A" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+(pin passive line (at 5.08 0 180) (length 2.54) (name "K" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
+)
+)
+)

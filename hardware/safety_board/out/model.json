@@ -1,0 +1,5396 @@
+{
+ "parts": [
+  {
+   "ref": "J1",
+   "lib": "Connector_Generic:Conn_01x02",
+   "value": "Supply / pack output",
+   "fp": "",
+   "sheet": "power",
+   "pins": {
+    "1": "PSU+",
+    "2": "PGND"
+   },
+   "origin": "added: the supply / pack cable (PSU+ to F1, PSU- to stud J3)",
+   "nl": "J1",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "bench SE-1000-24 or the pack via XT90",
+   "group": "Supply input, F1, ideal diode U1/Q6 (blocks regen into the PSU)"
+  },
+  {
+   "ref": "F1",
+   "lib": "Device:Fuse",
+   "value": "60A MIDI slow-blow",
+   "fp": "",
+   "sheet": "power",
+   "pins": {
+    "1": "PSU+",
+    "2": "F1_OUT"
+   },
+   "origin": "netlist v4",
+   "nl": "F1",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "electrical.py MAIN_FUSE",
+   "group": "Supply input, F1, ideal diode U1/Q6 (blocks regen into the PSU)"
+  },
+  {
+   "ref": "J2",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M5 stud F1_OUT (from F1)",
+   "fp": "MountingHole:MountingHole_5.3mm_M5_Pad_Via",
+   "sheet": "power",
+   "pins": {
+    "1": "F1_OUT"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J2",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Supply input, F1, ideal diode U1/Q6 (blocks regen into the PSU)"
+  },
+  {
+   "ref": "J3",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M5 stud PSU- / pack-",
+   "fp": "MountingHole:MountingHole_5.3mm_M5_Pad_Via",
+   "sheet": "power",
+   "pins": {
+    "1": "PGND"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Supply input, F1, ideal diode U1/Q6 (blocks regen into the PSU)"
+  },
+  {
+   "ref": "U1",
+   "lib": "Power_Management:LM74700",
+   "value": "LM74700-Q1",
+   "fp": "Package_TO_SOT_SMD:SOT-23-6",
+   "sheet": "power",
+   "pins": {
+    "1": "U1_VCAP",
+    "2": "GND",
+    "3": "F1_OUT",
+    "4": "VIN",
+    "5": "Q6_G",
+    "6": "F1_OUT"
+   },
+   "origin": "netlist v4",
+   "nl": "U1, Q6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "EN tied to ANODE (always on)",
+   "group": "Supply input, F1, ideal diode U1/Q6 (blocks regen into the PSU)"
+  },
+  {
+   "ref": "C10",
+   "lib": "Device:C",
+   "value": "100n 50V",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "U1_VCAP",
+    "2": "F1_OUT"
+   },
+   "origin": "added: LM74700 VCAP charge-pump capacitor (datasheet 0.1 µF)",
+   "nl": "U1, Q6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Supply input, F1, ideal diode U1/Q6 (blocks regen into the PSU)"
+  },
+  {
+   "ref": "Q6",
+   "lib": "Device:Q_NMOS_GDS",
+   "value": "IRFB7530",
+   "fp": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "sheet": "power",
+   "pins": {
+    "1": "Q6_G",
+    "2": "VIN",
+    "3": "F1_OUT"
+   },
+   "origin": "netlist v4",
+   "nl": "U1, Q6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "source at the supply side: body diode F1_OUT → VIN",
+   "group": "Supply input, F1, ideal diode U1/Q6 (blocks regen into the PSU)"
+  },
+  {
+   "ref": "J4",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M5 stud VIN (to K1 A1)",
+   "fp": "MountingHole:MountingHole_5.3mm_M5_Pad_Via",
+   "sheet": "power",
+   "pins": {
+    "1": "VIN"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Supply input, F1, ideal diode U1/Q6 (blocks regen into the PSU)"
+  },
+  {
+   "ref": "K1",
+   "lib": "pip_safety:ALEV100",
+   "value": "ALEV100 24V coil",
+   "fp": "",
+   "sheet": "power",
+   "pins": {
+    "A1": "VIN",
+    "A2": "VBUS",
+    "X1": "COIL+",
+    "X2": "COIL-",
+    "3": "AUX_A",
+    "4": "AUX_B"
+   },
+   "origin": "netlist v4",
+   "nl": "K1",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "electrical.py CONTACTOR",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "J5",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M5 stud VBUS (from K1 A2)",
+   "fp": "MountingHole:MountingHole_5.3mm_M5_Pad_Via",
+   "sheet": "power",
+   "pins": {
+    "1": "VBUS"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "NT1",
+   "lib": "Device:NetTie_2",
+   "value": "VBUS sense tie",
+   "fp": "NetTie:NetTie-2_SMD_Pad0.5mm",
+   "sheet": "power",
+   "pins": {
+    "1": "VBUS",
+    "2": "VBUS_SNS"
+   },
+   "origin": "added: Kelvin sense point for the comparator dividers (checklist: divider sense at the VBUS terminal)",
+   "nl": "NT1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "D1",
+   "lib": "Device:D",
+   "value": "1N4007",
+   "fp": "Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal",
+   "sheet": "power",
+   "pins": {
+    "1": "COIL+",
+    "2": "K1_SNUB"
+   },
+   "origin": "netlist v4",
+   "nl": "D1, Z1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "Z1",
+   "lib": "Device:D_Zener",
+   "value": "1N5359B 24V 5W",
+   "fp": "Diode_THT:D_DO-201AE_P15.24mm_Horizontal",
+   "sheet": "power",
+   "pins": {
+    "1": "COIL-",
+    "2": "K1_SNUB"
+   },
+   "origin": "netlist v4",
+   "nl": "D1, Z1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "drain clamps at 24 V + Vz + Vf ≈ 50 V (safety_board_sim.md: 52 V)",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "Q4",
+   "lib": "Device:Q_NMOS_GDS",
+   "value": "IRL540N 100V",
+   "fp": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "sheet": "power",
+   "pins": {
+    "1": "Q4_G",
+    "2": "COIL-",
+    "3": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "Q4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "design change 1: driven from U9 OUTB at 12 V (not specified at 3.3 V)",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "R15",
+   "lib": "Device:R",
+   "value": "10",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "Q4_DRV",
+    "2": "Q4_G"
+   },
+   "origin": "added: Q4 gate resistor",
+   "nl": "Q4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "R16",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "Q4_G",
+    "2": "PGND"
+   },
+   "origin": "added: Q4 gate pull-down (checklist: dead driver = off)",
+   "nl": "Q4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "TP6",
+   "lib": "Connector:TestPoint",
+   "value": "TP6 Q4 gate",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "power",
+   "pins": {
+    "1": "Q4_G"
+   },
+   "origin": "netlist v4",
+   "nl": "TP6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "TP7",
+   "lib": "Connector:TestPoint",
+   "value": "TP7 Q4 drain",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "power",
+   "pins": {
+    "1": "COIL-"
+   },
+   "origin": "netlist v4",
+   "nl": "TP7",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "TP29",
+   "lib": "Connector:TestPoint",
+   "value": "TP29 PGND (Q4)",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "power",
+   "pins": {
+    "1": "PGND"
+   },
+   "origin": "added: scope ground next to TP6/TP7",
+   "nl": "TP29",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 main contactor (chassis) and coil driver Q4 (12 V gate drive from U9 channel B)"
+  },
+  {
+   "ref": "K2",
+   "lib": "Relay:G5LE-1",
+   "value": "G5LE-1 24VDC",
+   "fp": "Relay_THT:Relay_SPDT_Omron-G5LE-1",
+   "sheet": "power",
+   "pins": {
+    "1": "VIN",
+    "2": "K2_COIL-",
+    "3": null,
+    "4": "K2_C",
+    "5": "COIL+"
+   },
+   "origin": "netlist v4",
+   "nl": "K2, Q5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "coil from the coil chain node COIL+ (block diagram: '+24V_L ─ S1a/S2a (same chain) ─ K2 coil'); NO = pin 4",
+   "group": "K2 pre-charge relay + R3 (RH-50, chassis); +24V_L feed"
+  },
+  {
+   "ref": "D9",
+   "lib": "Device:D",
+   "value": "1N4148W",
+   "fp": "Diode_SMD:D_SOD-123",
+   "sheet": "power",
+   "pins": {
+    "1": "COIL+",
+    "2": "K2_COIL-"
+   },
+   "origin": "added: K2 coil flyback diode (checklist: coil suppression on K2 too; not in the netlist)",
+   "nl": "K2, Q5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2 pre-charge relay + R3 (RH-50, chassis); +24V_L feed"
+  },
+  {
+   "ref": "Q5",
+   "lib": "Device:Q_NMOS_GSD",
+   "value": "IRLML6344",
+   "fp": "Package_TO_SOT_SMD:SOT-23",
+   "sheet": "power",
+   "pins": {
+    "1": "Q5_G",
+    "2": "PGND",
+    "3": "K2_COIL-"
+   },
+   "origin": "netlist v4",
+   "nl": "K2, Q5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "netlist part; 30 V (design change 1 asks >= 60 V: issue N5)",
+   "group": "K2 pre-charge relay + R3 (RH-50, chassis); +24V_L feed"
+  },
+  {
+   "ref": "R17",
+   "lib": "Device:R",
+   "value": "100",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "K2_DRIVE",
+    "2": "Q5_G"
+   },
+   "origin": "added: Q5 gate series resistor",
+   "nl": "K2, Q5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2 pre-charge relay + R3 (RH-50, chassis); +24V_L feed"
+  },
+  {
+   "ref": "R18",
+   "lib": "Device:R",
+   "value": "100k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "Q5_G",
+    "2": "PGND"
+   },
+   "origin": "added: Q5 gate pull-down",
+   "nl": "K2, Q5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2 pre-charge relay + R3 (RH-50, chassis); +24V_L feed"
+  },
+  {
+   "ref": "J6",
+   "lib": "Connector_Generic:Conn_01x02",
+   "value": "Pre-charge resistor leads",
+   "fp": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
+   "sheet": "power",
+   "pins": {
+    "1": "K2_C",
+    "2": "VBUS"
+   },
+   "origin": "added: board terminal for the off-board RH-50",
+   "nl": "J6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2 pre-charge relay + R3 (RH-50, chassis); +24V_L feed"
+  },
+  {
+   "ref": "R5",
+   "lib": "Device:R",
+   "value": "3.3 RH-50",
+   "fp": "",
+   "sheet": "power",
+   "pins": {
+    "1": "K2_C",
+    "2": "VBUS"
+   },
+   "origin": "netlist v4 (as 'R3': duplicate ref with the clamp NH-50 R3, issue N1)",
+   "nl": "R3",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "electrical.py R_PRE",
+   "group": "K2 pre-charge relay + R3 (RH-50, chassis); +24V_L feed"
+  },
+  {
+   "ref": "F5",
+   "lib": "Device:Fuse",
+   "value": "2A slow 1206",
+   "fp": "Fuse:Fuse_1206_3216Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "VIN",
+    "2": "+24V_L"
+   },
+   "origin": "added: +24V_L has no source in the netlist (issue N2); fused from VIN, separate from F2 ('nothing else may hang on it')",
+   "nl": "F5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "K1 coil + K2 coil + U20 + aux opto ≈ 0.4 A ESTIMATE",
+   "group": "K2 pre-charge relay + R3 (RH-50, chassis); +24V_L feed"
+  },
+  {
+   "ref": "C1",
+   "lib": "Device:C_Polarized",
+   "value": "4.7mF 35V",
+   "fp": "Capacitor_THT:CP_Radial_D30.0mm_P10.00mm_SnapIn",
+   "sheet": "power",
+   "pins": {
+    "1": "VBUS",
+    "2": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "C1, C2, D3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "electrical.py C_BULK",
+   "group": "Bulk capacitor C1 (star point PGND/GND), arm branch: U19 current sensor, F3"
+  },
+  {
+   "ref": "NT2",
+   "lib": "Device:NetTie_2",
+   "value": "Star point at C1-",
+   "fp": "NetTie:NetTie-2_SMD_Pad2.0mm",
+   "sheet": "power",
+   "pins": {
+    "1": "PGND",
+    "2": "GND"
+   },
+   "origin": "added: the only joint between power return and logic ground (checklist: star point at C1)",
+   "nl": "NT2",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Bulk capacitor C1 (star point PGND/GND), arm branch: U19 current sensor, F3"
+  },
+  {
+   "ref": "U19",
+   "lib": "Sensor_Current:ACS724xLCTR-30AB",
+   "value": "ACS724LLCTR-30AB",
+   "fp": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+   "sheet": "power",
+   "pins": {
+    "1": "VBUS",
+    "2": "VBUS",
+    "3": "ARM_F",
+    "4": "ARM_F",
+    "5": "GND",
+    "6": "U19_FILT",
+    "7": "OC_V",
+    "8": "+5V"
+   },
+   "origin": "netlist v4",
+   "nl": "U19",
+   "loc": "board",
+   "variant": "all",
+   "basis": "66 mV/A at 5 V (ESTIMATE until the datasheet is checked)",
+   "group": "Bulk capacitor C1 (star point PGND/GND), arm branch: U19 current sensor, F3"
+  },
+  {
+   "ref": "C53",
+   "lib": "Device:C",
+   "value": "1n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "U19_FILT",
+    "2": "GND"
+   },
+   "origin": "added: U19 pin 6 (FILTER per the KiCad symbol; issue R6)",
+   "nl": "U19",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Bulk capacitor C1 (star point PGND/GND), arm branch: U19 current sensor, F3"
+  },
+  {
+   "ref": "C100",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "+5V",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U19",
+   "nl": "C100",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Bulk capacitor C1 (star point PGND/GND), arm branch: U19 current sensor, F3"
+  },
+  {
+   "ref": "F3",
+   "lib": "Device:Fuse",
+   "value": "20A ATO",
+   "fp": "Fuse:Fuseholder_Blade_ATO_Littelfuse_Pudenz_2_Pin",
+   "sheet": "power",
+   "pins": {
+    "1": "ARM_F",
+    "2": "ARM_LEAD"
+   },
+   "origin": "netlist v4",
+   "nl": "F3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "electrical.py BENCH_FUSE",
+   "group": "Bulk capacitor C1 (star point PGND/GND), arm branch: U19 current sensor, F3"
+  },
+  {
+   "ref": "J11",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M4 stud arm lead +",
+   "fp": "MountingHole:MountingHole_4.3mm_M4_Pad_Via",
+   "sheet": "power",
+   "pins": {
+    "1": "ARM_LEAD"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J11",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Bulk capacitor C1 (star point PGND/GND), arm branch: U19 current sensor, F3"
+  },
+  {
+   "ref": "J12",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M4 stud arm lead -",
+   "fp": "MountingHole:MountingHole_4.3mm_M4_Pad_Via",
+   "sheet": "power",
+   "pins": {
+    "1": "PGND"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J12",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Bulk capacitor C1 (star point PGND/GND), arm branch: U19 current sensor, F3"
+  },
+  {
+   "ref": "TP1",
+   "lib": "Connector:TestPoint",
+   "value": "TP1 VBUS at the board",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "power",
+   "pins": {
+    "1": "VBUS"
+   },
+   "origin": "netlist v4",
+   "nl": "TP1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "Bulk capacitor C1 (star point PGND/GND), arm branch: U19 current sensor, F3"
+  },
+  {
+   "ref": "TP2",
+   "lib": "Connector:TestPoint",
+   "value": "TP2 VBUS at the dummy drive bank",
+   "fp": "",
+   "sheet": "power",
+   "pins": {
+    "1": "ARM_LEAD"
+   },
+   "origin": "netlist v4",
+   "nl": "TP2",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "safety_board_tests.md: at the end of the arm lead (off-board probe point)",
+   "group": "Bulk capacitor C1 (star point PGND/GND), arm branch: U19 current sensor, F3"
+  },
+  {
+   "ref": "F2",
+   "lib": "Device:Fuse",
+   "value": "1A slow 1206",
+   "fp": "Fuse:Fuse_1206_3216Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "VIN",
+    "2": "F2_OUT"
+   },
+   "origin": "netlist v4",
+   "nl": "U2, U3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "U2",
+   "lib": "Regulator_Switching:R-78B12-2.0",
+   "value": "R-78B12-2.0",
+   "fp": "Converter_DCDC:Converter_DCDC_RECOM_R-78B-2.0_THT",
+   "sheet": "power",
+   "pins": {
+    "1": "F2_OUT",
+    "2": "GND",
+    "3": "+12V"
+   },
+   "origin": "netlist v4",
+   "nl": "U2, U3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "netlist '24 → 12 V 1 A buck'; R-78B: 32 V max input (R-78E is 28 V, too close to the 27.5 V drive limit)",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "C12",
+   "lib": "Device:C",
+   "value": "10u 50V",
+   "fp": "Capacitor_SMD:C_1210_3225Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "F2_OUT",
+    "2": "GND"
+   },
+   "origin": "added: U2 input capacitor",
+   "nl": "U2, U3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "C13",
+   "lib": "Device:C",
+   "value": "10u 25V",
+   "fp": "Capacitor_SMD:C_1210_3225Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "+12V",
+    "2": "GND"
+   },
+   "origin": "added: U2 output capacitor",
+   "nl": "U2, U3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "U3",
+   "lib": "Regulator_Linear:MCP1703Ax-330xxDB",
+   "value": "MCP1703A-3302",
+   "fp": "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+   "sheet": "power",
+   "pins": {
+    "1": "+12V",
+    "2": "GND",
+    "3": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U2, U3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "C14",
+   "lib": "Device:C",
+   "value": "1u",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "+12V",
+    "2": "GND"
+   },
+   "origin": "added: MCP1703 input 1 µF (datasheet)",
+   "nl": "U2, U3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "C15",
+   "lib": "Device:C",
+   "value": "1u",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: MCP1703 output 1 µF (datasheet)",
+   "nl": "U2, U3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "U32",
+   "lib": "Regulator_Linear:MCP1703Ax-500xxDB",
+   "value": "MCP1703A-5002",
+   "fp": "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+   "sheet": "power",
+   "pins": {
+    "1": "+12V",
+    "2": "GND",
+    "3": "+5V"
+   },
+   "origin": "added: the ACS724 is a 5 V part and the netlist has no 5 V rail (issue N3)",
+   "nl": "U32",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "C16",
+   "lib": "Device:C",
+   "value": "1u",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "+12V",
+    "2": "GND"
+   },
+   "origin": "added: MCP1703 input",
+   "nl": "U19",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "C17",
+   "lib": "Device:C",
+   "value": "1u",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "power",
+   "pins": {
+    "1": "+5V",
+    "2": "GND"
+   },
+   "origin": "added: MCP1703 output",
+   "nl": "U19",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "TP14",
+   "lib": "Connector:TestPoint",
+   "value": "TP14 +12V (T0)",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "power",
+   "pins": {
+    "1": "+12V"
+   },
+   "origin": "added: test point",
+   "nl": "TP14",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "TP15",
+   "lib": "Connector:TestPoint",
+   "value": "TP15 +3V3 (T0)",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "power",
+   "pins": {
+    "1": "+3V3"
+   },
+   "origin": "added: test point",
+   "nl": "TP15",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "TP26",
+   "lib": "Connector:TestPoint",
+   "value": "TP26 GND",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "power",
+   "pins": {
+    "1": "GND"
+   },
+   "origin": "added: test point",
+   "nl": "TP26",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Logic supply: F2 → U2 24→12 V → U3 3.3 V (watchdog/logic only), U32 5 V for U19"
+  },
+  {
+   "ref": "J10",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M5 stud VBUS (NH-50 common leads)",
+   "fp": "MountingHole:MountingHole_5.3mm_M5_Pad_Via",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VBUS"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "J7",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M4 stud DRN1 (R1 lead)",
+   "fp": "MountingHole:MountingHole_4.3mm_M4_Pad_Via",
+   "sheet": "clamp",
+   "pins": {
+    "1": "DRN1"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J7",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "R1",
+   "lib": "Device:R",
+   "value": "0.56 NH-50",
+   "fp": "",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VBUS",
+    "2": "DRN1"
+   },
+   "origin": "netlist v4",
+   "nl": "Q1–Q3 / R1–R3",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "electrical.py CLAMP r_each; Vishay NH-50 on the Al plate, 10 AWG leads",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "D4",
+   "lib": "pip_safety:VS-40CPQ060",
+   "value": "VS-40CPQ060-N3",
+   "fp": "Package_TO_SOT_THT:TO-247-3_Vertical",
+   "sheet": "clamp",
+   "pins": {
+    "1": "DRN1",
+    "3": "DRN1",
+    "2": "VBUS"
+   },
+   "origin": "netlist v4",
+   "nl": "D4–D6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "Q1",
+   "lib": "Device:Q_NMOS_GDS",
+   "value": "IRFB7530",
+   "fp": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "sheet": "clamp",
+   "pins": {
+    "1": "G1",
+    "2": "DRN1",
+    "3": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "Q1–Q3 / R1–R3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "R11",
+   "lib": "Device:R",
+   "value": "10 1206",
+   "fp": "Resistor_SMD:R_1206_3216Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "CLAMP_DRV",
+    "2": "G1"
+   },
+   "origin": "netlist v4",
+   "nl": "R_G",
+   "loc": "board",
+   "variant": "all",
+   "basis": "≈ 10–22 ohm, set on the scope for ≈ 0.3 µs edges",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "R40",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "G1",
+    "2": "PGND"
+   },
+   "origin": "added: gate pull-down (checklist)",
+   "nl": "Q1–Q3 / R1–R3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "J8",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M4 stud DRN2 (R2 lead)",
+   "fp": "MountingHole:MountingHole_4.3mm_M4_Pad_Via",
+   "sheet": "clamp",
+   "pins": {
+    "1": "DRN2"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J8",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "R2",
+   "lib": "Device:R",
+   "value": "0.56 NH-50",
+   "fp": "",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VBUS",
+    "2": "DRN2"
+   },
+   "origin": "netlist v4",
+   "nl": "Q1–Q3 / R1–R3",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "electrical.py CLAMP r_each; Vishay NH-50 on the Al plate, 10 AWG leads",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "D5",
+   "lib": "pip_safety:VS-40CPQ060",
+   "value": "VS-40CPQ060-N3",
+   "fp": "Package_TO_SOT_THT:TO-247-3_Vertical",
+   "sheet": "clamp",
+   "pins": {
+    "1": "DRN2",
+    "3": "DRN2",
+    "2": "VBUS"
+   },
+   "origin": "netlist v4",
+   "nl": "D4–D6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "Q2",
+   "lib": "Device:Q_NMOS_GDS",
+   "value": "IRFB7530",
+   "fp": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "sheet": "clamp",
+   "pins": {
+    "1": "G2",
+    "2": "DRN2",
+    "3": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "Q1–Q3 / R1–R3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "R12",
+   "lib": "Device:R",
+   "value": "10 1206",
+   "fp": "Resistor_SMD:R_1206_3216Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "CLAMP_DRV",
+    "2": "G2"
+   },
+   "origin": "netlist v4",
+   "nl": "R_G",
+   "loc": "board",
+   "variant": "all",
+   "basis": "≈ 10–22 ohm, set on the scope for ≈ 0.3 µs edges",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "R41",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "G2",
+    "2": "PGND"
+   },
+   "origin": "added: gate pull-down (checklist)",
+   "nl": "Q1–Q3 / R1–R3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "J9",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M4 stud DRN3 (R3 lead)",
+   "fp": "MountingHole:MountingHole_4.3mm_M4_Pad_Via",
+   "sheet": "clamp",
+   "pins": {
+    "1": "DRN3"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J9",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "R3",
+   "lib": "Device:R",
+   "value": "0.56 NH-50",
+   "fp": "",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VBUS",
+    "2": "DRN3"
+   },
+   "origin": "netlist v4",
+   "nl": "Q1–Q3 / R1–R3",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "electrical.py CLAMP r_each; Vishay NH-50 on the Al plate, 10 AWG leads",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "D6",
+   "lib": "pip_safety:VS-40CPQ060",
+   "value": "VS-40CPQ060-N3",
+   "fp": "Package_TO_SOT_THT:TO-247-3_Vertical",
+   "sheet": "clamp",
+   "pins": {
+    "1": "DRN3",
+    "3": "DRN3",
+    "2": "VBUS"
+   },
+   "origin": "netlist v4",
+   "nl": "D4–D6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "Q3",
+   "lib": "Device:Q_NMOS_GDS",
+   "value": "IRFB7530",
+   "fp": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "sheet": "clamp",
+   "pins": {
+    "1": "G3",
+    "2": "DRN3",
+    "3": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "Q1–Q3 / R1–R3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "R13",
+   "lib": "Device:R",
+   "value": "10 1206",
+   "fp": "Resistor_SMD:R_1206_3216Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "CLAMP_DRV",
+    "2": "G3"
+   },
+   "origin": "netlist v4",
+   "nl": "R_G",
+   "loc": "board",
+   "variant": "all",
+   "basis": "≈ 10–22 ohm, set on the scope for ≈ 0.3 µs edges",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "R42",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "G3",
+    "2": "PGND"
+   },
+   "origin": "added: gate pull-down (checklist)",
+   "nl": "Q1–Q3 / R1–R3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "C2",
+   "lib": "Device:C",
+   "value": "10u 63V film",
+   "fp": "Capacitor_THT:C_Rect_L31.5mm_W11.0mm_P27.50mm_MKS4",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VBUS",
+    "2": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "C1, C2, D3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "at Q1-Q3: closes the 30 nH MOSFET-diode loop",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "D3",
+   "lib": "Device:D_Zener",
+   "value": "SMDJ33A TVS",
+   "fp": "Diode_SMD:D_SMC",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VBUS",
+    "2": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "C1, C2, D3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "edge snubber only (unidirectional, cathode at VBUS)",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "R6",
+   "lib": "Device:R",
+   "value": "1k 3W",
+   "fp": "Resistor_THT:R_Axial_Power_L20.0mm_W6.4mm_P22.40mm",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VBUS",
+    "2": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "R6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "electrical.py R_BLEED",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "TP3",
+   "lib": "Connector:TestPoint",
+   "value": "TP3 Q1 drain",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "clamp",
+   "pins": {
+    "1": "DRN1"
+   },
+   "origin": "netlist v4",
+   "nl": "TP3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "TP4",
+   "lib": "Connector:TestPoint",
+   "value": "TP4 Q1 gate",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "clamp",
+   "pins": {
+    "1": "G1"
+   },
+   "origin": "netlist v4",
+   "nl": "TP4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "TP27",
+   "lib": "Connector:TestPoint",
+   "value": "TP27 PGND at Q1 source",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "clamp",
+   "pins": {
+    "1": "PGND"
+   },
+   "origin": "added: scope ground spring for TP3/TP4",
+   "nl": "TP27",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp legs: R1-R3 NH-50 0.56 ohm (chassis plate) ∥ D4-D6, Q1-Q3 IRFB7530"
+  },
+  {
+   "ref": "U7",
+   "lib": "pip_safety:74LVC1G332",
+   "value": "74LVC1G332",
+   "fp": "Package_TO_SOT_SMD:SOT-23-6",
+   "sheet": "clamp",
+   "pins": {
+    "1": "OV",
+    "3": "U16_Q",
+    "6": "FORCE",
+    "2": "GND",
+    "4": "CLAMP_CMD",
+    "5": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U7, U9",
+   "loc": "board",
+   "variant": "all",
+   "basis": "3 terms (OV, FORCE and U16's on-time): the netlist's 2-input SN74LVC1G32 cannot take them (issue N4)",
+   "group": "Gate drive: U7 OR3 (OV | U16 | FORCE) → U9 UCC27524 (A: clamp, B: K1 coil Q4)"
+  },
+  {
+   "ref": "C101",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U7",
+   "nl": "C101",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Gate drive: U7 OR3 (OV | U16 | FORCE) → U9 UCC27524 (A: clamp, B: K1 coil Q4)"
+  },
+  {
+   "ref": "U9",
+   "lib": "pip_safety:UCC27524",
+   "value": "UCC27524",
+   "fp": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+   "sheet": "clamp",
+   "pins": {
+    "1": "+12V",
+    "2": "CLAMP_CMD",
+    "3": "PGND",
+    "4": "U8_OUT",
+    "5": "Q4_DRV",
+    "6": "+12V",
+    "7": "CLAMP_DRV",
+    "8": "+12V"
+   },
+   "origin": "netlist v4",
+   "nl": "U7, U9",
+   "loc": "board",
+   "variant": "all",
+   "basis": "ENA/ENB tied to VDD; channel B drives Q4 (design change 1)",
+   "group": "Gate drive: U7 OR3 (OV | U16 | FORCE) → U9 UCC27524 (A: clamp, B: K1 coil Q4)"
+  },
+  {
+   "ref": "C18",
+   "lib": "Device:C",
+   "value": "1u 25V",
+   "fp": "Capacitor_SMD:C_1206_3216Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "+12V",
+    "2": "PGND"
+   },
+   "origin": "added: UCC27524 VDD bulk",
+   "nl": "U7, U9",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Gate drive: U7 OR3 (OV | U16 | FORCE) → U9 UCC27524 (A: clamp, B: K1 coil Q4)"
+  },
+  {
+   "ref": "C102",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "+12V",
+    "2": "PGND"
+   },
+   "origin": "added: decoupling for U9",
+   "nl": "C102",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Gate drive: U7 OR3 (OV | U16 | FORCE) → U9 UCC27524 (A: clamp, B: K1 coil Q4)"
+  },
+  {
+   "ref": "U16",
+   "lib": "74xGxx:74LVC1G123",
+   "value": "74LVC1G123",
+   "fp": "Package_SO:VSSOP-8_2.3x2mm_P0.5mm",
+   "sheet": "clamp",
+   "pins": {
+    "1": "GND",
+    "2": "OV",
+    "3": "+3V3",
+    "5": "U16_Q",
+    "6": "U16_C",
+    "7": "U16_RC",
+    "4": "GND",
+    "8": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U16",
+   "loc": "board",
+   "variant": "all",
+   "basis": "t = R·C = 50.3 µs (electrical.py T_ON_MIN 50 µs)",
+   "group": "Gate drive: U7 OR3 (OV | U16 | FORCE) → U9 UCC27524 (A: clamp, B: K1 coil Q4)"
+  },
+  {
+   "ref": "R52",
+   "lib": "Device:R",
+   "value": "10.7k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "+3V3",
+    "2": "U16_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U16",
+   "loc": "board",
+   "variant": "all",
+   "basis": "t = R·C = 50.3 µs (electrical.py T_ON_MIN 50 µs)",
+   "group": "Gate drive: U7 OR3 (OV | U16 | FORCE) → U9 UCC27524 (A: clamp, B: K1 coil Q4)"
+  },
+  {
+   "ref": "C46",
+   "lib": "Device:C",
+   "value": "4.7n C0G",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "U16_C",
+    "2": "U16_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U16",
+   "loc": "board",
+   "variant": "all",
+   "basis": "t = R·C = 50.3 µs (electrical.py T_ON_MIN 50 µs) (C0G / film)",
+   "group": "Gate drive: U7 OR3 (OV | U16 | FORCE) → U9 UCC27524 (A: clamp, B: K1 coil Q4)"
+  },
+  {
+   "ref": "C103",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U16",
+   "nl": "C103",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Gate drive: U7 OR3 (OV | U16 | FORCE) → U9 UCC27524 (A: clamp, B: K1 coil Q4)"
+  },
+  {
+   "ref": "U4",
+   "lib": "pip_safety:TLV3202",
+   "value": "TLV3202",
+   "fp": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+   "sheet": "clamp",
+   "pins": {
+    "3": "OV_P",
+    "2": "VREF",
+    "1": "OV",
+    "5": "PRE_P",
+    "6": "PRE_N",
+    "7": "PRE_OK",
+    "8": "+3V3",
+    "4": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "C104",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U4",
+   "nl": "C104",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "U33",
+   "lib": "Reference_Voltage:TL431DBZ",
+   "value": "TL431B",
+   "fp": "Package_TO_SOT_SMD:SOT-23",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VREF",
+    "2": "VREF",
+    "3": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "TL431B as a 2.495 V shunt (K = REF); also the reference of U23",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "R43",
+   "lib": "Device:R",
+   "value": "680",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "+3V3",
+    "2": "VREF"
+   },
+   "origin": "added: TL431 bias (≈ 1.2 mA ≥ 1 mA min)",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "C44",
+   "lib": "Device:C",
+   "value": "1n C0G",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VREF",
+    "2": "GND"
+   },
+   "origin": "added: TL431 decoupling (checklist); below the TL431 stability boundary, reviewer re-check",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "R44",
+   "lib": "Device:R",
+   "value": "124k 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VBUS_SNS",
+    "2": "OV_P"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "OV divider: on 25.98 V / off 25.68 V (electrical.py CLAMP v_on ± hyst = 26.00 / 25.70 V)",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "R45",
+   "lib": "Device:R",
+   "value": "13.3k 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "OV_P",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "OV divider bottom",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "R46",
+   "lib": "Device:R",
+   "value": "1.37M 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "OV",
+    "2": "OV_P"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "positive feedback: 0.30 V hysteresis",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "C45",
+   "lib": "Device:C",
+   "value": "180p C0G",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "OV_P",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "2 µs filter (design change 0): Rth 11.91k × 180p = 2.14 µs",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "R47",
+   "lib": "Device:R",
+   "value": "100k 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VBUS_SNS",
+    "2": "PRE_P"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "PRE_OK + node: 0.0991·VBUS + offset",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "R48",
+   "lib": "Device:R",
+   "value": "82.5k 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VREF",
+    "2": "PRE_P"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "offset from VREF: PRE_OK at VBUS ≥ VIN − 3.03 V",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "R49",
+   "lib": "Device:R",
+   "value": "12.7k 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "PRE_P",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "PRE_OK + node to GND",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "R50",
+   "lib": "Device:R",
+   "value": "100k 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "VIN",
+    "2": "PRE_N"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "PRE_OK − node: 0.0991·VIN",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "R51",
+   "lib": "Device:R",
+   "value": "11k 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "clamp",
+   "pins": {
+    "1": "PRE_N",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "PRE_OK − node to GND",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "TP22",
+   "lib": "Connector:TestPoint",
+   "value": "TP22 PRE_OK",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "clamp",
+   "pins": {
+    "1": "PRE_OK"
+   },
+   "origin": "added: test point",
+   "nl": "TP22",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "TP23",
+   "lib": "Connector:TestPoint",
+   "value": "TP23 OV",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "clamp",
+   "pins": {
+    "1": "OV"
+   },
+   "origin": "added: test point",
+   "nl": "TP23",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Clamp comparator U4 (A: OV on/off, B: PRE_OK) + TL431B reference"
+  },
+  {
+   "ref": "R55",
+   "lib": "Device:R",
+   "value": "100",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "GPIO17",
+    "2": "HB_IN"
+   },
+   "origin": "added: series resistor on the Pi line",
+   "nl": "U5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Arm watchdog: GPIO17 → U5a (U30) Schmitt → U5 '123, 25 ms → WD_OK"
+  },
+  {
+   "ref": "R56",
+   "lib": "Device:R",
+   "value": "100k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "HB_IN",
+    "2": "GND"
+   },
+   "origin": "added: pull-down (Pi unplugged = no edges)",
+   "nl": "U5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Arm watchdog: GPIO17 → U5a (U30) Schmitt → U5 '123, 25 ms → WD_OK"
+  },
+  {
+   "ref": "U30",
+   "lib": "74xGxx:74LVC1G17",
+   "value": "74LVC1G17",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "2": "HB_IN",
+    "3": "GND",
+    "4": "HB_BUF",
+    "5": "+3V3",
+    "1": null
+   },
+   "origin": "netlist v4 (as 'U5a')",
+   "nl": "U5a",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Arm watchdog: GPIO17 → U5a (U30) Schmitt → U5 '123, 25 ms → WD_OK"
+  },
+  {
+   "ref": "C105",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U30",
+   "nl": "C105",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Arm watchdog: GPIO17 → U5a (U30) Schmitt → U5 '123, 25 ms → WD_OK"
+  },
+  {
+   "ref": "U5",
+   "lib": "74xGxx:74LVC1G123",
+   "value": "74LVC1G123",
+   "fp": "Package_SO:VSSOP-8_2.3x2mm_P0.5mm",
+   "sheet": "logic",
+   "pins": {
+    "1": "GND",
+    "2": "HB_BUF",
+    "3": "+3V3",
+    "5": "WD_OK",
+    "6": "U5_C",
+    "7": "U5_RC",
+    "4": "GND",
+    "8": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "t = R4·C3 = 25 ms (bringup.yaml watchdog_s)",
+   "group": "Arm watchdog: GPIO17 → U5a (U30) Schmitt → U5 '123, 25 ms → WD_OK"
+  },
+  {
+   "ref": "R4",
+   "lib": "Device:R",
+   "value": "250k 1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "U5_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "t = R4·C3 = 25 ms (bringup.yaml watchdog_s)",
+   "group": "Arm watchdog: GPIO17 → U5a (U30) Schmitt → U5 '123, 25 ms → WD_OK"
+  },
+  {
+   "ref": "C3",
+   "lib": "Device:C",
+   "value": "100n C0G",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "U5_C",
+    "2": "U5_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "t = R4·C3 = 25 ms (bringup.yaml watchdog_s) (C0G / film)",
+   "group": "Arm watchdog: GPIO17 → U5a (U30) Schmitt → U5 '123, 25 ms → WD_OK"
+  },
+  {
+   "ref": "C106",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U5",
+   "nl": "C106",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Arm watchdog: GPIO17 → U5a (U30) Schmitt → U5 '123, 25 ms → WD_OK"
+  },
+  {
+   "ref": "TP5",
+   "lib": "Connector:TestPoint",
+   "value": "TP5 WD_OK",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "logic",
+   "pins": {
+    "1": "WD_OK"
+   },
+   "origin": "netlist v4",
+   "nl": "TP5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "Arm watchdog: GPIO17 → U5a (U30) Schmitt → U5 '123, 25 ms → WD_OK"
+  },
+  {
+   "ref": "R57",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "ESTOP_CH2",
+    "2": "GND"
+   },
+   "origin": "added: pull-down (open loop = stop)",
+   "nl": "S1, S2",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "E-stop channel b (S1b-S2b in series = S1b ∧ S2b) and U13 → GPIO22 ESTOP_SENSE"
+  },
+  {
+   "ref": "C48",
+   "lib": "Device:C",
+   "value": "10n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "ESTOP_CH2",
+    "2": "GND"
+   },
+   "origin": "added: cable noise filter",
+   "nl": "S1, S2",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "E-stop channel b (S1b-S2b in series = S1b ∧ S2b) and U13 → GPIO22 ESTOP_SENSE"
+  },
+  {
+   "ref": "R58",
+   "lib": "Device:R",
+   "value": "470",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "ESTOP_CH2",
+    "2": "ESTOP_LED"
+   },
+   "origin": "added: U13 LED resistor (≈ 4 mA)",
+   "nl": "U12, U13",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "E-stop channel b (S1b-S2b in series = S1b ∧ S2b) and U13 → GPIO22 ESTOP_SENSE"
+  },
+  {
+   "ref": "U13",
+   "lib": "Isolator:PC817",
+   "value": "PC817",
+   "fp": "Package_DIP:DIP-4_W7.62mm",
+   "sheet": "logic",
+   "pins": {
+    "1": "ESTOP_LED",
+    "2": "GND",
+    "3": "GND",
+    "4": "GPIO22"
+   },
+   "origin": "netlist v4",
+   "nl": "U12, U13",
+   "loc": "board",
+   "variant": "all",
+   "basis": "open collector to GPIO22 (Pi pull-up)",
+   "group": "E-stop channel b (S1b-S2b in series = S1b ∧ S2b) and U13 → GPIO22 ESTOP_SENSE"
+  },
+  {
+   "ref": "R60",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "AUX_RAW_N"
+   },
+   "origin": "added: U12 collector pull-up",
+   "nl": "U12, U13",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "E-stop channel b (S1b-S2b in series = S1b ∧ S2b) and U13 → GPIO22 ESTOP_SENSE"
+  },
+  {
+   "ref": "R59",
+   "lib": "Device:R",
+   "value": "4.7k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+24V_L",
+    "2": "AUX_A"
+   },
+   "origin": "added: aux loop current ≈ 5 mA (+24V_L → aux → U12 LED)",
+   "nl": "U12, U13",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "U12",
+   "lib": "Isolator:PC817",
+   "value": "PC817",
+   "fp": "Package_DIP:DIP-4_W7.62mm",
+   "sheet": "logic",
+   "pins": {
+    "1": "AUX_B",
+    "2": "GND",
+    "3": "GND",
+    "4": "AUX_RAW_N"
+   },
+   "origin": "netlist v4",
+   "nl": "U12, U13",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "U58",
+   "lib": "74xGxx:74LVC1G14",
+   "value": "74LVC1G14",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "2": "AUX_RAW_N",
+    "3": "GND",
+    "4": "AUX_RAW",
+    "5": "+3V3",
+    "1": null
+   },
+   "origin": "added: stiff push-pull AUX_RAW for the debounce RC (its model assumes a stiff source; an opto emitter with a pull-down would add ~10k to R_d); the PC817 collector output is inverted back",
+   "nl": "U12, U13",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "C107",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U58",
+   "nl": "C107",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "R61",
+   "lib": "Device:R",
+   "value": "100",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "AUX_RAW",
+    "2": "GPIO27"
+   },
+   "origin": "added: series resistor to the Pi (AUX_OK)",
+   "nl": "U12, U13",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "TP8",
+   "lib": "Connector:TestPoint",
+   "value": "TP8 AUX_RAW",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "logic",
+   "pins": {
+    "1": "AUX_RAW"
+   },
+   "origin": "netlist v4",
+   "nl": "TP8",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "R20",
+   "lib": "Device:R",
+   "value": "100k 1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "AUX_RAW",
+    "2": "AUX_C"
+   },
+   "origin": "netlist v4 (as 'R_c')",
+   "nl": "R_c",
+   "loc": "board",
+   "variant": "all",
+   "basis": "electrical.py AUX_DEBOUNCE r_c",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "D20",
+   "lib": "Diode:BAT54W",
+   "value": "BAT54W",
+   "fp": "Package_TO_SOT_SMD:SOT-323_SC-70",
+   "sheet": "logic",
+   "pins": {
+    "1": "AUX_C",
+    "3": "AUX_RD",
+    "2": null
+   },
+   "origin": "netlist v4 (as 'D_db')",
+   "nl": "D_db",
+   "loc": "board",
+   "variant": "all",
+   "basis": "anode at C_db: discharges it when AUX_RAW falls",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "R21",
+   "lib": "Device:R",
+   "value": "4.7k 1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "AUX_RD",
+    "2": "AUX_RAW"
+   },
+   "origin": "netlist v4 (as 'R_d')",
+   "nl": "R_d",
+   "loc": "board",
+   "variant": "all",
+   "basis": "electrical.py AUX_DEBOUNCE r_d",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "C20",
+   "lib": "Device:C",
+   "value": "47n C0G",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "AUX_C",
+    "2": "GND"
+   },
+   "origin": "netlist v4 (as 'C_db')",
+   "nl": "C_db",
+   "loc": "board",
+   "variant": "all",
+   "basis": "electrical.py AUX_DEBOUNCE c",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "U29",
+   "lib": "74xGxx:74LVC1G17",
+   "value": "74LVC1G17",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "2": "AUX_C",
+    "3": "GND",
+    "4": "AUX_DB",
+    "5": "+3V3",
+    "1": null
+   },
+   "origin": "netlist v4",
+   "nl": "U29, R_c, R_d, D_db, C_db",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "C108",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U29",
+   "nl": "C108",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "TP12",
+   "lib": "Connector:TestPoint",
+   "value": "TP12 AUX_DB",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "logic",
+   "pins": {
+    "1": "AUX_DB"
+   },
+   "origin": "netlist v4",
+   "nl": "TP12",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "U60",
+   "lib": "74xGxx:74LVC1G04",
+   "value": "74LVC1G04",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "2": "AUX_DB",
+    "3": "GND",
+    "4": "AUX_DB_N",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate): ¬AUX_DB",
+   "nl": "U10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "C109",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U60",
+   "nl": "C109",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "K1 aux: AUX_A ← +24V_L, AUX_B → U12 → U58 → AUX_RAW (TP8) → GPIO27; debounce U29 → AUX_DB (TP12)"
+  },
+  {
+   "ref": "U40",
+   "lib": "74xGxx:74LVC1G11",
+   "value": "74LVC1G11",
+   "fp": "Package_TO_SOT_SMD:SOT-23-6",
+   "sheet": "logic",
+   "pins": {
+    "1": "ESTOP_CH2",
+    "3": "WD_OK",
+    "6": "TH1_OK",
+    "2": "GND",
+    "4": "OK3",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate)",
+   "nl": "U10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "STOP / ARM terms: RUN_OK = ¬STOP = S1b∧S2b∧WD_OK∧TH1∧WD_B; ARM_OK (U10 D) = RUN_OK ∧ ¬AUX_DB"
+  },
+  {
+   "ref": "C110",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U40",
+   "nl": "C110",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "STOP / ARM terms: RUN_OK = ¬STOP = S1b∧S2b∧WD_OK∧TH1∧WD_B; ARM_OK (U10 D) = RUN_OK ∧ ¬AUX_DB"
+  },
+  {
+   "ref": "U41",
+   "lib": "74xGxx:74LVC1G08",
+   "value": "74LVC1G08",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "1": "OK3",
+    "2": "WD_B",
+    "3": "GND",
+    "4": "RUN_OK",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate)",
+   "nl": "U10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "STOP / ARM terms: RUN_OK = ¬STOP = S1b∧S2b∧WD_OK∧TH1∧WD_B; ARM_OK (U10 D) = RUN_OK ∧ ¬AUX_DB"
+  },
+  {
+   "ref": "C111",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U41",
+   "nl": "C111",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "STOP / ARM terms: RUN_OK = ¬STOP = S1b∧S2b∧WD_OK∧TH1∧WD_B; ARM_OK (U10 D) = RUN_OK ∧ ¬AUX_DB"
+  },
+  {
+   "ref": "U61",
+   "lib": "74xGxx:74LVC1G08",
+   "value": "74LVC1G08",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "1": "RUN_OK",
+    "2": "AUX_DB_N",
+    "3": "GND",
+    "4": "ARM_OK",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate)",
+   "nl": "U10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "STOP / ARM terms: RUN_OK = ¬STOP = S1b∧S2b∧WD_OK∧TH1∧WD_B; ARM_OK (U10 D) = RUN_OK ∧ ¬AUX_DB"
+  },
+  {
+   "ref": "C112",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U61",
+   "nl": "C112",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "STOP / ARM terms: RUN_OK = ¬STOP = S1b∧S2b∧WD_OK∧TH1∧WD_B; ARM_OK (U10 D) = RUN_OK ∧ ¬AUX_DB"
+  },
+  {
+   "ref": "JP1",
+   "lib": "Jumper:SolderJumper_2_Open",
+   "value": "WD_B=1 (M1 only)",
+   "fp": "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "WD_B"
+   },
+   "origin": "added: on the M1 bench (no base channel, U22 not fitted) WD_B is tied high; open on the robot",
+   "nl": "U22",
+   "loc": "board",
+   "variant": "M1",
+   "basis": "",
+   "group": "STOP / ARM terms: RUN_OK = ¬STOP = S1b∧S2b∧WD_OK∧TH1∧WD_B; ARM_OK (U10 D) = RUN_OK ∧ ¬AUX_DB"
+  },
+  {
+   "ref": "U43",
+   "lib": "pip_safety:74LVC1G332",
+   "value": "74LVC1G332",
+   "fp": "Package_TO_SOT_SMD:SOT-23-6",
+   "sheet": "logic",
+   "pins": {
+    "1": "FORCE",
+    "3": "PRE_TIMEOUT",
+    "6": "DISC",
+    "2": "GND",
+    "4": "FAULT_A",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate)",
+   "nl": "U10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "C113",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U43",
+   "nl": "C113",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "U44",
+   "lib": "pip_safety:74LVC1G332",
+   "value": "74LVC1G332",
+   "fp": "Package_TO_SOT_SMD:SOT-23-6",
+   "sheet": "logic",
+   "pins": {
+    "1": "FAULT_A",
+    "3": "UV12",
+    "6": "OC",
+    "2": "GND",
+    "4": "FAULT",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate)",
+   "nl": "U10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "C114",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U44",
+   "nl": "C114",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "U62",
+   "lib": "74xGxx:74LVC1G04",
+   "value": "74LVC1G04",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "2": "FAULT",
+    "3": "GND",
+    "4": "FAULT_N",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate)",
+   "nl": "U10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "C115",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U62",
+   "nl": "C115",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "U63",
+   "lib": "74xGxx:74LVC1G08",
+   "value": "74LVC1G08",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "1": "RUN_OK",
+    "2": "FAULT_N",
+    "3": "GND",
+    "4": "CLR_CMD",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate)",
+   "nl": "U10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "C116",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U63",
+   "nl": "C116",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "D21",
+   "lib": "Diode:BAT54W",
+   "value": "BAT54W",
+   "fp": "Package_TO_SOT_SMD:SOT-323_SC-70",
+   "sheet": "logic",
+   "pins": {
+    "1": "LATCH_CLRn",
+    "3": "CLR_CMD",
+    "2": null
+   },
+   "origin": "added: wired-AND of the clear command with the R9·C9 POR node",
+   "nl": "R9, C9",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "R9",
+   "lib": "Device:R",
+   "value": "100k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "LATCH_CLRn"
+   },
+   "origin": "netlist v4",
+   "nl": "R9, C9",
+   "loc": "board",
+   "variant": "all",
+   "basis": "POR τ = 0.1 s (electrical.md)",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "C9",
+   "lib": "Device:C",
+   "value": "1u",
+   "fp": "Capacitor_SMD:C_1206_3216Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "LATCH_CLRn",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "R9, C9",
+   "loc": "board",
+   "variant": "all",
+   "basis": "POR τ = 0.1 s",
+   "group": "LATCH clear: CLR̄ = ¬(STOP ∨ FORCE ∨ PRE_TIMEOUT ∨ DISC ∨ UV12 ∨ OC), POR = R9·C9 (wired-AND through D21)"
+  },
+  {
+   "ref": "R63",
+   "lib": "Device:R",
+   "value": "100k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "ARM_RAW",
+    "2": "GND"
+   },
+   "origin": "added: SB1 pull-down",
+   "nl": "SB1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "R62",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "ARM_RAW",
+    "2": "ARM_RC"
+   },
+   "origin": "added: SB1 debounce (checklist: 'SB1 is the clock, debounced'; not in the netlist)",
+   "nl": "SB1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "C49",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "ARM_RC",
+    "2": "GND"
+   },
+   "origin": "added: SB1 debounce τ 1 ms",
+   "nl": "SB1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "U59",
+   "lib": "74xGxx:74LVC1G17",
+   "value": "74LVC1G17",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "2": "ARM_RC",
+    "3": "GND",
+    "4": "ARM_CLK",
+    "5": "+3V3",
+    "1": null
+   },
+   "origin": "added: SB1 debounce Schmitt",
+   "nl": "SB1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "C117",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U59",
+   "nl": "C117",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "U10",
+   "lib": "pip_safety:74LVC1G74",
+   "value": "74LVC1G74",
+   "fp": "Package_SO:VSSOP-8_2.3x2mm_P0.5mm",
+   "sheet": "logic",
+   "pins": {
+    "1": "ARM_CLK",
+    "2": "ARM_OK",
+    "3": null,
+    "4": "GND",
+    "5": "LATCH",
+    "6": "LATCH_CLRn",
+    "7": "+3V3",
+    "8": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "C118",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U10",
+   "nl": "C118",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "TP10",
+   "lib": "Connector:TestPoint",
+   "value": "TP10 LATCH",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "logic",
+   "pins": {
+    "1": "LATCH"
+   },
+   "origin": "netlist v4",
+   "nl": "TP10",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "U28",
+   "lib": "pip_safety:74LVC1G74",
+   "value": "74LVC1G74",
+   "fp": "Package_SO:VSSOP-8_2.3x2mm_P0.5mm",
+   "sheet": "logic",
+   "pins": {
+    "1": "AUX_DB",
+    "2": "+3V3",
+    "3": "RUN_N",
+    "4": "GND",
+    "5": "RUN",
+    "6": "LATCH",
+    "7": "+3V3",
+    "8": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U28",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "C119",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U28",
+   "nl": "C119",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "TP13",
+   "lib": "Connector:TestPoint",
+   "value": "TP13 RUN",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "logic",
+   "pins": {
+    "1": "RUN"
+   },
+   "origin": "netlist v4",
+   "nl": "TP13",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "ARM button debounce, U10 LATCH (TP10), U28 RUN (TP13)"
+  },
+  {
+   "ref": "U47",
+   "lib": "74xGxx:74LVC1G08",
+   "value": "74LVC1G08",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "1": "LATCH",
+    "2": "RUN_N",
+    "3": "GND",
+    "4": "K2X",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate): LATCH ∧ ¬RUN (also starts U11)",
+   "nl": "U11",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "C120",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U47",
+   "nl": "C120",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "U46",
+   "lib": "74xGxx:74LVC1G08",
+   "value": "74LVC1G08",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "1": "K2X",
+    "2": "PRE_TO_N",
+    "3": "GND",
+    "4": "K2_DRIVE",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate)",
+   "nl": "K2, Q5",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "C121",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U46",
+   "nl": "C121",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "TP11",
+   "lib": "Connector:TestPoint",
+   "value": "TP11 K2_DRIVE",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "logic",
+   "pins": {
+    "1": "K2_DRIVE"
+   },
+   "origin": "netlist v4",
+   "nl": "TP11",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "R64",
+   "lib": "Device:R",
+   "value": "1M",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "K2X",
+    "2": "PT_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U11",
+   "loc": "board",
+   "variant": "all",
+   "basis": "τ = 1.00 s to 0.635·3.3 V (electrical.py T_PRE_TIMEOUT 1.0 s)",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "D22",
+   "lib": "Diode:BAT54W",
+   "value": "BAT54W",
+   "fp": "Package_TO_SOT_SMD:SOT-323_SC-70",
+   "sheet": "logic",
+   "pins": {
+    "1": "PT_RC",
+    "3": "K2X",
+    "2": null
+   },
+   "origin": "added: fast reset of the timer RC",
+   "nl": "U11",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "C50",
+   "lib": "Device:C",
+   "value": "1u film",
+   "fp": "Capacitor_SMD:C_1206_3216Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "PT_RC",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U11",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "R65",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "PT_REF"
+   },
+   "origin": "netlist v4",
+   "nl": "U11",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "R66",
+   "lib": "Device:R",
+   "value": "17.4k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "PT_REF",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U11",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "U11",
+   "lib": "pip_safety:TLV3202",
+   "value": "TLV3202",
+   "fp": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+   "sheet": "logic",
+   "pins": {
+    "3": "PT_RC",
+    "2": "PT_REF",
+    "1": "PRE_TIMEOUT",
+    "5": "PT_REF",
+    "6": "PT_RC",
+    "7": "PRE_TO_N",
+    "8": "+3V3",
+    "4": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U11",
+   "loc": "board",
+   "variant": "all",
+   "basis": "RC + comparator; B is the complement (K2_DRIVE term)",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "C122",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U11",
+   "nl": "C122",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "TP24",
+   "lib": "Connector:TestPoint",
+   "value": "TP24 PRE_TIMEOUT",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "logic",
+   "pins": {
+    "1": "PRE_TIMEOUT"
+   },
+   "origin": "added: test point",
+   "nl": "TP24",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT; U11 1 s pre-charge timer (TP11 K2_DRIVE)"
+  },
+  {
+   "ref": "U15",
+   "lib": "74xGxx:74LVC1G04",
+   "value": "74LVC1G04",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "2": "K2_DRIVE",
+    "3": "GND",
+    "4": "U6_CLRn",
+    "5": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U15",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "FORCE one-shot U6: Ā = AUX_DB ∧ ¬DISC (falling = K1 opened or DISC), B = 3V3, CLR̄ = ¬K2_DRIVE (U15) (TP9)"
+  },
+  {
+   "ref": "C123",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U15",
+   "nl": "C123",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "FORCE one-shot U6: Ā = AUX_DB ∧ ¬DISC (falling = K1 opened or DISC), B = 3V3, CLR̄ = ¬K2_DRIVE (U15) (TP9)"
+  },
+  {
+   "ref": "U52",
+   "lib": "74xGxx:74LVC1G08",
+   "value": "74LVC1G08",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "1": "AUX_DB",
+    "2": "DISC_N",
+    "3": "GND",
+    "4": "U6_TRIG",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate): DISC → U6 trigger (netlist: 'DISC → U6 trigger')",
+   "nl": "U17",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "FORCE one-shot U6: Ā = AUX_DB ∧ ¬DISC (falling = K1 opened or DISC), B = 3V3, CLR̄ = ¬K2_DRIVE (U15) (TP9)"
+  },
+  {
+   "ref": "C124",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U52",
+   "nl": "C124",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "FORCE one-shot U6: Ā = AUX_DB ∧ ¬DISC (falling = K1 opened or DISC), B = 3V3, CLR̄ = ¬K2_DRIVE (U15) (TP9)"
+  },
+  {
+   "ref": "U6",
+   "lib": "74xGxx:74LVC1G123",
+   "value": "74LVC1G123",
+   "fp": "Package_SO:VSSOP-8_2.3x2mm_P0.5mm",
+   "sheet": "logic",
+   "pins": {
+    "1": "U6_TRIG",
+    "2": "+3V3",
+    "3": "U6_CLRn",
+    "5": "FORCE",
+    "6": "U6_C",
+    "7": "U6_RC",
+    "4": "GND",
+    "8": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "t = R·C = 100 ms (electrical.py T_FORCE)",
+   "group": "FORCE one-shot U6: Ā = AUX_DB ∧ ¬DISC (falling = K1 opened or DISC), B = 3V3, CLR̄ = ¬K2_DRIVE (U15) (TP9)"
+  },
+  {
+   "ref": "R67",
+   "lib": "Device:R",
+   "value": "100k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "U6_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "t = R·C = 100 ms (electrical.py T_FORCE)",
+   "group": "FORCE one-shot U6: Ā = AUX_DB ∧ ¬DISC (falling = K1 opened or DISC), B = 3V3, CLR̄ = ¬K2_DRIVE (U15) (TP9)"
+  },
+  {
+   "ref": "C51",
+   "lib": "Device:C",
+   "value": "1u",
+   "fp": "Capacitor_SMD:C_1206_3216Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "U6_C",
+    "2": "U6_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U6",
+   "loc": "board",
+   "variant": "all",
+   "basis": "t = R·C = 100 ms (electrical.py T_FORCE) (C0G / film)",
+   "group": "FORCE one-shot U6: Ā = AUX_DB ∧ ¬DISC (falling = K1 opened or DISC), B = 3V3, CLR̄ = ¬K2_DRIVE (U15) (TP9)"
+  },
+  {
+   "ref": "C125",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U6",
+   "nl": "C125",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "FORCE one-shot U6: Ā = AUX_DB ∧ ¬DISC (falling = K1 opened or DISC), B = 3V3, CLR̄ = ¬K2_DRIVE (U15) (TP9)"
+  },
+  {
+   "ref": "TP9",
+   "lib": "Connector:TestPoint",
+   "value": "TP9 FORCE",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "logic",
+   "pins": {
+    "1": "FORCE"
+   },
+   "origin": "netlist v4",
+   "nl": "TP9",
+   "loc": "board",
+   "variant": "all",
+   "basis": "safety_board_tests.md scope point",
+   "group": "FORCE one-shot U6: Ā = AUX_DB ∧ ¬DISC (falling = K1 opened or DISC), B = 3V3, CLR̄ = ¬K2_DRIVE (U15) (TP9)"
+  },
+  {
+   "ref": "U57",
+   "lib": "74xGxx:74LVC1G32",
+   "value": "74LVC1G32",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "1": "PRE_OK",
+    "2": "AUX_DB",
+    "3": "GND",
+    "4": "HOLD",
+    "5": "+3V3"
+   },
+   "origin": "netlist v4 (U8's OR)",
+   "nl": "U8",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "C126",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U57",
+   "nl": "C126",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "U8",
+   "lib": "74xGxx:74LVC1G11",
+   "value": "74LVC1G11",
+   "fp": "Package_TO_SOT_SMD:SOT-23-6",
+   "sheet": "logic",
+   "pins": {
+    "1": "LATCH",
+    "3": "WD_OK",
+    "6": "HOLD",
+    "2": "GND",
+    "4": "U8_OUT",
+    "5": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U8",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "C127",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U8",
+   "nl": "C127",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "U17",
+   "lib": "74xGxx:74LVC1G86",
+   "value": "74LVC1G86",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "logic",
+   "pins": {
+    "1": "U8_OUT",
+    "2": "AUX_DB",
+    "3": "GND",
+    "4": "DISC_X",
+    "5": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U17",
+   "loc": "board",
+   "variant": "all",
+   "basis": "XOR(coil command, AUX_DB); the logic-level command stands for 'Q4 gate' (12 V)",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "C128",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U17",
+   "nl": "C128",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "R68",
+   "lib": "Device:R",
+   "value": "39.2k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "DISC_X",
+    "2": "DISC_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U17",
+   "loc": "board",
+   "variant": "all",
+   "basis": "window 39.5 ms (electrical.py DISC_WINDOW 40 ms)",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "D23",
+   "lib": "Diode:BAT54W",
+   "value": "BAT54W",
+   "fp": "Package_TO_SOT_SMD:SOT-323_SC-70",
+   "sheet": "logic",
+   "pins": {
+    "1": "DISC_RC",
+    "3": "DISC_X",
+    "2": null
+   },
+   "origin": "added: reset diode, so the window measures one continuous mismatch",
+   "nl": "U17",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "C52",
+   "lib": "Device:C",
+   "value": "1u film",
+   "fp": "Capacitor_SMD:C_1206_3216Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "DISC_RC",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U17",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "R69",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "DISC_REF"
+   },
+   "origin": "netlist v4",
+   "nl": "U17",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "R70",
+   "lib": "Device:R",
+   "value": "17.4k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "DISC_REF",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U17",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "U51",
+   "lib": "pip_safety:TLV3202",
+   "value": "TLV3202",
+   "fp": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+   "sheet": "logic",
+   "pins": {
+    "3": "DISC_RC",
+    "2": "DISC_REF",
+    "1": "DISC",
+    "5": "DISC_REF",
+    "6": "DISC_RC",
+    "7": "DISC_N",
+    "8": "+3V3",
+    "4": "GND"
+   },
+   "origin": "netlist v4 (U17's comparator)",
+   "nl": "U17",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "C129",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U51",
+   "nl": "C129",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "TP25",
+   "lib": "Connector:TestPoint",
+   "value": "TP25 DISC",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "logic",
+   "pins": {
+    "1": "DISC"
+   },
+   "origin": "added: test point",
+   "nl": "TP25",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Coil command U8 = LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX_DB); discrepancy U17 (40 ms) → DISC"
+  },
+  {
+   "ref": "R71",
+   "lib": "Device:R",
+   "value": "75k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+12V",
+    "2": "V12_SNS"
+   },
+   "origin": "netlist v4",
+   "nl": "U18",
+   "loc": "board",
+   "variant": "all",
+   "basis": "trip 10.56 V (TLV3012 REF 1.242 V)",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "R72",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "V12_SNS",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U18",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "U18",
+   "lib": "pip_safety:TLV3012",
+   "value": "TLV3012",
+   "fp": "Package_TO_SOT_SMD:SOT-23-6",
+   "sheet": "logic",
+   "pins": {
+    "3": "U18_REF",
+    "4": "V12_SNS",
+    "5": "U18_REF",
+    "1": "UV12",
+    "6": "+3V3",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U18",
+   "loc": "board",
+   "variant": "all",
+   "basis": "IN+ = REF, IN− = 12 V divider: UV12 high below 10.5 V",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "R73",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "UV12"
+   },
+   "origin": "added: open-drain pull-up",
+   "nl": "U18",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "C130",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U18",
+   "nl": "C130",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "R74",
+   "lib": "Device:R",
+   "value": "1M",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "OC_V",
+    "2": "OC_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U19",
+   "loc": "board",
+   "variant": "all",
+   "basis": "÷2 + 5 s RC: (1M ∥ 1M) × 10 µF",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "R75",
+   "lib": "Device:R",
+   "value": "1M",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "OC_RC",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U19",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "C54",
+   "lib": "Device:C",
+   "value": "10u",
+   "fp": "Capacitor_SMD:C_1206_3216Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "OC_RC",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U19",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "R76",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "OC_REF"
+   },
+   "origin": "netlist v4",
+   "nl": "U19",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "R77",
+   "lib": "Device:R",
+   "value": "11.8k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "OC_REF",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U19",
+   "loc": "board",
+   "variant": "all",
+   "basis": "16 A threshold: 16.2 A (66 mV/A ESTIMATE)",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "U53",
+   "lib": "pip_safety:TLV3202",
+   "value": "TLV3202",
+   "fp": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+   "sheet": "logic",
+   "pins": {
+    "3": "OC_RC",
+    "2": "OC_REF",
+    "1": "OC",
+    "5": "GND",
+    "6": "+3V3",
+    "7": null,
+    "8": "+3V3",
+    "4": "GND"
+   },
+   "origin": "netlist v4 (U19's comparator)",
+   "nl": "U19",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "C131",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "logic",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U53",
+   "nl": "C131",
+   "loc": "board",
+   "variant": "all",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Supervision: U18 12 V UVLO (10.5 V) → UV12; U19 branch overload (16 A, 5 s) → OC"
+  },
+  {
+   "ref": "U20",
+   "lib": "pip_safety:G9SA-321-T",
+   "value": "G9SA-321-T075 set 2.0s",
+   "fp": "",
+   "sheet": "base",
+   "pins": {
+    "A1": "+24V_L",
+    "A2": "GND",
+    "T11": "U20_T11",
+    "T12": "U20_T12",
+    "T21": "U20_T21",
+    "T22": "U20_T22",
+    "T31": "U20_T31",
+    "T32": "U20_T32",
+    "T33": null,
+    "13": null,
+    "14": null,
+    "23": null,
+    "24": null,
+    "33": null,
+    "34": null,
+    "41": null,
+    "42": null,
+    "47": "+24V_L",
+    "48": "U20_D1",
+    "57": "U20_D1",
+    "58": "U21_EN"
+   },
+   "origin": "netlist v4",
+   "nl": "U20",
+   "loc": "chassis",
+   "variant": "robot",
+   "basis": "electrical.py BASE_SS1; terminals per Omron (reviewer)",
+   "group": "U20 G9SA-321-T075 OFF-delay safety relay (DIN rail) and U27 photoMOS (LATCH in ch1)"
+  },
+  {
+   "ref": "U27",
+   "lib": "pip_safety:AQV252G",
+   "value": "AQV252G",
+   "fp": "Package_DIP:DIP-6_W7.62mm",
+   "sheet": "base",
+   "pins": {
+    "1": "U27_LED",
+    "2": "GND",
+    "3": null,
+    "4": "S2C_U27",
+    "5": null,
+    "6": "U20_T12"
+   },
+   "origin": "netlist v4",
+   "nl": "U27",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "U20 G9SA-321-T075 OFF-delay safety relay (DIN rail) and U27 photoMOS (LATCH in ch1)"
+  },
+  {
+   "ref": "R78",
+   "lib": "Device:R",
+   "value": "330",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "LATCH",
+    "2": "U27_LED"
+   },
+   "origin": "added: U27 LED resistor (≈ 6 mA from LATCH)",
+   "nl": "U27",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "U20 G9SA-321-T075 OFF-delay safety relay (DIN rail) and U27 photoMOS (LATCH in ch1)"
+  },
+  {
+   "ref": "U21",
+   "lib": "pip_safety:LM5069-1",
+   "value": "LM5069-1",
+   "fp": "Package_SO:MSOP-10_3x3mm_P0.5mm",
+   "sheet": "base",
+   "pins": {
+    "1": "Q9_D",
+    "2": "VIN",
+    "3": "U21_UV",
+    "4": "U21_OV",
+    "5": "GND",
+    "6": "U21_TMR",
+    "7": "U21_PWR",
+    "8": null,
+    "9": "VBUS_B",
+    "10": "U21_GATE"
+   },
+   "origin": "netlist v4",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R79",
+   "lib": "Device:R",
+   "value": "1m 3W",
+   "fp": "Resistor_SMD:R_2512_6332Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "VIN",
+    "2": "Q9_D"
+   },
+   "origin": "netlist v4",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "electrical.py BASE_SWITCH '1 mΩ sense' (issue R4: 55 mV / 1 mΩ = 55 A, not 35 A)",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "Q9",
+   "lib": "Device:Q_NMOS_GDS",
+   "value": "IRFB7530",
+   "fp": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "sheet": "base",
+   "pins": {
+    "1": "Q9_G",
+    "2": "Q9_D",
+    "3": "VBUS_B"
+   },
+   "origin": "netlist v4",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R80",
+   "lib": "Device:R",
+   "value": "10",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U21_GATE",
+    "2": "Q9_G"
+   },
+   "origin": "added: gate resistor",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R81",
+   "lib": "Device:R",
+   "value": "1k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U21_GATE",
+    "2": "U21_SS"
+   },
+   "origin": "added: dv/dt soft-start leg",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "C55",
+   "lib": "Device:C",
+   "value": "47n 50V",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U21_SS",
+    "2": "GND"
+   },
+   "origin": "added: dv/dt cap, ≈ 50 ms ramp at 20 µA gate current (ESTIMATE)",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "C56",
+   "lib": "Device:C",
+   "value": "1u",
+   "fp": "Capacitor_SMD:C_1206_3216Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U21_TMR",
+    "2": "GND"
+   },
+   "origin": "added: LM5069 fault timer (ESTIMATE; reviewer sizes for Q9 SOA)",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R82",
+   "lib": "Device:R",
+   "value": "20k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U21_PWR",
+    "2": "GND"
+   },
+   "origin": "added: LM5069 power limit (ESTIMATE; reviewer sizes for Q9 SOA)",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R83",
+   "lib": "Device:R",
+   "value": "38.3k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U21_EN",
+    "2": "U21_UV"
+   },
+   "origin": "added: UVLO divider: on above ≈ 12 V of U21_EN",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R84",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U21_UV",
+    "2": "GND"
+   },
+   "origin": "added: UVLO divider",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R85",
+   "lib": "Device:R",
+   "value": "102k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "VIN",
+    "2": "U21_OV"
+   },
+   "origin": "added: OVLO divider: off above ≈ 28 V",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R86",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U21_OV",
+    "2": "GND"
+   },
+   "origin": "added: OVLO divider",
+   "nl": "Q9, U21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "C132",
+   "lib": "Device:C",
+   "value": "100n 50V",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "VIN",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U21",
+   "nl": "C132",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R88",
+   "lib": "Device:R",
+   "value": "68k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U21_EN",
+    "2": "BEN_L"
+   },
+   "origin": "added: 24 V enable → 3.3 V logic (U25, U26)",
+   "nl": "U25",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R89",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "BEN_L",
+    "2": "GND"
+   },
+   "origin": "added: enable divider",
+   "nl": "U25",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "F4",
+   "lib": "Device:Fuse",
+   "value": "20A ATO",
+   "fp": "Fuse:Fuseholder_Blade_ATO_Littelfuse_Pudenz_2_Pin",
+   "sheet": "base",
+   "pins": {
+    "1": "VBUS_B",
+    "2": "BASE_OUT"
+   },
+   "origin": "netlist v4 (block diagram 'F 20A'; no ref, issue N6)",
+   "nl": "F 20A",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "J20",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M4 stud base +",
+   "fp": "MountingHole:MountingHole_4.3mm_M4_Pad_Via",
+   "sheet": "base",
+   "pins": {
+    "1": "BASE_OUT"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J20",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "J21",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M4 stud base -",
+   "fp": "MountingHole:MountingHole_4.3mm_M4_Pad_Via",
+   "sheet": "base",
+   "pins": {
+    "1": "PGND"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "R8",
+   "lib": "Device:R",
+   "value": "1k 3W",
+   "fp": "Resistor_THT:R_Axial_Power_L20.0mm_W6.4mm_P22.40mm",
+   "sheet": "base",
+   "pins": {
+    "1": "VBUS_B",
+    "2": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "R8",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "TP16",
+   "lib": "Connector:TestPoint",
+   "value": "TP16 VBUS_B (T17-T19)",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "base",
+   "pins": {
+    "1": "VBUS_B"
+   },
+   "origin": "added: test point",
+   "nl": "TP16",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "TP17",
+   "lib": "Connector:TestPoint",
+   "value": "TP17 Q9 enable (T17)",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "base",
+   "pins": {
+    "1": "U21_EN"
+   },
+   "origin": "added: test point",
+   "nl": "TP17",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base switch Q9 / U21 LM5069-1 (soft-start, 35 A breaker): VIN → VBUS_B, enable through U20"
+  },
+  {
+   "ref": "J23",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M4 stud VBUS_B (R7 lead)",
+   "fp": "MountingHole:MountingHole_4.3mm_M4_Pad_Via",
+   "sheet": "base",
+   "pins": {
+    "1": "VBUS_B"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J23",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "J22",
+   "lib": "Connector_Generic:Conn_01x01",
+   "value": "M4 stud DRN_B (R7 lead)",
+   "fp": "MountingHole:MountingHole_4.3mm_M4_Pad_Via",
+   "sheet": "base",
+   "pins": {
+    "1": "DRN_B"
+   },
+   "origin": "added: board terminal for an off-board part",
+   "nl": "J22",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "R7",
+   "lib": "Device:R",
+   "value": "0.56 NH-50",
+   "fp": "",
+   "sheet": "base",
+   "pins": {
+    "1": "VBUS_B",
+    "2": "DRN_B"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "chassis",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "D7",
+   "lib": "pip_safety:VS-40CPQ060",
+   "value": "VS-40CPQ060-N3",
+   "fp": "Package_TO_SOT_THT:TO-247-3_Vertical",
+   "sheet": "base",
+   "pins": {
+    "1": "DRN_B",
+    "3": "DRN_B",
+    "2": "VBUS_B"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "Q10",
+   "lib": "Device:Q_NMOS_GDS",
+   "value": "IRFB7530",
+   "fp": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "sheet": "base",
+   "pins": {
+    "1": "G_B",
+    "2": "DRN_B",
+    "3": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "R14",
+   "lib": "Device:R",
+   "value": "10 1206",
+   "fp": "Resistor_SMD:R_1206_3216Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "BCLAMP_DRV",
+    "2": "G_B"
+   },
+   "origin": "netlist v4 (R_G of the base leg)",
+   "nl": "R_G",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "R90",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "G_B",
+    "2": "PGND"
+   },
+   "origin": "added: gate pull-down",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "C4",
+   "lib": "Device:C",
+   "value": "10u 63V film",
+   "fp": "Capacitor_THT:C_Rect_L31.5mm_W11.0mm_P27.50mm_MKS4",
+   "sheet": "base",
+   "pins": {
+    "1": "VBUS_B",
+    "2": "PGND"
+   },
+   "origin": "added: local film cap for the base leg's MOSFET-diode loop (the arm leg's C2; issue N7)",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "U23",
+   "lib": "pip_safety:TLV3202",
+   "value": "TLV3202",
+   "fp": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+   "sheet": "base",
+   "pins": {
+    "3": "OVB_P",
+    "2": "VREF",
+    "1": "OV_B",
+    "5": "GND",
+    "6": "+3V3",
+    "7": null,
+    "8": "+3V3",
+    "4": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "C133",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U23",
+   "nl": "C133",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "R91",
+   "lib": "Device:R",
+   "value": "124k 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "VBUS_B",
+    "2": "OVB_P"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "as R44-R46",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "R92",
+   "lib": "Device:R",
+   "value": "13.3k 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "OVB_P",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "R93",
+   "lib": "Device:R",
+   "value": "1.37M 0.1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "OV_B",
+    "2": "OVB_P"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "C58",
+   "lib": "Device:C",
+   "value": "180p C0G",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "OVB_P",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "2 µs filter",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "U24",
+   "lib": "74xGxx:74LVC1G123",
+   "value": "74LVC1G123",
+   "fp": "Package_SO:VSSOP-8_2.3x2mm_P0.5mm",
+   "sheet": "base",
+   "pins": {
+    "1": "GND",
+    "2": "OV_B",
+    "3": "+3V3",
+    "5": "U24_Q",
+    "6": "U24_C",
+    "7": "U24_RC",
+    "4": "GND",
+    "8": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "50 µs",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "R94",
+   "lib": "Device:R",
+   "value": "10.7k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "U24_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "50 µs",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "C59",
+   "lib": "Device:C",
+   "value": "4.7n C0G",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U24_C",
+    "2": "U24_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "50 µs (C0G / film)",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "C134",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U24",
+   "nl": "C134",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "U25",
+   "lib": "74xGxx:74LVC1G123",
+   "value": "74LVC1G123",
+   "fp": "Package_SO:VSSOP-8_2.3x2mm_P0.5mm",
+   "sheet": "base",
+   "pins": {
+    "1": "BEN_L",
+    "2": "+3V3",
+    "3": "+3V3",
+    "5": "FORCE_B",
+    "6": "U25_C",
+    "7": "U25_RC",
+    "4": "GND",
+    "8": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U25",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 ms",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "R95",
+   "lib": "Device:R",
+   "value": "100k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "U25_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U25",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 ms",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "C60",
+   "lib": "Device:C",
+   "value": "1u",
+   "fp": "Capacitor_SMD:C_1206_3216Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U25_C",
+    "2": "U25_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U25",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 ms (C0G / film)",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "C135",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U25",
+   "nl": "C135",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "U56",
+   "lib": "pip_safety:74LVC1G332",
+   "value": "74LVC1G332",
+   "fp": "Package_TO_SOT_SMD:SOT-23-6",
+   "sheet": "base",
+   "pins": {
+    "1": "OV_B",
+    "3": "U24_Q",
+    "6": "FORCE_B",
+    "2": "GND",
+    "4": "BCLAMP_CMD",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate): OV_B ∨ U24 ∨ FORCE_B",
+   "nl": "Q10, R7, D7, U23, U24, U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "C136",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U56",
+   "nl": "C136",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "U31",
+   "lib": "pip_safety:UCC27517",
+   "value": "UCC27517",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "base",
+   "pins": {
+    "1": "+12V",
+    "2": "PGND",
+    "3": "BCLAMP_CMD",
+    "4": "GND",
+    "5": "BCLAMP_DRV"
+   },
+   "origin": "netlist v4 (as 'U22b')",
+   "nl": "U22b",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "C137",
+   "lib": "Device:C",
+   "value": "1u",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+12V",
+    "2": "PGND"
+   },
+   "origin": "added: decoupling for U31",
+   "nl": "C137",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "TP18",
+   "lib": "Connector:TestPoint",
+   "value": "TP18 Q10 gate (T18)",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "base",
+   "pins": {
+    "1": "G_B"
+   },
+   "origin": "added: test point",
+   "nl": "TP18",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "TP19",
+   "lib": "Connector:TestPoint",
+   "value": "TP19 FORCE_B (T18)",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "base",
+   "pins": {
+    "1": "FORCE_B"
+   },
+   "origin": "added: test point",
+   "nl": "TP19",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base clamp leg: R7 NH-50 (chassis) ∥ D7, Q10; U23 window, U24 50 µs, U25 FORCE_B 100 ms → U56 → U31 (U22b) UCC27517"
+  },
+  {
+   "ref": "R97",
+   "lib": "Device:R",
+   "value": "100",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "GPIO23",
+    "2": "HB_B"
+   },
+   "origin": "added: series resistor on the Pi line",
+   "nl": "U22",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "R98",
+   "lib": "Device:R",
+   "value": "100k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "HB_B",
+    "2": "GND"
+   },
+   "origin": "added: pull-down",
+   "nl": "U22",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "U22",
+   "lib": "74xGxx:74LVC1G123",
+   "value": "74LVC1G123",
+   "fp": "Package_SO:VSSOP-8_2.3x2mm_P0.5mm",
+   "sheet": "base",
+   "pins": {
+    "1": "GND",
+    "2": "HB_B",
+    "3": "+3V3",
+    "5": "WD_B",
+    "6": "U22_C",
+    "7": "U22_RC",
+    "4": "GND",
+    "8": "+3V3"
+   },
+   "origin": "netlist v4",
+   "nl": "U22",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "25 ms as U5",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "R96",
+   "lib": "Device:R",
+   "value": "250k 1%",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "U22_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U22",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "25 ms as U5",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "C62",
+   "lib": "Device:C",
+   "value": "100n C0G",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "U22_C",
+    "2": "U22_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U22",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "25 ms as U5 (C0G / film)",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "C138",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U22",
+   "nl": "C138",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "TP21",
+   "lib": "Connector:TestPoint",
+   "value": "TP21 WD_B",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "base",
+   "pins": {
+    "1": "WD_B"
+   },
+   "origin": "added: test point",
+   "nl": "TP21",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "U26",
+   "lib": "pip_safety:TLV3202",
+   "value": "TLV3202",
+   "fp": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+   "sheet": "base",
+   "pins": {
+    "3": "VBB_SNS",
+    "2": "VREF",
+    "1": "VBB_UP",
+    "5": "DISCB_RC",
+    "6": "DISCB_REF",
+    "7": "DISC_B",
+    "8": "+3V3",
+    "4": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "C139",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U26",
+   "nl": "C139",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "R99",
+   "lib": "Device:R",
+   "value": "100k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "VBUS_B",
+    "2": "VBB_SNS"
+   },
+   "origin": "netlist v4",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "'VBUS_B up' above 12.1 V (ESTIMATE threshold)",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "R100",
+   "lib": "Device:R",
+   "value": "26.1k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "VBB_SNS",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "U54",
+   "lib": "74xGxx:74LVC1G04",
+   "value": "74LVC1G04",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "base",
+   "pins": {
+    "2": "BEN_L",
+    "3": "GND",
+    "4": "BEN_N",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate): ¬EN",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "C140",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U54",
+   "nl": "C140",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "U55",
+   "lib": "74xGxx:74LVC1G08",
+   "value": "74LVC1G08",
+   "fp": "Package_TO_SOT_SMD:SOT-23-5",
+   "sheet": "base",
+   "pins": {
+    "1": "VBB_UP",
+    "2": "BEN_N",
+    "3": "GND",
+    "4": "DISCB_X",
+    "5": "+3V3"
+   },
+   "origin": "added: glue gate for a netlist boolean term (electrical.md gives the term, not the gate)",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "C141",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "origin": "added: decoupling for U55",
+   "nl": "C141",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "100 nF X7R at the supply pin",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "R101",
+   "lib": "Device:R",
+   "value": "49.9k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "DISCB_X",
+    "2": "DISCB_RC"
+   },
+   "origin": "netlist v4",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "50 ms RC",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "D24",
+   "lib": "Diode:BAT54W",
+   "value": "BAT54W",
+   "fp": "Package_TO_SOT_SMD:SOT-323_SC-70",
+   "sheet": "base",
+   "pins": {
+    "1": "DISCB_RC",
+    "3": "DISCB_X",
+    "2": null
+   },
+   "origin": "added: reset diode",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "C63",
+   "lib": "Device:C",
+   "value": "1u film",
+   "fp": "Capacitor_SMD:C_1206_3216Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "DISCB_RC",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "R102",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "+3V3",
+    "2": "DISCB_REF"
+   },
+   "origin": "netlist v4",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "R103",
+   "lib": "Device:R",
+   "value": "17.4k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "DISCB_REF",
+    "2": "GND"
+   },
+   "origin": "netlist v4",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "R104",
+   "lib": "Device:R",
+   "value": "100",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "DISC_B",
+    "2": "GPIO24"
+   },
+   "origin": "added: series resistor to the Pi",
+   "nl": "U26",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "TP20",
+   "lib": "Connector:TestPoint",
+   "value": "TP20 DISC_B (T19)",
+   "fp": "TestPoint:TestPoint_Keystone_5005-5009_Compact",
+   "sheet": "base",
+   "pins": {
+    "1": "DISC_B"
+   },
+   "origin": "added: test point",
+   "nl": "TP20",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Base watchdog U22 (GPIO23, 25 ms) → WD_B; DISC_B (U26): VBUS_B up ∧ ¬EN > 50 ms → GPIO24"
+  },
+  {
+   "ref": "Q11",
+   "lib": "Transistor_FET:IRLML2060",
+   "value": "IRLML2060 60V",
+   "fp": "Package_TO_SOT_SMD:SOT-23",
+   "sheet": "base",
+   "pins": {
+    "1": "Q11_G",
+    "2": "PGND",
+    "3": "SOL_N"
+   },
+   "origin": "netlist v4",
+   "nl": "Q11",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "'logic-level MOSFET' (no part in the netlist); 60 V for the 26.3 V clamp + flyback",
+   "group": "Caster-release solenoid driver Q11 on VBUS_B (gate from the Pi, 100k pull-down)"
+  },
+  {
+   "ref": "R105",
+   "lib": "Device:R",
+   "value": "100",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "CASTER_REL",
+    "2": "Q11_G"
+   },
+   "origin": "added: gate series resistor",
+   "nl": "Q11",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Caster-release solenoid driver Q11 on VBUS_B (gate from the Pi, 100k pull-down)"
+  },
+  {
+   "ref": "R106",
+   "lib": "Device:R",
+   "value": "100k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "base",
+   "pins": {
+    "1": "Q11_G",
+    "2": "PGND"
+   },
+   "origin": "netlist v4",
+   "nl": "Q11",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "netlist '100 kΩ pull-down'",
+   "group": "Caster-release solenoid driver Q11 on VBUS_B (gate from the Pi, 100k pull-down)"
+  },
+  {
+   "ref": "D8",
+   "lib": "Device:D",
+   "value": "1N4007",
+   "fp": "Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal",
+   "sheet": "base",
+   "pins": {
+    "1": "VBUS_B",
+    "2": "SOL_N"
+   },
+   "origin": "netlist v4 ('flyback diode', no ref)",
+   "nl": "Q11",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Caster-release solenoid driver Q11 on VBUS_B (gate from the Pi, 100k pull-down)"
+  },
+  {
+   "ref": "J24",
+   "lib": "Connector_Generic:Conn_01x02",
+   "value": "Caster solenoid",
+   "fp": "Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical",
+   "sheet": "base",
+   "pins": {
+    "1": "VBUS_B",
+    "2": "SOL_N"
+   },
+   "origin": "added: solenoid connector",
+   "nl": "J24",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "Caster-release solenoid driver Q11 on VBUS_B (gate from the Pi, 100k pull-down)"
+  },
+  {
+   "ref": "J13",
+   "lib": "Connector_Generic:Conn_01x04",
+   "value": "K1 coil / aux",
+   "fp": "Connector_JST:JST_VH_B4P-VH_1x04_P3.96mm_Vertical",
+   "sheet": "conn",
+   "pins": {
+    "1": "COIL+",
+    "2": "COIL-",
+    "3": "AUX_A",
+    "4": "AUX_B"
+   },
+   "origin": "added: K1 coil + aux harness",
+   "nl": "J13",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 coil + aux connector; mushrooms S1, S2 (chassis, 4 NC each) on J14 / J15"
+  },
+  {
+   "ref": "J14",
+   "lib": "Connector_Generic:Conn_02x04_Odd_Even",
+   "value": "S1 mushroom",
+   "fp": "Connector_Molex:Molex_Micro-Fit_3.0_43045-0800_2x04_P3.00mm_Horizontal",
+   "sheet": "conn",
+   "pins": {
+    "1": "+24V_L",
+    "2": "S1A_S2A",
+    "3": "+3V3",
+    "4": "S1B_S2B",
+    "5": "U20_T11",
+    "6": "S1C_S2C",
+    "7": "U20_T21",
+    "8": "S1D_S2D"
+   },
+   "origin": "added: mushroom S1 harness (keyed Micro-Fit; swapping J14/J15 still makes a series chain)",
+   "nl": "J14",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 coil + aux connector; mushrooms S1, S2 (chassis, 4 NC each) on J14 / J15"
+  },
+  {
+   "ref": "J15",
+   "lib": "Connector_Generic:Conn_02x04_Odd_Even",
+   "value": "S2 mushroom",
+   "fp": "Connector_Molex:Molex_Micro-Fit_3.0_43045-0800_2x04_P3.00mm_Horizontal",
+   "sheet": "conn",
+   "pins": {
+    "1": "S1A_S2A",
+    "2": "COIL+",
+    "3": "S1B_S2B",
+    "4": "ESTOP_CH2",
+    "5": "S1C_S2C",
+    "6": "S2C_U27",
+    "7": "S1D_S2D",
+    "8": "U20_T22"
+   },
+   "origin": "added: mushroom S2 harness",
+   "nl": "J15",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 coil + aux connector; mushrooms S1, S2 (chassis, 4 NC each) on J14 / J15"
+  },
+  {
+   "ref": "S1",
+   "lib": "pip_safety:MUSHROOM_4NC",
+   "value": "E-stop torso",
+   "fp": "",
+   "sheet": "conn",
+   "pins": {
+    "11": "+24V_L",
+    "12": "S1A_S2A",
+    "21": "+3V3",
+    "22": "S1B_S2B",
+    "31": "U20_T11",
+    "32": "S1C_S2C",
+    "41": "U20_T21",
+    "42": "S1D_S2D"
+   },
+   "origin": "netlist v4",
+   "nl": "S1, S2",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 coil + aux connector; mushrooms S1, S2 (chassis, 4 NC each) on J14 / J15"
+  },
+  {
+   "ref": "S2",
+   "lib": "pip_safety:MUSHROOM_4NC",
+   "value": "E-stop base",
+   "fp": "",
+   "sheet": "conn",
+   "pins": {
+    "11": "S1A_S2A",
+    "12": "COIL+",
+    "21": "S1B_S2B",
+    "22": "ESTOP_CH2",
+    "31": "S1C_S2C",
+    "32": "S2C_U27",
+    "41": "S1D_S2D",
+    "42": "U20_T22"
+   },
+   "origin": "netlist v4",
+   "nl": "S1, S2",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "",
+   "group": "K1 coil + aux connector; mushrooms S1, S2 (chassis, 4 NC each) on J14 / J15"
+  },
+  {
+   "ref": "J16",
+   "lib": "Connector_Generic:Conn_01x04",
+   "value": "ARM button",
+   "fp": "Connector_Molex:Molex_Micro-Fit_3.0_43650-0400_1x04_P3.00mm_Horizontal",
+   "sheet": "conn",
+   "pins": {
+    "1": "+3V3",
+    "2": "ARM_RAW",
+    "3": "U20_T31",
+    "4": "U20_T32"
+   },
+   "origin": "added: ARM button harness",
+   "nl": "J16",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button SB1 (a: U10 clock, b: U20 reset), TH1 thermal switch, U20 harness"
+  },
+  {
+   "ref": "SB1",
+   "lib": "pip_safety:PB_2NO",
+   "value": "ARM / reset",
+   "fp": "",
+   "sheet": "conn",
+   "pins": {
+    "13": "+3V3",
+    "14": "ARM_RAW",
+    "23": "U20_T31",
+    "24": "U20_T32"
+   },
+   "origin": "netlist v4",
+   "nl": "SB1",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button SB1 (a: U10 clock, b: U20 reset), TH1 thermal switch, U20 harness"
+  },
+  {
+   "ref": "J17",
+   "lib": "Connector_Generic:Conn_01x02",
+   "value": "TH1 thermal switch",
+   "fp": "Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical",
+   "sheet": "conn",
+   "pins": {
+    "1": "+3V3",
+    "2": "TH1_OK"
+   },
+   "origin": "added: TH1 harness",
+   "nl": "J17",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button SB1 (a: U10 clock, b: U20 reset), TH1 thermal switch, U20 harness"
+  },
+  {
+   "ref": "TH1",
+   "lib": "pip_safety:THERMO_NC",
+   "value": "85C NC",
+   "fp": "",
+   "sheet": "conn",
+   "pins": {
+    "1": "+3V3",
+    "2": "TH1_OK"
+   },
+   "origin": "netlist v4",
+   "nl": "TH1",
+   "loc": "chassis",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button SB1 (a: U10 clock, b: U20 reset), TH1 thermal switch, U20 harness"
+  },
+  {
+   "ref": "R53",
+   "lib": "Device:R",
+   "value": "10k",
+   "fp": "Resistor_SMD:R_0603_1608Metric",
+   "sheet": "conn",
+   "pins": {
+    "1": "TH1_OK",
+    "2": "GND"
+   },
+   "origin": "added: pull-down (open = over-temperature = STOP)",
+   "nl": "TH1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button SB1 (a: U10 clock, b: U20 reset), TH1 thermal switch, U20 harness"
+  },
+  {
+   "ref": "C47",
+   "lib": "Device:C",
+   "value": "100n",
+   "fp": "Capacitor_SMD:C_0603_1608Metric",
+   "sheet": "conn",
+   "pins": {
+    "1": "TH1_OK",
+    "2": "GND"
+   },
+   "origin": "added: cable noise filter",
+   "nl": "TH1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "ARM button SB1 (a: U10 clock, b: U20 reset), TH1 thermal switch, U20 harness"
+  },
+  {
+   "ref": "J19",
+   "lib": "Connector_Generic:Conn_02x06_Odd_Even",
+   "value": "U20 G9SA harness",
+   "fp": "Connector_Molex:Molex_Micro-Fit_3.0_43045-1200_2x06_P3.00mm_Horizontal",
+   "sheet": "conn",
+   "pins": {
+    "1": "+24V_L",
+    "2": "GND",
+    "3": "U20_T11",
+    "4": "U20_T12",
+    "5": "U20_T21",
+    "6": "U20_T22",
+    "7": "U20_T31",
+    "8": "U20_T32",
+    "9": "+24V_L",
+    "10": "U20_D1",
+    "11": "U20_D1",
+    "12": "U21_EN"
+   },
+   "origin": "added: board ↔ U20 (DIN rail)",
+   "nl": "J19",
+   "loc": "board",
+   "variant": "robot",
+   "basis": "",
+   "group": "ARM button SB1 (a: U10 clock, b: U20 reset), TH1 thermal switch, U20 harness"
+  },
+  {
+   "ref": "J18",
+   "lib": "Connector_Generic:Conn_01x08",
+   "value": "Pi interface",
+   "fp": "Connector_JST:JST_PH_B8B-PH-K_1x08_P2.00mm_Vertical",
+   "sheet": "conn",
+   "pins": {
+    "1": "GPIO17",
+    "2": "GPIO27",
+    "3": "GPIO22",
+    "4": "GPIO23",
+    "5": "GPIO24",
+    "6": "CASTER_REL",
+    "7": "GND",
+    "8": "GND"
+   },
+   "origin": "added: Pi harness (the caster-release GPIO is not named in the netlist: issue N8)",
+   "nl": "J18",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Raspberry Pi interface (heartbeats, AUX_OK, ESTOP_SENSE, DISC_B, caster release)"
+  },
+  {
+   "ref": "H1",
+   "lib": "Mechanical:MountingHole",
+   "value": "M3",
+   "fp": "MountingHole:MountingHole_3.2mm_M3",
+   "sheet": "conn",
+   "pins": {},
+   "origin": "added: board mounting hole",
+   "nl": "H1",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Raspberry Pi interface (heartbeats, AUX_OK, ESTOP_SENSE, DISC_B, caster release)"
+  },
+  {
+   "ref": "H2",
+   "lib": "Mechanical:MountingHole",
+   "value": "M3",
+   "fp": "MountingHole:MountingHole_3.2mm_M3",
+   "sheet": "conn",
+   "pins": {},
+   "origin": "added: board mounting hole",
+   "nl": "H2",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Raspberry Pi interface (heartbeats, AUX_OK, ESTOP_SENSE, DISC_B, caster release)"
+  },
+  {
+   "ref": "H3",
+   "lib": "Mechanical:MountingHole",
+   "value": "M3",
+   "fp": "MountingHole:MountingHole_3.2mm_M3",
+   "sheet": "conn",
+   "pins": {},
+   "origin": "added: board mounting hole",
+   "nl": "H3",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Raspberry Pi interface (heartbeats, AUX_OK, ESTOP_SENSE, DISC_B, caster release)"
+  },
+  {
+   "ref": "H4",
+   "lib": "Mechanical:MountingHole",
+   "value": "M3",
+   "fp": "MountingHole:MountingHole_3.2mm_M3",
+   "sheet": "conn",
+   "pins": {},
+   "origin": "added: board mounting hole",
+   "nl": "H4",
+   "loc": "board",
+   "variant": "all",
+   "basis": "",
+   "group": "Raspberry Pi interface (heartbeats, AUX_OK, ESTOP_SENSE, DISC_B, caster release)"
+  }
+ ],
+ "power_nets": [
+  "PSU+",
+  "F1_OUT",
+  "VIN",
+  "VBUS",
+  "PGND",
+  "DRN1",
+  "DRN2",
+  "DRN3",
+  "ARM_F",
+  "ARM_LEAD",
+  "K2_C",
+  "Q9_D",
+  "VBUS_B",
+  "BASE_OUT",
+  "DRN_B"
+ ],
+ "flags": [
+  "F1_OUT",
+  "F2_OUT",
+  "GND",
+  "PGND",
+  "VIN"
+ ]
+}

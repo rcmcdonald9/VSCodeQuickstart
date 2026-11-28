@@ -1,0 +1,4 @@
+Netlist ERC (KiCad 7 default pin map applied to the kicad-cli netlist; kicad-cli 7.0.11 has no `sch erc`)
+
+errors: 0
+warnings: 0

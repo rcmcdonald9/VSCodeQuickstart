@@ -1,0 +1,188 @@
+Qty,References,Value,Footprint,Location,Variant,Origin,Netlist ref(s)
+1,C1,4.7mF 35V,Capacitor_THT:CP_Radial_D30.0mm_P10.00mm_SnapIn,board,all,netlist v4,"C1, C2, D3"
+1,C2,10u 63V film,Capacitor_THT:C_Rect_L31.5mm_W11.0mm_P27.50mm_MKS4,board,all,netlist v4,"C1, C2, D3"
+1,C3,100n C0G,Capacitor_SMD:C_0603_1608Metric,board,all,netlist v4,U5
+1,C4,10u 63V film,Capacitor_THT:C_Rect_L31.5mm_W11.0mm_P27.50mm_MKS4,board,robot,added,"Q10, R7, D7, U23, U24, U22b"
+2,C9 C51,1u,Capacitor_SMD:C_1206_3216Metric,board,all,netlist v4,"R9, C9; U6"
+1,C10,100n 50V,Capacitor_SMD:C_0603_1608Metric,board,all,added,"U1, Q6"
+1,C12,10u 50V,Capacitor_SMD:C_1210_3225Metric,board,all,added,"U2, U3"
+1,C13,10u 25V,Capacitor_SMD:C_1210_3225Metric,board,all,added,"U2, U3"
+4,C14 C15 C16 C17,1u,Capacitor_SMD:C_0603_1608Metric,board,all,added,"U19; U2, U3"
+1,C18,1u 25V,Capacitor_SMD:C_1206_3216Metric,board,all,added,"U7, U9"
+1,C20,47n C0G,Capacitor_SMD:C_0603_1608Metric,board,all,netlist v4 (as 'C_db'),C_db
+1,C44,1n C0G,Capacitor_SMD:C_0603_1608Metric,board,all,added,U4
+1,C45,180p C0G,Capacitor_SMD:C_0603_1608Metric,board,all,netlist v4,U4
+1,C46,4.7n C0G,Capacitor_SMD:C_0603_1608Metric,board,all,netlist v4,U16
+34,C47 C49 C100 C101 C102 C103 C104 C105 C106 C107 C108 C109 C110 C111 C112 C113 C114 C115 C116 C117 C118 C119 C120 C121 C122 C123 C124 C125 C126 C127 C128 C129 C130 C131,100n,Capacitor_SMD:C_0603_1608Metric,board,all,added,C100; C101; C102; C103; C104; C105; C106; C107; C108; C109; C110; C111; C112; C113; C114; C115; C116; C117; C118; C119; C120; C121; C122; C123; C124; C125; C126; C127; C128; C129; C130; C131; SB1; TH1
+1,C48,10n,Capacitor_SMD:C_0603_1608Metric,board,all,added,"S1, S2"
+2,C50 C52,1u film,Capacitor_SMD:C_1206_3216Metric,board,all,netlist v4,U11; U17
+1,C53,1n,Capacitor_SMD:C_0603_1608Metric,board,all,added,U19
+1,C54,10u,Capacitor_SMD:C_1206_3216Metric,board,all,netlist v4,U19
+1,C55,47n 50V,Capacitor_SMD:C_0603_1608Metric,board,robot,added,"Q9, U21"
+2,C56 C60,1u,Capacitor_SMD:C_1206_3216Metric,board,robot,added/netlist v4,"Q9, U21; U25"
+1,C58,180p C0G,Capacitor_SMD:C_0603_1608Metric,board,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b"
+1,C59,4.7n C0G,Capacitor_SMD:C_0603_1608Metric,board,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b"
+1,C62,100n C0G,Capacitor_SMD:C_0603_1608Metric,board,robot,netlist v4,U22
+1,C63,1u film,Capacitor_SMD:C_1206_3216Metric,board,robot,netlist v4,U26
+1,C132,100n 50V,Capacitor_SMD:C_0603_1608Metric,board,robot,added,C132
+8,C133 C134 C135 C136 C138 C139 C140 C141,100n,Capacitor_SMD:C_0603_1608Metric,board,robot,added,C133; C134; C135; C136; C138; C139; C140; C141
+1,C137,1u,Capacitor_SMD:C_0603_1608Metric,board,robot,added,C137
+1,D1,1N4007,Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal,board,all,netlist v4,"D1, Z1"
+1,D3,SMDJ33A TVS,Diode_SMD:D_SMC,board,all,netlist v4,"C1, C2, D3"
+3,D4 D5 D6,VS-40CPQ060-N3,Package_TO_SOT_THT:TO-247-3_Vertical,board,all,netlist v4,D4–D6
+1,D7,VS-40CPQ060-N3,Package_TO_SOT_THT:TO-247-3_Vertical,board,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b"
+1,D8,1N4007,Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal,board,robot,"netlist v4 ('flyback diode', no ref)",Q11
+1,D9,1N4148W,Diode_SMD:D_SOD-123,board,all,added,"K2, Q5"
+4,D20 D21 D22 D23,BAT54W,Package_TO_SOT_SMD:SOT-323_SC-70,board,all,added/netlist v4 (as 'D_db'),"D_db; R9, C9; U11; U17"
+1,D24,BAT54W,Package_TO_SOT_SMD:SOT-323_SC-70,board,robot,added,U26
+1,F1,60A MIDI slow-blow,,chassis,all,netlist v4,F1
+1,F2,1A slow 1206,Fuse:Fuse_1206_3216Metric,board,all,netlist v4,"U2, U3"
+1,F3,20A ATO,Fuse:Fuseholder_Blade_ATO_Littelfuse_Pudenz_2_Pin,board,all,netlist v4,F3
+1,F4,20A ATO,Fuse:Fuseholder_Blade_ATO_Littelfuse_Pudenz_2_Pin,board,robot,"netlist v4 (block diagram 'F 20A'; no ref, issue N6)",F 20A
+1,F5,2A slow 1206,Fuse:Fuse_1206_3216Metric,board,all,added,F5
+4,H1 H2 H3 H4,M3,MountingHole:MountingHole_3.2mm_M3,board,all,added,H1; H2; H3; H4
+1,J1,Supply / pack output,,chassis,all,added,J1
+1,J2,M5 stud F1_OUT (from F1),MountingHole:MountingHole_5.3mm_M5_Pad_Via,board,all,added,J2
+1,J3,M5 stud PSU- / pack-,MountingHole:MountingHole_5.3mm_M5_Pad_Via,board,all,added,J3
+1,J4,M5 stud VIN (to K1 A1),MountingHole:MountingHole_5.3mm_M5_Pad_Via,board,all,added,J4
+1,J5,M5 stud VBUS (from K1 A2),MountingHole:MountingHole_5.3mm_M5_Pad_Via,board,all,added,J5
+1,J6,Pre-charge resistor leads,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",board,all,added,J6
+1,J7,M4 stud DRN1 (R1 lead),MountingHole:MountingHole_4.3mm_M4_Pad_Via,board,all,added,J7
+1,J8,M4 stud DRN2 (R2 lead),MountingHole:MountingHole_4.3mm_M4_Pad_Via,board,all,added,J8
+1,J9,M4 stud DRN3 (R3 lead),MountingHole:MountingHole_4.3mm_M4_Pad_Via,board,all,added,J9
+1,J10,M5 stud VBUS (NH-50 common leads),MountingHole:MountingHole_5.3mm_M5_Pad_Via,board,all,added,J10
+1,J11,M4 stud arm lead +,MountingHole:MountingHole_4.3mm_M4_Pad_Via,board,all,added,J11
+1,J12,M4 stud arm lead -,MountingHole:MountingHole_4.3mm_M4_Pad_Via,board,all,added,J12
+1,J13,K1 coil / aux,Connector_JST:JST_VH_B4P-VH_1x04_P3.96mm_Vertical,board,all,added,J13
+1,J14,S1 mushroom,Connector_Molex:Molex_Micro-Fit_3.0_43045-0800_2x04_P3.00mm_Horizontal,board,all,added,J14
+1,J15,S2 mushroom,Connector_Molex:Molex_Micro-Fit_3.0_43045-0800_2x04_P3.00mm_Horizontal,board,all,added,J15
+1,J16,ARM button,Connector_Molex:Molex_Micro-Fit_3.0_43650-0400_1x04_P3.00mm_Horizontal,board,all,added,J16
+1,J17,TH1 thermal switch,Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical,board,all,added,J17
+1,J18,Pi interface,Connector_JST:JST_PH_B8B-PH-K_1x08_P2.00mm_Vertical,board,all,added,J18
+1,J19,U20 G9SA harness,Connector_Molex:Molex_Micro-Fit_3.0_43045-1200_2x06_P3.00mm_Horizontal,board,robot,added,J19
+1,J20,M4 stud base +,MountingHole:MountingHole_4.3mm_M4_Pad_Via,board,robot,added,J20
+1,J21,M4 stud base -,MountingHole:MountingHole_4.3mm_M4_Pad_Via,board,robot,added,J21
+1,J22,M4 stud DRN_B (R7 lead),MountingHole:MountingHole_4.3mm_M4_Pad_Via,board,robot,added,J22
+1,J23,M4 stud VBUS_B (R7 lead),MountingHole:MountingHole_4.3mm_M4_Pad_Via,board,robot,added,J23
+1,J24,Caster solenoid,Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical,board,robot,added,J24
+1,JP1,WD_B=1 (M1 only),Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm,board,M1,added,U22
+1,K1,ALEV100 24V coil,,chassis,all,netlist v4,K1
+1,K2,G5LE-1 24VDC,Relay_THT:Relay_SPDT_Omron-G5LE-1,board,all,netlist v4,"K2, Q5"
+1,NT1,VBUS sense tie,NetTie:NetTie-2_SMD_Pad0.5mm,board,all,added,NT1
+1,NT2,Star point at C1-,NetTie:NetTie-2_SMD_Pad2.0mm,board,all,added,NT2
+4,Q1 Q2 Q3 Q6,IRFB7530,Package_TO_SOT_THT:TO-220-3_Vertical,board,all,netlist v4,"Q1–Q3 / R1–R3; U1, Q6"
+1,Q4,IRL540N 100V,Package_TO_SOT_THT:TO-220-3_Vertical,board,all,netlist v4,Q4
+1,Q5,IRLML6344,Package_TO_SOT_SMD:SOT-23,board,all,netlist v4,"K2, Q5"
+2,Q9 Q10,IRFB7530,Package_TO_SOT_THT:TO-220-3_Vertical,board,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b; Q9, U21"
+1,Q11,IRLML2060 60V,Package_TO_SOT_SMD:SOT-23,board,robot,netlist v4,Q11
+3,R1 R2 R3,0.56 NH-50,,chassis,all,netlist v4,Q1–Q3 / R1–R3
+1,R4,250k 1%,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U5
+1,R5,3.3 RH-50,,chassis,all,netlist v4 (as 'R3',R3
+1,R6,1k 3W,Resistor_THT:R_Axial_Power_L20.0mm_W6.4mm_P22.40mm,board,all,netlist v4,R6
+1,R7,0.56 NH-50,,chassis,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b"
+1,R8,1k 3W,Resistor_THT:R_Axial_Power_L20.0mm_W6.4mm_P22.40mm,board,robot,netlist v4,R8
+5,R9 R18 R56 R63 R67,100k,Resistor_SMD:R_0603_1608Metric,board,all,added/netlist v4,"K2, Q5; R9, C9; SB1; U5; U6"
+3,R11 R12 R13,10 1206,Resistor_SMD:R_1206_3216Metric,board,all,netlist v4,R_G
+1,R14,10 1206,Resistor_SMD:R_1206_3216Metric,board,robot,netlist v4 (R_G of the base leg),R_G
+1,R15,10,Resistor_SMD:R_0603_1608Metric,board,all,added,Q4
+13,R16 R40 R41 R42 R53 R57 R60 R62 R65 R69 R72 R73 R76,10k,Resistor_SMD:R_0603_1608Metric,board,all,added/netlist v4,"Q1–Q3 / R1–R3; Q4; S1, S2; SB1; TH1; U11; U12, U13; U17; U18; U19"
+3,R17 R55 R61,100,Resistor_SMD:R_0603_1608Metric,board,all,added,"K2, Q5; U12, U13; U5"
+1,R20,100k 1%,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4 (as 'R_c'),R_c
+1,R21,4.7k 1%,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4 (as 'R_d'),R_d
+1,R43,680,Resistor_SMD:R_0603_1608Metric,board,all,added,U4
+1,R44,124k 0.1%,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U4
+1,R45,13.3k 0.1%,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U4
+1,R46,1.37M 0.1%,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U4
+2,R47 R50,100k 0.1%,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U4
+1,R48,82.5k 0.1%,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U4
+1,R49,12.7k 0.1%,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U4
+1,R51,11k 0.1%,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U4
+1,R52,10.7k,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U16
+1,R58,470,Resistor_SMD:R_0603_1608Metric,board,all,added,"U12, U13"
+1,R59,4.7k,Resistor_SMD:R_0603_1608Metric,board,all,added,"U12, U13"
+3,R64 R74 R75,1M,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U11; U19
+2,R66 R70,17.4k,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U11; U17
+1,R68,39.2k,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U17
+1,R71,75k,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U18
+1,R77,11.8k,Resistor_SMD:R_0603_1608Metric,board,all,netlist v4,U19
+1,R78,330,Resistor_SMD:R_0603_1608Metric,board,robot,added,U27
+1,R79,1m 3W,Resistor_SMD:R_2512_6332Metric,board,robot,netlist v4,"Q9, U21"
+1,R80,10,Resistor_SMD:R_0603_1608Metric,board,robot,added,"Q9, U21"
+1,R81,1k,Resistor_SMD:R_0603_1608Metric,board,robot,added,"Q9, U21"
+1,R82,20k,Resistor_SMD:R_0603_1608Metric,board,robot,added,"Q9, U21"
+1,R83,38.3k,Resistor_SMD:R_0603_1608Metric,board,robot,added,"Q9, U21"
+5,R84 R86 R89 R90 R102,10k,Resistor_SMD:R_0603_1608Metric,board,robot,added/netlist v4,"Q10, R7, D7, U23, U24, U22b; Q9, U21; U25; U26"
+1,R85,102k,Resistor_SMD:R_0603_1608Metric,board,robot,added,"Q9, U21"
+1,R88,68k,Resistor_SMD:R_0603_1608Metric,board,robot,added,U25
+1,R91,124k 0.1%,Resistor_SMD:R_0603_1608Metric,board,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b"
+1,R92,13.3k 0.1%,Resistor_SMD:R_0603_1608Metric,board,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b"
+1,R93,1.37M 0.1%,Resistor_SMD:R_0603_1608Metric,board,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b"
+1,R94,10.7k,Resistor_SMD:R_0603_1608Metric,board,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b"
+4,R95 R98 R99 R106,100k,Resistor_SMD:R_0603_1608Metric,board,robot,added/netlist v4,Q11; U22; U25; U26
+1,R96,250k 1%,Resistor_SMD:R_0603_1608Metric,board,robot,netlist v4,U22
+3,R97 R104 R105,100,Resistor_SMD:R_0603_1608Metric,board,robot,added,Q11; U22; U26
+1,R100,26.1k,Resistor_SMD:R_0603_1608Metric,board,robot,netlist v4,U26
+1,R101,49.9k,Resistor_SMD:R_0603_1608Metric,board,robot,netlist v4,U26
+1,R103,17.4k,Resistor_SMD:R_0603_1608Metric,board,robot,netlist v4,U26
+1,S1,E-stop torso,,chassis,all,netlist v4,"S1, S2"
+1,S2,E-stop base,,chassis,all,netlist v4,"S1, S2"
+1,SB1,ARM / reset,,chassis,all,netlist v4,SB1
+1,TH1,85C NC,,chassis,all,netlist v4,TH1
+1,TP1,TP1 VBUS at the board,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP1
+1,TP2,TP2 VBUS at the dummy drive bank,,chassis,all,netlist v4,TP2
+1,TP3,TP3 Q1 drain,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP3
+1,TP4,TP4 Q1 gate,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP4
+1,TP5,TP5 WD_OK,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP5
+1,TP6,TP6 Q4 gate,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP6
+1,TP7,TP7 Q4 drain,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP7
+1,TP8,TP8 AUX_RAW,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP8
+1,TP9,TP9 FORCE,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP9
+1,TP10,TP10 LATCH,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP10
+1,TP11,TP11 K2_DRIVE,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP11
+1,TP12,TP12 AUX_DB,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP12
+1,TP13,TP13 RUN,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,netlist v4,TP13
+1,TP14,TP14 +12V (T0),TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,added,TP14
+1,TP15,TP15 +3V3 (T0),TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,added,TP15
+1,TP16,TP16 VBUS_B (T17-T19),TestPoint:TestPoint_Keystone_5005-5009_Compact,board,robot,added,TP16
+1,TP17,TP17 Q9 enable (T17),TestPoint:TestPoint_Keystone_5005-5009_Compact,board,robot,added,TP17
+1,TP18,TP18 Q10 gate (T18),TestPoint:TestPoint_Keystone_5005-5009_Compact,board,robot,added,TP18
+1,TP19,TP19 FORCE_B (T18),TestPoint:TestPoint_Keystone_5005-5009_Compact,board,robot,added,TP19
+1,TP20,TP20 DISC_B (T19),TestPoint:TestPoint_Keystone_5005-5009_Compact,board,robot,added,TP20
+1,TP21,TP21 WD_B,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,robot,added,TP21
+1,TP22,TP22 PRE_OK,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,added,TP22
+1,TP23,TP23 OV,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,added,TP23
+1,TP24,TP24 PRE_TIMEOUT,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,added,TP24
+1,TP25,TP25 DISC,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,added,TP25
+1,TP26,TP26 GND,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,added,TP26
+1,TP27,TP27 PGND at Q1 source,TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,added,TP27
+1,TP29,TP29 PGND (Q4),TestPoint:TestPoint_Keystone_5005-5009_Compact,board,all,added,TP29
+1,U1,LM74700-Q1,Package_TO_SOT_SMD:SOT-23-6,board,all,netlist v4,"U1, Q6"
+1,U2,R-78B12-2.0,Converter_DCDC:Converter_DCDC_RECOM_R-78B-2.0_THT,board,all,netlist v4,"U2, U3"
+1,U3,MCP1703A-3302,Package_TO_SOT_SMD:SOT-223-3_TabPin2,board,all,netlist v4,"U2, U3"
+4,U4 U11 U51 U53,TLV3202,Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,board,all,netlist v4/netlist v4 (U17's comparator)/netlist v4 (U19's comparator),U11; U17; U19; U4
+3,U5 U6 U16,74LVC1G123,Package_SO:VSSOP-8_2.3x2mm_P0.5mm,board,all,netlist v4,U16; U5; U6
+3,U7 U43 U44,74LVC1G332,Package_TO_SOT_SMD:SOT-23-6,board,all,added/netlist v4,"U10; U7, U9"
+2,U8 U40,74LVC1G11,Package_TO_SOT_SMD:SOT-23-6,board,all,added/netlist v4,U10; U8
+1,U9,UCC27524,Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,board,all,netlist v4,"U7, U9"
+2,U10 U28,74LVC1G74,Package_SO:VSSOP-8_2.3x2mm_P0.5mm,board,all,netlist v4,U10; U28
+2,U12 U13,PC817,Package_DIP:DIP-4_W7.62mm,board,all,netlist v4,"U12, U13"
+3,U15 U60 U62,74LVC1G04,Package_TO_SOT_SMD:SOT-23-5,board,all,added/netlist v4,U10; U15
+1,U17,74LVC1G86,Package_TO_SOT_SMD:SOT-23-5,board,all,netlist v4,U17
+1,U18,TLV3012,Package_TO_SOT_SMD:SOT-23-6,board,all,netlist v4,U18
+1,U19,ACS724LLCTR-30AB,Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,board,all,netlist v4,U19
+1,U20,G9SA-321-T075 set 2.0s,,chassis,robot,netlist v4,U20
+1,U21,LM5069-1,Package_SO:MSOP-10_3x3mm_P0.5mm,board,robot,netlist v4,"Q9, U21"
+3,U22 U24 U25,74LVC1G123,Package_SO:VSSOP-8_2.3x2mm_P0.5mm,board,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b; U22; U25"
+2,U23 U26,TLV3202,Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,board,robot,netlist v4,"Q10, R7, D7, U23, U24, U22b; U26"
+1,U27,AQV252G,Package_DIP:DIP-6_W7.62mm,board,robot,netlist v4,U27
+3,U29 U30 U59,74LVC1G17,Package_TO_SOT_SMD:SOT-23-5,board,all,added/netlist v4/netlist v4 (as 'U5a'),"SB1; U29, R_c, R_d, D_db, C_db; U5a"
+1,U31,UCC27517,Package_TO_SOT_SMD:SOT-23-5,board,robot,netlist v4 (as 'U22b'),U22b
+1,U32,MCP1703A-5002,Package_TO_SOT_SMD:SOT-223-3_TabPin2,board,all,added,U32
+1,U33,TL431B,Package_TO_SOT_SMD:SOT-23,board,all,netlist v4,U4
+6,U41 U46 U47 U52 U61 U63,74LVC1G08,Package_TO_SOT_SMD:SOT-23-5,board,all,added,"K2, Q5; U10; U11; U17"
+1,U54,74LVC1G04,Package_TO_SOT_SMD:SOT-23-5,board,robot,added,U26
+1,U55,74LVC1G08,Package_TO_SOT_SMD:SOT-23-5,board,robot,added,U26
+1,U56,74LVC1G332,Package_TO_SOT_SMD:SOT-23-6,board,robot,added,"Q10, R7, D7, U23, U24, U22b"
+1,U57,74LVC1G32,Package_TO_SOT_SMD:SOT-23-5,board,all,netlist v4 (U8's OR),U8
+1,U58,74LVC1G14,Package_TO_SOT_SMD:SOT-23-5,board,all,added,"U12, U13"
+1,Z1,1N5359B 24V 5W,Diode_THT:D_DO-201AE_P15.24mm_Horizontal,board,all,netlist v4,"D1, Z1"

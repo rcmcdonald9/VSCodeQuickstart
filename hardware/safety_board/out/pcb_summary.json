@@ -1,0 +1,35 @@
+{
+ "board_mm": [
+  240.0,
+  135.0
+ ],
+ "copper_um": 70.0,
+ "footprints": 288,
+ "drc": [
+  [
+   "240",
+   "DRC violations"
+  ],
+  [
+   "499",
+   "unconnected pads"
+  ],
+  [
+   "0",
+   "Footprint errors"
+  ]
+ ],
+ "kinds": {
+  "silk_overlap": 39,
+  "lib_footprint_issues": 199,
+  "silk_edge_clearance": 2,
+  "unconnected_items": 499
+ },
+ "ipc2221_width_mm_20K_one_layer": {
+  "arm branch 20 A": 6.144414576058237,
+  "clamp leg 9.4 A rms": 2.1687110590439205,
+  "supply 52 A (trip)": 22.95395587350075,
+  "supply 37.3 A (robot sustained)": 14.51545419201502,
+  "base 2.2 A sustained / 20 A fuse": 6.144414576058237
+ }
+}

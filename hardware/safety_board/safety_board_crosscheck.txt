@@ -1,0 +1,122 @@
+Safety board KiCad cross-check (python -m rnd.kicad_check; generated, do not edit)
+
+1. Drawing vs model: 302 components, 153 named nets in the exported full netlist; 153/153 model nets identical node-for-node; 0 differences
+   board netlist (safety_board.net, for the PCB): 288 footprints; = the model's on-board parts
+
+2. Model vs electrical.py ref table: 43 rows, 118 net claims, 118 satisfied, 0 failures
+  F1                           drawn as F1
+                               nets: PSU+=direct; F1_OUT=direct
+  U1, Q6                       drawn as C10, Q6, U1
+                               nets: F1_OUT=direct; VIN=direct
+  K1                           drawn as K1
+                               nets: VIN=direct; VBUS=direct; COIL+=direct; COIL−=direct; AUX_A=direct; AUX_B=direct
+  D1, Z1                       drawn as D1, Z1
+                               nets: COIL+=direct; COIL−=direct
+  Q4                           drawn as Q4, R15, R16
+                               nets: COIL−=direct; GND=direct; U8_OUT=via R15+U9
+  U8                           drawn as U8, U57
+                               nets: LATCH=direct; WD_OK=direct; PRE_OK=direct; AUX_DB=direct
+  S1, S2                       drawn as C48, R57, S1, S2
+                               nets: S1a=direct; S2a=direct; COIL+=direct; S1b=direct; S2b=direct
+  SB1                          drawn as C49, R62, R63, SB1, U59
+  U10                          drawn as U10, U40, U41, U43, U44, U60, U61, U62, U63
+                               nets: S1b=direct; S2b=direct; WD_OK=direct; TH1=direct; AUX_DB=direct; WD_B=direct; SB1=via U40+J15+J19+J16; STOP=direct; FORCE=direct; POR=direct; PRE_TIMEOUT=direct; DISC=direct; UV12=direct; OC=direct
+  U28                          drawn as U28
+                               nets: AUX_DB=direct; LATCH=direct; RUN=direct
+  U29, R_c, R_d, D_db, C_db    drawn as C20, D20, R20, R21, U29
+                               nets: AUX_RAW=direct; AUX_DB=direct
+  R9, C9                       drawn as C9, D21, R9
+  K2, Q5                       drawn as D9, K2, Q5, R17, R18, U46
+                               nets: VIN=direct; K2_C=direct; VBUS=via J6; K2_DRIVE=direct
+  R3                           drawn as R5
+                               nets: K2_C=direct; VBUS=direct
+  U11                          drawn as C50, D22, R64, R65, R66, U11, U47
+                               nets: LATCH=direct; PRE_TIMEOUT=direct; RUN=direct (as RUN_N)
+  U4                           drawn as C44, C45, R43, R44, R45, R46, R47, R48, R49, R50, R51, U4, U33
+                               nets: VBUS=via NT1; OV=direct; PRE_OK=direct; VIN=direct
+  U16                          drawn as C46, R52, U16
+                               nets: OV=direct
+  U17                          drawn as C52, D23, R68, R69, R70, U17, U51, U52
+                               nets: AUX_DB=direct; DISC=direct
+  U18                          drawn as R71, R72, R73, U18
+                               nets: UV12=direct
+  U19                          drawn as C16, C17, C53, C54, R74, R75, R76, R77, U19, U53
+                               nets: VBUS=direct; OC=direct
+  U6                           drawn as C51, R67, U6
+                               nets: AUX_DB=via U52; K2_DRIVE=via U15
+  U15                          drawn as U15
+                               nets: K2_DRIVE=direct
+  U7, U9                       drawn as C18, U7, U9
+                               nets: OV=direct; FORCE=direct
+  R_G                          drawn as R11, R12, R13, R14
+  Q1–Q3 / R1–R3                drawn as Q1, Q2, Q3, R1, R2, R3, R5, R40, R41, R42
+                               nets: VBUS=direct; GND=direct
+  D4–D6                        drawn as D4, D5, D6
+                               nets: VBUS=direct
+  TH1                          drawn as C47, R53, TH1
+                               nets: STOP=via U40+U41
+  R6                           drawn as R6
+                               nets: VBUS=direct; GND=direct
+  C1, C2, D3                   drawn as C1, C2, D3
+                               nets: VBUS=direct; GND=direct
+  U5                           drawn as C3, R4, R55, R56, U5
+                               nets: GPIO17=direct; GND=direct; WD_OK=direct
+  U2, U3                       drawn as C12, C13, C14, C15, F2, U2, U3
+                               nets: VIN=direct
+  U12, U13                     drawn as R58, R59, R60, R61, U12, U13, U58
+                               nets: AUX_RAW=direct; AUX_DB=via R58+U40+U41+U61; GPIO27=direct; AUX_OK=direct; S1b=direct; S2b=direct; GPIO22=direct; ESTOP_SENSE=direct
+  F3                           drawn as F3
+                               nets: VBUS=via U19
+  U20                          drawn as U20
+                               nets: S1c=via J14; S2c=via J14+J15; LATCH=via J19+U27+R78; S1d=via J14; S2d=direct; SB1b=direct; EN=direct
+  S1c/d, S2c/d                 drawn as S1, S2
+  U27                          drawn as R78, U27
+                               nets: LATCH=direct
+  Q9, U21                      drawn as C55, C56, Q9, R79, R80, R81, R82, R83, R84, R85, R86, U21
+                               nets: VIN=direct; VBUS_B=direct; EN=direct
+  U22                          drawn as C62, JP1, R96, R97, R98, U22
+                               nets: GPIO23=direct; WD_B=direct
+  Q10, R7, D7, U23, U24, U22b  drawn as C4, C58, C59, D7, Q10, R7, R90, R91, R92, R93, R94, U23, U24, U31, U56
+                               nets: VBUS_B=direct; GND=direct
+  U25                          drawn as C60, R88, R89, R95, U25
+                               nets: EN=direct
+  U26                          drawn as C63, D24, R99, R100, R101, R102, R103, R104, U26, U54, U55
+                               nets: VBUS_B=direct; EN=via R88; GPIO24=direct
+  R8                           drawn as R8
+                               nets: VBUS_B=direct; GND=direct
+  Q11                          drawn as D8, Q11, R105, R106
+                               nets: VBUS_B=direct
+
+3. Block-diagram chains: 15 checked, 0 failures
+  [ok] +24V_L ─ S1a NC ─ S2a NC ─ K1 coil (D1 + Z1 suppression) ─ Q4 drain
+  [ok] +24V_L ─ S1a/S2a (same chain) ─ K2 coil ─ Q5
+  [ok] K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT
+  [ok] U28 SN74LVC1G74: D = 3V3, CLK = AUX_DB ↑, CLR̄ = LATCH
+  [ok] K1 aux (NO) ─ U12 PC817 ─ AUX_RAW (TP8)
+  [ok] R_c 100k ∥ (BAT54 + R_d 4.7k) ─ C_db 47nF C0G ─ U29 74LVC1G17 → AUX_DB (TP12)
+  [ok] FORCE = U6 one-shot, Ā = AUX_DB (falling edge), B = 3V3, CLR̄ = ¬K2_DRIVE (U15)
+  [ok] U7 OR( OV , FORCE ) → U9 UCC27524 → R_G → Q1–Q3
+  [ok] GPIO17 heartbeat ─ U5a 74LVC1G17 ─ U5 SN74LVC1G123 B (rising edge), Ā = GND, CLR̄ = 3V3 (R4·C3) → WD_OK
+  [ok] U17 XOR(Q4 gate, AUX_DB) > 40 ms
+  [ok] VIN ─ Q9 IRFB7530 (U21 LM5069-1: soft-start, 35 A breaker) ─ VBUS_B
+  [ok] U21 EN ← +24V_L ─ U20 delayed contact 1 ─ U20 delayed contact 2
+  [ok] ch1 = S1c ─ S2c ─ U27 photoMOS (LATCH), ch2 = S1d ─ S2d; reset = SB1b
+  [ok] FORCE_B:                    U25 SN74LVC1G123 100 ms one-shot on U21 EN falling → Q10 gate
+  [ok] R7 0.56Ω NH-50 ∥ D7 VS-40CPQ060 ── Q10 IRFB7530 ── GND
+
+Parts: 302 drawn, 141 from netlist v4, 161 added by the drawing (glue gates, pull / series resistors, decoupling, connectors, test points: the Origin field gives each reason).
+
+5. Drawn values vs electrical.py (values follow electrical.py's constants; rnd/safety_board_sim.py models these)
+  clamp on / off (U4, U23)                 electrical.py: 26.00 / 25.70 V (CLAMP v_on ± hyst)          drawn: 25.982 / 25.684 V (R44-R46 E96 0.1 %, VREF 2.495 V)
+  comparator filter                        electrical.py: 2.0 µs (CMP_FILTER)                          drawn: 2.14 µs (Rth 11.91k × 180p)
+  PRE_OK                                   electrical.py: VBUS ≥ VIN − 3 V (table)                     drawn: VBUS ≥ VIN − 3.03 V (k+ 0.0991 / k− 0.0991)
+  watchdog U5 / U22                        electrical.py: 25 ms (bringup.yaml)                         drawn: 25.0 ms (R4 250k × 100 nF, K = 1)
+  min on-time U16 / U24                    electrical.py: 50 µs (T_ON_MIN)                             drawn: 50.3 µs (10.7k × 4.7n)
+  FORCE U6 / FORCE_B U25                   electrical.py: 100 ms (T_FORCE)                             drawn: 100 ms (100k × 1 µF)
+  pre-charge timeout U11                   electrical.py: 1.0 s (T_PRE_TIMEOUT)                        drawn: 1.01 s (1M × 1 µF to 0.635·VDD)
+  discrepancy window U17                   electrical.py: 40 ms ± 10%                                  drawn: 39.5 ms (39.2k × 1 µF)
+  DISC_B window U26                        electrical.py: 50 ms (table)                                drawn: 50.3 ms
+  12 V UVLO U18                            electrical.py: 10.5 V (table)                               drawn: 10.56 V (75k / 10k, REF 1.242 V)
+  branch overload U19                      electrical.py: 16 A, 5 s (table)                            drawn: 16.2 A, 5.0 s (66 mV/A ESTIMATE)
+  AUX debounce R_c / R_d / C_db            electrical.py: 100k / 4.7k / 47n (AUX_DEBOUNCE)             drawn: R20 100k / R21 4.7k / C20 47n
+  pre-charge R, bleeders, bulk C, clamp R  electrical.py: 3.3 Ω, 1k, 4.7 mF, 0.56 Ω                    drawn: R5 3.3, R6/R8 1k 3 W, C1 4.7 mF, R1-R3/R7 0.56
