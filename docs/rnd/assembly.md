@@ -113,8 +113,8 @@
 
 | Piece | kg |
 |---|---|
-| base | 7.78 |
+| base | 7.70 |
 | upper core | 8.88 |
 | arm (each) | 4.90 |
 | battery | 1.10 |
-| total robot | 27.55 |
+| total robot | 27.47 |

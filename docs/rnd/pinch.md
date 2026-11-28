@@ -51,7 +51,7 @@ two-joint combinations (each joint is swept with the others at the reference pos
 
 **People near (D25 soft limits: roll 5…100°): 11 joint-nip gap fails, 6 exposed parts** (4 → 2 on roll; 33 reach-clamping zones; exposure is reported over the full range).
 
-Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 13.1 min.
+Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 20.2 min.
 
 ## Exposed drive parts (accessible to the Ø12 probe at some step)
 

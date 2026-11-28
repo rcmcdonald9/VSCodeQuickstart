@@ -101,7 +101,7 @@ Roll support reactions per load case (N, N·m; worst pose by the motor-bearing l
 
 | Case | 61806 | Motor bearing (with the 61806) | Motor alone: radial | Motor alone: tilting | Roll torque | Pose |
 |---|---|---|---|---|---|---|
-| basket × 1.5 | 530 | 617 | 118 | 36.6 | 3.1 | set on a bed (0.55 m), x 0.50 |
+| basket × 1.5 | 530 | 617 | 119 | 36.6 | 3.1 | set on a bed (0.55 m), x 0.50 |
 | hug × 1.5 | 412 | 405 | 119 | 28.4 | 17.0 | yaw 0°, elbow -90° |
 | bump 140 N | 1638 | 1638 | 175 | 113.0 | 113.0 | forward, -Z |
 | stall (pitch 63 / roll 103 / elbow 63 N·m) | 1986 | 2330 | 345 | 137.0 | 112.9 | roll stall, elbow 90° |
