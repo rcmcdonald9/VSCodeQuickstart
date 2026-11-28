@@ -15,8 +15,8 @@ modes; but a GIM8115-9 owner reports the MIT frames did nothing until a mode was
 GIM8108 manual names the default CAN protocol "SmartCAN". Nothing public covers the SDC303 (GIM8108-36) or says the three
 drivers in this arm share one protocol (Fable review M4).
 
-Day-1 checklist (Step 1 of the M1 kit: ONE GIM6010-8 on the bench, PSU current-limited to 1 A, safety board built:
-electrical.md):
+Day-1 checklist (Step 1a of the M1 kit, docs/M1_RIG.md: ONE GIM6010-8 on the rig's motor plate, hub + index disc only,
+the 10 A supply at 24.0 V limited to 1 A, NO safety board needed yet; Fable review 2026-11-28 M1):
 1. **Protocol discovery**: `python -m sw.gim_discover --bus socketcan:can0 --id <n>`: listen, a no-torque probe
    (MIT exit-motor-mode), then with `--enable` a zero-gain motor-mode trace while you turn the output by hand. Report:
    docs/sw/gim_discovery_<date>.md. Before it: read the node ID, firmware version and bit rate with the vendor tool over
@@ -25,11 +25,11 @@ electrical.md):
    tool. If it does not: the table cannot be used as is (a position/velocity-only drive needs a different torque bound
    in sw/safety.py): say so in the report and stop. No further GIM is bought until this step passes (M1_READINESS.md).
 3. Registers from the manual / vendor tool: IDs, CAN timeout, the current or torque limit and its flash save; prove each
-   with sw/bringup.py steps "limits" and "safety" (written, read back, survives a power cycle, the drive disables itself
-   after the CAN timeout).
-4. Measure the torque constant against a luggage scale on a 0.2 m lever (thermal.md assumes 75 % of nominal in the
-   worst corner) and the encoder resolution at the output; `python -m sw.drivers.gim` (no TODO left), then
-   `python -m sw.bringup --bus socketcan:can0,can1`.
+   on the bare motor with `python -m sw.rig_1a --bus socketcan:can0 --joint yaw limits verify impedance timeout stall`
+   (written, read back, kept over a power cycle, the MIT law, the drive disables itself after the CAN timeout, the limit
+   holds at stall against the luggage scale on the 100 mm stall arm: the torque constant's first check).
+4. `python -m sw.drivers.gim` (no TODO left); with the safety board (Step 1b) and the lever rig:
+   `python -m sw.bringup --rig step1 --bus socketcan:can0,can1 --estop gpiod:gpiochip0:17:27 --joints yaw,wpitch`.
 """
 from __future__ import annotations
 

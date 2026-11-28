@@ -1,10 +1,12 @@
-"""Step-1 rig rehearsal on the virtual bench: the one GIM6010-8 (yaw stage, SIM PLACEHOLDER table) + the DM-J4310 (wrist
-pitch), only those two simulated as motors, with HIDDEN actuator values (friction, torque constant, backlash) and a
-realistic USB-CAN bus; the bring-up runs every step including sysid, and the fit is compared with the hidden truth.
-python -m sw.rehearse_step1 [--bus usb] [--seed 0]  → docs/sw/sysid_rehearsal.md + .json
+"""Step-1 rig rehearsal on the virtual bench: the M1 Step-1 LEVER RIG (sw/config/rig_step1.yaml, docs/M1_RIG.md), i.e. the
+one GIM6010-8 (SIM PLACEHOLDER protocol table) and the DM-J4310, each a BARE motor on its own lever (ratio 1.0, rubber
+stops at −15° / +100°), with HIDDEN actuator values (friction, torque constant, backlash) and a realistic USB-CAN bus;
+the bring-up runs every step including sysid with `--rig step1` settings, and the fit is compared with the hidden truth.
+python -m sw.rehearse_step1 [--bus usb] [--seed 0] [--load bringup]  → docs/sw/sysid_rehearsal.md + .json
 
-The rig: the upper arm is clamped horizontal (pitch −90°) so the yaw stage turns the forearm in a vertical plane, like
-the Step-1 test lever (docs/M1_BENCH_ARM.md), and the test weight at the grasp point loads both joints.
+Until 2026-11-28 this rehearsed the ARM (the yaw stage at 2:1 turning the forearm with the upper arm clamped), which is
+not the machine on the Step-1 bench (Fable review, Critical C1): a pass said nothing about the lever rig. The plant is now
+the rig model of sw/rig.py; the only mass the twin does not know is the weighing error of the lever parts (±1 g twice).
 """
 from __future__ import annotations
 
@@ -14,29 +16,36 @@ import math
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parent.parent / "docs" / "sw"
-STEP1_FIXTURE = {"pitch": -90, "roll": 0, "yaw": 0, "elbow": -90, "wpitch": 0, "wroll": 0}
-HIDDEN = {   # what the virtual drives really have (the bring-up does not know these)
-    "yaw": dict(coulomb_nm=0.32, viscous_nms=0.85, kt_scale=0.955, backlash_rad=math.radians(0.30)),
+HIDDEN = {   # what the virtual drives really have (the bring-up does not know these): bare outputs on the rig
+    "yaw": dict(coulomb_nm=0.15, viscous_nms=0.30, kt_scale=0.955, backlash_rad=math.radians(0.20)),     # GIM6010-8 8:1, 12′ class
     "wpitch": dict(coulomb_nm=0.055, viscous_nms=0.42, kt_scale=1.035, backlash_rad=math.radians(0.25)),
 }
 TOL_PCT = dict(coulomb=10.0, viscous=15.0, kt=2.0, backlash=20.0, latency=15.0)
+WEIGH_ERR_KG = 0.002          # per lever: the carrier + bar + discs weighed to ±1 g each (the twin does not know this)
 
 
-def rehearse(bus="usb", seed=0, out_dir=None, log=print, hidden=None):
+def rehearse(bus="usb", seed=0, out_dir=None, log=print, hidden=None, load="bringup"):
     from sw.bringup import STEPS, build_virtual, load_cfg
+    from sw.rig import apply
     from sw.virtual_arm import SIM_GIM
-    cfg = load_cfg()
-    cfg["fixture_pose"] = dict(STEP1_FIXTURE)
+    cfg = apply(load_cfg(), "step1", load)
     cfg["cal_speed"] = 0.5
     out_dir = Path(out_dir or Path(__file__).resolve().parent / "out" / "rehearse_step1")
     bu, arm = build_virtual(cfg=cfg, gim_table=SIM_GIM, joints=["yaw", "wpitch"], rig_only=True, seed=seed, bus=bus,
-                            act=hidden or HIDDEN, log=log, actuator_dir=out_dir / "actuators")
+                            act=hidden or HIDDEN, log=log, actuator_dir=out_dir / "actuators", hand_extra_kg=WEIGH_ERR_KG)
     bu.run_all()
     st = {s: bu.steps[s].status for s in STEPS}
     tv = bu.steps["sysid"].data.get("truth_vs_fit", {})
-    res = dict(bus=bus, seed=seed, steps=st, failed=[f"{s}: {w} — {d}" for s in STEPS for w, ok, d in bu.steps[s].checks if not ok],
+    cal = {r["joint"]: r for r in bu.steps["calibrate"].data.get("joints", [])}
+    res = dict(bus=bus, seed=seed, rig="step1", load=load, load_kg=cfg["load_kg"], steps=st,
+               failed=[f"{s}: {w} — {d}" for s in STEPS for w, ok, d in bu.steps[s].checks if not ok],
                truth_vs_fit=tv, fits={j: {k: v for k, v in f.items() if k not in ("not_randomized", "still_randomized")}
                                       for j, f in bu.steps["sysid"].data.get("fits", {}).items()},
+               calibration={j: dict(stop_deg=c.get("stop_deg"), span_measured_deg=c.get("span_measured_deg"),
+                                    span_expected_deg=c.get("span_expected_deg"), t_cal_nm=c.get("t_cal_nm"), t_cal_frac=c.get("t_cal_frac"))
+                            for j, c in cal.items()},
+               zero_error_deg={j: round(math.degrees(bu.drivers[j].offset - t["offset_joint"]), 4)
+                               for j, t in arm.truth().items() if j in bu.calibrated},
                bus_stats=arm.bus_stats()["round_trip_ms"])
     return bu, arm, res
 
@@ -45,10 +54,15 @@ def write(res, name="sysid_rehearsal"):
     from sw.sysid import NOT_RANDOMIZED, STILL_RANDOMIZED
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / f"{name}.json").write_text(json.dumps(res, indent=1, default=str))
-    L = ["# Actuator sysid rehearsal, Step-1 rig (generated by `python -m sw.rehearse_step1`)", "",
-         f"Virtual bench, bus profile **{res['bus']}** (sw/bus_sim.py), seed {res['seed']}: GIM6010-8 yaw stage (SIM PLACEHOLDER table) + "
-         "DM-J4310 wrist pitch, upper arm clamped horizontal (the Step-1 lever), hidden actuator values in the plant. Bring-up steps: "
-         + ", ".join(f"{k} {v}" for k, v in res["steps"].items()) + ".", "",
+    L = ["# Actuator sysid rehearsal, Step-1 lever rig (generated by `python -m sw.rehearse_step1`)", "",
+         f"Virtual bench, bus profile **{res['bus']}** (sw/bus_sim.py), seed {res['seed']}: the **Step-1 lever rig** "
+         "(sw/config/rig_step1.yaml, docs/M1_RIG.md): the GIM6010-8 (SIM PLACEHOLDER table) and the DM-J4310, each a bare motor "
+         f"(ratio 1.0) on its own 0.27 m lever, session load '{res['load']}' (discs {res['load_kg']} kg on top of the bar + carrier), "
+         "calibrated against the rubber stop at −15° with the span to +100° checked; hidden actuator values in the plant, and a "
+         "2 g weighing error per lever the twin does not know. Bring-up steps: " + ", ".join(f"{k} {v}" for k, v in res["steps"].items()) + ".", "",
+         "Calibration: " + "; ".join(f"{j} span {c['span_measured_deg']}° (expected {c['span_expected_deg']}°), calibration torque "
+                                     f"{c['t_cal_nm']} N·m ({c['t_cal_frac']:.0%} of rated)" for j, c in res["calibration"].items())
+         + "; zero error vs the hidden encoder offset " + ", ".join(f"{j} {v:+.3f}°" for j, v in res["zero_error_deg"].items()) + ".", "",
          "| Joint | Quantity | Hidden truth | Fit | Error | Tolerance |", "|---|---|---|---|---|---|"]
     unit = dict(coulomb="N·m", viscous="N·m·s/rad", kt="—", backlash="°", latency="ms (round trip)")
     for j, t in res["truth_vs_fit"].items():
@@ -60,7 +74,9 @@ def write(res, name="sysid_rehearsal"):
             L.append(f"| {j} | {q} [{unit[q]}] | {fmt(tr)} | {fmt(fi)} | {'—' if v['err_pct'] is None else f'{v['err_pct']:+.1f} %'} | ±{TOL_PCT[q]:.0f} % |")
     if res["failed"]:
         L += ["", "Failed checks: " + "; ".join(res["failed"])]
-    L += ["", f"Latency truth = the plant's own record of command → host-visible reply during the latency test "
+    L += ["", "Torque constant: `kt_method: absolute` (the lever's gravity from weighed parts; no weight hung mid-session, "
+          "the guard is interlocked).", "",
+          f"Latency truth = the plant's own record of command → host-visible reply during the latency test "
           f"(whole run: {res['bus_stats']}).", "",
           "**Not randomised once measured (Asimov lesson 4):** " + NOT_RANDOMIZED, "", "**Still randomised:** " + STILL_RANDOMIZED]
     (OUT / f"{name}.md").write_text("\n".join(L) + "\n")
@@ -71,8 +87,9 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--bus", default="usb")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--load", default="bringup")
     a = ap.parse_args(argv)
-    bu, arm, res = rehearse(a.bus, a.seed)
+    bu, arm, res = rehearse(a.bus, a.seed, load=a.load)
     print("\n".join(write(res)))
     arm.close()
 

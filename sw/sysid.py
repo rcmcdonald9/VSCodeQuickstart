@@ -13,6 +13,10 @@ randomising around an unmeasured drive. For each online joint, at low torque, wi
    mass model cancels in the difference): per pass Δτ̄ = Δḡ / K, K = Σ Δg·Δτ / Σ Δτ². (Static holds were tried first:
    the joint stops anywhere inside its stiction band, which biased K by 8–14 %.)
    Joints where the mass makes < 5 % of rated torque keep K = 1 and say "not observable here".
+   **The Step-1 rig (`kt_method: absolute`, sw/config/rig_step1.yaml):** its guard is interlocked, so no weight can be
+   hung mid-session; but there the whole load is known (bar, carrier and discs weighed to ±1 g, radii from the CAD), so
+   K comes from the mean of the ± sweeps of all four speeds against the twin's gravity directly: per position bin
+   (τ̄₊ + τ̄₋)/2 = g / K (friction and viscous terms cancel), K = Σ g·τ̄ / Σ τ̄².
 3. **Backlash: direction reversals.** A slow triangle (±2.5°, 0.1 rad/s) at the joint's zero-gravity angle (from the
    twin). The drive's encoder is on the motor side; inside the gap the motor turns with ≈ 0 torque, so the motor travel
    while |τ| < ½ F_c at each reversal is the backlash.
@@ -21,7 +25,10 @@ randomising around an unmeasured drive. For each online joint, at low torque, wi
    1–20 Hz torque chirp, lag of the cross-correlation peak.
 
 The fit goes to `actuators_<serial>.yaml` (sw/config on the bench; the report directory for a virtual run), which
-rnd/twin.py `actuator_model()`, sw/bench_env.py and sw/virtual_arm.py load when present (datasheet model otherwise).
+rnd/twin.py `actuator_model()`, sw/bench_env.py and sw/virtual_arm.py load when present (datasheet model otherwise). A
+rig's fit (a bare motor output, not the arm joint) goes to sw/config/rig_<name>/ and is tagged with the rig, so the arm
+twin never loads it; carrying it to the arm's yaw (2:1 stage) is a conversion (friction ×2 plus the stage's own, backlash
+÷2 plus the belt's), not a copy.
 """
 from __future__ import annotations
 
@@ -287,30 +294,55 @@ def _operator_mass(bu, sup, kg, timeout=120.0):
 
 
 def _mass_torque(bu, j, qs, m_kg):
-    """Mean torque of a point mass m_kg at the grasp site about joint j over the joint states qs (twin kinematics only:
-    the arm's own mass model cancels in the with/without difference)."""
+    """Mean torque of the test mass (m_kg at the grasp site, or {joint: kg} on the rig's levers) about joint j over the
+    joint states qs (twin kinematics only: the arm's own mass model cancels in the with/without difference)."""
     from sw.bringup import ARM
-    from sw.collision import add_point_mass
+    from sw.rig import capture, set_mass
     tw = bu.twin
-    hand = tw.mj.mj_name2id(tw.m, tw.mj.mjtObj.mjOBJ_BODY, "hand")
-    site = tw.mj.mj_name2id(tw.m, tw.mj.mjtObj.mjOBJ_SITE, "grasp")
-    saved = (float(tw.m.body_mass[hand]), tw.m.body_ipos[hand].copy(), tw.m.body_inertia[hand].copy())
+    base = capture(tw.m)
     k6 = ARM.index(j)
     g0, g1 = [], []
     for q in qs:
         g0.append(tw.gravity(bu.full_q(q))[k6])
-    add_point_mass(tw.m, hand, m_kg, tw.m.site_pos[site].copy())
+    set_mass(tw.m, m_kg, base)
     for q in qs:
         g1.append(tw.gravity(bu.full_q(q))[k6])
-    tw.m.body_mass[hand], tw.m.body_ipos[hand], tw.m.body_inertia[hand] = saved[0], saved[1].copy(), saved[2].copy()
+    set_mass(tw.m, 0, base)
     return float(np.mean(g1) - np.mean(g0))
+
+
+def _kt_absolute(bu, sweeps):
+    """K per joint from the ± sweeps alone (the Step-1 rig: the lever's whole gravity is known from weighed parts): per
+    position bin both passes have, (τ̄₊ + τ̄₋)/2 = g/K, g = the twin's gravity at the bin's mean pose."""
+    from sw.bringup import ARM
+    out = {}
+    for j, runs in sweeps.items():
+        k6 = ARM.index(j)
+        g, t = [], []
+        for r in runs:
+            b0 = {round(bb[0], 6): bb for bb in r[0][2]}
+            for bb in r[1][2]:
+                c = round(bb[0], 6)
+                if c in b0:
+                    q = 0.5 * (np.asarray(b0[c][2]) + np.asarray(bb[2]))
+                    g.append(bu.twin.gravity(bu.full_q(q))[k6])
+                    t.append(0.5 * (b0[c][1] + bb[1]))
+        g, t = np.array(g), np.array(t)
+        rated = bu.J[j]["rated_nm"]
+        if not len(g) or np.max(np.abs(g)) < 0.05 * rated:
+            out[j] = dict(kt_scale=None, why=f"lever gravity ≤ {np.max(np.abs(g), initial=0):.2f} N·m over the sweeps (< 5 % of rated): not observable",
+                          dg=g.round(4).tolist(), dtau=t.round(4).tolist(), method="absolute")
+            continue
+        K = float(np.dot(g, t) / np.dot(t, t))
+        out[j] = dict(kt_scale=K, dg=g.round(4).tolist(), dtau=t.round(4).tolist(), resid_nm=float(np.abs(g - K * t).max()), method="absolute")
+    return out
 
 
 def _kt(bu, sup, cfgs, base_sweeps):
     """Effective torque constant per joint from sliding sweeps with and without the test mass. While sliding at the same
     speed the friction is the same in both runs (a static hold stops anywhere inside the stiction band, which biased K by
     8–14 % in the first rehearsal), so per pass Δτ̄_reported = Δḡ_mass / K."""
-    m_kg = float(cfgs["test_mass_kg"])
+    m_kg = cfgs["test_mass_kg"]
     _operator_mass(bu, sup, m_kg)
     loaded = {}
     for j, (v, lo, hi) in base_sweeps["args"].items():
@@ -365,9 +397,11 @@ def run(bu, step):
         bu._move(sup, {j: centre}, speed=bu.cfg["cal_speed"], settle=0.2)
         vj = bu.cfg["jog_speed_frac"] * bu.J[j]["max_speed_rad_s"]
         pts = []
+        kt_base.setdefault("all", {})[j] = []
         for i, f in enumerate(cfgs["speeds_frac"]):
             r = _sweep(bu, sup, j, f * vj, lo, hi, keep=True)
             pts.append(_y_v(r))
+            kt_base["all"][j].append(r)
             if i == 1:
                 kt_base["res"][j], kt_base["args"][j] = r, (f * vj, lo, hi)
         P = np.array([(v, y) for y, v in pts])
@@ -384,7 +418,8 @@ def run(bu, step):
         rows[j] = dict(points=P.round(5).tolist(), fc_rep=float(a), b_rep=float(b), fit_resid=float(np.abs(resid).max()),
                        backlash_rad=bl, backlash_samples=[round(x, 5) for x in bl_all], backlash_pose_deg=round(math.degrees(q0), 1),
                        backlash_threshold_nm=round(th, 4), latency_ms=lat, latency_truth_ms=lat_truth)
-    kt = _kt(bu, sup, cfgs, kt_base)
+    absolute = cfgs.get("kt_method") == "absolute"
+    kt = _kt_absolute(bu, kt_base["all"]) if absolute else _kt(bu, sup, cfgs, kt_base)
     bu._move(sup, {j: bu.jc(j)["park"] * D2R for j in bu.names}, settle=0.2)
     bu.disable_all()
     # assemble, check, write
@@ -392,15 +427,25 @@ def run(bu, step):
     serials = {r["joint"]: r.get("serial") for r in bu.steps["enumerate"].data.get("devices", [])}
     kinds = {r["joint"]: r.get("kind") for r in bu.steps["enumerate"].data.get("devices", [])}
     from rnd.twin import ACTUATOR_DATASHEET
+    rig = bu.cfg.get("rig")
+    if rig:
+        from sw.rig import load as _rig_load
+        datasheet = _rig_load(rig)["actuators"]
+    else:
+        datasheet = ACTUATOR_DATASHEET
     out_dir = Path(bu.actuator_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     fits = {}
     for j, r in rows.items():
         K = kt[j]["kt_scale"]
         Ku = K if K is not None else 1.0
-        ds = ACTUATOR_DATASHEET[j]
+        ds = datasheet[j]
         fit = dict(joint=j, kind=kinds.get(j), serial=serials.get(j), date=date,
                    source="virtual bench (rehearsal)" if bu.plant is not None else "bench (sw/bringup.py sysid)",
+                   rig=rig, stage=(f"bare motor output on the {rig} rig lever (ratio 1.0): NOT the arm joint; convert before using it "
+                                   "for the arm (friction × stage ratio + the stage's own, backlash ÷ ratio + the belt's)") if rig else
+                   "arm joint (motor + stage)",
+                   load=bu.cfg.get("load"),
                    coulomb_nm=round(Ku * r["fc_rep"], 5), viscous_nms=round(Ku * r["b_rep"], 5),
                    kt_scale=None if K is None else round(K, 5), backlash_rad=None if r["backlash_rad"] is None else round(r["backlash_rad"], 6),
                    latency_ms=r["latency_ms"],
@@ -422,7 +467,9 @@ def run(bu, step):
         if K is None:
             step.notes.append(f"ℹ️ {j}: torque constant {kt[j]['why']}; K = 1 kept (datasheet)")
         else:
-            step.check(f"{j}: effective torque constant K = {K:.3f} (true / reported) from sweeps with the {cfgs['test_mass_kg']} kg test mass",
+            how = ("the ± sweeps against the weighed lever's gravity (kt_method absolute)" if absolute else
+                   f"sweeps with the {cfgs['test_mass_kg']} kg test mass")
+            step.check(f"{j}: effective torque constant K = {K:.3f} (true / reported) from {how}",
                        0.8 < K < 1.2, f"Δτ {kt[j]['dtau']} vs mass torque {kt[j]['dg']} N·m (K outside 0.8–1.2: wrong KT_NM_PER_A, ratio or sign)")
         step.check(f"{j}: backlash {'—' if fit['backlash_rad'] is None else f'{math.degrees(fit['backlash_rad']):.3f}°'} at {r['backlash_pose_deg']}° (zero gravity)",
                    fit["backlash_rad"] is not None and fit["backlash_rad"] < 2 * D2R,
