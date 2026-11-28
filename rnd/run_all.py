@@ -132,7 +132,9 @@ def _confidence_rows():
     f = DOCS / "thermal.json"
     if f.exists():
         a = json.loads(f.read_text())
-        rows.append(("Thermal: hottest motor, non-stop task day (MC worst corner)", f"{a['task_max_c']:.0f} °C", "≤ 100 °C", a["task_max_c"] <= 100))
+        cap = a.get("task_max_c_al_cap", a["task_max_c"])     # belt joints ship with the Al finned rear cap (bom.py AL_CAP)
+        rows.append(("Thermal: hottest motor, non-stop task day (MC worst corner), in the BOM mount (closed sleeve + Al cap)",
+                     f"{cap:.0f} °C (without the cap {a['task_max_c']:.0f} °C)", "≤ 100 °C", cap <= 100))
     f = DOCS / "dexterity.json"
     if f.exists():
         a = json.loads(f.read_text())

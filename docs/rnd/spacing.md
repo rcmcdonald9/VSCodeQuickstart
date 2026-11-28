@@ -14,14 +14,10 @@ pair is classified, and the first matching rule wins:
 Swept checks over the joint ranges are separate (rnd/swept.py, rnd/pinch.py); the head is also checked here at both
 ends of its tilt range (upper.TILT_RANGE), since its pivot moves the shell round the yoke.
 
-**Pairs under target: 14; under the hard limit: 4.**
+**Pairs under target: 10; under the hard limit: 0.**
 
 | Module | Part A | Part B | Kind | Gap (mm) | Target / hard | |
 |---|---|---|---|---|---|---|
-| arm | e_can | e_tension_ring | static | 0.0 | 1.0 / 0.5 | ❌ hard |
-| roll/yaw | yaw_can | yaw_tension_ring | static | 0.0 | 1.0 / 0.5 | ❌ hard |
-| arm | e_cassette | e_tension_ring | static | 0.05 | 1.0 / 0.5 | ❌ hard |
-| roll/yaw | yaw_block | yaw_tension_ring | static | 0.05 | 1.0 / 0.5 | ❌ hard |
 | roll/yaw | roll_gim_housing | roll_outflange | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
 | roll/yaw | yaw_flange | yaw_stop_pin | running | 0.3 | 0.3 / 0.2 | ⚠️ target |
 | upper | lift_bracket | lift_cover | static | 0.84 | 1.0 / 0.5 | ⚠️ target |

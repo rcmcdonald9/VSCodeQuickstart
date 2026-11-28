@@ -22,7 +22,8 @@ from pathlib import Path
 
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
 
-MATE = [("can", "motor"), ("collar", "hub"), ("hub", "shaft"), ("shaft", "wheel"), ("pod", "deck"), ("torque_hanger", "deck"),
+MATE = [("can", "motor"), ("tension_ring", "can"), ("tension_ring", "cassette"), ("tension_ring", "yaw_block"),   # D26 tension ring: clamped on the can nose, seated in the wall counterbore
+         ("collar", "hub"), ("hub", "shaft"), ("shaft", "wheel"), ("pod", "deck"), ("torque_hanger", "deck"),
         ("deck", "deck"), ("deck", "rim"), ("deck", "coupling"), ("_guide", "deck"), ("ballast", "deck"), ("ballast", "ballast"), ("skirt", "skirt"), ("skirt", "bumper"), ("coupling", "plug"),
         ("mast", "ratchet"), ("mast", "lift_mount"), ("mast", "carriage"), ("mast", "head_bracket"), ("lift_pulley", "lift_belt"),
         ("lift_mount", "lift_cover"), ("torso_shell", "estop"), ("torso_shell", "chest_light"), ("torso_shell", "ai_bay"),
