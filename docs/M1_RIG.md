@@ -219,7 +219,7 @@ The 1a tool writes docs/sw/rig_1a_<date>_<joint>.md / .json. **1a is done when 1
 | 1b | Magnetic coded safety switch, NC, with actuator | 1 | 15 | wired in series with the e-stop mushrooms (electrical owner: the safety board's e-stop input) |
 | — | Category-0 catch cradle + tether ($25) | — | −25 | **move to Step 2**: the rig cannot fall (pendulum levers, stops); the cradle is for the arm |
 
-**Net:** Step 1a +$198 (the stand line +$45 of it), Step 1b +$104 (after −$12 for the replaced weights and −$25 for the moved catch), so ≈ +$302 before contingency, ≈ +$347 with 15 %. Printed parts use the kit's filament and M4 inserts: guard clips and corners, interlock riser, index disc, stall arm.
+**Net:** Step 1a +$198 (the stand line +$45 of it), Step 1b +$104 (after −$12 for the replaced weights and −$25 for the moved catch), so ≈ +$302 before contingency, ≈ +$347 with 15 %. After the merge with the W17c coupon tools (laser and mirror kept once, the C14 dummy output cut from the rig plate) the kit carries **+$292 / +$336**. Printed parts use the kit's filament and M4 inserts: guard clips and corners, interlock riser, index disc, stall arm.
 
 **Still ESTIMATE:**
 

@@ -213,8 +213,8 @@ def step1_coupons():
                 f"radial pull at the flange (the motor bearing's share of the {st['F_shaft']:.0f} N shaft load at the peak, belts.md hinged); "
                 f"breakaway of each screw ≥ its build torque after (the model holds 27.2 N·m: μ 0.2 × 8 × 1.0 kN × r 17, 2.47×)",
                 f"(c) 1b, on the rig: the drive at its {T_pk:.0f} N·m peak against the hard stop, 10 ×: no slip (witness mark)"],
-        method=f"(a) Motor housing bolted to the stand's plate, output up, unpowered. The lever stock across the output (4 × M3 is enough here), "
-               f"weights of 1 / 2 / 4 kg hung at r {C14_LEVER_R:.0f} (2.5 / 4.9 / 9.8 N·m, no torque about the axis). Read the tilt on the output "
+        method=f"(a) As docs/M1_RIG.md step 1a-11: motor unpowered on its rig plate, the turned tilt mandrel on the output, a radial load of "
+               f"0–200 N through a 6001 at 97 mm (Dyneema cord, luggage scale, turnbuckle), no torque about the axis. Read the tilt on the output "
                "flange itself, not on the lever (the 6 mm bar bends millimetres): the optical lever first (a small mirror on the flange, a laser "
                "spot on a wall 3 m away, 1′ ≈ 1.75 mm of spot), or a 0.002 mm dial test indicator on the flange rim at r ≈ 20 (near its resolution); "
                "the same reading on the housing, subtracted; turn the lever 180° and repeat. Note the free play (tilt at ± 0.5 N·m) separately. "
