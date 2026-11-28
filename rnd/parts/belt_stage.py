@@ -231,7 +231,7 @@ def bolted_cartridge(motor: dict | None = None, site: str = "default"):
     """(name, part, colour) of the bolted cartridge M in the stage frame: sleeve, rear cap, motor. site: the ear pattern
     (cartridge_m.EAR_SITES; "lift" on the lift, "default" elsewhere)."""
     from . import cartridge_m as cm
-    return [("can", cm.can_bolted(motor, site), "white"), ("can_cap", cm.can_cap_bolted(motor), "white"), ("motor", cm.motor_bolted(motor), "dark")]
+    return [("can", cm.can_bolted(motor, site), "white"), ("can_cap", cm.can_cap_bolted(motor, site), "white"), ("motor", cm.motor_bolted(motor), "dark")]
 
 
 def bolted_stage(T, teeth: int = 20, prefix: str = "", motor: dict | None = None, site: str = "default"):

@@ -4,7 +4,7 @@
 
 | Metric | Now | Target | |
 |---|---|---|---|
-| R17 pinch (HARD GATE; rnd/pinch.py): joint-nip fails / exposed drive parts (12 mm probe; every moving gap ≤ 8 mm or ≥ 25 mm over its range) | 5 / 0 | 0 / 0 | ❌ |
+| R17 pinch (HARD GATE; rnd/pinch.py): joint-nip fails / exposed drive parts (12 mm probe; every moving gap ≤ 8 mm or ≥ 25 mm over its range) | 4 / 0 | 0 / 0 | ❌ |
 | A10 tip-over (HARD GATE; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, with the rules sw/safety.py enforces | 16/16 (worst 36 mm); 16/16 (worst 36 mm) once SW-T1 person within reach, SW-T2 caster lock (D18b), SW-T4 threshold speed (D2b), SW-T6 person approaching (A10 real states), SW-T7 basket carry are in the supervisor | 16/16 ≥ 30 mm | ✅ |
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
@@ -48,7 +48,7 @@
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 66 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
 | FEA critical printed parts: min margin vs 12 MPa (across layers) | 2.5× (13 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip) | 100/100 (95 % LB 96%), worst pad error 19 mm | LB ≥ 90 %, within ±25 mm | ✅ |
-| R15 spacing: pairs under the hard limit / under target (static 1, running 0.3, moving 2, belt 3 mm) | 0 / 11 | 0 under hard | ✅ |
+| R15 spacing: pairs under the hard limit / under target (static 1, running 0.3, moving 2, belt 3 mm) | 0 / 10 | 0 under hard | ✅ |
 | R14 assembly sequence: drive shafts whose bearings slide on and whose shaft can be inserted (rnd/assembly_seq.py) | 7/7 | all | ✅ |
 | Cable routing: joints the arm bundle can cross over their full range (rnd/harness.py) | 6/6 | all | ✅ |
 | Threshold/carpet Monte Carlo (5–15 mm, heading ±10°, 0.12–0.18 m/s, μ, mass, COM) | 55/55 (95 % LB 93%); 15–18 mm: 25/25 | LB ≥ 90 % | ✅ |
