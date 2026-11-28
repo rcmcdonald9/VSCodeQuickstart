@@ -1,0 +1,314 @@
+{
+ "ok": true,
+ "interference": [],
+ "contact": {
+  "yaw_lower": {
+   "stop_deg": -15,
+   "clear_1deg_before": true,
+   "touches_1deg_past": true,
+   "bar_clear_1deg_past": true
+  },
+  "yaw_upper": {
+   "stop_deg": 100,
+   "clear_1deg_before": true,
+   "touches_1deg_past": true,
+   "bar_clear_1deg_past": true
+  },
+  "wpitch_lower": {
+   "stop_deg": -15,
+   "clear_1deg_before": true,
+   "touches_1deg_past": true,
+   "bar_clear_1deg_past": true
+  },
+  "wpitch_upper": {
+   "stop_deg": 100,
+   "clear_1deg_before": true,
+   "touches_1deg_past": true,
+   "bar_clear_1deg_past": true
+  }
+ },
+ "guard": {
+  "inner": {
+   "x": [
+    -239.9,
+    379.9
+   ],
+   "y": [
+    -178.0,
+    178.0
+   ],
+   "z_top": 596.9
+  },
+  "outer_mm": [
+   625.8,
+   362.0,
+   599.9
+  ],
+  "clearance_mm": {
+   "x_minus": 137.7,
+   "x_plus": 66.5,
+   "y_minus": 44.0,
+   "y_plus": 40.0,
+   "top": 149.0
+  },
+  "slot_to_swept_mm": 149.0,
+  "slot_mm": [
+   60.0,
+   15.0
+  ],
+  "notch_gap_mm": 2.0,
+  "pc_area_m2": 1.385
+ },
+ "printed_max_mm": {
+  "guard_clip": 120.0,
+  "guard_corner": 40.0,
+  "interlock_riser": 90.0,
+  "index_disc": 102.0,
+  "stall_arm": 130.0
+ },
+ "geometry": {
+  "axis_z": 370.0,
+  "r_mass": 270.0,
+  "stops_deg": [
+   -15,
+   100
+  ],
+  "upper_bumper_face_z": 446.9,
+  "crossbar_z": [
+   508.9,
+   548.9
+  ],
+  "lower_bumper_face_x": -99.9,
+  "lever_planes_y": {
+   "yaw": 103.0,
+   "wpitch": -109.0
+  },
+  "leg_x": [
+   299.9,
+   339.9
+  ],
+  "lower_block_x": [
+   -199.9,
+   -149.9
+  ],
+  "extrusion_mm": {
+   "40x40": {
+    "side_rails": "2 \u00d7 900",
+    "cross_members": "2 \u00d7 172",
+    "post": 468.9,
+    "leg": 468.9
+   },
+   "40x80": {
+    "crossbar": 359.9
+   }
+  },
+  "stop_plate_upper_mm": [
+   60,
+   270.0,
+   12.0
+  ],
+  "stop_block_lower_mm": [
+   50.0,
+   40.0,
+   94.2
+  ],
+  "bottom_clearance_mm": 70.0
+ },
+ "load": "soak",
+ "sizing": {
+  "yaw": {
+   "rated_nm": 5.0,
+   "peak_nm": 11.0,
+   "disc_kg": 0.2175,
+   "loads": {
+    "bringup": {
+     "discs": 0,
+     "mass_kg": 0.168,
+     "g_horizontal_nm": 0.702,
+     "frac_rated": 0.14,
+     "t_cal_nm": 1.483,
+     "t_cal_frac": 0.297,
+     "g_at_ref_stop_nm": 0.182,
+     "J": 0.01893
+    },
+    "soak": {
+     "discs": 4,
+     "mass_kg": 1.038,
+     "g_horizontal_nm": 3.007,
+     "frac_rated": 0.601,
+     "t_cal_nm": 1.59,
+     "t_cal_frac": 0.318,
+     "g_at_ref_stop_nm": 0.778,
+     "J": 0.08275
+    }
+   },
+   "soak_rms_nm": 2.769,
+   "soak_rms_frac": 0.554,
+   "soak_centre_deg": 69.1,
+   "sag_testable": true,
+   "cal_ok": true,
+   "centre_of_percussion_m": 0.265,
+   "stop_r_m": 0.27,
+   "stall_at_stop_n": 40.7,
+   "stops": [
+    {
+     "case": "calibration seek 0.3 rad/s",
+     "stop": "lower",
+     "energy_j": 0.004,
+     "defl_mm": 0.2,
+     "strain": 0.0,
+     "force_n": 37,
+     "hub_n": 1,
+     "gear_nm": 5.2
+    },
+    {
+     "case": "jog 1.26 rad/s",
+     "stop": "either",
+     "energy_j": 0.065,
+     "defl_mm": 0.9,
+     "strain": 0.02,
+     "force_n": 153,
+     "hub_n": 3,
+     "gear_nm": 5.8
+    },
+    {
+     "case": "supervisor speed fault 4 rad/s",
+     "stop": "either",
+     "energy_j": 0.662,
+     "defl_mm": 2.7,
+     "strain": 0.05,
+     "force_n": 488,
+     "hub_n": 9,
+     "gear_nm": 7.5
+    },
+    {
+     "case": "runaway up at the flash limit (5 N\u00b7m), \u221210\u00b0 \u2192 100\u00b0",
+     "stop": "upper",
+     "energy_j": 6.116,
+     "defl_mm": 8.2,
+     "strain": 0.16,
+     "force_n": 1484,
+     "hub_n": 28,
+     "gear_nm": 12.5
+    },
+    {
+     "case": "runaway down at the flash limit, +90\u00b0 \u2192 -15\u00b0",
+     "stop": "lower",
+     "energy_j": 12.067,
+     "defl_mm": 11.6,
+     "strain": 0.23,
+     "force_n": 2084,
+     "hub_n": 40,
+     "gear_nm": 15.5
+    },
+    {
+     "case": "runaway down at the peak 11 N\u00b7m (flash limit not enforced)",
+     "stop": "lower",
+     "energy_j": 23.063,
+     "defl_mm": 16.0,
+     "strain": 0.32,
+     "force_n": 2881,
+     "hub_n": 55,
+     "gear_nm": 19.5
+    }
+   ]
+  },
+  "wpitch": {
+   "rated_nm": 3.0,
+   "peak_nm": 7.0,
+   "disc_kg": 0.2175,
+   "loads": {
+    "bringup": {
+     "discs": 0,
+     "mass_kg": 0.168,
+     "g_horizontal_nm": 0.702,
+     "frac_rated": 0.234,
+     "t_cal_nm": 1.283,
+     "t_cal_frac": 0.428,
+     "g_at_ref_stop_nm": 0.182,
+     "J": 0.01799
+    },
+    "soak": {
+     "discs": 2,
+     "mass_kg": 0.603,
+     "g_horizontal_nm": 1.855,
+     "frac_rated": 0.618,
+     "t_cal_nm": 0.972,
+     "t_cal_frac": 0.324,
+     "g_at_ref_stop_nm": 0.48,
+     "J": 0.0499
+    }
+   },
+   "soak_rms_nm": 1.708,
+   "soak_rms_frac": 0.569,
+   "soak_centre_deg": 69.1,
+   "sag_testable": true,
+   "cal_ok": true,
+   "centre_of_percussion_m": 0.261,
+   "stop_r_m": 0.27,
+   "stall_at_stop_n": 25.9,
+   "stops": [
+    {
+     "case": "calibration seek 0.3 rad/s",
+     "stop": "lower",
+     "energy_j": 0.002,
+     "defl_mm": 0.2,
+     "strain": 0.0,
+     "force_n": 28,
+     "hub_n": 1,
+     "gear_nm": 3.1
+    },
+    {
+     "case": "jog 1.26 rad/s",
+     "stop": "either",
+     "energy_j": 0.039,
+     "defl_mm": 0.7,
+     "strain": 0.01,
+     "force_n": 119,
+     "hub_n": 4,
+     "gear_nm": 3.4
+    },
+    {
+     "case": "supervisor speed fault 4 rad/s",
+     "stop": "either",
+     "energy_j": 0.399,
+     "defl_mm": 2.1,
+     "strain": 0.04,
+     "force_n": 379,
+     "hub_n": 13,
+     "gear_nm": 4.2
+    },
+    {
+     "case": "runaway up at the flash limit (3 N\u00b7m), \u221210\u00b0 \u2192 100\u00b0",
+     "stop": "upper",
+     "energy_j": 3.611,
+     "defl_mm": 6.3,
+     "strain": 0.13,
+     "force_n": 1140,
+     "hub_n": 40,
+     "gear_nm": 6.7
+    },
+    {
+     "case": "runaway down at the flash limit, +90\u00b0 \u2192 -15\u00b0",
+     "stop": "lower",
+     "energy_j": 7.289,
+     "defl_mm": 9.0,
+     "strain": 0.18,
+     "force_n": 1620,
+     "hub_n": 57,
+     "gear_nm": 8.3
+    },
+    {
+     "case": "runaway down at the peak 7 N\u00b7m (flash limit not enforced)",
+     "stop": "lower",
+     "energy_j": 10.94,
+     "defl_mm": 11.0,
+     "strain": 0.22,
+     "force_n": 1985,
+     "hub_n": 70,
+     "gear_nm": 9.4
+    }
+   ]
+  }
+ }
+}

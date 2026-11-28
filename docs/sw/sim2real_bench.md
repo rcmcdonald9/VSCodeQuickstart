@@ -103,8 +103,13 @@ The fit is written to `sw/config/actuators_<serial>.yaml` on the bench (a virtua
 - `sw/bench_env.py`: joint damping and armature;
 - `sw/virtual_arm.py`: plant friction, Kt, backlash.
 
-**Rehearsal on the Step-1 rig.** The virtual GIM yaw stage turns the forearm in a vertical plane like the test lever,
-next to the DM-J4310. Hidden values: yaw F_c 0.32, B 0.85, K 0.955, backlash 0.30°; wpitch F_c 0.055, B 0.42, K 1.035,
+**Superseded 2026-11-28 (Fable review C1):** the table below rehearsed the ARM (the virtual GIM yaw stage at 2:1
+turning the forearm, upper arm clamped), which is not the Step-1 machine. `python -m sw.rehearse_step1` now rehearses
+the **lever rig** (`--rig step1`: bare motors on 0.27 m levers, ratio 1.0, rubber stops at −15° / +100°, K from the
+weighed lever); its current numbers are in [sysid_rehearsal.md](sysid_rehearsal.md) and [../M1_RIG.md](../M1_RIG.md) §2.
+
+**Rehearsal on the arm fixture (historical).** The virtual GIM yaw stage turns the forearm in a vertical plane, next to
+the DM-J4310. Hidden values: yaw F_c 0.32, B 0.85, K 0.955, backlash 0.30°; wpitch F_c 0.055, B 0.42, K 1.035,
 backlash 0.25°.
 
 | Bus | yaw F_c | yaw B | yaw K | yaw backlash | wpitch F_c | wpitch B | wpitch K | wpitch backlash | latency |
@@ -154,7 +159,9 @@ Off the Pi these are reported as informational and skipped gracefully. This cont
 thermal sensor, no vcgencmd.
 
 **Soak test** (Step-1 exit criterion, docs/M1_BENCH_ARM.md and M1_READINESS 7): sysid → 2 h of 0.25 Hz cyclic motion at
-≈ 50 % rated (2 kg at the 0.3 m lever on the yaw stage) → sysid again.
+≈ 50–60 % rated → sysid again. On the Step-1 lever rig (`--rig step1 --load soak`, docs/M1_RIG.md): 4 discs on the
+GIM lever (1.04 kg at 0.27 m, 3.0 N·m horizontal), 2 on the DM lever (1.86 N·m), ≈ 55 % RMS; the run fails outside
+45–65 %. (The old "2 kg at the 0.3 m lever on the yaw stage" assumed the arm's 2:1 stage: 118 % of the bare motor's rated.)
 
 Pass if all of these hold:
 
@@ -169,7 +176,8 @@ Pass if all of these hold:
 
 Virtual rehearsal (45–60 s): a stable drive **passes**, with drift Coulomb −0.9 %, K −0.01 %. A drive whose friction
 grows 25 %/K of motor temperature **fails** (Coulomb +35 %). See [soak_virtual.md](soak_virtual.md) and
-[soak_virtual_drift.md](soak_virtual_drift.md).
+[soak_virtual_drift.md](soak_virtual_drift.md) (the arm, historical); on the lever rig
+[soak_virtual_step1.md](soak_virtual_step1.md) and [soak_virtual_step1_drift.md](soak_virtual_step1_drift.md).
 
 ## 4. CAN interface
 

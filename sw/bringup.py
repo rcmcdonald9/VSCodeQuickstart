@@ -1,5 +1,12 @@
-"""M1 day-1 bring-up tool (S1).  python -m sw.bringup --bus virtual            (the MuJoCo bench twin, now)
-                                python -m sw.bringup --bus socketcan:can0,can1 --estop gpiod:gpiochip0:17:27   (day 1)
+"""M1 day-1 bring-up tool (S1).  python -m sw.bringup --bus virtual [--rig step1]   (the MuJoCo bench twin, now)
+    python -m sw.bringup --rig step1 --bus socketcan:can0,can1 --estop gpiod:gpiochip0:17:27 --joints yaw,wpitch  (Step 1)
+    python -m sw.bringup --rig arm   --bus socketcan:can0,can1 --estop gpiod:gpiochip0:17:27                      (Step 2)
+
+**Which machine** (Fable review 2026-11-28, C1): `--rig step1` is the M1 Step-1 lever rig (sw/config/rig_step1.yaml,
+sw/rig.py, docs/M1_RIG.md): the GIM6010-8 and the DM-J4310 as BARE motors, each on its own lever, ratio 1.0, rubber stops
+at ±100°, the twin a model of the two levers. `--rig arm` (and the virtual default) is the arm. On real hardware the
+choice is required: the rig run with the arm's settings would double every angle and speed at the lever, halve every
+torque the supervisor believes in, and seek ±155° stops that the rig does not have.
 
 Same code against a python-can virtual bus answered by sw/virtual_arm.py and against the real USB-CAN adapters. Steps, in
 order; **each refuses to run unless the one before passed**, and every step that can move a joint runs inside the 500 Hz
@@ -76,8 +83,16 @@ def load_cfg(path=None):
     return yaml.safe_load(Path(path or ROOT / "config" / "bringup.yaml").read_text())
 
 
-def joints_json():
-    return {j["name"]: j for j in json.loads((ROOT / "description" / "joints.json").read_text())}
+def joints_json(cfg=None):
+    """Joint rows by name: the arm's sw/description/joints.json, or the rig's bare motors when cfg names a rig."""
+    return {j["name"]: j for j in joint_rows(cfg)}
+
+
+def joint_rows(cfg=None):
+    if cfg and cfg.get("rig"):
+        from sw.rig import description
+        return description(cfg["rig"])
+    return json.loads((ROOT / "description" / "joints.json").read_text())
 
 
 class StepFail(Exception):
@@ -107,8 +122,13 @@ def make_twin(cfg):
     from sw.bench_env import BenchEnv, xml
     from sw.collision import MujocoTwin
     from sw.virtual_arm import balancer_sign
-    env = BenchEnv(render=False)
-    m = mujoco.MjModel.from_xml_string(xml())
+    if cfg.get("rig"):                                   # the Step-1 rig (sw/rig.py): two levers, the arm joints inert
+        from sw.rig import RigEnv
+        env = RigEnv(cfg["rig"], None, cfg.get("load_kg"))       # the session's discs are part of the twin's gravity
+        m = env.m
+    else:
+        env = BenchEnv(render=False)
+        m = mujoco.MjModel.from_xml_string(xml())
     m.body_gravcomp[:] = 0
     bal = cfg.get("balancer") or {}
     sgn = balancer_sign(m, env.qadr, env.dadr)
@@ -245,7 +265,10 @@ class BringUp:
                  joints=None, limit=None, reg_timeout=0.05, log=print, actuator_dir=None):
         from sw.can_map import load
         self.cfg = cfg or load_cfg()
-        self.can_map = can_map or load()
+        self.rig = self.cfg.get("rig")              # None = the arm; "step1" = the M1 Step-1 lever rig (sw/rig.py)
+        self.can_map = can_map or load(self.rig)
+        if bool(self.can_map.get("rig")) != bool(self.rig) or (self.rig and self.can_map.get("rig") != self.rig):
+            raise ValueError(f"CAN map is for {self.can_map.get('rig') or 'the arm'} but the settings are for {self.rig or 'the arm'}")
         self.tables = tables or TABLES
         self.buses, self.io, self.op, self.plant = buses, io, operator, plant
         self.dt = 1.0 / self.cfg["control_hz"]
@@ -256,8 +279,16 @@ class BringUp:
         self.log = log
         # where the sysid step writes actuators_<serial>.yaml: sw/config on the bench (loaded by the sims from then on);
         # a virtual rehearsal writes next to its outputs so it never replaces a real fit
-        self.actuator_dir = Path(actuator_dir) if actuator_dir else (ROOT / "config" if plant is None else ROOT / "out" / "actuators_virtual")
-        self.J = joints_json()
+        # (a rig's fits go to its own directory, sw/config/rig_<name>/: a bare-motor fit must never load as the arm joint)
+        if actuator_dir:
+            self.actuator_dir = Path(actuator_dir)
+        elif plant is not None:
+            self.actuator_dir = ROOT / "out" / "actuators_virtual"
+        else:
+            from sw.rig import actuator_dir as _rig_dir
+            self.actuator_dir = _rig_dir(self.rig) if self.rig else ROOT / "config"
+        self.desc = joint_rows(self.cfg)
+        self.J = {j["name"]: j for j in self.desc}
         self.steps = {s: Step(s) for s in STEPS}
         self.drivers = {}             # online joints, ARM order
         self.blocked = {}
@@ -372,7 +403,7 @@ class BringUp:
         vm = v_max if v_max is not None else np.array([self.cfg["jog_speed_frac"] * self.J[j]["max_speed_rad_s"] for j in self.names])
         from sw.safety import FB_MAX_AGE
         return Supervisor(v_max=vm, clock=self.clock, joints=self.names, limits=limits, torque=torque,
-                          fb_max_age=float(self.cfg.get("fb_max_age_s", FB_MAX_AGE)), collision=collision)
+                          fb_max_age=float(self.cfg.get("fb_max_age_s", FB_MAX_AGE)), collision=collision, desc=self.desc)
 
     def collision(self, thr=None, rel=None):
         """An OnlineCollision for a supervisor: thresholds from the gravity step (bringup.yaml has none) unless given."""
@@ -578,6 +609,10 @@ class BringUp:
         errs, loads = check(self.can_map)
         s.check("CAN map valid (IDs, terminations, ratios, bus load ≤ 50 %)", not errs, "; ".join(errs) or
                 ", ".join(f"{k} {v:.0%}" for k, v in loads.items()))
+        if self.rig:                                             # the twin's gravity is only right for the declared discs
+            from sw.rig import describe_load
+            txt = describe_load(self.cfg)
+            s.check(f"rig {self.rig}: operator confirms the {txt}", self.op.confirm(f"Confirm the {txt}"), "")
         rows, others = [], []
         if self.io is not None:                                  # the drives are powered through the contactor
             self.keepalive = True
@@ -1219,7 +1254,7 @@ class BringUp:
         tag = tag if tag is not None else ("_virtual" if self.plant is not None else "")
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
-        js = dict(date=date, bus=bus_desc, virtual=self.plant is not None, joints_online=self.names, blocked=self.blocked,
+        js = dict(date=date, bus=bus_desc, virtual=self.plant is not None, rig=self.rig, joints_online=self.names, blocked=self.blocked,
                   steps={k: dict(status=v.status, summary=v.summary, checks=v.checks, notes=v.notes, data=v.data) for k, v in self.steps.items()},
                   calibration=dict(offsets={j: self.drivers[j].offset for j in sorted(self.calibrated)},
                                    signs={j: self.drivers[j].sign for j in sorted(self.calibrated)}),
@@ -1238,7 +1273,10 @@ class BringUp:
 
     def _markdown(self, js, jname):
         L = [f"# M1 bring-up report {js['date']}{' (VIRTUAL: MuJoCo bench twin on a python-can virtual bus)' if js['virtual'] else ''}",
-             "", f"Generated by `python -m sw.bringup` ({js['bus']}); data: [{jname}]({jname}). Online: **{', '.join(js['joints_online']) or '—'}**; "
+             "", (f"**Machine: the {js['rig']} rig** (sw/config/rig_{js['rig']}.yaml: bare motors on levers, ratio 1.0, stops ±"
+                  f"{abs(self.cfg['joints'][self.names[0]]['stop'][1]) if self.names else '?'}°; docs/M1_RIG.md). " if js.get("rig") else
+                  "**Machine: the arm** (sw/config/can_map.yaml, sw/description/joints.json). ")
+             + f"Generated by `python -m sw.bringup` ({js['bus']}); data: [{jname}]({jname}). Online: **{', '.join(js['joints_online']) or '—'}**; "
              f"blocked: {', '.join(js['blocked']) or '—'}; {js['cycles']} control cycles at {self.cfg['control_hz']} Hz. "
              f"Longest heartbeat gap {js['heartbeat_gap_max_ms']:.1f} ms (p99.9 {js.get('heartbeat_gap_p999_ms')} ms; latched stops and the hang test excluded) against the {js['watchdog_ms']:.0f} ms hardware watchdog"
              f"{'' if js['virtual'] else ' (real loop: if it is over half the watchdog, raise watchdog_s and re-check electrical.md)'}.", "",
@@ -1352,6 +1390,18 @@ def load_collision_thresholds(path):
 
 
 # ---------------------------------------------------------------------------------------------------------------------
+RIG_CHOICES = ["step1", "arm"]
+
+
+def rig_arg(ap, a):
+    """--rig → the rig name (None = the arm). On a real bus the choice is required: running the Step-1 lever rig with the
+    arm's settings doubles every angle and halves every torque the supervisor believes in (Fable review 2026-11-28, C1)."""
+    if a.bus != "virtual" and a.rig is None:
+        ap.error("real hardware: say which machine is on the bench, --rig step1 (the M1 Step-1 lever rig: docs/M1_RIG.md) "
+                 "or --rig arm (Step 2)")
+    return None if a.rig in (None, "arm") else a.rig
+
+
 def build_virtual(cfg=None, gim_table=None, faults=(), seed=0, joints=None, hand_extra_kg=0.05, log=print, bus="ideal", act=None,
                   rig_only=False, actuator_dir=None, **kw):
     """A BringUp wired to a VirtualArm (python-can virtual bus + MuJoCo plant + simulated e-stop circuit and operator).
@@ -1361,7 +1411,7 @@ def build_virtual(cfg=None, gim_table=None, faults=(), seed=0, joints=None, hand
     from sw.drivers.canbus import CanBus
     from sw.virtual_arm import SimOperator, VirtualArm
     cfg = cfg or load_cfg()
-    cm = load()
+    cm = load(cfg.get("rig"))
     tables = dict(TABLES)
     if gim_table is not None:
         tables["gim6010"] = gim_table
@@ -1393,17 +1443,25 @@ def main(argv=None):
     ap.add_argument("--fault", action="append", default=[], help="virtual only: inject a plant fault (see sw/virtual_arm.py)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="docs/sw")
+    ap.add_argument("--rig", default=None, choices=RIG_CHOICES, help="the machine on the bench: 'step1' = the M1 Step-1 lever rig "
+                    "(sw/config/rig_step1.yaml, docs/M1_RIG.md), 'arm' = the arm (Step 2). REQUIRED on real hardware; virtual default: arm")
+    ap.add_argument("--load", default="bringup", help="rig only: the session load (discs on the levers, rig_<name>.yaml loads)")
     a = ap.parse_args(argv)
+    rig = rig_arg(ap, a)
     joints = a.joints.split(",") if a.joints else None
+    cfg = load_cfg()
+    if rig:
+        from sw.rig import apply
+        cfg = apply(cfg, rig, a.load)
     if a.bus == "virtual":
         from sw.virtual_arm import SIM_GIM
-        bu, arm = build_virtual(gim_table=SIM_GIM if a.gim_table == "sim" else None, faults=a.fault, seed=a.seed, joints=joints)
+        bu, arm = build_virtual(cfg=cfg, gim_table=SIM_GIM if a.gim_table == "sim" else None, faults=a.fault, seed=a.seed, joints=joints)
         desc = "virtual bus" + (", SIM PLACEHOLDER GIM table" if a.gim_table else "") + (f", faults {a.fault}" if a.fault else "")
-        tag = "_virtual" + ("_simgim" if a.gim_table else "")
+        tag = "_virtual" + (f"_{rig}" if rig else "") + ("_simgim" if a.gim_table else "")
     else:
         from sw.can_map import load
         from sw.drivers.canbus import CanBus
-        cm = load()
+        cm = load(rig)
         kind, _, chans = a.bus.partition(":")
         chans = chans.split(",")
         names = list(cm["buses"])
@@ -1420,9 +1478,11 @@ def main(argv=None):
         if a.estop and a.estop.startswith("gpiod:"):
             _, chip, hb, aux = a.estop.split(":")
             io = GpiodSafetyIO(chip, hb, aux)
-        bu = BringUp(buses, cm, io=io, operator=ConsoleOperator(), joints=joints, limit=a.limit)
-        desc, tag = a.bus, ""
-        print("Real bench: PSU current-limited, regen clamp fitted, arm in the cradle, e-stop in reach (docs/rnd/electrical.md A5).")
+        bu = BringUp(buses, cm, cfg, io=io, operator=ConsoleOperator(), joints=joints, limit=a.limit)
+        desc, tag = a.bus, (f"_{rig}" if rig else "")
+        print("Real bench: " + ("STEP-1 LEVER RIG (bare motors, ratio 1.0, stops ±100°): guard on and interlocked, weights bolted, "
+                                "supply limited, e-stop in reach (docs/M1_RIG.md)." if rig else
+                                "PSU current-limited, regen clamp fitted, arm in the cradle, e-stop in reach (docs/rnd/electrical.md A5)."))
     bu.run_all(until=a.until)
     mp, jp, js = bu.report(a.out, tag=tag, bus_desc=desc)
     print(f"report: {mp}  {jp}")

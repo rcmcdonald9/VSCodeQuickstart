@@ -31,6 +31,11 @@ motor side, so the gap is invisible except as lost motion at torque reversals). 
 joint torque (a contact) for the collision tests; `add_test_mass(kg)` hangs a known weight at the grasp site (the lever
 weights of the Step-1 rig).
 
+**The Step-1 lever rig** (cfg from `sw.rig.apply`, `cfg["rig"]`): the plant is the rig model of sw/rig.py instead of the
+bench arm (two bare motors on 0.27 m levers, ratio 1.0, rubber stops at −15° / +100°, the session's discs on the levers;
+the arm joints are inert placeholders held in the fixture), with the rig's actuator datasheet as the default truth and the
+rig's own fitted-model directory; `hand_extra_kg` is then the mass on each weight bolt the twin does not know.
+
 `SIM_GIM` is a **placeholder** GIM protocol table (the DM-J4310 layout with wider ranges) so the GIM code path can be
 exercised end to end here. It is not the SteadyWin protocol.
 """
@@ -335,13 +340,16 @@ class VirtualArm:
         VirtualArm._n += 1
         self._prefix = f"pip{os.getpid()}_{VirtualArm._n}"           # python-can virtual channels are process-global
         import mujoco
-        from sw.bench_env import BenchEnv
+        from sw.rig import actuator_dir as rig_dir, capture, make_env, points
         self.mj = mujoco
         self.rng = np.random.default_rng(seed)
         self.clock = SimClock()
         self.faults = set(faults)
         self.cfg = cfg
-        env = BenchEnv(render=False)
+        self.rig = cfg.get("rig")                  # the Step-1 lever rig (sw/rig.py): two levers instead of the arm
+        if self.rig and actuator_dir is None:
+            actuator_dir = rig_dir(self.rig)       # a rig's fits live apart from the arm's
+        env = make_env(cfg, actuator_dir if self.rig else None)
         env.reset(0)
         self.env, m, d = env, env.m, env.d
         m.body_gravcomp[:] = 0
@@ -351,15 +359,15 @@ class VirtualArm:
         m.geom_conaffinity[:] = 0
         self.jid = {j: mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, j) for j in ARM}
         self.qadr, self.dadr = env.qadr, env.dadr
-        J = {j["name"]: j for j in _joints()}
+        J = {j["name"]: j for j in _joints(cfg)}
         for j, c in cfg["joints"].items():                    # the physical hard stops
             a, b = sorted((math.radians(c["stop"][1]), math.radians(c["other"])))
             m.jnt_range[self.jid[j]] = (a, b)
-        self.hand = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "hand")
-        if hand_extra_kg:
+        if hand_extra_kg:                                     # a mass the twin does not know: at the grasp (arm) / each weight bolt (rig)
             from sw.collision import add_point_mass
-            add_point_mass(m, self.hand, hand_extra_kg, m.site_pos[env.site].copy())
-        self._hand0 = (float(m.body_mass[self.hand]), m.body_ipos[self.hand].copy(), m.body_inertia[self.hand].copy())
+            for bd, kg, pos in points(m, hand_extra_kg):
+                add_point_mass(m, bd, kg, pos)
+        self._mass0 = capture(m)
         self.test_mass = 0.0
         # actuator truth: joint friction in the plant (Coulomb = MuJoCo frictionloss, viscous = dof damping)
         if act is None:
@@ -369,13 +377,21 @@ class VirtualArm:
         else:
             self.act_source = "given" if act else "defaults"
         self.act = {}
+        dbl = {}
+        if self.rig:                                          # the rig's bare outputs: its datasheet (a real gear has backlash)
+            from sw.rig import load as _rig_load
+            ra = _rig_load(self.rig)["actuators"]
+            dflt = {**DEFAULT_COULOMB, **{j: a["coulomb_nm"] for j, a in ra.items()}}
+            dbl = {j: a["backlash_rad"] for j, a in ra.items()}
+        else:
+            dflt = DEFAULT_COULOMB
         for k, j in enumerate(ARM[:5]):
             a = dict((act or {}).get(j) or {})
-            fc = a.get("coulomb_nm", DEFAULT_COULOMB[j])
+            fc = a.get("coulomb_nm", dflt[j])
             b = a.get("viscous_nms", float(m.dof_damping[self.dadr[k]]))
             m.dof_frictionloss[self.dadr[k]] = fc
             m.dof_damping[self.dadr[k]] = b
-            self.act[j] = dict(coulomb_nm=fc, viscous_nms=b, kt_scale=a.get("kt_scale"), backlash_rad=a.get("backlash_rad", 0.0))
+            self.act[j] = dict(coulomb_nm=fc, viscous_nms=b, kt_scale=a.get("kt_scale"), backlash_rad=a.get("backlash_rad", dbl.get(j, 0.0)))
         self.ext_tau = np.zeros(6)                            # external joint torque (a contact), N·m
         self.bal = cfg.get("balancer") or {}
         self.bal_k_true = float(self.bal.get("k_nm", 0.0)) * 1.05
@@ -414,19 +430,21 @@ class VirtualArm:
         for mt in self.motors:
             mt.power(False, 0.0)
         # power-on pose: hanging (rest pose) with the fixture for joints that are not simulated, yaw anywhere
-        rest = cfg["rest_pose"] if self.sim_joints and set(self.sim_joints) >= {"pitch", "roll", "elbow"} else cfg["fixture_pose"]
+        # (the rig: both levers hang near 0, a few degrees off, as left by hand)
+        rest = cfg["rest_pose"] if self.rig or (self.sim_joints and set(self.sim_joints) >= {"pitch", "roll", "elbow"}) else cfg["fixture_pose"]
         self.hold = {}
         for k, j in enumerate(ARM):
             q = math.radians(rest[j]) if j in self.sim_joints else math.radians(cfg["fixture_pose"][j])
             if j == "yaw" and j in self.sim_joints:
-                q = float(self.rng.uniform(-1.0, 1.0))
+                q = float(self.rng.uniform(-1.0, 1.0)) if not self.rig else float(self.rng.uniform(-0.1, 0.1))
             d.qpos[self.qadr[k]] = q
             if j not in self.sim_joints:
                 self.hold[k] = math.radians(cfg["fixture_pose"][j])
         d.qvel[:] = 0
         mujoco.mj_forward(m, d)
-        self.fa = m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, "fa")]
-        self.fa_d = m.jnt_dofadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, "fa")]
+        fa = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, "fa")           # gripper finger (the arm only)
+        self.fa = m.jnt_qposadr[fa] if fa >= 0 else None
+        self.fa_d = m.jnt_dofadr[fa] if fa >= 0 else None
         # fixture stiffness per joint: 15 Hz, critically damped, from the joint's own inertia (stable at the 2 ms step)
         M = np.zeros((m.nv, m.nv))
         mujoco.mj_fullM(m, M, d.qM) if hasattr(d, "qM") else mujoco.mj_fullM(m, d, M)
@@ -447,13 +465,11 @@ class VirtualArm:
         return float(self.env.d.qpos[self.qadr[ARM.index(joint)]])
 
     def add_test_mass(self, kg):
-        """Hang a known weight at the grasp site (0 removes it): the operator's lever weight."""
-        from sw.collision import add_point_mass
-        m = self.env.m
-        m.body_mass[self.hand], m.body_ipos[self.hand], m.body_inertia[self.hand] = self._hand0[0], self._hand0[1].copy(), self._hand0[2].copy()
-        if kg > 0:
-            add_point_mass(m, self.hand, kg, m.site_pos[self.env.site].copy())
-        self.test_mass = float(kg)
+        """The operator's known weight (0 removes it): at the grasp site (arm), or discs on each lever's weight bolt (the
+        rig; kg = {joint: kg} or the same on every lever)."""
+        from sw.rig import set_mass
+        set_mass(self.env.m, kg, self._mass0)
+        self.test_mass = kg
 
     # ---- the wire: python-can virtual bus + impairments (sw/bus_sim.py)
     def _send(self, bn, meta=None, base=None):
@@ -509,7 +525,8 @@ class VirtualArm:
         if self.bal_k_true:
             k = ARM.index(self.bal.get("joint", "pitch"))
             d.qfrc_applied[self.dadr[k]] += self.bal_sign * self.bal_k_true * math.sin(q[k])
-        d.qfrc_applied[self.fa_d] = 200.0 * (0.03 - d.qpos[self.fa]) - 5.0 * d.qvel[self.fa_d] + d.qfrc_bias[self.fa_d]
+        if self.fa is not None:
+            d.qfrc_applied[self.fa_d] = 200.0 * (0.03 - d.qpos[self.fa]) - 5.0 * d.qvel[self.fa_d] + d.qfrc_bias[self.fa_d]
         mj.mj_step(m, d)
 
     def step(self, dt):
@@ -572,10 +589,9 @@ class VirtualArm:
 _SPEC_KEYS = ("fixed_ms", "jitter", "tail", "max_ms", "p_drop", "p_dup", "p_crc", "p_corrupt", "bus_off_at", "bus_off_ms")
 
 
-def _joints():
-    import json
-    from pathlib import Path
-    return json.loads((Path(__file__).resolve().parent / "description" / "joints.json").read_text())
+def _joints(cfg=None):
+    from sw.bringup import joint_rows
+    return joint_rows(cfg)
 
 
 def balancer_sign(m, qadr, dadr):

@@ -204,12 +204,15 @@ def _trim(lim, tf, kp_, kd_, e, vm):
 
 class Supervisor:
     def __init__(self, v_max=1.5, margin_deg=3.0, ws_lo=(0.10, -0.45, 0.76), ws_hi=(0.80, 0.45, 1.35), clock=time.monotonic, fk=None,
-                 collision=None, joints=None, limits=None, torque=None, fb_max_age=FB_MAX_AGE, power=True, rest_a=REST_A, roll_latch=None):
+                 collision=None, joints=None, limits=None, torque=None, fb_max_age=FB_MAX_AGE, power=True, rest_a=REST_A, roll_latch=None,
+                 desc=None):
         """joints: subset of joint names (default: all of joints.json, in order), e.g. the joints online during bring-up.
         limits: {name: (lower, upper)} overriding joints.json (rad, before the margin), e.g. the travel bounds used while a
         joint is not yet calibrated. torque: {name: N·m} overriding the rated/peak bound (e.g. the low calibration torque).
-        power: battery-current budget on (default) or off; rest_a: allowance (A) for the rest of the robot (sw/power.py)."""
-        J = json.loads(DESC.read_text())
+        power: battery-current budget on (default) or off; rest_a: allowance (A) for the rest of the robot (sw/power.py).
+        desc: joint rows replacing joints.json (the machine on the bench is not the arm: the Step-1 rig's bare motors,
+        sw/rig.description); a row's `lever_m` replaces HAND_LEVER for the hand-speed estimate."""
+        J = list(desc) if desc is not None else json.loads(DESC.read_text())
         if joints is not None:
             by = {j["name"]: j for j in J}
             J = [by[n] for n in joints]
@@ -252,7 +255,7 @@ class Supervisor:
         self._pn_lo, self._pn_hi = None, None
         self._approach, self._approach_box, self._near_box = False, None, None     # SW-T6 (14.)
         self.area_clear = False                                                    # SW-T7 (15.): fail-safe
-        self._lever = np.array([HAND_LEVER.get(n, 0.8) for n in self.names])
+        self._lever = np.array([j.get("lever_m", HAND_LEVER.get(j["name"], 0.8)) for j in J])
         # 16. roll latch: "engaged" (solenoid off, the default) | "retracting" | "retracted"
         self.roll_latch = (ROLL_GUARD == "latch" if roll_latch is None else bool(roll_latch)) and "roll" in self.names
         self._rl_state, self._latch_t0, self._latch_switch = "engaged", None, None

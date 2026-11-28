@@ -12,9 +12,15 @@
 5. Bus realism (sw/bus_sim.py): 0–9 ms delay each way, drops, duplicates, CRC errors, bus-off, corrupted payloads: the
    old 10 ms stale-feedback bound false-trips; the tuned bring-up passes, no false trip in motion, real faults (contact,
    silent bus, bus-off) still caught; corrupted frames are dropped by the driver's plausibility gate.
-6. Actuator sysid on the Step-1 rig with hidden friction / torque constant / backlash and a USB-CAN bus: the fit recovers
-   them within tolerance; actuators_<serial>.yaml is loaded back by rnd/twin.py and sw/virtual_arm.py.
-7. Soak test: sysid before and after cyclic motion; a stable drive passes, a drive whose friction drifts fails.
+6. Actuator sysid on the Step-1 LEVER RIG (sw/rig.py: bare motors on levers, ratio 1.0, stops −15° / +100°; Fable review
+   2026-11-28 C1: it used to rehearse the arm) with hidden friction / torque constant / backlash and a USB-CAN bus: the
+   fit recovers them within tolerance; the span check reads the rig's 115°; actuators_<serial>.yaml is tagged as a rig
+   fit and loaded back by sw/rig.py and sw/virtual_arm.py.
+7. Soak test on the rig with the soak discs: RMS torque inside the 45–65 % band; sysid before and after cyclic motion; a
+   stable drive passes, a drive whose friction drifts fails.
+0. Rig profile: the rig's CAN map (ratio 1.0) and description, the arm's ratio rejected on the rig, a real bus without
+   --rig refused, the sizing (soak load, calibration torque, stops) inside its limits. Step 1a (sw/rig_1a.py): the
+   unloaded 1 A tests pass on a good simulated drive, and a drive without its limit, CAN timeout or flash save fails.
 8. Teleop (sw/teleop_sim.py): 5 scripted-leader episodes through the supervisor recorded as LeRobot v3.0 and reloaded
    with the official loader; an extra episode with an e-stop is discarded and the arm stops. No other episode may end
    on a supervisor stop (W14a: seed 3 used to end on a tracking-error stop: a teleop IK / workspace bug, not a
@@ -407,43 +413,128 @@ def test_sysid():
             assert v["err_pct"] is not None and abs(v["err_pct"]) <= TOL_PCT[q], (j, q, v)
             worst[q] = max(worst.get(q, 0.0), abs(v["err_pct"]))
     write(res)
-    # real2sim: a new virtual arm loads the fitted files instead of its defaults
+    # the machine rehearsed is the lever rig: span stop-to-stop 115° at ratio 1.0 (the arm's 2.0 would read half), zero found
+    for j, c in res["calibration"].items():
+        assert abs(c["span_measured_deg"] - c["span_expected_deg"]) < 0.02 * c["span_expected_deg"] and c["span_expected_deg"] == 115.0, (j, c)
+        assert abs(res["zero_error_deg"][j]) < 0.5, res["zero_error_deg"]
+    assert bu.rig == "step1" and bu.can_map["rig"] == "step1" and all(d.ratio == 1.0 for d in bu.drivers.values())
+    # real2sim: a new virtual rig loads the fitted files instead of its defaults; the fits are tagged as bare-motor rig fits
     from sw.bringup import build_virtual, load_cfg
+    from sw.rig import actuator_model as rig_model, apply
+    from sw.virtual_arm import SIM_GIM
     fdir = OUT.parent / "rehearse_step1" / "actuators"
     from rnd.twin import actuator_model, measured_actuators
     fits = measured_actuators(fdir)
     assert set(fits) == {"yaw", "wpitch"}, fits
+    assert all(f["rig"] == "step1" and "NOT the arm joint" in f["stage"] for f in fits.values()), fits
     assert actuator_model("wpitch", fdir)["source"].startswith("fitted") and actuator_model("wpitch")["source"].startswith("datasheet")
-    bu2, arm2 = build_virtual(cfg=load_cfg(), log=_quiet, actuator_dir=fdir)
+    assert rig_model("step1", "yaw", fdir)["source"].startswith("fitted") and rig_model("step1", "yaw")["source"].startswith("rig datasheet")
+    bu2, arm2 = build_virtual(cfg=apply(load_cfg(), "step1"), gim_table=SIM_GIM, log=_quiet, actuator_dir=fdir)
     assert arm2.act_source.startswith("fitted") and abs(arm2.act["wpitch"]["coulomb_nm"] - fits["wpitch"]["coulomb_nm"]) < 1e-9
     arm.close()
     arm2.close()
-    return ("Actuator sysid (bring-up step 7, sw/sysid.py) rehearsed on the Step-1 rig (GIM yaw stage on a lever + DM-J4310, hidden values, "
-            "USB-CAN bus): fit vs hidden truth worst error " + ", ".join(f"{q} {v:.1f} %" for q, v in worst.items())
-            + " (docs/sw/sysid_rehearsal.md); actuators_<serial>.yaml written and loaded back by rnd/twin.py and sw/virtual_arm.py ✅")
+    return ("Actuator sysid (bring-up step 7, sw/sysid.py) rehearsed on the Step-1 LEVER RIG (sw/config/rig_step1.yaml: bare GIM6010-8 + "
+            "DM-J4310 on 0.27 m levers, ratio 1.0, calibrated on the −15° rubber stop, span to +100° "
+            + ", ".join(f"{j} {c['span_measured_deg']}°" for j, c in res["calibration"].items())
+            + " of 115°; K from the weighed lever; hidden values, USB-CAN bus): fit vs hidden truth worst error "
+            + ", ".join(f"{q} {v:.1f} %" for q, v in worst.items())
+            + " (docs/sw/sysid_rehearsal.md); actuators_<serial>.yaml tagged as rig fits and loaded back by sw/rig.py and sw/virtual_arm.py ✅")
 
 
 def test_soak():
+    """On the Step-1 lever rig with the soak discs on (the machine the exit criterion runs on, Fable review C1)."""
     from sw import soak
     from sw.bringup import build_virtual, load_cfg
+    from sw.rig import apply
+    from sw.virtual_arm import SIM_GIM
     out = {}
     for fault in ((), ("drift",)):
-        cfg = load_cfg()
+        cfg = apply(load_cfg(), "step1", "soak")
         cfg["cal_speed"] = 0.5
-        cfg["soak"] = dict(mass_kg=0.5, sample_s=10.0)
-        cfg["sysid"] = dict(latency_steps=12)
-        bu, arm = build_virtual(cfg=cfg, faults=fault, bus="usb", log=_quiet, actuator_dir=OUT / "soak", act={})
+        cfg["soak"]["sample_s"] = 10.0
+        cfg["sysid"]["latency_steps"] = 12
+        bu, arm = build_virtual(cfg=cfg, faults=fault, bus="usb", log=_quiet, actuator_dir=OUT / "soak", act={}, gim_table=SIM_GIM,
+                                hand_extra_kg=soak.RIG_WEIGH_ERR_KG)
         res = soak.run(bu, 45.0, log=_quiet)
-        soak.write(res, "soak_virtual" + ("_drift" if fault else ""))
+        soak.write(res, "soak_virtual_step1" + ("_drift" if fault else ""))
         out[fault] = res
         arm.close()
     ok, bad = out[()], out[("drift",)]
     assert ok["status"] == "PASS", ok.get("fails")
+    assert set(ok["motion"]["rms_torque_frac"]) == {"yaw", "wpitch"}
+    band = ok["definition"]["load_band"]
+    assert all(band[0] <= f <= band[1] for f in ok["motion"]["rms_torque_frac"].values()), ok["motion"]["rms_torque_frac"]
     assert bad["status"] == "FAIL" and any("coulomb" in f for f in bad["fails"]), bad.get("fails")
-    d0 = ok["drift"]["wpitch"]["drift"]
-    return (f"Soak test (sw/soak.py, Step-1 exit criterion): sysid at start and end of cyclic motion; stable virtual drive PASS (drift Coulomb "
-            f"{d0['coulomb_pct']:+.1f} %, K {d0['kt_pct']:+.2f} %, latency {d0['latency_mean_ms']:+.1f} ms); a drive whose friction grows with temperature "
-            f"FAILS ({'; '.join(bad['fails'])}) ✅")
+    d0 = ok["drift"]["yaw"]["drift"]
+    rms = ok["motion"]["rms_torque_frac"]
+    return (f"Soak test (sw/soak.py, Step-1 exit criterion) on the Step-1 LEVER RIG with the soak discs (GIM lever +{ok['load_kg']['yaw']} kg, "
+            f"DM lever +{ok['load_kg']['wpitch']} kg at 0.27 m): RMS torque yaw {rms['yaw']:.0%}, wpitch {rms['wpitch']:.0%} of rated "
+            f"(band {band[0]:.0%}–{band[1]:.0%}; the old 2 kg at 0.3 m was 118 % on the bare GIM); sysid at start and end; stable drives PASS "
+            f"(yaw drift Coulomb {d0['coulomb_pct']:+.1f} %, K {d0['kt_pct']:+.2f} %, latency {d0['latency_mean_ms']:+.1f} ms); a drive whose friction "
+            f"grows with temperature FAILS ({'; '.join(bad['fails'])}) ✅")
+
+
+def test_rig_1a():
+    """Step 1a (sw/rig_1a.py) against a simulated drive: every phase passes on a good drive; each bad drive fails its phase."""
+    from sw.rig_1a import rehearse, write
+    good = rehearse(log=_quiet)
+    assert all(v["ok"] for v in good.values()), good
+    write(good, "_virtual")
+    caught = {}
+    for fault, phase in (("no_clamp", "stall"), ("no_timeout", "timeout"), ("no_flash", "verify")):
+        r = rehearse(log=_quiet, faults=(fault,))
+        assert not r[phase]["ok"], (fault, r[phase])
+        caught[fault] = phase
+    assert good["stall"]["reported_plateau_nm"] > 0 and abs(good["stall"]["scale_nm"] - 1.0) < 0.15
+    return ("Step 1a motor tests (sw/rig_1a.py: no safety board, supply 24 V / 1 A, hub + index disc only) rehearsed: limits written + "
+            f"saved, kept over a power cycle, impedance step (hold error {good['impedance']['hold_error_rad']} rad, MIT law p99 "
+            f"{good['impedance']['law_error_nm']} N·m), the drive's own CAN timeout, the limit at stall ({good['stall']['reported_plateau_nm']} N·m "
+            f"reported, {good['stall']['scale_nm']} N·m on the scale); a drive that ignores its limit, its timeout or its flash save fails "
+            + ", ".join(f"{p}" for p in caught.values()) + " (the no-clamp drive REPORTS 1.0 N·m: only the scale catches it) ✅")
+
+
+def test_rig():
+    """The Step-1 rig profile (sw/rig.py, sw/config/rig_step1.yaml): the software describes the lever rig, not the arm."""
+    import contextlib
+    import io
+    from sw import bringup, soak
+    from sw.can_map import check, load
+    from sw.rig import apply, can_map, description, sizing
+    arm_map, rig_map = load(), load("step1")
+    yaw = lambda cm: next(d for b in cm["buses"].values() for d in b["devices"] if d["name"] == "yaw")
+    assert yaw(arm_map)["ratio"] == 2.0 and yaw(rig_map)["ratio"] == 1.0
+    assert check(rig_map)[0] == [] and check(arm_map)[0] == []
+    bad = can_map("step1")
+    yaw(bad)["ratio"] = 2.0                                        # the arm's stage ratio on the rig: caught at enumerate
+    assert any("ratio 2.0 vs rig step1 1.000" in e for e in check(bad)[0]), check(bad)
+    d = {j["name"]: j for j in description("step1")}
+    assert d["yaw"]["rated_nm"] == 5.0 and d["yaw"]["peak_nm"] == 11.0 and d["wpitch"]["rated_nm"] == 3.0
+    cfg = apply(bringup.load_cfg(), "step1")
+    assert cfg["joints"]["yaw"]["stop"] == [-1, -15] and cfg["joints"]["yaw"]["other"] == 100 and "elbow" not in cfg["joints"]
+    assert all(c["span_check"] for c in cfg["joints"].values())
+    assert not any(c["span_check"] for c in apply(bringup.load_cfg(), "step1", "soak")["joints"].values())
+    try:                                                           # a rig cfg with the arm's CAN map is refused
+        bringup.BringUp({}, arm_map, cfg, io=None, plant=object())
+        raise AssertionError("BringUp accepted the arm map with rig settings")
+    except ValueError:
+        pass
+    for mod in (bringup, soak):                                    # real hardware without --rig is refused before any bus opens
+        with contextlib.redirect_stderr(io.StringIO()):
+            try:
+                mod.main(["--bus", "socketcan:can0"])
+                raise AssertionError(f"{mod.__name__} ran on real hardware without --rig")
+            except SystemExit as e:
+                assert e.code == 2, e.code
+    s = sizing("step1")
+    for j, v in s.items():
+        assert 0.50 <= v["soak_rms_frac"] <= 0.60, (j, v["soak_rms_frac"])
+        assert v["cal_ok"] and v["sag_testable"], (j, v)
+        assert abs(v["centre_of_percussion_m"] - v["stop_r_m"]) < 0.02, (j, v)
+        assert all(c["strain"] <= 0.40 for c in v["stops"]), (j, v["stops"])
+    return ("Step-1 rig profile (sw/rig.py): CAN map yaw ratio 1.0 on the rig (2.0 on the arm, which the rig's map check rejects), bare-motor "
+            "ratings 5 / 11 and 3 / 7 N·m, stops −15° / +100°, the arm's stops gone; a rig cfg with the arm map and a real bus without --rig "
+            "are refused; sizing: soak RMS " + ", ".join(f"{j} {v['soak_rms_frac']:.0%}" for j, v in s.items()) + " of rated, calibration ≤ 60 % "
+            "loaded or not, stop at the centre of percussion, every stop case inside the bumper's 40 % strain ✅")
 
 
 def test_teleop():
@@ -477,8 +568,8 @@ def test_gim_discover():
 
 
 def main():
-    out = [test_protocol(), test_gim_discover(), test_bringup_dm(), test_bringup_full(), test_faults(), test_bus_realism(), test_integrated_stop(), test_sysid(),
-           test_soak(), test_teleop()]
+    out = [test_protocol(), test_gim_discover(), test_rig(), test_rig_1a(), test_bringup_dm(), test_bringup_full(), test_faults(), test_bus_realism(), test_integrated_stop(),
+           test_sysid(), test_soak(), test_teleop()]
     Path("docs/sw").mkdir(parents=True, exist_ok=True)
     Path("docs/sw/s2_tests.md").write_text("# S1 bring-up + S2 teleop tests (generated by `python -m sw.test_s2`)\n\n"
                                            + __doc__.split("\n\n", 1)[1].strip() + "\n\n" + "\n".join(f"- {o}" for o in out) + "\n")

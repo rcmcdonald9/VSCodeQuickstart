@@ -1,0 +1,92 @@
+# M1 Step-1 lever rig profile (Fable review 2026-11-28, Critical C1). The single source for what the software and the CAD
+# say the Step-1 machine is: sw/rig.py loads it for the bring-up, soak, sysid rehearsal and the virtual bench (`--rig step1`,
+# REQUIRED on real hardware: sw/bringup.py and sw/soak.py refuse a real bus without --rig); rnd/parts/rig.py builds the
+# stand, levers, stops and guard from the `rig` block. Procedure, numbers and pass criteria: docs/M1_RIG.md.
+#
+# The joints keep their arm names so the CAN IDs, serials and protocol tables carry over to Step 2:
+#   yaw    = the ONE Step-1 GIM6010-8 (SDC104), BARE output, its own lever: no belt stage, ratio 1.0 (the arm's yaw is 2.0)
+#   wpitch = the DM-J4310-2EC V1.1, bare output, its own lever (ratio 1.0, as in the arm)
+# Both motors sit back to back on one centre post, axes horizontal (along Y); each lever hangs at 0 and swings in a
+# vertical plane, +θ toward +X. Rubber stops at the weight radius: the REFERENCE stop at −15° (just past hanging, so gravity
+# at it stays small with any weight on: calibration works loaded) and the span stop at +100°. A lift-off polycarbonate
+# guard with an interlock covers everything; opening it cuts the drives (so weights are only changed between sessions).
+name: step1
+
+can:            # same adapters and IDs as sw/config/can_map.yaml B1 / B2; only the two Step-1 motors on the bus
+  bitrate: 1000000
+  control_hz: 500
+  buses:
+    B1:
+      adapter: "USB-CAN #1 (candleLight / gs_usb, SocketCAN can0)"
+      termination: [adapter, yaw]          # 120 Ω plug at the GIM end of the stub
+      devices:
+        - {name: yaw, kind: gim6010, id: 0x03, fb_id: 0x13, ratio: 1.0, frames_per_cycle: 2}   # bare GIM6010-8 output
+    B2:
+      adapter: "USB-CAN #2 (candleLight / gs_usb, SocketCAN can1)"
+      termination: [adapter, wpitch]
+      devices:
+        - {name: wpitch, kind: dm_j4310, id: 0x05, fb_id: 0x15, ratio: 1.0, frames_per_cycle: 2}
+
+# Joint description on the rig (sw/description/joints.json format; angles in degrees here). Bare-motor ratings from
+# rnd/specs/actuators.yaml: GIM6010-8 5 / 11 N·m, DM-J4310 3 / 7 N·m. max_speed = the 120 rpm rated speed of both (the jog
+# runs at 10 % of it, 1.26 rad/s, under the supervisor's 4 rad/s speed fault). Software range −10° … +90° inside the
+# physical stops −15° / +100°.
+joints:
+  - {name: yaw,    actuator: GIM6010-8,         ratio: 1.0, lower_deg: -10, upper_deg: 90, rated_nm: 5.0, peak_nm: 11.0, max_speed_rad_s: 12.566, lever_m: 0.30}
+  - {name: wpitch, actuator: DM-J4310-2EC_V1.1, ratio: 1.0, lower_deg: -10, upper_deg: 90, rated_nm: 3.0, peak_nm: 7.0,  max_speed_rad_s: 12.566, lever_m: 0.30}
+
+# Actuator model of the bare outputs for the rig twin and the virtual plant (ESTIMATE until the sysid step fits them;
+# fits go to sw/config/rig_step1/actuators_<serial>.yaml, never to sw/config/, so the arm twin never loads a rig fit).
+# armature = rotor inertia × ratio² (actuators.yaml: GIM 2.4e-5 × 8², DM 6e-6 × 10²).
+actuators:
+  yaw:    {actuator: "GIM6010-8 bare output (Step-1 rig)", coulomb_nm: 0.12, viscous_nms: 0.25, armature: 0.00154, kt_scale: 1.0, backlash_rad: 0.0035, latency_ms: null}
+  wpitch: {actuator: "DM-J4310-2EC 10:1 (Step-1 rig)",     coulomb_nm: 0.04, viscous_nms: 0.50, armature: 0.0006,  kt_scale: 1.0, backlash_rad: 0.0035, latency_ms: null}
+
+# Physical rig (rnd/parts/rig.py). Frame X along the base rail, Y along the motor axes (GIM +Y, DM −Y), Z up from the bench.
+rig:
+  axis_z: 0.370               # m, both motor axes above the bench top (lever + discs reach 0.300 below it: 70 mm clear)
+  stops_deg: [-15, 100]       # rubber stop contact angles, both levers (reference = the lower one)
+  r_mass: 0.270               # m, axis → weight bolt; also the stop radius (≈ the lever's centre of percussion: no hub impact)
+  bar: {l: 0.300, w: 0.040, t: 0.006, tail: 0.015, rho: 2700}     # 6061 flat bar (the kit's test lever), axis 15 mm from its end
+  hub: {d: 0.064, t: 0.010, rho: 2700}                             # 6061 hub disc on the motor output (bar bolted to it)
+  carrier_kg: 0.168           # always on: M8 × 65 8.8 bolt + nyloc + 2 × Ø60 × 3 steel plates (weigh it, ±1 g)
+  disc: {d: 0.060, t: 0.010, hole: 0.0085, rho: 7850}             # S235 Ø60 × 10 discs, 0.2175 kg each (weigh each, ±1 g)
+  loads:                      # discs on each lever (in pairs, one each side of the bar) on top of the carrier, per session
+    bringup: {yaw: 0, wpitch: 0}     # bring-up: calibrate (with the span check) / jog / gravity / sag / sysid
+    soak:    {yaw: 4, wpitch: 2}     # the 2 h soak: ≈ 55 % of rated RMS on both (sw/rig.py sizing, docs/M1_RIG.md)
+  bumper: {d: 0.050, h: 0.050, k_n_per_m: 180000, strain_max: 0.40}   # natural rubber 60 Sh A, type D, M10 stud (k ESTIMATE: measure)
+  frame: {post: 0.040, standoff: 0.020, plate_t: 0.010}            # 40×40 centre post; 10 mm 6061 motor plates on 20 mm standoffs
+                                                                   # on its ±Y faces (room behind for the motors' rear connectors)
+  motors:                     # no_load: output speed at 24 V (actuators.yaml: 420 / 200 rpm), caps a runaway's energy
+    yaw:    {kind: GIM6010-8, od: 0.080, h: 0.040, side: +1, no_load_rad_s: 43.98}   # rear face on its plate; output face +Y
+    wpitch: {kind: DM-J4310,  od: 0.057, h: 0.046, side: -1, no_load_rad_s: 20.94}   # output face −Y
+
+# Bring-up settings on the rig (merged over sw/config/bringup.yaml by sw/rig.py; `joints` replaces the arm's).
+bringup:
+  order: [wpitch, yaw]
+  rest_pose: {pitch: 0, roll: 0, yaw: 0, elbow: 0, wpitch: 0, wroll: 0}      # levers hang at 0 (the limp equilibrium)
+  fixture_pose: {pitch: 0, roll: 0, yaw: 0, elbow: 0, wpitch: 0, wroll: 0}   # arm joints: not on the rig
+  balancer: {joint: pitch, k_nm: 0.0}
+  cal_frac_max: 0.60
+  joints:
+    # reference: the lower stop at −15° (side −1), a short seek from hanging with little gravity whatever the load; span
+    # check against +100° in the bring-up session (bar + carrier only): a wrong ratio or a misplaced stop shows as a span
+    # error (the arm's 2.0 on this rig reads 230° for 115°). Loaded sessions skip the span (sw/rig.apply).
+    yaw:    {kp: 30, kd: 1.5, stop: [-1, -15], other: 100, span_check: true, park: 30, jog: 15}
+    wpitch: {kp: 15, kd: 0.7, stop: [-1, -15], other: 100, span_check: true, park: 30, jog: 15}
+  gravity:
+    approach_deg: 3
+    settle_s: 0.6
+    avg_s: 0.3
+    max_residual_frac: 0.20
+    poses:
+      - {pitch: 0, roll: 0, yaw: 0,  elbow: 0, wpitch: 85, wroll: 0}
+      - {pitch: 0, roll: 0, yaw: 25, elbow: 0, wpitch: 60, wroll: 0}
+      - {pitch: 0, roll: 0, yaw: 50, elbow: 0, wpitch: 0,  wroll: 0}
+      - {pitch: 0, roll: 0, yaw: 75, elbow: 0, wpitch: 35, wroll: 0}
+      - {pitch: 0, roll: 0, yaw: 85, elbow: 0, wpitch: 10, wroll: 0}
+  # kt_method absolute: the lever's gravity is known from weighed parts (bar, carrier, discs: ±1 g) and the CAD radii, so
+  # K = twin gravity / mean drive torque of the ± friction sweeps; no weight is hung mid-session (the guard is closed).
+  sysid: {joints: [yaw, wpitch], kt_method: absolute, speeds_frac: [0.1, 0.2, 0.35, 0.6], backlash_amp_deg: 2.5, backlash_speed: 0.1,
+          latency_steps: 30, latency_frac: 0.08}
+  soak: {load_band: [0.45, 0.65]}      # the soak FAILS if a joint's RMS torque leaves this fraction of rated
