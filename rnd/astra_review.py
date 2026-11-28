@@ -13,9 +13,9 @@ now = datetime.datetime.now(datetime.timezone.utc)
 if STAMP.exists() and now - datetime.datetime.fromisoformat(STAMP.read_text().strip()) < datetime.timedelta(hours=24):
     raise SystemExit(f"Refusing: last Astra run was {STAMP.read_text().strip()} (owner rule: at most one run per day).")
 packet = Path(sys.argv[1]) if len(sys.argv) > 1 else R / "docs/review/packet_m1_arm.md"
-prompt = (R / "docs/review/PROMPT_review2.md").read_text()
+prompt = (R / (sys.argv[2] if len(sys.argv) > 2 else "docs/review/PROMPT_review2.md")).read_text()
 content = [{"type": "text", "text": prompt + "\n\n" + packet.read_text()}]
-img = R / "docs/rnd/img/robot_v4.png"
+img = R / "docs/rnd/img/robot_v9.png"
 if img.exists():
     content.append({"type": "image_url", "image_url": {"url": "data:image/png;base64," + base64.b64encode(img.read_bytes()).decode()}})
 body = {"model": MODEL, "messages": [{"role": "user", "content": content}], "stream": True, "reasoning_effort": "high",
@@ -35,5 +35,5 @@ with urllib.request.urlopen(req, timeout=3600) as r:
             msg.append(ch.get("delta", {}).get("content") or "")
             finish = ch.get("finish_reason") or finish
 out = R / "docs" / "review" / f"astra_review_{now.date()}.md"
-out.write_text(f"# External review #2b: {MODEL} ({now.date()})\n\nPacket: {packet.name}; prompt: PROMPT_review2.md. Raw output below.\n\n" + "".join(msg))
+out.write_text(f"# External review #2b: {MODEL} ({now.date()})\n\nPacket: {packet.name}; prompt: {sys.argv[2] if len(sys.argv) > 2 else 'PROMPT_review2.md'}. Raw output below.\n\n" + "".join(msg))
 print("finish:", finish, "usage:", usage, "chars:", len("".join(msg)), "→", out)
