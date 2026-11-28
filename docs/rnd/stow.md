@@ -91,7 +91,8 @@ rnd/pinch.py single-joint rows (docs/rnd/pinch.json, tier 1) that fail within 15
 
 | Sweep | Joint | Moving × static | min gap | worst at | stow within |
 |---|---|---|---|---|---|
-| people-near | roll | roll_cover_yaw × roll_roll_link | 6.5 mm | 15° | 7° |
+| all | roll | roll_cover_yaw × roll_ferrule_m | 5.6 mm | 15° | 7° |
+| people-near | roll | roll_cover_yaw × roll_roll_link | 6.4 mm | 15° | 7° |
 
 The stow needs the rolls out at +8° / +8° (held at the +8° park value it is 553 mm), so the move in crosses the roll rows above (the yaw hood closes on the ferrule near +15°). Those rows fail for any roll move through that band (every reach does it); the fix is the shoulder cover's (rnd/parts/covers.py compliant() note), not the stow.
 

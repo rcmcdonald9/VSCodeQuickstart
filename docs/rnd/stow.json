@@ -793,11 +793,29 @@
  },
  "pinch_near": [
   {
+   "src": "all",
+   "joint": "roll",
+   "moving": "roll_cover_yaw",
+   "static": "roll_ferrule_m",
+   "min": 5.645902967989818,
+   "at": 15.0,
+   "stow": 6.618141049079151
+  },
+  {
+   "src": "people-near",
+   "joint": "roll",
+   "moving": "roll_cover_yaw",
+   "static": "roll_ferrule_m",
+   "min": 5.645902967989818,
+   "at": 15.0,
+   "stow": 6.618141049079151
+  },
+  {
    "src": "people-near",
    "joint": "roll",
    "moving": "roll_cover_yaw",
    "static": "roll_roll_link",
-   "min": 6.475518879691847,
+   "min": 6.449945701180802,
    "at": 15.0,
    "stow": 6.618141049079151
   }
