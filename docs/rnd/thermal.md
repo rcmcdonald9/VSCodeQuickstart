@@ -18,6 +18,11 @@ Duty cases:
    joint friction 0.6 N·m, motors at 75 % torque constant (so the same torque needs more current: τ_rated × 0.75), 0.6 kg can.
 2. **Worst static hold.** The worst workspace pose with the 1 kg payload, held indefinitely. The result is the time to
    reach the limit.
+3. **D20 and B1y (Astra review #3 major 11, 2026-11-28).** The heavy-carry motor sets (params `d20`, `d20_yaw`) in the mount
+   the BOM pays for (belt joints: closed sleeve + aluminium finned rear cap; the B1y inline DM-J4340 yaw: bare under the
+   R17 cover, no cap): task day, worst 1 kg hold, the R2c hug at the spec 0.25 m and the R2d basket carry (2 min, from
+   cold and from the task-day temperature), each with a **sensitivity band** over the network's estimated constants, and
+   the number the bench has to measure to keep each pass.
 
 Ambient 30 °C, limit 100 °C, ΔT at rated (open, still air) 60 K, τ 600 s; h_o 12 / h_i 5 W/m²K, F_WC 30%, +5 K local air under the covers, ASA 0.17 W/mK × 3 mm (all ESTIMATE until the M1 bench logs a real motor's temperature).
 
@@ -26,6 +31,7 @@ Ambient 30 °C, limit 100 °C, ΔT at rated (open, still air) 60 K, τ 600 s; h_
 | Open in still air + 10 K (the old model) | 1.00 | 70 K | 1.00 × rated |
 | **Closed ASA sleeve, printed cap, plastic coupling (as drawn)** | **3.19** | **152 K** | **0.65 × rated** |
 | Sleeve + aluminium rear cap, finned face to the room | 0.90 | 56 K | 1.00 × rated |
+| Inline motor bare under the R17 cover (GIM6010-size frame; section 3 uses each motor's own frame) | 2.98 | 143 K | 0.67 × rated |
 
 ## 1. Task day: fetch cycle back to back, Monte Carlo worst corner
 
@@ -54,3 +60,61 @@ Ambient 30 °C, limit 100 °C, ΔT at rated (open, still air) 60 K, τ 600 s; h_
 | wrist_pitch | 1.9 | 3.0 | 93 °C | unlimited ✅ | 58 °C | unlimited ✅ | 2.0 |
 
 **Some joints can't hold their worst pose forever in the closed sleeve (shortest 9 min).** The planner must derate long holds at full reach (the driver's thermal model already does this). Normal reaching is far below the worst pose.
+
+## 3. D20 and B1y in the mount the BOM pays for, with a sensitivity band (Astra review #3 major 11)
+
+Belt joints: closed sleeve + aluminium finned rear cap (bom.py / m1_kit AL_CAP). Inline joints (the roll in every design, the B1y DM-J4340 yaw): bare under the R17 cover (cover Ø+20 mm, +40 mm, 2.5 mm ASA, ESTIMATE), no cap, no metal path. Task day = section 1's fetch cycle on that design (worst corner, motors at 75 % torque constant). Hug = R2c at the spec 0.25 m (rnd/payload_study.py), equal shares. Basket = the worst R2d carry pose (rnd/basket.py, equal shares), 2 minutes started from the joint's task-day temperature in the same band corner.
+
+| Design | Joint (actuator, mount) | Duty | τ / rated (N·m) | **Winding, nominal** | Band at 30 °C (lo–hi) | Band worst, 35 °C room | Time to 100 °C from cold: nominal / band worst | Continuous torque in this mount: nominal / band worst (N·m) | Bench must show: winding rise at rated torque in this mount | Cap contact resistance needed |
+|---|---|---|---|---|---|---|---|---|---|---|
+| B0 | shoulder_pitch (GIM6010-8, sleeve + Al cap) | task day (non-stop fetch, worst corner) | 7.1 / 10.7 | **59 °C** ✅ | 52–77 °C ✅ | 82 °C ✅ | unlimited / unlimited | 11.5 / 9.3 (1.63× / 1.32× the duty) | ≤ 149 K (model 56 K, band ≤ 86 K) | any (no cap needed) |
+| B0 | shoulder_pitch (GIM6010-8, sleeve + Al cap) | worst 1 kg workspace hold | 12.1 / 14.2 | **76 °C** ✅ | 64–102 °C ❌ | 107 °C ❌ | unlimited / 23 min | 15.4 / 12.4 (1.27× / 1.02× the duty) | ≤ 90 K (model 56 K, band ≤ 86 K) | ≤ 10.49 K/W |
+| B0 | shoulder_pitch (GIM6010-8, sleeve + Al cap) | R2c hug 0.25 m, held | 13.9 / 14.2 | **88 °C** ✅ | 73–121 °C ❌ | 126 °C ❌ | unlimited / 9 min | 15.4 / 12.4 (1.11× / 0.90× the duty) | ≤ 69 K (model 56 K, band ≤ 86 K) | ≤ 3.32 K/W |
+| B0 | shoulder_roll (GIM8108-36, cover) | task day (non-stop fetch, worst corner) | 1.2 / 26.3 | **35 °C** ✅ | 33–41 °C ✅ | 46 °C ✅ | unlimited / unlimited | 17.5 / 13.4 | not binding (> 250 K) | — |
+| B0 | shoulder_roll (GIM8108-36, cover) | worst 1 kg workspace hold | 16.8 / 35.1 | **69 °C** ✅ | 55–97 °C ✅ | 102 °C ❌ | unlimited / unlimited | 23.4 / 17.9 (1.39× / 1.07× the duty) | not binding (> 250 K) | — |
+| B0 | upper_yaw (GIM6010-8, sleeve + Al cap) | task day (non-stop fetch, worst corner) | 0.2 / 7.1 | **35 °C** ✅ | 33–40 °C ✅ | 45 °C ✅ | unlimited / unlimited | 7.7 / 6.2 | not binding (> 250 K) | any (no cap needed) |
+| B0 | upper_yaw (GIM6010-8, sleeve + Al cap) | worst 1 kg workspace hold | 6.9 / 9.5 | **65 °C** ✅ | 56–86 °C ✅ | 91 °C ✅ | unlimited / unlimited | 10.2 / 8.3 (1.47× / 1.19× the duty) | ≤ 122 K (model 56 K, band ≤ 86 K) | ≤ 40.37 K/W |
+| B0 | elbow (GIM6010-8, sleeve + Al cap) | task day (non-stop fetch, worst corner) | 3.4 / 7.1 | **47 °C** ✅ | 42–59 °C ✅ | 64 °C ✅ | unlimited / unlimited | 7.7 / 6.2 (2.29× / 1.85× the duty) | not binding (> 250 K) | any (no cap needed) |
+| B0 | elbow (GIM6010-8, sleeve + Al cap) | worst 1 kg workspace hold | 6.9 / 9.5 | **65 °C** ✅ | 56–86 °C ✅ | 91 °C ✅ | unlimited / unlimited | 10.2 / 8.3 (1.47× / 1.19× the duty) | ≤ 122 K (model 56 K, band ≤ 86 K) | ≤ 40.30 K/W |
+| B0 | elbow (GIM6010-8, sleeve + Al cap) | R2c hug 0.25 m, held | 13.9 / 9.5 | **154 °C** ❌ | 124–222 °C ❌ | 227 °C ❌ | 8 min / 3 min | 10.2 / 8.3 (0.74× / 0.60× the duty) | ≤ 31 K (model 56 K, band ≤ 86 K) | no cap passes |
+| B1 (D20) | shoulder_pitch (GIM8108-8, sleeve + Al cap) | task day (non-stop fetch, worst corner) | 8.4 / 16.0 | **51 °C** ✅ | 45–65 °C ✅ | 70 °C ✅ | unlimited / unlimited | 17.1 / 13.6 (2.05× / 1.63× the duty) | ≤ 238 K (model 57 K, band ≤ 90 K) | any (no cap needed) |
+| B1 (D20) | shoulder_pitch (GIM8108-8, sleeve + Al cap) | worst 1 kg workspace hold | 12.2 / 21.4 | **54 °C** ✅ | 47–69 °C ✅ | 74 °C ✅ | unlimited / unlimited | 22.8 / 18.2 (1.87× / 1.48× the duty) | ≤ 198 K (model 57 K, band ≤ 90 K) | any (no cap needed) |
+| B1 (D20) | shoulder_pitch (GIM8108-8, sleeve + Al cap) | R2c hug 0.25 m, held | 13.9 / 21.4 | **59 °C** ✅ | 51–78 °C ✅ | 83 °C ✅ | unlimited / unlimited | 22.8 / 18.2 (1.65× / 1.31× the duty) | ≤ 154 K (model 57 K, band ≤ 90 K) | any (no cap needed) |
+| B1 (D20) | shoulder_pitch (GIM8108-8, sleeve + Al cap) | R2d basket carry 2 min, from the task-day temperature | 20.7 / 21.4 | **57 °C** ✅ | 48–80 °C ✅ | 85 °C ✅ | — / — | — (2-min duty) | — | — |
+| B1 (D20) | shoulder_roll (GIM8108-36, cover) | task day (non-stop fetch, worst corner) | 1.6 / 26.3 | **36 °C** ✅ | 33–41 °C ✅ | 46 °C ✅ | unlimited / unlimited | 17.5 / 13.4 (10.79× / 8.27× the duty) | not binding (> 250 K) | — |
+| B1 (D20) | shoulder_roll (GIM8108-36, cover) | worst 1 kg workspace hold | 16.9 / 35.1 | **69 °C** ✅ | 56–98 °C ✅ | 103 °C ❌ | unlimited / unlimited | 23.4 / 17.9 (1.38× / 1.06× the duty) | not binding (> 250 K) | — |
+| B1 (D20) | shoulder_roll (GIM8108-36, cover) | R2d basket carry 2 min, from the task-day temperature | 1.7 / 35.1 | **36 °C** ✅ | 33–41 °C ✅ | 46 °C ✅ | — / — | — (2-min duty) | — | — |
+| B1 (D20) | upper_yaw (GIM6010-8, sleeve + Al cap) | task day (non-stop fetch, worst corner) | 0.8 / 7.1 | **36 °C** ✅ | 34–41 °C ✅ | 46 °C ✅ | unlimited / unlimited | 7.7 / 6.2 (9.49× / 7.67× the duty) | not binding (> 250 K) | any (no cap needed) |
+| B1 (D20) | upper_yaw (GIM6010-8, sleeve + Al cap) | worst 1 kg workspace hold | 6.9 / 9.5 | **65 °C** ✅ | 56–86 °C ✅ | 91 °C ✅ | unlimited / unlimited | 10.2 / 8.3 (1.47× / 1.19× the duty) | ≤ 122 K (model 56 K, band ≤ 86 K) | ≤ 40.37 K/W |
+| B1 (D20) | upper_yaw (GIM6010-8, sleeve + Al cap) | R2d basket carry 2 min, from the task-day temperature | 0.0 / 9.5 | **36 °C** ✅ | 33–41 °C ✅ | 46 °C ✅ | — / — | — (2-min duty) | — | — |
+| B1 (D20) | elbow (GIM8108-8, sleeve + Al cap) | task day (non-stop fetch, worst corner) | 2.4 / 16.0 | **36 °C** ✅ | 34–42 °C ✅ | 47 °C ✅ | unlimited / unlimited | 17.1 / 13.6 (7.13× / 5.67× the duty) | not binding (> 250 K) | any (no cap needed) |
+| B1 (D20) | elbow (GIM8108-8, sleeve + Al cap) | worst 1 kg workspace hold | 6.9 / 21.4 | **41 °C** ✅ | 38–50 °C ✅ | 55 °C ✅ | unlimited / unlimited | 22.8 / 18.2 (3.29× / 2.61× the duty) | not binding (> 250 K) | any (no cap needed) |
+| B1 (D20) | elbow (GIM8108-8, sleeve + Al cap) | R2c hug 0.25 m, held | 13.9 / 21.4 | **59 °C** ✅ | 51–78 °C ✅ | 83 °C ✅ | unlimited / unlimited | 22.8 / 18.2 (1.65× / 1.31× the duty) | ≤ 154 K (model 57 K, band ≤ 90 K) | any (no cap needed) |
+| B1 (D20) | elbow (GIM8108-8, sleeve + Al cap) | R2d basket carry 2 min, from the task-day temperature | 14.2 / 21.4 | **41 °C** ✅ | 36–52 °C ✅ | 57 °C ✅ | — / — | — (2-min duty) | — | — |
+| B1y | shoulder_pitch (GIM8108-8, sleeve + Al cap) | task day (non-stop fetch, worst corner) | 7.4 / 16.0 | **47 °C** ✅ | 42–59 °C ✅ | 64 °C ✅ | unlimited / unlimited | 17.1 / 13.6 (2.32× / 1.84× the duty) | not binding (> 250 K) | any (no cap needed) |
+| B1y | shoulder_pitch (GIM8108-8, sleeve + Al cap) | worst 1 kg workspace hold | 12.1 / 21.4 | **53 °C** ✅ | 47–69 °C ✅ | 74 °C ✅ | unlimited / unlimited | 22.8 / 18.2 (1.89× / 1.50× the duty) | ≤ 203 K (model 57 K, band ≤ 90 K) | any (no cap needed) |
+| B1y | shoulder_pitch (GIM8108-8, sleeve + Al cap) | R2c hug 0.25 m, held | 13.9 / 21.4 | **59 °C** ✅ | 51–78 °C ✅ | 83 °C ✅ | unlimited / unlimited | 22.8 / 18.2 (1.65× / 1.31× the duty) | ≤ 154 K (model 57 K, band ≤ 90 K) | any (no cap needed) |
+| B1y | shoulder_roll (GIM8108-36, cover) | task day (non-stop fetch, worst corner) | 1.2 / 26.3 | **35 °C** ✅ | 33–41 °C ✅ | 46 °C ✅ | unlimited / unlimited | 17.5 / 13.4 | not binding (> 250 K) | — |
+| B1y | shoulder_roll (GIM8108-36, cover) | worst 1 kg workspace hold | 16.8 / 35.1 | **69 °C** ✅ | 55–97 °C ✅ | 102 °C ❌ | unlimited / unlimited | 23.4 / 17.9 (1.39× / 1.07× the duty) | not binding (> 250 K) | — |
+| B1y | upper_yaw (DM-J4340-2EC, cover) | task day (non-stop fetch, worst corner) | 0.2 / 6.8 | **35 °C** ✅ | 33–40 °C ✅ | 45 °C ✅ | unlimited / unlimited | 4.6 / 3.5 | not binding (> 250 K) | — |
+| B1y | upper_yaw (DM-J4340-2EC, cover) | worst 1 kg workspace hold | 6.9 / 9.0 | **119 °C** ❌ | 89–184 °C ❌ | 189 °C ❌ | 15 min / 4 min | 6.1 / 4.7 (0.88× / 0.67× the duty) | ≤ 109 K (model 142 K, band ≤ 241 K) | — |
+| B1y | upper_yaw (DM-J4340-2EC, cover + Al cap (option)) | task day (non-stop fetch, worst corner) | 0.2 / 6.8 | **35 °C** ✅ | 33–40 °C ✅ | 45 °C ✅ | unlimited / unlimited | 7.5 / 6.1 | not binding (> 250 K) | any (no cap needed) |
+| B1y | upper_yaw (DM-J4340-2EC, cover + Al cap (option)) | worst 1 kg workspace hold | 6.9 / 9.0 | **67 °C** ✅ | 57–87 °C ✅ | 92 °C ✅ | unlimited / unlimited | 9.9 / 8.1 (1.43× / 1.17× the duty) | ≤ 109 K (model 53 K, band ≤ 79 K) | ≤ 39.37 K/W |
+| B1y | elbow (GIM8108-8, sleeve + Al cap) | task day (non-stop fetch, worst corner) | 3.1 / 16.0 | **37 °C** ✅ | 35–43 °C ✅ | 48 °C ✅ | unlimited / unlimited | 17.1 / 13.6 (5.55× / 4.41× the duty) | not binding (> 250 K) | any (no cap needed) |
+| B1y | elbow (GIM8108-8, sleeve + Al cap) | worst 1 kg workspace hold | 6.9 / 21.4 | **41 °C** ✅ | 38–50 °C ✅ | 55 °C ✅ | unlimited / unlimited | 22.8 / 18.2 (3.29× / 2.61× the duty) | not binding (> 250 K) | any (no cap needed) |
+| B1y | elbow (GIM8108-8, sleeve + Al cap) | R2c hug 0.25 m, held | 13.9 / 21.4 | **59 °C** ✅ | 51–78 °C ✅ | 83 °C ✅ | unlimited / unlimited | 22.8 / 18.2 (1.65× / 1.31× the duty) | ≤ 154 K (model 57 K, band ≤ 90 K) | any (no cap needed) |
+
+**Reading.** Band = every corner of h_o 8–16 W/m²K, h_i 3–8, cap contact 0.25–2 K/W, F_WC 20%–40%, local air +3…10 K, τ 400–900 s (2-min carries); room 30 °C, and the band's worst corner again in a 35 °C room. 4 of 36 duty rows leave the 100 °C limit somewhere in the band: B0 shoulder_pitch worst 1 kg workspace hold (nominal 76 °C, band hi 102 °C); B0 shoulder_pitch R2c hug 0.25 m (nominal 88 °C, band hi 121 °C); B0 elbow R2c hug 0.25 m (nominal 154 °C, band hi 222 °C); B1y upper_yaw worst 1 kg workspace hold (nominal 119 °C, band hi 184 °C). A pass that holds only at the nominal constants is not a pass yet: it is a number the bench must confirm.
+
+**B1 (D20):** hug at 0.25 m: shoulder_pitch 59 °C nominal, 78 °C band worst (83 °C in a 35 °C room); continuous torque in the capped sleeve 22.8 N·m nominal / 18.2 N·m band worst against 13.9 N·m demanded (**1.65× / 1.31× continuous**; without the cap the sleeve gives 13.9 N·m, the ≈ 13.9 N·m the review quoted). Basket 2-min carry from hot: worst 80 °C band worst. No row leaves the limit anywhere in the band.
+
+**B1y:** hug at 0.25 m: shoulder_pitch 59 °C nominal, 78 °C band worst (83 °C in a 35 °C room); continuous torque in the capped sleeve 22.8 N·m nominal / 18.2 N·m band worst against 13.9 N·m demanded (**1.65× / 1.31× continuous**; without the cap the sleeve gives 13.9 N·m, the ≈ 13.9 N·m the review quoted). Rows that leave the limit in the band: upper_yaw worst 1 kg workspace hold (nominal 119, band 184 °C, 4 min to the limit at the worst corner).
+
+**B1y yaw (DM-J4340-2EC bare under the cover):** the worst 1 kg hold (6.9 of 9.0 N·m rated) settles at 119 °C nominal (89–184 °C band) and reaches 100 °C in 15 min nominal, 4 min at the band's worst corner; continuous 6.1 N·m nominal / 4.7 band worst. With an aluminium finned ring on the motor's rear face through the cover (the belt joints' cap, ≈ $19 a joint): 67 °C nominal, 87 °C band worst, continuous 9.9 / 8.1 N·m. The yaw's task day and basket duty are small; the long full-reach hold is what needs either the ring or a planner hold-time derate (the GIM6010 + 2:1 belt it replaces has 9.5 N·m rated at the joint and its cap).
+
+**What the bench must measure to keep these passes** (Step 1 lever rig, then the first arm, motor in its final closed mount with the cover on, restrained output, at a logged room temperature):
+1. **Winding rise at rated torque in the final mount**, at equilibrium (≥ 40 min, 4 τ), by winding resistance or the drive's estimate, plus case, cap, sleeve wall, cover skin and local air NTCs. Each row's 'bench must show' column is the most that rise may be for that duty to stay ≤ 100 °C in a 30 °C room (+5 K local air); scale by (τ/τ_rated)² for other loads.
+2. **The cap's real contact resistance** (motor rear face → aluminium cap → fins): ΔT across the pad at a known heater or copper loss. The 'cap contact' column is the largest value that keeps the steady duty under the limit at the nominal h_o.
+3. **h_o of the finished cover** (vents open / blocked): cap and skin temperature against room at a known power; the band's 8 W/m²K corner is a blocked vent or a cap against a cushion.
+4. **The thermal time constant τ** from the heating curve (the 2-min basket rise and the hug hold time scale with it).
+5. **Repeat at the depleted-pack voltage** and with the neighbouring drives warm (pitch beside the torso electronics; yaw under the roll motor for B1y), then the two-minute basket cycle from hot.
