@@ -1428,3 +1428,18 @@ One long push instead of half-hour runs. In order:
 - **Caster lock at speed:** engaging is harmless, but travelling locked at 0.8 m/s turns a floor step into a snag (80–116 % of the tip energy, ≈ 3.6 kN per foot). **SW queue (SW-T2):** a forced lock waits for ≤ 0.25 m/s; the hardware still locks when the timer opens and on power loss. The locked-travel cap of 0.3 m/s needs a bench snag test, or lower it to 0.25.
 - **Step-1 test kit:** 40 A Schottky regen diode; T12's 30 A from the energy bank; CP2100A at 800 kHz accepted (requirement ≥ 500 kHz); new robot-board tests T17–T19. **BOM queue:** the W15b lines and W14b's +70 g / +$3 aren't in bom.py yet.
 - **W14b pinch:** nips 16 → 13 (people near 13 → 11), exposed 20 → 6. A static shroud on the pitch spring ring closes the torso shoulder port (idler roller/axle + 12 parts). A static round collar on the GIM8108 face, a raised link frame and the spring bar turned to −135° close roll rows. R14 unchanged, all CAD checks pass. Next: move the roll hard stop off the rear plate (the stop bushes cause the yaw-hood rows), and close the wrist and elbow can covers (the remaining 6 exposures).
+
+### 2026-11-28 Wave 16 merged + Fable review #2
+- **W16a SW-T2:** a forced or planner caster lock above 0.25 m/s is deferred (released, solenoids on) while the base brakes. It engages at ≤ 0.25 m/s, which is 1.10 s from 0.8 m/s (timeout 1.40 s). Threshold mode still locks at once. Locked cap 0.3 → 0.25 m/s (snag ≤ 374 N per foot vs 440 N). BASE_STOP_DECEL brought back under tip.md (1.18 / 1.53). **Open:** the basket at 0.25 m/s uses ≈ 113 % of the snag tip energy in the tuck-pose model; it needs a real-pose check and a lower basket speed or the snag bench test.
+- **W16b BOM:** $6,366 → **$6,485** ($6,751 with D20) with the board timer (`PIP_BASE_TIMER=board`, provisional, owner decision pending); $7,052 with the G9SA. Step 1 $2,844, Step 2 $1,507.
+- **W16c R17:** exposed 6 → **0**; nips 13 (people near 11). The roll hard stop moved inside the front collar (2 × 7075 dogs on the output adapter against blocks on a 7075 ring: 3.91× at stall, no motor-bearing load). Flat rear plate, R14 roll 16/16, round closed wrist boot, elbow dome redrawn. The roll stage mass is now 0.45 kg; about +$30 per robot (BOM lines queued). Next: the inboard wedge (hood rows), the yaw stop-pin row, and the elbow scissor.
+- **Fable review #2** (docs/review/fable_review_2026-11-28.md). Verdict: **split Step 1**.
+  - **1a, buy now (≈ $720):** GIM6010-8, DM-J4310, CAN parts, stand and lever stock, a 10 A CC supply, for unloaded protocol discovery at 1 A.
+  - **1b, later (≈ $2,115):** supply, safety board and instruments, after discovery, a drawn and reviewed board, and a designed rig.
+  - **Critical:** the Step-1 lever rig is unguarded and the software describes another machine (can_map yaw ratio 2.0 on a direct lever; the 2 kg soak = 118 % of rated; calibrate seeks ±155° stops the rig lacks; no rig CAD).
+  - **Major:**
+    - 1b is bought before the protocol and the schematic review.
+    - Safety-board logic race: on a K1 drop-out U6 is triggered and cleared by the same AUX edge (FORCE at +30 ms vs T7's 4 ms), there's no AUX debounce, and no reviewer is named.
+    - The direct pinion depends on the GIM bearing's tilt stiffness; measure it in 1a.
+    - Step-1 exit criterion 6 has no coupons (insert pull-out, 4-ear flange, drive stub); KX and eccentric coupons are stale.
+  - Plus 8 minor findings. Follow-up on review #1: 3 fixed, 1 as a plan, 6 partly, 1 open by design.
