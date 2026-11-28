@@ -1,0 +1,635 @@
+<title>Pip Build Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap">
+<style>
+/* Layout: a workbench. The CAD viewer fills the left (top on phones); the step card and the step list sit beside it. */
+:root {
+  --bg: #E4E8EC;          /* cool grey ground */
+  --surface: #F3F5F7;
+  --ink: #0C1016;
+  --muted: #4B5562;
+  --line: #C6CED7;
+  --chip: #EBEEF1;
+  --accent: #2B45F2;      /* cobalt */
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DCE1FD;
+  --lime: #CDF23F;        /* signal lime: what is new in this step */
+  --lime-ink: #0C1016;
+  --warn: #8A4B00;
+  --warn-soft: #F6E7D2;
+  --stage: #DDE2E7;       /* 3D scene background */
+  --floor: #CDD4DB;
+  --grid: #B4BEC9;
+  --font-display: "Bricolage Grotesque", "Arial Narrow", Arial, sans-serif;
+  --font-body: "DM Sans", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121820; --surface: #19212B; --ink: #E8ECF1; --muted: #9DA8B5; --line: #2C3744; --chip: #212A35;
+    --accent: #8394FF; --accent-ink: #0C1016; --accent-soft: #232C52;
+    --lime: #CDF23F; --lime-ink: #0C1016; --warn: #F0B871; --warn-soft: #33281A;
+    --stage: #18202A; --floor: #212B36; --grid: #34414F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121820; --surface: #19212B; --ink: #E8ECF1; --muted: #9DA8B5; --line: #2C3744; --chip: #212A35;
+  --accent: #8394FF; --accent-ink: #0C1016; --accent-soft: #232C52;
+  --lime: #CDF23F; --lime-ink: #0C1016; --warn: #F0B871; --warn-soft: #33281A;
+  --stage: #18202A; --floor: #212B36; --grid: #34414F;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.app {
+  height: 100%;
+  display: flex; flex-direction: column; gap: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 14px 16px;
+}
+.top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.brand h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.55rem; letter-spacing: -0.01em; line-height: 1.1; }
+.brand .sub { color: var(--muted); font-size: 0.95rem; }
+.status {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.8rem; color: var(--muted); letter-spacing: 0.02em;
+}
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--muted); }
+
+.main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) clamp(300px, 30vw, 400px); gap: 16px; }
+.stage { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.viewer {
+  position: relative; flex: 1; min-height: 320px;
+  background: var(--stage); border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--line);
+  touch-action: none;
+}
+.viewer canvas { display: block; width: 100%; height: 100%; outline: none; }
+.viewer canvas:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+.overlay {
+  position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+  font-size: 0.9rem; color: var(--muted);
+}
+.overlay .box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 200px; }
+.overlay .bar { height: 4px; background: var(--chip); border-radius: 2px; overflow: hidden; }
+.overlay .bar i { display: block; height: 100%; width: 0; background: var(--accent); }
+.hint {
+  position: absolute; right: 10px; bottom: 10px; max-width: calc(100% - 20px);
+  font-size: 0.75rem; color: var(--muted); background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border-radius: 6px; padding: 3px 8px; pointer-events: none;
+}
+.legend {
+  position: absolute; left: 10px; top: 10px;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.78rem; color: var(--ink); background: color-mix(in srgb, var(--surface) 86%, transparent);
+  border-radius: 6px; padding: 3px 9px 3px 7px; pointer-events: none;
+}
+.legend i { width: 11px; height: 11px; border-radius: 3px; background: var(--lime); box-shadow: inset 0 0 0 1px rgba(12,16,22,.25); }
+.progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: transparent; }
+.progress i { display: block; height: 100%; width: 0; background: var(--accent); }
+
+.controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 40px; padding: 0 14px; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  font-weight: 500; font-size: 0.92rem;
+}
+.btn:hover { border-color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: default; border-color: var(--line); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn svg { width: 16px; height: 16px; fill: currentColor; flex: none; }
+.count { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.88rem; }
+
+.panel { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+.card { flex: none; max-height: 72%; overflow-y: auto; }
+.steps { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; position: relative; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 12px; }
+.eyebrow { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+.card h2 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; line-height: 1.12; letter-spacing: -0.01em; text-wrap: balance; }
+.card ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; }
+.card li { padding-left: 2px; }
+.card li::marker { color: var(--accent); }
+.need h3 { margin: 0 0 6px; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.need ul { list-style: none; padding: 0; gap: 4px; }
+.need li { padding: 5px 9px; background: var(--chip); border-radius: 7px; font-size: 0.88rem; }
+.flag { font-size: 0.86rem; border-radius: 8px; padding: 8px 10px; background: var(--warn-soft); color: var(--ink); border-left: 3px solid var(--warn); }
+.flag b { color: var(--warn); font-weight: 700; }
+.src { font-size: 0.78rem; color: var(--muted); margin: 0; }
+.src span { white-space: normal; }
+
+.steps h3 { position: sticky; top: 0; z-index: 1; background: var(--bg); padding-bottom: 8px; margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1.05rem; }
+.steps ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.steps button {
+  width: 100%; display: flex; align-items: baseline; gap: 10px; text-align: left;
+  padding: 6px 10px; border-radius: 8px; border: 1px solid transparent; background: transparent; cursor: pointer;
+  font-size: 0.92rem;
+}
+.steps button:hover { background: var(--chip); }
+.steps button .n { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 1.6em; font-size: 0.85rem; }
+.steps button[aria-current="step"] { background: var(--accent-soft); border-color: var(--accent); font-weight: 500; }
+.steps button[aria-current="step"] .n { color: var(--accent); }
+.steps button.done .n { color: var(--ink); }
+.disclaimer { font-size: 0.82rem; color: var(--muted); margin: 0; border-top: 1px solid var(--line); padding-top: 12px; }
+
+@media (max-width: 880px) {
+  html, body { height: auto; }
+  .app { height: auto; }
+  .main { display: flex; flex-direction: column; }
+  .viewer { flex: none; aspect-ratio: 1 / 1.05; min-height: 0; max-width: 100%; }
+  .card, .steps { max-height: none; overflow: visible; }
+  .card h2 { font-size: 1.4rem; }
+  .brand h1 { font-size: 1.35rem; }
+}
+@media (max-width: 420px) {
+  .btn { padding: 0 11px; }
+  .btn .lbl-long { display: none; }
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Pip v4</h1>
+      <span class="sub">Build guide, step by step from the CAD</span>
+    </div>
+    <span class="status">Not built yet: design preview</span>
+  </header>
+
+  <div class="main">
+    <section class="stage" aria-label="3D assembly viewer">
+      <div class="viewer" id="viewer">
+        <span class="legend" id="legend"><i></i>New in this step</span>
+        <div class="overlay" id="overlay"><div class="box"><span id="loadText">Loading the CAD model…</span><div class="bar"><i id="loadBar"></i></div></div></div>
+        <span class="hint" id="hint">Drag to turn · scroll or pinch to zoom · right-drag or two fingers to pan</span>
+        <div class="progress"><i id="stepProg"></i></div>
+      </div>
+      <div class="controls" role="group" aria-label="Step controls">
+        <button class="btn" id="prev" type="button" aria-label="Previous step"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 2.5 4.5 8l6 5.5z"/></svg><span class="lbl-long">Back</span></button>
+        <button class="btn primary" id="next" type="button" aria-label="Next step"><span>Next</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 2.5 11.5 8l-6 5.5z"/></svg></button>
+        <button class="btn" id="play" type="button" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true" id="playIcon"><path d="M4 2.5v11l9-5.5z"/></svg><span id="playLbl">Play all</span></button>
+        <button class="btn" id="replay" type="button" aria-label="Replay this step"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5a5.5 5.5 0 1 1-5.2 3.7l1.6.6A3.8 3.8 0 1 0 8 4.2v2.3L4.6 3.4 8 .3z"/></svg><span class="lbl-long">Replay</span></button>
+        <span class="count" id="count" aria-live="polite">Step 1 of 13</span>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Instructions">
+      <article class="card" id="card" aria-live="polite">
+        <div class="eyebrow" id="eyebrow">Step 1 of 13</div>
+        <h2 id="title">Wheel modules</h2>
+        <ul id="body"></ul>
+        <div class="need" id="need" hidden><h3>Fasteners and materials</h3><ul id="needList"></ul></div>
+        <div class="flag" id="caution" hidden></div>
+        <div class="flag" id="note" hidden></div>
+        <p class="src" id="src"></p>
+      </article>
+      <nav class="steps" aria-label="All steps">
+        <h3>All steps</h3>
+        <ol id="stepList"></ol>
+        <p class="disclaimer">Pip v4 hasn't been built yet. The parts and their order come from the design files in the project repository (the CAD export and the build docs), so expect them to change. Screws and materials are listed only where the docs give them.</p>
+      </nav>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const viewer = $("viewer");
+  const reduceMQ = matchMedia("(prefers-reduced-motion: reduce)");
+  const darkMQ = matchMedia("(prefers-color-scheme: dark)");
+  const LIME = "#CDF23F";
+  const HOLD = 1.6;                       // seconds between steps in play-through
+
+  // ---------- three.js scene ----------
+  THREE.ColorManagement.legacyMode = false;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.domElement.tabIndex = 0;
+  renderer.domElement.setAttribute("aria-label", "Pip v4 CAD model. Drag to turn, scroll to zoom.");
+  viewer.insertBefore(renderer.domElement, viewer.firstChild);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 1.5, 20, 20000);
+  camera.up.set(0, 0, 1);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.12;
+  controls.minDistance = 250;
+  controls.maxDistance = 6000;
+  controls.maxPolarAngle = Math.PI * 0.53;
+  controls.screenSpacePanning = true;
+
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x8a929c, 0.5);
+  hemi.position.set(0, 0, 1);
+  scene.add(hemi);
+  const key = new THREE.DirectionalLight(0xffffff, 0.8);
+  key.position.set(1400, 900, 2600);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.bias = -0.0004;
+  key.shadow.normalBias = 1.5;
+  Object.assign(key.shadow.camera, { left: -900, right: 900, top: 900, bottom: -900, near: 500, far: 6000 });
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xdfe6ff, 0.25);
+  fill.position.set(-1600, -1200, 900);
+  scene.add(fill);
+  const rimL = new THREE.DirectionalLight(0xffffff, 0.2);
+  rimL.position.set(-600, 1500, 400);
+  scene.add(rimL);
+  key.target.position.set(0, 0, 600); scene.add(key.target);
+
+  const floorMat = new THREE.ShadowMaterial({ color: 0x0c1016, opacity: 0.16 });
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(1500, 96), floorMat);
+  floor.receiveShadow = true;
+  floor.position.z = -0.5;
+  scene.add(floor);
+  let grid = null;
+
+  function token(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#888"; }
+  function applyTheme() {
+    scene.background = new THREE.Color(token("--stage"));
+    floorMat.opacity = isDark() ? 0.32 : 0.16;
+    if (grid) { scene.remove(grid); grid.geometry.dispose(); grid.material.dispose(); }
+    grid = new THREE.GridHelper(3000, 30, token("--grid"), token("--grid"));   // 100 mm squares
+    grid.rotation.x = Math.PI / 2;
+    grid.position.z = 0.2;
+    grid.material.transparent = true;
+    grid.material.opacity = 0.55;
+    scene.add(grid);
+    const dark = isDark();
+    hemi.intensity = dark ? 0.45 : 0.5;
+    hemi.groundColor.set(dark ? 0x3a424d : 0x8a929c);
+    needsRender = true;
+  }
+  function isDark() {
+    const t = document.documentElement.getAttribute("data-theme");
+    return t === "dark" || (t !== "light" && darkMQ.matches);
+  }
+
+  // ---------- materials ----------
+  const MAT = {};
+  function makeMats(colours) {
+    const spec = {
+      white:  { roughness: 0.55, metalness: 0.0 },
+      dark:   { roughness: 0.6,  metalness: 0.05 },
+      black:  { roughness: 0.42, metalness: 0.35 },
+      orange: { roughness: 0.45, metalness: 0.0, emissive: 0.12 },
+      steel:  { roughness: 0.32, metalness: 0.55 },
+      green:  { roughness: 0.6,  metalness: 0.0 }
+    };
+    const lime = new THREE.Color(LIME);
+    for (const k of Object.keys(colours)) {
+      const s = spec[k] || spec.dark;
+      const base = new THREE.Color(colours[k]);
+      const m = new THREE.MeshStandardMaterial({ color: base, roughness: s.roughness, metalness: s.metalness });
+      if (s.emissive) { m.emissive = base.clone(); m.emissiveIntensity = s.emissive; }
+      const hc = base.clone().lerp(lime, k === "white" ? 0.55 : 0.5);
+      const h = new THREE.MeshStandardMaterial({ color: hc, roughness: 0.5, metalness: 0.0, emissive: lime.clone(), emissiveIntensity: 0.07 });
+      const g = new THREE.MeshStandardMaterial({ color: base, roughness: 0.6, metalness: 0, transparent: true, opacity: 0.16, depthWrite: false });
+      MAT[k] = { base: m, hl: h, ghost: g };
+    }
+  }
+
+  // ---------- data ----------
+  let D = null;                 // steps.json
+  let meshes = [];              // per part
+  let stepParts = [];           // per step: [{i, moves:[{v,t0,t1}], show}]
+  let ghostSets = [];           // per step: earlier parts drawn see-through
+  const fileLoaded = [];
+  let cur = 0;                  // current step index
+  let animT = 0;                // seconds into the current step
+  let running = false;          // step animation running
+  let auto = false;             // play-through
+  let holdLeft = -1;            // seconds until the next step in play-through
+  let pending = -1;             // step waiting for data
+  let needsRender = true;
+  let started = false;
+
+  function decodePart(p, buf) {
+    const pad = (n) => n + ((4 - (n % 4)) % 4);
+    const q = new Int16Array(buf, p.o, p.nv * 3);
+    const nOff = p.o + pad(p.nv * 6);
+    const nq = new Int8Array(buf, nOff, p.nv * 3);
+    const iOff = nOff + pad(p.nv * 3);
+    const idx = new Uint16Array(buf, iOff, p.ni);
+    const pos = new Float32Array(p.nv * 3);
+    const sx = (p.hi[0] - p.lo[0]) / 65535, sy = (p.hi[1] - p.lo[1]) / 65535, sz = (p.hi[2] - p.lo[2]) / 65535;
+    for (let j = 0; j < p.nv; j++) {
+      pos[3 * j] = p.lo[0] + (q[3 * j] + 32768) * sx;
+      pos[3 * j + 1] = p.lo[1] + (q[3 * j + 1] + 32768) * sy;
+      pos[3 * j + 2] = p.lo[2] + (q[3 * j + 2] + 32768) * sz;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setAttribute("normal", new THREE.BufferAttribute(new Int8Array(nq), 3, true));
+    g.setIndex(new THREE.BufferAttribute(new Uint16Array(idx), 1));
+    g.computeBoundingSphere();
+    return g;
+  }
+
+  function buildFile(fi, buf) {
+    D.parts.forEach((p, i) => {
+      if (p.s !== fi) return;
+      const m = new THREE.Mesh(decodePart(p, buf), (MAT[p.c] || MAT.dark).base);
+      m.castShadow = true; m.receiveShadow = true;
+      m.visible = false;
+      m.userData.c = p.c;
+      meshes[i] = m;
+      scene.add(m);
+    });
+    fileLoaded[fi] = true;
+  }
+
+  let bytesDone = 0, bytesTotal = 0;
+  function showLoading(on, text) {
+    $("overlay").hidden = !on;
+    if (text) $("loadText").textContent = text;
+  }
+  function loadProgress() {
+    const mb = (x) => (x / 1e6).toFixed(1);
+    $("loadBar").style.width = (bytesTotal ? (100 * bytesDone / bytesTotal) : 0).toFixed(1) + "%";
+    $("loadText").textContent = "Loading the CAD model · " + mb(bytesDone) + " of " + mb(bytesTotal) + " MB";
+  }
+
+  async function fetchFile(fi) {
+    const f = D.files[fi];
+    if (!f.path) { buildFile(fi, null); return; }
+    const res = await fetch(f.path);
+    if (!res.ok) throw new Error(f.path + ": HTTP " + res.status);
+    const buf = await res.arrayBuffer();
+    bytesDone += f.bytes;
+    loadProgress();
+    buildFile(fi, buf);
+    if (pending >= 0 && readyFor(pending)) { const k = pending; pending = -1; goTo(k, true); }
+  }
+  function readyFor(k) { for (let s = 0; s <= k; s++) if (!fileLoaded[s]) return false; return true; }
+
+  async function init() {
+    try {
+      const res = await fetch("steps.json");
+      if (!res.ok) throw new Error("steps.json: HTTP " + res.status);
+      D = await res.json();
+    } catch (e) {
+      showLoading(true, "The model data didn't load (" + e.message + "). Reload the page to try again.");
+      return;
+    }
+    makeMats(D.colours);
+    bytesTotal = D.files.reduce((a, f) => a + f.bytes, 0);
+    loadProgress();
+    stepParts = D.steps.map((st) => {
+      const by = new Map();
+      st.parts.forEach((i) => by.set(i, { i, moves: [], show: 1 }));
+      st.moves.forEach((mv) => mv.p.forEach((i) => {
+        const e = by.get(i);
+        e.moves.push({ v: mv.v, t0: mv.t[0], t1: mv.t[1] });
+        e.show = Math.min(e.show, mv.t[0]);
+      }));
+      return Array.from(by.values());
+    });
+    ghostSets = D.steps.map((st) => new Set(st.ghost || []));
+    buildList();
+    let start = 0;
+    const m = /^#step-(\d+)$/.exec(location.hash || "");
+    if (m) start = Math.min(D.steps.length, Math.max(1, +m[1])) - 1;
+    renderCard(start);
+    pending = start;
+    // load in order; the first files arrive quickly, the rest stream in behind the animation
+    for (let fi = 0; fi < D.files.length; fi++) {
+      try { await fetchFile(fi); }
+      catch (e) { showLoading(true, "Part of the model didn't load (" + e.message + "). Reload the page to try again."); return; }
+      if (fi === 0) showLoading(pending >= 0, null);
+    }
+    showLoading(false);
+  }
+
+  // ---------- step logic ----------
+  const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const clamp01 = (x) => Math.max(0, Math.min(1, x));
+
+  function poseAll() {
+    const st = D.steps[cur];
+    const u = st ? clamp01(animT / st.dur) : 1;
+    const ghost = ghostSets[cur];
+    for (let s = 0; s < stepParts.length; s++) {
+      for (const e of stepParts[s]) {
+        const m = meshes[e.i];
+        if (!m) continue;
+        if (s < cur) {
+          const gh = ghost.has(e.i);
+          m.visible = true; m.position.set(0, 0, 0);
+          m.material = gh ? MAT[m.userData.c].ghost : MAT[m.userData.c].base;
+          m.castShadow = !gh;
+        } else if (s > cur) {
+          m.visible = false;
+        } else {
+          m.visible = u >= e.show;
+          m.material = MAT[m.userData.c].hl;
+          let x = 0, y = 0, z = 0;
+          for (const mv of e.moves) {
+            const k = 1 - ease(clamp01((u - mv.t0) / Math.max(1e-6, mv.t1 - mv.t0)));
+            x += mv.v[0] * k; y += mv.v[1] * k; z += mv.v[2] * k;
+          }
+          m.position.set(x, y, z);
+        }
+      }
+    }
+    $("stepProg").style.width = (100 * u).toFixed(2) + "%";
+    needsRender = true;
+  }
+
+  function goTo(k, animate) {
+    k = Math.max(0, Math.min(D.steps.length - 1, k));
+    cur = k;
+    renderCard(k);
+    try { history.replaceState(null, "", "#step-" + (k + 1)); } catch (e) { /* hash routing is optional */ }
+    if (!readyFor(k)) {
+      pending = k;
+      showLoading(true, null); loadProgress();
+      return;
+    }
+    showLoading(false);
+    started = true;
+    flyTo(D.steps[k].cam, !reduceMQ.matches);
+    if (animate && !reduceMQ.matches) { animT = 0; running = true; }
+    else { animT = D.steps[k].dur; running = false; onStepDone(); }
+    holdLeft = -1;
+    poseAll();
+  }
+
+  function onStepDone() {
+    if (auto) {
+      if (cur < D.steps.length - 1) holdLeft = reduceMQ.matches ? 2.6 : HOLD;
+      else setAuto(false);
+    }
+  }
+
+  function setAuto(on) {
+    auto = on;
+    $("play").setAttribute("aria-pressed", on ? "true" : "false");
+    $("playLbl").textContent = on ? "Pause" : "Play all";
+    $("playIcon").innerHTML = on ? '<path d="M4 2.5h3v11H4zm5 0h3v11H9z"/>' : '<path d="M4 2.5v11l9-5.5z"/>';
+    if (!on) holdLeft = -1;
+  }
+
+  // ---------- camera ----------
+  let tween = null;
+  function camPose(c) {
+    const a = c.az * Math.PI / 180, e = c.el * Math.PI / 180;
+    const w = viewer.clientWidth || 1, h = viewer.clientHeight || 1;
+    const asp = w / h;
+    const d = c.dist * (asp < 1.35 ? Math.pow(1.35 / asp, 0.7) : 1);
+    const t = new THREE.Vector3().fromArray(c.target);
+    const p = new THREE.Vector3(Math.cos(e) * Math.cos(a), Math.cos(e) * Math.sin(a), Math.sin(e)).multiplyScalar(d).add(t);
+    return { p, t };
+  }
+  function flyTo(c, smooth) {
+    const to = camPose(c);
+    if (!smooth || !started) {
+      camera.position.copy(to.p); controls.target.copy(to.t); tween = null; controls.update(); needsRender = true; return;
+    }
+    tween = { p0: camera.position.clone(), t0: controls.target.clone(), p1: to.p, t1: to.t, k: 0 };
+  }
+  controls.addEventListener("start", () => { tween = null; });
+  controls.addEventListener("change", () => { needsRender = true; });
+
+  // ---------- UI ----------
+  function buildList() {
+    const ol = $("stepList");
+    ol.innerHTML = "";
+    D.steps.forEach((st, k) => {
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.type = "button"; b.id = "step-btn-" + (k + 1);
+      b.innerHTML = '<span class="n">' + String(k + 1).padStart(2, "0") + '</span><span></span>';
+      b.lastChild.textContent = st.title;
+      b.addEventListener("click", () => { setAuto(false); goTo(k, true); });
+      li.appendChild(b); ol.appendChild(li);
+    });
+  }
+  function renderCard(k) {
+    const st = D.steps[k], n = D.steps.length;
+    $("legend").hidden = st.parts.length === 0;
+    $("eyebrow").textContent = "Step " + (k + 1) + " of " + n;
+    $("count").textContent = "Step " + (k + 1) + " of " + n;
+    $("title").textContent = st.title;
+    const ul = $("body"); ul.innerHTML = "";
+    st.body.forEach((t) => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); });
+    const need = st.fasteners || [];
+    $("need").hidden = need.length === 0;
+    const nl = $("needList"); nl.innerHTML = "";
+    need.forEach((t) => { const li = document.createElement("li"); li.textContent = t; nl.appendChild(li); });
+    flag("caution", st.caution, "Safety: ");
+    flag("note", st.note, "Open design check: ");
+    $("src").textContent = "From " + st.src.join(" · ");
+    $("prev").disabled = k === 0;
+    $("next").disabled = k === n - 1;
+    const nav = document.querySelector(".steps");
+    document.querySelectorAll("#stepList button").forEach((b, j) => {
+      if (j === k) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+      b.classList.toggle("done", j < k);
+      if (j === k && nav.scrollHeight > nav.clientHeight + 1 && getComputedStyle(nav).overflowY === "auto") {
+        const top = b.offsetTop, h = b.offsetHeight;          // keep the current step in view inside the list only
+        if (top < nav.scrollTop + 40) nav.scrollTop = Math.max(0, top - 40);
+        else if (top + h > nav.scrollTop + nav.clientHeight) nav.scrollTop = top + h - nav.clientHeight + 8;
+      }
+    });
+  }
+  function flag(id, text, lead) {
+    const el = $(id);
+    el.hidden = !text;
+    if (text) { el.innerHTML = "<b></b>"; el.firstChild.textContent = lead; el.appendChild(document.createTextNode(text)); }
+  }
+
+  $("prev").addEventListener("click", () => { setAuto(false); goTo(cur - 1, true); });
+  $("next").addEventListener("click", () => { setAuto(false); goTo(cur + 1, true); });
+  $("replay").addEventListener("click", () => { setAuto(false); goTo(cur, true); });
+  $("play").addEventListener("click", () => {
+    if (!D) return;
+    if (auto) { setAuto(false); return; }
+    setAuto(true);
+    if (running) return;
+    if (cur >= D.steps.length - 1) goTo(0, true); else goTo(cur + 1, true);
+  });
+  document.addEventListener("keydown", (ev) => {
+    if (!D || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    const tag = (ev.target && ev.target.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+    if (ev.key === "ArrowRight") { setAuto(false); goTo(cur + 1, true); ev.preventDefault(); }
+    else if (ev.key === "ArrowLeft") { setAuto(false); goTo(cur - 1, true); ev.preventDefault(); }
+  });
+  window.addEventListener("hashchange", () => {
+    const m = /^#step-(\d+)$/.exec(location.hash || "");
+    if (m && D && +m[1] - 1 !== cur) goTo(+m[1] - 1, true);
+  });
+  const isTouch = matchMedia("(pointer: coarse)").matches;
+  if (isTouch) $("hint").textContent = "Drag to turn · pinch to zoom · two fingers to pan";
+
+  // ---------- sizing, theme ----------
+  function resize() {
+    const w = viewer.clientWidth, h = viewer.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    needsRender = true;
+  }
+  new ResizeObserver(resize).observe(viewer);
+  darkMQ.addEventListener("change", applyTheme);
+  new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
+  applyTheme();
+  resize();
+  // a neutral opening view while the first file loads
+  flyTo({ target: [0, 0, 650], az: 35, el: 14, dist: 3000 }, false);
+
+  // ---------- loop ----------
+  let last = performance.now();
+  function frame(now) {
+    requestAnimationFrame(frame);
+    const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
+    last = now;
+    if (D && running) {
+      animT += dt;
+      const dur = D.steps[cur].dur;
+      if (animT >= dur) { animT = dur; running = false; onStepDone(); }
+      poseAll();
+    }
+    if (D && auto && !running && holdLeft >= 0) {
+      holdLeft -= dt;
+      if (holdLeft < 0) { holdLeft = -1; goTo(cur + 1, true); }
+    }
+    if (tween) {
+      tween.k = Math.min(1, tween.k + dt / 0.9);
+      const e = ease(tween.k);
+      camera.position.lerpVectors(tween.p0, tween.p1, e);
+      controls.target.lerpVectors(tween.t0, tween.t1, e);
+      if (tween.k >= 1) tween = null;
+      needsRender = true;
+    }
+    if (controls.update()) needsRender = true;
+    if (needsRender) { renderer.render(scene, camera); needsRender = false; }
+  }
+  requestAnimationFrame(frame);
+  reduceMQ.addEventListener("change", () => { if (reduceMQ.matches && running) { animT = D.steps[cur].dur; } });
+  init();
+})();
+</script>
