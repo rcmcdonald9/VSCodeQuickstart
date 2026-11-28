@@ -4,11 +4,14 @@
 
 ```
 6S2P 10 Ah pack ─ JK-B2A8S20P BMS (200 A) ─ XT90 ─ MAIN FUSE 60 A ─┬─ LOGIC branch (always on): 5 V 5 A DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters
+                                                         ├─ BASE CHANNEL (W15, NOT on the contactor): Q9 base switch (LM5069-1 + IRFB7530, soft-start = base pre-charge) enabled through U20's OFF-delay safety contacts (G9SA-321-T075, 2.0 s)
+                                                         │    └─ VBUS_B ─┬─ base clamp leg Q10 (1 × NH-50, 26.0 / 25.7 V) + FORCE_B on the switch's opening edge
+                                                         │               ├─ F 20 A → base: 4 wheel cartridges (CAN bus A; stop category 1: ramp, then U20 removes power)
+                                                         │               └─ 4 × caster-lock solenoids (released only while powered: U20 opening locks them)
                                                          └─ E-STOP CONTACTOR (ALEV100, DC-rated; coil: mushroom NC ×2 in series → watchdog MOSFET; aux contact → feedback + discharge)
                                                             └─ PRE-CHARGE branch around it: relay K_PRE (opens on every stop) + 3.3 Ω RH-50 (A5 v2: switched, never permanent)
                                                               ├─ REGEN CLAMP / BUS DISCHARGE on the motor bus: TLV3202 comparator on 26.0 / off 25.7 V ± 1 %, 2 µs filter, 50 µs min on-time → 3 × IRFB7530 → 3 × 0.56 Ω NH-50, each with a freewheel Schottky (Neon #2 F1); forced on by a 100 ms one-shot on the contactor's opening edge (never while K_PRE is closed)
                                                               ├─ 12 V 10 A DC-DC → STS3215 servos (A5: now downstream of the contactor)
-                                                              ├─ F 20 A → base: 4 wheel cartridges (CAN bus A)
                                                               ├─ F 10 A → lift cartridge + pawl solenoid (CAN bus A)
                                                               ├─ F 20 A → left arm via detach plug (CAN bus B, TTL bus 1)
                                                               └─ F 20 A → right arm via detach plug (CAN bus C, TTL bus 2)
@@ -53,8 +56,8 @@ Packaging: the pack sits in a steel battery box in the base bay (ESTIMATE line i
 
 ## E-stop behaviour (A5, loop 40: external review finding 6)
 - **Two-channel mushrooms (torso back, base rear).** Channel 1 opens the contactor coil loop directly (hardware, no software in the path). Channel 2 tells the Pi and the sensor nodes, which command a controlled stop. Motor power drops; logic stays up to log and report.
-- **Stop category:** loop 39 had a *safe stop 1* with a 0.5 s capacitor hold-up. A capacitor delay is not a dependable timer, so the **default is now category 0** (power cut at once). The arms go limp; the balancer and belt friction slow the fall (≈ 0.3 s to the stop at the hanging pose; a 1 kg payload is released by the gripper's own back-drive). SS1 can return later with a rated delay relay.
-- **Everything that moves is downstream of the contactor:** loop 39 fed the 12 V servo converter from the logic branch, so the wrists, grippers and head kept power in an e-stop. It now sits after the contactor.
+- **Stop category:** loop 39 had a *safe stop 1* with a 0.5 s capacitor hold-up. A capacitor delay is not a dependable timer, so the **arms, lift and servos are category 0** (power cut at once). The arms go limp; the balancer and belt friction slow the fall (≈ 0.3 s to the stop at the hanging pose; a 1 kg payload is released by the gripper's own back-drive). **The base is category 1 (W15, docs/sw/base_stop.md):** a hard base stop tips the robot (tip.md), so the base has its own switch behind a rated OFF-delay safety relay (Omron G9SA-321-T075, 2.0 s): the supervisor (or, with the Pi dead, the drives' own CAN-timeout quick-stop) ramps it down while it keeps power, then the relay removes base power whatever the software does (*Base channel* below; safety_board_sim.md §6).
+- **Everything that moves is downstream of the contactor, except the base:** loop 39 fed the 12 V servo converter from the logic branch, so the wrists, grippers and head kept power in an e-stop. It now sits after the contactor. The base sits after its own time-limited switch (stop category 1).
 - **Torso:** the lift pawl is spring-applied, so it drops in and the torso holds (A15 reviews the pawl itself).
 - Not a certified safety function. The bench arm runs inside a marked keep-out zone until SW2 is measured.
 
@@ -172,6 +175,14 @@ Clamp gate:                 U7 OR( OV , FORCE ) → U9 UCC27524 → R_G → Q1�
 Watchdog:                   GPIO17 heartbeat ─ U5a 74LVC1G17 ─ U5 SN74LVC1G123 B (rising edge), Ā = GND, CLR̄ = 3V3 (R4·C3) → WD_OK
 Monitored reset:            SB1 ARM (NO) → U10 SN74LVC1G74 D-FF set only if S1b, S2b closed ∧ WD_OK; CLR̄ low on any STOP, FORCE (any K1 opening), TH1, PRE_TIMEOUT, power-on (R9·C9)
 Feedback to the Pi:         K1 aux (NO) ─ U12 PC817 ─ AUX (logic, high = closed) + GPIO27 (AUX_OK);  S1b/S2b ch2 ─ U13 PC817 ─ GPIO22 (ESTOP_SENSE)
+
+Base channel (robot board, W15; not populated on the M1 bench):
+VIN ─ Q9 IRFB7530 (U21 LM5069-1: soft-start, 35 A breaker) ─ VBUS_B ─┬─ F 20A ─► 4 wheel cartridges;  4 caster solenoids (Q11–Q14, gates from the Pi, pull-downs)
+                                                                    ├─ R7 0.56Ω NH-50 ∥ D7 VS-40CPQ060 ── Q10 IRFB7530 ── GND   (U23 TLV3202 on 26.0 / off 25.7 V + 2µs RC ∨ U24 50µs ∨ FORCE_B → U22b UCC27517)
+                                                                    └─ R8 1kΩ bleeder; divider → U26 DISC_B (VBUS_B up ∧ ¬EN for > 50 ms → GPIO24 + BMS discharge-off request)
+U21 EN ← +24V_L ─ U20 delayed contact 1 ─ U20 delayed contact 2   (U20 G9SA-321-T075, OFF-delay 2.0 s; ch1 = S1c ─ S2c ─ U27 photoMOS (LATCH), ch2 = S1d ─ S2d; reset = SB1b)
+Base watchdog:              GPIO23 base heartbeat ─ U22 SN74LVC1G123 (25 ms) → WD_B: STOP term on U10 CLR̄ and a term of U10 D (ARM)
+FORCE_B:                    U25 SN74LVC1G123 100 ms one-shot on U21 EN falling → Q10 gate
 ```
 
 | Ref | Part | Nets | Function |
@@ -207,6 +218,16 @@ Feedback to the Pi:         K1 aux (NO) ─ U12 PC817 ─ AUX (logic, high = clo
 | U2, U3 | 24 → 12 V 1 A buck + 3.3 V LDO (e.g. MCP1703A-3302) | F2 (1 A) from VIN | logic supply of its own (the watchdog must not share the Pi's rail); nothing else may hang on it |
 | U12, U13 | 2 × PC817 opto | K1 aux → AUX (to U6 / U8 / U11) and GPIO27 (AUX_OK); S1b/S2b → GPIO22 (ESTOP_SENSE) | sw/bringup.py `--estop gpiod:gpiochip0:17:27`; 22 for the button sense |
 | F3 | 20 A ATO | VBUS → arm lead (14 AWG) | arm branch (sustained ≈ 15 A, Bench supply above) |
+| U20 | Omron G9SA-321-T075 AC/DC24 time-delay safety relay (dual-channel input, OFF-delay safety contacts settable 0.5–7.5 s, set 2.0 s) | ch1: S1c/S2c + U27 photoMOS (LATCH); ch2: S1d/S2d; reset SB1b; 2 OFF-delay N/O in series → U21 EN | hardware SS1 ceiling: base power off 2.0 s ± 10% (ESTIMATE until T17) after any e-stop or board STOP; a rated relay, not a capacitor hold-up |
+| S1c/d, S2c/d | 2 more NC contact blocks per mushroom | U20 channels 1 and 2 | the base delay starts from the button itself, not from the logic |
+| U27 | photoMOS relay (AQV252G class, 60 V 2.5 A) | in U20 ch1, LED driven by LATCH | any board STOP (watchdog, WD_B, TH1, UV12, OC, DISC, POR) also starts the base delay |
+| Q9, U21 | TI LM5069-1 hot-swap controller (latch-off) + IRFB7530 (60 V, 2 mΩ) + 1 mΩ sense | VIN → VBUS_B; EN through U20 | base switch: soft-start 50 ms into the drives' 1.9 mF (the base pre-charge), 35 A circuit breaker (latch-off); its body diode returns base regen to VIN after it opens |
+| U22 | SN74LVC1G123, 25 ms (as U5) | B = GPIO23 base heartbeat (`base_heartbeat_ok()`), Q = WD_B | base watchdog: WD_B low = STOP; ARM needs it |
+| Q10, R7, D7, U23, U24, U22b | 1 × IRFB7530 + 1 × Vishay NH-50 0.56 Ω ∥ VS-40CPQ060-N3, TLV3202 (on 26.0 / off 25.7 V) + 2 µs filter + 50 µs min on-time + UCC27517 gate driver; FORCE_B 100 ms on the base switch's opening edge | VBUS_B → R7 → Q10 → GND | base clamp leg: holds VBUS_B ≤ 26.3 V when the pack cannot sink the ramp's regen (safety_board_sim.md §6) |
+| U25 | SN74LVC1G123 one-shot, 100 ms | Ā = U21 EN (falling) | FORCE_B: empties VBUS_B in ≈ 1.5 ms once the base switch opens |
+| U26 | comparator + RC (50 ms) | VBUS_B divider ∧ ¬EN → DISC_B (GPIO24) | shorted Q9: the Pi sends the BMS discharge-off request (the robot's second break, as for a welded K1) |
+| R8 | 1 kΩ 3 W | VBUS_B → GND | base bus bleeder |
+| Q11–Q14 | 4 × logic-level MOSFET + flyback diode (BOM line 'D18b solenoid drivers') | VBUS_B → caster solenoids; gates from the Pi with 100 kΩ pull-downs | caster release only while VBUS_B is up: U20 opening (≤ 2.2 s) or any power loss locks the casters |
 
 | State | Condition | Effect |
 |---|---|---|
@@ -215,8 +236,36 @@ Feedback to the Pi:         K1 aux (NO) ─ U12 PC817 ─ AUX (logic, high = clo
 | PRE-CHARGE | VBUS rises through 3.3 Ω, τ ≈ 23 ms (M1) | FORCE inhibited (no aux edge, and CLR̄ held low while K2 is driven); OV never trips below 25.74 V |
 | RUN | PRE_OK → Q4 on → K1 closes; aux closes → K2 drops out; Q4 now holds on AUX | drives powered; a bus sag cannot open K1 (PRE_OK has left the hold term), the bring-up enables the drives only after this |
 | STOP (any) | mushroom, WD_OK low, TH1, PRE_TIMEOUT, the Pi (stops the heartbeat), or K1 dropping out for any other reason (coil dip, shock) | Q4 off → K1 opens (≤ 10 ms) → aux falls → FORCE 100 ms (bus < UVLO in ≈ 2 ms) **and LATCH cleared** → K2 stays open; only SB1 re-arms |
+| BASE RAMP (robot) | any STOP above, or WD_B low (the base loop died) | U20's input drops: the base keeps power while the supervisor (or the drives' quick-stop) ramps it; after 2.0 s U20 opens Q9's enable → FORCE_B → the casters lock; only SB1 re-arms (U20 reset) |
 
 Bench tests of the board before any motor (bring-up step 0): ARM refused with a mushroom pressed or without a heartbeat; pre-charge reaches VIN − 3 V and K1 closes; a 10 Ω RH-50 dummy load across VBUS holds it under VIN − 3 V and trips PRE_TIMEOUT; heartbeat stopped → K1 opens within 30 ms; FORCE pulse seen on the scope at every opening and never during pre-charge; **K1 coil interrupted by hand while armed → LATCH clears and K2 stays open** (no self re-arm); supply switched off and on → board comes up disarmed; clamp at 26.0 V from a lab supply through 1 Ω with the drain voltage on the scope (≤ 48 V). **The full procedure with pass/fail numbers is [safety_board_tests.md](safety_board_tests.md)** (Step-1 gate).
+
+### Base channel: category-1 base stop (W15; docs/sw/base_stop.md hardware items 1–6)
+The base used to hang after K1, so every e-stop cut it at once (and a drive that shorts its phases would then brake it hard enough to tip). Now (netlist above, *Base channel*):
+
+| base_stop.md item | Hardware / drive answer | |
+|---|---|---|
+| 1. separate base power / enable channel | Q9 solid-state base switch from VIN (TI LM5069-1 hot-swap controller (latch-off) + IRFB7530 (60 V, 2 mΩ) + 1 mΩ sense), not on K1; own watchdog WD_B on GPIO23 (`base_heartbeat_ok()`), a STOP and ARM term | ✅ |
+| 2. hardware-timed SS1 ceiling | Q9's enable only through U20's OFF-delay safety contacts (Omron G9SA-321-T075 AC/DC24 time-delay safety relay (dual-channel input, OFF-delay safety contacts settable 0.5–7.5 s, set 2.0 s)); its input is the mushrooms' own NC blocks + LATCH, so any e-stop or board STOP removes base power 2.0 s ± 10% later whatever the software does (DigiKey $501.38 (13-week lead), RS UK £344.61 ex VAT (2026-11-28 search); OFF-delay accuracy not found in the listings: ± 10 % ESTIMATE, board test T17 measures it) | ✅ |
+| 3. drive-side ramp when the software is gone | **drive configuration requirement:** quick-stop on CAN timeout (30 ms) and on disable at ≤ 0.3 m/s² at the rim by default; the supervisor writes base_stop_decel() (≤ 0.5 m/s²) to the drives whenever it changes. A drive that can only disable or short its phases fails; verify at bench bring-up (sw.gim_discover) | ⚠️ unverified on the GIM |
+| 4. no phase-short braking | **drive configuration requirement:** phases float on disable, after the quick-stop and at UVLO (a short brakes ≈ 2.8 m/s² at 0.8 m/s: safety_board_sim.md §6) | ⚠️ unverified |
+| 5. regen on the base branch | the ramp returns ≈ 10 J at ≤ 13 W into VIN (the pack); with the BMS charge FET off a base clamp leg Q10 (same parts and window as the arm clamp) holds VBUS_B ≤ 26.3 V; never a diode into the arm clamp (FORCE would empty the base bus) | ✅ |
+| 6. odometry into the supervisor | software (sw/); the board only needs the base heartbeat | – |
+
+**Cost (BOM owner):** U20 $501 is most of it; the board-level alternative (board-level dual timer (SN74LVC1G123 RC + an independent crystal-timed counter, either one drops the enable), set 2.25 s, ≈ $8, ± 20 %, not rated) is the owner's trade. The caster solenoids (4 × 0.4 A when released) move to VBUS_B; the base branch's fuse stays 20 A.
+
+| E-stop sequence (safety_board_sim.md §6) | Arm torque off | Base stopped | Base power off | Speed left |
+|---|---|---|---|---|
+| mushroom, Pi alive: transit 0.8 m/s, casters released | 14 ms | 1.60 s | 2.00 s | 0.00 m/s |
+| supervisor fault (e.g. over-temperature), Pi alive: transit | 42 ms | 1.60 s | 2.03 s | 0.00 m/s |
+| mushroom, U20 at −10 % | 14 ms | 1.60 s | 1.80 s | 0.00 m/s |
+| mushroom, U20 at +10 % | 14 ms | 1.60 s | 2.20 s | 0.00 m/s |
+| Pi hung (both heartbeats stop), drive quick-stop written to 0.5 m/s² | 42 ms | 1.63 s | 2.03 s | 0.00 m/s |
+| Pi hung, drive quick-stop at its default 0.3 m/s² | 42 ms | 3.39 s | 2.03 s | 0.20 m/s |
+| Pi hung, default quick-stop, U20 at −10 % | 42 ms | 3.60 s | 1.83 s | 0.26 m/s |
+| mushroom, R2d basket carry 9.07 kg at 0.3 m/s | 14 ms | 1.00 s | 2.00 s | 0.00 m/s |
+
+**Caster lock (W14a open point):** engaging the D18b lock is harmless at any speed, but travelling locked at 0.8 m/s turns any floor step into a floor-level snag: 116% of the tip energy with the lift up (it tips), ≈ 3.6 kN on a foot (rods ≈ 880 N). Requirement for sw/ (SW-T2): a forced lock waits until the base is ≤ 0.25 m/s (limit 0.28 m/s); the hardware locks at U20's opening and at power loss anyway (safety_board_sim.md §6).
 
 ### Safety board simulation (Astra review #3, critical 3)
 `python -m rnd.safety_board_sim` (ngspice; [safety_board_sim.md](safety_board_sim.md)): the clamp with the harness to every drive, pre-charge, the coil drop and the forced discharge as circuits; the logic as an event model of this netlist; fuses against the wires' heating. A model of an unbuilt board: it changed the netlist above and sets the bench numbers, it does not show that the built board works.
@@ -225,9 +274,9 @@ Bench tests of the board before any motor (bring-up step 0): ARM refused with a 
 |---|---|---|---|
 | Clamp chopper (M1, 1.3 kW regen) | rings at 32 MHz (simulation aborts): turn-on step ≈ 2 V > 1.2 V window | 3.4 kHz with the 2 µs filter + 50 µs on-time | ✅ |
 | Highest drive voltage, rated-limit stop (×0.45) M1 / robot | 27.0 V window (v3, with the filter): 29.89 V already at full regen | 27.47 / 27.15 V (≤ 27.5) | ✅ |
-| Highest drive voltage, every joint at peak torque at once M1 / robot | – | 29.07 / 28.42 V (elbow, behind ≈ 0.1 Ω of harness) | ❌ → regen ≤ 611 W (M1) / 1663 W (robot) |
+| Highest drive voltage, every joint at peak torque at once M1 / robot | – | 29.07 / 28.42 V (elbow, behind ≈ 0.1 Ω of harness) | ❌ → regen ≤ 611 W (M1) / 1667 W (robot) |
 | Resistor energy, full worst-case dump | – | 49 J (M1) / 112 J (robot, 323 J) per NH-50 ≤ 312 J | ✅ |
-| MOSFET drain peak | – | 30.5 V ≤ 48 V | ✅ |
+| MOSFET drain peak | – | 30.6 V ≤ 48 V | ✅ |
 | K1 coil driver drain at turn-off (D1 + Z1) | 33 V on a 30 V part (avalanche every stop) | 52 V on a 100 V part | ✅ |
 | Pre-charge: PRE_OK / K1 making current M1, robot | 59 ms, 60 A / 128 ms, 136 A | robot idle draw must stay < ≈ 0.8 A (×1.5 of the ESTIMATE → PRE_TIMEOUT); robot making current vs the ALEV100 make rating | ⚠️ |
 | K1 open → far drive < UVLO M1 / robot | 2.0 / 2.8 ms | – | ✅ |
@@ -235,7 +284,7 @@ Bench tests of the board before any motor (bring-up step 0): ARM refused with a 
 | Logic single faults | 4 fail: AUX wire breaks while running; AUX stuck closed, then ARM; K1 main contacts welded, heartbeat stops; 12 V gate-driver supply lost (U2 / F2) while running | all pass (¬AUX on ARM, discrepancy monitor, 12 V UVLO) | ✅ |
 | Wire protection | bench Step 2 / robot unprotected at 22–30 A | branch current monitor (U19) | ✅ |
 
-**Regen requirement (sw / planner):** the board clamps its own node; each drive sits above it by its regen current × harness resistance. A controlled stop may return at most ≈ 611 W on the M1 bench arm (1663 W on the robot, both arms + lift): drive limits at rated (bring-up's default) meet it; a peak-limit strength test runs one joint at a time (already the bench rule); the planner's deceleration limit must keep the sum of τ·ω of the braking joints under it. Board test T12 scopes the bus **at the drive**.
+**Regen requirement (sw / planner):** the board clamps its own node; each drive sits above it by its regen current × harness resistance. A controlled stop may return at most ≈ 611 W on the M1 bench arm (1667 W on the robot, both arms + lift): drive limits at rated (bring-up's default) meet it; a peak-limit strength test runs one joint at a time (already the bench rule); the planner's deceleration limit must keep the sum of τ·ω of the braking joints under it. Board test T12 scopes the bus **at the drive**.
 
 **Integrated stop on the virtual bench** (sw/test_s2.py `test_integrated_stop`, docs/sw/integrated_stop.json; board model at monostable +20 % and a 10 ms release): a contact latches the collision fault only and the compliant hold keeps the heartbeat and K1; every hard fault then overrides it (ms to heartbeat drop / contactor open / no torque: e-stop 12 / 10 / 10; process hang 0 / 38 / 32; NaN feedback 2 / 38 / 2; bus silent 22 / 58 / 32; bus-off 22 / 58 / 32; over-temperature 10 / 46 / 10; supply trip 2 / 0 / 2). **A silent bus or bus-off is the slow case:** the supervisor needs fb_max_age (20 ms) to call it, then the watchdog runs, so the contactor opens at 58 ms and the hardware path alone ends at ≈ 61 ms, over the 50 ms budget; torque is gone at 32 ms only because the drive's own CAN timeout (30 ms) fires. That timeout is unverified on the GIM (Step 1, sw.gim_discover): without it the hardware path must lose ≈ 11 ms: fb_max_age ≤ 9 ms on the real adapter (it is 20 ms for the 0–9 ms pil9 bus), or watchdog_s ≤ 15 ms (sized at 25 ms on loop jitter).
 
@@ -243,7 +292,7 @@ Bench tests of the board before any motor (bring-up step 0): ARM refused with a 
 Category 0 removes torque, so the arm falls (Astra 18). From horizontal, the M1 arm (D20 motors, 1 kg in hand, 6.4 kg outboard of pitch, COM 303 mm) releases **15 J** after the balancer's share; with a 10 lb half-basket it is 24 J. Rules for every powered bench test:
 - **Mechanical catch:** an adjustable padded cradle (EVA foam on a bolted aluminium bar) set ≤ 50 mm under the forearm or hand in every pose under test, or a Dyneema tether from the stand with ≤ 50 mm slack: drop energy ≤ 3.1 J. Rated ≥ 628 N (10 × the arm's weight).
 - Payload tray under the gripper; belt guards on; the stand bolted to the bench; operator outside the whole fall envelope (remote button).
-- On the robot (later): SS1 (controlled stop, then torque off) with a rated delay relay; the lift pawl holds the torso.
+- On the robot: the arms stay category 0 and the base is SS1 through its own channel (*Base channel* above); the lift pawl holds the torso.
 
 
 ## Data buses
