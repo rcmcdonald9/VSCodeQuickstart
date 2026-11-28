@@ -990,6 +990,12 @@ def test_roll_latch():
     r0 = qm[k]
     qm, low = run(50, s.lo[k], qm)
     assert low >= r0 - 1e-12
+    from sw.safety import LATCH_T_MAX                                 # pin in: the roll torque stays under its guide's load
+    t[0] += dt; s.tick()
+    tff = np.zeros(6); tff[k] = 80.0
+    v = s.check(qm, 60 * np.ones(6), np.ones(6), tff, qm - 0.05, np.zeros(6), dt)
+    t_pin = abs(Supervisor.drive_torque(v, qm - 0.05, np.zeros(6))[k])
+    assert t_pin <= LATCH_T_MAX + 1e-9, t_pin
     s.set_people_near(False)
     # 3. with a switch: retracted only when it confirms; a switch that disagrees later puts the bound back
     qm, _ = run(int(2.0 / dt), pin + 0.3, qm, switch=False)
@@ -1005,7 +1011,7 @@ def test_roll_latch():
     assert not s.roll_latch_solenoid()
     return (f"Roll latch (O2, PIP_ROLL_GUARD={ROLL_GUARD!r}: off by default): solenoid on only healthy + nobody near; without a switch the "
             f"roll stays ≥ the +5° bound (+3° margin) for {LATCH_RETRACT_S * 1000:.0f} ms, with one until it confirms; a person near or an "
-            f"e-stop drops the pin at once; the bound never pulls the arm up ✅")
+            f"e-stop drops the pin at once; the bound never pulls the arm up; roll torque {t_pin:.1f} ≤ {LATCH_T_MAX} N·m while the pin may be in ✅")
 
 
 def main():

@@ -84,7 +84,8 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    switch confirms (`set_latch_switch`), or LATCH_RETRACT_S has passed without a switch, the roll target bound stays at
    the people-near limit (never above the arm: it only stops the arm being driven into the pin). A person near or any
    latched fault drops the pin at once (the contactor feeds the solenoid, so K1 opening drops it in hardware too).
-   ROLL_PARK_DEG: where the planner parks the roll when idle or before a planned power-down.
+   While the pin may be in, the roll torque bound is LATCH_T_MAX (16 N·m: its guide's printed load path). ROLL_PARK_DEG:
+   where the planner parks the roll when idle or before a planned power-down.
 Every override is counted so a session log shows how often the policy was overruled.
 """
 from __future__ import annotations
@@ -135,6 +136,7 @@ BASKET_CLEAR_R = 9.5                            # m: ≥ 0.7 + 1.6 × (0.2 + 5 s
 ROLL_GUARD = os.environ.get("PIP_ROLL_GUARD", "none")   # "none" | "latch" (CAD: rnd/parts/roll.py; default off, owner's call)
 LATCH_RETRACT_S = 0.05            # s: solenoid pull-in + pin travel before the roll may go below +5° without a switch (ESTIMATE)
 ROLL_PARK_DEG = 8.0               # deg: the roll park angle (idle / planned power-down) above the latch
+LATCH_T_MAX = 16.0                # N·m: roll torque cap while the pin may be in (0.39 kN at r 41.5: the printed guide, ≈ 12 MPa; power_off.md)
 DESC = Path(__file__).resolve().parent / "description" / "joints.json"
 
 
@@ -411,6 +413,15 @@ class Supervisor:
             self._rl_state, self._latch_t0 = "retracting", self.clock()
             self._count("roll latch switch disagrees")
 
+    def _latch_lim(self, lim):
+        """16.: while the pin may be in, the roll torque stays ≤ LATCH_T_MAX (its printed guide's load path, roll.py LATCH)."""
+        if not self.roll_latch or self._rl_state == "retracted":
+            return lim
+        lim = lim.copy()
+        k = self.names.index("roll")
+        lim[k] = min(lim[k], LATCH_T_MAX)
+        return lim
+
     def roll_latch_solenoid(self):
         """The latch output: True = solenoid energised (pin retracted or retracting). False (the spring-applied pin in) on a
         person near or any latched fault; always False with the latch option off."""
@@ -632,7 +643,7 @@ class Supervisor:
             self._latch("BMS over-current or under-voltage")
         if self.latched == ["collision"]:                               # compliant hold, not a stop: the arm must not drop
             qm = np.asarray(q_meas, float)
-            lim = self.peak if allow_peak else self.rated
+            lim = self._latch_lim(self.peak if allow_peak else self.rated)
             if self._anchor is None:
                 self._anchor = qm.copy()
             self._anchor += (qm - self._anchor) * min(dt / T_ANCHOR, 1.0)
@@ -691,7 +702,7 @@ class Supervisor:
                     self._count("workspace reject")
                     q2, tf = self.last_q.copy(), np.zeros(self.n)
         # 2. total torque bound
-        lim = self.peak if allow_peak else self.rated
+        lim = self._latch_lim(self.peak if allow_peak else self.rated)
         kp_ = np.clip(np.nan_to_num(np.asarray(kp, float)), 0, KP_MAX)
         kd_ = np.clip(np.nan_to_num(np.asarray(kd, float)), 0, KD_MAX)
         if np.any(kp_ != kp) or np.any(kd_ != kd):
