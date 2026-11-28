@@ -88,13 +88,13 @@ ARM_MOTOR_SETS = {
     # yaw_drop_dm (m added to the roll drive's yaw_drop; the coaxial yaw motor sits under the roll motor).
     # I1 all SteadyWin: GIM8108-36 at pitch + elbow, GIM6010-48 at yaw.
     "inline": dict(shoulder_pitch=("GIM8108-36", 1.0), elbow=("GIM8108-36", 1.0), upper_yaw=("GIM6010-48", 1.0), elbow_teeth=20,
-                   elbow_belt_c=0.07095, bone_mass_upper=0.52, pitch_module_mass=0.80, yaw_stage_dm=-0.26, yaw_drop_dm=0.025),
+                   elbow_belt_c=0.07095, bone_mass_upper=0.55, pitch_module_mass=0.80, yaw_stage_dm=-0.26, yaw_drop_dm=0.025),
     # I2a mixed: as I1 with a dual-encoder DM-J4340-2EC at yaw (40:1, 9 / 27 N·m).
     "inline_dm": dict(shoulder_pitch=("GIM8108-36", 1.0), elbow=("GIM8108-36", 1.0), upper_yaw=("DM-J4340-2EC", 1.0), elbow_teeth=20,
-                      elbow_belt_c=0.07095, bone_mass_upper=0.53, pitch_module_mass=0.80, yaw_stage_dm=-0.28, yaw_drop_dm=0.015),
+                      elbow_belt_c=0.07095, bone_mass_upper=0.56, pitch_module_mass=0.80, yaw_stage_dm=-0.29, yaw_drop_dm=0.015),
     # I2b mixed: as I2a with a dual-encoder DM-J8009-2EC at the elbow (9:1 single stage, 20 / 40 N·m).
     "inline_dm8009": dict(shoulder_pitch=("GIM8108-36", 1.0), elbow=("DM-J8009-2EC", 1.0), upper_yaw=("DM-J4340-2EC", 1.0), elbow_teeth=20,
-                          elbow_belt_c=0.07095, bone_mass_upper=0.52, pitch_module_mass=0.80, yaw_stage_dm=-0.28, yaw_drop_dm=0.015),
+                          elbow_belt_c=0.07095, bone_mass_upper=0.55, pitch_module_mass=0.80, yaw_stage_dm=-0.29, yaw_drop_dm=0.015),
 }
 assert ARM_MOTORS in ARM_MOTOR_SETS, f"PIP_ARM_MOTORS must be one of {list(ARM_MOTOR_SETS)}"
 _AM = ARM_MOTOR_SETS[ARM_MOTORS]
