@@ -373,6 +373,45 @@ SW_CHANGES = [
 ]
 
 
+# ------------------------------------------------------------------- D29 #9: one caster solenoid pulling 4 cables (cost_down.md)
+# params PIP_CASTER_RELEASE ("four" today: a JF-1039 per caster on its lock plate; "cable": one central solenoid + 4 Ø1 steel
+# cables in PTFE liners). Force budget and timing, all ESTIMATE until the bench pull-force test (cost_down.md checks).
+F_LOCK = (4.0, 3.0, 5.0)          # N: lock-plate spring at the release point (caulk-gun plate; nominal, lo, hi)
+PLATE_STROKE = 0.003              # m: plate tilt travel to free the rod
+MU_LINER = (0.15, 0.10, 0.25)     # steel cable in a PTFE liner (capstan μ)
+WRAP = math.pi + math.pi / 6      # rad per cable: a 90° turn at the solenoid, a 90° turn down to the plate, + 30° of routing
+F_RETURN = 2.0                    # N: plunger return spring (keeps the cables taut, the plunger out when de-energised)
+SOLENOIDS = {"JF-1039 (24 V, 25 N, $12.99 Walmart; the per-caster part)": 25.0,
+             "JF-1264B (24 V, 55 N, 10 mm, $26.62 eBay listing 2026-11-28)": 55.0}
+T_COIL_ON, T_COIL_OFF = 0.020, 0.015   # s: coil current rise to pull-in / decay to drop-out with the flyback diode (JF class, ESTIMATE)
+M_MOVING = dict(four=0.020 + 0.005, cable=0.030 + 4 * (0.005 + 0.002))   # kg: plunger (+ equaliser) + plates + cables
+MARGIN = 1.5                      # force margin wanted at nominal; ≥ 1.0 at the worst corner
+
+
+def cable_release():
+    """Force budget and timing for both release layouts: dict per layout and solenoid."""
+    from sw import safety as s
+    pulse = s.CASTER_PULSE_S
+    out = []
+
+    def need(n, mu, f):
+        return n * f * math.exp(mu * WRAP) + F_RETURN if n > 1 else f + F_RETURN
+
+    for lay, n, sols in (("four", 1, [list(SOLENOIDS)[0]]), ("cable", 4, list(SOLENOIDS))):
+        for sname in sols:
+            F = SOLENOIDS[sname]
+            nom, worst = need(n, MU_LINER[0], F_LOCK[0]), need(n, MU_LINER[2], F_LOCK[2])
+            m = M_MOVING[lay]
+            t_rel = T_COIL_ON + math.sqrt(2 * PLATE_STROKE * m / max(F - worst, 1e-3)) if F > worst else math.inf
+            f_back = (n * F_LOCK[1] * math.exp(-MU_LINER[2] * WRAP) if n > 1 else F_LOCK[1]) + F_RETURN      # weakest spring, worst liner
+            t_lock = T_COIL_OFF + math.sqrt(2 * PLATE_STROKE * m / f_back)
+            ok_f = F >= MARGIN * nom and F >= worst
+            ok_t = t_rel <= 0.5 * pulse and t_lock <= 0.5 * pulse
+            out.append(dict(layout=lay, solenoid=sname, F=F, need_nom=nom, need_worst=worst, margin_nom=F / nom, margin_worst=F / worst,
+                            t_release=t_rel, t_lock=t_lock, pulse=pulse, ok_force=ok_f, ok_timing=ok_t, ok=ok_f and ok_t))
+    return out
+
+
 def fmt(r, w):
     v = r[w] * 1000
     return f"{v:.0f}{' ✅' if r[w] >= NEED - 1e-9 else ' ❌'}"
@@ -521,7 +560,6 @@ def main():
           "(SW-T1 then has to stop the base and set the basket down). **Open:** the lock's take-up and the ratchet-down behaviour on a real floor are "
           "ESTIMATES (bench: caster coupon on tile + low pile, measure take-up under 150 N); the quasi-static ZMP ignores the bump of a caster engaging "
           "(a MuJoCo push test with the caster model is the next check); the ball transfer on medium pile when released drags ≈ 0.5 × 10 N per caster."]
-    (DOCS / "tip.md").write_text("\n".join(L) + "\n")
     js = dict(worst=sa[0], n_ok=sa[1], n=16, n_fail=16 - sa[1], worst_sw_today=st[0], n_ok_sw_today=st[1], worst_before=sb[0], n_ok_before=sb[1],
               worst_loop40=s40[0], n_ok_loop40=s40[1], worst_no_ballast=snb[0], n_ok_no_ballast=snb[1],
               threshold=dict(before=th0, after=th1, after_slow=th2), push_tip_n=dict(before=f0, after=f1),
@@ -529,6 +567,37 @@ def main():
               real=dict(worst=sr[0], n_ok=sr[1], worst_with_rules=sra[0], n_ok_with_rules=sra[1], approach_enforced=approach_ok,
                         basket_clear_enforced=basket_ok, r_need=r_need, r_basket=r_basket, t_avail=t_avail, transition=trans, rows=real,
                         extras=rex, estop=est))
+    # D29 #9: A10 on both caster-release layouts (the lock geometry does not move; only the base mass does) + force / timing
+    from .params import CASTER_RELEASES
+    var = {}
+    for lay, v in CASTER_RELEASES.items():
+        dd = dataclasses.replace(d1, base=dataclasses.replace(d1.base, caster_mass=v["caster_mass"], caster_release=lay))
+        bb, cs = Body(dd), casters(dd, "D18b")
+        ra, rl = run_cases(dd, bb, P, cs, requested, rules), real_rows(dd, bb, P, cs, rules)
+        var[lay] = dict(caster_mass=v["caster_mass"], worst=summ(ra)[0], n_ok=summ(ra)[1], real_worst=summ(rl)[0], real_n_ok=summ(rl)[1])
+    cr = cable_release()
+    best = max((c for c in cr if c["layout"] == "cable"), key=lambda c: (c["ok"], c["F"]))
+    a10_ok = var["cable"]["n_ok"] >= var["four"]["n_ok"] and var["cable"]["worst"] >= NEED - 1e-9 and var["cable"]["real_n_ok"] >= var["four"]["real_n_ok"]
+    L += ["", f"## D29 #9: one caster solenoid pulling 4 cables (PIP_CASTER_RELEASE; this page uses **{d1.base.caster_release}**)", "",
+          f"Lock plates, rods, feet and their positions are unchanged; the base loses {4 * (var['four']['caster_mass'] - var['cable']['caster_mass']):.2f} kg "
+          "(4 solenoids → 1 larger one + cables, ESTIMATE). Force budget: the solenoid must pull n × F_lock × e^(μθ) + the plunger return spring "
+          f"(F_lock {F_LOCK[0]:g} N, {F_LOCK[1]:g}–{F_LOCK[2]:g}; PTFE liner μ {MU_LINER[0]:g}, {MU_LINER[1]:g}–{MU_LINER[2]:g}; wrap {math.degrees(WRAP):.0f}° per cable; "
+          f"return {F_RETURN:g} N), wanted ≥ {MARGIN:g}× at nominal and ≥ 1.0× at the worst corner. Timing: release (coil rise + plate travel) and re-lock "
+          f"(drop-out + the springs dragging the cables back, weakest spring, worst liner), each ≤ half the {cr[0]['pulse'] * 1000:.0f} ms re-seat pulse "
+          "(sw/safety.py CASTER_PULSE_S; the person-near lock is then ≪ the 1.5 s transition).", "",
+          "| Layout | Solenoid | Need: nominal / worst (N) | Margin nominal / worst | Release / re-lock (ms) | |", "|---|---|---|---|---|---|"]
+    ms = lambda t: "—" if math.isinf(t) else f"{t * 1000:.0f}"
+    L += [f"| {c['layout']} | {c['solenoid']} | {c['need_nom']:.1f} / {c['need_worst']:.1f} | {c['margin_nom']:.2f}× / {c['margin_worst']:.2f}× | "
+          f"{ms(c['t_release'])} / {ms(c['t_lock'])} | {'✅' if c['ok'] else '❌'} |" for c in cr]
+    L += ["", "| Layout | A10 (requested rules) worst / cases ≥ 30 mm | A10 from the real states (today's rules) worst / cases |", "|---|---|---|"]
+    L += [f"| {k} (caster {v['caster_mass']:.3f} kg each) | {v['worst'] * 1000:.0f} mm / {v['n_ok']}/16 | {v['real_worst'] * 1000:.0f} mm / {v['real_n_ok']}/16 |" for k, v in var.items()]
+    L += ["", f"**Re-check: A10 {'PASS' if a10_ok else 'FAIL'}; force + timing {'PASS' if best['ok'] else 'FAIL'} with the {best['solenoid'].split(' (')[0]}** "
+          f"(the per-caster JF-1039 cannot pull four cables: {next(c for c in cr if c['layout'] == 'cable' and c['F'] == 25.0)['margin_nom']:.2f}× at nominal). "
+          "Not modelled: a mechanically stuck plunger or a kinked liner now holds **all four** casters released (one solenoid per caster leaves three "
+          "locking), which the A10 rows with locked casters do not cover; a slack cable on a rigid equaliser leaves its caster locked on a threshold "
+          "crossing (safe side for tip, a jam for R4). Bench: pull force through the four liners at the lock plates, and the release / re-lock times on a scope."]
+    js["d29_caster_release"] = dict(a10_ok=a10_ok, variants=var, release=cr, best=best["solenoid"], force_timing_ok=best["ok"])
+    (DOCS / "tip.md").write_text("\n".join(L) + "\n")
     (DOCS / "tip.json").write_text(json.dumps(js, indent=1, default=float))
     print("\n".join(L[4:]))
 
