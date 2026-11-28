@@ -1480,3 +1480,11 @@ One long push instead of half-hour runs. In order:
 ### 2026-11-28 W18b merged (SW-T8, BASE_STOP_DECEL from tip.json)
 - **The locked caster cap now follows the payload** (`caster_locked_v_for`): ≤ 6 kg 0.20, ≤ 10 kg 0.15, above 10 kg no locked travel (was a flat 0.25). A heavier payload while moving brakes to the new cap. A deferred lock engages at the lower speed: 1.20 s from 0.8 m/s, timeout 1.50 s, still before U20's 1.8 s. **A10 snag row ❌ 2/23 → ✅ 23/23** (basket 16 % / 252 N).
 - **BASE_STOP_DECEL is read from tip.json's 30 mm column, rounded down** (1.17 / 1.50 / 0.52), falling back to 1.00 / 1.30 / 0.45 if the file is missing or bad. This fixes the recurring hand-copied drift (test_base_stop 1.53 > 1.50). test_s1, test_s2 and rnd.check pass. Queue (rnd owners): tip.py summary text still treats CASTER_LOCKED_V as one cap; safety_board_sim should model the basket at caster_locked_v_for(9.07); electrical stop_timing 44.9 vs sim 45.5 ms.
+
+### 2026-11-28 W18a merged (R17 pinch 13 → 5)
+- **Nips 13 → 5 (people near 11 → 3), exposed 0.** The elbow scissor is closed by geometry: the forearm stands 25.5 mm off the housing with a flat inner side (FORE_Y 72 → 90.5, TUBE_DY 3 → 7, elbow core cut 158 mm), and a static round sleeve covers the shaft. No static shield works, because the housing isn't round beyond r 40. A round yaw-plate skirt closes the stop-pin row. The front frame (y 21…26) and the band inboard face (48.5 mm) close two shoulder–torso rows.
+- Stow 567 → 560 mm, hand deflection 5.4 → 5.6 mm (≤ 6), R14, R16, harness and swap path unchanged, 97/97 printable, ≈ +22 g per arm, no cost change. Nit: `yaw_flange × yaw_plate_bot` sits at 2.0 mm against a 2.0 target (raise YAW_SKIRT r_in by 0.3 mm).
+- **Open (5):**
+  - hood × torso (19.3 mm): turn the yaw rear-cap lugs off ±Y, or PIP_TORSO_RECESS=1. Lead's call, queued.
+  - The hood's inboard wedge (2 rows, open with people near too): rigid guards can't work. **Owner call:** ROLL_Y + 23–30 mm (but stow 560 + ≈ 60 mm breaks the R5 ≤ 600 mm limit) or a soft TPU skirt plus the force limit.
+  - yaw_block / yaw_band × ferrule (full range only; the D25 soft limit closes them with people near).
