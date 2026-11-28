@@ -51,7 +51,7 @@ def main():
          "(electrical.md *Bench supply*)", "calculated; price sourced", "high (80 %)",
          "Overload is a **latched shutdown at 105–125 %** (43.8–52 A; SE-1000 spec), not current limiting: a peak over it is a category-0 drop and a re-power. "
          "Peak-limit strength tests one joint at a time. The 10 A CC supply only does the 1 A first power-up."),
-        ("1", "Safety board (e-stop, contactor, pre-charge, one-shot discharge, clamp, watchdog)",
+        ("1", "Safety board (e-stop, contactor, pre-charge, one-shot discharge, clamp, watchdog; netlist v3: 100 V coil driver, AUX / K1 monitor, 12 V UVLO, branch trip)",
          f"netlist + block diagram + state table (electrical.md); heartbeat lost → no torque {st_m1['total'] * 1000:.1f} ms (SW2 50); "
          f"watchdog {wd:.0f} ms vs the loop's longest measured heartbeat gap {jmax:.1f} ms (sw/loop_jitter.py, this machine, loaded)",
          "netlist v3 (Neon #2 F1: NH-50 + freewheel Schottky, TLV3202, K1 holds on AUX, LATCH cleared by any K1 opening, U6 on Ā, 60 A main fuse); not built", "medium (60 %)",
@@ -61,13 +61,20 @@ def main():
          f"{th.get('task_max_c', nan):.0f} °C (old open + 10 K model {th.get('task_max_c_open_model', nan):.0f} °C); with a finned aluminium cap "
          f"{th.get('task_max_c_al_cap', nan):.0f} °C (thermal.md)", E, "low (45 %)",
          "Step 1 logs the motor case on the lever with thermistors; the aluminium cap is a Step-2 line after seller question 6 (which face carries the housing holes)."),
-        ("1", "Step-1 rig: a 6061 lever bolted straight to the GIM output + the joint's turned C45 drive stub (the stub coupon; D26: no Oldham)",
-         "no belt stage in Step 1 (Neon #2 F15); D26 direct stage: the 20T keyed on a C45 stub bolted to the output (8 × M3 × 6), its far end in a 6001 "
-         "in wall B; the yaw belt at its fixed centre is a Step-2 line", C + "; bought-part dimensions " + E, "high (80 %)",
+        ("1", "Step-1 rig: a 6061 lever bolted straight to the GIM output + the joint's C45+QT integral pinion shaft (stub v5: the stub coupon; D26: no Oldham)",
+         "no belt stage in Step 1 (Neon #2 F15); D26 direct stage v5 (Astra #3 m7): the 20T hobbed on a C45+QT pinion shaft bolted to the output "
+         "(8 × M3 × 6), its far end in a 6001 in wall B (fatigue 3.13× hinged, belts.md); the yaw belt + D26 tension ring are Step-2 lines",
+         C + "; bought-part dimensions and the pinion price " + E, "high (80 %)",
          "Drill the lever to the measured output pattern; measure the GIM output PCD, pilot and output-bearing position before quoting the stubs "
          "(the motor's output bearing now carries its share of the belt pull: belt_stage.support_split)."),
+        ("1", "Step-1 gate test kit (motorless tests T0–T16)", f"dummy drive bank, load resistors, regen diode, energy bank ${t['s1_test'] - t['s1_instr']:,.0f}; "
+         f"instruments ${t['s1_instr']:,.0f} (scope, differential probe, two current clamps, 20 A CC supply, DMM; skip what the owner has)",
+         "prices: list snapshots 2026-11-28 / " + E, "high (80 %)",
+         "safety_board_tests.md names a 1N5822-class regen diode (3 A) for 10–30 A steps: the kit uses a 40 A Schottky; the CP2100A clamp is 800 kHz vs the "
+         "sheet's ≥ 1 MHz (fine for ms events; a CP2100B if the clamp-leg edges matter)"),
         ("2", "Arm structure (C1 / C3 / M5 CAD fixes)", "C1 tie-rods with steel crush sleeves at the pitch hub and yaw flange (W8c: life preload 88 / 87 %), "
-         "4-ear cartridge flanges (W8b: tipping ≥ 10× at 30 % preload), yaw centre 80.93 mm for a stock 315-5M (rnd/joints.py, belts.md)", C + "; creep data " + E, "medium (60 %)",
+         "C45+QT clamp rings and a 7075-T6 yaw flange (Astra #3 m9: contact faces 1.34–2.93×), 4-ear cartridge flanges (W8b: tipping ≥ 10× at 30 % preload), "
+         "D26 tension rings at elbow + yaw (Astra #3 m6: preload 134–220 N, set by span frequency) (rnd/joints.py, belts.md)", C + "; creep data " + E, "medium (60 %)",
          "**Do not print the pitch / yaw shafts or the cartridges as drawn** until those land; the Step-2 hardware lines follow them."),
         ("2", "Hold B: inline GIM8108-36 roll (the plan)", f"dome {ri.get('inline', {}).get('dome', {}).get('width_x', '?')} × "
          f"{ri.get('inline', {}).get('dome', {}).get('height_z', '?')} mm on the seller drawing (Ø96 × 57); boss dowels 1.6× stall; steel stops",
@@ -75,22 +82,26 @@ def main():
          "Seller questions 3–5. A different driver from Step 1's: protocol discovery again on arrival. Backlash 15 arcmin (ESTIMATE) → "
          f"hand {acc_raw:.1f} mm without joint encoders."),
         ("2", "Hold A: GIM8108-8 at pitch + elbow (D20)", (f"20 lb hug {hug:.2f}× rated (slim_study V1); " if hug else "") +
-         "cartridge_m.parts_list_direct(MOTOR_8108): a steel 20T on a C45 stub (8 × M3 × 6 10.9, 1.7×), a 6001 in wall B (2.0×), PU steel-cord "
+         "cartridge_m.parts_list_direct(MOTOR_8108): a C45+QT integral pinion shaft (v5: fatigue 0.68 → 2.63×; 8 × M3 × 6 10.9, 1.7×), a 6001 in wall B (2.0×), PU steel-cord "
          "15 mm belts, an 18 N·m flash limit (D26; kit lines ESTIMATE)", V + " / motor data " + E, "low (45 %)",
          "No datasheet; listings are 48 V nominal; the D20 drive is a redesign. **Do not buy until the 24 V answer.**"),
         ("2", "Hand accuracy and encoders (M3)", f"{acc_enc:.1f} mm with joint encoders, {acc_raw:.1f} mm without (accuracy.md, inline backlash in)",
          E, "low (40 %)", "The AS5048A mounts and the RP2040 node firmware do not exist yet: build them first, or drop the ≤ 1 mm claim for M1."),
         ("2", "Printed structure (hand sag, R2b)", f"{st.get('total_mm', nan):.1f} mm raw, {st.get('after_mm', nan):.1f} mm after a gravity model "
          "(stiffness.json; P2 FEA chain; target ≤ 6 / ≤ 2)", "verified (FEA)", "medium (60 %)", "The bench measures it."),
+        ("2", "Option: R17 roll latch (PIP_ROLL_GUARD=latch, default off)", f"O2 spring latch at +5°, {sd(t['opt'])} per arm ESTIMATE, ≈ 45 g (power_off.md); "
+         "CAD + supervisor half in the tree", E, "medium (55 %)",
+         "Owner decision; not in any total. The print behind the guide sleeve carries ≈ 0.4 kN until a metal path to the motor face is drawn."),
         ("2", "Bring-up software (sw/bringup.py)", "virtual bench: every step passes with a placeholder GIM table (5/5 joints); with the real table "
          "only the DM-J4310 is online", "verified (virtual bench)", "medium (60 %)", "The real GIM table is filled from Step 1."),
     ]
     L = ["# M1 bench arm: purchase readiness (generated by `python -m rnd.m1_readiness`)", "",
-         f"**Kit ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)), with {CONTINGENCY:.0%} contingency:** Step 1 **${t['s1_c']:,.0f}**; Step 2 **${t['s2_plan_c']:,.0f}** "
-         f"(today's plan: GIM6010 at pitch + elbow, inline roll); whole kit ${t['plan_c']:,.0f}. Hold A (D20 with its drive parts) {sd(t['d_a'])}; "
-         f"belt-roll fallback {sd(-t['d_b'])}.", "",
+         f"**Kit ([M1_BENCH_ARM.md](M1_BENCH_ARM.md)), with {CONTINGENCY:.0%} contingency:** Step 1 **${t['s1_c']:,.0f}** (parts ${t['s1_parts_c']:,.0f} + the "
+         f"motorless test kit ${t['s1_test_c']:,.0f}, of which instruments ${t['s1_instr_c']:,.0f}: ${t['s1_c'] - t['s1_instr_c']:,.0f} if the owner has them); "
+         f"Step 2 **${t['s2_plan_c']:,.0f}** (today's plan: GIM6010 at pitch + elbow, inline roll); whole kit ${t['plan_c']:,.0f}. Hold A (D20 with its drive parts) {sd(t['d_a'])}; "
+         f"belt-roll fallback {sd(-t['d_b'])}; roll latch option {sd(t['opt_c'])} per arm (not in a total).", "",
          "## Go / no-go per step", "",
-         "### Step 1: one GIM6010-8 + DM-J4310 + CAN + bench supply + safety board + test lever — **GO** (the safety-board parts after the schematic review)",
+         "### Step 1: one GIM6010-8 + DM-J4310 + CAN + bench supply + safety board + test lever + motorless test kit — **GO** (the safety-board parts after the schematic review)",
          "- Nothing in it waits on a seller answer or a CAD fix; every line is decided, and all but the two supplies, the stand, the test lever "
          "and the catch are reused in the arm.",
          "- It is the cheapest way to settle the biggest unknown: whether the SDC104 has a usable impedance mode, a CAN timeout and a torque "
@@ -102,7 +113,8 @@ def main():
          "netlist v3 changed: as drawn the clamp rang at MHz (filter + 50 µs minimum on-time; on 26.0 / off 25.7 V), the coil driver was a 30 V part seeing ≈ 52 V, "
          "a stuck AUX bypassed pre-charge, a welded K1 / broken AUX went undetected, a dead 12 V left K1 closed with no clamp, and the 20 A fuse leaves the "
          "in-arm 16 AWG unprotected at 18–35 A. **The Step-1 GO covers buying the parts; powering the rig needs the board's motorless tests** "
-         "(docs/rnd/safety_board_tests.md, T0–T16) **and the independent schematic/layout review checklist signed.**", "",
+         "(docs/rnd/safety_board_tests.md, T0–T16) **and the independent schematic/layout review checklist signed.** The test kit for T0–T16 is now a Step-1 "
+         "list (M1_BENCH_ARM.md): the consumables are bought with the board; the instruments only if the owner does not have them.", "",
          "**Step 1 exit criteria (all needed before Step 2 is bought):**",
          "1. **Gate before any drive is powered:** the independent review checklist (docs/rnd/safety_board_tests.md) signed by someone who did not draw "
          "the board, then the board built and **every motorless test T0–T16 of docs/rnd/safety_board_tests.md passed** (bench supply + dummy capacitor bank "
@@ -149,7 +161,7 @@ def main():
           "| Motors run hot in the closed sleeves | derating to ≈ 0.65 × rated | aluminium finned caps (Step 2, after seller question 6), cover vents, the drive's thermal limit | no |",
           "| GIM8108-8 is 48 V-only or slow at 24 V; D20 drive needs a redesign | D20 fails; 20 lb hug not met | hold A; GIM6010-8 fallback | hold A |",
           f"| Robot BOM over budget: ${bom.get('total', 0):,.0f} landed (limit $5,500, owner 2026-11-27), ${bom.get('with_d20', 0):,.0f} with D20 | the full robot needs a "
-          "cost decision | the M1 parts are reused; the decision is the owner's (BOM_v4.md) | no |",
+          "cost decision | the M1 parts are reused; ranked savings in docs/rnd/cost_down.md (the gate-neutral ones do not reach $5,500 alone); the decision is the owner's | no |",
           "| Category-0 drop on the bench | a falling arm | catch cradle ≤ 50 mm under the arm, tether, remote mushroom (Step 1) | no |",
           "", "## Day-1 plan (Step 1)", "",
           "0. **Before any motor power:** build the safety board (electrical.md netlist) and run its bench tests; set the catch cradle; bolt the "

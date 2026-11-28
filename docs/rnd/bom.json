@@ -1,1 +1,71 @@
-{"total": 6609.24, "with_d20": 6811.639999999999, "with_d20_inline": 6811.639999999999}
+{
+ "total": 6712.7,
+ "with_d20": 6887.5,
+ "with_d20_inline": 6887.5,
+ "options": {
+  "**Roll latch** (PIP_ROLL_GUARD=latch, default off; power_off": 32.199999999999996
+ },
+ "subsystems": {
+  "Arms \u00d72: actuators": 1550.2,
+  "Arms \u00d72: drive, joints, bones": 1546.06,
+  "Base: wheels, tip, ballast": 743.76,
+  "Lift + mast": 276.94,
+  "Head + face": 170.53,
+  "Power + safety electronics": 936.05,
+  "Compute, sensing, comms": 1002.22,
+  "Printing + covers + misc. fasteners": 402.48,
+  "Dock": 83.95
+ },
+ "savings_top10": [
+  {
+   "item": "Belt shoulder roll instead of the inline GIM8108-36 (queued idea; `PIP_ROLL_DRIVE=belt`, CAD + checks in the tree)",
+   "landed": 563.36,
+   "gate_neutral": false
+  },
+  {
+   "item": "GIM6010-8 at the $70 listing (11 units)",
+   "landed": 253.0,
+   "gate_neutral": true
+  },
+  {
+   "item": "Pitch crush sleeves from 1/4\" \u00d7 .035\" 4130 tube (queued idea; 16 per robot)",
+   "landed": 117.76,
+   "gate_neutral": true
+  },
+  {
+   "item": "One batch quote for the custom metal (pinions, tension rings, C1 rings / flanges / cranks, roll adapters, rear plates, stop bushes, straps, chassis ring)",
+   "landed": 101.26,
+   "gate_neutral": true
+  },
+  {
+   "item": "Stock aluminium heatsinks for the 6 finned rear caps",
+   "landed": 62.1,
+   "gate_neutral": true
+  },
+  {
+   "item": "MT6701 magnetic encoders for the 7 shaft-end joints",
+   "landed": 56.35,
+   "gate_neutral": true
+  },
+  {
+   "item": "Regen-clamp NH-50 0.56 \u03a9 at the distributor price (3 on the robot, 3 on the M1 board)",
+   "landed": 51.75,
+   "gate_neutral": true
+  },
+  {
+   "item": "Bond the inline roll's 61806 outer race with the structural epoxy already bought (drop the Loctite 660 tube)",
+   "landed": 33.34,
+   "gate_neutral": true
+  },
+  {
+   "item": "One caster-release solenoid pulling 4 Bowden cables (D18b)",
+   "landed": 31.02,
+   "gate_neutral": true
+  },
+  {
+   "item": "Generic 304 3\" quick-release tri-clamps for the arm detach (2)",
+   "landed": 29.9,
+   "gate_neutral": true
+  }
+ ]
+}
