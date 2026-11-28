@@ -31,7 +31,9 @@ the hood's inboard wedge is still open (see the roll notes above roll_frame()).
 
 R17 W20 (2026-11-28): the yaw can's rear-cap lugs at ±125° (cartridge_m.CAP_SITES) put the hood's inboard wall at y 20.5
 (cover_yaw × torso_shell closed); PIP_WEDGE_GUARD=skirt adds the TPU comb skirt over the hood's upper inboard wedge
-(wedge_skirt), reported by rnd/pinch.py as soft-guarded, not as a rigid pass.
+(wedge_skirt), reported by rnd/pinch.py as soft-guarded, not as a rigid pass. D31 (2026-11-28): the skirt is the default
+and holds on by 12 integral TPU push-in pins through Ø3.2 holes in the hood (SKIRT_PIN, skirt_attachment();
+python -m rnd.parts.covers → docs/rnd/skirt_attach.md).
 
 R17 pass (2026-11-28): the elbow bay dome is redrawn round the GIM6010 can (its flange ears stood outside the concept box)
 and the wrist boot is a round, closed boot (the can flange faced the hand): no exposed motor can left. The roll hard stop
@@ -209,8 +211,9 @@ def _yaw_hood():
     over the roll range (3° steps, ±1.5 mm on each axis), and 1.5 mm off the roll output's rear arm. Wave 5: it no longer stops at x −46.5 (that left the can's front 10 mm and the
     hood's front corners open); it runs over the can's front to its own box end (5.2 mm past the can), cut only by those
     swept parts. One PETG print (≈ 99 × 109 × 71 mm, in printed()); fixing still to draw: 4 × M3 tabs at its foot into
-    heat-set inserts in the yaw block's top plate (inserts: next rnd/parts/roll.py edit). The inboard wedge between the yaw block
-    and the ferrule stays open (see compliant())."""
+    heat-set inserts in the yaw block's top plate (inserts: next rnd/parts/roll.py edit; keep them ≥ 6 mm off the skirt's
+    bottom pin row at z −40). The inboard wedge between the yaw block and the ferrule stays open (see compliant()).
+    PIP_WEDGE_GUARD=skirt (D31): 12 × Ø3.2 holes for the skirt's push-in pins (SKIRT_PINS). Print top down, open foot up."""
     if not _HOOD:
         from . import roll
         from .. import swept
@@ -235,6 +238,9 @@ def _yaw_hood():
         # front corners (box round a round can) open and the probe reached the can's pigtail window (12 × 16) and the
         # motor through them. It now runs on over the can's front 10 mm to 5.2 mm past the can (its own box end),
         # cut only by the static parts swept over the roll range (+1.5 mm) and the rear clevis arm (+1.5 mm).
+        from ..params import WEDGE_GUARD
+        if WEDGE_GUARD == "skirt":                                                   # D31: the skirt's push-in pin holes
+            h = _pin_holes(h)
         _HOOD.append(_main(h))
     return _HOOD[0]
 
@@ -244,8 +250,8 @@ def _yaw_hood():
 # its inboard face (y 20.5, x ≤ −29.5) and the inboard part of its top beside the roll link's ferrule boss (a Ø90 disc
 # about the pitch axis, outboard face y 12, x ≥ −45), the link above it and the ferrule rim. These are planes parallel to
 # the roll axis, so the gap at each point of the hood runs from ≈ 1–9 mm to 6–38 mm over −15…100° (no rigid fix, see the
-# notes below). The soft option keeps a finger off the hood there instead of holding a gap: a TPU 95A comb skirt bonded
-# and clipped to the hood over x WEDGE_SKIRT["x"] (inboard face, the rounded top-inboard edge and a top strip out to
+# notes below). The soft option keeps a finger off the hood there instead of holding a gap: a TPU 95A comb skirt held on
+# the hood by its own push-in pins (SKIRT_PIN below, D31) over x WEDGE_SKIRT["x"] (inboard face, the rounded top-inboard edge and a top strip out to
 # y0 + top_w), fins in planes normal to the roll axis (each fin turns in its own plane; where the boss, the link or the
 # ferrule rim comes into a fin it is pushed sideways and lays over on its neighbour, it does not have to compress),
 # WEDGE_SKIRT["pitch"] apart (the slots between fins ≤ 8 mm, closed to a finger), fin_h tall off a backing sheet. The fins
@@ -271,7 +277,8 @@ def _skirt_fin_x():
 
 def wedge_skirt():
     """PIP_WEDGE_GUARD=skirt: the TPU 95A comb skirt on the yaw hood's inboard face and top edge (roll-module frame, rides
-    on the roll output). One TPU print, ≈ 69 × 39 × 83 mm."""
+    on the roll output). One TPU print, ≈ 69 × 39 × 83 mm, with its 12 push-in pins (SKIRT_PINS, D31) on the hood side;
+    printed on its inboard-face fin tips, hood side up."""
     if not _SKIRT:
         from .. import swept
         mv, st, o, _, _ = swept.joints()["roll"]
@@ -297,8 +304,205 @@ def wedge_skirt():
                 sk = _cut_main(sk, Pos(*d) * p)
         for c, size in _skirt_crush_boxes(st, o):                                               # no TPU where it would be crushed
             sk = _cut_main(sk, Pos(*c) * Box(*size))
+        sk = _main(sk)
+        for site in skirt_pin_sites():                                                          # D31 attachment: push-in pins (inside the hood)
+            sk = sk + _pin_frame(site) * skirt_pin()
         _SKIRT.append(_main(sk))
     return _SKIRT[0]
+
+
+# D31 attachment (2026-11-28): how the skirt is held on the PETG hood. TPU-to-PETG adhesion is poor (no fusion between
+# the two; a glued joint would also make the skirt a hood-plus-skirt replacement), and anything rigid on the hood's
+# outer face is ruled out: a stud or rail head on the inboard face stands inside the 25.5 mm hood-to-torso gap that
+# closed cover_yaw × torso_shell (W20a), and on the top it eats the 0.2 mm the skirt's folded stack has left against the
+# ferrule rim (pinch_skirt.md stack margin). So the skirt carries its own fasteners and nothing outside the hood changes:
+# SKIRT_PINS integral TPU 95A push-in pins (Ø3 stem through the 2.2 mm wall, a barbed cone head Ø5.4 that snaps behind it)
+# on the sheet's hood side, into Ø3.2 holes in the hood (the only hood change). The skirt is fitted and replaced from
+# outside with the arm assembled: peel it off pin by pin and press a new one on (each pin pushed home through the slot
+# between two fins, or at a fin root, with a blunt 3 mm tool). Inside, a head may sit only where the hood clears the yaw
+# can by more than its height plus SKIRT_PIN["clear_min"]: the can stands 3.0 mm inside the wall over x −95…−64 above
+# z −34 and under the whole top strip west of x −56, so the pins form a bottom row (z −40, where the can's lower body
+# steps in, ≥ 3.6 mm), a rear column astride the last fin (x −96.8: the sheet runs out at x −100), a front column (x −58.8, −46.8) and two on the
+# rounded edge at 45° (x −52.8, −46.8), every one in a slot centre except the rear pair; the 33 mm × 50 mm middle above
+# the bottom row is held on three sides by the comb (fins 10 mm deep in the y–z plane stiffen the L section) and has no
+# pin (ESTIMATE: it can lift a few mm under a finger pulling a fin, not come off). Loads (skirt_attachment()): the brief's
+# ≈ 2 N per 10 mm of fin (pinch_skirt.md: 2.1 N), a finger 20 mm wide laying 4 fins over (shear and a fin-root moment
+# reacted across the 12 mm pin row), a static part laying fins over (pushes the sheet onto the hood; its drag is shear) and
+# a 20 N tug on a fin (two pins). Retention per pin is SKIRT_PIN["hold_n"] (ESTIMATE until a coupon: 6 pins in a 2.2 mm
+# PETG plate, pull-out ≥ 20 N, push-in ≤ 40 N, 5 refits). Print: the skirt on its inboard-face fin tips, hood side up
+# (inboard pins straight up, edge pins at 45°, the top strip and its fins standing as vertical walls; supports only under
+# the 2 front-corner fins that do not reach the bed), the hood top down (open foot up; its Ø3.2 holes print horizontal
+# and at 45°, ream to Ø3.2).
+SKIRT_PIN = dict(stem=3.0, hole=3.2, head=5.4, tip=2.4, head_h=2.5, into_sheet=0.4, clear_min=2.0, re=8.0,
+                 hold_n=20.0, push_n=40.0, tug_n=20.0, finger_w=20.0, row_pitch=12.0)
+SKIRT_PINS = ([("face", x, -40.0) for x in (-94.8, -82.8, -70.8, -58.8, -46.8)]          # bottom row (slot centres)
+              + [("face", -96.8, z) for z in (6.0, -16.0)]                                 # rear column, astride the last fin
+              + [("face", -58.8, 6.0), ("face", -58.8, -16.0), ("face", -46.8, -16.0)]   # front columns
+              + [("edge", x, 45.0) for x in (-52.8, -46.8)])                               # the r 8 top-inboard edge, at 45°
+
+
+def skirt_pin_sites():
+    """[(c, n, θ)]: each pin's root on the hood's outer surface (roll-module frame), the outward normal there and the
+    rotation about X (deg) that turns +Z into −n (the pin's axis, pointing into the hood)."""
+    x0, x1, y0, y1, z0, z1 = _hood_box()
+    re = SKIRT_PIN["re"]
+    out = []
+    for kind, x, v in SKIRT_PINS:
+        a = 0.0 if kind == "face" else v
+        t = math.radians(a)
+        c = (x, y0, v) if kind == "face" else (x, y0 + re - re * math.cos(t), z1 - re + re * math.sin(t))
+        out.append((c, (0.0, -math.cos(t), math.sin(t)), -(90.0 + a)))
+    return out
+
+
+def _pin_frame(site):
+    c, _, th = site
+    return Pos(*c) * Rot(th, 0, 0)
+
+
+def skirt_pin():
+    """One push-in pin in its own frame (+Z into the hood, z 0 on the hood's outer face): the stem from 0.4 mm inside the
+    sheet through the wall, the barbed cone head behind it."""
+    from build123d import Cone
+    k = SKIRT_PIN
+    stem = Pos(0, 0, -k["into_sheet"]) * Cylinder(k["stem"] / 2, WALL + k["into_sheet"], align=MIN)
+    return stem + Pos(0, 0, WALL) * Cone(k["head"] / 2, k["tip"] / 2, k["head_h"], align=MIN)
+
+
+def _pin_holes(h):
+    """The hood with the Ø3.2 holes the skirt's pins go through."""
+    for site in skirt_pin_sites():
+        h = _cut_main(h, _pin_frame(site) * Pos(0, 0, -1.0) * Cylinder(SKIRT_PIN["hole"] / 2, WALL + 2.0, align=MIN))
+    return h
+
+
+def skirt_attachment():
+    """Check of the D31 attachment (python -m rnd.parts.covers → docs/rnd/skirt_attach.md): per pin, the hood wall and the
+    skirt's sheet present round it, and the head's clearance to every part riding with the hood (the yaw cartridge, the
+    yaw block, the rear clevis arm); then the pin loads against SKIRT_PIN["hold_n"]."""
+    from build123d import Cone, Vector
+    from . import roll
+    k, W = SKIRT_PIN, WEDGE_SKIRT
+    sk, hood = wedge_skirt(), _yaw_hood()
+    ride = [(n, p) for n, p, _ in roll.module() if n in roll.ROLL_OUT or n.startswith("yaw_")]
+    rows = []
+    for site, (kind, x, v) in zip(skirt_pin_sites(), SKIRT_PINS):
+        c, n, _ = site
+        c, n = Vector(*c), Vector(*n)
+        a = Vector(1, 0, 0)
+        b = n.cross(a)
+        ring = lambda r, s: [c + n * s + (a * math.cos(q) + b * math.sin(q)) * r for q in [2 * math.pi * i / 8 for i in range(8)]]
+        sheet = all(sk.is_inside(p) for p in ring(k["hole"] / 2 + 1.0, W["sheet"] / 2))        # the sheet round the stem
+        wall = all(hood.is_inside(p) for p in ring(k["hole"] / 2 + 1.0, -WALL / 2))            # the hood wall round the hole
+        hole = not hood.is_inside(c - n * (WALL / 2))
+        head = _pin_frame(site) * Pos(0, 0, WALL) * Cone(k["head"] / 2, k["tip"] / 2, k["head_h"], align=MIN)
+        best = (99.0, "")
+        for nm, p in ride:
+            hb, pb = head.bounding_box(), p.bounding_box()
+            if (hb.min.X > pb.max.X + 10 or pb.min.X > hb.max.X + 10 or hb.min.Y > pb.max.Y + 10 or pb.min.Y > hb.max.Y + 10
+                    or hb.min.Z > pb.max.Z + 10 or pb.min.Z > hb.max.Z + 10):
+                continue
+            d = head.distance_to(p)
+            if d < best[0]:
+                best = (d, nm)
+        rows.append(dict(kind=kind, x=x, at=v, sheet=bool(sheet), wall=bool(wall), hole=bool(hole), clear=float(best[0]), nearest=best[1],
+                         ok=bool(sheet and wall and hole and best[0] >= k["clear_min"])))
+    q = 0.2                                                       # N per mm of fin bent over (the brief's ≈ 2 N per 10 mm)
+    nf = math.ceil(k["finger_w"] / W["pitch"])                    # fins under a finger
+    f_lat = nf * q * k["finger_w"]                                # finger laying nf fins over along its width
+    loads = dict(
+        finger_shear=f_lat / 2,                                   # two pins within a row pitch of the patch
+        finger_peel=f_lat * W["fin_h"] / k["row_pitch"],          # fin-root moment across the pin row, on one pin
+        static_drag=1.0 * q * 30.0 * 3 / 3,                       # a static part laying 3 fins over 30 mm, μ 1.0, three pins (no peel: it pushes the sheet on)
+        tug=k["tug_n"] / 2)
+    worst = max(loads.values())
+    mass = sum((_pin_frame(s) * skirt_pin()).volume for s in skirt_pin_sites()) * 1.21e-3
+    return dict(pins=rows, n=len(rows), ok=all(r["ok"] for r in rows) and worst * 1.5 <= k["hold_n"], loads=loads, worst=worst,
+                sf=k["hold_n"] / worst, mass_g=mass, rule=dict(k), fins_under_finger=nf,
+                print={n: _print_stats(p, PRINT_UP[n], fins=n == "skirt") for n, p in (("skirt", sk), ("hood", hood))})
+
+
+PRINT_UP = {"skirt": (0.0, 1.0, 0.0), "hood": (0.0, 0.0, -1.0)}   # build direction in the roll-module frame (skirt_attachment)
+
+
+def _print_stats(part, up, fins=False):
+    """Down-facing area steeper than 45° off the bed (bridges included), bed contact, and (fins=True) each fin's lift off
+    the bed."""
+    import numpy as np
+    import trimesh
+    v, t = part.tessellate(0.1, 0.2)
+    m = trimesh.Trimesh(np.array([(q.X, q.Y, q.Z) for q in v]), np.array(t))
+    u = np.asarray(up, float)
+    h, c, dn = m.vertices @ u, m.triangles_center @ u, m.face_normals @ u
+    bed = h.min()
+    out = dict(up=list(up), overhang_mm2=float(m.area_faces[(dn < -math.cos(math.radians(45))) & (c > bed + 0.3)].sum()),
+               bed_mm2=float(m.area_faces[(dn < -0.99) & (c <= bed + 0.3)].sum()), area_mm2=float(m.area))
+    if fins:
+        V, w = m.vertices, WEDGE_SKIRT["wall"]
+        out["fins_off_bed"] = [(x, float((V[(V[:, 0] <= x + 0.01) & (V[:, 0] >= x - w - 0.01)] @ u).min() - bed)) for x in _skirt_fin_x()]
+    return out
+
+
+def skirt_attach_report(r=None):
+    """docs/rnd/skirt_attach.md + .json from skirt_attachment()."""
+    import json
+    from pathlib import Path
+    r = r or skirt_attachment()
+    docs = Path(__file__).resolve().parents[2] / "docs" / "rnd"
+    k = r["rule"]
+    L = ["# Wedge skirt attachment, D31 (generated by `python -m rnd.parts.covers`)", "",
+         "The TPU 95A comb skirt (covers.wedge_skirt, PIP_WEDGE_GUARD=skirt) is held on the PETG yaw hood by "
+         f"**{r['n']} integral push-in pins**: Ø{k['stem']:g} stem through the {WALL:g} mm hood wall, a barbed cone head "
+         f"Ø{k['head']:g} → Ø{k['tip']:g} × {k['head_h']:g} mm that snaps behind it, into Ø{k['hole']:g} holes in the hood "
+         "(the only hood change). No bond (TPU-to-PETG adhesion is poor and a glued skirt is a hood-plus-skirt replacement), "
+         "nothing rigid on the hood's outer face (it would stand inside the 25.5 mm hood-to-torso gap and the skirt's 0.2 mm "
+         "stack margin). Fitted and replaced from outside with the arm assembled: peel off pin by pin, press the new one on "
+         "(each pin through the slot between two fins, or astride the last fin, with a blunt 3 mm tool).", "",
+         f"**Result: {'✅' if r['ok'] else '❌'}** every pin has the hood wall and the skirt's sheet round it and its head ≥ "
+         f"{k['clear_min']:g} mm from every part riding with the hood (smallest {min(p['clear'] for p in r['pins']):.1f} mm); "
+         f"worst pin load {r['worst']:.1f} N against {k['hold_n']:g} N retention (SF {r['sf']:.1f}, ≥ 1.5 asked; ESTIMATE until "
+         f"the coupon below). Pins {r['mass_g']:.1f} g per skirt. The skirt's outer shape is unchanged, so its soft-guard rule "
+         "(rnd/pinch.py item 7: wall, slots, no TPU crushed) and the probe sweep see the same skirt; the Ø3.2 holes are far "
+         "below the Ø12 probe.", "",
+         "| Pin | Where (roll-module frame) | Sheet round it | Hood wall round it | Head clearance (mm) | Nearest part | |",
+         "|---|---|---|---|---|---|---|"]
+    for i, p in enumerate(r["pins"], 1):
+        where = f"inboard face x {p['x']:g}, z {p['at']:g}" if p["kind"] == "face" else f"top-inboard edge (r 8) x {p['x']:g}, {p['at']:g}°"
+        L.append(f"| {i} | {where} | {'yes' if p['sheet'] else 'no'} | {'yes' if p['wall'] and p['hole'] else 'no'} | "
+                 f"{p['clear']:.1f} | {p['nearest']} | {'✅' if p['ok'] else '❌'} |")
+    ld, nf = r["loads"], r["fins_under_finger"]
+    L += ["", "**Why there is no pin in the middle:** over x −95…−64 above z −34, and under the whole top strip west of x −56, "
+          "the yaw can stands 3.0 mm inside the hood wall: no head fits there with 2 mm to spare. That ≈ 33 × 50 mm field is held "
+          "on three sides (bottom row, rear and front columns) and the comb stiffens it (each fin is a 10 mm deep TPU plate in the "
+          "y–z plane); a finger pulling a fin there lifts the sheet a few mm (ESTIMATE), it does not come off.", "",
+          "## Loads (per pin, ESTIMATE)", "",
+          "Basis: the brief's ≈ 2 N per 10 mm of fin bent over (rnd/pinch.py soft-guard row: 2.1 N), TPU 95A.", "",
+          "| Case | Model | N per pin |", "|---|---|---|",
+          f"| finger, sideways | a {k['finger_w']:g} mm finger lays {nf} fins over along its width: {nf * 0.2 * k['finger_w']:.0f} N, "
+          f"shared by 2 pins | {ld['finger_shear']:.1f} shear |",
+          f"| finger, fin-root moment | that force × the {WEDGE_SKIRT['fin_h']:g} mm fin height across the {k['row_pitch']:g} mm pin "
+          f"row, on one pin | {ld['finger_peel']:.1f} tension |",
+          f"| static part lays fins over | pushes the sheet onto the hood (no peel); drag μ 1.0 on 3 fins × 30 mm, 3 pins | {ld['static_drag']:.1f} shear |",
+          f"| tug on a fin | {k['tug_n']:g} N outward, 2 pins | {ld['tug']:.1f} tension |", "",
+          f"Capacity: pull-out ≥ {k['hold_n']:g} N, push-in ≤ {k['push_n']:g} N per pin (design targets, ESTIMATE: the head's "
+          "1.1 mm undercut on Ø3.2 has to fold back to pass). Stem shear (Ø3 TPU, ≈ 15 MPa) ≈ 100 N and PETG bearing are not "
+          "limiting. **Coupon (proposed):** 6 pins printed as below on a TPU strip, a 2.2 mm PETG plate with Ø3.2 holes printed "
+          f"horizontal; push-in ≤ {k['push_n']:g} N, pull-out ≥ {k['hold_n']:g} N each, 5 refits without a pin tearing.", "",
+          "## Print orientation", ""]
+    ps, ph = r["print"]["skirt"], r["print"]["hood"]
+    off = [f"x {x:g} (+{d:.1f} mm)" for x, d in ps["fins_off_bed"] if d > 0.2]
+    L += [f"- **Skirt (TPU 95A):** on its inboard-face fin tips, hood side up (build +Y). The inboard-face pins print straight up, "
+          "the two edge pins at 45°; the top strip and its fins stand as vertical walls; the sheet bridges the 4.4 mm slots. "
+          f"Bed contact {ps['bed_mm2']:.0f} mm²; down-facing area past 45° {ps['overhang_mm2']:.0f} of {ps['area_mm2']:.0f} mm² "
+          f"(mostly the slot bridges). Fins that do not reach the bed: {', '.join(off) or 'none'}; support those only.",
+          f"- **Hood (PETG):** top down, open foot up (build −Z). Bed contact {ph['bed_mm2']:.0f} mm², down-facing area past 45° "
+          f"{ph['overhang_mm2']:.0f} of {ph['area_mm2']:.0f} mm². The pin holes print horizontal (inboard face) and at 45° (edge): "
+          "ream to Ø3.2.", "",
+          "Spacing: the pins sit inside the hood, among parts that all ride on the roll output (no relative motion), so they add "
+          "no swept or pinch row; the clearance column is to the yaw can, can cap, motor, tension ring, yaw block and rear clevis arm."]
+    (docs / "skirt_attach.md").write_text("\n".join(L) + "\n")
+    (docs / "skirt_attach.json").write_text(json.dumps(r, indent=1, default=float))
+    return r
 
 
 def skirt_roots():
@@ -772,3 +976,9 @@ def printed():
         za, zb = z0 + (z1 - z0) * i / k, z0 + (z1 - z0) * (i + 1) / k
         P[f"cover belt_duct [{i + 1}/{k}]"] = duct & (Pos((x0 + x1) / 2, (y0 + y1) / 2, (za + zb) / 2) * Box(x1 - x0 + 2, y1 - y0 + 2, zb - za - 0.2))
     return P
+
+
+if __name__ == "__main__":
+    r = skirt_attach_report()
+    print(f"skirt attachment: {r['n']} pins, ok={r['ok']}, min head clearance {min(p['clear'] for p in r['pins']):.1f} mm, "
+          f"worst {r['worst']:.1f} N per pin (SF {r['sf']:.1f})")
