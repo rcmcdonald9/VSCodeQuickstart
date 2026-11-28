@@ -203,6 +203,26 @@ def rule_text(lims):
     ]
 
 
+def travel_text():
+    """Base travel with the basket (W17): the locked-caster snag on these carry poses is computed by rnd/tip.py (tip.json)."""
+    f = DOCS / "tip.json"
+    sn = json.loads(f.read_text()).get("snag") if f.exists() else None
+    if not sn:
+        return ["", "## Travel with the basket", "", "Snag check not run (`python -m rnd.tip`)."]
+    from .tip import BASKET_DROP, BASKET_SHARE
+    rows = [r for r in sn["rows"] if r.get("var") and r["var"] != "hand point"]
+    cap = sn["basket_cap"]
+    return ["", "## Travel with the basket (rnd/tip.py *Snag at the locked cap*, W17)", "",
+            f"The carry poses above (handles 0.70 / 0.80 m, basket centre 0.35–0.45 m out, every IK solution, the basket COM "
+            f"{BASKET_DROP:.2f} m below the handles, the {BASKET_SHARE * 100:.0f} % abort share) travel with the casters locked. A locked caster meeting a step edge "
+            f"at today's cap ({sn['v_locked']} m/s) uses {min(r['frac'] for r in rows) * 100:.0f}–{max(r['frac'] for r in rows) * 100:.0f} % of the tip "
+            f"energy (limit {sn['frac_lim'] * 100:.0f} %) and {min(r['F'] for r in rows):.0f}–{max(r['F'] for r in rows):.0f} N per foot (limit {sn['f_lim']:.0f} N). "
+            f"Allowed: **{sn['basket_v_allow']:.2f} m/s → locked cap {cap:.2f} m/s with the basket** (SW-T8, "
+            f"{'in sw/safety.py' if sn['enforced'] else 'NOT in sw/safety.py yet'}). The floor pick and the bed set-down (centre 0.50 m out) are "
+            "done with the base stopped. D28 / SW-T7 (nobody within BASKET_CLEAR_R while the base moves) "
+            f"{'still holds' if sn['d28']['ok'] else 'FAILS'}: {sn['d28']['r_rule']:.1f} m needed at {cap:.2f} m/s, {sn['d28']['r_set']} m set."]
+
+
 def main():
     from .inline_study import corrected_bodies
     with corrected_bodies():                 # actuator masses on the bodies that carry them (Astra #3 Part A b; rnd/inline_study.study_xml)
@@ -258,6 +278,7 @@ def _main():
           "torque at 0.45 m with equal shares) and then its peak margin on the pick with the seating factor; the elbow and the B1y yaw keep "
           "margin. A rule on the 2-min rise is a thermal rule: thermal.md section 3 has the same carry in the capped mount.", ""]
     L += rule_text(lims)
+    L += travel_text()
     (DOCS / "basket.md").write_text("\n".join(L) + "\n")
     js = {"ok": ok, "ok_b1y": oky, "rows": rows, "variants": res,
           "shares": {k: {f"{s:.2f}": dict(per=v["per"], where=v["where"], worst=v["worst"], tip=v["tip"], fails=v["fails"]) for s, v in st.items()} for k, st in studies.items()},

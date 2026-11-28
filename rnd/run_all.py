@@ -256,6 +256,14 @@ def _tip_extra_rows():
         rows.append(("R4 15 mm threshold with the A10 v2 mass (rnd/threshold.py roller model re-run by rnd/tip.py, 45°): peak margin at 0.15 m/s (D2b) / 0.12 m/s (SW-T4)",
                      f"{t['after']['margin']:.2f}× / {t['after_slow']['margin']:.2f}× ({t['after']['mass']:.1f} kg)", "≥ 1.5× at the planner's crossing speed",
                      t["after"]["margin"] >= 1.5))
+    sn = a.get("snag")
+    if sn:      # W17: a locked D18b caster meeting a step edge at the locked-travel cap, every carry state incl. the R2d basket
+        caps = "; ".join((f"≤ {c['kg']:.0f} kg" if c["lo"] < 0 else f"{c['lo']:.0f}–{c['kg']:.0f} kg") + f" {c['cap']:.2f}" for c in sn["steps"])
+        rows.append(("A10 snag at the locked cap (rnd/tip.py W17: a locked caster meets a step edge; every carry state incl. the R2d basket in its "
+                     "real poses; energy ≤ 25 % of the tip energy, force ≤ ½ rod yield)",
+                     f"{sn['n_ok_today']}/{sn['n']} at {sn['v_locked']} m/s (basket {sn['basket_frac_max'] * 100:.0f} % / {sn['basket_f_max']:.0f} N, allowed "
+                     f"{sn['basket_v_allow']:.2f} m/s); SW-T8 locked cap by payload ({caps} m/s) {'in sw/safety.py' if sn['enforced'] else 'NOT in sw/safety.py;'} "
+                     f"{'' if sn['enforced'] else 'with it '}{'pass' if sn['ok_rule'] else 'fail'}", "every state at the cap sw/safety.py enforces", bool(sn["ok"])))
     return rows
 
 

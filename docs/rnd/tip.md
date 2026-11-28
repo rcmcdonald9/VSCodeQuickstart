@@ -17,13 +17,15 @@ limit are what the safety supervisor allows (sw/safety.py is read, not copied): 
 LOAD_WS and base_accel_limit(); at or under LOAD_KG the arms may be straight out at shoulder height, lift mid (the old
 worst pose). Target: reserve ≥ 30 mm in every case (twin v1 dynamic rule); R12 keeps its own 50 mm static rule.
 
-**Result: worst reserve 35 mm, 16/16 cases ≥ 30 mm with the A10 v2 hardware and the requested supervisor rules (SW-T1/T2 below); 16/16 (worst 35 mm) with the rules sw/safety.py enforces today.** Before: loop 40's reading -80 mm (7/16; the review quoted the older −102 mm); the same hardware read honestly (D18 take-up, all headings, today's rules) -118 mm (6/16).
+**Result: worst reserve 36 mm, 16/16 cases ≥ 30 mm with the A10 v2 hardware and the requested supervisor rules (SW-T1/T2 below); 16/16 (worst 36 mm) with the rules sw/safety.py enforces today.** Before: loop 40's reading -80 mm (7/16; the review quoted the older −102 mm); the same hardware read honestly (D18 take-up, all headings, today's rules) -117 mm (6/16).
 
-**A10 from the real states (Astra review #3, finding 2): conditional.** The 16/16 above credits the push cases with the SW-T1 state (arms in, lift down, 0.1 m/s²). A person needn't wait for it: detected at 1.5 m and walking at 1.6 m/s they can push 0.30 s later, the transition takes up to 1.5 s. From the states the robot is actually in then (arms out, lift mid or top, casters locked, braking at the then-current limit): **8/16, worst -53 mm**. With SW-T6 (person approaching at 3.5 m ≥ the 3.4 m the transition needs, in sw/safety.py) the push meets the SW-T1 state: **16/16, worst 35 mm**. The basket needs nobody within 9.0 m (SW-T7, BASKET_CLEAR_R 9.5 m). Still open: the lock take-up and pad sinkage (sensitivity below), an e-stop that brakes harder than the planner (table below), one failed caster lock, and the ballast interlock (A10 counts the blocks as fitted).
+**A10 from the real states (Astra review #3, finding 2): conditional.** The 16/16 above credits the push cases with the SW-T1 state (arms in, lift down, 0.1 m/s²). A person needn't wait for it: detected at 1.5 m and walking at 1.6 m/s they can push 0.30 s later, the transition takes up to 1.5 s. From the states the robot is actually in then (arms out, lift mid or top, casters locked, braking at the then-current limit): **8/16, worst -53 mm**. With SW-T6 (person approaching at 3.5 m ≥ the 3.5 m the transition needs, in sw/safety.py) the push meets the SW-T1 state: **16/16, worst 36 mm**. The basket needs nobody within 8.8 m (SW-T7, BASKET_CLEAR_R 9.5 m). Still open: the lock take-up and pad sinkage (sensitivity below), an e-stop that brakes harder than the planner (table below), one failed caster lock, and the ballast interlock (A10 counts the blocks as fitted).
+
+**Snag at the locked cap (W17, section below): FAIL with the rules sw/safety.py enforces.** Travelling locked at 0.25 m/s, a caster meeting a step edge overloads its rods in every state with a load or the arms out, and the basket in its real carry poses uses up to 43 % of the tip energy (limit 25 %; W16a's tuck-pose reading: 113 %). Allowed: basket 0.19 m/s, 2.5 kg 0.22 m/s. Proposed SW-T8 locked cap by payload: ≤ 6 kg 0.20 m/s; 6–10 kg 0.15 m/s (NOT in sw/safety.py yet). D28 / SW-T7 still holds.
 
 ## What changed (A10 v2)
 
-1. **Mass low in the base.** The battery already sat on the belly (z ≈ 33–98 mm). The A5 v2 power stage (contactor, pre-charge, clamp plate, bulk cap: 0.75 kg, ESTIMATE) was in no budget; it now sits on the belly in the front-right sector (`base.power_board`). **Removable steel ballast: 2 × 2.45 kg** (92 × 44 × 76 mm blocks, FROM CAD: 4.89 kg) in the two rear sectors at z 31–107 mm, sitting in printed cradles, lifted out through two deck hatches once the upper core is off (no tools). R3: base module 7.7 kg (≤ 8 target, 10 piece limit), each ballast block 2.45 kg as its own carry piece (≤ 10); robot 25.6 → 31.9 kg (twin). Moving mass *down* barely matters here (the braking term is h·a/g: 0.3 m/s² × 0.05 m = 1.5 mm); what the ballast buys is **mass** (the push term F·H/(M g) falls 120 → 96 mm) and, sitting at the rear, a COM that starts 33 → 13 mm ahead of the centre with the arms parked, so a forward load has more room.
+1. **Mass low in the base.** The battery already sat on the belly (z ≈ 33–98 mm). The A5 v2 power stage (contactor, pre-charge, clamp plate, bulk cap: 0.75 kg, ESTIMATE) was in no budget; it now sits on the belly in the front-right sector (`base.power_board`). **Removable steel ballast: 2 × 2.45 kg** (92 × 44 × 76 mm blocks, FROM CAD: 4.89 kg) in the two rear sectors at z 31–107 mm, sitting in printed cradles, lifted out through two deck hatches once the upper core is off (no tools). R3: base module 7.7 kg (≤ 8 target, 10 piece limit), each ballast block 2.45 kg as its own carry piece (≤ 10); robot 25.7 → 31.9 kg (twin). Moving mass *down* barely matters here (the braking term is h·a/g: 0.3 m/s² × 0.05 m = 1.5 mm); what the ballast buys is **mass** (the push term F·H/(M g) falls 119 → 96 mm) and, sitting at the rear, a COM that starts 33 → 13 mm ahead of the centre with the arms parked, so a forward load has more room.
 2. **Support polygon: not widened.** R5's 70 cm door is set by the arms, not the base: folded, the shoulders and forearms span 0.70–0.78 m (twin CAD hulls, tuck poses; ≥ 0.65 m even at −15° roll), so the door rule is already the arm owner's problem (flagged). A wider base would not change the door fit but would push the base edge into the R1 floor targets (x ≥ 0.30 m from the centre) and the counter approach, and the wheels at r 0.21 m already reach the Ø50 cm shell (wheel faces at r 0.233). The 4 casters are what widens the polygon (diamond → octagon), and only once they carry load.
 3. **Casters D18 → D18b.** D18's ball transfers rode on a 5 N spring with a hard stop after 5 mm: they carry nothing until the base has tilted 4.0° about the wheel edge (COM ≈ 36 mm outward first), and a 5 mm stroke can't clear a 15 mm threshold, and at the D2b 45° heading a caster is the leading point (review finding 4). D18b v2 (D26 cost-down; W8d had a 2" steel ball transfer, ≈ $45 and 0.54 kg of ball each): a printed skid foot on a replaceable Ø19 PTFE glide pad with a 44° cone flank (PTFE tape) up to Ø60 at 22 mm, at r 205 mm on a printed guide with **22 mm of float** on a 5 N spring, and a **spring-applied one-way rod lock** (caulk-gun plate on a Ø8 steel rod) released by a 24 V pull solenoid. Locked, it can follow the floor down but not be pushed up, so it is a rigid support after the lock's take-up (1.0 mm, ESTIMATE → 1.0°); released, it floats over a 15 mm threshold: the edge meets the flank for any step of 2–22 mm, so the climb takes tan(44° + atan 0.15) = 1.32 × the 5–10 N spring force (7–13 N; the 2" ball needed 2.2 × (11–22 N), a 1½" ball 4.6 ×). Locked casters carry only their 5 N preload at rest (20 N of ≈ 300 N off the wheels); sliding, that is ≈ 3 N of drag on hard floors (PTFE μ ≈ 0.15, ESTIMATE; furniture-glide duty), against the rolling ball's ≈ 1 N. Tip statics are unchanged (a friction force at the contact that carries the tip load has no moment about it).
 4. **Planner rules last** (below): the 8 push cases need SW-T1, the casters need SW-T2, the ballast's R4 cost needs SW-T4; the rest is enforced today.
@@ -31,23 +33,23 @@ worst pose). Target: reserve ≥ 30 mm in every case (twin v1 dynamic rule); R12
 | Load | Load COM | Braking | Push 30 N @ 1 m | Pose (rules) | Decel m/s² | COM offset mm | h m | ZMP shift mm | Loop 40 reading | Before, honest | A10 v2, SW today | **A10 v2 + SW-T1/T2** | worst heading |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1.0 kg | 0° |  |  | straight | 0.0 | 86 | 0.44 | 0 | 82 ✅ | 62 ✅ | 106 ✅ | **106 ✅** | 336° |
-| 1.0 kg | 0° | yes |  | straight | 1.0 | 86 | 0.44 | 44 | 57 ✅ | 8 ❌ | 61 ✅ | **61 ✅** | 336° |
-| 1.0 kg | 0° |  | yes | box_person | 0.0 | 46 | 0.42 | 93 | -26 ❌ | -53 ❌ | 49 ✅ | **49 ✅** | 336° |
-| 1.0 kg | 0° | yes | yes | box_person | 0.1 | 46 | 0.42 | 97 | -52 ❌ | -107 ❌ | 45 ✅ | **45 ✅** | 336° |
-| 1.0 kg | 45° |  |  | straight | 0.0 | 86 | 0.44 | 0 | 87 ✅ | 51 ✅ | 104 ✅ | **104 ✅** | 66° |
-| 1.0 kg | 45° | yes |  | straight | 1.0 | 86 | 0.44 | 44 | 63 ✅ | -2 ❌ | 59 ✅ | **59 ✅** | 66° |
-| 1.0 kg | 45° |  | yes | box_person | 0.0 | 46 | 0.42 | 93 | -16 ❌ | -64 ❌ | 48 ✅ | **48 ✅** | 66° |
-| 1.0 kg | 45° | yes | yes | box_person | 0.1 | 46 | 0.42 | 97 | -40 ❌ | -118 ❌ | 44 ✅ | **44 ✅** | 66° |
-| 2.5 kg | 0° |  |  | box | 0.0 | 74 | 0.40 | 0 | 48 ✅ | 79 ✅ | 117 ✅ | **117 ✅** | 336° |
-| 2.5 kg | 0° | yes |  | box | 0.3 | 67 | 0.57 | 17 | 23 ❌ | 58 ✅ | 102 ✅ | **102 ✅** | 336° |
-| 2.5 kg | 0° |  | yes | box_person | 0.0 | 60 | 0.41 | 89 | -55 ❌ | -30 ❌ | 41 ✅ | **41 ✅** | 336° |
-| 2.5 kg | 0° | yes | yes | box_person | 0.1 | 60 | 0.42 | 93 | -80 ❌ | -51 ❌ | 37 ✅ | **37 ✅** | 336° |
-| 2.5 kg | 45° |  |  | box | 0.0 | 74 | 0.40 | 0 | 55 ✅ | 62 ✅ | 115 ✅ | **115 ✅** | 66° |
-| 2.5 kg | 45° | yes |  | box | 0.3 | 67 | 0.57 | 17 | 31 ✅ | 41 ✅ | 101 ✅ | **101 ✅** | 66° |
-| 2.5 kg | 45° |  | yes | box_person | 0.0 | 60 | 0.41 | 89 | -43 ❌ | -47 ❌ | 39 ✅ | **39 ✅** | 66° |
-| 2.5 kg | 45° | yes | yes | box_person | 0.1 | 60 | 0.42 | 93 | -68 ❌ | -68 ❌ | 35 ✅ | **35 ✅** | 24° |
+| 1.0 kg | 0° | yes |  | straight | 1.0 | 86 | 0.44 | 45 | 57 ✅ | 8 ❌ | 61 ✅ | **61 ✅** | 336° |
+| 1.0 kg | 0° |  | yes | box_person | 0.0 | 49 | 0.27 | 93 | -26 ❌ | -53 ❌ | 49 ✅ | **49 ✅** | 336° |
+| 1.0 kg | 0° | yes | yes | box_person | 0.1 | 47 | 0.40 | 97 | -51 ❌ | -106 ❌ | 45 ✅ | **45 ✅** | 336° |
+| 1.0 kg | 45° |  |  | straight | 0.0 | 86 | 0.44 | 0 | 88 ✅ | 51 ✅ | 104 ✅ | **104 ✅** | 66° |
+| 1.0 kg | 45° | yes |  | straight | 1.0 | 86 | 0.44 | 45 | 64 ✅ | -2 ❌ | 59 ✅ | **59 ✅** | 66° |
+| 1.0 kg | 45° |  | yes | box_person | 0.0 | 49 | 0.27 | 93 | -16 ❌ | -64 ❌ | 48 ✅ | **48 ✅** | 66° |
+| 1.0 kg | 45° | yes | yes | box_person | 0.1 | 47 | 0.40 | 97 | -40 ❌ | -117 ❌ | 44 ✅ | **44 ✅** | 66° |
+| 2.5 kg | 0° |  |  | box | 0.0 | 75 | 0.54 | 0 | 49 ✅ | 73 ✅ | 114 ✅ | **114 ✅** | 336° |
+| 2.5 kg | 0° | yes |  | box | 0.3 | 75 | 0.54 | 17 | 23 ❌ | 53 ✅ | 97 ✅ | **97 ✅** | 336° |
+| 2.5 kg | 0° |  | yes | box_person | 0.0 | 60 | 0.41 | 89 | -54 ❌ | -36 ❌ | 41 ✅ | **41 ✅** | 336° |
+| 2.5 kg | 0° | yes | yes | box_person | 0.1 | 60 | 0.41 | 93 | -80 ❌ | -56 ❌ | 37 ✅ | **37 ✅** | 336° |
+| 2.5 kg | 45° |  |  | box | 0.0 | 75 | 0.54 | 0 | 55 ✅ | 56 ✅ | 112 ✅ | **112 ✅** | 66° |
+| 2.5 kg | 45° | yes |  | box | 0.3 | 75 | 0.54 | 17 | 31 ✅ | 37 ✅ | 96 ✅ | **96 ✅** | 66° |
+| 2.5 kg | 45° |  | yes | box_person | 0.0 | 60 | 0.41 | 89 | -43 ❌ | -52 ❌ | 40 ✅ | **40 ✅** | 66° |
+| 2.5 kg | 45° | yes | yes | box_person | 0.1 | 60 | 0.41 | 93 | -67 ❌ | -72 ❌ | 36 ✅ | **36 ✅** | 24° |
 
-Columns: *loop 40 reading* = the old tip.py (rigid D18, both arms straight out, 0.5 m/s², along the load direction only); *before, honest* = the same hardware with D18's 5 mm take-up, every heading and the supervisor's real limits (1 kg: arms straight out allowed, 1.0 m/s²; 2.5 kg: load box, 0.3 m/s²); *A10 v2* = power board + ballast + locked D18b casters. Without the ballast blocks (A10 v2 + rules): worst -7 mm, 6/16.
+Columns: *loop 40 reading* = the old tip.py (rigid D18, both arms straight out, 0.5 m/s², along the load direction only); *before, honest* = the same hardware with D18's 5 mm take-up, every heading and the supervisor's real limits (1 kg: arms straight out allowed, 1.0 m/s²; 2.5 kg: load box, 0.3 m/s²); *A10 v2* = power board + ballast + locked D18b casters. Without the ballast blocks (A10 v2 + rules): worst -6 mm, 6/16.
 
 **Push that tips the robot, arms parked, 1.0 m up, worst heading:** 31 N before (wheels only) → 54 N (A10 v2, casters locked).
 
@@ -55,19 +57,19 @@ Columns: *loop 40 reading* = the old tip.py (rigid D18, both arms straight out, 
 
 | Ballast | lock take-up 0.5 mm | 1.0 mm | 2.0 mm |
 |---|---|---|---|
-| 0.00 kg | -3 mm, 6/16 | -7 mm, 6/16 | -15 mm, 6/16 |
-| 2.45 kg | 20 mm, 10/16 | 16 mm, 8/16 | 8 mm, 8/16 |
-| 4.90 kg | 39 mm, 16/16 | 35 mm, 16/16 | 28 mm, 14/16 |
+| 0.00 kg | -2 mm, 6/16 | -6 mm, 6/16 | -15 mm, 6/16 |
+| 2.45 kg | 20 mm, 10/16 | 16 mm, 9/16 | 9 mm, 8/16 |
+| 4.90 kg | 39 mm, 16/16 | 36 mm, 16/16 | 28 mm, 14/16 |
 
 ## Other modes (A10 v2, requested rules)
 
 | Mode | Mass kg | Reserve | |
 |---|---|---|---|
 | No load, arms parked, transit (casters released, > 0.3 m/s allowed), braking 1.0 m/s², no person within reach | 31.9 | 98 mm at 314° | ✅ |
-| No load, arms parked, person within reach: ≤ 0.1 m/s → casters locked, braking 0.1 m/s² + 30 N push | 31.9 | 72 mm at 336° | ✅ |
-| Threshold crossing (D2b, casters released) with 2.5 kg in the load box, braking 0.3 m/s², no person within reach | 34.4 | 83 mm at 314° | ✅ |
-| R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s², no person within reach | 40.9 | 44 mm at 336° | ✅ |
-| R2d basket 9.07 kg, person within reach: held at x ≤ 0.35 m, z ≤ 0.60 m, braking 0.1 m/s² + 30 N push | 40.9 | 7 mm at 336° | ❌ (rule: not allowed) |
+| No load, arms parked, person within reach: ≤ 0.1 m/s → casters locked, braking 0.1 m/s² + 30 N push | 31.9 | 73 mm at 336° | ✅ |
+| Threshold crossing (D2b, casters released) with 2.5 kg in the load box, braking 0.3 m/s², no person within reach | 34.4 | 78 mm at 316° | ✅ |
+| R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s², no person within reach | 41.0 | 42 mm at 336° | ✅ |
+| R2d basket 9.07 kg, person within reach: held at x ≤ 0.35 m, z ≤ 0.60 m, braking 0.1 m/s² + 30 N push | 41.0 | 7 mm at 336° | ❌ (rule: not allowed) |
 
 ## A10 from the states the robot is in when a person appears
 
@@ -75,69 +77,126 @@ Timeline: the person is detected at 1.5 m (PeopleNearTrigger) and can push once 
 
 | Mode when the person appears | Braking (s) | Arms / lift (s) | Transition (s) | Detection radius it needs (m) |
 |---|---|---|---|---|
-| ≤ 1 kg, arms straight out (lift mid / top) | 0.20 | 0.77 | 0.77 | 2.2 |
-| 2.5 kg in the load box | 0.67 | 1.49 | 1.49 | 3.4 |
+| ≤ 1 kg, arms straight out (lift mid / top) | 0.15 | 0.77 | 0.77 | 2.2 |
+| 2.5 kg in the load box | 0.50 | 1.52 | 1.52 | 3.5 |
 | unloaded transit, casters released | 1.40 | 0.39 | 1.40 | 3.3 |
-| 2.5 kg threshold crossing, casters released | 0.07 | 1.49 | 1.49 | 3.4 |
-| R2d basket 9.07 kg: stop and set it down | 1.00 | 5.00 | 5.00 | 9.0 |
+| 2.5 kg threshold crossing, casters released | 0.07 | 1.52 | 1.52 | 3.5 |
+| R2d basket 9.07 kg: stop and set it down | 0.83 | 4.00 | 4.83 | 8.8 |
 
 So the push meets the state the robot was in. The 16 cases from that state (the pose and braking today's rules allow, lift mid or top, whichever is worse; casters locked):
 
 | Load | Load COM | Braking | Push | Pose | Decel m/s² | **From the real state** | Credited (SW-T1 state) | worst heading |
 |---|---|---|---|---|---|---|---|---|
 | 1.0 kg | 0° |  |  | straight_high | 0.0 | **103 ✅** | 106 ✅ | 336° |
-| 1.0 kg | 0° | yes |  | straight_high | 1.0 | **42 ✅** | 61 ✅ | 336° |
+| 1.0 kg | 0° | yes |  | straight_high | 1.0 | **41 ✅** | 61 ✅ | 336° |
 | 1.0 kg | 0° |  | yes | straight_high | 0.0 | **10 ❌** | 49 ✅ | 336° |
-| 1.0 kg | 0° | yes | yes | straight_high | 1.0 | **-52 ❌** | 45 ✅ | 336° |
+| 1.0 kg | 0° | yes | yes | straight_high | 1.0 | **-51 ❌** | 45 ✅ | 24° |
 | 1.0 kg | 45° |  |  | straight_high | 0.0 | **101 ✅** | 104 ✅ | 66° |
 | 1.0 kg | 45° | yes |  | straight_high | 1.0 | **40 ✅** | 59 ✅ | 66° |
 | 1.0 kg | 45° |  | yes | straight_high | 0.0 | **8 ❌** | 48 ✅ | 24° |
 | 1.0 kg | 45° | yes | yes | straight_high | 1.0 | **-53 ❌** | 44 ✅ | 24° |
-| 2.5 kg | 0° |  |  | box | 0.0 | **117 ✅** | 117 ✅ | 336° |
-| 2.5 kg | 0° | yes |  | box | 0.3 | **102 ✅** | 102 ✅ | 336° |
-| 2.5 kg | 0° |  | yes | box | 0.0 | **28 ❌** | 41 ✅ | 336° |
-| 2.5 kg | 0° | yes | yes | box | 0.3 | **13 ❌** | 37 ✅ | 336° |
-| 2.5 kg | 45° |  |  | box | 0.0 | **115 ✅** | 115 ✅ | 66° |
-| 2.5 kg | 45° | yes |  | box | 0.3 | **101 ✅** | 101 ✅ | 66° |
-| 2.5 kg | 45° |  | yes | box | 0.0 | **26 ❌** | 39 ✅ | 66° |
-| 2.5 kg | 45° | yes | yes | box | 0.3 | **12 ❌** | 35 ✅ | 24° |
+| 2.5 kg | 0° |  |  | box | 0.0 | **114 ✅** | 114 ✅ | 336° |
+| 2.5 kg | 0° | yes |  | box | 0.3 | **97 ✅** | 97 ✅ | 336° |
+| 2.5 kg | 0° |  | yes | box | 0.0 | **25 ❌** | 41 ✅ | 336° |
+| 2.5 kg | 0° | yes | yes | box | 0.3 | **8 ❌** | 37 ✅ | 336° |
+| 2.5 kg | 45° |  |  | box | 0.0 | **112 ✅** | 112 ✅ | 66° |
+| 2.5 kg | 45° | yes |  | box | 0.3 | **96 ✅** | 96 ✅ | 66° |
+| 2.5 kg | 45° |  | yes | box | 0.0 | **23 ❌** | 40 ✅ | 66° |
+| 2.5 kg | 45° | yes | yes | box | 0.3 | **7 ❌** | 36 ✅ | 66° |
 
 | Other mode, from the real state, + 30 N push | Mass kg | Reserve | |
 |---|---|---|---|
 | Unloaded transit, arms parked, casters still released, braking at 0.5 m/s² + push | 31.9 | 22 mm at 314° | ❌ |
-| 2.5 kg threshold crossing (casters released), braking 0.3 m/s² + push | 34.4 | -6 mm at 314° | ❌ |
-| R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s² + push | 40.9 | -31 mm at 336° | ❌ |
-| R2d basket 9.07 kg at the load box face, base stopped + push | 40.9 | -15 mm at 336° | ❌ |
-| R2d basket 9.07 kg pulled into PERSON_WS, base stopped + push | 40.9 | 12 mm at 336° | ❌ |
+| 2.5 kg threshold crossing (casters released), braking 0.3 m/s² + push | 34.4 | -11 mm at 314° | ❌ |
+| R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s² + push | 41.0 | -32 mm at 336° | ❌ |
+| R2d basket 9.07 kg at the load box face, base stopped + push | 41.0 | -16 mm at 336° | ❌ |
+| R2d basket 9.07 kg pulled into PERSON_WS, base stopped + push | 41.0 | 12 mm at 336° | ❌ |
 
 **E-stop / snag braking.** A stop need not respect the planner's limit. Base deceleration at which the reserve falls to 30 mm / tips (no push):
 
 | State | 30 mm at (m/s²) | Tips at (m/s²) |
 |---|---|---|
 | ≤ 1 kg, arms straight out, lift top, casters locked | 1.18 | 1.67 |
-| 2.5 kg in the load box, casters locked | 1.53 | 2.05 |
-| R2d basket 9.07 kg at the load box face, casters locked | 0.52 | 1.01 |
-| unloaded, arms parked, casters released (transit) | 2.70 | 3.45 |
-| 2.5 kg in PERSON_WS, casters locked (SW-T1 state) | 1.96 | 2.52 |
+| 2.5 kg in the load box, casters locked | 1.50 | 2.04 |
+| R2d basket 9.07 kg at the load box face, casters locked | 0.53 | 1.01 |
+| unloaded, arms parked, casters released (transit) | 2.69 | 3.44 |
+| 2.5 kg in PERSON_WS, casters locked (SW-T1 state) | 1.95 | 2.52 |
 
-Rule changes (sw/safety.py, tested in sw/test_s1.py): **SW-T6** person approaching at PN_PREP_RADIUS (3.5 m ≥ 3.4 m): the SW-T1 part (PERSON_WS, base caps, casters locked, basket stop) starts there, the D25 roll bound / roll latch / hand-speed cap stay at 1.5 m; **SW-T7** the base moves with > 2.5 kg only with perception reporting nobody within BASKET_CLEAR_R (9.5 m ≥ 9.0 m; fail-safe default: not clear); **slower while loaded**: the people-near hand-speed cap falls with payload (rnd/hand_speed.py). Not in software: the base e-stop has to be a controlled stop (stop category 1: ramp at ≤ the limit in force, then remove power) with the wheel drives not shorted, since a 2.5 kg load-box carry tips at ≈ 2.0 m/s² and the wheels can brake harder on a dry floor (μ·g ≈ 5 m/s², ESTIMATE): electrical / base-drive track.
+Rule changes (sw/safety.py, tested in sw/test_s1.py): **SW-T6** person approaching at PN_PREP_RADIUS (3.5 m ≥ 3.5 m): the SW-T1 part (PERSON_WS, base caps, casters locked, basket stop) starts there, the D25 roll bound / roll latch / hand-speed cap stay at 1.5 m; **SW-T7** the base moves with > 2.5 kg only with perception reporting nobody within BASKET_CLEAR_R (9.5 m ≥ 8.8 m; fail-safe default: not clear); **slower while loaded**: the people-near hand-speed cap falls with payload (rnd/hand_speed.py). Not in software: the base e-stop has to be a controlled stop (stop category 1: ramp at ≤ the limit in force, then remove power) with the wheel drives not shorted, since a 2.5 kg load-box carry tips at ≈ 2.0 m/s² and the wheels can brake harder on a dry floor (μ·g ≈ 5 m/s², ESTIMATE): electrical / base-drive track.
 
 ## R4 cost of the mass (rnd/threshold.py's roller model re-run at each mass and COM height, 15 mm, 45°, hard floor + carpet)
 
 | Design | Speed | Mass (+ 2 kg) | COM h | Crossed | Peak wheel torque | Margin to GIM peak (≥ 1.5×) |
 |---|---|---|---|---|---|---|
-| before | 0.12 m/s | 27.6 kg | 0.48 m | ✅ | 5.8 N·m | 1.90× ✅ |
+| before | 0.12 m/s | 27.7 kg | 0.48 m | ✅ | 5.8 N·m | 1.90× ✅ |
 | A10 v2 | 0.12 m/s | 33.9 kg | 0.41 m | ✅ | 6.5 N·m | 1.70× ✅ |
 | A10 v2, SW-T4 | 0.12 m/s | 33.9 kg | 0.41 m | ✅ | 6.5 N·m | 1.70× ✅ |
+
+## Snag at the locked cap (W17: the real carry poses; W16a open point)
+
+W15b's model (rnd/safety_board_sim.py `caster_snag`, called here read-only): a locked D18b foot meets a step edge (rug edge, tile lip, cable) at speed and stops dead; angular momentum about the pivot is kept and the robot pitches about it. Pass: snag energy ≤ 25 % of the tip-over energy and peak force ≤ 440 N per foot (½ × the 880 N that yields its two Ø8 rods, 3 mm contact compliance: ESTIMATES). W16a fed it the basket's 9.07 kg at the tuck-pose hand point, lift top: **113 % at 0.25 m/s** (COM 48 mm behind its pivot, h 0.64 m). Here every travel state the supervisor allows, on the twin (CAD masses and body inertias, both arms, the lift where the pose puts it): the basket in rnd/basket.py's IK carry poses (D20, the actuator masses on their bodies, every collision-free solution: the worst counts), hung 0.12 m below the handles as a rigid 0.45 × 0.60 × 0.28 m box with its own inertia (ESTIMATE), also at the hand point, and with its COM moved sideways by the 62 % share at which basket.py's rule aborts; loads up to 10 kg at the LOAD_WS far face (x 0.45 m, z 0.20–0.80 m, the worst of tip.py's box poses); unloaded and 1 kg with the arms straight out at shoulder height.
+
+**Pivot.** W15b pivots about the chord through the snagged casters. At a wheel heading (0°, 90°, …) that chord is 65 mm behind the leading wheel, which is still on the floor (or on the step it has just climbed), so the base cannot rotate about the chord without driving that wheel into the floor: it rotates about the support polygon's leading edge or vertex (the octagon of wheels and locked casters), and the caster's impulse at floor level has no moment about that line. At a caster heading (45°, …) the two pivots are the same. Both are shown; the polygon pivot is the result. Moving the pivot out also stops less of the momentum in rotation, so the force per foot rises (the rod limit then sets most of the allowed speeds).
+
+| State (at today's locked cap) | Mass kg | COM x / h (m) | Lift q | v m/s | Energy / tip energy | Peak force per foot | Allowed v: energy / force (m/s) | W15b chord: energy at v, allowed v | |
+|---|---|---|---|---|---|---|---|---|---|
+| unloaded, arms parked, lift mid (W15b) | 31.9 | 0.013 / 0.39 | 0.70 | 0.25 | 4 % | 392 N | 0.62 / **0.26** | 8 %, 0.28 | ✅ |
+| unloaded, arms parked, lift top (W15b) | 31.9 | 0.013 / 0.55 | 1.05 | 0.25 | 6 % | 361 N | 0.51 / **0.28** | 11 %, 0.29 | ✅ |
+| unloaded, arms straight out at shoulder height, lift mid / top | 31.9 | 0.064 / 0.43 | 0.70 | 0.25 | 8 % | 463 N | 0.44 / **0.24** | 22 %, 0.27 | ❌ |
+| 1.0 kg, arms straight out at shoulder height, lift mid / top (≤ LOAD_KG) | 32.9 | 0.086 / 0.44 | 0.70 | 0.25 | 11 % | 503 N | 0.37 / **0.23** | 42 %, 0.19 | ❌ |
+| 1.0 kg at the LOAD_WS far face (x 0.45 m, z ≤ 0.80 m) | 32.9 | 0.056 / 0.27 | 0.35 | 0.25 | 4 % | 533 N | 0.65 / **0.23** | 9 %, 0.24 | ❌ |
+| 2.5 kg at the LOAD_WS far face (x 0.45 m, z ≤ 0.80 m), held at the hands | 34.4 | 0.073 / 0.26 | 0.35 | 0.25 | 5 % | 579 N | 0.59 / **0.22** | 14 %, 0.24 | ❌ |
+| 6.0 kg at the LOAD_WS far face (x 0.45 m, z ≤ 0.80 m), held at the hands | 37.9 | 0.100 / 0.24 | 0.35 | 0.25 | 6 % | 672 N | 0.52 / **0.20** | 28 %, 0.22 | ❌ |
+| 10.0 kg at the LOAD_WS far face (x 0.45 m, z ≤ 0.80 m), held at the hands | 41.9 | 0.136 / 0.61 | 1.05 | 0.25 | 55 % | 743 N | 0.17 / **0.19** | 3,193 %, 0.02 | ❌ |
+
+| Basket travel pose (rnd/basket.py IK) | Load at | Mass kg | COM x / h (m) | Lift q | v m/s | Energy / tip energy | Peak force per foot | Allowed v: energy / force (m/s) | W15b chord: energy at v, allowed v | |
+|---|---|---|---|---|---|---|---|---|---|---|
+| basket 9.07 kg, carry, handles at 0.70, centre 0.35 m out | basket COM (0.12 m below the handles) | 41.2 | 0.090 / 0.56 | 1.05 | 0.25 | 18 % | 599 N | 0.30 / 0.21 | 70 %, 0.15 | ❌ |
+| basket 9.07 kg, carry, handles at 0.70, centre 0.35 m out | hand point (W16a's convention) | 41.2 | 0.090 / 0.58 | 1.05 | 0.25 | 20 % | 588 N | 0.28 / 0.22 | 77 %, 0.14 | ❌ |
+| basket 9.07 kg, carry, handles at 0.70, centre 0.35 m out | basket COM, 62 % share (sideways) | 41.2 | 0.090 / 0.56 | 1.05 | 0.25 | 20 % | 643 N | 0.28 / 0.21 | 70 %, 0.15 | ❌ |
+| basket 9.07 kg, carry, handles at 0.70, centre 0.40 m out | basket COM (0.12 m below the handles) | 41.2 | 0.106 / 0.56 | 1.05 | 0.25 | 24 % | 655 N | 0.26 / 0.20 | 140 %, 0.11 | ❌ |
+| basket 9.07 kg, carry, handles at 0.70, centre 0.40 m out | hand point (W16a's convention) | 41.2 | 0.106 / 0.58 | 1.05 | 0.25 | 26 % | 647 N | 0.25 / 0.21 | 152 %, 0.10 | ❌ |
+| basket 9.07 kg, carry, handles at 0.70, centre 0.40 m out | basket COM, 62 % share (sideways) | 41.2 | 0.106 / 0.56 | 1.05 | 0.25 | 27 % | 654 N | 0.24 / 0.21 | 140 %, 0.11 | ❌ |
+| basket 9.07 kg, carry, handles at 0.70, centre 0.45 m out | basket COM (0.12 m below the handles) | 41.2 | 0.122 / 0.56 | 1.05 | 0.25 | 33 % | 699 N | 0.22 / 0.20 | 405 %, 0.06 | ❌ |
+| basket 9.07 kg, carry, handles at 0.70, centre 0.45 m out | hand point (W16a's convention) | 41.2 | 0.122 / 0.58 | 1.05 | 0.25 | 36 % | 692 N | 0.21 / 0.20 | 441 %, 0.06 | ❌ |
+| basket 9.07 kg, carry, handles at 0.70, centre 0.45 m out | basket COM, 62 % share (sideways) | 41.2 | 0.124 / 0.54 | 0.98 | 0.25 | 38 % | 699 N | 0.20 / 0.20 | 458 %, 0.06 | ❌ |
+| basket 9.07 kg, handles at 0.80, centre 0.40 m out | basket COM (0.12 m below the handles) | 41.2 | 0.108 / 0.58 | 1.05 | 0.25 | 26 % | 650 N | 0.24 / 0.21 | 164 %, 0.10 | ❌ |
+| basket 9.07 kg, handles at 0.80, centre 0.40 m out | hand point (W16a's convention) | 41.2 | 0.108 / 0.61 | 1.05 | 0.25 | 28 % | 643 N | 0.23 / 0.21 | 177 %, 0.09 | ❌ |
+| basket 9.07 kg, handles at 0.80, centre 0.40 m out | basket COM, 62 % share (sideways) | 41.2 | 0.108 / 0.58 | 1.05 | 0.25 | 30 % | 649 N | 0.23 / 0.21 | 164 %, 0.10 | ❌ |
+| basket 9.07 kg, handles at 0.80, centre 0.45 m out | basket COM (0.12 m below the handles) | 41.2 | 0.124 / 0.58 | 1.05 | 0.25 | 38 % | 694 N | 0.20 / 0.20 | 540 %, 0.05 | ❌ |
+| basket 9.07 kg, handles at 0.80, centre 0.45 m out | hand point (W16a's convention) | 41.2 | 0.124 / 0.61 | 1.05 | 0.25 | 41 % | 689 N | 0.20 / 0.20 | 581 %, 0.05 | ❌ |
+| basket 9.07 kg, handles at 0.80, centre 0.45 m out | basket COM, 62 % share (sideways) | 41.2 | 0.124 / 0.58 | 1.05 | 0.25 | 43 % | 695 N | 0.19 / 0.20 | 540 %, 0.05 | ❌ |
+
+**At today's cap (0.25 m/s for any payload): 2/23 states pass.** The basket uses 18 %–43 % of the tip energy (not W16a's 113 %: the basket hangs lower than the tuck-pose hand point and the pivot is the polygon, not the chord) and 599–699 N per foot; every state with a load or the arms out exceeds the 440 N rod limit. The W15b chord model would fail the same states on energy instead (the basket at 0.45 m out: 540 %).
+
+**Allowed locked speed per payload band** (polygon pivot; the lowest of any state in the band, the basket rows without the hand-point variant):
+
+| Payload band | Sets it | Allowed (polygon) | W15b chord | Proposed cap |
+|---|---|---|---|---|
+| unloaded | unloaded, arms straight out at shoulder height, lift mid / top | 0.244 m/s | 0.267 m/s | **0.20 m/s** |
+| 0.0–1.0 kg | 1.0 kg at the LOAD_WS far face (x 0.45 m, z ≤ 0.80 m) | 0.227 m/s | 0.194 m/s | **0.20 m/s** |
+| 1.0–2.5 kg | 2.5 kg at the LOAD_WS far face (x 0.45 m, z ≤ 0.80 m), held at the hands | 0.218 m/s | 0.235 m/s | **0.20 m/s** |
+| 2.5–6.0 kg | 6.0 kg at the LOAD_WS far face (x 0.45 m, z ≤ 0.80 m), held at the hands | 0.202 m/s | 0.217 m/s | **0.20 m/s** |
+| 6.0–10.0 kg | 10.0 kg at the LOAD_WS far face (x 0.45 m, z ≤ 0.80 m), held at the hands | 0.168 m/s | 0.022 m/s | **0.15 m/s** |
+
+**Basket: 0.19 m/s allowed → 0.15 m/s cap; 2.5 kg: 0.22 → 0.20 m/s.** At the proposed caps every state passes: ✅ (the basket then uses ≤ 20 % of the tip energy and ≤ 267 N). Rule options for the basket:
+
+1. **Payload-dependent locked cap (proposed, SW-T8 below):** ≤ 6 kg 0.20 m/s; 6–10 kg 0.15 m/s; no travel above 10 kg. The octagon keeps carrying the braking and push cases (A10 rows above, unchanged), and the snag has ≥ 1.6× margin on the basket's energy and force.
+2. **Basket only in threshold mode** (casters released, 0.12 m/s): no snag while the feet float, but braking at 0.3 m/s² then rests on the wheel diamond alone: reserve 42–67 mm, 32 mm with the 62 % share (need 30), and a hardware lock on the way (Q9 timer, power loss) snags at ≤ 10 %. It passes, thinly and slower, and loses the casters exactly when the load is highest: not proposed.
+3. **Bench snag test** (would justify more): a locked D18b foot with its guide and rods on a sled ballasted to 41 kg with the COM height of the basket carry, driven into a 5 / 10 / 15 mm step and a Ø8 cable at 0.10–0.25 m/s, at a wheel heading and a caster heading; load cell on the foot (peak force, pulse length = the real compliance), IMU on the sled (pitch reached), the rods measured for set after each run. The force limit sets most bands, and it rests on two ESTIMATES (3 mm compliance, the rods' 40 mm lever and yield; the printed guide is unrated): a measured pulse twice as long, or rods and guide good for 2× the load, raise the force-limited speeds by √2 (≤ 6 kg: 0.20 → 0.29 m/s, energy limit 0.37), which would put that band back at 0.25 m/s. It cannot buy the basket much: its energy limit (polygon pivot) is 0.19 m/s, so ≤ 0.15 → 0.20 at best. The same rig checks the pivot correction (pitch at a wheel heading).
+
+**D28 still holds.** Its rule is about people, not snags: with more than 2.5 kg the base moves only while nobody is within BASKET_CLEAR_R (9.5 m). The radius the stop-and-set-down needs falls with the slower cap: 8.8 m from today's 0.25 m/s, 8.2 m from 0.15 m/s (stop at A_LOAD, then 4 s to lower and release, ESTIMATE) ≤ 9.5 m ✅. The snag is a separate failure (the robot falls with nobody near), so it needs its own rule (option 1); D28's 2.5 kg boundary is not a snag boundary (the caps step at 6 kg).
+
 
 ## Supervisor rule changes for the software owner (sw/safety.py is read-only here)
 
 - **SW-T1 person within reach:** `Supervisor.set_person_near(bool)`: when perception reports a person within reach (≈ 1 m), the supervisor caps the base at ≤ 0.1 m/s and ≤ 0.1 m/s² (`base_accel_limit()` → A_PERSON) and rejects hand targets outside LOAD_WS whatever the payload, with x ≤ 0.35 m and z ≤ 0.60 m (the arms come in and the lift goes down first). A push can only come from a person, so the 8 push cases are evaluated under this rule. With the R2d basket (> 2.5 kg) the base stops and the basket is set down before the person is within reach. sw/safety.py has no person input today.
-- **SW-T2 caster lock (D18b):** Casters stay locked (solenoids off, spring-applied, so an e-stop or power loss locks them) except in two planner modes: (a) a threshold or rug crossing (D2b: 45°, ≤ 0.15 m/s), started only with no person within reach; (b) unloaded transit with the arms parked above 0.3 m/s. Release pulse (≈ 100 ms) at every stop and every 0.3 m of locked travel so a lock never ratchets down into a floor dip and lifts a wheel. Needs a caster-lock output and a `Supervisor.casters_locked()` state the base planner checks before moving. rnd/tip.py counts SW-T1/T2 as enforced (scorecard gate) once `set_person_near` and `casters_locked` exist in sw/safety.py.
+- **SW-T2 caster lock (D18b):** Casters stay locked (solenoids off, spring-applied, so an e-stop or power loss locks them) except in two planner modes: (a) a threshold or rug crossing (D2b: 45°, ≤ 0.15 m/s), started only with no person within reach; (b) unloaded transit with the arms parked above the locked cap (CASTER_LOCKED_V). Release pulse (≈ 100 ms) at every stop and every 0.3 m of locked travel so a lock never ratchets down into a floor dip and lifts a wheel. Needs a caster-lock output and a `Supervisor.casters_locked()` state the base planner checks before moving. rnd/tip.py counts SW-T1/T2 as enforced (scorecard gate) once `set_person_near` and `casters_locked` exist in sw/safety.py.
 - **SW-T4 threshold speed (D2b):** Cross thresholds at ≤ 0.12 m/s (was 0.15): with the ballast the roller model's 15 mm peak rises to the 1.45× margin at 0.15 m/s; 0.12 m/s restores ≥ 1.5× (table above). A planner value, not in sw/safety.py; threshold_mc should be re-run over 0.10–0.14 m/s.
 - **SW-T6 person approaching (A10 real states):** `Supervisor.set_person_approach(bool)`, a second PeopleNearTrigger at PN_PREP_RADIUS: the SW-T1 box, base caps, caster lock and basket stop from there, so the transition (≤ 1.5 s) is done before a walking person is within reach (table above). Implemented in sw/safety.py; rnd/tip.py credits the push cases with the SW-T1 state only while it exists and its radius ≥ the radius the transition needs.
 - **SW-T7 basket carry:** `Supervisor.set_area_clear(bool)`: the base moves with more than PERSON_MAX_KG only while perception sees nobody within BASKET_CLEAR_R (set-down before a walking person can arrive). Implemented; fail-safe default False.
 - **SW-T3 keep:** Keep LOAD_KG 1.0 kg, LOAD_WS x ≤ 0.45 m / z ≤ 0.80 m and the 0.3 m/s² load-mode cap: the cases below rely on them (they are enforced today). `load_heading_ok()` (±20° of a wheel) is not called anywhere and is not needed with D18b (the 45° cases pass).
+- **SW-T8 payload-dependent locked speed:** `Supervisor.caster_locked_v_for(payload)` (a staticmethod, as `base_stop_decel_for`) → the base speed cap with the casters locked (or locking / pulsing), replacing the flat CASTER_LOCKED_V 0.25 m/s in `base_speed_limit()`: **≤ 6 kg: 0.20 m/s; 6–10 kg: 0.15 m/s; above 10 kg: 0 (no travel)** (snag table: the lowest allowed speed of any pose the supervisor allows at that payload, rounded down to 0.05 m/s). `set_payload()` to a heavier band while moving brakes to the new cap at the limit in force before anything else. A deferred forced lock (SW-T2) engages at ≤ min(V_CASTER_LOCK, that cap). Threshold mode keeps THRESHOLD_SPEED (0.12 m/s ≤ every cap). Tests: the cap at each band edge, a payload step while moving, the deferred lock at the lower V. rnd/tip.py reads the function when it exists (the scorecard's snag row then counts it as enforced).
 
 **Reading.** A 1.3 m robot on a Ø50 cm base can't take a firm push at shoulder height while it holds a load out in front on hardware alone: the push term alone (≈ 100–120 mm) uses most of the 148 mm between wheels. The hardware changes make every case pass that the robot can meet without a person next to it, and SW-T1 is what makes the push cases pass. The R2d basket (9 kg at 0.45 m) is outside A10: it passes with casters locked and nobody within reach, and is not allowed with a person within reach (SW-T1 then has to stop the base and set the basket down). **Open:** the lock's take-up and the ratchet-down behaviour on a real floor are ESTIMATES (bench: caster coupon on tile + low pile, measure take-up under 150 N); the quasi-static ZMP ignores the bump of a caster engaging (a MuJoCo push test with the caster model is the next check); the ball transfer on medium pile when released drags ≈ 0.5 × 10 N per caster.
 
@@ -154,6 +213,6 @@ Lock plates, rods, feet and their positions are unchanged; the base loses 0.08 k
 | Layout | A10 (requested rules) worst / cases ≥ 30 mm | A10 from the real states (today's rules) worst / cases |
 |---|---|---|
 | four (caster 0.180 kg each) | 36 mm / 16/16 | -53 mm / 8/16 |
-| cable (caster 0.160 kg each) | 35 mm / 16/16 | -53 mm / 8/16 |
+| cable (caster 0.160 kg each) | 36 mm / 16/16 | -53 mm / 8/16 |
 
 **Re-check: A10 PASS; force + timing PASS with the JF-1264B** (the per-caster JF-1039 cannot pull four cables: 0.84× at nominal). Not modelled: a mechanically stuck plunger or a kinked liner now holds **all four** casters released (one solenoid per caster leaves three locking), which the A10 rows with locked casters do not cover; a slack cable on a rigid equaliser leaves its caster locked on a threshold crossing (safe side for tip, a jam for R4). Bench: pull force through the four liners at the lock plates, and the release / re-lock times on a scope.
