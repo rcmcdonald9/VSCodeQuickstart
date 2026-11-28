@@ -10,10 +10,14 @@ things for every drive shaft:
 2. **Shaft insertion.** A one-piece shaft carrying an element wider than the bearing seats of the walls it passes
    through (an integral pulley, flange or ferrule between or beyond two walls of a one-piece link) can't be put in.
    The shaft must be split (bolted pulley / flange), or the link must be split.
-3. **Tool access (R14 (c), Fable review C3).** Every drive-train fastener (cartridge flange ears, rear caps, seat caps,
-   pinch clamps, pitch hub, yaw flange, the inline roll's motor and clevis bolts) must be reachable on the assembled robot
-   with a real driver: Ø6 straight for 80 mm, or a ball-end at ≤ 25°.
-4. **Cartridge swap (R14 (d)).** Each bolted cartridge must come out with the belt on and the shaft in place.
+3. **Tool access (R14 (c), Fable review C3; probe = the requirement since Astra #3 major 13).** Every drive-train fastener
+   (cartridge flange ears, rear caps, seat caps, pinch clamps, pitch hub, yaw flange, the inline roll's motor and clevis
+   bolts) must have R14 (c)'s Ø12 clear along its axis for ≥ 50 mm on the assembled robot (a 7 mm socket on a 1/4" bit
+   holder, or a hex driver's shank, both ≤ Ø12; inside a counterbore the hex key itself, Ø3.5 across corners for M4, to
+   the mouth). A ball-end at ≤ 25° is reported but is not a pass: R14 (c) asks for access along the axis.
+4. **Cartridge swap (R14 (d)).** Each bolted cartridge must come out with the shaft in place and its BELT IN THE CHECK: a
+   closed belt loop encircles the stub, so the stub must leave the loop along its axis (its lowest point above the belt's
+   top edge) before any sideways move; the pinion may slide through the belt only during that axial move.
 
 **7/7 drive shafts can be assembled as drawn.**
 
@@ -23,97 +27,97 @@ things for every drive shaft:
 | roll stage, D24 inline GIM8108-36 (no shaft or pulley; 61806 onto the roll link's stub from −X, clevis bolted to the output flange) | z -36.0…-29.0 (Ø30.0): ✅ −Z end | ✅ | ✅ |
 | yaw shaft (D19, loop 44: 40T + spring hub one piece; up into the top plate, bottom plate bolted on, flange last) | z -58.0…-52.0 (Ø40.0): ✅ +Z end; z -95.2…-88.2 (Ø40.0): ✅ −Z end | ✅ | ✅ |
 | elbow shaft (D19: 40T one piece; 2 × 61808 in capped U-seats + 2 × 6708; the cassette goes in from below) | z 3.7…9.7 (Ø40.0): ✅ −Z end; z 37.7…42.9 (Ø40.0): ✅ +Z end; z -57.5…-50.5 (Ø40.0): ✅ −Z end; z 50.5…57.5 (Ø40.0): ✅ +Z end | ✅ | ✅ |
-| D26 direct stage v4 (C45 stub = Ø42 flange on the motor output + Ø12 shaft, one piece; keyed pulley and the 6001 slide on from its free end) at pitch, yaw, elbow | z -42.0…-34.0 (Ø12.0): ✅ −Z end; z -33.5…-6.5 (Ø12.0): ✅ −Z end | ✅ | ✅ |
+| D26 direct stage, stub v5 (Astra #3 m7: C45+QT integral pinion shaft = Ø42 flange on the motor output + neck + hobbed 20T + Ø12 seat, one piece; the 6001 slides on from its free end) at pitch, yaw, elbow | z -42.0…-34.0 (Ø12.0): ✅ −Z end | ✅ | ✅ |
 | D16 wrist-roll spindle (loop 43: from above, shoulder on the upper bearing; bearings from below, end cap) | z -91.1…-84.1 (Ø20.0): ✅ −Z end; z -98.1…-91.1 (Ø20.0): ✅ −Z end | ✅ | ✅ |
 | wheel shaft + flange (×4) | z -44…-37 (Ø40.0): ✅ +Z end; z -39…-32 (Ø40.0): ✅ +Z end | ✅ | ✅ |
 
 ## R14 (c) tool access
 
-Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elbow -90, wrist 0; covers, boots and ducts off; at pitch: torso_shell, bracket_slot off. A fastener passes with a Ø6 driver straight along its axis for 80 mm from the head (the Ø2.5 key inside a counterbore), or a Ø6 ball-end tilted 15 / 25° at 8 azimuths. 'swap' = undone for a cartridge swap.
+Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elbow -90, wrist 0; covers, boots and ducts off; at pitch: torso_shell, bracket_slot off. A fastener passes with R14 (c)'s Ø12 clear straight along its axis for 50 mm from the head (the Ø3.5 hex key inside a counterbore; was Ø6 × 80, Astra #3 m13). A Ø6 ball-end tilted 15 / 25° at 8 azimuths is tried where the straight probe is blocked and reported as a deviation (not a pass). 'swap' = undone for a cartridge swap.
 
 | Joint | Fasteners | Pass | Failures (blocked by) |
 |---|---|---|---|
-| pitch | 16 | 16/16 (2 by ball-end) ✅ | — |
-| elbow | 12 | 12/12 ✅ | — |
-| yaw | 10 | 10/10 ✅ | — |
-| lift | 4 | 4/4 (1 by ball-end) ✅ | — |
+| pitch | 16 | 12/16 (3 only by ball-end) ❌ | flange ear screw +40° (M4, site pitch4) (sh_can); flange ear screw -40° (M4, site pitch4) (sh_can); flange ear screw +160° (from the pulley side) (M4, site pitch4) (sh_bracket_wall); flange ear screw -120° (from the pulley side) (M4, site pitch4) (sh_bracket_wall) |
+| elbow | 12 | 8/12 ❌ | flange ear screw +40° (M4, site elbow) (arm_e_can); flange ear screw -40° (M4, site elbow) (arm_e_can); flange ear screw +140° (M4, site elbow) (arm_e_can); flange ear screw -140° (M4, site elbow) (arm_e_can) |
+| yaw | 10 | 6/10 (4 only by ball-end) ❌ | flange ear screw +50° (M4, site yaw) (rolyaw_can); flange ear screw -50° (M4, site yaw) (rolyaw_can); flange ear screw +145° (M4, site yaw) (rolyaw_can); flange ear screw -145° (M4, site yaw) (rolyaw_can) |
+| lift | 4 | 0/4 (4 only by ball-end) ❌ | flange ear screw +40° (M4, site lift4) (lift_can); flange ear screw -40° (M4, site lift4) (lift_can); flange ear screw +140° (M4, site lift4) (lift_can); flange ear screw -140° (M4, site lift4) (lift_can) |
 | wrist | 12 | 12/12 ✅ | — |
-| roll (inline) | 16 | 16/16 ✅ | — |
+| roll (inline) | 16 | 14/16 ❌ | motor M4 × 25 66° (yaw block + rear arm off) (rolrolgim_housing); motor M4 × 25 201° (yaw block + rear arm off) (rolrolgim_housing) |
 
 <details><summary>Every fastener</summary>
 
 | Joint | Fastener | Kind | Result | Blocked by (straight) |
 |---|---|---|---|---|
-| pitch | flange ear screw +40° (M4, site pitch4) | swap | ✅ straight Ø6 × 80 | — |
-| pitch | flange ear screw -40° (M4, site pitch4) | swap | ✅ straight Ø6 × 80 | — |
-| pitch | flange ear screw +160° (from the pulley side) (M4, site pitch4) | swap | ✅ straight Ø6 × 80 | — |
-| pitch | flange ear screw -120° (from the pulley side) (M4, site pitch4) | swap | ✅ straight Ø6 × 80 | — |
-| elbow | flange ear screw +40° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
-| elbow | flange ear screw -40° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
-| elbow | flange ear screw +140° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
-| elbow | flange ear screw -140° (M4, site elbow) | swap | ✅ straight Ø6 × 80 | — |
-| yaw | flange ear screw +50° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
-| yaw | flange ear screw -50° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
-| yaw | flange ear screw +145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
-| yaw | flange ear screw -145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
-| lift | flange ear screw +40° (M4, site lift4) | swap | ✅ straight Ø6 × 80 | — |
-| lift | flange ear screw -40° (M4, site lift4) | swap | ✅ straight Ø6 × 80 | — |
-| lift | flange ear screw +140° (M4, site lift4) | swap | ✅ straight Ø6 × 80 | — |
-| lift | flange ear screw -140° (M4, site lift4) | swap | ✅ ball-end 15° (az 225°) | rim |
-| pitch | exit-slot strap M4 x -26 | swap | ✅ ball-end 15° (az 90°) | carriage |
-| pitch | exit-slot strap M4 x -8 | swap | ✅ ball-end 15° (az 90°) | carriage |
-| pitch | exit-slot strap M4 x +8 | swap | ✅ straight Ø6 × 80 | — |
-| pitch | exit-slot strap M4 x +26 | swap | ✅ straight Ø6 × 80 | — |
-| pitch | idler axle M5 (head on the outer wall) | swap | ✅ straight Ø6 × 80 | — |
-| pitch | pitch hub tie nut M4 45° (arm detached) | service | ✅ straight Ø6 × 80 | — |
-| pitch | pitch hub tie nut M4 135° (arm detached) | service | ✅ straight Ø6 × 80 | — |
-| pitch | pitch hub tie nut M4 225° (arm detached) | service | ✅ straight Ø6 × 80 | — |
-| pitch | pitch hub tie nut M4 315° (arm detached) | service | ✅ straight Ø6 × 80 | — |
-| pitch | outer wall M4 z -50 | service | ✅ straight Ø6 × 80 | — |
-| pitch | outer wall M4 z 10 | service | ✅ straight Ø6 × 80 | — |
-| pitch | outer wall M4 z 70 | service | ✅ straight Ø6 × 80 | — |
-| elbow | seat cap -Y M4 x -30 (bone cap off) | service | ✅ straight Ø6 × 80 | — |
-| elbow | seat cap -Y M4 x +30 (bone cap off) | service | ✅ straight Ø6 × 80 | — |
-| elbow | seat cap +Y M3 x -30 (bone cap off) | service | ✅ straight Ø6 × 80 | — |
-| elbow | seat cap +Y M3 x +30 (bone cap off) | service | ✅ straight Ø6 × 80 | — |
-| elbow | forearm pinch M5 y 66.5 | service | ✅ straight Ø6 × 80 | — |
-| elbow | forearm pinch M5 y 66.5 (head −X) | service | ✅ straight Ø6 × 80 | — |
-| elbow | forearm pinch M5 y 77.5 | service | ✅ straight Ø6 × 80 | — |
-| elbow | forearm pinch M5 y 77.5 (head −X) | service | ✅ straight Ø6 × 80 | — |
-| yaw | yaw tie M3 30° (bench: yaw block off the roll output) | service | ✅ straight Ø6 × 80 | — |
-| yaw | yaw tie M3 90° (bench: yaw block off the roll output) | service | ✅ straight Ø6 × 80 | — |
-| yaw | yaw tie M3 150° (bench: yaw block off the roll output) | service | ✅ straight Ø6 × 80 | — |
-| yaw | yaw tie M3 210° (bench: yaw block off the roll output) | service | ✅ straight Ø6 × 80 | — |
-| yaw | yaw tie M3 270° (bench: yaw block off the roll output) | service | ✅ straight Ø6 × 80 | — |
-| yaw | yaw tie M3 330° (bench: yaw block off the roll output) | service | ✅ straight Ø6 × 80 | — |
-| wrist | palm M3 0° | swap | ✅ straight Ø6 × 80 | — |
-| wrist | palm M3 60° | swap | ✅ straight Ø6 × 80 | — |
-| wrist | palm M3 120° | swap | ✅ straight Ø6 × 80 | — |
-| wrist | palm M3 180° | swap | ✅ straight Ø6 × 80 | — |
-| wrist | palm M3 240° | swap | ✅ straight Ø6 × 80 | — |
-| wrist | palm M3 300° | swap | ✅ straight Ø6 × 80 | — |
-| wrist | can flange M3 30° (hand off) | swap | ✅ straight Ø6 × 80 | — |
-| wrist | can flange M3 90° (hand off) | swap | ✅ straight Ø6 × 80 | — |
-| wrist | can flange M3 150° (hand off) | swap | ✅ straight Ø6 × 80 | — |
-| wrist | can flange M3 210° (hand off) | swap | ✅ straight Ø6 × 80 | — |
-| wrist | can flange M3 270° (hand off) | swap | ✅ straight Ø6 × 80 | — |
-| wrist | can flange M3 330° (hand off) | swap | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 21° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 66° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 111° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 156° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 201° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 246° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 291° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | motor M4 × 18 336° (yaw block + rear arm off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | clevis M5 22° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | clevis M5 68° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | clevis M5 112° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | clevis M5 158° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | clevis M5 202° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | clevis M5 247° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | clevis M5 292° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
-| roll (inline) | clevis M5 338° (spring ring + hub off) | service | ✅ straight Ø6 × 80 | — |
+| pitch | flange ear screw +40° (M4, site pitch4) | swap | ❌ ball-end 15° (az 45°) only (not R14 (c)) | l_sh_can |
+| pitch | flange ear screw -40° (M4, site pitch4) | swap | ❌ ball-end 15° (az 135°) only (not R14 (c)) | l_sh_can |
+| pitch | flange ear screw +160° (from the pulley side) (M4, site pitch4) | swap | ❌ ball-end 25° (az 90°) only (not R14 (c)) | l_sh_bracket_wall |
+| pitch | flange ear screw -120° (from the pulley side) (M4, site pitch4) | swap | ❌ blocked | l_sh_bracket_wall |
+| elbow | flange ear screw +40° (M4, site elbow) | swap | ❌ blocked | l_arm_e_can |
+| elbow | flange ear screw -40° (M4, site elbow) | swap | ❌ blocked | l_arm_e_can |
+| elbow | flange ear screw +140° (M4, site elbow) | swap | ❌ blocked | l_arm_e_can |
+| elbow | flange ear screw -140° (M4, site elbow) | swap | ❌ blocked | l_arm_e_can |
+| yaw | flange ear screw +50° (M4, site yaw) | swap | ❌ ball-end 15° (az 0°) only (not R14 (c)) | l_roll_yaw_can |
+| yaw | flange ear screw -50° (M4, site yaw) | swap | ❌ ball-end 15° (az 135°) only (not R14 (c)) | l_roll_yaw_can |
+| yaw | flange ear screw +145° (M4, site yaw) | swap | ❌ ball-end 15° (az 0°) only (not R14 (c)) | l_roll_yaw_can |
+| yaw | flange ear screw -145° (M4, site yaw) | swap | ❌ ball-end 15° (az 45°) only (not R14 (c)) | l_roll_yaw_can |
+| lift | flange ear screw +40° (M4, site lift4) | swap | ❌ ball-end 15° (az 0°) only (not R14 (c)) | lift_can |
+| lift | flange ear screw -40° (M4, site lift4) | swap | ❌ ball-end 15° (az 135°) only (not R14 (c)) | lift_can |
+| lift | flange ear screw +140° (M4, site lift4) | swap | ❌ ball-end 15° (az 315°) only (not R14 (c)) | lift_can |
+| lift | flange ear screw -140° (M4, site lift4) | swap | ❌ ball-end 15° (az 225°) only (not R14 (c)) | lift_can |
+| pitch | exit-slot strap M4 x -26 | swap | ✅ straight Ø12 × 50 | — |
+| pitch | exit-slot strap M4 x -8 | swap | ✅ straight Ø12 × 50 | — |
+| pitch | exit-slot strap M4 x +8 | swap | ✅ straight Ø12 × 50 | — |
+| pitch | exit-slot strap M4 x +26 | swap | ✅ straight Ø12 × 50 | — |
+| pitch | idler axle M5 (head on the outer wall) | swap | ✅ straight Ø12 × 50 | — |
+| pitch | pitch hub tie nut M4 45° (arm detached) | service | ✅ straight Ø12 × 50 | — |
+| pitch | pitch hub tie nut M4 135° (arm detached) | service | ✅ straight Ø12 × 50 | — |
+| pitch | pitch hub tie nut M4 225° (arm detached) | service | ✅ straight Ø12 × 50 | — |
+| pitch | pitch hub tie nut M4 315° (arm detached) | service | ✅ straight Ø12 × 50 | — |
+| pitch | outer wall M4 z -50 | service | ✅ straight Ø12 × 50 | — |
+| pitch | outer wall M4 z 10 | service | ✅ straight Ø12 × 50 | — |
+| pitch | outer wall M4 z 70 | service | ✅ straight Ø12 × 50 | — |
+| elbow | seat cap -Y M4 x -30 (bone cap off) | service | ✅ straight Ø12 × 50 | — |
+| elbow | seat cap -Y M4 x +30 (bone cap off) | service | ✅ straight Ø12 × 50 | — |
+| elbow | seat cap +Y M3 x -30 (bone cap off) | service | ✅ straight Ø12 × 50 | — |
+| elbow | seat cap +Y M3 x +30 (bone cap off) | service | ✅ straight Ø12 × 50 | — |
+| elbow | forearm pinch M5 y 66.5 | service | ✅ straight Ø12 × 50 | — |
+| elbow | forearm pinch M5 y 66.5 (head −X) | service | ✅ straight Ø12 × 50 | — |
+| elbow | forearm pinch M5 y 77.5 | service | ✅ straight Ø12 × 50 | — |
+| elbow | forearm pinch M5 y 77.5 (head −X) | service | ✅ straight Ø12 × 50 | — |
+| yaw | yaw tie M3 30° (bench: yaw block off the roll output) | service | ✅ straight Ø12 × 50 | — |
+| yaw | yaw tie M3 90° (bench: yaw block off the roll output) | service | ✅ straight Ø12 × 50 | — |
+| yaw | yaw tie M3 150° (bench: yaw block off the roll output) | service | ✅ straight Ø12 × 50 | — |
+| yaw | yaw tie M3 210° (bench: yaw block off the roll output) | service | ✅ straight Ø12 × 50 | — |
+| yaw | yaw tie M3 270° (bench: yaw block off the roll output) | service | ✅ straight Ø12 × 50 | — |
+| yaw | yaw tie M3 330° (bench: yaw block off the roll output) | service | ✅ straight Ø12 × 50 | — |
+| wrist | palm M3 0° | swap | ✅ straight Ø12 × 50 | — |
+| wrist | palm M3 60° | swap | ✅ straight Ø12 × 50 | — |
+| wrist | palm M3 120° | swap | ✅ straight Ø12 × 50 | — |
+| wrist | palm M3 180° | swap | ✅ straight Ø12 × 50 | — |
+| wrist | palm M3 240° | swap | ✅ straight Ø12 × 50 | — |
+| wrist | palm M3 300° | swap | ✅ straight Ø12 × 50 | — |
+| wrist | can flange M3 30° (hand off) | swap | ✅ straight Ø12 × 50 | — |
+| wrist | can flange M3 90° (hand off) | swap | ✅ straight Ø12 × 50 | — |
+| wrist | can flange M3 150° (hand off) | swap | ✅ straight Ø12 × 50 | — |
+| wrist | can flange M3 210° (hand off) | swap | ✅ straight Ø12 × 50 | — |
+| wrist | can flange M3 270° (hand off) | swap | ✅ straight Ø12 × 50 | — |
+| wrist | can flange M3 330° (hand off) | swap | ✅ straight Ø12 × 50 | — |
+| roll (inline) | motor M4 × 25 21° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | motor M4 × 25 66° (yaw block + rear arm off) | service | ❌ blocked | l_roll_roll_gim_housing |
+| roll (inline) | motor M4 × 25 111° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | motor M4 × 25 156° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | motor M4 × 25 201° (yaw block + rear arm off) | service | ❌ blocked | l_roll_roll_gim_housing |
+| roll (inline) | motor M4 × 25 246° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | motor M4 × 25 291° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | motor M4 × 25 336° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | clevis M5 22° (spring ring + hub off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | clevis M5 68° (spring ring + hub off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | clevis M5 112° (spring ring + hub off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | clevis M5 158° (spring ring + hub off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | clevis M5 202° (spring ring + hub off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | clevis M5 247° (spring ring + hub off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | clevis M5 292° (spring ring + hub off) | service | ✅ straight Ø12 × 50 | — |
+| roll (inline) | clevis M5 338° (spring ring + hub off) | service | ✅ straight Ø12 × 50 | — |
 
 </details>
 
@@ -130,12 +134,12 @@ A cartridge flange needs ≥ 3 ears with no gap > 120° between neighbours, or �
 
 ## R14 (d) cartridge swap (belt on, shaft in place)
 
-Flange screws out (rows above), then the cartridge moves along its axis in 2.5 mm steps: straight out its own length, or, once disengaged, 150 mm sideways. **D26 direct stages (pitch, elbow, yaw):** the cartridge takes its stub, pulley and 6001 with it (its length grows by the 42 mm stub); the belt, released by the pitch idler or in mesh at the fixed centres, slides off the single-flange pulley toward wall B and stays (the belt part is left out of this step); disengaged = the stub end clear of wall A, or, at the pitch, 8.5 mm (the 6001 out of wall B) and then down through wall A's U-slot (cartridge_m.WALL_EXIT). Oldham stages (lift): 4.5 mm (adapter tongue and spigot lip clear), side-exit slot in the flange (cartridge_m.EXIT_SITES).
+Flange screws out (rows above), then the cartridge moves along its axis in 2.5 mm steps: straight out its own length, or, once disengaged, 150 mm sideways. **D26 direct stages (pitch, elbow, yaw):** the cartridge takes its integral pinion shaft and 6001 with it; Astra #3 m13: the closed belt loop is in the check (built per stage, rnd/assembly_seq.py stage_belts) and the stub must leave it along its axis before any sideways move — where it cannot (the pitch), the sequence removes the loop first (SWAP_BELT_OFF). Before: (its length grows by the 42 mm stub); the belt, released by the pitch idler or in mesh at the fixed centres, slides off the single-flange pulley toward wall B and stays (the belt part is left out of this step); disengaged = the stub end clear of wall A, or, at the pitch, 8.5 mm (the 6001 out of wall B) and then down through wall A's U-slot (cartridge_m.WALL_EXIT). Oldham stages (lift): 4.5 mm (adapter tongue and spigot lip clear), side-exit slot in the flange (cartridge_m.EXIT_SITES).
 
 | Joint | Swap | How / blocked by |
 |---|---|---|
-| pitch | ✅ | 8.5 mm along its axis, then 150 mm sideways through wall A's exit slot (270°) |
-| elbow | ✅ | straight out 113 mm along its axis |
-| yaw | ✅ | straight out 113 mm along its axis |
+| pitch | ✅ | 8.5 mm along its axis, then 150 mm sideways through wall A's exit slot (270°) [the stub needs 33.5 mm along its axis to leave the belt loop and has 8.5: sequence with bracket_wall, pitch_hub, roll, arm + the belt off first] |
+| elbow | ✅ | straight out 113 mm along its axis [belt loop on, stub leaves it after 33.5 mm along its axis] |
+| yaw | ✅ | straight out 113 mm along its axis [belt loop on, stub leaves it after 33.5 mm along its axis] |
 | lift | ✅ | 8.5 mm along its axis, then 150 mm sideways through wall A's exit slot (0°) |
 | wrist (hand off) | ✅ | straight out 69 mm along its axis |
