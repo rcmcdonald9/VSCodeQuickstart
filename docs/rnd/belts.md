@@ -4,19 +4,22 @@ HTD 5M, 15 mm, printed pulleys, small pulley on its own bearing hub. **Loop 13 r
 
 | Joint | Teeth | Pitch Ø small / big | Sustained pull vs working | Peak pull vs ultimate/3 | Teeth in mesh | Centre / belt length |
 |---|---|---|---|---|---|---|
-| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 193 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 355 mm |
-| upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 173 / 312 N → 1.8× ✅ | 691 N → 5.6× ultimate ✅ | 8.7 ✅ | 81.18 / 315 mm |
-| elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 202 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.6 ✅ | 70.95 / 295 mm |
+| shoulder_pitch | 20:60 (3.00:1) | 31.8 / 95.5 | 196 / 312 N → 1.6× ✅ | 691 N → 5.6× ultimate ✅ | 7.0 ✅ | 70 / 355 mm |
+| upper_yaw | 20:40 (2.00:1) | 31.8 / 63.7 | 173 / 312 N → 1.8× ✅ | 691 N → 5.6× ultimate ✅ | 8.7 ✅ | 81.48 / 316 mm |
+| elbow | 20:40 (2.00:1) | 31.8 / 63.7 | 202 / 312 N → 1.5× ✅ | 691 N → 5.6× ultimate ✅ | 8.6 ✅ | 71.21 / 296 mm |
 
 ## D26 direct stages: tension, teeth in mesh, motor bearing (no Oldham)
 
-Each GIM stage drives its 20T from a turned C45 stub bolted to the motor output (8 × M3), supported by the motor's own output bearing and a 6001-2RS in wall B (bonded align-and-bond bushing); the motor is fixed (belt_stage.small_stage_v4).
+Each GIM stage drives its belt from a one-piece C45+QT integral pinion shaft (stub v5, Astra #3 m7: flange + neck + hobbed 20T + 6001 seat) bolted to the motor output (8 × M3), supported by the motor's own output bearing and a 6001-2RS in wall B (bonded align-and-bond bushing); the motor is fixed (belt_stage.small_stage_v4).
 
 | Joint | Tension | Belt | Centre CAD / exact | Preload per strand | Teeth in mesh (nominal / worst) | Idler load at peak |
 |---|---|---|---|---|---|---|
-| shoulder_pitch | back-side slotted idler (f 0.45 on the +Y strand), travel 8.3 mm (δ 0.0 … 8.3, nominal 6.4) | 355-5M | 70.00 / 70.15 | 173 N set at the idler ✅ | 7.82 / 7.52 ✅ | 421 N on 2 × 625 (C0 1.36 kN) → 3.2× |
-| elbow | fixed centre (+0.25 mm over the stock belt's exact centre), no tensioner | 295-5M | 70.95 / 70.70 | 82 N nominal, 0–165 N over ± 0.25 mm (49 N worst with the plates printed to the measured belt; target 173) ⚠️ | 8.56 ✅ | — |
-| upper_yaw | fixed centre (+0.25 mm over the stock belt's exact centre), no tensioner | 315-5M | 81.18 / 80.93 | 78 N nominal, 0–156 N over ± 0.25 mm (47 N worst with the plates printed to the measured belt; target 173) ⚠️ | 8.74 ✅ | — |
+| shoulder_pitch | back-side slotted idler (f 0.45 on the +Y strand), travel 8.2 mm (δ 0.0 … 8.2, nominal 6.4) | 355-5M | 70.00 / 70.15 | 173 N set at the idler ✅ | 7.83 / 7.52 ✅ | 426 N on 2 × 625 (C0 1.36 kN) → 3.2× |
+| elbow | D26 tension ring (6061, e 0.30 mm ≥ the 0.25 mm of stock-belt + print error) under the cartridge lip, set by span frequency before the 6001 bond | 295-5M | 71.21 / 70.70 | 173 N set (± 16 N), **134–218 N** over stretch-in and −10/+20 K = 0.77–1.26 × target; span 69.4 mm, accept 335–449 Hz (387 Hz at target) ✅ (was stock belt +0.25 fixed: 0–165 N) | 8.57 ✅ | — |
+| upper_yaw | D26 tension ring (6061, e 0.30 mm ≥ the 0.25 mm of stock-belt + print error) under the cartridge lip, set by span frequency before the 6001 bond | 315-5M | 81.48 / 80.93 | 173 N set (± 15 N), **134–220 N** over stretch-in and −10/+20 K = 0.77–1.27 × target; span 79.9 mm, accept 291–390 Hz (336 Hz at target) ✅ (was stock belt +0.25 fixed: 0–156 N) | 8.75 ✅ | — |
+
+- Pitch idler roller (Astra #3 m6): Ø30 flat PETG-CF roller vs the reverse-bend minimum Ø25.4 for the glass-cord belt ✅ (was Ø25 < 25.4 Gates 5 mm HTD); 16 mm face between 1.5 mm flanges for the 15 mm belt, one 625-2RS at each end (tilt-free on the M5 shank); idler load 426 N at the peak = 213 N per 625 → 3.2× C0 (2 × 0.68 kN); belt-back pressure 3.8 MPa on the print; M5 12.9 axle 277 MPa simply supported over 32 mm → 3.4× (static: the axle does not turn). Backside idlers on a reversing drive see both strands' tension: the tight-side value is used.
+- Fixed-centre stages: tooth jump under reversing load is not proven by the teeth-in-mesh count. With the ring band's low end the slack strand stays loaded up to ≈ 2 × T0 of effective pull; above that the drive runs on the tight strand alone, normal for timing belts at peak. Bench test (M1 exit test 6 replacement): both torque directions to the drive limit, hot (+20 K) and cold, at the band's low end, 1000 reversals, look for skip, tracking and tension drift (span frequency before / after).
 
 | Motor bearing check | Shaft load (F + 2·T0) | Motor bearing (share) | Its rating | 6001 in wall B | 6001 C0 |
 |---|---|---|---|---|---|
@@ -25,7 +28,33 @@ Each GIM stage drives its 20T from a turned C45 stub bolted to the motor output 
 | GIM8108-8 (D20) at the 18 N·m flash limit | 1696 N | 528 N (31%) | not published (seller question) ⚠️ | 1169 N (69%) | 2.36 kN → 2.0× |
 
 - Span: motor bearing 47.6 mm above the belt plane (its centre 6 mm behind the output face, ESTIMATE), 6001 21.5 mm below. An overhung pulley on the bare output (no wall-B bearing) would put the whole 1037 N plus ≈ 49 N·m of tilting on the GIM6010's bearing: over the 800 N listing before the moment, rejected.
-- Hyperstatic check: the stub is simply supported only if the motor's bearing tilts a few arcmin (a single deep-groove row, ESTIMATE). If it is moment-rigid, the bushing's align-and-bond keeps the offset ≲ 0.05 mm → ≲ 100 N of preload (stub cantilever ≈ 2 kN/mm); a swapped motor re-centres within the spigot fit (≈ 0.15 mm → ≲ 300 N, inside the 6001's margin).
+- Hyperstatic check: the stub is simply supported only if the motor's bearing tilts a few arcmin (a single deep-groove row, ESTIMATE). If it is moment-rigid, see the stub table below (Astra #3 m7: the v5 stub is 15.6 kN/mm, the old ≈ 2 kN/mm figure was the Ø12 shaft alone; STUB_SUPPORT_RULE).
+
+## D26 drive stub: rotating-bending fatigue (Astra #3 major 7)
+
+The belt load is fixed in space and the stub turns, so every motor revolution is one fully reversed bending cycle. Method (rnd/belts.py stub_check): σ_W = 0.45 R_m (FKM, steel), FKM roughness K_R (Rz 6.3 µm), Peterson notch sensitivity, stepped-shaft K_t (Roark Table 17.1 fit), keyseat K_t 2.14 / K_ts 3.0 (Shigley Table 7-1), DE-Goodman with the torque steady or fully reversed (worse of the two), first-cycle yield with K_f. Shaft load = T / r + 2 T0 with T0 at the top of the tension band (1.35 × target). Supports: the motor's output bearing (6 mm behind its face, ESTIMATE) and the 6001; 'hinged' = the motor bearing tilts (single row), 'clamped' = moment-rigid with the 6001 bushing offset δ (bond / swap): the two bounds. Criterion: n ≥ 1.5 on fatigue (envelope rows), n_y ≥ 1.5 at the fault.
+
+| Motor | Case | Stub | Supports | Shaft load | Worst section | M | σ nominal | K_f | Fatigue n | Yield n_y | 6001 / motor bearing | |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| GIM6010-8 | envelope: every rev at the 11 N·m peak | v4 C45+N | hinged | 1158 N | keyway under the 20T at the belt plane | 17.1 N·m | 101 MPa | 1.56 | 1.18× | 1.58× | 797 N / 360 N | ❌ |
+| GIM6010-8 | envelope: every rev at the 11 N·m peak | v5 C45+QT | hinged | 1158 N | neck Ø16/10 → pinion flange, r 1.5 | 13.5 N·m | 40 MPa | 1.74 | 3.13× | 5.42× | 797 N / 360 N | ✅ |
+| GIM6010-8 | envelope: every rev at the 11 N·m peak | v5 C45+QT | clamped, bond δ 0.05 | 1158 N | flange Ø42 → neck Ø16/10, r 1.5 | 35.1 N·m | 103 MPa | 1.74 | 1.36× | 2.34× | 1082 N / 1016 N + 45.3 N·m | bound ⚠️ (moment-rigid output only) |
+| GIM6010-8 | envelope: every rev at the 11 N·m peak | v5 C45+QT | clamped, swap δ 0.15 | 1158 N | flange Ø42 → neck Ø16/10, r 1.5 | 90.7 N·m | 266 MPa | 1.74 | 0.56× | 0.92× | 2022 N / 1956 N + 110.3 N·m | bound ⚠️ (moment-rigid output only) |
+| GIM8108-8 | envelope: every rev at the 18 N·m flash limit | v4 C45+N | hinged | 2064 N | keyway under the 20T at the belt plane | 30.6 N·m | 180 MPa | 1.56 | 0.67× | 0.91× | 1422 N / 642 N | ❌ |
+| GIM8108-8 | envelope: every rev at the 18 N·m flash limit | v5 C45+QT | hinged | 2064 N | neck Ø18/10 → pinion flange, r 1.5 | 24.1 N·m | 47 MPa | 1.79 | 2.63× | 4.57× | 1422 N / 642 N | ✅ |
+| GIM8108-8 | envelope: every rev at the 18 N·m flash limit | v5 C45+QT | clamped, bond δ 0.05 | 2064 N | flange Ø42 → neck Ø18/10, r 1.5 | 60.2 N·m | 116 MPa | 1.80 | 1.17× | 2.01× | 1858 N / 1770 N + 77.9 N·m | bound ⚠️ (moment-rigid output only) |
+| GIM8108-8 | envelope: every rev at the 18 N·m flash limit | v5 C45+QT | clamped, swap δ 0.15 | 2064 N | flange Ø42 → neck Ø18/10, r 1.5 | 152.6 N·m | 295 MPa | 1.80 | 0.49× | 0.81× | 3421 N / 3333 N + 185.9 N·m | bound ⚠️ (moment-rigid output only) |
+| GIM8108-8 | fault: 22 N·m stall | v4 C45+N | hinged | 2315 N | keyway under the 20T at the belt plane | 34.3 N·m | 202 MPa | 1.56 | 0.59× | 0.79× | 1595 N / 720 N | ❌ |
+| GIM8108-8 | fault: 22 N·m stall | v5 C45+QT | hinged | 2315 N | neck Ø18/10 → pinion flange, r 1.5 | 27.1 N·m | 52 MPa | 1.79 | 2.31× | 4.00× | 1595 N / 720 N | ✅ |
+| GIM8108-8 | fault: 22 N·m stall | v5 C45+QT | clamped, bond δ 0.05 | 2315 N | flange Ø42 → neck Ø18/10, r 1.5 | 61.9 N·m | 120 MPa | 1.80 | 1.12× | 1.94× | 1989 N / 1890 N + 80.8 N·m | bound ✅ |
+| GIM8108-8 | fault: 22 N·m stall | v5 C45+QT | clamped, swap δ 0.15 | 2315 N | flange Ø42 → neck Ø18/10, r 1.5 | 154.3 N·m | 298 MPa | 1.80 | 0.48× | 0.80× | 3552 N / 3453 N + 188.8 N·m | bound ⚠️ (moment-rigid output only) |
+
+- Materials: C45+N EN 10083-2 +N, 16 < d ≤ 100 mm: R_m ≥ 580, R_eH ≥ 305 MPa; C45+QT EN 10083-2 +QT, 16 < d ≤ 40 mm: R_m 650–800, R_e ≥ 430 MPa; 42CrMo4+QT EN 10083-3 +QT, 16 < d ≤ 40 mm: R_m 1000–1200, R_e ≥ 750 MPa. v4 = 'C45 / 1045' with no condition on the drawing, taken as +N; v5 = C45+QT (42CrMo4+QT is the fallback if a supplier only hobs alloy steel).
+- Per section, D20 at the 18 N·m limit (v5, hinged): 6001 seat Ø12 k5: DIN 509 relief at the inner-ring face 5.7 N·m, σ 34 MPa, K_t 2.50 → n 3.98; teeth → Ø15 collar, r 1.0 16.4 N·m, σ 49 MPa, K_t 2.02 → n 2.92; tooth root Ø26.6 at the belt plane (hobbed, no key) 30.6 N·m, σ 17 MPa, K_t 1.50 → n 9.29; neck Ø18/10 → pinion flange, r 1.5 24.1 N·m, σ 47 MPa, K_t 1.90 → n 2.63; flange Ø42 → neck Ø18/10, r 1.5 6.4 N·m, σ 12 MPa, K_t 1.91 → n 5.46.
+- Duty cycle (motor side, ESTIMATE revolutions/year): basket carry × 1.5 (D20 pitch 23.3 N·m / 3:1) 12.3 N·m, ≈ 1e+03 rev/yr; R2c hug × 1.5 (D20 elbow ≈ 14 N·m at 0.25 m / 3:1) 7.4 N·m, ≈ 3e+03 rev/yr; teleop 1 kg p95 (GIM6010 elbow / yaw, motor side) 5.0 N·m, ≈ 3e+06 rev/yr. Only teleop passes the ≈ 1e6-cycle knee in a year, at about a quarter of the envelope torque; the basket and hug cycles are a few thousand a year. The envelope (every revolution at the torque limit) therefore bounds the whole duty; with the v5 stub even that is infinite-life.
+- Motor-bearing share (re-check): the supports did not move, so hinged it is still 31% (720 N at the D20 stall with the band-top preload, 642 N at the 18 N·m limit; GIM6010 360 N vs the 800 N listing → 2.2×). The hinged model holds while the motor's output bearing is a single deep-groove row: the bond offset tilts the stub 2.5′ and a swap offset 7.5′, inside the 2–10′ a deep-groove ball bearing accepts (SKF, permissible misalignment) without building a moment. The 'clamped' rows are the other bound: a crossed-roller or preloaded-pair output (moment-rigid) would see the stub's full stiffness (15.6 kN/mm at the 6001; Ø12 v4 3.1) through any offset, and fails at a swap. Rule (STUB_SUPPORT_RULE): a single-row output keeps the 6001 (this design); a moment-rigid output deletes the 6001 and its bushing and runs the pinion overhung, which needs M0 ≥ 1.5 × 98 N·m at the bearing (D20, 18 N·m) and a Ø22 neck. Seller question (output-bearing type, C0, M0) stays open; until it is answered the bench rig measures the stub-end runout and the 6001 drag torque after the bond and after a swap (both ≤ 0.05 mm / no step in drag).
+- 6001 life (C 5.4 kN): L10 = (C / P)³ = 5.5e+07 rev at the D20 envelope load (1422 N), 1.0e+09 rev at the GIM6010 teleop load; static C0 vs the stall row 1.48×.
+- BOM: 'D26 drive stub C45 + keyed 20T + 4 × 4 key + set screw' → 'D26 integral pinion shaft, C45+QT, 20T HTD 5M hobbed, Ø12 k5 6001 seat' (one part per stage; price ESTIMATE $35 each in 10s vs ≈ $25 for stub + pulley + key).
 
 ## Shaft joints at the motor peak (Fable M5/M6)
 
