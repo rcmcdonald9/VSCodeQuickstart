@@ -237,7 +237,8 @@ HOLD_A = dict(
 # protocol fails.
 HOLD_B = dict(
     title="Hold B: inline GIM8108-36 at shoulder roll (D24, **approved by the owner 2026-11-27**)",
-    waits="the seller's answers (output face, output-bearing radial rating ≥ 612 N and tilting moment, backlash, SDC303 protocol and CAN timeout) and "
+    waits="the seller's answers (output face; the output bearing's type, radial, axial and tilting-moment ratings against ≈ 1,413 N radial in service / "
+          "3,130 N at a fault, or 36.4 / 137 N·m tilting without the rear 61806; backlash, SDC303 protocol and CAN timeout) and "
           "the Step-1 protocol result; the *no* list is the fallback (belt roll)",
     yes=[("Actuators", "SteadyWin GIM8108-36, **SDC303 (24 V)** driver", 1, GIM8108_36[0], "shoulder roll, inline 36:1", GIM8108_36[1]),
          ("Bearings", "61806 (30×42×7)", 1, 3.0, "rear roll support on the roll link's stub (68 mm from the motor's output bearing)", E),
@@ -283,9 +284,11 @@ SELLER_QUESTIONS = [
     "and housing / rear mounting pattern, and the connector position.",
     "**GIM8108-36 (SDC303, 24 V):** which face is the output; the output flange material and the dowel-hole depth; reducer **backlash** "
     "(listings say 15 arcmin: measured how?); frame and connector position (we have the Ø96 × 57 drawing).",
-    "**GIM8108-36 output bearing:** bearing type and allowable radial load at the output flange: we need **≈ 612 N radial in service** (W8c, 2026-11-27: the external 61806 now floats axially, so the output bearing carries more; was ≈ 280 N), "
-    "and a **tilting-moment rating** (≥ 137 N·m would let us delete the 61806 support); also the allowable axial load and tilting moment (one listing gives 1000 N "
-    "radial / 250 N axial: please confirm and say where it is measured). Price with the SDC303 driver and lead time.",
+    "**GIM8108-36 output bearing:** please give the **bearing type** (deep-groove, angular-contact pair, crossed-roller?) and its **radial, axial and "
+    "tilting-moment ratings** (static and dynamic, and where along the output they are referenced). Our two load cases at the output flange "
+    "(rnd/joints.py, M1 roll support, Astra review): **with our rear 61806 support, ≈ 1,413 N radial in service and 3,130 N radial at a fault** "
+    "(a collision or a stall, including misalignment); **without it, a tilting moment of 36.4 N·m in service and 137 N·m at a fault**. One listing gives "
+    "1000 N radial / 250 N axial: please confirm, and say which of the two cases the bearing carries. Price with the SDC303 driver and lead time.",
     "**CAN protocol manual** for the SDC104 (GIM6010-8), SDC303 (GIM8108-36) and the GIM8108-8's driver: frame formats; is the MIT / "
     "impedance mode (position, velocity, kp, kd, torque feed-forward) the default or selected in the tool, and its float ranges; how to "
     "set the node ID and the feedback ID; 1 Mbit/s; a **CAN-command timeout** (the drive disables itself when commands stop) and its "
