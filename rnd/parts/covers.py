@@ -25,6 +25,10 @@ follow the riser hub ≈ 84 mm; both need a geometry or range decision (see comp
 Neck CAD pass (R17, 2026-11-27): the head's back is now round the tilt axis and the neck slot is closed by a rigid saddle
 on the neck bar at a constant 4 mm (upper.py, neck v2), so the neck boot and its two compliant() rows are gone.
 
+R17 W18 (2026-11-28): the elbow scissor is closed by geometry (arm.ELBOW_GAP: the forearm 25.5 mm off the housing), the
+yaw row by a round skirt under the yaw plate (roll.yaw_skirt), two shoulder–torso rows by roll.FRONT_FRAME / roll.BAND_IN;
+the hood's inboard wedge is still open (see the roll notes above roll_frame()).
+
 R17 pass (2026-11-28): the elbow bay dome is redrawn round the GIM6010 can (its flange ears stood outside the concept box)
 and the wrist boot is a round, closed boot (the can flange faced the hand): no exposed motor can left. The roll hard stop
 moved inside the front collar (roll.FRONT_STOP) and the yaw hood's front is squared off the now flat rear plate.
@@ -229,16 +233,28 @@ def _yaw_hood():
 #   and go, and the hood had to be cut 9.5 mm back from the plate round their sweep). The stop moved inside the front
 #   collar (roll.FRONT_STOP), the rear plate is flat and the hood's front is squared 3.5 mm off it (HOOD_FRONT): the row
 #   now holds 3.5 mm at every angle. (A round-fronted hood, tried earlier, was worse: 10–18 mm walls.)
-# - Rear, still open: cover_yaw × roll_link (0.5 … 8.9 mm; people near 0.9 … 11.2) and cover_yaw × ferrule_m (3.4 … 8.0).
-#   Both are the hood's inboard wall and top against the roll link's ferrule boss (y 8…12, x −45…45), the ferrule's
-#   spigot and the roll link's inboard frame / side block, all non-round about the roll axis and within 25 mm of the
-#   hood: the top half of the inboard wedge. Unlike the yaw block's lower half it closes as the arm rises (the hood's
-#   upper inboard corner, r 59, passes the boss at roll ≈ +22°), so the D25 +5° soft limit does not open it. Fixes, not
-#   taken: ROLL_Y + ≈ 23 mm (the inboard-wedge fix), or a narrower yaw can. Max gaps are within 0.04–0.9 mm of the
-#   8 mm line; the 20 mm world-grid cells that fail hold hood material 8.0–8.9 mm from the plate (rnd/pinch.py CELL).
+# - Rear, still open: cover_yaw × roll_link and cover_yaw × ferrule_m (people near too). The row minima shown in pinch.md
+#   are the worst cell only: per cell (W18 diagnostic, 2026-11-28) the hood's inboard wall (y 14.3, x −131 … −29.5) has
+#   cells running 1–2 → 11–23 mm and 7 → 26 mm over the roll range, not ones just over the 8 mm line. Cause: the static
+#   faces within 25 mm of it (the ferrule's back face and rim, the boss, the frame) are planes parallel to the roll axis,
+#   and a point that turns about the axis changes its distance to such a plane at every angle; only static faces normal
+#   to the axis (the rear plate, the side block's −X face: the hood front's 3.5 mm row holds) or round about it keep a gap.
+#   No rigid guard fixes it: a static guard round about the roll axis has to be a full ring (a sector has ends, and the
+#   hood's sweep, 48 … 312° of the output frame plus the 115° roll range, covers every angle), and a full ring can only
+#   live inside r 52 (the yaw block's top plate sweeps there), while the hood and the ferrule share the band r 51 … 73 in
+#   x −45.5 … −29.5. A box study (the hood moved outboard by dy, gap to the ferrule + boss over −15 … 100°): dy 10 / 20 / 30
+#   mm gives 4.9 / 12.1 / 18.2 mm (18.2 at +100°, where the hood's top passes over the roll link's top), so even a yaw
+#   cartridge ≈ 30 mm outboard (≈ 21° about the yaw axis on the same 315-5M belt) does not reach 25 on its own. Options
+#   for an owner call: ROLL_Y + ≈ 23–30 mm (not verified for this wedge; R5: the stow is at 567 / 570 mm), or a soft (TPU)
+#   hood skirt in contact with the ferrule boss plus the D23 (5) force limit.
 # - Inboard wedge (yaw block / band × ferrule, 2.6 / 2.7 mm at −15°): arm part against arm part, closed with people near
 #   by the D25 soft limit (≥ +5°). Full-range fixes: a roll hard stop at ≥ +5° (R16 across-body 71 → 49 %) or ROLL_Y + 23
-#   mm. upper.TORSO_RECESS (PIP_TORSO_RECESS=1) fixes only the shoulder–torso rows.
+#   mm.
+# - Shoulder–torso (pitch, W18 2026-11-28): roll_link × torso_shell closed by the front frame moved outboard (roll.FRONT_FRAME,
+#   26 mm off the torso wall), yaw_band × torso_shell by the band's inboard face (roll.BAND_IN, 25.5 mm). Still open:
+#   cover_yaw × torso_shell (19.3 … 39.9): the hood's inboard wall is 14.3 because the yaw can's rear-cap lugs point ±Y
+#   (cartridge_m.CAP ang ±90°, r 49.5; the can is r 43.3 elsewhere). With the lugs turned off ±Y the hood's inboard wall
+#   could step to y 20.5 (25.5 off the torso); or upper.TORSO_RECESS (PIP_TORSO_RECESS=1) closes it.
 def roll_frame():
     """Concept: rides on the roll output: a sleeve round the whole yaw block (both plates, the belt, the yaw
     cartridge, its KX collar and torque fork), open at the top (the clevis arms) and the bottom (the yaw flange).
@@ -302,8 +318,10 @@ def arm_frame():
     - Elbow bay dome over the elbow cartridge where it leaves the housing's −Y bay (_elbow_dome).
     - Collar door over the KX collar twist window: 2.2 mm, two snap lugs at its ends, 0.5 mm off the collar lugs.
     (An elbow side shield on the bone cap was tried: the forearm's inner face is not flat (the CF socket stands 7 mm
-    proud of the link), so a static plane there makes a closing gap. The elbow scissor needs a flat forearm inner
-    face in arm.py.)
+    proud of the link), so a static plane there makes a closing gap. R17 W18 (2026-11-28): a static shield can't close the
+    elbow scissor at all (the housing is not round about the elbow axis beyond r ≈ 40, and the forearm sweeps 150° over
+    it), so the forearm now stands arm.ELBOW_GAP (25.5 mm) off the housing's +Y face with a flat inner side, and a static
+    round sleeve (arm.elbow_sleeve) covers the elbow shaft across the gap.)
     """
     from . import arm
     zS = -arm.ELBOW_Z + arm.BELT_C

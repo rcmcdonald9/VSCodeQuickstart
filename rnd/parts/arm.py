@@ -37,7 +37,18 @@ HOUSING = (dict(x=109.0, y=108.0, z0=-ELBOW_Z - 58.0, z1=-ELBOW_Z + BELT_C + 54.
            dict(x=98.0, y=108.0, z0=-ELBOW_Z - 42.0, z1=-ELBOW_Z + 70.0 + 56.0, rv=28.0, rv_minus=14.0))   # D24 (2026-11-27): 110 → 98 wide, the KX collar (r 52.5 lugs, loop 23) is gone; the can (r 43.3) has 4.5 mm inside the skin. Corner r 14 on the −Y half, 28 on the +Y (forearm) half (was 34: at 98 wide that skin hit the cassette posts)
 SLOT_Z = -ELBOW_Z + BELT_C + 22.0     # cassette anti-rotation pin slot (−92 with the GIM6010)
 J4310 = dict(od=57.0, h=46.0)   # DM-J4310 (actuators.yaml)
-FORE_Y = HOUSING["y"] / 2 + 18.0  # forearm link centre plane (+Y side link); loop 23: +6 so the CF socket/tube clear the housing over the full elbow range
+# R17 (2026-11-28, rnd/pinch.py elbow rows: forearm / CF tube / forearm fairing × upper bone 3.1 … 15.7 mm, forearm × +Y seat
+# cap 7.0 … 8.5): the forearm's inner face (link y 61, socket 57, tube 60, fairing 59) ran 3–7 mm off the housing's +Y face
+# (y 54) and swept across its outline (r 28 corners, bottom edge, cap lugs) as the elbow turned, so every forearm cell
+# within 25 mm of it saw the gap open and close (the elbow scissor). The housing is not round about the elbow axis beyond
+# r ≈ 40 (it holds the motor 71 mm above the axis), so no static shield can keep that gap ≤ 8 mm over the 150° fold.
+# The forearm now stands ELBOW_GAP off the housing instead: its whole inner side is one plane (TUBE_DY puts the sockets'
+# inner faces flush with the link's), ELBOW_GAP from the +Y face at every elbow angle (≥ 25 mm, ISO 13854 finger). The
+# hand stays on the arm's centre plane (the wrist housing is unchanged); the elbow shaft and its core run ELBOW_GAP − 7 mm
+# further out to the hub (covers.arm_frame puts a static round sleeve over that span). Was HOUSING["y"] / 2 + 18
+# (loop 23: + 6 so the CF socket / tube cleared the housing).
+ELBOW_GAP = 25.5
+FORE_Y = HOUSING["y"] / 2 + ELBOW_GAP + 11.0  # forearm link centre plane (+Y side link, 22 thick): inner face ELBOW_GAP off the housing
 # elbow belt cassette (housing frame, y spans of the two plates): set by the D13 small stage bearings (loop 38). D24: the
 # bolted cartridge's flange plane is plate A's −Y face, Y_E = 3.7 (stage frame of belt_stage.small_stage_v3: y = Y_E − z);
 # the plates, bearings and belt stay where loop 38 put them (the KX face was at y = −20).
@@ -156,6 +167,7 @@ def upper_bone() -> Part:
             p -= Pos(x, sc["y"], -ELBOW_Z - SEAT_LUG_H) * Cylinder(sc["insert_d"] / 2, sc["depth"], align=MIN)
     from .encoder import elbow_insert_cuts                                             # M3 (Fable): AS5048A bracket inserts in the −Y boss
     p -= elbow_insert_cuts()
+    p += elbow_sleeve("top")                                                             # R17 (ELBOW_GAP)
     # bottom cap is a separate print (bone_cap()): the cassette goes in from below
     return p - Pos(0, 0, CAP_Z) * Box(200, 200, 100, align=(Align.CENTER, Align.CENTER, Align.MAX))
 
@@ -166,6 +178,23 @@ SEAT_LUG_R, SEAT_LUG_H = 35.0, 20.0
 # corners (the forearm socket sweeps 3 mm outside them)
 SEAT_SCREW = {"-": dict(x=30.5, y=-HOUSING["y"] / 2, insert_d=5.6, clr_d=4.5, head_d=7.5, depth=8.0, head_z=0.0),
               "+": dict(x=29.5, y=HOUSING["y"] / 2 - 4.5, insert_d=4.0, clr_d=3.4, head_d=6.0, depth=6.0, head_z=6.0)}
+
+
+# R17 (ELBOW_GAP): a static round sleeve over the elbow shaft across the 25.5 mm gap to the forearm hub, from the +Y face
+# (on the 61808's outer race, r ≥ 24.3, and the seat boss) to ELBOW_SLEEVE["end_gap"] short of the hub. Static and round
+# about the elbow axis, so the shaft (4.5 mm inside) and the hub's inboard face keep the same gap to it at every elbow
+# angle (a spigot on the forearm instead read 17.0 … 19.2 mm: the housing's +Y face curls away into its bottom fillet
+# under it). Split at the axis plane like the seat: the top half is printed on the bone's boss, the bottom half on the +Y
+# seat cap, so the cassette still drops out downward with the cap.
+ELBOW_SLEEVE = dict(r_in=24.5, r_out=27.0, end_gap=2.0, split=0.2)
+
+
+def elbow_sleeve(half: str) -> Part:
+    c = ELBOW_SLEEVE
+    y0, y1 = HOUSING["y"] / 2, FORE_Y - 11.0 - c["end_gap"]
+    t = Pos(0, y0, -ELBOW_Z) * Rot(-90, 0, 0) * (Cylinder(c["r_out"], y1 - y0, align=MIN) - Cylinder(c["r_in"], y1 - y0, align=MIN))
+    keep = Pos(0, 0, -ELBOW_Z + (c["split"] / 2 if half == "top" else -c["split"] / 2)) * Box(200, 400, 200, align=(Align.CENTER, Align.CENTER, Align.MIN if half == "top" else Align.MAX))
+    return t & keep
 
 
 def _seat_boss(side: str) -> Part:
@@ -198,6 +227,8 @@ def elbow_seat_cap(side: str) -> Part:
     for x in (-sc["x"], sc["x"]):
         c -= Pos(x, sc["y"], CAP_Z - 5) * Cylinder(sc["clr_d"] / 2, 60, align=MIN)
         c -= Pos(x, sc["y"], CAP_Z - 5) * Cylinder(sc["head_d"] / 2, 5 + 4.5 + sc["head_z"], align=MIN)
+    if side == "+":
+        c += elbow_sleeve("bot")                                                         # R17 (ELBOW_GAP)
     return c
 
 
@@ -282,8 +313,10 @@ def forearm() -> Part:
         p -= Pos(0, yy, 29) * Rot(0, 90, 0) * Cylinder(2.75, 60)
     body_len = FORE_L - 40 - 38
     # link (loop 9): carbon tube Ø30×1 (see cf_fore()) bonded into a socket on the hub disc and one on the wrist can
-    for z0 in (-40 - FORE_SOCKET, -FORE_L + 38):                                       # sockets ≥ 1 × OD (Astra #2b finding 2)
-        p += Pos(0, y + TUBE_DY, z0) * (Cylinder(18, FORE_SOCKET, align=MIN) - Cylinder(15.1, FORE_SOCKET, align=MIN))
+    for z0, ov in ((-40 - FORE_SOCKET, 6.0), (-FORE_L + 38, 0.0)):                     # sockets ≥ 1 × OD (Astra #2b finding 2)
+        # (R17, 2026-11-28: the hub-end socket runs ov mm on into the hub disc; its top face only touched the disc's rim on a
+        # line, which left it a separate solid (and, with TUBE_DY 7, an invalid union))
+        p += Pos(0, y + TUBE_DY, z0) * (Cylinder(18, FORE_SOCKET + ov, align=MIN) - Cylinder(15.1, FORE_SOCKET + ov, align=MIN))
     # wrist housing: holds the wrist cartridge (axis Y, output toward -Y)
     # (loop 10) sized to the real DM-J4310 cartridge (rnd/parts/hand.py): KX56 face at y = WRIST_Y0, open toward -Y
     can_d = J4310["od"] + 2 * 2.4 + 0.6 + 0.6               # D24: the can OD is the spigot in this bore (0.3 a side; loop 36 had 1 mm float)
@@ -320,7 +353,7 @@ FORE_SOCKET = 30.0
 # 2026-11-27 (elbow sweep): the Ø36 socket's inner face sat exactly on the housing's +Y face plane (y 54), so it touched the
 # housing at elbow −150° (0.29 mm at −140°; only the rounded corners kept it clear elsewhere). The CF tube and both sockets
 # move 3 mm outboard of the link plane (still inside the hub disc and the wrist web): ≥ 3 mm over the whole elbow range.
-TUBE_DY = 3.0
+TUBE_DY = 18.0 - 11.0   # R17 (ELBOW_GAP): socket (r 18) inner face flush with the link's (22 thick); was 3.0
 
 
 def cf_fore() -> Part:
@@ -335,7 +368,7 @@ def elbow_pulley_hub() -> Part:
     the whole cassette (shaft + plates + belt + small stage) goes up into the housing's U-seats, closed by
     elbow_seat_cap()."""
     from .belt_stage import pulley, dd_flats, PITCH, PLD, DEPTH
-    y0, y1 = -(HOUSING["y"] / 2 + 12), FORE_Y + 11.0          # −66 … 83: the +Y end runs through the forearm disc (was ±66)
+    y0, y1 = -(HOUSING["y"] / 2 + 12), FORE_Y + 11.0          # −66 … FORE_Y + 11: the +Y end runs through the forearm disc (was ±66)
     L = y1 - y0
     t = Cylinder(20, L, align=MIN) - Cylinder(15, L, align=MIN)
     big = pulley(E_TEETH, 16, flange=True)
@@ -344,7 +377,7 @@ def elbow_pulley_hub() -> Part:
         for z in (0.0, 10.5):
             big -= Pos(0, 0, z) * (Cylinder(r_rim, 5.5, align=MIN) - Cylinder(28, 5.5, align=MIN))
     t += Pos(0, 0, y1 - BELT_Y - 8) * (big - Pos(0, 0, -5) * Cylinder(15, 30, align=MIN))   # local z = y1 − y
-    t -= dd_flats(0, y1 - (FORE_Y - 13.0))                    # double-D under the forearm clamp (y 59 … 83)
+    t -= dd_flats(0, y1 - (FORE_Y - 13.0))                    # double-D under the forearm clamp (FORE_Y − 13 … + 11)
     return Pos(0, y1, 0) * Rot(90, 0, 0) * t
 
 
@@ -358,7 +391,7 @@ def elbow_pulley_hub() -> Part:
 # ≈ 160 MPa, ASM). Load transfer: epoxy bond under the 40T and the clamp (≈ 30 / 24 mm) ≤ 2 MPa at the D20 stall (PETG
 # lap shear ≈ 3–5 MPa, ESTIMATE: coupon), and at the +Y end the forearm's 2 × M5 pinch squeezes the printed double-D onto
 # the metal (≈ 24 N·m friction, ESTIMATE). +51 g.
-ELBOW_CORE = dict(od=30.0, t=1.5, y=(-57.0, 82.5), E=69e3, G=26e3, material="6061-T6 drawn round tube Ø30 × 1.5, cut to 139.5 mm",
+ELBOW_CORE = dict(od=30.0, t=1.5, y=(-57.0, FORE_Y + 10.5), E=69e3, G=26e3, material=f"6061-T6 drawn round tube Ø30 × 1.5, cut to {FORE_Y + 10.5 + 57.0:.1f} mm",
                   bond="structural 2-part epoxy, PETG bore abraded (coupon: lap shear on PETG-CF)")
 
 
