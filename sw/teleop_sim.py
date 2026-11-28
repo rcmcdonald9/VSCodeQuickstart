@@ -15,7 +15,13 @@ An episode in which the supervisor stopped (e-stop, watchdog, fault) is discarde
 
 Scripted leader: the twin's pick-and-place planner (bench_env.expert_action) with a human-like hand: first-order lag
 (τ 0.05 s), tremor (σ 0.5 mm per step) and a one-step reaction delay, so the recorded actions are not the expert's own
-(more lag or delay makes this closed-loop planner oscillate; a person corrects with their eyes instead).
+(more lag or delay makes this closed-loop planner oscillate; a person corrects with their eyes instead). Like a person,
+it moves on from a free-space waypoint the hand has stopped short of (out of reach, or an IK local minimum).
+Teleop-side limits (W14a): the IK is bounded and monotone (never a worse pose than the last target), and the joint step
+is shortened so the hand stays inside the supervisor's workspace box: a rejected target makes the supervisor hold, and
+its catch-up afterwards at its own v_max can outrun a torque-bounded joint into a tracking-error stop.
+A supervisor stop is stop category 0 (electrical.md): torque off, the arm is not held; this twin is gravity compensated,
+so after a stop the arm only coasts on its momentum (≈ 0.08 s × the speed at the stop; `drift_after_stop_rad`).
 Keyboard: W/S x, A/D y, R/F z, Q/E yaw, I/K pitch, J/L roll, Space gripper, Enter end episode (keep), Backspace discard,
 Esc e-stop (release with Esc again, then Backspace).
 """
@@ -82,6 +88,26 @@ class SupervisedBench:
         self.mj.mj_kinematics(env.m, d2)
         return d2.site_xpos[env.site].copy()
 
+    WS_MARGIN = 0.005        # m inside the supervisor's workspace box
+
+    def _in_box(self, q0, q1):
+        """The longest part of the step q0 → q1 whose hand stays inside the supervisor's workspace box (less WS_MARGIN) at
+        its end and midpoint. The supervisor rejects a target outside the box by holding the last one; the teleop target
+        then runs on, and when the hand is back inside, the supervisor's catch-up at its own v_max (wrist pitch 6.3 rad/s,
+        3.5× this loop's slew) outruns the wrist's 3 N·m torque bound: W14a seed 3 (418 rejects → a 20° wrist-pitch lag →
+        tracking-error stop). The teleop layer keeps its own targets inside instead."""
+        lo, hi = self.sup.ws_lo + self.WS_MARGIN, self.sup.ws_hi - self.WS_MARGIN
+
+        def inside(s):
+            return all(np.all((p >= lo) & (p <= hi)) for p in (self.fk(q0 + (q1 - q0) * s), self.fk(q0 + (q1 - q0) * s / 2)))
+        if inside(1.0) or not inside(0.0):         # already outside (not from this loop): the supervisor's walk-in rule decides
+            return q1
+        a, b = 0.0, 1.0
+        for _ in range(8):
+            m = (a + b) / 2
+            a, b = (m, b) if inside(m) else (a, m)
+        return q0 + (q1 - q0) * a
+
     def q(self):
         return np.array([self.env.d.qpos[a] for a in self.env.qadr])
 
@@ -105,10 +131,12 @@ class SupervisedBench:
         self.mj.mju_quat2Mat(dR, env._rotvec_quat(a[3:6]))
         env.target_R = dR.reshape(3, 3) @ env.target_R
         # continuous IK only (warm start from the last target, no re-seeding): a teleop target must never jump to another
-        # IK branch; an unreachable command just leaves the hand as close as it gets
-        q_ik = env._ik_from(env.ctrl_q, env.target_p, env.target_R, 30)
+        # IK branch; an unreachable command just leaves the hand as close as it gets (bench_env._ik_continuous: bounded
+        # and monotone; the plain DLS diverged against the wrist-pitch limit, W14a)
+        q_ik = env._ik_continuous(env.ctrl_q, env.target_p, env.target_R, 30)
         dq = q_ik - env.ctrl_q
         q_goal = env.ctrl_q + dq * min(1.0, self.DQ_STEP / max(float(np.max(np.abs(dq))), 1e-9))
+        q_goal = self._in_box(env.ctrl_q, q_goal)
         env.ctrl_q = q_goal
         d.ctrl[6] = 0.045 * a[6]
         if estop:
@@ -148,6 +176,10 @@ class ScriptedLeader:
         self.tremor, self.buf = tremor, deque([np.zeros(7)] * delay, maxlen=delay + 1)
         self.y = np.zeros(7)
         self.phase, self.hold = 0, 0
+        self.stall, self._eef = 0, deque(maxlen=self.STALL_STEPS)
+
+    FREE = (0, 3, 4, 7)      # free-space moves (above the cube, lift, carry, retreat): no precision needed
+    STALL_STEPS = 15         # settled (hand within 5 mm of where it was 1 s before, command at the plan point) for 1 s
 
     def act(self, o):
         env = self.b.env
@@ -155,8 +187,18 @@ class ScriptedLeader:
         if self.phase in (2, 6):
             self.hold += 1
             ok = self.hold > 6
+        # an operator whose hand stops short of a free-space waypoint moves on from where it is; the planner alone would
+        # wait for it forever (W14a: seed 3's lift 0.15 m above a cube 0.41 m out needs the wrist pitch past its 119° bound,
+        # the hand stops 3 cm low; other seeds stop in an IK local minimum on the 150° turn from home to hand-down, and the
+        # next waypoint's target gets them out). Grasp and place heights (phases 1, 5) still need the 6 mm.
+        self._eef.append(o["eef_pos"].copy())
+        settled = len(self._eef) == self.STALL_STEPS and float(np.linalg.norm(self._eef[-1] - self._eef[0])) < 0.005
+        self.stall = self.stall + 1 if (self.phase in self.FREE and np.linalg.norm(a[:3]) < 0.003 and settled) else 0
+        if self.stall >= self.STALL_STEPS:
+            ok = True
         if ok:
-            self.phase, self.hold = self.phase + 1, 0
+            self.phase, self.hold, self.stall = self.phase + 1, 0, 0
+            self._eef.clear()
         self.buf.append(a)
         x = self.buf[0]
         self.y = self.y + self.alpha * (x - self.y)
@@ -198,15 +240,17 @@ def record(n_episodes=5, out=DST, img=96, seed=0, max_steps=260, estop_episode=N
                 break
             if reasons:
                 stop_reasons = reasons
-                q_stop = bench.q()
+                q_stop, v_stop = bench.q(), bench.qd()
                 for _ in range(5):                              # the arm must stay stopped (torque off, gravcomp holds it)
                     o, _, _ = bench.step(np.zeros(7))
                 drift = float(np.max(np.abs(bench.q() - q_stop)))
                 break
         overrides = {kk: v - overrides0.get(kk, 0) for kk, v in bench.sup.counts.items() if v - overrides0.get(kk, 0)}
-        rec = dict(seed=seed + k, steps=len(frames), success=bool(success), stop=stop_reasons, overrides=overrides)
+        placed = bool(success and leader.phase >= 7)      # placed and released (a cube that spawns near the goal is not a success)
+        rec = dict(seed=seed + k, steps=len(frames), success=placed, stop=stop_reasons, overrides=overrides)
         if stop_reasons:
             rec["drift_after_stop_rad"] = drift
+            rec["speed_at_stop_rad_s"] = float(np.max(np.abs(v_stop)))
             discarded += 1
             bench.sup.release_estop()
         else:
