@@ -129,6 +129,7 @@ def upper_bone() -> Part:
     # one continuous printed sleeve runs flange → housing and the tube is bonded over its whole length (≈ 57 mm ≥ 1 × OD)
     zn = h["z1"] - (WALL if D20 else 2)                                               # D20: the can top is 1.5 mm under the skin
     p += Pos(0, 0, zn) * (Cylinder(23, -4 - zn, align=MIN) - Cylinder(20.1, -4 - zn, align=MIN))
+    p += bone_tie_column()                                                              # Fable #2 major 5: the bone ↔ yaw flange tie (roll.BONE_TIE)
     hz = h["z1"] - h["z0"]
     p += housing_shell()                                                                 # looks pass: soft on every edge (loop 23: two corner radii)
     p += housing_stiffener()                                                             # loop 40 (A8): P2 FEA found the 1.2 mm shell far too soft
@@ -168,8 +169,32 @@ def upper_bone() -> Part:
     from .encoder import elbow_insert_cuts                                             # M3 (Fable): AS5048A bracket inserts in the −Y boss
     p -= elbow_insert_cuts()
     p += elbow_sleeve("top")                                                             # R17 (ELBOW_GAP)
+    p -= bone_tie_holes()
     # bottom cap is a separate print (bone_cap()): the cassette goes in from below
     return p - Pos(0, 0, CAP_Z) * Box(200, 200, 100, align=(Align.CENTER, Align.CENTER, Align.MAX))
+
+
+def bone_tie_column() -> Part:
+    """Fable #2 major 5 (2026-11-28): the upper bone ↔ yaw flange joint (rnd/parts/roll.py BONE_TIE). Six Ø8.6 bosses round
+    the neck socket (r 23) from the bone flange down to the ring seat, one per stud: with the 6 mm flange they are the
+    printed stack the crush sleeves span (35.5 mm), so the studs are long enough (40 mm grip) that the metal stack keeps its
+    preload after embedding. The clamp ring and the nuts sit under the bosses, round the neck."""
+    from .roll import BONE_TIE, bone_tie_levels, _bone_tie_angles
+    t, lv = BONE_TIE, bone_tie_levels()
+    c = Part()
+    for a in _bone_tie_angles():
+        c += Pos(t["r"] * math.cos(a), t["r"] * math.sin(a), lv["seat"]) * Cylinder(t["boss_r"], -6.0 - lv["seat"] + 0.5, align=MIN)
+    return c
+
+
+def bone_tie_holes() -> Part:
+    """The crush-sleeve holes (Ø4.7) through the bosses and the bone flange."""
+    from .roll import BONE_TIE, bone_tie_levels, _bone_tie_angles
+    t, lv = BONE_TIE, bone_tie_levels()
+    h = Part()
+    for a in _bone_tie_angles():
+        h += Pos(t["r"] * math.cos(a), t["r"] * math.sin(a), lv["seat"] - 0.5) * Cylinder(t["sleeve_hole"] / 2, -lv["seat"] + 1.0, align=MIN)
+    return h
 
 
 SEAT_Y = {"-": (-HOUSING["y"] / 2 - 4.0, 8.0), "+": (HOUSING["y"] / 2 - 7.0, 7.0)}   # (y0, thickness) of the ±Y 61808 bosses
@@ -458,6 +483,8 @@ def masses(density=1.27):
     out["elbow shaft 6061 core tube Ø30 × 1.5 (Neon #2 finding 7)"] = elbow_core_tube().volume * 2.7e-6
     out["elbow can nose/flange/rear cap over the loop-10 can"] = (cm.can_bolted(MOT).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-6
     out.update(cf)
+    from .roll import bone_tie_hardware_mass
+    out["bone ↔ yaw flange tie: 6 × M3 × 45 10.9 studs + 6 E355 crush sleeves + 6 nuts + C45+QT ring (roll.BONE_TIE, Fable #2 M5)"] = bone_tie_hardware_mass()
     out["bearings: 2×61808 + 2×61804 + 4×61805 (ESTIMATE)"] = 0.020 * 2 + 0.008 * 2 + 0.012 * 4
     out["belt, screws, inserts (ESTIMATE)"] = 0.05
     return out
@@ -482,7 +509,8 @@ def assembly(elbow_deg: float = -55.0, wrist_deg: float = -35.0):
     from .encoder import elbow_parts                                                     # M3 (Fable): AS5048A joint encoder on the tube's −Y end
     st, rot = elbow_parts()
     out += st + rot                                                                      # the magnet parts are axisymmetric about the elbow axis
-    out += [("forearm", fe * forearm(), "white"), ("cf_fore", fe * cf_fore(), "dark"), ("cf_neck", cf_neck(), "dark")]
+    from .roll import bone_tie_ring                                                       # Fable #2 M5: the bone tie's steel ring round the neck
+    out += [("forearm", fe * forearm(), "white"), ("cf_fore", fe * cf_fore(), "dark"), ("cf_neck", cf_neck() + bone_tie_ring(), "dark")]   # (one entry: a "cf_neck" mate of the bone in rnd.spacing)
     # wrist cartridge (DM-J4310 + KX56) + hand (rnd/parts/hand.py), hand centre plane on the arm's centre plane (y = 0)
     from . import hand as hd
     from .kx import KX56

@@ -39,7 +39,7 @@ GIM8108-36): output dowels with load sharing, the metal rear clamp (plate + slee
 
 - **Pitch hub ↔ pitch tube** (rnd/parts/shoulder.py HUB_TIE): 4 × M4 class 10.9 studs (DIN 976-1, cut to 78.8 mm) on r 15.5 at 45° + k·90°, Loctite 270 into the 7075-T6 balancer crank (tapped through 4 mm, stud end flush with its inboard face), each in two steel crush sleeves Ø7.0 / Ø4.3 (42CrMo4+QT, turned; one through the tube wall r 11–20, one through the hub, butting at the hub ↔ tube face, together 0.05 ± 0.02 mm shorter than the measured tube + hub print stack), M4 nuts (ISO 4032 class 8, Loctite 243) on a C45+QT clamp ring (was 6061-T6, Astra #3 m9) r 11–21 × 2 in a 5.7 mm recess of the detach face; 1.5 kN each (≈ 1.3 N·m, ESTIMATE). Assembly: tube into the inner wall → crank + studs from the inboard side → tube sleeves over the studs → belt → outer wall → hub over the double-D, hub sleeves → ring, nuts.
 - **Yaw flange ↔ yaw tube** (rnd/parts/roll.py YAW_TIE): 7075-T6 flange (was 6061-T6: Astra #3 m9, the sleeve feet on its spigot top; its hex spigot stays the torque path). 6 × M3 × 40 ISO 4762 class 12.9 go down from the tube's top end in steel crush sleeves Ø4.6 / Ø3.2 (ring → the flange's spigot top, 0.05 mm shorter than the print), heads on a C45+QT clamp ring (was S235, Astra #3 m9) r 8.5–16.8 × 2 in a Ø34 × 5.5 counterbore (heads 0.5 mm under the top), through Ø3.4 holes in the wall into M3 threads tapped at the hex corners (r 11) of the flange's spigot + plate (8.3 mm engaged, Loctite 243); 1.2 kN each (≈ 0.5 N·m). Tightened from above on the bench, before the yaw block goes onto the roll output.
-- Crush sleeves (D26 cost-down: stock tube where its guaranteed yield clears the sleeve stress, cut and faced square by the builder in a drilled guide block to the measured print − 0.05 ± 0.02, checked with a micrometer): pitch Ø7.0 / Ø4.3 42CrMo4+QT, turned (R_p ≥ 750 MPa): turned: the two sleeves butt at the hub ↔ tube face, so they must be located by the Ø7.1 hole; 1/4" × .035" 4130 (F_ty 517) floats 0.4 mm in it (butt overlap down to ≈ 0.3 of its 0.89 mm wall) and its softer section takes the stall row 1.18 → 1.08× (thread strip); it fits if the CAD hole goes Ø7.1 → Ø6.45; yaw Ø4.6 / Ø3.2 42CrMo4+QT, turned (R_p ≥ 750 MPa): turned: no stock tube ≤ Ø4.7 with an ID ≥ 3.2 clears the yaw stall stress (4.5 × 0.6 E355+SR, R_eH 440: ≈ 1.07×); rear Ø6.0 / Ø4.4 E235+C precision tube (EN 10305-1; R_eH taken as the E235+N 235 MPa floor) (R_p ≥ 235 MPa): 6 × 0.8 seamless E235+C precision tube; clevis Ø8.0 / Ø5.6 E235+C precision tube (EN 10305-1; R_eH taken as 235 MPa) (R_p ≥ 235 MPa): 8 × 1.2 seamless E235+C precision tube (press fit in the print: the bearing path). Was turned 42CrMo4+QT on all four sets ($7 each, 56 per robot); an E235 tube would yield at the pitch / yaw bump and stall rows. The review's DIN 6796 disc springs (McMaster-Carr "DIN 6796 lock washers", norelem 07000, Bossard BN 794; load to flat M3 1.32 / M4 3.77 kN) were evaluated and not used: see the preload rows.
+- Crush sleeves (D26 cost-down: stock tube where its guaranteed yield clears the sleeve stress, cut and faced square by the builder in a drilled guide block to the measured print − 0.05 ± 0.02, checked with a micrometer): pitch Ø7.0 / Ø4.3 42CrMo4+QT, turned (R_p ≥ 750 MPa): turned: the two sleeves butt at the hub ↔ tube face, so they must be located by the Ø7.1 hole; 1/4" × .035" 4130 (F_ty 517) floats 0.4 mm in it (butt overlap down to ≈ 0.3 of its 0.89 mm wall) and its softer section takes the stall row 1.18 → 1.08× (thread strip); it fits if the CAD hole goes Ø7.1 → Ø6.45; yaw Ø4.6 / Ø3.2 42CrMo4+QT, turned (R_p ≥ 750 MPa): turned: no stock tube ≤ Ø4.7 with an ID ≥ 3.2 clears the yaw stall stress (4.5 × 0.6 E355+SR, R_eH 440: ≈ 1.07×); rear Ø6.0 / Ø4.4 E235+C precision tube (EN 10305-1; R_eH taken as the E235+N 235 MPa floor) (R_p ≥ 235 MPa): 6 × 0.8 seamless E235+C precision tube; clevis Ø8.0 / Ø5.6 E235+C precision tube (EN 10305-1; R_eH taken as 235 MPa) (R_p ≥ 235 MPa): 8 × 1.2 seamless E235+C precision tube (press fit in the print: the bearing path); bone Ø4.5 / Ø3.3 E355+SR precision tube (EN 10305-1; R_eH ≥ 440) (R_p ≥ 440 MPa): 4.5 × 0.6 seamless E355+SR precision tube, cut and faced (or turned to a drawing: Fable #2 minor). Was turned 42CrMo4+QT on all four sets ($7 each, 56 per robot); an E235 tube would yield at the pitch / yaw bump and stall rows. The review's DIN 6796 disc springs (McMaster-Carr "DIN 6796 lock washers", norelem 07000, Bossard BN 794; load to flat M3 1.32 / M4 3.77 kN) were evaluated and not used: see the preload rows.
 - Not drawn (rnd/parts/arm.py, arm track): the upper bone ↔ yaw flange screws. With the flange in aluminium they should be M4 into tapped holes in the flange, heads on washers on the bone flange, not inserts.
 
 ## C1: preload over life
@@ -48,6 +48,7 @@ GIM8108-36): output dowels with load sharing, the metal rear clamp (plate + slee
 
 - **pitch hub ↔ tube:** 4 × M4 10.9 at 1.50 kN in Ø7.0/4.3 steel crush sleeves (69.6 mm, 69 kN/mm; the print sandwiched with a 0.05 mm squeeze ≈ 1.3 MPa that may creep away): metal stack, embedding only → life preload **1.33 kN (88 %)** vs 0.72 kN for no gap under the worst service wrench (30.3 N·m, 0 N) → **1.83×**. Before: wave 3 as designed (print as the clamped member, 1.5 kN): bolt 43 vs print 183 µm/kN per bolt (69.6 mm of PETG: 274 µm of elastic squeeze, so the springs are bolt + print, not the bolt alone), life preload 0.46 kN (30 %; φ 1: 0.66 kN) vs 0.40 kN needed → 1.12×. Not chosen: the review's disc springs (3 × DIN 6796-M4 in series, 0.28 mm travel): life 0.71 kN but the softer bolts need 0.85 kN → 0.83× (the stiff bolts carried the bending). ✅
 - **yaw flange ↔ tube:** 6 × M3 12.9 at 1.20 kN in Ø4.6/3.2 steel crush sleeves (29.7 mm, 58 kN/mm; the print sandwiched with a 0.05 mm squeeze ≈ 2.4 MPa that may creep away): metal stack, embedding only → life preload **1.05 kN (87 %)** vs 0.65 kN for no gap under the worst service wrench (32.6 N·m, 102 N) → **1.61×**. Before: wave 3 as designed (print as the clamped member, 1.0 kN): bolt 36 vs print 145 µm/kN per bolt (37.7 mm of PETG: 145 µm of elastic squeeze, so the springs are bolt + print, not the bolt alone), life preload 0.30 kN (30 %; φ 1: 0.43 kN) vs 0.35 kN needed → 0.86×. Not chosen: the review's disc springs (3 × DIN 6796-M3 in series, 0.53 mm travel): life 0.68 kN but the softer bolts need 0.69 kN → 0.98× (the stiff bolts carried the bending). ✅
+- **bone ↔ yaw flange:** 6 × M3 10.9 at 1.30 kN in Ø4.5/3.3 steel crush sleeves (35.5 mm, 41 kN/mm; the print sandwiched with a 0.05 mm squeeze ≈ 2.5 MPa that may creep away): metal stack, embedding only → life preload **1.14 kN (88 %)** vs 0.26 kN for no gap under the worst service wrench (32.4 N·m, 102 N) → **4.44×**. Before: not drawn (the 6 mm printed bone flange only touched the 7075 flange; Fable #2 major 5). Not chosen: a short tie through the 6 mm bone flange alone (14 µm of elastic stack against ≈ 10 µm of metal embedding: it loses most of its preload). ✅
 
 ## C1: capacity per load case
 
@@ -63,6 +64,10 @@ Before = the wave-2 joint (6 × M3 into heat-set inserts, ≈ 1.0 kN pull-out ES
 | yaw flange ↔ tube | hug × 1.5 | 103 | 24.1 | yaw -45°, elbow -90° | 1.99× | no gap up to 53 N·m at the life preload; bolt 1.41 kN; print contact 5.9 MPa (≤ 12) | 2.03× | ✅ |
 | yaw flange ↔ tube | bump 140 N | 164 | 96.2 | abducted 90°, -Z | 0.51× | gaps; bolt 2.32 kN vs proof 4.88 kN; thread strip (the weaker of the 7075-T6 flange (8.3 mm tapped, 7.8 effective) and the 12.9 screw) 14.3 kN (6.18× the bolt, need 1.5×); sleeve 346 MPa (≤ 750); print contact 10.0 MPa (≤ 40) | 2.11× | ✅ |
 | yaw flange ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 168 | 98.7 | elbow stall, forward | 0.49× | gaps; bolt 2.38 kN vs proof 4.88 kN; thread strip (the weaker of the 7075-T6 flange (8.3 mm tapped, 7.8 effective) and the 12.9 screw) 14.3 kN (6.02× the bolt, need 1.5×); sleeve 353 MPa (≤ 750); print contact 10.2 MPa (≤ 40) | 2.05× | ✅ |
+| bone ↔ yaw flange | basket × 1.5 | 102 | 32.4 | floor pick, x 0.50 | — (not drawn) | no gap up to 149 N·m at the life preload; bolt 1.61 kN; print contact 5.5 MPa (≤ 12) | 2.20× | ✅ |
+| bone ↔ yaw flange | hug × 1.5 | 103 | 24.1 | yaw -45°, elbow -90° | — (not drawn) | no gap up to 149 N·m at the life preload; bolt 1.56 kN; print contact 5.2 MPa (≤ 12) | 2.30× | ✅ |
+| bone ↔ yaw flange | bump 140 N | 164 | 95.6 | abducted 90°, -Z | — (not drawn) | gaps; bolt 1.96 kN vs proof 4.17 kN; thread strip (the weaker of the 7075-T6 flange floor (3.4 mm tapped through, 2.65 effective) and the 10.9 stud) 4.9 kN (2.49× the bolt, need 1.5×); sleeve 241 MPa (≤ 440); print contact 6.8 MPa (≤ 40) | 1.66× | ✅ |
+| bone ↔ yaw flange | stall (pitch 63 / roll 103 / elbow 63 N·m) | 168 | 98.0 | elbow stall, forward | — (not drawn) | gaps; bolt 1.97 kN vs proof 4.17 kN; thread strip (the weaker of the 7075-T6 flange floor (3.4 mm tapped through, 2.65 effective) and the 10.9 stud) 4.9 kN (2.47× the bolt, need 1.5×); sleeve 243 MPa (≤ 440); print contact 6.9 MPa (≤ 40) | 1.65× | ✅ |
 
 ## C1: contact faces, clamp rings, sleeve lengths (Astra #3 major 9)
 
@@ -77,11 +82,15 @@ Contact pressure on each face that a bolt head, nut or sleeve end stands on, at 
 | yaw flange ↔ tube | M3 head (d_w 5.07) on the clamp ring | 11.1 mm² | 134 / 214 MPa | S235: 1.21× ✅ | C45+QT: 2.52× | ✅ |
 | yaw flange ↔ tube | sleeve end on the clamp ring | 7.5 mm² | 218 / 401 MPa | S235: 0.64× ❌ | C45+QT: 1.34× | ✅ |
 | yaw flange ↔ tube | sleeve foot on the flange's spigot top | 8.6 mm² | 191 / 353 MPa | 6061-T6: 0.75× ❌ | 7075-T6: 1.43× | ✅ |
+| bone ↔ yaw flange | M3 nut (d_w 4.6) on the clamp ring | 7.5 mm² | 214 / 261 MPa | — | C45+QT: 2.06× | ✅ |
+| bone ↔ yaw flange | sleeve end on the clamp ring | 6.8 mm² | 198 / 262 MPa | — | C45+QT: 2.06× | ✅ |
+| bone ↔ yaw flange | sleeve end on the 7075-T6 flange's underside | 7.4 mm² | 184 / 243 MPa | — | 7075-T6: 2.08× | ✅ |
 - pitch hub ↔ tube: clamp ring r 11.0–21.0 × 2 between studs on the print (beam on an elastic foundation): it imposes 66% of the 0.05 mm squeeze between studs in 6061 (63 MPa), 85% in steel (82 MPa). The sleeves and the nut or head are coaxial, so the clamp load goes through the ring's thickness, not its span; only the print's light squeeze bends it, and the service rows already take that squeeze as crept away.
 - yaw flange ↔ tube: clamp ring r 8.5–16.8 × 2 between studs on the print (beam on an elastic foundation): it imposes 95% of the 0.05 mm squeeze between studs in 6061 (38 MPa), 98% in steel (39 MPa). The sleeves and the nut or head are coaxial, so the clamp load goes through the ring's thickness, not its span; only the print's light squeeze bends it, and the service rows already take that squeeze as crept away.
-- Squeeze, one dimension: the pitch's two sleeves per stud (tube + hub) are faced so that TOGETHER they are 0.05 ± 0.02 mm shorter than the measured tube + hub print stack (the tube sleeve to the tube print − 0.025, then the hub sleeve to the remainder, micrometer); before, each was specified 0.05 short, i.e. 0.10 in total against the model's 0.05. The yaw has one sleeve per screw: 0.05 ± 0.02 under the print, the same micrometer check.
-- Unequal sleeves and preload scatter: each stud's nut closes its own bolt ↔ sleeve loop, so a ± 0.02 mm sleeve-length spread changes only the local print squeeze, not the sleeve preload. The real scatter is the tightening: a click wrench gives ± 20 % (VDI 2230 α_A ≈ 1.6, ESTIMATE). With every bolt at −20 % the service preload margins become pitch hub ↔ tube 1.47×; yaw flange ↔ tube 1.31× (no gap); a single low bolt is between that and nominal.
-- Not drawn yet (arm track): the upper bone ↔ yaw flange screws, the detach clamp, the elbow core / clamp and the wrist output bearing in the same wrench chain — those rows stay open (review major 9).
+- bone ↔ yaw flange: clamp ring r 23.6–29.6 × 2 between studs on the print (beam on an elastic foundation): it imposes 37% of the 0.05 mm squeeze between studs in 6061 (90 MPa), 64% in steel (155 MPa). The sleeves and the nut or head are coaxial, so the clamp load goes through the ring's thickness, not its span; only the print's light squeeze bends it, and the service rows already take that squeeze as crept away.
+- Squeeze, one dimension: the pitch's two sleeves per stud (tube + hub) are faced so that TOGETHER they are 0.05 ± 0.02 mm shorter than the measured tube + hub print stack (the tube sleeve to the tube print − 0.025, then the hub sleeve to the remainder, micrometer); before, each was specified 0.05 short, i.e. 0.10 in total against the model's 0.05. The yaw and bone ties have one sleeve per screw / stud: 0.05 ± 0.02 under the print, the same micrometer check.
+- Unequal sleeves and preload scatter: each stud's nut closes its own bolt ↔ sleeve loop, so a ± 0.02 mm sleeve-length spread changes only the local print squeeze, not the sleeve preload. The real scatter is the tightening: a click wrench gives ± 20 % (VDI 2230 α_A ≈ 1.6, ESTIMATE). With every bolt at −20 % the service preload margins become pitch hub ↔ tube 1.47×; yaw flange ↔ tube 1.31×; bone ↔ yaw flange 3.71× (no gap); a single low bolt is between that and nominal.
+- The rest of the chain (Fable #2 major 5: the bone ↔ yaw flange tie, the detach clamp, the elbow core, the wrist bearings) is in the *Load chain* sections below.
 
 ## M1: inline GIM8108-36
 
@@ -106,4 +115,99 @@ Roll support reactions per load case (N, N·m; worst pose by the motor-bearing l
 | bump 140 N | 1638 | 1638 | 175 | 113.0 | 113.0 | forward, -Z |
 | stall (pitch 63 / roll 103 / elbow 63 N·m) | 1986 | 2330 | 345 | 137.0 | 112.9 | roll stall, elbow 90° |
 
-Coupons to add (docs/COUPONS.md): a printed tube clamped as wave 3 (no sleeves) at 8.8 MPa, 1000 h at 40 °C with a load washer (measures φ, the ESTIMATE behind the 'before' rows), the sleeved joint's moment to gap, the 7075 threads of the yaw flange, the front stop's dog on its block at 3 kN (anodised 7075 pair, 100 hits: wear and dent), the output dowels' slip torque on a seller motor.
+Coupons (docs/COUPONS.md, defined 2026-11-28): C15 creep φ of a print-clamped tube, C16 the sleeved ties' moment to gap, C17 the 7075 tapped threads (yaw tie and bone studs), C18 the front stop's dog on its block, C19 the output dowels' slip torque, C20 the elbow core bond, C21 the V-band clamp.
+
+## Load chain: margin per link (Fable #2 major 5; scorecard rows)
+
+Every joint between the shoulder and the hand, under the same cases (basket and hug × 1.5 service; the 140 N bump and the stall faults), plus the rated hold (a joint's rated torque held: service torsion) and the stop hits (a joint driven into its stop at its peak: fault torsion; beyond its peak a joint backdrives, so a link's fault torsion is capped there). Margin = the worst of the link's checks (capacity / demand against each check's own criterion).
+
+| Link (shoulder → hand) | Governing check | Case | Margin | |
+|---|---|---|---|---|
+| detach V-band (KX-V, D29 + W21 disc stack) | detach V-band: preload over life | service: basket / hug × 1.5 | 1.07× | ✅ (open: fit: the stock clamp's hardware meets the torso wall (0.0 mm), lead / owner call) |
+| pitch hub ↔ pitch tube (C1 tie) | pitch hub ↔ tube | stall (pitch 63 / roll 103 / elbow 63 N·m) | 1.18× | ✅ |
+| roll output boss / rear mount / 61806 / stops (M1) | M1 output boss ↔ 7075 adapter (torque path) | stall | 1.03× | ✅ |
+| yaw flange ↔ yaw tube (C1 tie) | yaw flange ↔ tube | preload (assembly → life) | 1.61× | ✅ |
+| upper bone ↔ yaw flange (bone tie) | bone ↔ yaw flange: torque | rated hold 9.5 / yaw peak 20.9 N·m | 1.31× | ✅ |
+| elbow shaft: 6061 core + bond + 61808 | elbow core + bond (service) | basket × 1.5/hug × 1.5: M 14.3 N·m at the +Y 61808 (floor pick, x 0.50), T 24.1 N·m (max of the rows and the elbow rated hold) | 1.10× | ✅ |
+| wrist-pitch output (flange screws; motor bearing open) | wrist-pitch output flange screws | fault tilting 54 N·m | 1.08× | ✅ (open: wrist-pitch output support (DM-J4310 bearing)) |
+| wrist-roll spindle (bearings, spindle, cap) | wrist-roll spindle bearings | basket hook 335 N + 73 N axial / fault 3352 N | 1.10× | ✅ |
+
+Open in the chain: the DM-J4310's output bearing has no published rating (seller question, the row lists what it must carry); the clamp's fit (below) needs a lead / owner call before it goes into roll.module().
+
+## Load chain: upper bone ↔ yaw flange (drawn 2026-11-28)
+
+- **Hardware** (rnd/parts/roll.py BONE_TIE, arm.bone_tie_column): 6 × M3 10.9 studs (DIN 976-1, cut to 45 mm) at r 26.5 (0° + k·60°, between the yaw tie's taps), Loctite 270 into M3 threads tapped through the flange's 3.6 mm recess floor (stud end 0.2 mm under the floor: bearing B's outer race is 0.5 mm above it), down through the bone flange and 6 printed Ø8.6 bosses round the neck socket (35.5 mm of print) in 4.5 × 0.6 seamless E355+SR precision tube, cut and faced (or turned to a drawing: Fable #2 minor) crush sleeves (35.45 mm, 0.05 ± 0.02 under the print), a C45+QT ring r 23.6–29.6 × 2 and ISO 4032 M3 nuts (class 10, Loctite 243) at 1.3 kN (≈ 0.78 N·m), tightened from below with a 5.5 mm spanner (free annulus z -40 … -73 under the ring). The stud stands 1.7 mm out of the nut. Mass 40 g of hardware per arm + the bosses.
+- Why studs and not screws: the flange is 3.6 mm where it is free (inside the bearing-B recess; the stop slot takes r 34.7–41.3 over 310°), a screw head or nut cannot stand proud of the floor under the static bearing, and nothing is reachable from above once the flange is on the tube. A tie through the 6 mm bone flange alone would have ≈ 14 µm of elastic stack against ≈ 10 µm of metal embedding; the 40 mm grip keeps 88 %.
+- Rows: the C1 tables above (preload, the four cases, the contact faces) and:
+
+| Check | Case | Result | Margin | |
+|---|---|---|---|---|
+| bone ↔ yaw flange: torque | rated hold 9.5 / yaw peak 20.9 N·m | sleeve-end friction 6 × 1.14 kN (life) × μ 0.15 (steel on 7075, ESTIMATE) × r 26.5 = 27.3 N·m vs 1.5 × the service torsion 9.5 N·m (the yaw's rated hold; the twin's service rows 2.4) and the yaw's 20.9 N·m peak (a stop hit or stall: the joint backdrives beyond it; the twin's rigid-joint fault torsion is 150 N·m); behind it the 6 studs as dowels in shear, 499 N·m (0.15 mm radial lash in the sleeves) | 1.31× | ✅ |
+| bone ↔ yaw flange: 7075 floor | worst service / fault stud force | the 3.6 mm recess floor carries the most-loaded stud's share of the joint load (the preload closes in the stud ↔ sleeve loop), 0.43 / 1.26 kN (service / fault), 15.5 mm in to the yaw tie's taps (a 19.6 mm strip, both ends guided: M = F·L/2): 78 / 230 MPa vs 7075-T6 R_p 460 (service ≤ R_p / 1.5); the stud ends stand 0.2 mm under the floor (bearing B's outer race is 0.5 mm above it) | 2.00× | ✅ |
+
+| Case | Pull-off (N) | Bending (N·m) | Torsion, twin (N·m) | Pose |
+|---|---|---|---|---|
+| basket × 1.5 | 102 | 32.4 | 2.4 | floor pick, x 0.50 |
+| hug × 1.5 | 103 | 24.1 | 0.0 | yaw -45°, elbow -90° |
+| bump 140 N | 164 | 95.6 | 61.0 | abducted 90°, -Z |
+| stall (pitch 63 / roll 103 / elbow 63 N·m) | 168 | 98.0 | 149.6 | elbow stall, forward |
+
+## Load chain: arm detach V-band (KX-V, D29 wing-nut 3" clamp; drawn 2026-11-28)
+
+Model (vband()): rigid printed flanges on an elastic contact face, the band's load uniform round the rim; no face gap in service at the life preload, P ≥ M / lever + N with lever = (r_o² + r_i²) / (4 r_o). The band's axial compliance is tan²α·c_circ / (2π²) (α 20°, c_circ = the 304 band 1.2 × ≈ 14 mm + the 5/16" T-bolt + the hinge, ESTIMATE until a clamp is measured): 1.0 µm/kN, so a few µm of embedding on the printed flanges take the whole preload; the printed stack 7.5 µm/kN on the land, creep φ 2, 3 printed interfaces × 10 µm (as C1). Force ratio P / T from bom.detach_recheck (capstan + flank friction, μ 0.15–0.30).
+
+| Check | Case | Before (as D29) | After (W21) | Margin | |
+|---|---|---|---|---|---|
+| detach V-band: preload over life | service: basket / hug × 1.5 | D29 wing nut by hand: 1.0–5.8 kN fresh (bom.detach_recheck) → **0.00–0.00 kN** after embedding + creep (the band is 1.0 µm/kN axially, the two printed flanges 1.6, 3 printed interfaces × 10 µm) vs **2.12 kN** for no face gap under the worst service row (26.7 N·m; full face r 15–45.5: lever 12.6 mm) ❌. The D29 row's 832 N used the face as a ring at r 40 (P·r: 3.2× the face's real lever) and kx_check's 22.2 N·m (the static socket moment × 1.5), under this file's hug row; fresh at a light hand it gaps at 13 N·m | 8 × DIN 2093 B 16 × 8.2 × 0.6 in series under a one-wing lever nut, a steel stop sleeve inside the stack at 0.75 h0: tighten until it stops → T-bolt 410 N (F(s) of the stack, not the hand), 0.65 N·m on the lever (≤ 1.3); P 2.2–3.8 kN (μ 0.30–0.15); the stack's 2.7 mm of stroke makes the band 63 µm/kN axially → life **1.39 kN** vs **1.30 kN** (faces on the outer land r 41–45.5: lever 20.6 mm) | 1.07× | ✅ |
+| detach V-band: printed flanges (service) | fresh preload, high end | — | flank 2.0 MPa (P 3.8 kN on a 6.9 mm slant over r 43), land 3.1 MPa (≤ 12); FEA: fea.md *KX-V ferrule* | 3.88× | ✅ |
+| detach V-band: fault (bump / stall) | M 183 N·m, pull-off 343 N | — | the face opens; tipping about the land's far edge needs P = M / R_o + N = 4.4 kN from the band (stack solid on its sleeve): band yield / T-bolt / hinge limit T 3.5 kN → 19.0 kN at μ 0.30; flank 5 MPa on the tension half (≤ 40); the band grows 9 µm radially (4.8 mm of lip overlap): it does not ride off | 4.35× | ✅ |
+| detach V-band: pitch torque | rated hold 39.6 / pitch peak 62.7 N·m | — | 3 × Ø6 dowels at r 30 in bearing on the printed holes (≈ 8 mm a side, ESTIMATE): 9.2 / 14.5 MPa (≤ 12 / 40); land friction at the life preload 15 N·m helps | 1.31× | ✅ |
+
+| Case | Pull-off (N) | Bending (N·m) | Pitch torque, twin (N·m) | Pose |
+|---|---|---|---|---|
+| basket × 1.5 | 0 | 13.7 | 39.6 | floor pick, x 0.50 |
+| hug × 1.5 | 0 | 26.7 | 24.1 | yaw -45°, elbow -90° |
+| bump 140 N | 140 | 126.1 | 113.0 | abducted 90°, -Z |
+| stall (pitch 63 / roll 103 / elbow 63 N·m) | 343 | 183.5 | 115.8 | roll stall, elbow 90° |
+
+**Fit of the drawn clamp** (roll.detach_clamp: band, hinge, T-bolt at r 57.5, disc stack, lever nut; clock 15°, the front, where the roll side is clear):
+- the roll link's ferrule boss and frame filled the band's lips (102 mm³): relieved r ≥ 39.6 to y 9.9 (roll_link_inline) → 1.1 mm; the hardware 3.5 mm; the pitch hub 0.07 mm (its own ferrule), the static pitch spring ring 1.17 mm (moving pair over pitch: target 2.0) ⚠️
+- the roll output at full adduction: 1.3 mm (yaw_block at roll -15°; 2-D section 1.48 mm, 0.02 at the −16.5° stop; the bare ferrule had 2.39 / 0.97). ROLL_Y + 1 mm gives 2.36 mm ⚠️
+- **the torso shell** (the clamp turns with pitch, −200 … 60°): the band clears its port by 2.8 mm, but the stock clamp's hinge, ears, T-bolt and nut stand ± 7 mm about the detach plane at r 47–64 and the torso's side wall is ≈ 5 mm inboard of it: **0.0 mm** ❌ (hardware moved 4 / 5 / 6 mm outboard: 1.0 / 2.0 / 3.0 mm). Options (lead / owner): the detach plane 5–6 mm outboard (the pitch hub's ferrule spigot, shoulder.py; stow + 10–12 mm), a 6 mm recess round the pitch axis in the torso wall (covers / upper), or a clamp whose hardware is all on the arm side (custom band ears; not a stock part).
+- So the clamp is drawn and checked but not in roll.module() yet: adding it moves R15 (1 pair under target), the pinch rows near the ferrule and the torso check; that waits for the call above.
+
+## Load chain: elbow shaft core (6061 Ø30 × 1.5, cut 158 mm since W18a) and its bond
+
+The forearm's wrench enters the shaft at its clamp (y 77.5 … 101.5) and crosses the +Y 61808; W18a's 25.5 mm elbow gap put the clamp 18.5 mm further out, so a sideways hand load (the stall rows) bends the shaft there. Loads from the twin with the D20 masses; the elbow torsion is the larger of the rows and the elbow's rated hold (service) or its peak (fault).
+
+| Check | Case | Result | Margin | |
+|---|---|---|---|---|
+| elbow core + bond (service) | basket × 1.5/hug × 1.5: M 14.3 N·m at the +Y 61808 (floor pick, x 0.50), T 24.1 N·m (max of the rows and the elbow rated hold) | core 85% of the bending / 86% of the torque: 13 MPa bending + 11 shear → 24 MPa vM (≤ 96: 6061-T6 fatigue); printed tube 1.0 MPa (Kt 1.5, ≤ 12); bond 0.62 MPa under the clamp (23.5 mm) / 0.91 under the 40T (16 mm) (≤ 1.0, structural epoxy on abraded PETG); moment into the core over 50 mm: 0.9 MPa on the bore; 61808 139 N → s0 24.8 (≥ 1.5), boss 0.4 MPa; the belt's own 7.0 N·m between the 6708s (elbow_shaft_stress) is a different section | 1.10× | ✅ |
+| elbow core + bond (fault) | bump 140 N/stall (pitch 63 / roll 103 / elbow 63 N·m): M 149.6 N·m at the +Y 61808 (roll stall, elbow 90°), T 62.7 N·m (the elbow peak (stall / stop hit; twin 65)) | core 85% of the bending / 86% of the torque: 139 MPa bending + 29 shear → 148 MPa vM (≤ 240: 6061-T6 R_p); printed tube 8.3 MPa (Kt 1.5, ≤ 24); bond 1.61 MPa under the clamp (23.5 mm) / 2.37 under the 40T (16 mm) (≤ 3.0, structural epoxy on abraded PETG); moment into the core over 50 mm: 9.9 MPa on the bore; 61808 1431 N → s0 2.4 (≥ 1.0), boss 3.9 MPa; the belt's own 18.3 N·m between the 6708s (elbow_shaft_stress) is a different section | 1.27× | ✅ |
+
+| Case | 61808 −Y / +Y (N) | Bending at +Y 61808 (N·m) | Torsion, twin (N·m) | Pose |
+|---|---|---|---|---|
+| basket × 1.5 | 137 / 139 | 14.3 | 22.2 | floor pick, x 0.50 |
+| hug × 1.5 | 42 / 45 | 4.4 | 24.1 | yaw 45°, elbow 90° |
+| bump 140 N | 610 / 610 | 63.7 | 63.7 | abducted 90°, -Z |
+| stall (pitch 63 / roll 103 / elbow 63 N·m) | 1431 / 1431 | 149.6 | 65.4 | roll stall, elbow 90° |
+
+## Load chain: wrist under the basket hook load
+
+The basket's 4.54 kg × 1.5 hangs on the D21 finger hook, 13 mm off the hand axis and 12 mm under the twin's grasp point (the handle bar against the fixed jaw, on the hook foot); the hug load acts on the forearm, inboard of the wrist.
+
+| Check | Case | Before | After | Margin | |
+|---|---|---|---|---|---|
+| wrist-pitch output support (DM-J4310 bearing) | service 7.6 / fault 53.5 N·m tilting | — | the hand hangs on the motor's own output bearing ≈ 5 mm inside its face (ESTIMATE): it needs 73 N radial + 25 N axial + **7.6 N·m** tilting in service (basket hook, floor pick, x 0.45), 148 N + 343 N + **54 N·m** at a fault (wrist torsion capped at the 7 N·m peak: it backdrives). No rating is published (actuators.yaml); **open: seller question** (output bearing type, C0, tilting M0), as the GIM8108's | — | open |
+| wrist-pitch output flange screws | fault tilting 54 N·m | — | 6 × M3 12.9 on PCD 24 into the motor output at ≈ 1.0 kN: + 1.49 kN at the fault tilt → 2.49 kN vs proof 4.88; strip in ≈ 4 mm of the output's thread (wrought-Al τ, ESTIMATE) 4.0 kN (1.6×). The printed ASA flange between them: fea.md *Wrist output flange* | 1.08× | ✅ |
+| wrist-roll spindle bearings | basket hook 335 N + 73 N axial / fault 3352 N | 2 × SKF 61804 (20 × 32 × 7): s0 6.9 service / **0.69** fault ❌ (the pair is 7 mm apart, so a hand load becomes a big radial couple) | 2 × 6804 full complement (full-complement 6804 (20 × 32 × 7, no cage; bike-pivot grade, e.g. Enduro MAX): C0 ≈ 1.6 × the caged 61804's 2.32 kN, ESTIMATE until a datasheet is in hand): s0 11.1 service / 1.10 fault (≥ 1.5 / 1.0); the printed skirt seat 15.0 MPa at the fault (≤ 40; FEA: fea.md *Wrist-roll skirt*) | 1.10× | ✅ |
+| wrist-roll spindle + cap | fault couple 23.5 N·m; hanging 73 N | printed PETG spindle (D16): 31 MPa at the fault couple vs 24 MPa ❌ | spindle turned 6061-T6 (Ø20, Ø8 wire bore; the gripper's 4 × M3 tapped in metal): 3.1 / 31 MPa (≤ 96 / 240); the hanging load goes lower outer race → cap → 3 × M2.5 inserts, now in lugs at r 21.5 (they cut the r 16 bearing seat at r 17.4): 24 N each in pull-out (C12-class, ≥ 0.4 kN ESTIMATE) | 7.83× | ✅ |
+
+| Case | Wrist pitch: radial / axial (N), tilting (N·m) | Wrist roll: bearings (N), axial (N) | Pose |
+|---|---|---|---|
+| basket × 1.5 | 73 / 25, 7.6 | 313 / 335, 73 | floor pick, x 0.45 / floor pick, x 0.45 |
+| hug × 1.5 | 7 / 0, 0.3 | 18 / 11, 0 | yaw 45°, elbow 90° / yaw -45°, elbow -90° |
+| bump 140 N | 144 / 140, 22.2 | 1240 / 1376, 144 | abducted 90°, -Z / elbow 90°, +Z |
+| stall (pitch 63 / roll 103 / elbow 63 N·m) | 148 / 343, 53.5 | 3009 / 3352, 67 | roll stall, elbow 90° / roll stall, elbow 90° |
+
+Coupons behind these numbers: docs/COUPONS.md C15–C21 (rnd/coupons.py joint_coupons(), pass numbers from this file).

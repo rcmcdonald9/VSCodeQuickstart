@@ -563,6 +563,8 @@ def roll_link_inline() -> Part:
     p += inline_spring_bar()                                                                                   # spring bar (R17: turned up, FRONT_FRAME)
     if GUARD == "latch":                                                                                       # R17 roll latch seat
         p -= latch_cut()
+    dc = DETACH                                                                                                # Fable #2 M5: room for the detach clamp's lips
+    p -= Pos(0, 7.99, 0) * Rot(-90, 0, 0) * (Cylinder(dc["crown_r"] + 1.5, dc["relief_y"] - 7.99, align=MIN) - Cylinder(dc["relief_r"], dc["relief_y"] - 7.99, align=MIN))
     return p - Pos(xf0 - 1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(PLATE_R[1] + 0.5, X_PLATE[1] - xf0 + 1, align=MIN) - Cylinder(PLATE_R[0] - 0.2, 20, align=MIN))   # Neon 6b: rear plate seat
 
 
@@ -711,7 +713,7 @@ def _enc_static():
 
 
 def module_inline():
-    out = [("ferrule_m", Rot(-90, 0, 0) * ferrule(male=True), "orange"),
+    out = [("ferrule_m", detach_ferrule_male(), "orange"),
            ("roll_link", roll_link_inline(), "white"), ("roll_gim_housing", roll_motor_housing(), "dark"),
            ("roll_outflange", roll_outflange(), "steel"), ("roll_arm_rear", roll_arm_rear(), "white"),
            ("roll_spring_hub", roll_spring_hub() + _enc_rot("roll"), "dark"), ("roll_spring_ring", roll_spring_ring(), "dark"),
@@ -940,11 +942,64 @@ def yaw_tie_ring() -> Part:
     return p
 
 
+# Bone ↔ yaw flange tie (Fable #2 major 5, 2026-11-28; was "not drawn": the upper bone's 6 mm printed flange only touched
+# the flange). Where it can go: the 7075 flange is 5 mm, and only 3.6 mm (FL_T − FL_REC) inside the Ø64 recess under
+# bearing B; the stop slot (r 34.7 … 41.3, 310° of arc) and the YAW_TIE taps (r 11) take the rest; above the recess floor
+# the static bearing-B outer race is 0.5 mm away and its boss 2.1 mm, so nothing may stand proud of the floor, and from
+# above nothing can be reached once the flange is on the tube. So: 6 × M3 10.9 studs (DIN 976-1, cut to STUD_L, as the
+# pitch tie's M4 studs in the 7075 crank) with Loctite 270 into M3 threads tapped through the 3.6 mm floor at r 26.5
+# (between bearing B's OD r 26 … the recess wall r 32 seen from below; the stud end 0.2 mm under the floor top), down
+# through the bone flange and a printed column (6 bosses round the neck socket, arm.upper_bone) in steel crush sleeves
+# (stock E355+SR 4.5 × 0.6 tube, the stress is ≈ ½ the yaw tie's at r 26.5), a C45+QT clamp ring under the column and
+# ISO 4032 M3 nuts (class 10, Loctite 243) tightened from below with a 5.5 mm spanner (free annulus between the ring and
+# the elbow housing, ≥ 30 mm). Metal stack flange → sleeves → ring → nuts; the printed bone is sandwiched with a light
+# squeeze, as the C1 ties. Torque: sleeve-end friction on the flange, the studs as dowels behind it. Rows: rnd/joints.py.
+BONE_TIE = dict(n=6, r=26.5, ang0=0.0, d=3.0, pitch=0.5, As=5.03, grade="10.9", proof=830.0, preload=1300.0, stud_L=45.0, flush=0.2,
+                print_L=35.5, boss_r=4.3, sleeve=(4.5, 3.3), sleeve_hole=4.7, hole=3.4, squeeze=0.05, ring=(23.6, 29.6, 2.0), nut_h=2.4,
+                nut_dw=4.6, ring_mat="C45+QT", flange_mat="7075-T6", tau_flange=331.0, mu=0.15, tap=2.5, bell="M3")
+
+
+def _bone_tie_angles():
+    return [math.radians(BONE_TIE["ang0"] + 360.0 * k / BONE_TIE["n"]) for k in range(BONE_TIE["n"])]
+
+
+def bone_tie_levels():
+    """Arm frame z (0 = the flange's bottom face = the bone flange's top face, mm): the floor top, the stud's top end, the
+    thread engaged in the flange floor, the ring seat (column bottom), the nut, the stud's bottom end and its protrusion."""
+    t = BONE_TIE
+    floor = FL_T - FL_REC
+    top = floor - t["flush"]
+    seat = -t["print_L"]
+    nut = seat - t["ring"][2]
+    bot = top - t["stud_L"]
+    return dict(floor=floor, top=top, engaged=top, seat=seat, nut=nut, nut_bot=nut - t["nut_h"], bot=bot, proud=nut - t["nut_h"] - bot,
+                L_sleeve=t["print_L"] - t["squeeze"], grip=top / 2 + t["print_L"] + t["ring"][2] + t["nut_h"] / 2)
+
+
+def bone_tie_ring() -> Part:
+    """Bone tie clamp ring (C45+QT, laser cut from 2 mm QT strip), arm frame: under the column, round the neck socket (r 23)."""
+    r0, r1, th = BONE_TIE["ring"]
+    z = bone_tie_levels()["nut"]
+    p = Pos(0, 0, z) * (Cylinder(r1, th, align=MIN) - Cylinder(r0, th, align=MIN))
+    for a in _bone_tie_angles():
+        p -= Pos(BONE_TIE["r"] * math.cos(a), BONE_TIE["r"] * math.sin(a), z) * Cylinder(BONE_TIE["hole"] / 2, th, align=MIN)
+    return p
+
+
+def bone_tie_hardware_mass() -> float:
+    """kg per arm: 6 studs + 6 sleeves + 6 nuts (steel) + the ring (CAD)."""
+    t, lv = BONE_TIE, bone_tie_levels()
+    st = t["n"] * t["As"] * 1.1 * t["stud_L"] * 7.85e-6
+    sl = t["n"] * math.pi / 4 * (t["sleeve"][0] ** 2 - t["sleeve"][1] ** 2) * lv["L_sleeve"] * 7.85e-6
+    return round(st + sl + t["n"] * 0.00025 + bone_tie_ring().volume * 7.85e-6, 4)
+
+
 def yaw_flange() -> Part:
     """Upper-arm flange (7075-T6 since Astra #3 m9, 6061-T6 since C1; the upper bone bolts to it inside the stop slot), on the yaw tube's lower end: a
     Ø64 × FL_REC recess in its top clears the bearing-B boss; in it, the hollow hex spigot goes up into the tube's socket
     (torque); 6 × M3 tapped holes at the hex corners take the YAW_TIE screws from the tube's top (bending, axial). Hard-stop
-    slot (blind, 3.5 mm deep in its top) for the fixed Ø6 stop pin: software ±150°, hard ±155°."""
+    slot (blind, 3.5 mm deep in its top) for the fixed Ø6 stop pin: software ±150°, hard ±155°. BONE_TIE (2026-11-28):
+    6 × M3 tapped through the recess floor at r 26.5 for the upper bone's studs."""
     z0 = -YAW_DROP
     f = Pos(0, ROLL_Y, z0) * Cylinder(FL_R, FL_T, align=MIN)
     f -= Pos(0, ROLL_Y, z0 + FL_T - FL_REC) * Cylinder(BOSS[1] + 2.0, FL_REC + 1, align=MIN)
@@ -955,7 +1010,100 @@ def yaw_flange() -> Part:
     tip = yaw_tie_levels()["tip"]
     for a in _yaw_tie_angles():
         f -= Pos(YAW_TIE["r"] * math.cos(a), ROLL_Y + YAW_TIE["r"] * math.sin(a), tip) * Cylinder(YAW_TIE["tap"] / 2, zr + YF["hex_h"] - tip, align=MIN)
+    for a in _bone_tie_angles():                                                   # BONE_TIE: tapped through the recess floor
+        f -= Pos(BONE_TIE["r"] * math.cos(a), ROLL_Y + BONE_TIE["r"] * math.sin(a), z0 - 0.01) * Cylinder(BONE_TIE["tap"] / 2, FL_T - FL_REC + 0.02, align=MIN)
     return f
+
+
+# Arm detach clamp (KX-V, D29 wing-nut 3" single-hinge clamp; Fable #2 major 5: "not drawn"). Drawn here (roll frame:
+# the detach plane y = 0, the male ferrule y 0 … 8 on the arm side, the pitch hub's female y −8 … 0) so the fit is checked:
+# the band is a V channel over the two ferrule tapers (304 SS, 1.2 mm, crown Ø95: ESTIMATE until a clamp is measured),
+# a hinge opposite the T-bolt, the 5/16" T-bolt tangential at r 53. What drawing it found:
+# 1. the band's lips reach y ± 8.8 at r 40.8 … 46.5, and the roll link's ferrule boss and frame start at y 8 out to r 45 …
+#    60: the clamp could not be fitted (102 mm³ of overlap). The roll link is relieved r ≥ DETACH["relief_r"] up to
+#    y DETACH["relief_y"] (roll_link_inline): 1.2 mm radial / 1.1 mm axial to the lips; the ferrule's back still bears on
+#    the boss inside r 39.6.
+# 2. preload: on two printed flanges a wing nut's 1.0–5.8 kN (bom.detach_recheck) is lost to embedding and creep, the band
+#    being ≈ 1 µm/kN stiff axially (rnd/joints.py vband rows). Fix (W21): DETACH["stack"] disc springs in series under a
+#    printed one-wing lever nut (44 mm lever, parked pointing outward) with a steel stop sleeve inside the stack: tighten until it stops
+#    (the sleeve is solid), which sets the T-bolt load to the stack's F(s_set) instead of the hand torque, and gives the
+#    band millimetres of stroke for the creep. The male face is relieved inside r DETACH["land"][0] by 0.2 mm (the faces
+#    touch on an outer land: a longer lever for the preload against the arm's moment).
+# 3. the band stands 2.0 mm outside the ferrule's rim (r 47.5 vs 45.5), where the roll output passes the ferrule at full
+#    adduction (ferrule_sweep_gap 2.39 mm at −15°, 0.97 at the −16.5° stop): see clamp_sweep_gap(). Not in module() yet.
+DETACH = dict(profile=[(40.8, 8.0), (45.6, 3.0), (46.0, 3.0), (46.0, -3.0), (45.6, -3.0), (40.8, -8.0), (41.67, -8.83), (46.47, -3.83),
+                       (47.5, -3.83), (47.5, 3.83), (46.47, 3.83), (41.67, 8.83)],
+              band_t=1.2, band_A=17.0, crown_r=47.5, alpha=20.0, E_band=193e3, bolt_d=7.9, bolt_As=33.6, bolt_L=40.0, bolt_Rp=450.0, k_hinge=20e3,
+              r_bolt=57.5, ear_dang=5.0, clock=15.0, knob_d=44.0, knob_t=10.0, knob_h=12.0, land=(41.0, 45.5), land_relief=0.2,
+              relief_r=39.6, relief_y=9.9, stack=dict(De=16.0, Di=8.2, t=0.6, h0=0.45, n=8, s_set=0.75, din="DIN 2093 B 16 × 8.2 × 0.6"))
+
+
+def detach_clamp(clock=None) -> Part:
+    """The clamp (roll frame): band, hinge (opposite the bolt), the two bolt ears, the T-bolt, the disc stack and the knob.
+    clock: the T-bolt's angle about the detach axis (deg, 0 = +X, 90 = +Z)."""
+    b, h = detach_clamp_parts(clock)
+    return b + h
+
+
+def detach_clamp_parts(clock=None):
+    """(band, hardware): the revolved V band, and the hinge + ears + T-bolt + disc stack + knob."""
+    from build123d import Polygon, revolve
+    c = DETACH
+    th = math.radians(c["clock"] if clock is None else clock)
+    band = revolve(Polygon(*c["profile"], align=None), Axis.Y, 360)
+    p = Part()
+    at = lambda ang, r: (r * math.cos(ang), r * math.sin(ang))
+    tan = lambda ang: (-math.sin(ang), math.cos(ang))
+    def block(ang, r0, r1, wt, wy):
+        x, z = at(ang, (r0 + r1) / 2)
+        return Pos(x, 0, z) * Rot(0, -math.degrees(ang), 0) * Box(r1 - r0, wy, wt)
+    p += block(th + math.pi, c["crown_r"] - 0.5, c["crown_r"] + 7.5, 10.0, 14.0)                  # hinge knuckles
+    d = math.radians(c["ear_dang"])
+    for s in (-1, 1):
+        p += block(th + s * d, c["crown_r"] - 0.5, c["r_bolt"] + 6.0, 3.0, 14.0)                 # bolt ears
+    bx, bz = at(th, c["r_bolt"])
+    tx, tz = tan(th)
+    ang_t = math.degrees(math.atan2(tz, tx))
+    L0 = c["r_bolt"] * math.sin(d) + 1.5                                                       # ear B's outer face from the bolt point
+    rod = lambda s0, L, r: Pos(bx - (s0 + L / 2) * tx, 0, bz - (s0 + L / 2) * tz) * Rot(0, 90 - ang_t, 0) * Cylinder(r, L)
+    st = c["stack"]
+    h_stack = st["n"] * (st["t"] + st["h0"] * (1 - st["s_set"]))
+    p += rod(-L0 - 2.0, c["bolt_L"], c["bolt_d"] / 2)                                          # T-bolt (eye at ear A)
+    p += rod(L0, h_stack, st["De"] / 2)                                                        # disc stack + stop sleeve
+    kx, kz = bx - (L0 + h_stack + c["knob_t"] / 2) * tx, bz - (L0 + h_stack + c["knob_t"] / 2) * tz
+    p += Pos(kx, 0, kz) * Rot(0, -math.degrees(th), 0) * Pos(c["knob_d"] / 2 - c["knob_h"] / 2, 0, 0) * Box(c["knob_d"], c["knob_h"], c["knob_t"])   # one-wing lever nut, parked pointing out (y ± 6)
+    return band, p
+
+
+def clamp_sweep_gap(roll_y=None, roll_deg=ROLL_MIN):
+    """ferrule_sweep_gap() with the clamp band's crown (r DETACH crown_r over y ± 3.83, its flanks to the lips) in place of the
+    bare ferrule rim: the roll output's inboard edge at full adduction, plane x = 0."""
+    import numpy as np
+    roll_y = ROLL_Y if roll_y is None else roll_y
+    top_b, z_bot = P1[1] + 1.5, P1[1] - 60.0
+    moving = [(-46.0, z) for z in np.linspace(z_bot, P1[1], 40)] + [(y, P1[1]) for y in np.linspace(-46, 0, 30)]
+    moving += [(-BAND_IN, z) for z in np.linspace(z_bot, top_b - BAND_CH, 40)]
+    moving += [(-BAND_IN + BAND_CH * t, top_b - BAND_CH * (1 - t)) for t in np.linspace(0, 1, 30)] + [(y, top_b) for y in np.linspace(-BAND_IN + BAND_CH, 0, 30)]
+    c = DETACH
+    (r_lip, y_lip), (r_fl, y_fl) = c["profile"][11], c["profile"][10]
+    prof = [(0.0, c["crown_r"]), (y_fl, c["crown_r"]), (y_fl, r_fl), (y_lip, r_lip), (y_lip, 32.0), (FER_FACE, 32.0), (FER_FACE, 0.0)]
+    seg = lambda p, a, b: float(np.hypot(*(p - (a + np.clip(np.dot(p - a, b - a) / max(np.dot(b - a, b - a), 1e-9), 0, 1) * (b - a)))))
+    t = math.radians(roll_deg)
+    gap = 1e9
+    for yr, z in moving:
+        Y, Z = roll_y + yr * math.cos(t) - z * math.sin(t), yr * math.sin(t) + z * math.cos(t)
+        p = np.array([Y, abs(Z)])
+        gap = min(gap, min(seg(p, np.array(a), np.array(b)) for a, b in zip(prof[:-1], prof[1:])))
+        if 8 <= Y <= FER_FACE + 2 and Z > -28 - 2:                                  # roll link boss / frame (z ≥ −28), as ferrule_sweep_gap
+            gap = min(gap, -28 - Z)
+    return gap
+
+
+def detach_ferrule_male() -> Part:
+    """The arm-side ferrule (shoulder.ferrule(male=True), roll frame) with its flat face relieved inside DETACH land r0 by 0.2 mm:
+    the two faces touch on the outer land only (rnd/joints.py vband rows)."""
+    c = DETACH
+    return Rot(-90, 0, 0) * ferrule(male=True) - Pos(0, -0.01, 0) * Rot(-90, 0, 0) * Cylinder(c["land"][0], c["land_relief"] + 0.01, align=MIN)
 
 
 def _arc_slot(r, hw, az, half, h):
