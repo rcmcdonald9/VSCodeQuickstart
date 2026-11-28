@@ -3,7 +3,9 @@
 Wave-1 design (2026-11-27): D24 bolted arm cartridges with an Oldham drive (the D15 socket steps go from the arm; KX sockets
 stay on the head), D19 one-piece shaft-pulleys in capped seats, sw/bringup.py for bring-up. W10 (2026-11-27): the inline roll,
 the lift as a bolted stage (lift v2), D24 v2 flange ears with nuts, a 6061 Oldham motor hub (the printed ASA tongue was
-rejected, W8b), steel crush sleeves at the C1 / inline-roll bolts (W8c), D18b casters + ballast (W8d).
+rejected, W8b), steel crush sleeves at the C1 / inline-roll bolts (W8c), D18b casters + ballast (W8d). D26 (wave 11): no
+Oldham; each stage's 20T sits on a turned C45 stub bolted to the motor output, its far end in a 6001 (lift: 61901) bonded
+in wall B; the pitch belt is tensioned by a slotted idler, elbow / yaw at fixed centres.
 """
 from __future__ import annotations
 
@@ -15,19 +17,22 @@ DOCS = Path(__file__).resolve().parent.parent / "docs"
 # (step, what, count, minutes each) — ESTIMATEs for a first build by one person with the parts printed
 STEPS = [
     ("1 Print", "Print the parts in print_plan.md order: the bolted cans and rear caps first in ASA (they let you bench-test motors early)", 1, 0),
-    ("2 Coupons", "Print + test the bolted-flange coupon (4 ears, M4 × 12 + washers into captive nuts, centring lip), the Oldham coupon (6061 motor hub on the GIM "
-     "output against the bought D50 disc, 1.5 × the 11 N·m peak) and the GIM bolt-circle coupon; measure the printed C1 / rear-mount stacks and order or face the "
+    ("2 Coupons", "Print + test the bolted-flange coupon (4 ears, M4 × 12 + washers into captive nuts, centring lip), the drive-stub coupon (C45 stub on the GIM "
+     "output, 8 × M3 × 6 + Loctite 243, 1.5 × the 11 N·m peak) and the GIM bolt-circle coupon; measure the printed C1 / rear-mount stacks and order or face the "
      "crush sleeves to print − 0.05 mm; adjust the flange / bolt circles in rnd/parts before mass printing", 1, 60),
     ("3 KX sockets", "D15 screwed socket, head pan + tilt only (D24: the arm has none; lift v2 bolts): 6 dowels, 6 coil springs, collar, retainer (3 × M3 into inserts); "
      "3 balls into the male face with retaining compound", 2, 8),
     ("4a Bolted cartridges", "D24 v2: 2 × M3 heat-set inserts in the sleeve lugs; motor into the sleeve from the rear, rear cap (3 × DIN 7984 M3 × 8 to the motor + "
-     "2 × M3 × 10 into the lugs); 6061 Oldham motor hub on the output (4 × DIN 7984 M3 × 6, Loctite 243); label + CAN ID (pitch, yaw, elbow × 2 + lift)", 7, 9),
+     "2 × M3 × 10 into the lugs); D26 drive stub on the output (8 × DIN 7984 M3 × 6, Loctite 243), key + 20T pulley on the stub, 6001 (lift: 61901) pressed "
+     "on its end; label + CAN ID (pitch, yaw, elbow × 2 + lift)", 7, 9),
     ("4b Wrist cartridges", "D24: DM-J4310 into its can, bolted can flange and output flange (inserts + 6 × M3 each); label + CAN ID", 2, 9),
     ("4c KX + servo cartridges", "Wheels ×4: motor into its can (3 screws), torque pin, KX adapter (4 screws); STS3215 sleeves ×6", 10, 6),
-    ("5 Belt stages", "D13 v3 + D19: 6801s into the eccentric bushings, keyed Ø12 shaft through wall A, keyed aluminium pulley, wall B; keyed Oldham clamp hub on the "
-     "shaft end + disc; the one-piece shaft-pulley with its bearings into the capped U-slots, caps on (2 × M4 / M3); belt on, tension with the bushings; "
-     "cartridge nose into the counterbore, 4 ear screws M4 × 12 + washers into captive / side-fed nuts (pitch: the rear pair M4 × 16 from the pulley side "
-     "through the outer wall); 6 arm stages + the lift (lift v2)", 7, 15),
+    ("5 Belt stages", "D26 direct stage + D19: the one-piece shaft-pulley with its bearings into the capped U-slots, caps on (2 × M4 / M3); belt round the "
+     "big pulley; cartridge in through wall A's Ø40.6 hole (pitch, lift: along its exit slot) with the stub's 6001 into the wall-B bushing, nose into the "
+     "counterbore, 4 ear screws M4 × 12 + washers into captive / side-fed nuts (pitch: the rear pair M4 × 16 from the pulley side through the outer wall); "
+     "bond the bushing in wall B (structural epoxy, cartridge bolted); belt on the 20T: pitch tensioned by the idler's M4 jack screw, then its M5 axle "
+     "locked, key + 6061 strap across the exit slot (4 × M4); elbow / yaw at fixed centres; the lift's open belt tensioned at the carriage clamps. "
+     "6 arm stages + the lift", 7, 15),
     ("5b Clock springs", "Wind the 6 ribbon cassettes per arm (D14 ribbon) and fit them at pitch, roll, yaw, elbow, wrist pitch, wrist roll", 2, 30),
     ("6 Arms", "Bond the CF tubes into the sockets and the 6061 Ø30 core tube into the elbow shaft (structural epoxy, cure overnight); upper bone + elbow "
      "cassette (in from below, seat caps), forearm + clamp (2 × M5), wrist + hand + gripper, roll/yaw module; yaw flange tie: 6 × M3 in Ø4.6 crush "
@@ -86,7 +91,7 @@ def main():
           "- **Loop 10 cut the estimate from 25 h to ~19 h:**",
           "    - print-in-place KX sockets with pins and spring embedded at print pauses (no retainer, no screws) — *retired in loop 40 (D15): the screwed socket takes ≈ 8 min; D24 then removed the sockets from the arm*",
           "    - 7 instead of 14 screws per cartridge",
-          "    - eccentric-bushing belt tensioning",
+          "    - eccentric-bushing belt tensioning — *retired in D26: fixed centres, a slotted idler at the pitch*",
           "    - pre-made harness segments",
           "- **A 21-actuator robot won't reach 4 h.** Precedent: a 6-servo LeRobot SO-101 arm takes a few hours.",
           "- **Proposed target split (owner decision):** first build of one arm ≤ 4 h; whole robot ≤ 15 h; any module swap ≤ 5 min.",

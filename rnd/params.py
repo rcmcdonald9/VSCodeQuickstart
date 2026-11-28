@@ -88,8 +88,6 @@ ARM_MOTOR_SETS = {
     # rnd/inline_study.py MASS_LINES (FROM CAD removals, ESTIMATE additions); the study asserts these numbers match them.
     # Optional keys (absent = today's yaw): upper_yaw, yaw_stage_dm (kg added to the roll drive's yaw_stage_mass),
     # yaw_drop_dm (m added to the roll drive's yaw_drop; the coaxial yaw motor sits under the roll motor).
-    # bone_mass_upper here is the bare motor-set value like the belt sets (the roll drive adds its bone_upper_dm on top;
-    # Astra #3 m15: with_arm_motors used to drop it, which these sets had absorbed, so they are 0.01 lower than before).
     # I1 all SteadyWin: GIM8108-36 at pitch + elbow, GIM6010-48 at yaw.
     "inline": dict(shoulder_pitch=("GIM8108-36", 1.0), elbow=("GIM8108-36", 1.0), upper_yaw=("GIM6010-48", 1.0), elbow_teeth=20,
                    elbow_belt_c=0.07095, bone_mass_upper=0.54, pitch_module_mass=0.80, yaw_stage_dm=-0.31, yaw_drop_dm=0.025),
@@ -98,7 +96,15 @@ ARM_MOTOR_SETS = {
                       elbow_belt_c=0.07095, bone_mass_upper=0.55, pitch_module_mass=0.80, yaw_stage_dm=-0.34, yaw_drop_dm=0.015),
     # I2b mixed: as I2a with a dual-encoder DM-J8009-2EC at the elbow (9:1 single stage, 20 / 40 N·m).
     "inline_dm8009": dict(shoulder_pitch=("GIM8108-36", 1.0), elbow=("DM-J8009-2EC", 1.0), upper_yaw=("DM-J4340-2EC", 1.0), elbow_teeth=20,
-                          elbow_belt_c=0.07095, bone_mass_upper=0.53, pitch_module_mass=0.80, yaw_stage_dm=-0.34, yaw_drop_dm=0.015),
+                          elbow_belt_c=0.07095, bone_mass_upper=0.53, pitch_module_mass=0.80, yaw_stage_dm=-0.34, yaw_drop_dm=0.015),   # Astra #3 m7: 0.54 → 0.53 (the elbow stage it removes is 0.054 heavier, MASS_LINES)
+    # B1y (Astra review #3 Part A, 2026-11-28: "the next variant I would study is B1 plus only the DM-J4340 yaw"): the D20 set
+    # (GIM8108-8 + 3:1 belts at pitch and elbow, CAD masses as "d20") with a coaxial dual-encoder DM-J4340-2EC at upper-arm yaw
+    # in place of the off-axis GIM6010-8 + 2:1 belt stage. Yaw deltas as I2a (rnd/inline_study.py YAW_LINES); the upper-bone
+    # neck is 15 mm shorter (yaw drop + 15 mm: −0.010 kg, params ROLL_DRIVES neck g/mm). PARAMS-LEVEL ONLY (no inline-yaw CAD).
+    "d20_yaw": dict(shoulder_pitch=("GIM8108-8", 3.0), elbow=("GIM8108-8", 3.0), upper_yaw=("DM-J4340-2EC", 1.0), elbow_teeth=60,
+                    elbow_belt_c=0.08432, bone_mass_upper=0.99, pitch_module_mass=1.10, yaw_stage_dm=-0.34, yaw_drop_dm=0.015),
+    # (Astra #3 m6/m7, 2026-11-28: as "d20" − 0.010 neck; the D26 integral pinion shafts and the tension-ring centre; yaw_stage_dm
+    # − 0.05 because the roll drive's belt yaw stage it replaces is 0.05 heavier)
 }
 assert ARM_MOTORS in ARM_MOTOR_SETS, f"PIP_ARM_MOTORS must be one of {list(ARM_MOTOR_SETS)}"
 _AM = ARM_MOTOR_SETS[ARM_MOTORS]
@@ -112,7 +118,7 @@ class Arm:
     shoulder_y: float = 0.20       # |y| of shoulder pitch axis from robot centre line
     shoulder_x: float = 0.06       # x of shoulder axis relative to spine
     roll_drive: str = ROLL_DRIVE   # "belt" | "inline" (ROLL_DRIVES above; D24)
-    arm_motors: str = ARM_MOTORS   # "gim6010" | "d20" (ARM_MOTOR_SETS above; D20)
+    arm_motors: str = ARM_MOTORS   # "gim6010" | "d20" | "d20_yaw" | inline study sets (ARM_MOTOR_SETS above; D20)
     elbow_teeth: int = _AM["elbow_teeth"]        # elbow big pulley (20T small): 40 → 2:1, 60 → 3:1
     elbow_belt_c: float = _AM["elbow_belt_c"]    # elbow belt centre distance (m), = arm.BELT_C
     roll_offset_y: float = _RD["roll_offset_y"]   # roll axis outboard of the pitch body / detach plane (belt: loop 10 roll CAD: 0.05 → 0.075, the 72T pulley; loop 40: 0.083, the 80T pulley; inline 0.070)
@@ -245,10 +251,10 @@ def with_arm_motors(d: Design, name: str) -> Design:
     v = ARM_MOTOR_SETS[name]
     j = dict(d.arm.joints)
     j["shoulder_pitch"], j["elbow"] = v["shoulder_pitch"], v["elbow"]
-    keep = {k: v[k] for k in ("elbow_teeth", "elbow_belt_c", "pitch_module_mass")}
-    # Astra #3 major 15: the bone mass keeps the roll drive's delta (inline roll: + 0.010 kg, the longer neck), as the direct
-    # Arm() construction does (bone_mass_upper = _AM + _RD); rnd/test_params.py checks both ways give identical params.
-    keep["bone_mass_upper"] = v["bone_mass_upper"] + ROLL_DRIVES[d.arm.roll_drive]["bone_upper_dm"]
+    keep = {k: v[k] for k in ("elbow_teeth", "elbow_belt_c", "bone_mass_upper", "pitch_module_mass")}
+    # Astra review #3 major 15 (2026-11-28): keep the roll drive's upper-bone delta (inline roll: +0.010 kg longer neck), as the
+    # env-var path does (Arm.bone_mass_upper = _AM + _RD), so PIP_ARM_MOTORS=<set> and with_arm_motors(<set>) give the same arm.
+    keep["bone_mass_upper"] += ROLL_DRIVES[d.arm.roll_drive]["bone_upper_dm"]
     old = ARM_MOTOR_SETS[d.arm.arm_motors]                                   # inline-yaw sets (inline study): yaw actuator + deltas
     j["upper_yaw"] = v.get("upper_yaw") or (("GIM6010-8", 2.0) if "upper_yaw" in old else d.arm.joints["upper_yaw"])
     keep["yaw_stage_mass"] = d.arm.yaw_stage_mass - old.get("yaw_stage_dm", 0.0) + v.get("yaw_stage_dm", 0.0)

@@ -19,7 +19,7 @@ Each case lists its loads (worst static ×1.5 dynamic, or actuator peak for belt
 | Pitch tube + hub (C1 tie, 4 × M4 in crush sleeves, print squeeze 0.9 kN), fault: bump/stall × 0.5, M 184 N·m, pull-off 343 N | 44,981 | 4.8 MPa (max 19.3) | 0.19 mm | 2.5× ✅ |
 | Yaw tube (C1 tie, 6 × M3 in crush sleeves, print squeeze 1.3 kN), service: basket/hug × 1.5, M 33 N·m, pull-off 101 N | 19,451 | 1.2 MPa (max 1.7) | 0.01 mm | 10.1× ✅ |
 | Yaw tube (C1 tie, 6 × M3 in crush sleeves, print squeeze 1.3 kN), fault: bump/stall × 0.5, M 99 N·m, pull-off 167 N | 19,451 | 1.5 MPa (max 2.1) | 0.01 mm | 7.9× ✅ |
-| Lift carriage (D20 slot, side walls 8 mm): one arm per side, F (0, 0, -152) N, M (37, 57, 0) N·m × 1.5 (basket floor pick, x 0.50) | 95,474 | 0.6 MPa (max 2.5) | 0.02 mm | 20.2× ✅ |
+| Lift carriage (D20 slot, side walls 4 mm): one arm per side, F (0, 0, -154) N, M (38, 58, 0) N·m × 1.5 (basket floor pick, x 0.50) | 87,064 | 0.7 MPa (max 2.9) | 0.02 mm | 17.0× ✅ |
 | Roll link (D24 inline): rear 61806 stub + GIM8108-36 floor, arm moment 19 N·m (couple 275 N) + roll torque 35 N·m | 148,733 | 1.0 MPa (max 6.7) | 0.11 mm | 12.3× ✅ |
 | Clevis + yaw block (D24 inline, + rear arm): yaw belt peak 691 N + arm moment 19 N·m (couple 525 N) | 128,979 | 0.5 MPa (max 1.8) | 0.08 mm | 23.3× ✅ |
 | Torque hanger (wheel): GIM peak 11 N·m → 367 N on the fork | 34,101 | 2.1 MPa (max 5.4) | 0.08 mm | 5.7× ✅ |

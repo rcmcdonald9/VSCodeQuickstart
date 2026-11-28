@@ -57,8 +57,10 @@ def mast() -> Part:
 # Lift v2 (2026-11-27, queue item 2 + the R15/R17 lift-bottom clash). The GIM cartridge used to sit on a KX74 seat with
 # the 20T straight on it and the belt pull on the motor bearing, and the drive + its cover stood 175 mm tall behind the
 # mast, so below lift ≈ 0.46 m the torso, carriage, collars and spine pod ran into it. Now:
-# - the lift is a D13/D24 stage (belt_stage.bolted_stage): bolted cartridge → Oldham → Ø12 shaft in 2 × 6801 → 20T
-#   aluminium pulley, between two walls of one printed lift bracket that stands on the deck behind the mast coupling;
+# - the lift is a D26 direct stage (belt_stage.bolted_stage_v4): bolted cartridge → turned C45 stub on the motor output
+#   → 20T aluminium pulley, the stub's far end in a 61901 flush in wall B (the mast coupling is 2 mm behind it), between
+#   two walls of one printed lift bracket that stands on the deck behind the mast coupling; no idler: the open belt is
+#   tensioned at the carriage clamps;
 # - the cartridge axis runs along −X (pointing back, away from the mast), so the belt runs in the YZ plane and the motor
 #   sits low (axis 44.5 mm above the deck) and behind everything that rides the lift;
 # - the closed cover steps down over the pulley (P zone) and rises over the cartridge only behind x = −146 (C zone),
@@ -69,6 +71,7 @@ def mast() -> Part:
 # the torso bottom at lift − 75 (it was lift − 105): D23 (3) asked for ≥ 120 mm under the torso, 155 → 275 mm = 120.
 LIFT_PD = 20 * 5.0 / math.pi                 # 20T HTD 5M pitch diameter (31.83 mm)
 EAR_SITE = "lift4"                           # D24 v2 flange-ear pattern (cartridge_m.EAR_SITES), read by rnd/assembly_seq.py; W8b (Neon #2 finding 2): 4 ears, ±40° + ±140°
+DRIVE = "direct"                             # D26: stub on the motor output + 61901 in wall B, no Oldham (read by rnd/assembly_seq.py)
 LIFT_XF = -151.0                             # cartridge flange plane = wall A's cartridge-side face (stage z = 0)
 LIFT_Y = -2.0 - LIFT_PD / 2                  # stage axis y: the belt's rising strand leaves the pulley at y = −2
 LIFT_Z = 199.5                               # stage axis height: can bottom 1.2 mm over the deck (Z_BASE 155)
@@ -115,9 +118,10 @@ def lift_pawl(lift_mm: float) -> Part:
 
 def lift_mount(*_):
     """One printed bracket (PETG-CF, ≈ 74 × 99 × 71 mm) on the deck behind the mast coupling: wall A (cartridge flange,
-    2 × M4 ear bolts + nut pockets, eccentric seat for 6801 A: belt_stage.wall_a_cuts), wall B (eccentric seat for 6801 B), a web on
+    4 × M4 ear bolts + nut pockets, Ø40.6 pulley-flange hole + exit slot up: belt_stage.wall_a_cuts_v4), wall B (Ø38.2 seat
+    for the bonded 61901 bushing), a web on
     the −Y side between them (clear of both strands) and a deck foot under the can's nose, 4 × M4 into deck inserts."""
-    from .belt_stage import V3, ear_tower, wall_a_cuts
+    from .belt_stage import V3, ear_tower, wall_a_cuts_v4
     T = lift_stage_T()
     xa0, xa1 = LIFT_XF, LIFT_XF + 6.0                                          # wall A (stage z −6 … 0)
     xb0, xb1 = LIFT_XF - V3["end"] - 6.0, LIFT_XF - V3["end"]                   # wall B (stage z −40 … −34)
@@ -129,8 +133,8 @@ def lift_mount(*_):
     foot = Pos((xa0 + xb1) / 2, (ya0 + ya1) / 2, Z_BASE) * Box(xb1 - xa0, ya1 - ya0, 5, align=MIN)           # in front of the can (its belly is 1.2 mm off the deck)
     m = wa + wb + web + foot
     m += T * ear_tower(None, EAR_SITE, (40.0, -40.0))                           # W8b lift4: the ±40° ears stand 18 mm over LIFT_WALL_TOP
-    m -= T * wall_a_cuts(None, EAR_SITE)                                         # D24 v2 (W8b lift4): 4 ears at ±40° / ±140° (cartridge_m.EAR_SITES)
-    m -= Pos(xb0 - 1, LIFT_Y, LIFT_Z) * Rot(0, 90, 0) * Cylinder(19.1, 8, align=MIN)          # wall B eccentric seat (Ø38.2)
+    m -= T * wall_a_cuts_v4(None, EAR_SITE)                                      # D24 v2 (W8b lift4): 4 ears at ±40° / ±140°; D26: Ø40.6 hole + WALL_EXIT slot
+    m -= Pos(xb0 - 1, LIFT_Y, LIFT_Z) * Rot(0, 90, 0) * Cylinder(19.1, 8, align=MIN)          # wall B seat (Ø38.2) for the bonded 61901 bushing
     for x in (xa1 + 4, xb0 - 4):                                                # 4 × M4 inserts, screws from under the deck
         for y in (ya0 + 6, ya1 - 6):
             m -= Pos(x, y, Z_BASE) * Cylinder(2.25, 12)
@@ -138,9 +142,9 @@ def lift_mount(*_):
 
 
 def lift_drive():
-    from .belt_stage import bolted_stage
+    from .belt_stage import BRG_B6, bolted_stage_v4
     xb, yb, wx, ty = lift_belt_xy()
-    out = bolted_stage(lift_stage_T(), 20, "lift_", site=EAR_SITE)
+    out = bolted_stage_v4(lift_stage_T(), 20, "lift_", site=EAR_SITE, brg=BRG_B6)   # D26: 61901 flush in wall B; open belt tensioned at the carriage clamps
     out += [("lift_belt", Pos(xb, yb, LIFT_Z) * Box(wx, ty, Z_TOP - 10 - LIFT_Z, align=MIN), "dark"),
             ("lift_bracket", lift_mount(), "white")]
     return out
@@ -202,11 +206,11 @@ def carriage(lift_mm: float) -> Part:
     c -= Pos(-108.6, RACK["y"], lift_mm - 30) * Box(15.2, 8.4, 30.0)
     if D.arm.arm_motors == "d20":
         # C3 (D24 v2, R14 (d)): the D20 pitch cans' rear ends sit 2.6 mm off the carriage's side faces and must back off
-        # 4.5 mm (Oldham tongue) before they drop out through their side exit, so each side wall is 12 → 8 mm thick over
-        # a slot under the can (x −66 … −15, carriage bottom → 56 mm over the pitch axis). D20 only; ESTIMATE: re-run the
-        # carriage FEA / rnd.stiffness with PIP_ARM_MOTORS=d20 before printing.
+        # D26: 8.5 mm (cartridge_m.DIRECT_LIFT, the 6001 out of wall B) before they drop out through wall A's U-slot, so
+        # each side wall is 12 → 4 mm thick over a slot under the can (x −66 … −15, carriage bottom → 56 mm over the pitch
+        # axis). D20 only; carriage FEA: rnd/fea.py (D20 carriage case).
         for sy in (1, -1):
-            c -= Pos(-40.5, sy * (W / 2 + 12.0), zc - h / 2 - 1) * Box(51.0, 6.0, lift_mm + 56 - (zc - h / 2) + 1, align=(Align.CENTER, Align.CENTER, Align.MIN))   # |y| W/2 + 9 … + 15 (the 625 bosses too)
+            c -= Pos(-40.5, sy * (W / 2 + 10.0), zc - h / 2 - 1) * Box(51.0, 10.0, lift_mm + 56 - (zc - h / 2) + 1, align=(Align.CENTER, Align.CENTER, Align.MIN))   # D26: |y| W/2 + 5 … + 15 (4 mm side wall left; the 625 bosses too)
     return c
 
 

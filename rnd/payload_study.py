@@ -8,7 +8,11 @@ balancer K·sin θu), elbow and wrist pitch, against the current actuators × ra
 Scenarios (20 lb = 9.07 kg):
 - A: one hand, 9.07 kg at the grasp point, arm straight out
 - B: two arms, 4.54 kg each, hug carry: upper arm hanging, forearm horizontal, load centred 0.20–0.30 m from the elbow
-  axis on the forearms/palms (the wrist sees ≈ nothing)
+  axis on the forearms/palms (the wrist sees ≈ nothing). **The R2c spec point is 0.25 m** (owner, 2026-11-27: "held close, load
+  on the forearms ≤ 0.25 m from the elbows"); 0.20 and 0.30 m bracket it (Astra review #3 Part A: the study must not quote 0.20 m
+  as the pass). In this pose the upper arm hangs, so actuator masses on the upper arm or on the elbow axis add nothing to the
+  pitch or elbow moment: only the forearm, hand and load count, and the result does not depend on which body carries the
+  elbow actuator's housing.
 - C: two arms, 4.54 kg each at the grasp points, arm at 45° (lifting a bag off a counter)
 Rule: rated / static ≥ 1.5 for holds; peak / static ≥ 1.5 for brief lifts (< 10 s).
 """
@@ -63,6 +67,7 @@ CASES = [
     ("A: 20 lb in one hand, arm straight out", LB20, math.pi / 2, math.pi / 2, None),
     ("A': 20 lb in one hand, elbow at 90° (hand 0.43 m out)", LB20, 0.0, math.pi / 2, None),
     ("B: 20 lb two-handed hug, 10 lb per arm, load 0.20 m out on the forearms", LB20 / 2, 0.0, math.pi / 2, 0.20),
+    ("B (R2c spec): same, load 0.25 m out", LB20 / 2, 0.0, math.pi / 2, 0.25),
     ("B: same, load 0.30 m out", LB20 / 2, 0.0, math.pi / 2, 0.30),
     ("C: 20 lb two-handed bag, 10 lb per hand, arm at 45°, elbow straight", LB20 / 2, math.pi / 4, math.pi / 4, None),
 ]
@@ -122,8 +127,14 @@ def main():
           "| Case | Shoulder pitch (rated× / peak×) | Elbow (rated× / peak×) |", "|---|---|---|"]
     for r in rows2:
         L.append(f"| {r['case']} | {r['rated']['shoulder_pitch']:.2f}× / {r['peak']['shoulder_pitch']:.2f}× | {r['rated']['elbow']:.2f}× / {r['peak']['elbow']:.2f}× |")
+    hug = {la: next(r for r in rows2 if r["case"].startswith("B") and f"{la:.2f} m out" in r["case"]) for la in (0.20, 0.25, 0.30)}
+    w = lambda r, k="rated": min(r[k]["shoulder_pitch"], r[k]["elbow"])
+    h0 = next(r for r in rows if r["case"].startswith("B (R2c spec)"))
     L += ["", "**R2c (owner, 2026-11-27): 20 lb carried two-handed, held close (load on the forearms ≤ 0.25 m from the elbows).** "
-          "Met on rated torque with the D20 motors (≥ 1.5× at 0.2 m, 1.32× at 0.3 m, with ≈ 3.9× on peak). The GIM6010s only manage it as a brief lift."]
+          f"At the spec 0.25 m the D20 motors give **{w(hug[0.25]):.2f}× rated** ({w(hug[0.25], 'peak'):.1f}× peak): just over the 1.5× rule, "
+          f"with equal sharing between the hands and before thermal derating (0.20 m: {w(hug[0.20]):.2f}×, 0.30 m: {w(hug[0.30]):.2f}×). "
+          f"The GIM6010s give {w(h0):.2f}× rated at 0.25 m: a brief lift only ({w(h0, 'peak'):.2f}× peak). Unequal sharing between the "
+          "hands: rnd/basket.py share study (docs/rnd/basket.md)."]
     L += ["", "## The rest of the robot with 20 lb aboard (R2c ripple check, loop 45)", ""] + ripple()
     (DOCS / "payload_study.md").write_text("\n".join(L))
     (DOCS / "payload_study.json").write_text(json.dumps(rows, default=float))
