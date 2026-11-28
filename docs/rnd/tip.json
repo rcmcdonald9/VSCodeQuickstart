@@ -707,6 +707,7 @@
     "v_allow": 0.24369793885007865,
     "v_chord": 0.26696063518993524,
     "cap": 0.2,
+    "sw": 0.2,
     "who": "unloaded, arms straight out at shoulder height, lift mid / top"
    },
    {
@@ -715,6 +716,7 @@
     "v_allow": 0.22702007179392988,
     "v_chord": 0.19355830073727526,
     "cap": 0.2,
+    "sw": 0.2,
     "who": "1.0 kg at the LOAD_WS far face (x 0.45 m, z \u2264 0.80 m)"
    },
    {
@@ -723,6 +725,7 @@
     "v_allow": 0.21791196280023414,
     "v_chord": 0.23523265489841966,
     "cap": 0.2,
+    "sw": 0.2,
     "who": "2.5 kg at the LOAD_WS far face (x 0.45 m, z \u2264 0.80 m), held at the hands"
    },
    {
@@ -731,6 +734,7 @@
     "v_allow": 0.2022943715508622,
     "v_chord": 0.21656594311338268,
     "cap": 0.2,
+    "sw": 0.2,
     "who": "6.0 kg at the LOAD_WS far face (x 0.45 m, z \u2264 0.80 m), held at the hands"
    },
    {
@@ -739,10 +743,22 @@
     "v_allow": 0.1678927191463091,
     "v_chord": 0.022122423688033695,
     "cap": 0.15000000000000002,
+    "sw": 0.15,
     "who": "10.0 kg at the LOAD_WS far face (x 0.45 m, z \u2264 0.80 m), held at the hands"
    }
   ],
   "v_locked": 0.2,
+  "v_locked_by": [
+   [
+    6.0,
+    0.2
+   ],
+   [
+    10.0,
+    0.15
+   ]
+  ],
+  "caps_match": true,
   "w16a": {
    "frac": 0.4078527544586963,
    "x": 0.04805654534907261,
@@ -751,7 +767,9 @@
   },
   "basket_v_allow": 0.1900493081251834,
   "basket_cap": 0.15000000000000002,
+  "basket_v_sw": 0.15,
   "cap_25": 0.2,
+  "cap_25_sw": 0.2,
   "v_allow_25": 0.21791196280023414,
   "frac_lim": 0.25,
   "f_lim": 439.822971502571,
@@ -762,6 +780,9 @@
    "kg": 2.5,
    "ok": true
   },
+  "v_top": 0.2,
+  "n_over_force": 0,
+  "n_flat_fail": 7,
   "ok": true,
   "n": 23,
   "n_ok_today": 23,
