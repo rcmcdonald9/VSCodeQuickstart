@@ -1488,3 +1488,7 @@ One long push instead of half-hour runs. In order:
   - hood × torso (19.3 mm): turn the yaw rear-cap lugs off ±Y, or PIP_TORSO_RECESS=1. Lead's call, queued.
   - The hood's inboard wedge (2 rows, open with people near too): rigid guards can't work. **Owner call:** ROLL_Y + 23–30 mm (but stow 560 + ≈ 60 mm breaks the R5 ≤ 600 mm limit) or a soft TPU skirt plus the force limit.
   - yaw_block / yaw_band × ferrule (full range only; the D25 soft limit closes them with people near).
+
+### 2026-11-28 W19a merged (consistency cleanup)
+- tip.md's snag text now uses `caster_locked_v_for` per state (23/23). The board sim runs the basket e-stop at its own 0.15 m/s cap (stopped 0.84 → 0.50 s, 0.10 → 0.04 m). **One stop chain:** `electrical.stop_chain_rows()` is shared with the sim, so M1 is 45.5 ms and the robot 46.3 ms (≤ 50). Watchdog headroom 29 → 28 ms in readiness.
+- Lead: the scorecard snag row and basket.md now print the basket's SW-T8 cap (0.15 m/s), not the flat 0.20.

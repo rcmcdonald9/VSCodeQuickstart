@@ -215,7 +215,7 @@ def travel_text():
     return ["", "## Travel with the basket (rnd/tip.py *Snag at the locked cap*, W17)", "",
             f"The carry poses above (handles 0.70 / 0.80 m, basket centre 0.35–0.45 m out, every IK solution, the basket COM "
             f"{BASKET_DROP:.2f} m below the handles, the {BASKET_SHARE * 100:.0f} % abort share) travel with the casters locked. A locked caster meeting a step edge "
-            f"at today's cap ({sn['v_locked']} m/s) uses {min(r['frac'] for r in rows) * 100:.0f}–{max(r['frac'] for r in rows) * 100:.0f} % of the tip "
+            f"at its SW-T8 cap ({sn.get('basket_v_sw', sn['v_locked'])} m/s) uses {min(r['frac'] for r in rows) * 100:.0f}–{max(r['frac'] for r in rows) * 100:.0f} % of the tip "
             f"energy (limit {sn['frac_lim'] * 100:.0f} %) and {min(r['F'] for r in rows):.0f}–{max(r['F'] for r in rows):.0f} N per foot (limit {sn['f_lim']:.0f} N). "
             f"Allowed: **{sn['basket_v_allow']:.2f} m/s → locked cap {cap:.2f} m/s with the basket** (SW-T8, "
             f"{'in sw/safety.py' if sn['enforced'] else 'NOT in sw/safety.py yet'}). The floor pick and the bed set-down (centre 0.50 m out) are "

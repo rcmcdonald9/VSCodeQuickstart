@@ -261,7 +261,7 @@ def _tip_extra_rows():
         caps = "; ".join((f"≤ {c['kg']:.0f} kg" if c["lo"] < 0 else f"{c['lo']:.0f}–{c['kg']:.0f} kg") + f" {c['cap']:.2f}" for c in sn["steps"])
         rows.append(("A10 snag at the locked cap (rnd/tip.py W17: a locked caster meets a step edge; every carry state incl. the R2d basket in its "
                      "real poses; energy ≤ 25 % of the tip energy, force ≤ ½ rod yield)",
-                     f"{sn['n_ok_today']}/{sn['n']} at {sn['v_locked']} m/s (basket {sn['basket_frac_max'] * 100:.0f} % / {sn['basket_f_max']:.0f} N, allowed "
+                     f"{sn['n_ok_today']}/{sn['n']} at each payload's SW-T8 cap (basket at {sn.get('basket_v_sw', sn['v_locked'])} m/s: {sn['basket_frac_max'] * 100:.0f} % / {sn['basket_f_max']:.0f} N, allowed "
                      f"{sn['basket_v_allow']:.2f} m/s); SW-T8 locked cap by payload ({caps} m/s) {'in sw/safety.py' if sn['enforced'] else 'NOT in sw/safety.py;'} "
                      f"{'' if sn['enforced'] else 'with it '}{'pass' if sn['ok_rule'] else 'fail'}", "every state at the cap sw/safety.py enforces", bool(sn["ok"])))
     return rows

@@ -36,7 +36,7 @@ twin's IK arm); the tip check carries both hands' loads. Run for D20 (B1) and B1
 | floor pick | 0.50 | 0.25 | peak ≥ 1.5× | 22.3 (2.8×, 12 K) | 1.8 (57.5×, 0 K) | 1.4 (14.9×, 0 K) | 10.0 (6.3×, 2 K) | 0.1 (47.6×, 0 K) | 56 mm ✅ |
 | carry | 0.35 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 14.7 (4.3×, 5 K) | 1.7 (60.9×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 86 mm ✅ |
 | carry | 0.40 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 17.4 (3.6×, 7 K) | 1.7 (61.7×, 0 K) | 0.0 (999.0×, 0 K) | 12.9 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 76 mm ✅ |
-| carry | 0.45 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 20.0 (3.1×, 9 K) | 1.6 (65.7×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 67 mm ✅ |
+| carry | 0.45 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 20.0 (3.1×, 9 K) | 1.6 (65.6×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 67 mm ✅ |
 | carry, handles at 0.80 | 0.35 | 0.80 | carry | no collision-free IK | | | | | |
 | carry, handles at 0.80 | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 17.4 (3.6×, 7 K) | 1.7 (61.8×, 0 K) | 0.0 (999.0×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 76 mm ✅ |
 | carry, handles at 0.80 | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.0 (3.1×, 10 K) | 1.6 (65.7×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 66 mm ✅ |
@@ -51,8 +51,8 @@ twin's IK arm); the tip check carries both hands' loads. Run for D20 (B1) and B1
 
 | Pose | Basket centre x (m) | Handles z (m) | Rule | Shoulder pitch N·m (peak×, 2-min rise) | Roll | Yaw | Elbow | Wrist pitch | Tip, load toward a wheel |
 |---|---|---|---|---|---|---|---|---|---|
-| floor pick | 0.40 | 0.25 | peak ≥ 1.5× | 17.3 (3.6×, 7 K) | 1.0 (108.3×, 0 K) | 0.9 (28.8×, 0 K) | 7.2 (8.7×, 1 K) | 0.1 (118.0×, 0 K) | 74 mm ✅ |
-| floor pick | 0.45 | 0.25 | peak ≥ 1.5× | 19.9 (3.1×, 9 K) | 0.8 (126.2×, 0 K) | 1.2 (21.8×, 0 K) | 8.3 (7.5×, 2 K) | 0.1 (74.7×, 0 K) | 65 mm ✅ |
+| floor pick | 0.40 | 0.25 | peak ≥ 1.5× | 17.3 (3.6×, 7 K) | 0.9 (108.3×, 0 K) | 0.9 (28.8×, 0 K) | 7.2 (8.7×, 1 K) | 0.1 (118.0×, 0 K) | 74 mm ✅ |
+| floor pick | 0.45 | 0.25 | peak ≥ 1.5× | 19.9 (3.1×, 9 K) | 0.8 (126.2×, 0 K) | 1.2 (21.9×, 0 K) | 8.3 (7.5×, 2 K) | 0.1 (74.7×, 0 K) | 65 mm ✅ |
 | floor pick | 0.50 | 0.25 | peak ≥ 1.5× | 22.5 (2.8×, 12 K) | 1.8 (57.4×, 0 K) | 1.4 (19.2×, 0 K) | 10.0 (6.3×, 2 K) | 0.1 (47.6×, 0 K) | 54 mm ✅ |
 | carry | 0.35 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 15.1 (4.2×, 5 K) | 1.7 (60.9×, 0 K) | 0.0 (999.0×, 0 K) | 12.9 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 85 mm ✅ |
 | carry | 0.40 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 17.7 (3.6×, 7 K) | 1.7 (61.7×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 75 mm ✅ |
@@ -99,4 +99,4 @@ The 100 % row is the case the rule must catch in the air (one hook released or s
 
 ## Travel with the basket (rnd/tip.py *Snag at the locked cap*, W17)
 
-The carry poses above (handles 0.70 / 0.80 m, basket centre 0.35–0.45 m out, every IK solution, the basket COM 0.12 m below the handles, the 62 % abort share) travel with the casters locked. A locked caster meeting a step edge at today's cap (0.25 m/s) uses 18–43 % of the tip energy (limit 25 %) and 599–699 N per foot (limit 440 N). Allowed: **0.19 m/s → locked cap 0.15 m/s with the basket** (SW-T8, NOT in sw/safety.py yet). The floor pick and the bed set-down (centre 0.50 m out) are done with the base stopped. D28 / SW-T7 (nobody within BASKET_CLEAR_R while the base moves) still holds: 8.2 m needed at 0.15 m/s, 9.5 m set.
+The carry poses above (handles 0.70 / 0.80 m, basket centre 0.35–0.45 m out, every IK solution, the basket COM 0.12 m below the handles, the 62 % abort share) travel with the casters locked. A locked caster meeting a step edge at its SW-T8 cap (0.15 m/s) uses 6–16 % of the tip energy (limit 25 %) and 216–252 N per foot (limit 440 N). Allowed: **0.19 m/s → locked cap 0.15 m/s with the basket** (SW-T8, in sw/safety.py). The floor pick and the bed set-down (centre 0.50 m out) are done with the base stopped. D28 / SW-T7 (nobody within BASKET_CLEAR_R while the base moves) still holds: 8.2 m needed at 0.15 m/s, 9.5 m set.
