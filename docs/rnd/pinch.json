@@ -1,7 +1,7 @@
 {
- "gap_fails": 17,
- "exposed_fails": 16,
- "fails": 33,
+ "gap_fails": 16,
+ "exposed_fails": 20,
+ "fails": 36,
  "reach_zones": 38,
  "joints": [
   "pitch",
@@ -26,8 +26,8 @@
    "moving": "arm_forearm",
    "static": "arm_upper_bone",
    "tier": 1,
-   "min": 3.0526327918765626,
-   "max": 9.909109448530819,
+   "min": 3.093168989265439,
+   "max": 9.994595290097637,
    "ok": false,
    "shear": false,
    "at": -150.0,
@@ -41,8 +41,8 @@
    "moving": "arm_cf_fore",
    "static": "arm_upper_bone",
    "tier": 1,
-   "min": 6.066971348796009,
-   "max": 14.153209773551428,
+   "min": 6.076430388270159,
+   "max": 14.128171468440206,
    "ok": false,
    "shear": false,
    "at": -150.0,
@@ -56,11 +56,11 @@
    "moving": "arm_forearm",
    "static": "arm_e_seat_cap_p",
    "tier": 1,
-   "min": 7.008264675276491,
-   "max": 8.326192489634535,
+   "min": 7.028494305038502,
+   "max": 8.614233288358609,
    "ok": false,
    "shear": false,
-   "at": -105.0,
+   "at": 0.0,
    "sides": [
     "l",
     "r"
@@ -71,8 +71,8 @@
    "moving": "arm_cover_forearm_f",
    "static": "arm_upper_bone",
    "tier": 1,
-   "min": 7.702128035202357,
-   "max": 22.864430284253086,
+   "min": 7.701622037395,
+   "max": 22.046863460254208,
    "ok": false,
    "shear": false,
    "at": -150.0,
@@ -86,8 +86,8 @@
    "moving": "arm_cover_forearm_r",
    "static": "arm_upper_bone",
    "tier": 1,
-   "min": 8.861818259332633,
-   "max": 15.751466539617592,
+   "min": 8.821788135833234,
+   "max": 15.383678899359653,
    "ok": false,
    "shear": false,
    "at": -150.0,
@@ -101,11 +101,11 @@
    "moving": "roll_roll_link",
    "static": "torso_shell",
    "tier": 1,
-   "min": 13.000012115583154,
-   "max": 24.412331711980112,
+   "min": 13.000004580281448,
+   "max": 24.968897701492892,
    "ok": false,
    "shear": false,
-   "at": -200.0,
+   "at": -140.0,
    "sides": [
     "l",
     "r"
@@ -116,11 +116,11 @@
    "moving": "roll_cover_yaw",
    "static": "torso_shell",
    "tier": 1,
-   "min": 19.30000119840088,
-   "max": 24.415014207074794,
+   "min": 19.300003449877718,
+   "max": 40.0,
    "ok": false,
    "shear": false,
-   "at": 20.0,
+   "at": 40.0,
    "sides": [
     "l",
     "r"
@@ -131,8 +131,8 @@
    "moving": "roll_yaw_band",
    "static": "torso_shell",
    "tier": 1,
-   "min": 24.00001347455393,
-   "max": 25.918063275857907,
+   "min": 24.000000774573,
+   "max": 26.075274149995394,
    "ok": false,
    "shear": false,
    "at": 60.0,
@@ -144,13 +144,13 @@
   {
    "joint": "roll",
    "moving": "roll_cover_yaw",
-   "static": "roll_roll_link",
+   "static": "roll_roll_gim_housing",
    "tier": 1,
-   "min": 0.6114963490467415,
-   "max": 14.836671757333765,
+   "min": 0.38500018650090545,
+   "max": 8.03646040274175,
    "ok": false,
    "shear": false,
-   "at": -15.0,
+   "at": 30.0,
    "sides": [
     "l",
     "r"
@@ -159,13 +159,13 @@
   {
    "joint": "roll",
    "moving": "roll_cover_yaw",
-   "static": "roll_roll_gim_housing",
+   "static": "roll_roll_link",
    "tier": 1,
-   "min": 1.4376332956084816,
-   "max": 9.370188594019755,
+   "min": 0.7083756461732957,
+   "max": 13.908978436270113,
    "ok": false,
    "shear": false,
-   "at": 45.0,
+   "at": 15.0,
    "sides": [
     "l",
     "r"
@@ -176,8 +176,8 @@
    "moving": "roll_yaw_block",
    "static": "roll_ferrule_m",
    "tier": 1,
-   "min": 2.4587821151023017,
-   "max": 11.736184014705831,
+   "min": 2.4979902680875954,
+   "max": 11.904125588351485,
    "ok": false,
    "shear": false,
    "at": -15.0,
@@ -191,28 +191,14 @@
    "moving": "roll_yaw_band",
    "static": "roll_ferrule_m",
    "tier": 1,
-   "min": 2.655727028142454,
-   "max": 31.08536630664017,
+   "min": 2.6710064421555875,
+   "max": 30.85511283669839,
    "ok": false,
    "shear": false,
    "at": -15.0,
    "sides": [
     "l",
     "r"
-   ]
-  },
-  {
-   "joint": "roll",
-   "moving": "roll_cover_yaw",
-   "static": "roll_ferrule_m",
-   "tier": 1,
-   "min": 3.5099589631075934,
-   "max": 10.5373444126933,
-   "ok": false,
-   "shear": false,
-   "at": 15.0,
-   "sides": [
-    "l"
    ]
   },
   {
@@ -220,8 +206,8 @@
    "moving": "roll_roll_outflange",
    "static": "roll_roll_gim_housing",
    "tier": 1,
-   "min": 8.443884131118587,
-   "max": 9.47386273051633,
+   "min": 7.889084201769441,
+   "max": 8.911991232811529,
    "ok": false,
    "shear": false,
    "at": 60.0,
@@ -235,11 +221,11 @@
    "moving": "roll_yaw_block",
    "static": "roll_roll_link",
    "tier": 1,
-   "min": 9.641470681268808,
-   "max": 10.905524795628974,
+   "min": 9.138630372947755,
+   "max": 14.154630042552585,
    "ok": false,
    "shear": false,
-   "at": -15.0,
+   "at": 5.0,
    "sides": [
     "l",
     "r"
@@ -250,8 +236,8 @@
    "moving": "roll_yaw_band",
    "static": "roll_roll_link",
    "tier": 1,
-   "min": 13.024188745116652,
-   "max": 25.87591443853922,
+   "min": 13.231567564985346,
+   "max": 25.503589757269296,
    "ok": false,
    "shear": false,
    "at": -15.0,
@@ -265,8 +251,8 @@
    "moving": "arm_upper_bone",
    "static": "roll_yaw_stop_pin",
    "tier": 1,
-   "min": 5.56514008598837,
-   "max": 8.074938870781216,
+   "min": 5.865229927852763,
+   "max": 8.478522329486607,
    "ok": false,
    "shear": false,
    "at": -5.0,
@@ -280,8 +266,8 @@
    "moving": "arm_e_shaft40",
    "static": "arm_enc_magnet_holder",
    "tier": 1,
-   "min": 0.018132739773698323,
-   "max": 0.5109339726728215,
+   "min": 0.03313555969650396,
+   "max": 0.21479016980645718,
    "ok": true,
    "shear": false,
    "at": -90.0,
@@ -291,82 +277,12 @@
    ]
   },
   {
-   "joint": "elbow",
-   "moving": "arm_e_shaft40",
-   "static": "arm_cover_elbow_bay",
-   "tier": 1,
-   "min": 0.04461443469648617,
-   "max": 0.2271633488552175,
-   "ok": true,
-   "shear": false,
-   "at": -120.0,
-   "sides": [
-    "r"
-   ]
-  },
-  {
    "joint": "lift",
    "moving": "carriage",
    "static": "mast",
    "tier": 1,
-   "min": 0.013488694006398981,
-   "max": 0.2149335829375931,
-   "ok": true,
-   "shear": false,
-   "at": 0.55,
-   "sides": [
-    "-"
-   ]
-  },
-  {
-   "joint": "lift",
-   "moving": "spine_pod",
-   "static": "belt_duct",
-   "tier": 1,
-   "min": 3.000042034763542,
-   "max": 3.003462658046004,
-   "ok": true,
-   "shear": false,
-   "at": 0.35,
-   "sides": [
-    "-"
-   ]
-  },
-  {
-   "joint": "lift",
-   "moving": "carriage",
-   "static": "ratchet",
-   "tier": 1,
-   "min": 3.000688245582879,
-   "max": 3.008300928750647,
-   "ok": true,
-   "shear": false,
-   "at": 0.75,
-   "sides": [
-    "-"
-   ]
-  },
-  {
-   "joint": "lift",
-   "moving": "collar_top",
-   "static": "belt_duct",
-   "tier": 1,
-   "min": 3.0033779016545235,
-   "max": 3.045355806086893,
-   "ok": true,
-   "shear": false,
-   "at": 0.55,
-   "sides": [
-    "-"
-   ]
-  },
-  {
-   "joint": "lift",
-   "moving": "collar_top",
-   "static": "mast",
-   "tier": 1,
-   "min": 5.000070823302759,
-   "max": 5.008434589301731,
+   "min": 0.08979176263663302,
+   "max": 0.13691350156692608,
    "ok": true,
    "shear": false,
    "at": 1.05,
@@ -376,39 +292,11 @@
   },
   {
    "joint": "lift",
-   "moving": "collar_bot",
-   "static": "mast",
-   "tier": 1,
-   "min": 5.000384975412944,
-   "max": 5.006315515821895,
-   "ok": true,
-   "shear": false,
-   "at": 0.55,
-   "sides": [
-    "-"
-   ]
-  },
-  {
-   "joint": "lift",
-   "moving": "collar_bot",
-   "static": "ratchet",
-   "tier": 1,
-   "min": 5.0011515634089925,
-   "max": 5.013682063581062,
-   "ok": true,
-   "shear": false,
-   "at": 0.55,
-   "sides": [
-    "-"
-   ]
-  },
-  {
-   "joint": "lift",
    "moving": "spine_pod",
-   "static": "ratchet",
+   "static": "belt_duct",
    "tier": 1,
-   "min": 5.006273315753681,
-   "max": 5.039284147690275,
+   "min": 3.000020442140439,
+   "max": 3.0051964454503435,
    "ok": true,
    "shear": false,
    "at": 0.35,
@@ -418,11 +306,25 @@
   },
   {
    "joint": "lift",
-   "moving": "collar_top",
+   "moving": "carriage",
    "static": "ratchet",
    "tier": 1,
-   "min": 5.012525913823713,
-   "max": 5.055528780747796,
+   "min": 3.0002145303779773,
+   "max": 3.0108007887853216,
+   "ok": true,
+   "shear": false,
+   "at": 0.55,
+   "sides": [
+    "-"
+   ]
+  },
+  {
+   "joint": "lift",
+   "moving": "collar_top",
+   "static": "belt_duct",
+   "tier": 1,
+   "min": 3.00087683750964,
+   "max": 3.0595583493342056,
    "ok": true,
    "shear": false,
    "at": 0.9,
@@ -432,11 +334,11 @@
   },
   {
    "joint": "lift",
-   "moving": "back_plate",
-   "static": "ratchet",
+   "moving": "collar_top",
+   "static": "mast",
    "tier": 1,
-   "min": 5.088129927358645,
-   "max": 5.852445523564117,
+   "min": 5.000090831627374,
+   "max": 5.008722622290719,
    "ok": true,
    "shear": false,
    "at": 0.35,
@@ -447,10 +349,52 @@
   {
    "joint": "lift",
    "moving": "collar_bot",
-   "static": "belt_duct",
+   "static": "mast",
    "tier": 1,
-   "min": 5.95866130628823,
-   "max": 5.983757759237048,
+   "min": 5.000249561930218,
+   "max": 5.007966412774671,
+   "ok": true,
+   "shear": false,
+   "at": 0.55,
+   "sides": [
+    "-"
+   ]
+  },
+  {
+   "joint": "lift",
+   "moving": "collar_bot",
+   "static": "ratchet",
+   "tier": 1,
+   "min": 5.000658838409618,
+   "max": 5.0115037334168795,
+   "ok": true,
+   "shear": false,
+   "at": 1.05,
+   "sides": [
+    "-"
+   ]
+  },
+  {
+   "joint": "lift",
+   "moving": "spine_pod",
+   "static": "ratchet",
+   "tier": 1,
+   "min": 5.001084481520517,
+   "max": 5.037626885418325,
+   "ok": true,
+   "shear": false,
+   "at": 1.05,
+   "sides": [
+    "-"
+   ]
+  },
+  {
+   "joint": "lift",
+   "moving": "collar_top",
+   "static": "ratchet",
+   "tier": 1,
+   "min": 5.002240270048945,
+   "max": 5.016485064171913,
    "ok": true,
    "shear": false,
    "at": 0.35,
@@ -460,28 +404,56 @@
   },
   {
    "joint": "lift",
-   "moving": "torso_shell",
-   "static": "mast",
+   "moving": "back_plate",
+   "static": "ratchet",
    "tier": 1,
-   "min": 15.000057678990169,
-   "max": 15.000677729046654,
+   "min": 5.063790491713433,
+   "max": 5.794021009489998,
    "ok": true,
-   "shear": true,
-   "at": 0.55,
+   "shear": false,
+   "at": 0.75,
    "sides": [
     "-"
    ]
   },
   {
    "joint": "lift",
-   "moving": "spine_pod",
+   "moving": "collar_bot",
+   "static": "belt_duct",
+   "tier": 1,
+   "min": 5.807867152312062,
+   "max": 5.83966608966715,
+   "ok": true,
+   "shear": false,
+   "at": 0.75,
+   "sides": [
+    "-"
+   ]
+  },
+  {
+   "joint": "lift",
+   "moving": "back_plate",
    "static": "mast",
    "tier": 1,
-   "min": 16.853360055174473,
-   "max": 17.093365366516114,
+   "min": 10.084769274400536,
+   "max": 10.19432462811633,
    "ok": true,
    "shear": true,
-   "at": 1.05,
+   "at": 0.75,
+   "sides": [
+    "-"
+   ]
+  },
+  {
+   "joint": "lift",
+   "moving": "torso_shell",
+   "static": "mast",
+   "tier": 1,
+   "min": 15.000034272537935,
+   "max": 15.006989951021891,
+   "ok": true,
+   "shear": true,
+   "at": 0.9,
    "sides": [
     "-"
    ]
@@ -491,8 +463,22 @@
    "moving": "torso_shell",
    "static": "ratchet",
    "tier": 1,
-   "min": 17.000018937220997,
-   "max": 17.004186752146072,
+   "min": 17.00000786033756,
+   "max": 17.006390219528743,
+   "ok": true,
+   "shear": true,
+   "at": 1.05,
+   "sides": [
+    "-"
+   ]
+  },
+  {
+   "joint": "lift",
+   "moving": "spine_pod",
+   "static": "mast",
+   "tier": 1,
+   "min": 24.165624087679593,
+   "max": 24.347712586465285,
    "ok": true,
    "shear": true,
    "at": 1.05,
@@ -505,11 +491,11 @@
    "moving": "yoke",
    "static": "pan_sleeve",
    "tier": 1,
-   "min": 10.600003786134891,
-   "max": 10.641661959838448,
+   "min": 10.600051894253289,
+   "max": 10.609003851671032,
    "ok": true,
    "shear": true,
-   "at": 0.0,
+   "at": -90.0,
    "sides": [
     "-"
    ]
@@ -519,11 +505,11 @@
    "moving": "roll_ferrule_m",
    "static": "sh_pitch_hub",
    "tier": 1,
-   "min": 0.0015184651957430345,
-   "max": 0.1791310559454317,
+   "min": 0.0013634338343383446,
+   "max": 0.16222195419451133,
    "ok": true,
    "shear": false,
-   "at": 60.0,
+   "at": -20.0,
    "sides": [
     "l",
     "r"
@@ -534,11 +520,11 @@
    "moving": "roll_roll_link",
    "static": "sh_pitch_hub",
    "tier": 1,
-   "min": 8.00000465331787,
-   "max": 8.002547614909272,
+   "min": 8.000007039813742,
+   "max": 8.002128499451924,
    "ok": true,
    "shear": true,
-   "at": -40.0,
+   "at": 0.0,
    "sides": [
     "l",
     "r"
@@ -549,11 +535,11 @@
    "moving": "roll_cover_yaw",
    "static": "sh_pitch_hub",
    "tier": 1,
-   "min": 14.329290703634882,
-   "max": 14.421778366881842,
+   "min": 14.334108987539269,
+   "max": 14.461231763933219,
    "ok": true,
    "shear": true,
-   "at": -180.0,
+   "at": -100.0,
    "sides": [
     "l",
     "r"
@@ -564,13 +550,27 @@
    "moving": "roll_yaw_block",
    "static": "sh_pitch_hub",
    "tier": 1,
-   "min": 23.990151657356158,
-   "max": 24.243320754831363,
+   "min": 23.96873118149852,
+   "max": 24.173526513317753,
    "ok": true,
    "shear": true,
-   "at": 40.0,
+   "at": 0.0,
    "sides": [
     "l",
+    "r"
+   ]
+  },
+  {
+   "joint": "pitch",
+   "moving": "roll_roll_gim_housing",
+   "static": "sh_pitch_hub",
+   "tier": 1,
+   "min": 24.979044112091177,
+   "max": 25.039850351998385,
+   "ok": true,
+   "shear": true,
+   "at": 20.0,
+   "sides": [
     "r"
    ]
   },
@@ -579,11 +579,11 @@
    "moving": "roll_roll_spring_hub",
    "static": "roll_roll_spring_ring",
    "tier": 1,
-   "min": 0.501436983490156,
-   "max": 1.3601738006661348,
+   "min": 0.5005539475654978,
+   "max": 1.1277471368727983,
    "ok": true,
    "shear": false,
-   "at": -15.0,
+   "at": 5.0,
    "sides": [
     "l",
     "r"
@@ -594,8 +594,8 @@
    "moving": "roll_roll_arm_rear",
    "static": "roll_roll_gim_housing",
    "tier": 1,
-   "min": 0.7144139423598102,
-   "max": 2.5025697280158203,
+   "min": 0.7433240555202004,
+   "max": 2.503246448736802,
    "ok": true,
    "shear": false,
    "at": -15.0,
@@ -609,41 +609,11 @@
    "moving": "roll_yaw_block",
    "static": "roll_roll_spring_ring",
    "tier": 1,
-   "min": 2.031096299091911,
-   "max": 2.3604441540839938,
+   "min": 2.0109320120014353,
+   "max": 2.2758127870625406,
    "ok": true,
    "shear": false,
-   "at": 60.0,
-   "sides": [
-    "l",
-    "r"
-   ]
-  },
-  {
-   "joint": "roll",
-   "moving": "roll_yaw_enc_pcb",
-   "static": "roll_roll_gim_housing",
-   "tier": 1,
-   "min": 3.096876110548434,
-   "max": 3.2304232450721955,
-   "ok": true,
-   "shear": false,
-   "at": 45.0,
-   "sides": [
-    "l",
-    "r"
-   ]
-  },
-  {
-   "joint": "roll",
-   "moving": "roll_yaw_enc_pcb",
-   "static": "roll_roll_link",
-   "tier": 1,
-   "min": 3.1202149377102795,
-   "max": 3.309892361511354,
-   "ok": true,
-   "shear": false,
-   "at": 30.0,
+   "at": -15.0,
    "sides": [
     "l",
     "r"
@@ -654,11 +624,41 @@
    "moving": "roll_roll_spring_hub",
    "static": "roll_roll_enc_pcb",
    "tier": 1,
-   "min": 3.5011385889326783,
-   "max": 3.588195847250374,
+   "min": 3.000280656350948,
+   "max": 3.112445254566002,
    "ok": true,
    "shear": false,
-   "at": 60.0,
+   "at": 100.0,
+   "sides": [
+    "l",
+    "r"
+   ]
+  },
+  {
+   "joint": "roll",
+   "moving": "roll_yaw_enc_pcb",
+   "static": "roll_roll_link",
+   "tier": 1,
+   "min": 3.1215164311513424,
+   "max": 3.2508254095290323,
+   "ok": true,
+   "shear": false,
+   "at": 90.0,
+   "sides": [
+    "l",
+    "r"
+   ]
+  },
+  {
+   "joint": "roll",
+   "moving": "roll_yaw_enc_pcb",
+   "static": "roll_roll_gim_housing",
+   "tier": 1,
+   "min": 3.4863198069495644,
+   "max": 3.781944428966484,
+   "ok": true,
+   "shear": false,
+   "at": 90.0,
    "sides": [
     "l",
     "r"
@@ -669,13 +669,27 @@
    "moving": "roll_yaw_block",
    "static": "roll_roll_gim_housing",
    "tier": 1,
-   "min": 4.154321233312936,
-   "max": 4.526726678802034,
+   "min": 4.275951156810979,
+   "max": 4.554821395369781,
    "ok": true,
    "shear": false,
-   "at": 60.0,
+   "at": 0.0,
    "sides": [
     "l",
+    "r"
+   ]
+  },
+  {
+   "joint": "roll",
+   "moving": "roll_yaw_enc_pcb",
+   "static": "roll_ferrule_m",
+   "tier": 1,
+   "min": 10.073976256604146,
+   "max": 10.372435031148562,
+   "ok": true,
+   "shear": true,
+   "at": -15.0,
+   "sides": [
     "r"
    ]
   },
@@ -684,11 +698,11 @@
    "moving": "roll_yaw_band",
    "static": "roll_roll_spring_ring",
    "tier": 1,
-   "min": 12.194652753196277,
-   "max": 12.341331161068103,
+   "min": 12.35822522476121,
+   "max": 12.56675336884841,
    "ok": true,
    "shear": true,
-   "at": 60.0,
+   "at": 45.0,
    "sides": [
     "l",
     "r"
@@ -699,8 +713,8 @@
    "moving": "roll_yaw_band",
    "static": "roll_roll_gim_housing",
    "tier": 1,
-   "min": 22.799013255830015,
-   "max": 22.943289403897438,
+   "min": 22.878173310240676,
+   "max": 22.956143277225504,
    "ok": true,
    "shear": true,
    "at": 0.0,
@@ -714,8 +728,8 @@
    "moving": "head_shell",
    "static": "yoke",
    "tier": 1,
-   "min": 3.7949022682693143,
-   "max": 3.984281263888444,
+   "min": 3.78420289602772,
+   "max": 3.9578552778101814,
    "ok": true,
    "shear": false,
    "at": 15.0,
@@ -728,11 +742,11 @@
    "moving": "arm_hand_palm",
    "static": "arm_wrist_adapter",
    "tier": 1,
-   "min": 0.006854672467669276,
-   "max": 0.15632167653098733,
+   "min": 0.012437540508484838,
+   "max": 0.14664199244322082,
    "ok": true,
    "shear": false,
-   "at": 100.0,
+   "at": -40.0,
    "sides": [
     "l",
     "r"
@@ -743,8 +757,8 @@
    "moving": "arm_hand_palm",
    "static": "arm_wrist_can",
    "tier": 1,
-   "min": 19.000017954268973,
-   "max": 19.003175664257775,
+   "min": 19.000005924985654,
+   "max": 19.002078677768907,
    "ok": true,
    "shear": true,
    "at": -120.0,
@@ -758,12 +772,13 @@
    "moving": "arm_hand_wr_sleeve",
    "static": "arm_wrist_adapter",
    "tier": 1,
-   "min": 23.67808635547693,
-   "max": 23.90416259458872,
+   "min": 23.63330969546136,
+   "max": 23.865639153372733,
    "ok": true,
    "shear": true,
-   "at": 80.0,
+   "at": -40.0,
    "sides": [
+    "l",
     "r"
    ]
   },
@@ -772,11 +787,11 @@
    "moving": "arm_hand_wr_sleeve",
    "static": "arm_wrist_can",
    "tier": 1,
-   "min": 23.900018621335324,
-   "max": 23.902917382658057,
+   "min": 23.90003318500326,
+   "max": 23.90430554196339,
    "ok": true,
    "shear": true,
-   "at": 80.0,
+   "at": 100.0,
    "sides": [
     "l",
     "r"
@@ -787,11 +802,11 @@
    "moving": "roll_yaw_flange",
    "static": "roll_yaw_stop_pin",
    "tier": 1,
-   "min": 0.30425593162348186,
-   "max": 2.123494594134912,
+   "min": 0.20698855392317672,
+   "max": 2.302048228957841,
    "ok": true,
    "shear": false,
-   "at": -95.0,
+   "at": 25.0,
    "sides": [
     "l",
     "r"
@@ -802,11 +817,11 @@
    "moving": "roll_yaw_flange",
    "static": "roll_yaw_plate_bot",
    "tier": 1,
-   "min": 1.915915903480576,
-   "max": 2.302412234550425,
+   "min": 1.9410942278232437,
+   "max": 2.4316835903326095,
    "ok": true,
    "shear": false,
-   "at": -65.0,
+   "at": -95.0,
    "sides": [
     "l",
     "r"
@@ -817,11 +832,11 @@
    "moving": "arm_upper_bone",
    "static": "roll_yaw_plate_bot",
    "tier": 1,
-   "min": 6.399955339655433,
-   "max": 7.04202898625376,
+   "min": 5.537459705864956,
+   "max": 6.651314888791746,
    "ok": true,
    "shear": false,
-   "at": -95.0,
+   "at": 25.0,
    "sides": [
     "l",
     "r"
@@ -832,7 +847,7 @@
    "moving": "arm_hand_palm",
    "static": "roll_roll_spring_ring",
    "tier": 2,
-   "min": 21.41786439212957,
+   "min": 21.923112050332687,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -845,9 +860,23 @@
   {
    "joint": "lift",
    "moving": "arm_cover_elbow_bay",
+   "static": "skirt3",
+   "tier": 2,
+   "min": 0.15834920359665697,
+   "max": 40.0,
+   "ok": false,
+   "shear": false,
+   "at": 0.35,
+   "sides": [
+    "r"
+   ]
+  },
+  {
+   "joint": "lift",
+   "moving": "arm_cover_elbow_bay",
    "static": "skirt0",
    "tier": 2,
-   "min": 0.16130704423703354,
+   "min": 0.1764853587633975,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -858,10 +887,39 @@
   },
   {
    "joint": "lift",
+   "moving": "arm_cover_elbow_bay",
+   "static": "deck0",
+   "tier": 2,
+   "min": 0.20032885133038167,
+   "max": 40.0,
+   "ok": false,
+   "shear": false,
+   "at": 0.35,
+   "sides": [
+    "l"
+   ]
+  },
+  {
+   "joint": "lift",
+   "moving": "arm_cover_elbow_bay",
+   "static": "rim",
+   "tier": 2,
+   "min": 0.25807304353450344,
+   "max": 40.0,
+   "ok": false,
+   "shear": false,
+   "at": 0.35,
+   "sides": [
+    "l",
+    "r"
+   ]
+  },
+  {
+   "joint": "lift",
    "moving": "arm_upper_bone",
    "static": "rim",
    "tier": 2,
-   "min": 0.18116782903272163,
+   "min": 0.2802604225498591,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -876,70 +934,13 @@
    "moving": "arm_cover_elbow_bay",
    "static": "deck2",
    "tier": 2,
-   "min": 0.21064279793294657,
+   "min": 0.3519119634554985,
    "max": 40.0,
    "ok": false,
    "shear": false,
    "at": 0.35,
    "sides": [
     "r"
-   ]
-  },
-  {
-   "joint": "lift",
-   "moving": "arm_cover_elbow_bay",
-   "static": "skirt3",
-   "tier": 2,
-   "min": 0.21739176526381856,
-   "max": 40.0,
-   "ok": false,
-   "shear": false,
-   "at": 0.35,
-   "sides": [
-    "r"
-   ]
-  },
-  {
-   "joint": "lift",
-   "moving": "arm_cover_elbow_bay",
-   "static": "caster45_guide",
-   "tier": 2,
-   "min": 0.23258580199717363,
-   "max": 40.0,
-   "ok": false,
-   "shear": false,
-   "at": 0.35,
-   "sides": [
-    "l"
-   ]
-  },
-  {
-   "joint": "lift",
-   "moving": "arm_cover_elbow_bay",
-   "static": "rim",
-   "tier": 2,
-   "min": 0.3499163614634816,
-   "max": 40.0,
-   "ok": false,
-   "shear": false,
-   "at": 0.35,
-   "sides": [
-    "l",
-    "r"
-   ]
-  },
-  {
-   "joint": "lift",
-   "moving": "arm_cover_elbow_bay",
-   "static": "deck0",
-   "tier": 2,
-   "min": 5.031149498600201,
-   "max": 40.0,
-   "ok": false,
-   "shear": false,
-   "at": 0.35,
-   "sides": [
-    "l"
    ]
   },
   {
@@ -947,7 +948,7 @@
    "moving": "arm_upper_bone",
    "static": "skirt3",
    "tier": 2,
-   "min": 5.748293723002399,
+   "min": 6.482259941263944,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -961,7 +962,7 @@
    "moving": "arm_upper_bone",
    "static": "skirt0",
    "tier": 2,
-   "min": 6.753197745081433,
+   "min": 6.563652317239224,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -975,7 +976,7 @@
    "moving": "arm_enc_bracket",
    "static": "skirt0",
    "tier": 2,
-   "min": 14.903102530149086,
+   "min": 15.579949018135302,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -989,7 +990,7 @@
    "moving": "arm_enc_bracket",
    "static": "skirt3",
    "tier": 2,
-   "min": 17.247117409354775,
+   "min": 17.283786872019796,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1003,7 +1004,7 @@
    "moving": "arm_hand_grip_servo_sleeve",
    "static": "skirt3",
    "tier": 2,
-   "min": 0.15458666787014633,
+   "min": 0.10765576566612171,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1014,10 +1015,10 @@
   },
   {
    "joint": "pitch",
-   "moving": "arm_hand_grip_base",
+   "moving": "arm_hand_grip_servo_sleeve",
    "static": "skirt0",
    "tier": 2,
-   "min": 0.22119213366889545,
+   "min": 0.3570126513596297,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1031,7 +1032,7 @@
    "moving": "arm_hand_grip_servo_sleeve",
    "static": "rim",
    "tier": 2,
-   "min": 0.23410518984001816,
+   "min": 0.36958813448682537,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1043,30 +1044,16 @@
   },
   {
    "joint": "pitch",
-   "moving": "arm_hand_grip_servo_sleeve",
+   "moving": "arm_hand_grip_base",
    "static": "skirt0",
    "tier": 2,
-   "min": 0.3012858476015311,
+   "min": 0.37815017226014525,
    "max": 40.0,
    "ok": false,
    "shear": false,
    "at": 40.0,
    "sides": [
     "l"
-   ]
-  },
-  {
-   "joint": "pitch",
-   "moving": "arm_hand_grip_base",
-   "static": "skirt3",
-   "tier": 2,
-   "min": 0.5681703460901952,
-   "max": 40.0,
-   "ok": false,
-   "shear": false,
-   "at": 40.0,
-   "sides": [
-    "r"
    ]
   },
   {
@@ -1074,13 +1061,69 @@
    "moving": "arm_hand_grip_servo",
    "static": "rim",
    "tier": 2,
-   "min": 0.8870052227157437,
+   "min": 0.9117524536188741,
    "max": 40.0,
    "ok": false,
    "shear": false,
    "at": 40.0,
    "sides": [
     "l",
+    "r"
+   ]
+  },
+  {
+   "joint": "pitch",
+   "moving": "arm_hand_grip_base",
+   "static": "skirt3",
+   "tier": 2,
+   "min": 0.9420367886460846,
+   "max": 40.0,
+   "ok": false,
+   "shear": false,
+   "at": 40.0,
+   "sides": [
+    "r"
+   ]
+  },
+  {
+   "joint": "pitch",
+   "moving": "arm_hand_grip_base",
+   "static": "deck0",
+   "tier": 2,
+   "min": 1.5872500942748902,
+   "max": 40.0,
+   "ok": false,
+   "shear": false,
+   "at": 40.0,
+   "sides": [
+    "l"
+   ]
+  },
+  {
+   "joint": "pitch",
+   "moving": "arm_hand_grip_servo",
+   "static": "skirt0",
+   "tier": 2,
+   "min": 1.8957634984555207,
+   "max": 40.0,
+   "ok": false,
+   "shear": false,
+   "at": 40.0,
+   "sides": [
+    "l"
+   ]
+  },
+  {
+   "joint": "pitch",
+   "moving": "arm_hand_grip_servo",
+   "static": "skirt3",
+   "tier": 2,
+   "min": 1.913451567983198,
+   "max": 40.0,
+   "ok": false,
+   "shear": false,
+   "at": 40.0,
+   "sides": [
     "r"
    ]
   },
@@ -1089,49 +1132,7 @@
    "moving": "arm_hand_grip_base",
    "static": "deck2",
    "tier": 2,
-   "min": 1.39798830675754,
-   "max": 40.0,
-   "ok": false,
-   "shear": false,
-   "at": 40.0,
-   "sides": [
-    "r"
-   ]
-  },
-  {
-   "joint": "pitch",
-   "moving": "arm_hand_grip_base",
-   "static": "deck0",
-   "tier": 2,
-   "min": 1.9857009776776824,
-   "max": 40.0,
-   "ok": false,
-   "shear": false,
-   "at": 40.0,
-   "sides": [
-    "l"
-   ]
-  },
-  {
-   "joint": "pitch",
-   "moving": "arm_hand_grip_servo",
-   "static": "skirt0",
-   "tier": 2,
-   "min": 2.0064534813350896,
-   "max": 40.0,
-   "ok": false,
-   "shear": false,
-   "at": 40.0,
-   "sides": [
-    "l"
-   ]
-  },
-  {
-   "joint": "pitch",
-   "moving": "arm_hand_grip_servo",
-   "static": "skirt3",
-   "tier": 2,
-   "min": 2.078942839057516,
+   "min": 1.9878744702261029,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1145,7 +1146,7 @@
    "moving": "arm_hand_grip_base",
    "static": "rim",
    "tier": 2,
-   "min": 6.286644867879651,
+   "min": 5.983266656003435,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1160,7 +1161,7 @@
    "moving": "arm_hand_grip_base",
    "static": "skirt2",
    "tier": 2,
-   "min": 10.364496819950515,
+   "min": 12.95639355386741,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1174,7 +1175,21 @@
    "moving": "arm_hand_wr_cap",
    "static": "rim",
    "tier": 2,
-   "min": 17.351431901944686,
+   "min": 17.246456245082953,
+   "max": 40.0,
+   "ok": false,
+   "shear": false,
+   "at": 40.0,
+   "sides": [
+    "r"
+   ]
+  },
+  {
+   "joint": "pitch",
+   "moving": "arm_hand_palm",
+   "static": "rim",
+   "tier": 2,
+   "min": 18.896546098807935,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1186,16 +1201,15 @@
   },
   {
    "joint": "pitch",
-   "moving": "arm_hand_palm",
+   "moving": "arm_hand_wr_brg_L",
    "static": "rim",
    "tier": 2,
-   "min": 18.844904174264745,
+   "min": 23.152273987770176,
    "max": 40.0,
    "ok": false,
    "shear": false,
    "at": 40.0,
    "sides": [
-    "l",
     "r"
    ]
   },
@@ -1204,8 +1218,8 @@
    "moving": "roll_yaw_band",
    "static": "torso_shell",
    "tier": 2,
-   "min": 10.267266945004424,
-   "max": 32.47079061850326,
+   "min": 10.210079913892894,
+   "max": 32.962338041315284,
    "ok": false,
    "shear": false,
    "at": -15.0,
@@ -1219,8 +1233,8 @@
    "moving": "roll_cover_yaw",
    "static": "torso_shell",
    "tier": 2,
-   "min": 11.490942029105886,
-   "max": 38.87499912512513,
+   "min": 11.414175444872741,
+   "max": 38.74429136717162,
    "ok": false,
    "shear": false,
    "at": -15.0,
@@ -1234,7 +1248,7 @@
    "moving": "roll_yaw_plate_bot",
    "static": "torso_shell",
    "tier": 2,
-   "min": 18.014071544535266,
+   "min": 18.103798961652473,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1249,8 +1263,8 @@
    "moving": "roll_yaw_block",
    "static": "torso_shell",
    "tier": 2,
-   "min": 18.83680911998642,
-   "max": 32.188347758544005,
+   "min": 18.658585749970566,
+   "max": 31.34621243395,
    "ok": false,
    "shear": false,
    "at": -15.0,
@@ -1264,7 +1278,7 @@
    "moving": "roll_yaw_flange",
    "static": "torso_shell",
    "tier": 2,
-   "min": 21.63103688704487,
+   "min": 21.63963551045964,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1279,7 +1293,7 @@
    "moving": "arm_upper_bone",
    "static": "torso_shell",
    "tier": 2,
-   "min": 23.940912246171255,
+   "min": 23.864243609320994,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1294,7 +1308,7 @@
    "moving": "arm_hand_grip_servo_sleeve",
    "static": "deck2",
    "tier": 2,
-   "min": 0.07910040478119487,
+   "min": 0.04859885955552184,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1308,21 +1322,7 @@
    "moving": "arm_hand_grip_servo_sleeve",
    "static": "deck0",
    "tier": 2,
-   "min": 0.14702537663190768,
-   "max": 40.0,
-   "ok": false,
-   "shear": false,
-   "at": -155.0,
-   "sides": [
-    "l"
-   ]
-  },
-  {
-   "joint": "yaw",
-   "moving": "arm_hand_grip_servo",
-   "static": "deck0",
-   "tier": 2,
-   "min": 0.173954059627423,
+   "min": 0.1680712047399698,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1336,7 +1336,7 @@
    "moving": "arm_hand_grip_servo",
    "static": "deck2",
    "tier": 2,
-   "min": 0.3399485135801718,
+   "min": 0.172990433867664,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1347,10 +1347,24 @@
   },
   {
    "joint": "yaw",
+   "moving": "arm_hand_grip_servo",
+   "static": "deck0",
+   "tier": 2,
+   "min": 0.3454555050837092,
+   "max": 40.0,
+   "ok": false,
+   "shear": false,
+   "at": -155.0,
+   "sides": [
+    "l"
+   ]
+  },
+  {
+   "joint": "yaw",
    "moving": "arm_hand_grip_base",
    "static": "deck0",
    "tier": 2,
-   "min": 1.756196138314079,
+   "min": 1.8022728593394575,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1364,7 +1378,7 @@
    "moving": "arm_hand_grip_base",
    "static": "deck2",
    "tier": 2,
-   "min": 1.8994658063396308,
+   "min": 1.9379010812745767,
    "max": 40.0,
    "ok": false,
    "shear": false,
@@ -1378,7 +1392,7 @@
   {
    "part": "l_sh_can",
    "kind": "motor can",
-   "area": 22022.857142857145,
+   "area": 23514.285714285717,
    "joint": "pitch",
    "at": -180.0,
    "ok": false,
@@ -1387,16 +1401,34 @@
   {
    "part": "r_sh_can",
    "kind": "motor can",
-   "area": 22002.857142857145,
+   "area": 23308.57142857143,
    "joint": "pitch",
-   "at": 60.0,
+   "at": -180.0,
+   "ok": false,
+   "hard": true
+  },
+  {
+   "part": "r_sh_can_cap",
+   "kind": "motor can",
+   "area": 6162.857142857143,
+   "joint": "roll",
+   "at": 45.0,
+   "ok": false,
+   "hard": true
+  },
+  {
+   "part": "l_sh_can_cap",
+   "kind": "motor can",
+   "area": 5954.285714285715,
+   "joint": "roll",
+   "at": 5.0,
    "ok": false,
    "hard": true
   },
   {
    "part": "l_sh_shaft",
    "kind": "rotating shaft",
-   "area": 6802.857142857143,
+   "area": 5945.714285714286,
    "joint": "yaw",
    "at": -155.0,
    "ok": true,
@@ -1405,70 +1437,34 @@
   {
    "part": "r_sh_shaft",
    "kind": "rotating shaft",
-   "area": 6471.428571428572,
+   "area": 5742.857142857143,
    "joint": "roll",
    "at": 5.0,
    "ok": true,
    "hard": false
   },
   {
-   "part": "r_sh_can_cap",
-   "kind": "motor can",
-   "area": 6160.0,
-   "joint": "yaw",
-   "at": -5.0,
-   "ok": false,
-   "hard": true
-  },
-  {
-   "part": "l_sh_can_cap",
-   "kind": "motor can",
-   "area": 5948.571428571429,
-   "joint": "roll",
-   "at": 5.0,
-   "ok": false,
-   "hard": true
-  },
-  {
    "part": "l_arm_wrist_can",
    "kind": "motor can",
-   "area": 3902.857142857143,
+   "area": 3837.1428571428573,
    "joint": "pitch",
-   "at": -20.0,
+   "at": -80.0,
    "ok": false,
    "hard": true
   },
   {
    "part": "r_arm_wrist_can",
    "kind": "motor can",
-   "area": 3842.857142857143,
+   "area": 3822.857142857143,
    "joint": "elbow",
    "at": -120.0,
    "ok": false,
    "hard": true
   },
   {
-   "part": "r_sh_motor",
-   "kind": "motor",
-   "area": 3051.4285714285716,
-   "joint": "roll",
-   "at": 5.0,
-   "ok": false,
-   "hard": true
-  },
-  {
    "part": "l_sh_motor",
    "kind": "motor",
-   "area": 2791.4285714285716,
-   "joint": "roll",
-   "at": 45.0,
-   "ok": false,
-   "hard": true
-  },
-  {
-   "part": "l_sh_al_pulley",
-   "kind": "belt / pulley (draw-in)",
-   "area": 2691.4285714285716,
+   "area": 2688.571428571429,
    "joint": "roll",
    "at": 60.0,
    "ok": false,
@@ -1477,25 +1473,25 @@
   {
    "part": "w270_shaft",
    "kind": "rotating shaft",
-   "area": 2671.4285714285716,
-   "joint": "yaw",
-   "at": 115.0,
+   "area": 2660.0,
+   "joint": "roll",
+   "at": -15.0,
    "ok": true,
    "hard": false
   },
   {
    "part": "w90_shaft",
    "kind": "rotating shaft",
-   "area": 2622.857142857143,
-   "joint": "roll",
-   "at": 5.0,
+   "area": 2642.857142857143,
+   "joint": "yaw",
+   "at": 155.0,
    "ok": true,
    "hard": false
   },
   {
-   "part": "r_sh_al_pulley",
-   "kind": "belt / pulley (draw-in)",
-   "area": 2577.1428571428573,
+   "part": "r_sh_motor",
+   "kind": "motor",
+   "area": 2600.0,
    "joint": "roll",
    "at": 5.0,
    "ok": false,
@@ -1504,7 +1500,7 @@
   {
    "part": "w180_shaft",
    "kind": "rotating shaft",
-   "area": 2505.714285714286,
+   "area": 2508.571428571429,
    "joint": "yaw",
    "at": -65.0,
    "ok": true,
@@ -1513,115 +1509,169 @@
   {
    "part": "w0_shaft",
    "kind": "rotating shaft",
-   "area": 2502.857142857143,
+   "area": 2500.0,
    "joint": "yaw",
-   "at": 115.0,
+   "at": -125.0,
    "ok": true,
    "hard": false
   },
   {
-   "part": "l_arm_e_shaft40",
-   "kind": "rotating shaft",
-   "area": 1225.7142857142858,
-   "joint": "roll",
-   "at": 30.0,
-   "ok": true,
-   "hard": false
-  },
-  {
-   "part": "r_arm_e_shaft40",
-   "kind": "rotating shaft",
-   "area": 1211.4285714285716,
-   "joint": "yaw",
-   "at": -65.0,
-   "ok": true,
-   "hard": false
-  },
-  {
-   "part": "r_sh_pulleyA",
+   "part": "l_sh_al_pulley",
    "kind": "belt / pulley (draw-in)",
-   "area": 651.4285714285714,
-   "joint": "pitch",
-   "at": -180.0,
-   "ok": false,
-   "hard": true
-  },
-  {
-   "part": "l_sh_pulleyA",
-   "kind": "belt / pulley (draw-in)",
-   "area": 628.5714285714286,
-   "joint": "pitch",
-   "at": -180.0,
-   "ok": false,
-   "hard": true
-  },
-  {
-   "part": "l_arm_e_can",
-   "kind": "motor can",
-   "area": 354.28571428571433,
+   "area": 1765.7142857142858,
    "joint": "yaw",
    "at": -155.0,
    "ok": false,
    "hard": true
   },
   {
+   "part": "r_sh_al_pulley",
+   "kind": "belt / pulley (draw-in)",
+   "area": 1722.857142857143,
+   "joint": "roll",
+   "at": 5.0,
+   "ok": false,
+   "hard": true
+  },
+  {
+   "part": "r_arm_e_shaft40",
+   "kind": "rotating shaft",
+   "area": 1340.0,
+   "joint": "yaw",
+   "at": -65.0,
+   "ok": true,
+   "hard": false
+  },
+  {
+   "part": "l_sh_idler_roller",
+   "kind": "belt / pulley (draw-in)",
+   "area": 1262.857142857143,
+   "joint": "roll",
+   "at": 60.0,
+   "ok": false,
+   "hard": true
+  },
+  {
+   "part": "l_arm_e_shaft40",
+   "kind": "rotating shaft",
+   "area": 1257.142857142857,
+   "joint": "roll",
+   "at": 30.0,
+   "ok": true,
+   "hard": false
+  },
+  {
+   "part": "r_sh_idler_roller",
+   "kind": "belt / pulley (draw-in)",
+   "area": 1231.4285714285716,
+   "joint": "roll",
+   "at": 5.0,
+   "ok": false,
+   "hard": true
+  },
+  {
+   "part": "l_sh_pulleyA",
+   "kind": "belt / pulley (draw-in)",
+   "area": 674.2857142857143,
+   "joint": "pitch",
+   "at": -180.0,
+   "ok": false,
+   "hard": true
+  },
+  {
+   "part": "r_sh_pulleyA",
+   "kind": "belt / pulley (draw-in)",
+   "area": 640.0,
+   "joint": "pitch",
+   "at": -180.0,
+   "ok": false,
+   "hard": true
+  },
+  {
    "part": "r_arm_e_can",
    "kind": "motor can",
-   "area": 342.8571428571429,
+   "area": 308.5714285714286,
    "joint": "pitch",
    "at": 0.0,
    "ok": false,
    "hard": true
   },
   {
-   "part": "r_sh_shaft_12",
-   "kind": "rotating shaft",
-   "area": 228.57142857142858,
-   "joint": "roll",
-   "at": 45.0,
-   "ok": true,
-   "hard": false
+   "part": "l_arm_e_can",
+   "kind": "motor can",
+   "area": 297.14285714285717,
+   "joint": "yaw",
+   "at": -155.0,
+   "ok": false,
+   "hard": true
   },
   {
-   "part": "l_roll_yaw_shaft_12",
+   "part": "l_sh_shaft_12",
    "kind": "rotating shaft",
-   "area": 211.42857142857144,
+   "area": 280.0,
    "joint": "lift",
    "at": 0.9,
    "ok": true,
    "hard": false
   },
   {
-   "part": "r_roll_yaw_shaft_12",
+   "part": "l_roll_yaw_shaft_12",
    "kind": "rotating shaft",
-   "area": 202.85714285714286,
-   "joint": "pitch",
-   "at": -40.0,
-   "ok": true,
-   "hard": false
-  },
-  {
-   "part": "l_sh_shaft_12",
-   "kind": "rotating shaft",
-   "area": 191.42857142857144,
+   "area": 260.0,
    "joint": "pitch",
    "at": -180.0,
    "ok": true,
    "hard": false
   },
   {
-   "part": "l_arm_e_can_cap",
+   "part": "r_sh_shaft_12",
+   "kind": "rotating shaft",
+   "area": 242.85714285714286,
+   "joint": "roll",
+   "at": 15.0,
+   "ok": true,
+   "hard": false
+  },
+  {
+   "part": "r_roll_yaw_shaft_12",
+   "kind": "rotating shaft",
+   "area": 231.42857142857144,
+   "joint": "pitch",
+   "at": -180.0,
+   "ok": true,
+   "hard": false
+  },
+  {
+   "part": "r_arm_e_can_cap",
    "kind": "motor can",
-   "area": 114.28571428571429,
+   "area": 160.0,
    "joint": "pitch",
    "at": 0.0,
    "ok": false,
    "hard": true
   },
   {
-   "part": "r_arm_e_can_cap",
+   "part": "l_arm_e_can_cap",
    "kind": "motor can",
-   "area": 88.57142857142858,
+   "area": 122.85714285714286,
+   "joint": "pitch",
+   "at": 0.0,
+   "ok": false,
+   "hard": true
+  },
+  {
+   "part": "r_sh_idler_axle",
+   "kind": "belt / pulley (draw-in)",
+   "area": 80.0,
+   "joint": "roll",
+   "at": 5.0,
+   "ok": false,
+   "hard": true
+  },
+  {
+   "part": "l_sh_idler_axle",
+   "kind": "belt / pulley (draw-in)",
+   "area": 74.28571428571429,
    "joint": "pitch",
    "at": -180.0,
    "ok": false,
@@ -1661,8 +1711,8 @@
     100.0
    ]
   },
-  "gap_fails": 14,
-  "exposed_fails": 16,
+  "gap_fails": 13,
+  "exposed_fails": 20,
   "reach_zones": 33,
   "gaps": [
    {
@@ -1670,8 +1720,8 @@
     "moving": "arm_forearm",
     "static": "arm_upper_bone",
     "tier": 1,
-    "min": 3.0526327918765626,
-    "max": 9.909109448530819,
+    "min": 3.093168989265439,
+    "max": 9.994595290097637,
     "ok": false,
     "shear": false,
     "at": -150.0,
@@ -1685,8 +1735,8 @@
     "moving": "arm_cf_fore",
     "static": "arm_upper_bone",
     "tier": 1,
-    "min": 6.066971348796009,
-    "max": 14.153209773551428,
+    "min": 6.076430388270159,
+    "max": 14.128171468440206,
     "ok": false,
     "shear": false,
     "at": -150.0,
@@ -1700,11 +1750,11 @@
     "moving": "arm_forearm",
     "static": "arm_e_seat_cap_p",
     "tier": 1,
-    "min": 7.008264675276491,
-    "max": 8.326192489634535,
+    "min": 7.028494305038502,
+    "max": 8.614233288358609,
     "ok": false,
     "shear": false,
-    "at": -105.0,
+    "at": 0.0,
     "sides": [
      "l",
      "r"
@@ -1715,8 +1765,8 @@
     "moving": "arm_cover_forearm_f",
     "static": "arm_upper_bone",
     "tier": 1,
-    "min": 7.702128035202357,
-    "max": 22.864430284253086,
+    "min": 7.701622037395,
+    "max": 22.046863460254208,
     "ok": false,
     "shear": false,
     "at": -150.0,
@@ -1730,8 +1780,8 @@
     "moving": "arm_cover_forearm_r",
     "static": "arm_upper_bone",
     "tier": 1,
-    "min": 8.861818259332633,
-    "max": 15.751466539617592,
+    "min": 8.821788135833234,
+    "max": 15.383678899359653,
     "ok": false,
     "shear": false,
     "at": -150.0,
@@ -1745,11 +1795,11 @@
     "moving": "roll_roll_link",
     "static": "torso_shell",
     "tier": 1,
-    "min": 13.000012115583154,
-    "max": 24.412331711980112,
+    "min": 13.000004580281448,
+    "max": 24.968897701492892,
     "ok": false,
     "shear": false,
-    "at": -200.0,
+    "at": -140.0,
     "sides": [
      "l",
      "r"
@@ -1760,11 +1810,11 @@
     "moving": "roll_cover_yaw",
     "static": "torso_shell",
     "tier": 1,
-    "min": 19.30000119840088,
-    "max": 24.415014207074794,
+    "min": 19.300003449877718,
+    "max": 40.0,
     "ok": false,
     "shear": false,
-    "at": 20.0,
+    "at": 40.0,
     "sides": [
      "l",
      "r"
@@ -1775,8 +1825,8 @@
     "moving": "roll_yaw_band",
     "static": "torso_shell",
     "tier": 1,
-    "min": 24.00001347455393,
-    "max": 25.918063275857907,
+    "min": 24.000000774573,
+    "max": 26.075274149995394,
     "ok": false,
     "shear": false,
     "at": 60.0,
@@ -1788,28 +1838,13 @@
    {
     "joint": "roll",
     "moving": "roll_cover_yaw",
-    "static": "roll_roll_link",
-    "tier": 1,
-    "min": 0.6253815159706816,
-    "max": 12.872319554333439,
-    "ok": false,
-    "shear": false,
-    "at": 15.0,
-    "sides": [
-     "l",
-     "r"
-    ]
-   },
-   {
-    "joint": "roll",
-    "moving": "roll_cover_yaw",
     "static": "roll_roll_gim_housing",
     "tier": 1,
-    "min": 1.4376332956084816,
-    "max": 9.32651554173021,
+    "min": 0.38500018650090545,
+    "max": 8.03646040274175,
     "ok": false,
     "shear": false,
-    "at": 45.0,
+    "at": 30.0,
     "sides": [
      "l",
      "r"
@@ -1818,15 +1853,16 @@
    {
     "joint": "roll",
     "moving": "roll_cover_yaw",
-    "static": "roll_ferrule_m",
+    "static": "roll_roll_link",
     "tier": 1,
-    "min": 3.5099589631075934,
-    "max": 10.5373444126933,
+    "min": 0.7083756461732957,
+    "max": 13.908978436270113,
     "ok": false,
     "shear": false,
     "at": 15.0,
     "sides": [
-     "l"
+     "l",
+     "r"
     ]
    },
    {
@@ -1834,8 +1870,8 @@
     "moving": "roll_roll_outflange",
     "static": "roll_roll_gim_housing",
     "tier": 1,
-    "min": 8.443884131118587,
-    "max": 9.47386273051633,
+    "min": 7.889084201769441,
+    "max": 8.911991232811529,
     "ok": false,
     "shear": false,
     "at": 60.0,
@@ -1849,8 +1885,8 @@
     "moving": "roll_yaw_block",
     "static": "roll_roll_link",
     "tier": 1,
-    "min": 11.307064957433804,
-    "max": 13.633195292268177,
+    "min": 9.138630372947755,
+    "max": 14.154630042552585,
     "ok": false,
     "shear": false,
     "at": 5.0,
@@ -1864,8 +1900,8 @@
     "moving": "arm_upper_bone",
     "static": "roll_yaw_stop_pin",
     "tier": 1,
-    "min": 5.56514008598837,
-    "max": 8.074938870781216,
+    "min": 5.865229927852763,
+    "max": 8.478522329486607,
     "ok": false,
     "shear": false,
     "at": -5.0,
@@ -1879,8 +1915,8 @@
     "moving": "arm_e_shaft40",
     "static": "arm_enc_magnet_holder",
     "tier": 1,
-    "min": 0.018132739773698323,
-    "max": 0.5109339726728215,
+    "min": 0.03313555969650396,
+    "max": 0.21479016980645718,
     "ok": true,
     "shear": false,
     "at": -90.0,
@@ -1890,82 +1926,12 @@
     ]
    },
    {
-    "joint": "elbow",
-    "moving": "arm_e_shaft40",
-    "static": "arm_cover_elbow_bay",
-    "tier": 1,
-    "min": 0.04461443469648617,
-    "max": 0.2271633488552175,
-    "ok": true,
-    "shear": false,
-    "at": -120.0,
-    "sides": [
-     "r"
-    ]
-   },
-   {
     "joint": "lift",
     "moving": "carriage",
     "static": "mast",
     "tier": 1,
-    "min": 0.013488694006398981,
-    "max": 0.2149335829375931,
-    "ok": true,
-    "shear": false,
-    "at": 0.55,
-    "sides": [
-     "-"
-    ]
-   },
-   {
-    "joint": "lift",
-    "moving": "spine_pod",
-    "static": "belt_duct",
-    "tier": 1,
-    "min": 3.000042034763542,
-    "max": 3.003462658046004,
-    "ok": true,
-    "shear": false,
-    "at": 0.35,
-    "sides": [
-     "-"
-    ]
-   },
-   {
-    "joint": "lift",
-    "moving": "carriage",
-    "static": "ratchet",
-    "tier": 1,
-    "min": 3.000688245582879,
-    "max": 3.008300928750647,
-    "ok": true,
-    "shear": false,
-    "at": 0.75,
-    "sides": [
-     "-"
-    ]
-   },
-   {
-    "joint": "lift",
-    "moving": "collar_top",
-    "static": "belt_duct",
-    "tier": 1,
-    "min": 3.0033779016545235,
-    "max": 3.045355806086893,
-    "ok": true,
-    "shear": false,
-    "at": 0.55,
-    "sides": [
-     "-"
-    ]
-   },
-   {
-    "joint": "lift",
-    "moving": "collar_top",
-    "static": "mast",
-    "tier": 1,
-    "min": 5.000070823302759,
-    "max": 5.008434589301731,
+    "min": 0.08979176263663302,
+    "max": 0.13691350156692608,
     "ok": true,
     "shear": false,
     "at": 1.05,
@@ -1975,39 +1941,11 @@
    },
    {
     "joint": "lift",
-    "moving": "collar_bot",
-    "static": "mast",
-    "tier": 1,
-    "min": 5.000384975412944,
-    "max": 5.006315515821895,
-    "ok": true,
-    "shear": false,
-    "at": 0.55,
-    "sides": [
-     "-"
-    ]
-   },
-   {
-    "joint": "lift",
-    "moving": "collar_bot",
-    "static": "ratchet",
-    "tier": 1,
-    "min": 5.0011515634089925,
-    "max": 5.013682063581062,
-    "ok": true,
-    "shear": false,
-    "at": 0.55,
-    "sides": [
-     "-"
-    ]
-   },
-   {
-    "joint": "lift",
     "moving": "spine_pod",
-    "static": "ratchet",
+    "static": "belt_duct",
     "tier": 1,
-    "min": 5.006273315753681,
-    "max": 5.039284147690275,
+    "min": 3.000020442140439,
+    "max": 3.0051964454503435,
     "ok": true,
     "shear": false,
     "at": 0.35,
@@ -2017,11 +1955,25 @@
    },
    {
     "joint": "lift",
-    "moving": "collar_top",
+    "moving": "carriage",
     "static": "ratchet",
     "tier": 1,
-    "min": 5.012525913823713,
-    "max": 5.055528780747796,
+    "min": 3.0002145303779773,
+    "max": 3.0108007887853216,
+    "ok": true,
+    "shear": false,
+    "at": 0.55,
+    "sides": [
+     "-"
+    ]
+   },
+   {
+    "joint": "lift",
+    "moving": "collar_top",
+    "static": "belt_duct",
+    "tier": 1,
+    "min": 3.00087683750964,
+    "max": 3.0595583493342056,
     "ok": true,
     "shear": false,
     "at": 0.9,
@@ -2031,11 +1983,11 @@
    },
    {
     "joint": "lift",
-    "moving": "back_plate",
-    "static": "ratchet",
+    "moving": "collar_top",
+    "static": "mast",
     "tier": 1,
-    "min": 5.088129927358645,
-    "max": 5.852445523564117,
+    "min": 5.000090831627374,
+    "max": 5.008722622290719,
     "ok": true,
     "shear": false,
     "at": 0.35,
@@ -2046,10 +1998,52 @@
    {
     "joint": "lift",
     "moving": "collar_bot",
-    "static": "belt_duct",
+    "static": "mast",
     "tier": 1,
-    "min": 5.95866130628823,
-    "max": 5.983757759237048,
+    "min": 5.000249561930218,
+    "max": 5.007966412774671,
+    "ok": true,
+    "shear": false,
+    "at": 0.55,
+    "sides": [
+     "-"
+    ]
+   },
+   {
+    "joint": "lift",
+    "moving": "collar_bot",
+    "static": "ratchet",
+    "tier": 1,
+    "min": 5.000658838409618,
+    "max": 5.0115037334168795,
+    "ok": true,
+    "shear": false,
+    "at": 1.05,
+    "sides": [
+     "-"
+    ]
+   },
+   {
+    "joint": "lift",
+    "moving": "spine_pod",
+    "static": "ratchet",
+    "tier": 1,
+    "min": 5.001084481520517,
+    "max": 5.037626885418325,
+    "ok": true,
+    "shear": false,
+    "at": 1.05,
+    "sides": [
+     "-"
+    ]
+   },
+   {
+    "joint": "lift",
+    "moving": "collar_top",
+    "static": "ratchet",
+    "tier": 1,
+    "min": 5.002240270048945,
+    "max": 5.016485064171913,
     "ok": true,
     "shear": false,
     "at": 0.35,
@@ -2059,28 +2053,56 @@
    },
    {
     "joint": "lift",
-    "moving": "torso_shell",
-    "static": "mast",
+    "moving": "back_plate",
+    "static": "ratchet",
     "tier": 1,
-    "min": 15.000057678990169,
-    "max": 15.000677729046654,
+    "min": 5.063790491713433,
+    "max": 5.794021009489998,
     "ok": true,
-    "shear": true,
-    "at": 0.55,
+    "shear": false,
+    "at": 0.75,
     "sides": [
      "-"
     ]
    },
    {
     "joint": "lift",
-    "moving": "spine_pod",
+    "moving": "collar_bot",
+    "static": "belt_duct",
+    "tier": 1,
+    "min": 5.807867152312062,
+    "max": 5.83966608966715,
+    "ok": true,
+    "shear": false,
+    "at": 0.75,
+    "sides": [
+     "-"
+    ]
+   },
+   {
+    "joint": "lift",
+    "moving": "back_plate",
     "static": "mast",
     "tier": 1,
-    "min": 16.853360055174473,
-    "max": 17.093365366516114,
+    "min": 10.084769274400536,
+    "max": 10.19432462811633,
     "ok": true,
     "shear": true,
-    "at": 1.05,
+    "at": 0.75,
+    "sides": [
+     "-"
+    ]
+   },
+   {
+    "joint": "lift",
+    "moving": "torso_shell",
+    "static": "mast",
+    "tier": 1,
+    "min": 15.000034272537935,
+    "max": 15.006989951021891,
+    "ok": true,
+    "shear": true,
+    "at": 0.9,
     "sides": [
      "-"
     ]
@@ -2090,8 +2112,22 @@
     "moving": "torso_shell",
     "static": "ratchet",
     "tier": 1,
-    "min": 17.000018937220997,
-    "max": 17.004186752146072,
+    "min": 17.00000786033756,
+    "max": 17.006390219528743,
+    "ok": true,
+    "shear": true,
+    "at": 1.05,
+    "sides": [
+     "-"
+    ]
+   },
+   {
+    "joint": "lift",
+    "moving": "spine_pod",
+    "static": "mast",
+    "tier": 1,
+    "min": 24.165624087679593,
+    "max": 24.347712586465285,
     "ok": true,
     "shear": true,
     "at": 1.05,
@@ -2104,11 +2140,11 @@
     "moving": "yoke",
     "static": "pan_sleeve",
     "tier": 1,
-    "min": 10.600003786134891,
-    "max": 10.641661959838448,
+    "min": 10.600051894253289,
+    "max": 10.609003851671032,
     "ok": true,
     "shear": true,
-    "at": 0.0,
+    "at": -90.0,
     "sides": [
      "-"
     ]
@@ -2118,11 +2154,11 @@
     "moving": "roll_ferrule_m",
     "static": "sh_pitch_hub",
     "tier": 1,
-    "min": 0.0015184651957430345,
-    "max": 0.1791310559454317,
+    "min": 0.0013634338343383446,
+    "max": 0.16222195419451133,
     "ok": true,
     "shear": false,
-    "at": 60.0,
+    "at": -20.0,
     "sides": [
      "l",
      "r"
@@ -2133,11 +2169,11 @@
     "moving": "roll_roll_link",
     "static": "sh_pitch_hub",
     "tier": 1,
-    "min": 8.00000465331787,
-    "max": 8.002547614909272,
+    "min": 8.000007039813742,
+    "max": 8.002128499451924,
     "ok": true,
     "shear": true,
-    "at": -40.0,
+    "at": 0.0,
     "sides": [
      "l",
      "r"
@@ -2148,11 +2184,11 @@
     "moving": "roll_cover_yaw",
     "static": "sh_pitch_hub",
     "tier": 1,
-    "min": 14.329290703634882,
-    "max": 14.421778366881842,
+    "min": 14.334108987539269,
+    "max": 14.461231763933219,
     "ok": true,
     "shear": true,
-    "at": -180.0,
+    "at": -100.0,
     "sides": [
      "l",
      "r"
@@ -2163,13 +2199,27 @@
     "moving": "roll_yaw_block",
     "static": "sh_pitch_hub",
     "tier": 1,
-    "min": 23.990151657356158,
-    "max": 24.243320754831363,
+    "min": 23.96873118149852,
+    "max": 24.173526513317753,
     "ok": true,
     "shear": true,
-    "at": 40.0,
+    "at": 0.0,
     "sides": [
      "l",
+     "r"
+    ]
+   },
+   {
+    "joint": "pitch",
+    "moving": "roll_roll_gim_housing",
+    "static": "sh_pitch_hub",
+    "tier": 1,
+    "min": 24.979044112091177,
+    "max": 25.039850351998385,
+    "ok": true,
+    "shear": true,
+    "at": 20.0,
+    "sides": [
      "r"
     ]
    },
@@ -2178,11 +2228,11 @@
     "moving": "roll_roll_spring_hub",
     "static": "roll_roll_spring_ring",
     "tier": 1,
-    "min": 0.5058805499156215,
-    "max": 0.968865496893915,
+    "min": 0.5005539475654978,
+    "max": 1.1277471368727983,
     "ok": true,
     "shear": false,
-    "at": 100.0,
+    "at": 5.0,
     "sides": [
      "l",
      "r"
@@ -2193,11 +2243,11 @@
     "moving": "roll_roll_arm_rear",
     "static": "roll_roll_gim_housing",
     "tier": 1,
-    "min": 1.561597112574181,
-    "max": 2.164757800143614,
+    "min": 1.6660055299182976,
+    "max": 2.526648082148611,
     "ok": true,
     "shear": false,
-    "at": 60.0,
+    "at": 75.0,
     "sides": [
      "l",
      "r"
@@ -2208,41 +2258,11 @@
     "moving": "roll_yaw_block",
     "static": "roll_roll_spring_ring",
     "tier": 1,
-    "min": 2.031096299091911,
-    "max": 2.3604441540839938,
+    "min": 2.021539012344066,
+    "max": 2.3525836234670763,
     "ok": true,
     "shear": false,
-    "at": 60.0,
-    "sides": [
-     "l",
-     "r"
-    ]
-   },
-   {
-    "joint": "roll",
-    "moving": "roll_yaw_enc_pcb",
-    "static": "roll_roll_gim_housing",
-    "tier": 1,
-    "min": 3.096876110548434,
-    "max": 3.2304232450721955,
-    "ok": true,
-    "shear": false,
-    "at": 45.0,
-    "sides": [
-     "l",
-     "r"
-    ]
-   },
-   {
-    "joint": "roll",
-    "moving": "roll_yaw_enc_pcb",
-    "static": "roll_roll_link",
-    "tier": 1,
-    "min": 3.1202149377102795,
-    "max": 3.309892361511354,
-    "ok": true,
-    "shear": false,
-    "at": 30.0,
+    "at": 15.0,
     "sides": [
      "l",
      "r"
@@ -2253,11 +2273,41 @@
     "moving": "roll_roll_spring_hub",
     "static": "roll_roll_enc_pcb",
     "tier": 1,
-    "min": 3.5011385889326783,
-    "max": 3.588195847250374,
+    "min": 3.000280656350948,
+    "max": 3.112445254566002,
     "ok": true,
     "shear": false,
-    "at": 60.0,
+    "at": 100.0,
+    "sides": [
+     "l",
+     "r"
+    ]
+   },
+   {
+    "joint": "roll",
+    "moving": "roll_yaw_enc_pcb",
+    "static": "roll_roll_link",
+    "tier": 1,
+    "min": 3.1215164311513424,
+    "max": 3.2050906134866617,
+    "ok": true,
+    "shear": false,
+    "at": 90.0,
+    "sides": [
+     "l",
+     "r"
+    ]
+   },
+   {
+    "joint": "roll",
+    "moving": "roll_yaw_enc_pcb",
+    "static": "roll_roll_gim_housing",
+    "tier": 1,
+    "min": 3.4863198069495644,
+    "max": 3.74332786407157,
+    "ok": true,
+    "shear": false,
+    "at": 90.0,
     "sides": [
      "l",
      "r"
@@ -2268,11 +2318,11 @@
     "moving": "roll_yaw_block",
     "static": "roll_roll_gim_housing",
     "tier": 1,
-    "min": 4.154321233312936,
-    "max": 4.526726678802034,
+    "min": 4.3455637576120125,
+    "max": 4.554821395369781,
     "ok": true,
     "shear": false,
-    "at": 60.0,
+    "at": 30.0,
     "sides": [
      "l",
      "r"
@@ -2283,8 +2333,8 @@
     "moving": "roll_roll_arm_rear",
     "static": "roll_roll_link",
     "tier": 1,
-    "min": 6.2465313261463935,
-    "max": 6.3296050032154705,
+    "min": 6.24904297687635,
+    "max": 6.304311472905102,
     "ok": true,
     "shear": false,
     "at": 30.0,
@@ -2297,26 +2347,11 @@
     "moving": "roll_yaw_band",
     "static": "roll_roll_spring_ring",
     "tier": 1,
-    "min": 12.194652753196277,
-    "max": 12.341331161068103,
+    "min": 12.35822522476121,
+    "max": 12.56675336884841,
     "ok": true,
     "shear": true,
-    "at": 60.0,
-    "sides": [
-     "l",
-     "r"
-    ]
-   },
-   {
-    "joint": "roll",
-    "moving": "roll_yaw_band",
-    "static": "roll_roll_gim_housing",
-    "tier": 1,
-    "min": 22.82036260708016,
-    "max": 22.943289403897438,
-    "ok": true,
-    "shear": true,
-    "at": 60.0,
+    "at": 45.0,
     "sides": [
      "l",
      "r"
@@ -2327,8 +2362,23 @@
     "moving": "roll_yaw_band",
     "static": "roll_roll_link",
     "tier": 1,
-    "min": 22.834214479895273,
-    "max": 22.960616931427232,
+    "min": 22.847761158112615,
+    "max": 23.023171514236463,
+    "ok": true,
+    "shear": true,
+    "at": 45.0,
+    "sides": [
+     "l",
+     "r"
+    ]
+   },
+   {
+    "joint": "roll",
+    "moving": "roll_yaw_band",
+    "static": "roll_roll_gim_housing",
+    "tier": 1,
+    "min": 22.878716885741227,
+    "max": 22.956143277225504,
     "ok": true,
     "shear": true,
     "at": 45.0,
@@ -2342,8 +2392,8 @@
     "moving": "head_shell",
     "static": "yoke",
     "tier": 1,
-    "min": 3.7949022682693143,
-    "max": 3.984281263888444,
+    "min": 3.78420289602772,
+    "max": 3.9578552778101814,
     "ok": true,
     "shear": false,
     "at": 15.0,
@@ -2356,11 +2406,11 @@
     "moving": "arm_hand_palm",
     "static": "arm_wrist_adapter",
     "tier": 1,
-    "min": 0.006854672467669276,
-    "max": 0.15632167653098733,
+    "min": 0.012437540508484838,
+    "max": 0.14664199244322082,
     "ok": true,
     "shear": false,
-    "at": 100.0,
+    "at": -40.0,
     "sides": [
      "l",
      "r"
@@ -2371,8 +2421,8 @@
     "moving": "arm_hand_palm",
     "static": "arm_wrist_can",
     "tier": 1,
-    "min": 19.000017954268973,
-    "max": 19.003175664257775,
+    "min": 19.000005924985654,
+    "max": 19.002078677768907,
     "ok": true,
     "shear": true,
     "at": -120.0,
@@ -2386,12 +2436,13 @@
     "moving": "arm_hand_wr_sleeve",
     "static": "arm_wrist_adapter",
     "tier": 1,
-    "min": 23.67808635547693,
-    "max": 23.90416259458872,
+    "min": 23.63330969546136,
+    "max": 23.865639153372733,
     "ok": true,
     "shear": true,
-    "at": 80.0,
+    "at": -40.0,
     "sides": [
+     "l",
      "r"
     ]
    },
@@ -2400,11 +2451,11 @@
     "moving": "arm_hand_wr_sleeve",
     "static": "arm_wrist_can",
     "tier": 1,
-    "min": 23.900018621335324,
-    "max": 23.902917382658057,
+    "min": 23.90003318500326,
+    "max": 23.90430554196339,
     "ok": true,
     "shear": true,
-    "at": 80.0,
+    "at": 100.0,
     "sides": [
      "l",
      "r"
@@ -2415,11 +2466,11 @@
     "moving": "roll_yaw_flange",
     "static": "roll_yaw_stop_pin",
     "tier": 1,
-    "min": 0.30425593162348186,
-    "max": 2.123494594134912,
+    "min": 0.20698855392317672,
+    "max": 2.302048228957841,
     "ok": true,
     "shear": false,
-    "at": -95.0,
+    "at": 25.0,
     "sides": [
      "l",
      "r"
@@ -2430,11 +2481,11 @@
     "moving": "roll_yaw_flange",
     "static": "roll_yaw_plate_bot",
     "tier": 1,
-    "min": 1.915915903480576,
-    "max": 2.302412234550425,
+    "min": 1.9410942278232437,
+    "max": 2.4316835903326095,
     "ok": true,
     "shear": false,
-    "at": -65.0,
+    "at": -95.0,
     "sides": [
      "l",
      "r"
@@ -2445,11 +2496,11 @@
     "moving": "arm_upper_bone",
     "static": "roll_yaw_plate_bot",
     "tier": 1,
-    "min": 6.399955339655433,
-    "max": 7.04202898625376,
+    "min": 5.537459705864956,
+    "max": 6.651314888791746,
     "ok": true,
     "shear": false,
-    "at": -95.0,
+    "at": 25.0,
     "sides": [
      "l",
      "r"
@@ -2460,7 +2511,7 @@
     "moving": "arm_hand_palm",
     "static": "roll_roll_spring_ring",
     "tier": 2,
-    "min": 21.41786439212957,
+    "min": 21.923112050332687,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2473,9 +2524,23 @@
    {
     "joint": "lift",
     "moving": "arm_cover_elbow_bay",
+    "static": "skirt3",
+    "tier": 2,
+    "min": 0.15834920359665697,
+    "max": 40.0,
+    "ok": false,
+    "shear": false,
+    "at": 0.35,
+    "sides": [
+     "r"
+    ]
+   },
+   {
+    "joint": "lift",
+    "moving": "arm_cover_elbow_bay",
     "static": "skirt0",
     "tier": 2,
-    "min": 0.16130704423703354,
+    "min": 0.1764853587633975,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2486,10 +2551,39 @@
    },
    {
     "joint": "lift",
+    "moving": "arm_cover_elbow_bay",
+    "static": "deck0",
+    "tier": 2,
+    "min": 0.20032885133038167,
+    "max": 40.0,
+    "ok": false,
+    "shear": false,
+    "at": 0.35,
+    "sides": [
+     "l"
+    ]
+   },
+   {
+    "joint": "lift",
+    "moving": "arm_cover_elbow_bay",
+    "static": "rim",
+    "tier": 2,
+    "min": 0.25807304353450344,
+    "max": 40.0,
+    "ok": false,
+    "shear": false,
+    "at": 0.35,
+    "sides": [
+     "l",
+     "r"
+    ]
+   },
+   {
+    "joint": "lift",
     "moving": "arm_upper_bone",
     "static": "rim",
     "tier": 2,
-    "min": 0.18116782903272163,
+    "min": 0.2802604225498591,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2504,70 +2598,13 @@
     "moving": "arm_cover_elbow_bay",
     "static": "deck2",
     "tier": 2,
-    "min": 0.21064279793294657,
+    "min": 0.3519119634554985,
     "max": 40.0,
     "ok": false,
     "shear": false,
     "at": 0.35,
     "sides": [
      "r"
-    ]
-   },
-   {
-    "joint": "lift",
-    "moving": "arm_cover_elbow_bay",
-    "static": "skirt3",
-    "tier": 2,
-    "min": 0.21739176526381856,
-    "max": 40.0,
-    "ok": false,
-    "shear": false,
-    "at": 0.35,
-    "sides": [
-     "r"
-    ]
-   },
-   {
-    "joint": "lift",
-    "moving": "arm_cover_elbow_bay",
-    "static": "caster45_guide",
-    "tier": 2,
-    "min": 0.23258580199717363,
-    "max": 40.0,
-    "ok": false,
-    "shear": false,
-    "at": 0.35,
-    "sides": [
-     "l"
-    ]
-   },
-   {
-    "joint": "lift",
-    "moving": "arm_cover_elbow_bay",
-    "static": "rim",
-    "tier": 2,
-    "min": 0.3499163614634816,
-    "max": 40.0,
-    "ok": false,
-    "shear": false,
-    "at": 0.35,
-    "sides": [
-     "l",
-     "r"
-    ]
-   },
-   {
-    "joint": "lift",
-    "moving": "arm_cover_elbow_bay",
-    "static": "deck0",
-    "tier": 2,
-    "min": 5.031149498600201,
-    "max": 40.0,
-    "ok": false,
-    "shear": false,
-    "at": 0.35,
-    "sides": [
-     "l"
     ]
    },
    {
@@ -2575,7 +2612,7 @@
     "moving": "arm_upper_bone",
     "static": "skirt3",
     "tier": 2,
-    "min": 5.748293723002399,
+    "min": 6.482259941263944,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2589,7 +2626,7 @@
     "moving": "arm_upper_bone",
     "static": "skirt0",
     "tier": 2,
-    "min": 6.753197745081433,
+    "min": 6.563652317239224,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2603,7 +2640,7 @@
     "moving": "arm_enc_bracket",
     "static": "skirt0",
     "tier": 2,
-    "min": 14.903102530149086,
+    "min": 15.579949018135302,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2617,7 +2654,7 @@
     "moving": "arm_enc_bracket",
     "static": "skirt3",
     "tier": 2,
-    "min": 17.247117409354775,
+    "min": 17.283786872019796,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2631,7 +2668,7 @@
     "moving": "arm_hand_grip_servo_sleeve",
     "static": "skirt3",
     "tier": 2,
-    "min": 0.15458666787014633,
+    "min": 0.10765576566612171,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2642,10 +2679,10 @@
    },
    {
     "joint": "pitch",
-    "moving": "arm_hand_grip_base",
+    "moving": "arm_hand_grip_servo_sleeve",
     "static": "skirt0",
     "tier": 2,
-    "min": 0.22119213366889545,
+    "min": 0.3570126513596297,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2659,7 +2696,7 @@
     "moving": "arm_hand_grip_servo_sleeve",
     "static": "rim",
     "tier": 2,
-    "min": 0.23410518984001816,
+    "min": 0.36958813448682537,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2671,30 +2708,16 @@
    },
    {
     "joint": "pitch",
-    "moving": "arm_hand_grip_servo_sleeve",
+    "moving": "arm_hand_grip_base",
     "static": "skirt0",
     "tier": 2,
-    "min": 0.3012858476015311,
+    "min": 0.37815017226014525,
     "max": 40.0,
     "ok": false,
     "shear": false,
     "at": 40.0,
     "sides": [
      "l"
-    ]
-   },
-   {
-    "joint": "pitch",
-    "moving": "arm_hand_grip_base",
-    "static": "skirt3",
-    "tier": 2,
-    "min": 0.5681703460901952,
-    "max": 40.0,
-    "ok": false,
-    "shear": false,
-    "at": 40.0,
-    "sides": [
-     "r"
     ]
    },
    {
@@ -2702,13 +2725,69 @@
     "moving": "arm_hand_grip_servo",
     "static": "rim",
     "tier": 2,
-    "min": 0.8870052227157437,
+    "min": 0.9117524536188741,
     "max": 40.0,
     "ok": false,
     "shear": false,
     "at": 40.0,
     "sides": [
      "l",
+     "r"
+    ]
+   },
+   {
+    "joint": "pitch",
+    "moving": "arm_hand_grip_base",
+    "static": "skirt3",
+    "tier": 2,
+    "min": 0.9420367886460846,
+    "max": 40.0,
+    "ok": false,
+    "shear": false,
+    "at": 40.0,
+    "sides": [
+     "r"
+    ]
+   },
+   {
+    "joint": "pitch",
+    "moving": "arm_hand_grip_base",
+    "static": "deck0",
+    "tier": 2,
+    "min": 1.5872500942748902,
+    "max": 40.0,
+    "ok": false,
+    "shear": false,
+    "at": 40.0,
+    "sides": [
+     "l"
+    ]
+   },
+   {
+    "joint": "pitch",
+    "moving": "arm_hand_grip_servo",
+    "static": "skirt0",
+    "tier": 2,
+    "min": 1.8957634984555207,
+    "max": 40.0,
+    "ok": false,
+    "shear": false,
+    "at": 40.0,
+    "sides": [
+     "l"
+    ]
+   },
+   {
+    "joint": "pitch",
+    "moving": "arm_hand_grip_servo",
+    "static": "skirt3",
+    "tier": 2,
+    "min": 1.913451567983198,
+    "max": 40.0,
+    "ok": false,
+    "shear": false,
+    "at": 40.0,
+    "sides": [
      "r"
     ]
    },
@@ -2717,49 +2796,7 @@
     "moving": "arm_hand_grip_base",
     "static": "deck2",
     "tier": 2,
-    "min": 1.39798830675754,
-    "max": 40.0,
-    "ok": false,
-    "shear": false,
-    "at": 40.0,
-    "sides": [
-     "r"
-    ]
-   },
-   {
-    "joint": "pitch",
-    "moving": "arm_hand_grip_base",
-    "static": "deck0",
-    "tier": 2,
-    "min": 1.9857009776776824,
-    "max": 40.0,
-    "ok": false,
-    "shear": false,
-    "at": 40.0,
-    "sides": [
-     "l"
-    ]
-   },
-   {
-    "joint": "pitch",
-    "moving": "arm_hand_grip_servo",
-    "static": "skirt0",
-    "tier": 2,
-    "min": 2.0064534813350896,
-    "max": 40.0,
-    "ok": false,
-    "shear": false,
-    "at": 40.0,
-    "sides": [
-     "l"
-    ]
-   },
-   {
-    "joint": "pitch",
-    "moving": "arm_hand_grip_servo",
-    "static": "skirt3",
-    "tier": 2,
-    "min": 2.078942839057516,
+    "min": 1.9878744702261029,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2773,7 +2810,7 @@
     "moving": "arm_hand_grip_base",
     "static": "rim",
     "tier": 2,
-    "min": 6.286644867879651,
+    "min": 5.983266656003435,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2788,7 +2825,7 @@
     "moving": "arm_hand_grip_base",
     "static": "skirt2",
     "tier": 2,
-    "min": 10.364496819950515,
+    "min": 12.95639355386741,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2802,7 +2839,21 @@
     "moving": "arm_hand_wr_cap",
     "static": "rim",
     "tier": 2,
-    "min": 17.351431901944686,
+    "min": 17.246456245082953,
+    "max": 40.0,
+    "ok": false,
+    "shear": false,
+    "at": 40.0,
+    "sides": [
+     "r"
+    ]
+   },
+   {
+    "joint": "pitch",
+    "moving": "arm_hand_palm",
+    "static": "rim",
+    "tier": 2,
+    "min": 18.896546098807935,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2814,16 +2865,15 @@
    },
    {
     "joint": "pitch",
-    "moving": "arm_hand_palm",
+    "moving": "arm_hand_wr_brg_L",
     "static": "rim",
     "tier": 2,
-    "min": 18.844904174264745,
+    "min": 23.152273987770176,
     "max": 40.0,
     "ok": false,
     "shear": false,
     "at": 40.0,
     "sides": [
-     "l",
      "r"
     ]
    },
@@ -2832,7 +2882,7 @@
     "moving": "roll_cover_yaw",
     "static": "torso_shell",
     "tier": 2,
-    "min": 17.199924892548506,
+    "min": 17.21353166140628,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2847,7 +2897,7 @@
     "moving": "arm_hand_grip_servo_sleeve",
     "static": "deck2",
     "tier": 2,
-    "min": 0.07910040478119487,
+    "min": 0.04859885955552184,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2861,21 +2911,7 @@
     "moving": "arm_hand_grip_servo_sleeve",
     "static": "deck0",
     "tier": 2,
-    "min": 0.14702537663190768,
-    "max": 40.0,
-    "ok": false,
-    "shear": false,
-    "at": -155.0,
-    "sides": [
-     "l"
-    ]
-   },
-   {
-    "joint": "yaw",
-    "moving": "arm_hand_grip_servo",
-    "static": "deck0",
-    "tier": 2,
-    "min": 0.173954059627423,
+    "min": 0.1680712047399698,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2889,7 +2925,7 @@
     "moving": "arm_hand_grip_servo",
     "static": "deck2",
     "tier": 2,
-    "min": 0.3399485135801718,
+    "min": 0.172990433867664,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2900,10 +2936,24 @@
    },
    {
     "joint": "yaw",
+    "moving": "arm_hand_grip_servo",
+    "static": "deck0",
+    "tier": 2,
+    "min": 0.3454555050837092,
+    "max": 40.0,
+    "ok": false,
+    "shear": false,
+    "at": -155.0,
+    "sides": [
+     "l"
+    ]
+   },
+   {
+    "joint": "yaw",
     "moving": "arm_hand_grip_base",
     "static": "deck0",
     "tier": 2,
-    "min": 1.756196138314079,
+    "min": 1.8022728593394575,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2917,7 +2967,7 @@
     "moving": "arm_hand_grip_base",
     "static": "deck2",
     "tier": 2,
-    "min": 1.8994658063396308,
+    "min": 1.9379010812745767,
     "max": 40.0,
     "ok": false,
     "shear": false,
@@ -2931,169 +2981,145 @@
    "roll": [
     {
      "lower": -15.0,
-     "fails": 8,
+     "fails": 7,
      "rows": [
       {
        "moving": "roll_cover_yaw",
-       "static": "roll_roll_link",
-       "min": 0.6114963490467415,
-       "max": 14.836671757333765
+       "static": "roll_roll_gim_housing",
+       "min": 0.38500018650090545,
+       "max": 8.03646040274175
       },
       {
        "moving": "roll_cover_yaw",
-       "static": "roll_roll_gim_housing",
-       "min": 1.4376332956084816,
-       "max": 9.370188594019755
+       "static": "roll_roll_link",
+       "min": 0.7083756461732957,
+       "max": 13.908978436270113
       },
       {
        "moving": "roll_yaw_block",
        "static": "roll_ferrule_m",
-       "min": 2.4587821151023017,
-       "max": 11.736184014705831
+       "min": 2.4979902680875954,
+       "max": 11.904125588351485
       },
       {
        "moving": "roll_yaw_band",
        "static": "roll_ferrule_m",
-       "min": 2.655727028142454,
-       "max": 31.08536630664017
-      },
-      {
-       "moving": "roll_cover_yaw",
-       "static": "roll_ferrule_m",
-       "min": 3.5099589631075934,
-       "max": 10.5373444126933
+       "min": 2.6710064421555875,
+       "max": 30.85511283669839
       },
       {
        "moving": "roll_roll_outflange",
        "static": "roll_roll_gim_housing",
-       "min": 8.443884131118587,
-       "max": 9.47386273051633
+       "min": 7.889084201769441,
+       "max": 8.911991232811529
       },
       {
        "moving": "roll_yaw_block",
        "static": "roll_roll_link",
-       "min": 9.641470681268808,
-       "max": 10.905524795628974
+       "min": 9.138630372947755,
+       "max": 14.154630042552585
       },
       {
        "moving": "roll_yaw_band",
        "static": "roll_roll_link",
-       "min": 13.024188745116652,
-       "max": 25.87591443853922
+       "min": 13.231567564985346,
+       "max": 25.503589757269296
       }
      ]
     },
     {
      "lower": 0.0,
-     "fails": 6,
+     "fails": 5,
      "rows": [
       {
        "moving": "roll_cover_yaw",
-       "static": "roll_roll_link",
-       "min": 0.6253815159706816,
-       "max": 12.872319554333439
-      },
-      {
-       "moving": "roll_cover_yaw",
        "static": "roll_roll_gim_housing",
-       "min": 1.4376332956084816,
-       "max": 9.32651554173021
+       "min": 0.38500018650090545,
+       "max": 8.03646040274175
       },
       {
        "moving": "roll_cover_yaw",
-       "static": "roll_ferrule_m",
-       "min": 3.5099589631075934,
-       "max": 10.5373444126933
+       "static": "roll_roll_link",
+       "min": 0.7083756461732957,
+       "max": 13.908978436270113
       },
       {
        "moving": "roll_roll_outflange",
        "static": "roll_roll_gim_housing",
-       "min": 8.443884131118587,
-       "max": 9.47386273051633
+       "min": 7.889084201769441,
+       "max": 8.911991232811529
       },
       {
        "moving": "roll_yaw_block",
        "static": "roll_roll_link",
-       "min": 11.307064957433804,
-       "max": 13.633195292268177
+       "min": 9.138630372947755,
+       "max": 14.154630042552585
       },
       {
        "moving": "roll_yaw_band",
        "static": "roll_ferrule_m",
-       "min": 23.3911728564036,
-       "max": 29.409750026849153
+       "min": 23.390443499905576,
+       "max": 29.54512652813924
       }
      ]
     },
     {
      "lower": 5.0,
-     "fails": 5,
+     "fails": 4,
      "rows": [
       {
        "moving": "roll_cover_yaw",
-       "static": "roll_roll_link",
-       "min": 0.6253815159706816,
-       "max": 12.872319554333439
-      },
-      {
-       "moving": "roll_cover_yaw",
        "static": "roll_roll_gim_housing",
-       "min": 1.4376332956084816,
-       "max": 9.32651554173021
+       "min": 0.38500018650090545,
+       "max": 8.03646040274175
       },
       {
        "moving": "roll_cover_yaw",
-       "static": "roll_ferrule_m",
-       "min": 3.5099589631075934,
-       "max": 10.5373444126933
+       "static": "roll_roll_link",
+       "min": 0.7083756461732957,
+       "max": 13.908978436270113
       },
       {
        "moving": "roll_roll_outflange",
        "static": "roll_roll_gim_housing",
-       "min": 8.443884131118587,
-       "max": 9.47386273051633
+       "min": 7.889084201769441,
+       "max": 8.911991232811529
       },
       {
        "moving": "roll_yaw_block",
        "static": "roll_roll_link",
-       "min": 11.307064957433804,
-       "max": 13.633195292268177
+       "min": 9.138630372947755,
+       "max": 14.154630042552585
       }
      ]
     },
     {
      "lower": 15.0,
-     "fails": 5,
+     "fails": 4,
      "rows": [
       {
        "moving": "roll_cover_yaw",
-       "static": "roll_roll_link",
-       "min": 0.6253815159706816,
-       "max": 12.872319554333439
-      },
-      {
-       "moving": "roll_cover_yaw",
        "static": "roll_roll_gim_housing",
-       "min": 1.4376332956084816,
-       "max": 9.32651554173021
+       "min": 0.38500018650090545,
+       "max": 8.03646040274175
       },
       {
        "moving": "roll_cover_yaw",
-       "static": "roll_ferrule_m",
-       "min": 3.5099589631075934,
-       "max": 10.5373444126933
+       "static": "roll_roll_link",
+       "min": 0.7083756461732957,
+       "max": 13.908978436270113
       },
       {
        "moving": "roll_roll_outflange",
        "static": "roll_roll_gim_housing",
-       "min": 8.443884131118587,
-       "max": 9.47386273051633
+       "min": 7.889084201769441,
+       "max": 8.911991232811529
       },
       {
        "moving": "roll_yaw_block",
        "static": "roll_roll_link",
-       "min": 11.602051919305943,
-       "max": 13.633195292268177
+       "min": 9.374992628181761,
+       "max": 14.154630042552585
       }
      ]
     },
@@ -3104,26 +3130,26 @@
       {
        "moving": "roll_cover_yaw",
        "static": "roll_roll_gim_housing",
-       "min": 1.4376332956084816,
-       "max": 9.32651554173021
+       "min": 0.38500018650090545,
+       "max": 8.03646040274175
       },
       {
        "moving": "roll_cover_yaw",
        "static": "roll_roll_link",
-       "min": 2.0952132225333373,
-       "max": 12.872319554333439
-      },
-      {
-       "moving": "roll_cover_yaw",
-       "static": "roll_ferrule_m",
-       "min": 5.388091834058205,
-       "max": 10.5373444126933
+       "min": 2.2835193615357245,
+       "max": 13.277234668894403
       },
       {
        "moving": "roll_roll_outflange",
        "static": "roll_roll_gim_housing",
-       "min": 8.443884131118587,
-       "max": 9.47386273051633
+       "min": 7.889084201769441,
+       "max": 8.911991232811529
+      },
+      {
+       "moving": "roll_yaw_block",
+       "static": "roll_roll_link",
+       "min": 12.156802698902677,
+       "max": 14.154630042552585
       }
      ]
     },
@@ -3134,44 +3160,38 @@
       {
        "moving": "roll_cover_yaw",
        "static": "roll_roll_gim_housing",
-       "min": 1.4376332956084816,
-       "max": 9.32651554173021
+       "min": 0.7261428561012047,
+       "max": 8.000584372094938
       },
       {
        "moving": "roll_cover_yaw",
        "static": "roll_roll_link",
-       "min": 7.178314664635824,
-       "max": 13.381586542917988
+       "min": 7.146885072438481,
+       "max": 13.277234668894403
       },
       {
        "moving": "roll_roll_outflange",
        "static": "roll_roll_gim_housing",
-       "min": 8.443884131118587,
-       "max": 9.47386273051633
+       "min": 7.889084201769441,
+       "max": 8.911991232811529
       }
      ]
     },
     {
      "lower": 60.0,
-     "fails": 3,
+     "fails": 2,
      "rows": [
       {
        "moving": "roll_cover_yaw",
        "static": "roll_roll_gim_housing",
-       "min": 2.124654565581344,
-       "max": 9.50027942990305
+       "min": 1.7979631430473355,
+       "max": 8.013631720252084
       },
       {
        "moving": "roll_roll_outflange",
        "static": "roll_roll_gim_housing",
-       "min": 8.443884131118587,
-       "max": 9.47386273051633
-      },
-      {
-       "moving": "roll_cover_yaw",
-       "static": "roll_roll_link",
-       "min": 24.950323939863154,
-       "max": 33.09520562697268
+       "min": 7.889084201769441,
+       "max": 8.911991232811529
       }
      ]
     },
@@ -3182,8 +3202,8 @@
       {
        "moving": "roll_cover_yaw",
        "static": "roll_roll_gim_housing",
-       "min": 6.422599594993314,
-       "max": 11.591363090091095
+       "min": 6.825194800172529,
+       "max": 11.423819201715055
       }
      ]
     },
@@ -3194,8 +3214,8 @@
       {
        "moving": "roll_cover_yaw",
        "static": "roll_roll_gim_housing",
-       "min": 8.724316319425736,
-       "max": 12.087548874867283
+       "min": 8.84292547565382,
+       "max": 12.319316312037708
       }
      ]
     }
