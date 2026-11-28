@@ -23,7 +23,7 @@
 | cover belt_duct [2/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [4/5] | 16 × 27 × 188 | 29 | ✅ |
 | cover belt_duct [5/5] | 16 × 27 × 188 | 29 | ✅ |
-| yaw plate bottom | 8 × 187 × 187 | 73 | ✅ |
+| yaw plate bottom | 8 × 188 × 188 | 73 | ✅ |
 | cover spine_pod | 55 × 110 × 167 | 89 | ✅ |
 | visor | 120 × 166 × 166 | 82 | ✅ |
 | shoulder bracket body | 150 × 158 × 162 | 188 | ✅ |
@@ -113,7 +113,7 @@
 | Piece | kg |
 |---|---|
 | base | 7.78 |
-| upper core | 8.60 |
-| arm (each) | 4.80 |
+| upper core | 8.88 |
+| arm (each) | 4.90 |
 | battery | 1.10 |
-| total robot | 27.07 |
+| total robot | 27.55 |
