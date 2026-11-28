@@ -36,7 +36,7 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | pitch | 16 | 16/16 (2 by ball-end) ✅ | — |
 | elbow | 12 | 12/12 ✅ | — |
 | yaw | 10 | 10/10 ✅ | — |
-| lift | 2 | 2/2 (1 by ball-end) ✅ | — |
+| lift | 4 | 4/4 (1 by ball-end) ✅ | — |
 | wrist | 12 | 12/12 ✅ | — |
 | roll (inline) | 16 | 16/16 ✅ | — |
 
@@ -56,8 +56,10 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | yaw | flange ear screw -50° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | yaw | flange ear screw +145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
 | yaw | flange ear screw -145° (M4, site yaw) | swap | ✅ straight Ø6 × 80 | — |
-| lift | flange ear screw +140° (M4, site lift) | swap | ✅ straight Ø6 × 80 | — |
-| lift | flange ear screw -140° (M4, site lift) | swap | ✅ ball-end 15° (az 225°) | rim |
+| lift | flange ear screw +40° (M4, site lift4) | swap | ✅ straight Ø6 × 80 | — |
+| lift | flange ear screw -40° (M4, site lift4) | swap | ✅ straight Ø6 × 80 | — |
+| lift | flange ear screw +140° (M4, site lift4) | swap | ✅ straight Ø6 × 80 | — |
+| lift | flange ear screw -140° (M4, site lift4) | swap | ✅ ball-end 15° (az 225°) | rim |
 | pitch | exit-slot strap M4 x -26 | swap | ✅ ball-end 15° (az 90°) | carriage |
 | pitch | exit-slot strap M4 x -8 | swap | ✅ ball-end 15° (az 90°) | carriage |
 | pitch | exit-slot strap M4 x +8 | swap | ✅ straight Ø6 × 80 | — |
@@ -124,7 +126,7 @@ A cartridge flange needs ≥ 3 ears with no gap > 120° between neighbours, or �
 | pitch | pitch4 | +40, -40, +160 (rev), -120 (rev) | 120° | ✅ |
 | elbow | elbow | +40, -40, +140, -140 | 100° | ✅ |
 | yaw | yaw | +50, -50, +145, -145 | 100° | ✅ |
-| lift | lift | +140, -140 | 280° | ❌ |
+| lift | lift4 | +40, -40, +140, -140 | 100° | ✅ |
 
 ## R14 (d) cartridge swap (belt on, shaft in place)
 
@@ -135,5 +137,5 @@ Flange screws out (rows above), then the cartridge moves along its axis in 2.5 m
 | pitch | ✅ | 8.5 mm along its axis, then 150 mm sideways through wall A's exit slot (270°) |
 | elbow | ✅ | straight out 113 mm along its axis |
 | yaw | ✅ | straight out 113 mm along its axis |
-| lift | ✅ | 4.5 mm along its axis, then 150 mm sideways through its side exit (slot at 180°) |
+| lift | ✅ | 8.5 mm along its axis, then 150 mm sideways through wall A's exit slot (0°) |
 | wrist (hand off) | ✅ | straight out 69 mm along its axis |
