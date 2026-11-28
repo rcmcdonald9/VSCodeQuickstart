@@ -71,7 +71,7 @@
 | roll arm rear | 18 × 71 × 88 | 32 | ✅ |
 | cartridge M can | 44 × 87 × 87 | 50 | ✅ |
 | KX56 collar | 19 × 78 × 85 | 28 | ✅ |
-| cover yaw hood TPU skirt (PIP_WEDGE_GUARD=skirt, TPU 95A) | 39 × 69 × 82 | 25 | ✅ |
+| cover yaw hood TPU skirt (PIP_WEDGE_GUARD=skirt, TPU 95A) | 39 × 69 × 82 | 26 | ✅ |
 | KX74 male | 8 × 80 × 80 | 29 | ✅ |
 | cartridge M adapter | 12 × 80 × 80 | 45 | ✅ |
 | cartridge M rear cap (D24) | 4 × 80 × 80 | 18 | ✅ |
