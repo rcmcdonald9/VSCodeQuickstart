@@ -60,8 +60,8 @@ T_CMP_RC = 40e-9                            # TLV3202 delay modelled as an RC (�
 # Fix found by this simulation: the clamp's own turn-on step at the board node (≈ 146 A × C1's ESR + the film cap's sag ≈ 2 V)
 # is larger than the 1.2 V hysteresis window, so the 55 ns comparator turns straight off again and the chopper rings at the
 # gate-edge rate (MHz). An RC filter on the divider and a minimum on-time (a one-shot ORed into the gate) bound it.
-CMP_FILTER = 2e-6                           # s, divider filter
-T_ON_MIN = 50e-6                            # s, minimum clamp on-time (SN74LVC1G123 one-shot on OV ↑, ORed with OV and FORCE)
+CMP_FILTER = el.CMP_FILTER                  # s, divider filter
+T_ON_MIN = el.T_ON_MIN                      # s, minimum clamp on-time (SN74LVC1G123 one-shot on OV ↑, ORed with OV and FORCE)
 L_BENCH_LEAD = 1.5                          # m, bench arm lead 14 AWG (ESTIMATE: board on the bench, arm on its stand)
 # K1 coil (TE ALEV100 24 V): ESTIMATEs until measured on the part (board test T4 measures the release)
 COIL = dict(R=170.0, L=0.5, i_drop_frac=0.15, t_mech=0.004)   # Ω, H, drop-out at 15 % of the hold current, armature travel s
@@ -231,11 +231,11 @@ def _harness(which, prof, ic=None, idle_scale=1.0):
 
 VARIANTS = {
     # netlist v3 as drawn: TLV3202 straight on the divider, on at 26.4 V + 0.6, off at 26.4 − 0.6 (electrical.clamp_check's corners)
-    "v3": dict(rise=el.CLAMP["v_on"] + el.CLAMP["hyst"], fall=el.CLAMP["v_on"] - el.CLAMP["hyst"], fix=False),
+    "v3": dict(rise=26.4 + 0.6, fall=26.4 - 0.6, fix=False),
     # v3 thresholds + the divider filter and the minimum on-time
-    "v3+ton": dict(rise=el.CLAMP["v_on"] + el.CLAMP["hyst"], fall=el.CLAMP["v_on"] - el.CLAMP["hyst"], fix=True),
-    # proposed: filter + on-time, on at 26.0 V, 0.3 V hysteresis (the on-time sets the real swing)
-    "fix": dict(rise=26.0, fall=25.7, fix=True),
+    "v3+ton": dict(rise=26.4 + 0.6, fall=26.4 - 0.6, fix=True),
+    # proposed (now electrical.CLAMP): filter + on-time, on at 26.0 V, off at 25.7 V (the on-time sets the real swing)
+    "fix": dict(rise=el.CLAMP["v_on"] + el.CLAMP["hyst"], fall=el.CLAMP["v_on"] - el.CLAMP["hyst"], fix=True),
 }
 TOL = el.CLAMP["v_tol"]
 
@@ -943,9 +943,10 @@ DESIGN_CHANGES = [
     "lifts it above the board. The branch limits above are a requirement on the drive torque limits and the planner (≤ that regen power per branch "
     "during a controlled stop), and the bench scopes the bus **at the drive** (T8). If a joint needs more, it needs a thicker branch or a local clamp.",
     "6. **Branch fuse vs the in-arm 16 AWG:** a 20 A slow-blow leaves the clock-spring 16 AWG unprotected from ≈ 18 A to ≈ 35 A (it may take minutes "
-    "at 22–30 A; section 4), and 15 A still leaves ≈ 20 A for up to 600 s. The fuse handles shorts; overloads need a **branch current monitor**: a Hall "
-    "sensor per arm branch on the board (ACS724-30A class) → 5 s RC → comparator at 16 A → STOP (into U10's CLR̄, latched), with F3 → 15 A. "
-    "Step 1 (≤ 13.8 A peak on a 14 AWG lead) is protected by the 20 A fuse and the supply latch as it is.",
+    "at 22–30 A; section 4), and a 15 A fuse still leaves ≈ 20 A for up to 600 s (and is under 1.25 × the arm's 14.8 A sustained). The fuse stays 20 A "
+    "for shorts; overloads get a **branch current monitor**: a Hall sensor per arm branch on the board (ACS724-30A class) → 5 s RC → comparator at "
+    "16 A → STOP (into U10's CLR̄, latched). Needed before the arm's own harness is powered (Step 2); Step 1 (≤ 13.8 A peak on a 14 AWG lead) is "
+    "protected by the 20 A fuse and the supply latch as it is.",
 ]
 
 
@@ -953,7 +954,9 @@ def tests_md(R):
     """Motorless board test procedure with pass/fail numbers (Step-1 gate)."""
     d_m1 = next(d for d in R["dumps"] if d["which"] == "M1" and d["envelope"] and d["scale"] == 1.0 and d["corner"] == "high")
     p_m1 = next(p for p in R["precharge"] if p["which"] == "M1" and not p.get("timeout") and p["t_operate"] == T_K1_OPERATE[1])
-    p_dum = next(p for p in R["precharge"] if p.get("timeout"))
+    p_dum = next(p for p in R["precharge"] if p.get("timeout") and p["which"] == "M1")
+    d045 = next(d for d in R["dumps"] if d["which"] == "M1" and d["variant"] == "fix" and d["scale"] == 0.45 and d["corner"] == "high")
+    lim = R["regen_limit"]["M1"]["P_max"]
     dis = R["discharge"][0]
     sc = R["stop_chain"]["M1"]
     wd = el.WATCHDOG["t_nom"]
@@ -1009,14 +1012,15 @@ def tests_md(R):
         ("T11", "Clamp switching edge", "regen source 20 A into TP2, clamp chopping", "TP3 drain overshoot, TP4 gate edge, freewheel current",
          f"TP3 ≤ 48 V (simulated {d_m1['v_drain_max']:.1f} V); gate edge 0.2–0.5 µs; no ringing > 5 V after 1 µs", "layout loop / R_G / diode"),
         ("T12", "Regen at the drive", "regen source at TP2: 10, 20, 30 A steps for 200 ms; then the 22 mF / 30 V bank dumped into TP2 10× in 1 s",
-         "TP1 and **TP2** max, resistor plate temperature", f"TP2 ≤ 27.5 V at the branch limit current (simulated board ceiling {d_m1['v_board_max']:.2f} V + harness drop); "
-         "plate ≤ 60 °C after the 10 dumps; TH1 opens at 85 °C ± 5 (heat gun)", "branch regen limit (design change 5)"),
+         "TP1 and **TP2** max, resistor plate temperature", f"TP2 ≤ {d045['drives']['n0T'] + 0.3:.1f} V at {lim / 26:.0f} A (the {lim:.0f} W regen limit; simulated "
+         f"{d045['drives']['n0T']:.2f} V at the lead end, {d045['v_drive_max']:.2f} V at the elbow at {d045['regen_P']:.0f} W); chopper 1–20 kHz, never MHz bursts on TP4; "
+         "plate ≤ 60 °C after the 10 dumps; TH1 opens at 85 °C ± 5 (heat gun)", "filter / on-time / regen limit (design changes 0, 5)"),
         ("T13", "Loss of clamp power", "armed, running; pull F2 (12 V / 3.3 V logic) for 1 s", "K1, LATCH, TP4",
          "K1 opens (WD_OK has no supply), board comes back disarmed; with design change 4: 12 V UVLO opens K1 before the 3.3 V rail falls", "UVLO"),
         ("T14", "AUX faults", "(a) cut the AUX opto wire while running; (b) short the AUX opto output while stopped and press ARM",
          "K1, FORCE, supply current", "(a) stop (FORCE + K1 opens; the supply may latch: acceptable); (b) ARM refused (design change 2)", "AUX logic"),
         ("T15", "Welded K1 (simulated)", "replace K1's main contact with a 10 AWG link (coil still driven), stop the heartbeat",
-         "FORCE, supply state", "design change 3: FORCE ≤ 30 ms after Q4 off, the SE-1000 latches off (power removed)", "detector"),
+         "FORCE, supply state", "design change 3: FORCE 30–40 ms after Q4 off, the SE-1000 latches off (power removed)", "discrepancy monitor"),
         ("T16", "Supply trip", "with the dummy bank and 2.2 Ω, raise the load until the SE-1000 trips (≥ 43.8 A)", "board state after the trip and after re-power",
          "board disarmed after re-power (T1); no fuse operated; wiring ≤ 60 °C", "POR / wiring"),
     ]
@@ -1033,7 +1037,10 @@ def tests_md(R):
           "- [ ] Q4 coil driver V_DS ≥ 2 × (supply + V_Z1) and V_GS(th) specified at the driving voltage; Q5 likewise; gate pull-downs so a dead driver means off.",
           "- [ ] D1 + Z1 orientation (Zener reverse-biased in normal operation, diode blocks the supply); coil suppression on K2 too.",
           "- [ ] Mushroom channel 1 in series with the coil on the **high side** of the coil, channel 2 only to logic; both NC; wiring diagram shows both buttons.",
-          "- [ ] TLV3202 divider: 0.1 % resistors, the hysteresis resistor, a filter cap ≤ 100 ns; reference TL431B decoupled; PRE_OK compares VBUS with VIN (not with a fixed level).",
+          "- [ ] TLV3202 divider: 0.1 % resistors, the hysteresis resistor, the 2 µs RC (design change 0); reference TL431B decoupled; PRE_OK compares VBUS with VIN (not with a fixed level).",
+          "- [ ] U16 minimum on-time (50 µs, triggered by OV ↑) ORed with OV and FORCE before the UCC27524; nothing else can hold the gate on.",
+          "- [ ] U17 discrepancy monitor: XOR(Q4 gate, AUX), RC 30 ms (> the contactor's 25 ms max operate time), into U6's trigger and U10's CLR̄.",
+          "- [ ] U18 12 V UVLO and U19 branch-current trip (16 A, 5 s) into U10's CLR̄; F3 still in series for shorts.",
           "- [ ] UCC27524 supply from U2 with the 12 V UVLO into the coil chain; gate resistors per MOSFET; Kelvin source not required but source returns to the film cap.",
           "- [ ] Freewheel Schottky across **each** NH-50 (anode at the drain, cathode at VBUS); IFSM, V_RRM ≥ 60 V.",
           "- [ ] Ideal diode U1/Q6 orientation (blocks VBUS → PSU), its gate supply, reverse-recovery behaviour on a fast regen edge.",
