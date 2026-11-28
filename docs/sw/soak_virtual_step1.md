@@ -7,11 +7,11 @@ Motion: 45.0 s, RMS torque {'yaw': 0.517, 'wpitch': 0.512} of rated, supervisor 
 | Joint | F_c start → end | B | K | backlash ° | latency mean / p95 ms | drift | verdict |
 |---|---|---|---|---|---|---|---|
 | yaw | 0.1343 → 0.1346 | 0.195 → 0.197 | 0.97366 → 0.97324 | 1.311 → 1.224 | 2.0/2.0 → 2.0/2.0 | {'coulomb_pct': 0.179, 'viscous_pct': 1.29, 'kt_pct': -0.043, 'backlash_deg': -0.087, 'latency_mean_ms': 0.0, 'latency_p95_ms': 0.0} | ✅ |
-| wpitch | 0.0448 → 0.0451 | 0.472 → 0.472 | 1.01863 → 1.01857 | 0.284 → 0.306 | 2.2/2.9 → 2.0/2.0 | {'coulomb_pct': 0.58, 'viscous_pct': -0.125, 'kt_pct': -0.006, 'backlash_deg': 0.022, 'latency_mean_ms': -0.167, 'latency_p95_ms': -0.9} | ✅ |
+| wpitch | 0.0448 → 0.0451 | 0.471 → 0.471 | 1.01861 → 1.01857 | 0.284 → 0.306 | 2.2/2.9 → 2.0/2.0 | {'coulomb_pct': 0.669, 'viscous_pct': -0.161, 'kt_pct': -0.004, 'backlash_deg': 0.022, 'latency_mean_ms': -0.167, 'latency_p95_ms': -0.9} | ✅ |
 
 - ℹ️ kernel real-time (PREEMPT_RT): 6.18.44-fc-v880 (PREEMPT_DYNAMIC (not RT)); policy SCHED_OTHER prio 0; isolated CPUs —; governor None — not the Pi: informational
 - ℹ️ CPU throttling / under-voltage (vcgencmd get_throttled): not available on this machine (skipped)
 - ℹ️ CPU temperature: no sensor readable (skipped)
-- ℹ️ loop period (SW1: p99 |period − 2 ms| < 1 ms): p50 0.51, p99.9 2.82, max 18.96 ms; jitter p99 1.64 ms; > 8 ms: 2 — virtual run: compute time per cycle, not a real-time measurement
+- ℹ️ loop period (SW1: p99 |period − 2 ms| < 1 ms): p50 0.50, p99.9 2.57, max 16.20 ms; jitter p99 1.63 ms; > 8 ms: 2 — virtual run: compute time per cycle, not a real-time measurement
 - ⚠️ CAN B2 controller health: state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +3, RX dropped +2
 - ⚠️ CAN B1 controller health: state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +3, RX dropped +0

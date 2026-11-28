@@ -7,13 +7,13 @@ Motion: 45.0 s, RMS torque {'yaw': 0.522, 'wpitch': 0.512} of rated, supervisor 
 | Joint | F_c start → end | B | K | backlash ° | latency mean / p95 ms | drift | verdict |
 |---|---|---|---|---|---|---|---|
 | yaw | 0.1633 → 0.3561 | 0.209 → 0.195 | 0.97545 → 0.9758 | 0.219 → 0.262 | 2.2/2.9 → 2.0/2.0 | {'coulomb_pct': 118.143, 'viscous_pct': -6.713, 'kt_pct': 0.036, 'backlash_deg': 0.044, 'latency_mean_ms': -0.167, 'latency_p95_ms': -0.9} | ❌ |
-| wpitch | 0.0529 → 0.0690 | 0.453 → 0.449 | 1.01863 → 1.01878 | 0.240 → 0.219 | 2.3/4.0 → 2.0/2.0 | {'coulomb_pct': 30.261, 'viscous_pct': -0.815, 'kt_pct': 0.015, 'backlash_deg': -0.022, 'latency_mean_ms': -0.333, 'latency_p95_ms': -2.0} | ❌ |
+| wpitch | 0.0529 → 0.0689 | 0.452 → 0.448 | 1.01861 → 1.01876 | 0.240 → 0.219 | 2.3/4.0 → 2.0/2.0 | {'coulomb_pct': 30.382, 'viscous_pct': -0.841, 'kt_pct': 0.015, 'backlash_deg': -0.022, 'latency_mean_ms': -0.333, 'latency_p95_ms': -2.0} | ❌ |
 
 - ℹ️ kernel real-time (PREEMPT_RT): 6.18.44-fc-v880 (PREEMPT_DYNAMIC (not RT)); policy SCHED_OTHER prio 0; isolated CPUs —; governor None — not the Pi: informational
 - ℹ️ CPU throttling / under-voltage (vcgencmd get_throttled): not available on this machine (skipped)
 - ℹ️ CPU temperature: no sensor readable (skipped)
-- ℹ️ loop period (SW1: p99 |period − 2 ms| < 1 ms): p50 0.55, p99.9 2.29, max 12.79 ms; jitter p99 1.62 ms; > 8 ms: 3 — virtual run: compute time per cycle, not a real-time measurement
+- ℹ️ loop period (SW1: p99 |period − 2 ms| < 1 ms): p50 0.49, p99.9 1.48, max 11.46 ms; jitter p99 1.62 ms; > 8 ms: 3 — virtual run: compute time per cycle, not a real-time measurement
 - ⚠️ CAN B2 controller health: state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +3, RX dropped +2
 - ⚠️ CAN B1 controller health: state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +3, RX dropped +0
 
-**Fails:** yaw coulomb_pct +118.14 (limit 20.0); wpitch coulomb_pct +30.26 (limit 20.0)
+**Fails:** yaw coulomb_pct +118.14 (limit 20.0); wpitch coulomb_pct +30.38 (limit 20.0)
