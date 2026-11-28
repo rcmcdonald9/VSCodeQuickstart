@@ -65,22 +65,22 @@ Worst case: **both arms + the lift decelerating at once, at the drives' peak tor
 
 | Joint (each arm) | Motor | I + rotor (kg·m²) | Top speed (rad/s) | Energy (J) | Peak bus power (W) | Stop time (s) |
 |---|---|---|---|---|---|---|
-| shoulder pitch | GIM8108-8 | 2.06 | 5.9 | 36 | 282 | 0.18 |
-| shoulder roll | GIM8108-36 | 2.17 | 6.8 | 50 | 545 | 0.14 |
+| shoulder pitch | GIM8108-8 | 2.07 | 5.9 | 36 | 282 | 0.18 |
+| shoulder roll | GIM8108-36 | 2.17 | 6.8 | 51 | 545 | 0.14 |
 | upper-arm yaw | GIM6010-8 | 0.62 | 13.7 | 58 | 114 | 0.38 |
 | elbow | GIM8108-8 | 0.69 | 5.9 | 12 | 282 | 0.06 |
-| lift (moving 18.9 kg; 34.0 kg with the rotor) | GIM6010-8 | – | 0.73 m/s | 13 | 321 | – |
-| **Robot total (2 arms + lift)** | | | | **323 J** | **2767 W** | |
+| lift (moving 19.4 kg; 34.5 kg with the rotor) | GIM6010-8 | – | 0.73 m/s | 13 | 321 | – |
+| **Robot total (2 arms + lift)** | | | | **324 J** | **2767 W** | |
 | M1 bench (one arm, 2 kg in hand, D20 motors) | | | | 119 J | 1328 W | |
 
-Continuous regen: lowering the torso at full speed returns 136 W, at the rated 0.20 m/s 37 W. The clamp's continuous rating is 150 W (3 NH-50 on their reference heatsink), so **lowering is capped at the rated speed whenever the pack is full or the supply is a bench PSU** (planner rule; the clamp's thermal switch latches a fault if it is ignored).
+Continuous regen: lowering the torso at full speed returns 140 W, at the rated 0.20 m/s 38 W. The clamp's continuous rating is 150 W (3 NH-50 on their reference heatsink), so **lowering is capped at the rated speed whenever the pack is full or the supply is a bench PSU** (planner rule; the clamp's thermal switch latches a fault if it is ignored).
 
 **Part (Neon review #2 finding 1):** 3 × **Vishay Dale NH-50, 0.56 Ω** (the RH-50's housing with a non-inductive Ayrton-Perry winding: Vishay gives the NH the same ratings as the RH, 50 W on its heatsink, short-time overload 5 × rated for 5 s = **1250 J per resistor**) in parallel = 0.19 Ω, switched by 3 × Infineon IRFB7530PbF (60 V, 2.0 mΩ max, 195 A package limit; one per resistor), **each resistor with a Vishay VS-40CPQ060-N3 (60 V, 2 × 20 A common-cathode Schottky, TO-247AC, both legs in parallel) across it** (freewheel path), a TI TLV3202 dual push-pull comparator (40 ns typ, 55 ns max) with a TL431B reference (on 26.0 V, off 25.7 V, ± 1 %; 2 µs filter, 50 µs minimum on-time), a UCC27524 gate driver with gate resistors that set ≈ 0.3 µs switching edges, 10 µF film capacitors at the MOSFETs, and an 85 °C NC thermal switch on the resistor plate. **Mandatory on the M1 bench** (a bench PSU cannot sink current). The 33 V TVS stays only as an edge snubber: a TVS that does not conduct at 25.2 V clamps far above 28 V at current, so it cannot enforce the drive limit (Astra 17). On the bench, an ideal-diode stage stops regen reaching the PSU.
 
 | Check | Value | Limit | |
 |---|---|---|---|
 | Sink power at the lowest threshold (25.59 V² / 0.19 Ω) | 3509 W | ≥ worst-case peak 2767 W | ✅ |
-| Pulse energy per resistor (323 J / 3) over the longest stop (0.38 s; mean 282 W = 5.6 × rated) | 108 J | ≤ min(25 % of the 5 s rating, rating × √(t / 5 s)) = 312 J (ESTIMATE; 2.9×) | ✅ |
+| Pulse energy per resistor (324 J / 3) over the longest stop (0.38 s; mean 282 W = 5.6 × rated) | 108 J | ≤ min(25 % of the 5 s rating, rating × √(t / 5 s)) = 312 J (ESTIMATE; 2.9×) | ✅ |
 | Highest bus voltage while clamping (+1 % tol. + hysteresis + comparator delay × dV/dt) | 26.26 V | ≤ 28 V − 0.5 V | ✅ |
 | Clamp off at a full pack (lowest threshold − hysteresis) | 25.44 V (with the comparator delay 25.44 V) | > 25.2 V | ✅ |
 | Peak current (MOSFETs, wiring) | 141 A (47 A per MOSFET) | 195 A package limit each | ✅ |
@@ -240,8 +240,8 @@ Bench tests of the board before any motor (bring-up step 0): ARM refused with a 
 **Integrated stop on the virtual bench** (sw/test_s2.py `test_integrated_stop`, docs/sw/integrated_stop.json; board model at monostable +20 % and a 10 ms release): a contact latches the collision fault only and the compliant hold keeps the heartbeat and K1; every hard fault then overrides it (ms to heartbeat drop / contactor open / no torque: e-stop 12 / 10 / 10; process hang 0 / 38 / 32; NaN feedback 2 / 38 / 2; bus silent 22 / 58 / 32; bus-off 22 / 58 / 32; over-temperature 10 / 46 / 10; supply trip 2 / 0 / 2). **A silent bus or bus-off is the slow case:** the supervisor needs fb_max_age (20 ms) to call it, then the watchdog runs, so the contactor opens at 58 ms and the hardware path alone ends at ≈ 61 ms, over the 50 ms budget; torque is gone at 32 ms only because the drive's own CAN timeout (30 ms) fires. That timeout is unverified on the GIM (Step 1, sw.gim_discover): without it the hardware path must lose ≈ 11 ms: fb_max_age ≤ 9 ms on the real adapter (it is 20 ms for the 0–9 ms pil9 bus), or watchdog_s ≤ 15 ms (sized at 25 ms on loop jitter).
 
 ### Category-0 drop protection (bench)
-Category 0 removes torque, so the arm falls (Astra 18). From horizontal, the M1 arm (D20 motors, 1 kg in hand, 6.3 kg outboard of pitch, COM 305 mm) releases **14 J** after the balancer's share; with a 10 lb half-basket it is 24 J. Rules for every powered bench test:
-- **Mechanical catch:** an adjustable padded cradle (EVA foam on a bolted aluminium bar) set ≤ 50 mm under the forearm or hand in every pose under test, or a Dyneema tether from the stand with ≤ 50 mm slack: drop energy ≤ 3.1 J. Rated ≥ 618 N (10 × the arm's weight).
+Category 0 removes torque, so the arm falls (Astra 18). From horizontal, the M1 arm (D20 motors, 1 kg in hand, 6.4 kg outboard of pitch, COM 303 mm) releases **15 J** after the balancer's share; with a 10 lb half-basket it is 24 J. Rules for every powered bench test:
+- **Mechanical catch:** an adjustable padded cradle (EVA foam on a bolted aluminium bar) set ≤ 50 mm under the forearm or hand in every pose under test, or a Dyneema tether from the stand with ≤ 50 mm slack: drop energy ≤ 3.1 J. Rated ≥ 628 N (10 × the arm's weight).
 - Payload tray under the gripper; belt guards on; the stand bolted to the bench; operator outside the whole fall envelope (remote button).
 - On the robot (later): SS1 (controlled stop, then torque off) with a rated delay relay; the lift pawl holds the torso.
 
