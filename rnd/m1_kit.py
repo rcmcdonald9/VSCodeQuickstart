@@ -29,7 +29,12 @@ E = "ESTIMATE"
 E_D20 = "ESTIMATE (D20 redesign: the cartridge track sets the exact parts)"
 
 # --- sourced unit prices used in more than one list (search snapshots 2026-11-27 unless noted) -------------------------
-GIM6010 = (90.0, "aifitlab $90 with SDC104 (loop 14); Robotics Center lists $70, backordered (2026-11-27)")
+# D29 #2 (cost_down.md, sourcing only): the robot and Step 2 buy at Robotics Center's $70 (SDC104, 24 V; backordered); the
+# current aifitlab $90 listing stays the fallback. Step 1 buys its one unit now, so it is priced at the fallback (it must not
+# wait on a backorder).
+GIM6010 = (70.0, "Robotics Center of Silicon Valley $70 (SDC104 driver, 24 V; 'backordered, sourced to order', 2026-11-28 snapshot); "
+                 "**fallback: aifitlab $90 with SDC104** (loop 14) if the backorder outlasts the buy")
+GIM6010_FALLBACK = (90.0, "aifitlab $90 with SDC104 (loop 14; the D29 fallback: Robotics Center's $70 is backordered, 2026-11-28)")
 GIM8108_8 = (115.0, "ESTIMATE: aifitlab $85 bare (no driver, backordered) + ≈ $25 driver (the GIM6010 gap $70 → $90); "
                     "openelab.com $113.99–213.99 by variant")
 GIM8108_8_HI = 213.99
@@ -96,7 +101,30 @@ KEYED_PULLEY = (12.0, "ESTIMATE: aluminium HTD 5M 20T, 15 mm belt, 12 H7 bore + 
 B61808 = (2.02, "AliExpress MOCHU 10-pack snapshot (loop 14)")
 B6801 = (0.90, E)
 PSU = (174.80, "Bravo Electro $174.80; Master Electronics $170.13 (2026-11-27 search snapshots)")
-AL_CAP = (15.0, "ESTIMATE: 6061 Ø86–96 × 6 disc with fins, JLCCNC / PCBWay-class instant quote")
+AL_CAP_MACHINED = (15.0, "ESTIMATE: 6061 Ø86–96 × 6 disc with fins, JLCCNC / PCBWay-class instant quote")
+# D29 #5 (PIP_REAR_CAP=stock, not adopted): the stock round LED heatsink at its US retail listings, not the $6 the cost-down
+# list assumed (that is an Alibaba wholesale price with a minimum order)
+AL_CAP_STOCK = (25.79, "Newegg 90 × 10 mm round 10 W LED aluminium heatsink: 5-pack $128.95 ($25.79 each), single $34.00–35.49, ships from "
+                       "China (2026-11-28 search); Alibaba sunflower extrusions from ≈ $4.80/kg need a minimum order; + facing and 3 holes by the builder")
+from .params import CASTER_RELEASE, DETACH_CLAMP, JOINT_ENCODER, REAR_CAP  # noqa: E402  (D29 switches)
+AL_CAP = AL_CAP_STOCK if REAR_CAP == "stock" else AL_CAP_MACHINED
+# D29 #7 (sourcing only, no design change): Vishay NH-50 0.56 Ω 1 % non-inductive, part number NH050R5600FE02 (inferred from
+# Vishay's NH code: NH050R1000FC02 = 100 mΩ, NH05050R00FE02 = 50 Ω); no distributor listing of that value was found
+NH50 = (18.0, "ESTIMATE $18 each for NH050R5600FE02: NH-50 single-unit listings IBS NH05050R00FE02 $15.01 (10 wk), Tedss NH-50 0.5 Ω $19.99, "
+              "0.2 Ω $15 ($12 at 5+), Quest NH-50 50 Ω $15 at 1 / $6.5 at 28 (2026-11-28 search; no 0.56 Ω price published, was $30 ESTIMATE); "
+              "not the RH050R5600FE05 (wirewound RH, Neon #2 F1)")
+CLAMP_PARTS = 37.0      # the regen-clamp line less its 3 NH-50: Schottkys, MOSFETs, driver, caps, thermal switch, plate (ESTIMATE)
+# D29 #9 (PIP_CASTER_RELEASE=cable): one central solenoid pulling the 4 lock plates (rnd/tip.py cable_release: the JF-1039 is 0.84×)
+SOLENOID_55N = (26.62, "eBay JF-1264B 24 V push-pull solenoid, 55 N, 10 mm (2026-11-28 search snapshot); rnd/tip.py: 1.85× / 1.06× the 4-cable pull")
+CABLE_KIT = (12.0, "ESTIMATE: 4 × 0.3 m Ø1 7×7 stainless cable + PTFE liners (bike-brake class), crimp stops, a printed equaliser plate")
+# D29 #10 arm-detach clamp (params PIP_DETACH_CLAMP)
+DETACH_CLAMPS = {"dixon": (25.0, '3" quick-release squeeze tri-clamp, 304 SS (Dixon 13MHHM-Q300)', "hosewarehouse (Dixon 13MHHM-Q300)"),
+                 "wingnut": (10.40, '3" single-hinge wing-nut tri-clamp, 304 SS (generic homebrew class; hand-tight, then a firm quarter turn)',
+                             "Howdybrewer 3\" 304 tri-clamp $10.40 (2026-11-28 search); Craft Kettle 3\" single-hinge heavy-duty $7.28, Steel & O'Brien 13MHHM-3-304 $17.69 (Zoro); "
+                             "no generic quick-release squeeze clamp was found below the Dixon (Steel & O'Brien 13MHHMQ-3-304 $46.39, Zoro)")}
+DETACH_CLAMP_P = DETACH_CLAMPS[DETACH_CLAMP]
+# D29 #6 joint encoders (params PIP_JOINT_ENCODER)
+ENCODER_P = {"as5048a": (12.0, "ESTIMATE: AS5048A board"), "mt6701": (4.0, "MT6701 boards: OnBuy 10-pack £22.33 (≈ $2.9 each), eBay $2.80, Walmart $7.10 (2026-11-28 search)")}[JOINT_ENCODER]
 # Waves 12–13 (Astra review #3, 2026-11-28): the parts the merged design added or changed.
 PINION = (35.0, "ESTIMATE (docs/rnd/belts.md, Astra #3 m7): one turned + hobbed C45+QT integral pinion shaft (stub v5: Ø42 × 4 flange, neck, "
                 "20T HTD 5M cut on the shaft, Ø15 collar, Ø12 k5 6001 seat) ≈ $35 each in 10s vs ≈ $25 for the v4 stub + keyed pulley + key; "
@@ -129,8 +157,9 @@ def step1():
     """Step 1: one joint, the GIM protocol and the safety chain (Fable verdict)."""
     j, s = (150.0, "Robotics Center $150 in stock (2026-11-27); AIFIT $125 backordered"), (19.5, "loop 14 retailer snapshot")
     return [
-        ("Actuators", "SteadyWin GIM6010-8 **24 V, SDC104 driver version** (ONE)", 1, *GIM6010[:1],
-         "the Step-1 joint (protocol discovery, limits, CAN timeout, e-stop on a real GIM); later the upper-arm yaw (20T:40T)", GIM6010[1]),
+        ("Actuators", "SteadyWin GIM6010-8 **24 V, SDC104 driver version** (ONE)", 1, *GIM6010_FALLBACK[:1],
+         "the Step-1 joint (protocol discovery, limits, CAN timeout, e-stop on a real GIM); later the upper-arm yaw (20T:40T)",
+         GIM6010_FALLBACK[1] + "; take the $70 Robotics Center unit instead if it ships in time (−$20)"),
         ("Actuators", "Damiao DM-J4310-2EC **V1.1**", 1, *j[:1], "wrist pitch; its MIT protocol is known: the second motor on the Step-1 bus", j[1]),
         ("Electronics (A14)", "USB-CAN adapter, candleLight / gs_usb (FYSETC UCAN, STM32F072), onboard 120 Ω (jumper)", 2, 19.0,
          "can_map.yaml buses B1 + B2 = SocketCAN can0 / can1", "MatterHackers $19 (2026-11)"),
@@ -146,8 +175,8 @@ def step1():
         ("Power (M2)", "4,700 µF 35 V bus capacitor + **60 A MIDI** main fuse (F1, sized for the robot pack) and 20 A ATO arm-lead fuse with holders + 10 / 14 AWG silicone wire, XT60",
          1, 30.0, "electrical.md safety-board netlist F1, F3, C1 (Neon #2 F1: a 40 A ATO never clears on the 41.7 A supply)", E),
         ("Power (A5 v2)", "Regen clamp / bus discharge: 3 × **Vishay NH-50 0.56 Ω (non-inductive)** + 3 × **VS-40CPQ060-N3 freewheel Schottky** + 3 × IRFB7530 + gate driver + gate resistors, film caps, 85 °C thermal switch, heatsink plate",
-         1, 127.0, "mandatory on a bench supply; Neon #2 F1: the wirewound RH-50 with no freewheel path avalanched the MOSFETs (electrical.md)",
-         "ESTIMATE: NH-50 $30 each (IBS NH05050R00FE02 $15.01, Future NH05025R00FE02 $42.30); VS-40CPQ060-N3 RS £37 / 25; rest as before"),
+         1, 3 * NH50[0] + CLAMP_PARTS, "mandatory on a bench supply; Neon #2 F1: the wirewound RH-50 with no freewheel path avalanched the MOSFETs (electrical.md)",
+         "NH-50 (NH050R5600FE02) " + NH50[1] + "; VS-40CPQ060-N3 RS £37 / 25; rest ESTIMATE"),
         ("Power (A5 v2)", "E-stop: 2 two-channel latching mushrooms + TE ALEV100 DC contactor (24 V coil, aux contact) + K_PRE relay + 3.3 Ω RH-50 pre-charge "
          "+ SN74LVC1G123 watchdog on its own LDO", 1, 150.0, "category-0 stop; watchdog 25 ms (sized on sw/loop_jitter.py)",
          "LEV100A5ANG $92 (Master Electronics); rest ESTIMATE"),
@@ -235,7 +264,7 @@ def step2_common():
          "12 × ISO 7089 washers", 1, 4.0, "Neon #2 F2: 4 ears per site (yaw side-fed nuts, pitch4 rear pair reversed); tipping ≥ 10× at 30 % preload", E),
         ("Fasteners", "Hardened dowels Ø6 × 10 (yaw hard-stop pin) + Ø6 × 12 (3 × KX-V ferrule dowels)", 1, 6.0, "yaw stops ±155°, arm detach ferrule", E),
         ("Structure", "Carbon tubes Ø40×1 + Ø30×1 (one arm)", 1, 40.0, "upper-arm neck (bond ≈ 55 mm), forearm link (30 mm into each socket)", E),
-        ("Structure", '3" quick-release squeeze tri-clamp, 304 SS', 1, 25.0, "KX-V ferrule at the shoulder (arm detach)", "hosewarehouse (Dixon 13MHHM-Q300)"),
+        ("Structure", DETACH_CLAMP_P[1], 1, DETACH_CLAMP_P[0], "KX-V ferrule at the shoulder (arm detach; D29 #10, PIP_DETACH_CLAMP)", DETACH_CLAMP_P[2]),
         ("Balancer (A9)", "ISO 10243 green die spring Ø25 / Ø12.5 × L0 115, 18.7 N/mm (Berger Tools V25-115 or Accu TJL25-115) + 2 mm UHMWPE cord", 1, 14.0,
          "2:1 tackle balancer, pin B b 20 mm, a 40–60 mm (balancer.md)", E),
         ("Sensors (M3)", "4 × AS5048A joint encoders + 2 RP2040 CAN nodes (shoulder + elbow) + 2 tactile pads + palm ToF", 1, 96.0,
@@ -384,6 +413,10 @@ def items():
 
 
 CHANGES = [
+    "**D29 cost route (2026-11-28, cost_down.md):** GIM6010-8 at Robotics Center's $70 (backordered) in Step 2 and the holds, with aifitlab's "
+    "$90 as the fallback; Step 1's one unit stays at the $90 fallback because Step 1 is bought now. NH-50 clamp resistors $30 → $18 ESTIMATE "
+    "(NH050R5600FE02; no 0.56 Ω listing found, NH-50 single-unit listings $12–20). The arm-detach clamp follows PIP_DETACH_CLAMP. Not adopted: "
+    "the stock rear-cap heatsink (thermal re-check fails, and the retail listing is dearer than the CNC cap) and the MT6701 encoders.",
     "**Waves 12–13 refresh (2026-11-28, Astra review #3):** the drive stub is now a **C45+QT integral pinion shaft** with the 20T hobbed on it (stub v5, m7: "
     "the keyed v4 stub was 0.68× / 1.19× in rotating-bending fatigue): Step 1's stub line becomes the pinion ($35 ESTIMATE, belts.md), and Step 2 no "
     "longer buys the yaw's keyed aluminium 20T or the key assortment; hold A / B pulleys + stubs become pinions. **D26 tension rings** (turned 6061-T6, "
@@ -432,7 +465,10 @@ CHECKS = [
     "Drive stub (D26): measure the GIM output's bolt circle, pilot and output-bearing position on the Step-1 motor (coupon_motor) and set belt_stage.STUB / "
     "MOTOR['out_pcd'] before quoting the stubs from the STEP; the 6001 seat k6, the pulley seat h6 with a 4 mm keyway.",
     "Crush sleeves (W8c, D26): measure each printed stack; pitch / yaw sleeves turned 42CrMo4+QT (R_p0.2 ≥ 750 MPa on the certificate) to print − 0.05 mm; clevis / rear sleeves cut from the E235+C tube sticks and faced in the jig to print − 0.05 ± 0.02 (micrometer).",
-    "Vishay NH-50 (not RH-50) for the three clamp resistors: the part number starts NH050; the pre-charge and dummy-load resistors stay RH-50.",
+    "Vishay NH-50 (not RH-50) for the three clamp resistors: the part number starts NH050 (0.56 Ω 1 %: NH050R5600FE02; confirm the code with the "
+    "distributor, D29 #7); the pre-charge and dummy-load resistors stay RH-50.",
+    "GIM6010-8 at $70 (D29 #2): Robotics Center is backordered: confirm the SDC104 24 V version in writing (seller question 6) and the ship date "
+    "before paying; fall back to the $90 aifitlab listing if it would hold Step 2 up.",
     "Heat-set inserts: the short M4 (5.7 mm) the flange calls for; the long 8.1 mm ones don't fit the 6 mm flange.",
     "Integral pinion shafts (v5): quote from the STEP after the GIM output PCD is measured; check the hobbed 20T against a stock HTD 5M belt (pitch diameter "
     "31.83 mm, root Ø26.6), the Ø12 k5 seat and the C45+QT certificate (R_e ≥ 490 MPa).",

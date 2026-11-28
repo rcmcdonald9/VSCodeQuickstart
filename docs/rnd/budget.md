@@ -2,12 +2,12 @@
 
 | Module | Mass (kg) | Target (R3) | Status |
 |---|---|---|---|
-| base | 7.78 | ≤ 8 | ✅ |
+| base | 7.70 | ≤ 8 | ✅ |
 | battery | 1.10 | ≤ 3 | ✅ |
 | ballast (2 removable blocks) | 4.90 | ≤ 10 | ✅ |
 | upper | 8.88 | ≤ 10 | ✅ |
 | arm (each, detachable) | 4.90 | ≤ 10 | ✅ |
-| **total robot** | **32.45** | | |
+| **total robot** | **32.37** | | |
 
 **base detail**
 
@@ -17,7 +17,7 @@
 | omni wheels | 1.800 |
 | wheel cartridges | 1.552 |
 | power board (A5 v2 contactor, pre-charge, clamp plate; A10 v2: in the base) | 0.750 |
-| anti-tip casters D18b (4 × lockable skid feet) | 0.720 |
+| anti-tip casters D18b (4 × lockable skid feet) | 0.640 |
 | electronics | 0.350 |
 | shell | 0.330 |
 | lidar | 0.150 |

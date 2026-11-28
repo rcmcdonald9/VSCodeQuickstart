@@ -122,15 +122,17 @@ assert REAR_CAP in ("machined", "stock"), "PIP_REAR_CAP must be machined | stock
 # #6 joint-side encoders on the 7 shaft-end joints: "as5048a" (default) | "mt6701" (rnd/accuracy.py ENCODERS).
 JOINT_ENCODER = os.environ.get("PIP_JOINT_ENCODER", "as5048a")
 assert JOINT_ENCODER in ("as5048a", "mt6701"), "PIP_JOINT_ENCODER must be as5048a | mt6701"
-# #9 D18b caster lock release: "four" = one 24 V pull solenoid per caster (default); "cable" = one central solenoid pulling
+# #9 D18b caster lock release: "four" = one 24 V JF-1039 pull solenoid per caster; "cable" (default since D29, re-check passed:
+# A10 16/16, 35 mm; force 1.85× / 1.06× with a 55 N JF-1264B; release 31 / re-lock 22 ms, tip.md) = one central solenoid pulling
 # 4 Ø1 steel cables in PTFE liners (rnd/tip.py cable_release). caster_mass per caster: "cable" drops the 0.05 kg solenoid
 # and carries a quarter of the central solenoid + cables (ESTIMATE: JF-1264B ≈ 0.09 kg + 4 × 0.25 m cable/liner ≈ 0.03 kg).
-CASTER_RELEASE = os.environ.get("PIP_CASTER_RELEASE", "four")
+CASTER_RELEASE = os.environ.get("PIP_CASTER_RELEASE", "cable")
 CASTER_RELEASES = {"four": dict(caster_mass=0.18), "cable": dict(caster_mass=0.18 - 0.05 + (0.09 + 0.03) / 4)}
 assert CASTER_RELEASE in CASTER_RELEASES, f"PIP_CASTER_RELEASE must be one of {list(CASTER_RELEASES)}"
-# #10 arm-detach clamp (KX-V ferrule, 3" sanitary profile): "dixon" = Dixon 13MHHM-Q300 quick-release squeeze clamp (default);
-# "wingnut" = a generic 304 3" single-hinge wing-nut clamp (rnd/bom.py DETACH_CLAMPS).
-DETACH_CLAMP = os.environ.get("PIP_DETACH_CLAMP", "dixon")
+# #10 arm-detach clamp (KX-V ferrule, 3" sanitary profile): "dixon" = Dixon 13MHHM-Q300 quick-release squeeze clamp;
+# "wingnut" (default since D29, re-check passed: preload 1.0–5.8 kN vs 832 N needed, two-arm split 16 s / join 24 s ≤ 30 s,
+# rnd/bom.py detach_recheck) = a generic 304 3" single-hinge wing-nut clamp (m1_kit DETACH_CLAMPS).
+DETACH_CLAMP = os.environ.get("PIP_DETACH_CLAMP", "wingnut")
 assert DETACH_CLAMP in ("dixon", "wingnut"), "PIP_DETACH_CLAMP must be dixon | wingnut"
 
 

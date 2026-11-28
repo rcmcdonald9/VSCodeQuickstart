@@ -44,8 +44,8 @@ Ambient 30 °C, limit 100 °C, ΔT at rated (open, still air) 60 K, τ 600 s; h_
 | wpitch (DM-J4310-2EC_V1.1) | 0.39 | 2.25 | 42 °C | **40 °C** ✅ | 37 °C ✅ | 36 °C ✅ |
 | wroll | 0.01 | 0.73 | 40 °C | **40 °C** ✅ | 40 °C ✅ | not in a sleeve (old model) |
 | lift | 167.29 | 235.85 | 70 °C | **70 °C** ✅ | 70 °C ✅ | not in a sleeve (old model) |
-| base_x | 8.76 | 98.43 | 40 °C | **40 °C** ✅ | 40 °C ✅ | not in a sleeve (old model) |
-| base_y | 0.20 | 98.43 | 40 °C | **40 °C** ✅ | 40 °C ✅ | not in a sleeve (old model) |
+| base_x | 8.74 | 98.43 | 40 °C | **40 °C** ✅ | 40 °C ✅ | not in a sleeve (old model) |
+| base_y | 0.19 | 98.43 | 40 °C | **40 °C** ✅ | 40 °C ✅ | not in a sleeve (old model) |
 
 **Hottest winding on a non-stop task day: 103 °C in the closed sleeve** (the old open + 10 K model said 70 °C; with an aluminium rear cap 70 °C; limit 100 °C). The sleeve wall runs cooler than the old model said (50 °C: the trapped air inside holds the heat back), so **the limit is the winding, not the ASA**. **Day-1 actions (Fable M7):** a 10 k NTC on every GIM sleeve plus the drive's own temperature in the bring-up log; an aluminium rear cap on the first cartridge (Step 1 of the M1 kit) to measure the difference; vents in the R17 covers over each cap.
 
@@ -82,7 +82,7 @@ Belt joints: closed sleeve + aluminium finned rear cap (bom.py / m1_kit AL_CAP).
 | B1 (D20) | shoulder_pitch (GIM8108-8, sleeve + Al cap) | R2c hug 0.25 m, held | 13.9 / 21.4 | **59 °C** ✅ | 51–78 °C ✅ | 83 °C ✅ | unlimited / unlimited | 22.8 / 18.2 (1.65× / 1.31× the duty) | ≤ 154 K (model 57 K, band ≤ 90 K) | any (no cap needed) |
 | B1 (D20) | shoulder_pitch (GIM8108-8, sleeve + Al cap) | R2d basket carry 2 min, from the task-day temperature | 20.0 / 21.4 | **57 °C** ✅ | 48–79 °C ✅ | 84 °C ✅ | — / — | — (2-min duty) | — | — |
 | B1 (D20) | shoulder_pitch (GIM8108-8, sleeve + Al cap) | R2d basket carry 2 min at a 70/30 share, heavier hand, from the task-day temperature | 27.0 / 21.4 | **65 °C** ✅ | 52–96 °C ✅ | 101 °C ❌ | — / — | — (2-min duty) | — | — |
-| B1 (D20) | shoulder_roll (GIM8108-36, cover) | task day (non-stop fetch, worst corner) | 1.7 / 26.3 | **36 °C** ✅ | 33–41 °C ✅ | 46 °C ✅ | unlimited / unlimited | 17.5 / 13.4 (10.52× / 8.07× the duty) | not binding (> 250 K) | — |
+| B1 (D20) | shoulder_roll (GIM8108-36, cover) | task day (non-stop fetch, worst corner) | 1.7 / 26.3 | **36 °C** ✅ | 33–41 °C ✅ | 46 °C ✅ | unlimited / unlimited | 17.5 / 13.4 (10.51× / 8.06× the duty) | not binding (> 250 K) | — |
 | B1 (D20) | shoulder_roll (GIM8108-36, cover) | worst 1 kg workspace hold | 17.1 / 35.1 | **70 °C** ✅ | 56–99 °C ✅ | 104 °C ❌ | unlimited / unlimited | 23.4 / 17.9 (1.37× / 1.05× the duty) | not binding (> 250 K) | — |
 | B1 (D20) | shoulder_roll (GIM8108-36, cover) | R2d basket carry 2 min, from the task-day temperature | 1.7 / 35.1 | **36 °C** ✅ | 33–41 °C ✅ | 46 °C ✅ | — / — | — (2-min duty) | — | — |
 | B1 (D20) | shoulder_roll (GIM8108-36, cover) | R2d basket carry 2 min at a 70/30 share, heavier hand, from the task-day temperature | 2.2 / 35.1 | **36 °C** ✅ | 33–41 °C ✅ | 46 °C ✅ | — / — | — (2-min duty) | — | — |
@@ -163,7 +163,7 @@ Machined cap: fin area 3 × the disc, contact 0.5 K/W (band 0.25–2). Stock Ø9
 | B1 (D20) | elbow (GIM8108-8) | task day (non-stop fetch | 36 / 42 °C ✅ | 36 / 42 °C ✅ | any |
 | B1 (D20) | elbow (GIM8108-8) | worst 1 kg workspace hold | 41 / 50 °C ✅ | 41 / 51 °C ✅ | any |
 | B1 (D20) | elbow (GIM8108-8) | R2c hug 0.25 m | 59 / 78 °C ✅ | 59 / 84 °C ✅ | any |
-| B1 (D20) | elbow (GIM8108-8) | R2d basket carry 2 min | 40 / 50 °C ✅ | 40 / 51 °C ✅ | — |
+| B1 (D20) | elbow (GIM8108-8) | R2d basket carry 2 min | 40 / 50 °C ✅ | 40 / 52 °C ✅ | — |
 | B1 (D20) | elbow (GIM8108-8) | R2d basket carry 2 min at a 70/30 share | 43 / 57 °C ✅ | 43 / 59 °C ✅ | — |
 | B1y | shoulder_pitch (GIM8108-8) | task day (non-stop fetch | 47 / 60 °C ✅ | 47 / 63 °C ✅ | any |
 | B1y | shoulder_pitch (GIM8108-8) | worst 1 kg workspace hold | 54 / 69 °C ✅ | 54 / 74 °C ✅ | any |

@@ -24,4 +24,6 @@ calibration) and the unmeasured bending.
 Plus unmeasured bending: bones 1.9 mm, mast 1.6 mm (worst static, 1 kg).
 The wrist camera closes the last loop on the object, so those terms matter for blind or fast moves, not for visually-servoed grasps.
 
+**D29 #6 (cost_down.md, PIP_JOINT_ENCODER; this page uses AS5048A (SPI)):** hand error with joint encoders, calibrated: AS5048A (SPI) 0.050° → **0.9 mm** (band 0.9–0.9 mm); MT6701 (SSI) 0.062° → **1.1 mm** (band 0.9–1.6 mm). The wrist pitch keeps its DM-J4310 output encoder (0.05°) either way.
+
 **Decision (D9):** fit AS5048A joint-side encoders on the 8 arm belt joints and the lift. That's about $140 including 3 small CAN encoder nodes. Precedent: link-side encoders on Franka and other research arms.

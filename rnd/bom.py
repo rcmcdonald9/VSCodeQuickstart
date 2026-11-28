@@ -44,15 +44,16 @@ def items(d=BASELINE):
     A("Wheels & power", "E-stop (A5 v2): 2 two-channel latching mushrooms + TE ALEV100 DC contactor (24 V coil, aux contact) + switched pre-charge (K_PRE relay + 3.3 Ω RH-50) + SN74LVC1G123 watchdog on its own LDO", 1, 150.0,
       "LEV100A5ANG $92 (Master Electronics); rest ESTIMATE")
     A("Wheels & power", "Regen clamp / bus discharge (A5 v2, Neon #2 F1): 3 × Vishay **NH-50** 0.56 Ω (non-inductive) + 3 × VS-40CPQ060-N3 freewheel Schottky + 3 × IRFB7530 + "
-      "TLV3202 / TL431B, gate driver + gate resistors, film caps, 85 °C thermal switch (robot peak regen 2.8 kW; electrical.md)", 1, 127.0,
-      "ESTIMATE: NH-50 $30 each (IBS NH05050R00FE02 $15.01, Future NH05025R00FE02 $42.30); VS-40CPQ060-N3 RS £37 / 25; rest ESTIMATE")
+      "TLV3202 / TL431B, gate driver + gate resistors, film caps, 85 °C thermal switch (robot peak regen 2.8 kW; electrical.md)", 1, 3 * K.NH50[0] + K.CLAMP_PARTS,
+      "D29 #7: NH-50 NH050R5600FE02 " + K.NH50[1] + "; VS-40CPQ060-N3 RS £37 / 25; rest ESTIMATE")
     A("Wheels & power", "Safety-board logic (netlist v3, electrical.md): discharge one-shot (LVC1G123 on Ā), LVC1G74 latch + power-on reset, LVC1G11 / LVC1G32 / LVC1G04 (K1 hold on AUX), UCC27524, "
       "1 kΩ 3 W bleeder, 12 V buck + 3.3 V LDO, 2 × PC817, 2-layer PCB (the M1 bench board moves to the robot; its ideal diode stays on the bench)", 1, 40.0, "ESTIMATE")
     A("Wheels & power", "Safety-board netlist v3 additions (Astra #3 critical 3, safety_board_sim.md): Q4 100 V logic-level coil driver (was a 30 V part seeing ≈ 52 V), "
       "U16 50 µs minimum-on one-shot, U17 AUX / K1 discrepancy monitor, U18 12 V UVLO; the branch current trip (ACS724-30A + RC + comparator) is the next line",
       1, K.BOARD_V3[0] - K.ACS724[0] + 1.0, K.BOARD_V3[1])
     A("Wheels & power", "Arm-branch current trip U19 (one per arm branch: the 20 A fuse leaves the in-arm 16 AWG unprotected at 18–35 A; electrical.md U19)", 2, *K.ACS724)
-    A("Drive & structure", f"Thermal (Fable M7; thermal.md §3 'the mount the BOM pays for'): aluminium finned rear caps on the {ns} arm belt-joint GIM6010 cartridges "
+    cap_w = "stock Ø90 × 10 round LED heatsinks, faced and drilled (D29 #5)" if K.REAR_CAP == "stock" else "aluminium finned rear caps"
+    A("Drive & structure", f"Thermal (Fable M7; thermal.md §3 'the mount the BOM pays for'): {cap_w} on the {ns} arm belt-joint GIM6010 cartridges "
       "(the inline roll runs bare under its cover) + 10 k NTC per GIM; capless, the task-day winding is 102 °C (limit 100), with the cap 68 °C", 1, ns * K.AL_CAP[0] + 6.0,
       "m1_kit AL_CAP: " + K.AL_CAP[1] + "; NTC 10-pack ESTIMATE $6")
     A("Wheels & power", "DC-DC 24→12 V 10 A (head servos), 24→5 V 5 A", 1, 30.0)
@@ -68,7 +69,9 @@ def items(d=BASELINE):
     A("Compute & sensors", "Head RGB-D camera (Orbbec Gemini 2: 0.15–10 m, global-shutter IR, 98 g)", 1, 234.0, "store.orbbec.com (loop 14); Gemini 336 was $310")
     A("Compute & sensors", "Wrist camera (D12): global-shutter OV9281-class MIPI-CSI module + FFC through the wrist + CSI→USB (UVC) bridge on the forearm + slim 4-core high-flex USB (OD ≤ 2.2 mm)", 2, 55.0, "T01: USB versions $60–155; CSI module + bridge ESTIMATE")
     # --- sensor pack v2 (owner, loop 15: favour accuracy + dexterity over cost) ---
-    A("Sensor pack v2", f"Joint-side absolute encoders AS5048A + diametric magnets on the shaft ends ({ns} arm belt joints + lift) → hand error 4.0 → 0.9 mm (accuracy.md)", ns + 1, 12.0, "ESTIMATE")
+    enc = "MT6701 (D29 #6)" if K.JOINT_ENCODER == "mt6701" else "AS5048A"
+    A("Sensor pack v2", f"Joint-side absolute encoders {enc} + diametric magnets on the shaft ends ({ns} arm belt joints + lift) → hand error 4.3 → "
+      f"{__import__('rnd.accuracy', fromlist=['score']).score(d)[0]:.1f} mm (accuracy.md)", ns + 1, *K.ENCODER_P)
     if inline:
         A("Sensor pack v2", "Inline-roll joint encoder: off-axis ring magnet round the GIM8108-36 + encoder board + printed bracket (the motor fills the axis; "
           "the old 9-encoder line counted the roll as a belt joint)", 2, 20.0, "ESTIMATE (rnd/inline_study.py OFFAXIS_ENC, same in every variant)")
@@ -141,8 +144,14 @@ def items(d=BASELINE):
     A("Drive & structure", "D18b v2 skid feet: PTFE tape on the 4 flanks (the feet themselves print in PETG, ≈ 25 g each, from the bundle's spare)", 1, *K.PTFE_TAPE)
     A("Drive & structure", "D18b caster mechanics: 2 × Ø8 h6 guide rods (≈ 90 mm), spring-applied one-way rod lock plate (caulk-gun type), 5 N spring, steel top plate", 4, 8.0,
       "ESTIMATE (8 mm linear rod ≈ $6 / 300 mm; plates on the SendCutSend order)")
-    A("Drive & structure", "D18b lock release: 24 V pull solenoid (spring-applied lock: e-stop / power loss = locked)", 4, *K.SOLENOID)
-    A("Drive & structure", "D18b solenoid drivers: 4 × logic-level MOSFET + flyback diode + JST, on the power board (SW-T2 caster-lock output)", 1, 6.0, "ESTIMATE")
+    if d.base.caster_release == "cable":                        # D29 #9 (rnd/tip.py cable_release: JF-1039 0.84×, JF-1264B 1.85× / 1.06×)
+        A("Drive & structure", "D18b lock release (D29 #9): ONE central 24 V pull solenoid, 55 N, pulling the 4 spring-applied lock plates through Ø1 cables "
+          "(e-stop / power loss = all locked)", 1, *K.SOLENOID_55N)
+        A("Drive & structure", "D18b release cables: 4 × Ø1 steel cable in PTFE liners + crimp stops + printed equaliser", 1, *K.CABLE_KIT)
+        A("Drive & structure", "D18b solenoid driver: 1 × logic-level MOSFET + flyback diode + JST, on the power board (SW-T2 caster-lock output)", 1, 4.0, "ESTIMATE")
+    else:
+        A("Drive & structure", "D18b lock release: 24 V pull solenoid (spring-applied lock: e-stop / power loss = locked)", 4, *K.SOLENOID)
+        A("Drive & structure", "D18b solenoid drivers: 4 × logic-level MOSFET + flyback diode + JST, on the power board (SW-T2 caster-lock output)", 1, 6.0, "ESTIMATE")
     A("Drive & structure", "A10 v2 rear ballast (D26): 2 × 2.45 kg removable blocks, each one saw-cut 92 mm drop of 1-3/4 × 3\" A36 flat bar (44.5 × 76.2; was 7 laser-cut "
       "1/4\" plates + bolts, $100), ends deburred", 1, *K.BALLAST_BAR)
     A("Drive & structure", "Ballast pull loops: 2 × 25 mm polyester webbing under the blocks (lift-out, R3)", 1, 2.0, "ESTIMATE")
@@ -162,7 +171,7 @@ def items(d=BASELINE):
                 A("Drive & structure", f"Inline roll (W8c{'' if once else ', both arms'}): {n}", q if once else 2 * q, u, src)
     A("Drive & structure", "Al square tube 60×60×2, 1.1 m (mast), black anodised", 1, 45.0, "no US listing found: ESTIMATE")
     A("Drive & structure", "Carbon tubes Ø40×38 (0.5 m) + Ø30×28 (1 m), roll-wrapped", 1, 70.0, "eBay / Carbonwebshop listings")
-    A("Drive & structure", '3" quick-release squeeze tri-clamp, 304 SS (arm detach; flange OD 90.9 mm confirmed)', 2, 25.0, "hosewarehouse (Dixon 13MHHM-Q300)")
+    A("Drive & structure", K.DETACH_CLAMP_P[1] + " (arm detach; flange OD 90.9 mm confirmed; D29 #10)", 2, K.DETACH_CLAMP_P[0], K.DETACH_CLAMP_P[2])
     A("Drive & structure", "Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards", 1, 35.0, "ESTIMATE")
     A("Drive & structure", "Balancers (A9): ISO 10243 green die spring Ø25/Ø12.5 × 115, 18.7 N/mm (Berger Tools V25-115 / Accu TJL25-115) + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
     A("Drive & structure", "Fasteners (other), heat-set inserts (base, torso, head), epoxy, grease", 1, 60.0)
@@ -177,7 +186,8 @@ def items(d=BASELINE):
 
 
 # loop 47 cost pass: the same parts at the best verified price (motor choices unchanged); wave-2 cost pass (2026-11-27) below
-BEST_PRICE = {"GIM6010-8": (90.0, "aifitlab $90 with SDC104 driver (actuators.yaml, loop 14); SteadyWin store $93.88 with GDS68"),
+BEST_PRICE = {"GIM6010-8": (K.GIM6010[0], "D29 #2: " + K.GIM6010[1] + f" (+${K.GIM6010_FALLBACK[0] - K.GIM6010[0]:.0f} a unit); "
+                                           "SteadyWin store $93.88 with GDS68"),
               "GIM8108-36": (240.0, "with a driver: SteadyWin store $239.80 (GDM810 = SDC303, 24 V), aifitlab $240 (GDK810); bare motor $190 "
                                     "(aifitlab, backordered), so the yaml mid $171 had no driver (2026-11-27 search snapshots)"),
               "DM-J4310-2EC_V1.1": (125.0, "AIFit Lab $125 (24 V V1.1/V3, US seller; backordered 2026-11-27): the full-robot buy "
@@ -213,8 +223,8 @@ D26_ROWS = [
 # D26: what is left of the gap to $5,500 after the couplings went. (match on the item name, credible alternative, saving
 # in $ of lines before contingency, as a function of the line's qty); the top lines by landed cost come from items().
 GAP_ALTS = [
-    (lambda n: n == "GIM6010-8", "Robotics Center lists the GIM6010-8 at $70 (backordered, 2026-11-27, m1_kit.GIM6010); the 4 wheel units could only "
-     "go cheaper with a base-drive redesign (not costed)", lambda q: q * (90.0 - 70.0)),
+    (lambda n: n == "GIM6010-8", "already at Robotics Center's $70 (D29 #2, backordered; $90 fallback); the 4 wheel units could only "
+     "go cheaper with a base-drive redesign (not costed)", lambda q: 0.0),
     (lambda n: n == "GIM8108-36", "belt roll fallback (PIP_ROLL_DRIVE=belt: a GIM6010-8 on 18T:80T, CAD and checks in the tree); the owner chose the inline "
      "roll for its hand-feel and slimmer shoulder", lambda q: HOLDS["inline"] / (1 + CONTINGENCY)),
     (lambda n: n.startswith("DM-J4310"), "none sourced cheaper in the US: Foxtech $116–120 ships from China (duty eats the gap); $125 is AIFit Lab, "
@@ -261,7 +271,7 @@ def drivers(d=BASELINE):
          g(is_sl), "the 16 pitch sleeves from 1/4\" × .035\" 4130 tube (F_ty 517) once shoulder.py's sleeve hole goes Ø7.1 → Ø6.45 (located by the hole; "
          "the pitch stall row 1.18 → 1.08×, rnd/joints.py SLEEVE_STOCK); the yaw's Ø4.6 has no stock tube that clears its stall stress", 16 * (K.SLEEVE[0] - K.SLEEVE_ALT[0])),
         ("D18b lockable casters (W8d; D26: PTFE skid feet instead of 2\" ball transfers): glides + tape, rods + lock, 24 V solenoids, drivers", g(lambda n: n.startswith("D18b")) - OLD_LINES["casters"],
-         "none sourced cheaper: the JF-1039 at $12.99 is the low listing; one solenoid pulling 4 Bowden cables would save ≈ $27 but its force budget is untested", 0.0),
+         "D29 #9 done where PIP_CASTER_RELEASE=cable: one 55 N solenoid pulling 4 cables (the 25 N JF-1039 cannot: tip.md); nothing cheaper sourced", 0.0),
         ("C1 joint hardware both arms (tie-rods, 6061 yaw flange, 7075 crank): in the M1 kit, never added to the BOM", g(lambda n: n.startswith("C1 joint") and "sleeves" not in n),
          "none: the printed joints are what failed (Fable C1)", 0.0),
         ("Rear ballast 2 × 2.45 kg (W8d; D26: saw-cut 1-3/4 × 3\" flat bar instead of laser-cut plate stacks)", g(lambda n: "allast" in n), "none (a local yard drop is the floor)", 0.0),
@@ -383,7 +393,7 @@ def savings(I):
              checks="R17 rnd.pinch and A10 rnd.tip on PIP_ROLL_DRIVE=belt (not re-run since W13), R2d basket (not run on the belt roll), thermal (roll GIM6010 "
                     "in a sleeve: needs its Al cap), roll_inline.md all rows", own="**owner** (D24 reversal); roll track (rnd/parts/roll.py) re-runs",
              gates="R16 ❌, R17 / A10 / R2d to re-run", flag=True),
-        dict(t=f"GIM6010-8 at the $70 listing ({n_gim} units)", s=n_gim * (K.GIM6010[0] - 70.0),
+        dict(t=f"GIM6010-8 at the $70 listing ({n_gim} units)", s=n_gim * (90.0 - 70.0),
              change="same motor, same SDC104 24 V driver, bought at Robotics Center's $70 list (backordered 2026-11-27) instead of aifitlab's $90",
              risk="backorder / lead time; a different reseller may ship the 48 V or GDS68 driver variant (seller question 6)",
              checks="seller question 6 answered in writing (24 V SDC104, drawing); arrival check of the label + firmware (M1 CHECKS)",
@@ -403,7 +413,7 @@ def savings(I):
              change="no design change: the line's $30 each is an ESTIMATE; the same Vishay NH-50 series lists at $15.01 (IBS, another value)",
              risk="the 0.56 Ω value may carry a premium or a minimum order; do not substitute the wirewound RH-50 (Neon #2 F1)",
              checks="part number starts NH050 (M1 CHECKS); pulse rating confirmed with Vishay (electrical.md)", own="electrical track + cost/BOM", gates="none"),
-        dict(t="Stock aluminium heatsinks for the 6 finned rear caps", s=6 * (K.AL_CAP[0] - 6.0),
+        dict(t="Stock aluminium heatsinks for the 6 finned rear caps", s=6 * (K.AL_CAP_MACHINED[0] - 6.0),
              change="a stock extruded round heatsink (Ø86–96 LED-downlight class, ≈ $6 ESTIMATE) faced flat and drilled to the cap pattern, on a thermal pad, "
                     "instead of a CNC'd finned 6061 disc",
              risk="fin area and flatness unknown until a sample is measured; the capped thermal rows need a cap contact resistance of ≤ 10.5 K/W (B0 pitch, worst 1 kg hold) and ≤ 40 K/W (yaw / elbow holds); capless the task day is 102 °C (limit 100)",
@@ -432,6 +442,96 @@ def savings(I):
     ]
 
 
+# --- D29 (owner 2026-11-28: no belt roll; the lead's route for the rest): what each row became -----------------------------------
+D29_BEFORE, D29_BEFORE_D20 = 6713.0, 6888.0     # bom.json before D29 (W14c)
+HAND_TORQUE = (0.3, 1.0)        # N·m: a hand-tight wing nut, a light to a firm hand (ESTIMATE)
+WING_BOLT_D, NUT_K = 0.0079, 0.20   # 5/16" T-bolt of a 3" single-hinge clamp; nut factor (ESTIMATE)
+MU_CLAMP = (0.15, 0.30)         # clamp ↔ ferrule flank and band friction (ESTIMATE)
+# Arm split / join step times (s per arm, ESTIMATE; R3: split/join ≤ 30 s without tools). The blind-mate XT60 + pogo plug
+# floats beside the ferrule, so it parts and mates with the flange (electrical.md); the arm is lifted off / seated on the dowels.
+SPLIT_STEPS = {"dixon": dict(split=[("open the squeeze lever, swing the clamp off", 2.0), ("lift the arm off the dowels", 3.0)],
+                             join=[("seat the arm on the 3 dowels", 4.0), ("clamp on, squeeze the lever shut", 3.0)]),
+               "wingnut": dict(split=[("loosen the wing nut ≈ 2 turns", 3.0), ("swing the T-bolt out, open the clamp", 2.0), ("lift the arm off", 3.0)],
+                               join=[("seat the arm on the 3 dowels", 4.0), ("close the clamp, swing the T-bolt in", 2.0),
+                                     ("run the wing nut ≈ 2 turns, hand-tight + a firm quarter turn", 6.0)])}
+
+
+def detach_recheck():
+    """D29 #10: KX-V clamp preload needed by the detach rows (rnd/kx_check.py: lift-off ≥ 1.5 × the dynamic moment) against each
+    clamp's preload, and the two-arm split / join time. Wing nut: band tension = the T-bolt load T = τ / (K d), averaged over
+    the hinged band by the capstan factor (1 − e^(−μπ)) / (μπ), axial = 2π T_avg (cos α − μ sin α) / (sin α + μ cos α) on the
+    20° sanitary flank. The squeeze clamp's preload is kx_check's 1,000 N ESTIMATE (set by its geometry)."""
+    from .kx_check import VBAND, detach_check
+    r = detach_check()
+    p_need = 1.5 * r["m_need"] / (VBAND["contact_r"] / 1000)
+    a = math.radians(VBAND["groove_half_angle"])
+
+    def axial(tq, mu):
+        T = tq / (NUT_K * WING_BOLT_D)
+        return 2 * math.pi * T * (1 - math.exp(-mu * math.pi)) / (mu * math.pi) * (math.cos(a) - mu * math.sin(a)) / (math.sin(a) + mu * math.cos(a))
+    wn = [axial(tq, mu) for tq in HAND_TORQUE for mu in MU_CLAMP]
+    pre = {"dixon": (VBAND["preload_n"], VBAND["preload_n"]), "wingnut": (min(wn), max(wn))}
+    t_min_wing = HAND_TORQUE[0] * p_need / min(axial(HAND_TORQUE[0], mu) for mu in MU_CLAMP)
+    out = {}
+    for k, (lo, hi) in pre.items():
+        ts, tj = (2 * sum(t for _, t in SPLIT_STEPS[k][w]) for w in ("split", "join"))
+        bear = hi / (2 * math.pi * VBAND["flange_od"] / 2 * 4.0)
+        out[k] = dict(preload_lo=lo, preload_hi=hi, margin_lo=lo / p_need, bearing_hi=bear, t_split=ts, t_join=tj,
+                      ok=lo >= p_need and ts <= 30.0 and tj <= 30.0 and bear <= 12.0)
+    return dict(p_need=p_need, m_need=r["m_need"], t_min_wing=t_min_wing, clamps=out)
+
+
+def d29_rows(I):
+    """[(#, item, status, check result, landed saving counted)] per cost_down row, from the checks' own outputs."""
+    c = 1 + CONTINGENCY
+    th = json.loads((DOCS / "thermal.json").read_text()).get("d29_stock_cap", {}) if (DOCS / "thermal.json").exists() else {}
+    tp = json.loads((DOCS / "tip.json").read_text()).get("d29_caster_release", {}) if (DOCS / "tip.json").exists() else {}
+    from . import accuracy as A
+    ec = A.encoder_compare()
+    dr = detach_recheck()
+    n_gim = sum(q for _, n, q, _, _ in I if n == "GIM6010-8")
+    on = lambda flag: "**adopted**" if flag else "not adopted"
+    s_cap = 6 * (K.AL_CAP_MACHINED[0] - K.AL_CAP_STOCK[0])
+    cap_ok = bool(th.get("ok")) and s_cap > 0
+    enc_ok = ec["mt6701"][0] <= ec["as5048a"][0] + 0.05
+    cab = tp.get("variants", {})
+    cas_ok = bool(tp.get("a10_ok")) and bool(tp.get("force_timing_ok"))
+    s_cas = 4 * K.SOLENOID[0] + 6.0 - (K.SOLENOID_55N[0] + K.CABLE_KIT[0] + 4.0)
+    w = dr["clamps"]["wingnut"]
+    s_cl = 2 * (K.DETACH_CLAMPS["dixon"][0] - K.DETACH_CLAMPS["wingnut"][0])
+    rows = [
+        (1, "Belt shoulder roll", "skipped (owner, D29: \"I don't love more belts\")", "—", 0.0),
+        (2, f"GIM6010-8 at the $70 listing ({n_gim} units)", on(K.GIM6010[0] == 70.0) + " (sourcing only)",
+         f"Robotics Center $70, SDC104 24 V, backordered (2026-11-28); fallback aifitlab $90 = +${n_gim * 20:.0f} lines (+${n_gim * 20 * c:,.0f} landed) "
+         "if the backorder holds the buy; Step 1's one unit is priced at the fallback", n_gim * 20.0 if K.GIM6010[0] == 70.0 else 0.0),
+        (3, "4130 pitch sleeves", "skipped (D29: stall margin 1.18× → 1.08× too thin)", "—", 0.0),
+        (4, "Batch metal quote", "note only (not in totals until quoted)", f"≈ ${next(r['s'] for r in savings(I) if r['t'].startswith('One batch quote')) * c:,.0f} landed at −15 % of the custom metal (ESTIMATE, "
+         "no quote yet)", 0.0),
+        (5, "Stock round heatsinks for the 6 rear caps", on(cap_ok and K.REAR_CAP == "stock") + " (PIP_REAR_CAP=stock)",
+         f"thermal re-check {'PASS' if th.get('ok') else 'FAIL'} (thermal.md §4: {th.get('new_hi', '?')} rows newly over 100 °C in the band, "
+         f"band worst up to {th.get('d_hi_max', 0):+.0f} K; task day {th.get('task_day_machined', 0):.0f} → {th.get('task_day_stock', 0):.0f} °C nominal); and the sourced "
+         f"price is ${K.AL_CAP_STOCK[0]:.2f} each vs the CNC cap's ${K.AL_CAP_MACHINED[0]:.0f} ESTIMATE ({_sd(-s_cap * c)} landed, the $6 was a wholesale figure)", 0.0),
+        (6, "MT6701 encoders (7 shaft-end joints)", on(enc_ok and K.JOINT_ENCODER == "mt6701") + " (PIP_JOINT_ENCODER=mt6701)",
+         f"hand error with joint encoders {ec['as5048a'][0]:.1f} → **{ec['mt6701'][0]:.1f} mm** (band {ec['mt6701'][1]:.1f}–{ec['mt6701'][2]:.1f}; datasheet INL "
+         "±1.0° typ / ±1.5° max vs the AS5048A's ±0.8°, no MT6701 noise figure found); the D9 0.9 mm claim is not re-shown; would save "
+         f"${7 * (12.0 - 4.0) * c:,.0f} landed (MT6701 boards ≈ $3–7)", 7 * (12.0 - K.ENCODER_P[0]) if K.JOINT_ENCODER == "mt6701" else 0.0),
+        (7, "NH-50 clamp resistors at a distributor price", "**adopted** (ESTIMATE kept)",
+         f"NH050R5600FE02; no 0.56 Ω listing found, NH-50 single-unit listings $12–20 → ${K.NH50[0]:.0f} ESTIMATE (was $30): 3 × ${30 - K.NH50[0]:.0f}", 3 * (30.0 - K.NH50[0])),
+        (8, "Roll 61806 bonded with the epoxy", "skipped (D29: rnd/parts/roll.py is another engineer's)", "—", 0.0),
+        (9, "One caster solenoid pulling 4 cables", on(cas_ok and K.CASTER_RELEASE == "cable") + " (PIP_CASTER_RELEASE=cable)",
+         f"A10 {cab.get('four', {}).get('worst', 0) * 1000:.0f} → {cab.get('cable', {}).get('worst', 0) * 1000:.0f} mm, {cab.get('cable', {}).get('n_ok', '?')}/16; "
+         f"force + timing {'PASS' if tp.get('force_timing_ok') else 'FAIL'} only with a 55 N JF-1264B (the 25 N JF-1039 is 0.84× on 4 cables), release ≤ 31 ms / re-lock "
+         f"≤ 22 ms vs the 100 ms re-seat pulse (tip.md D29 #9); saving shrinks to ${s_cas:.0f} lines; a stuck plunger now leaves all four released",
+         s_cas if (cas_ok and K.CASTER_RELEASE == "cable") else 0.0),
+        (10, "Generic 3\" clamps for the arm detach", on(w["ok"] and K.DETACH_CLAMP == "wingnut") + " (PIP_DETACH_CLAMP=wingnut)",
+         f"no generic quick-release squeeze clamp sourced below the Dixon's $25 (Steel & O'Brien squeeze $46.39); the generic wing-nut 3\" clamp ($10.40): "
+         f"preload {w['preload_lo'] / 1000:.1f}–{w['preload_hi'] / 1000:.1f} kN vs {dr['p_need']:.0f} N needed ({w['margin_lo']:.1f}× at a light hand, "
+         f"fails below ≈ {dr['t_min_wing']:.2f} N·m), flank {w['bearing_hi']:.1f} MPa on PETG; two-arm split {w['t_split']:.0f} s / join {w['t_join']:.0f} s ≤ 30 s (ESTIMATE)",
+         s_cl if (w["ok"] and K.DETACH_CLAMP == "wingnut") else 0.0),
+    ]
+    return rows, dr
+
+
 def cost_down_report(I, tot):
     """docs/rnd/cost_down.md: where the money goes, the top savings, what was rejected."""
     c = 1 + CONTINGENCY
@@ -453,8 +553,23 @@ def cost_down_report(I, tot):
     L = ["# Cost-down list (generated by `python -m rnd.bom`; prices are list / ESTIMATE, nothing bought)", "",
          f"**Robot BOM ${tot:,.0f} landed** (${lines:,.0f} of lines + {CONTINGENCY:.0%} contingency), **${tot + d20:,.0f} with D20** (GIM8108-8 at pitch + elbow, "
          f"{_sd(d20)}). Limit $5,500, aim $4,000 (R8); owner decision D26: cost-down redesign first. Gap: {_sd(tot - 5500)} ({_sd(tot + d20 - 5500)} with D20) to the "
-         f"limit, {_sd(tot - 4000)} to the aim. Line detail: [BOM_v4.md](BOM_v4.md).", "",
-         "## Where the money goes", "",
+         f"limit, {_sd(tot - 4000)} to the aim. Line detail: [BOM_v4.md](BOM_v4.md).", ""]
+    D, dr = d29_rows(I)
+    s29 = sum(r[4] for r in D) * c
+    kt0 = K.totals()
+    L += ["## D29 outcome (2026-11-28)", "",
+          f"Owner: \"I don't love more belts. You can decide the best route for the other stuff\"; the lead's route: sourcing-only rows now, the rest only where "
+          f"its re-check passes (each behind a params switch). **${D29_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - D29_BEFORE)}); with D20 ${D29_BEFORE_D20:,.0f} → "
+          f"${tot + d20:,.0f}** (D20's delta grows {_sd(d20 - (D29_BEFORE_D20 - D29_BEFORE))} because the GIM6010s it replaces got cheaper). "
+          f"Rows counted: −${s29:,.0f} landed. {_sd(tot - 5500)} against the $5,500 limit ({_sd(tot + d20 - 5500)} with D20). "
+          f"M1: Step 1 ${kt0['s1_c']:,.0f}, Step 2 ${kt0['s2_plan_c']:,.0f} (kit ${kt0['plan_c']:,.0f}).", "",
+          "| # | Row | D29 | Re-check / sourcing result | Counted (landed) |", "|---|---|---|---|---|"]
+    L += [f"| {i} | {t} | {st} | {ck} | {f'−${s * c:,.0f}' if s else '—'} |" for i, t, st, ck, s in D]
+    L += ["", "Switches (rnd/params.py; a default changes only when its row passes): `PIP_REAR_CAP` machined | stock, `PIP_JOINT_ENCODER` as5048a | mt6701, "
+          "`PIP_CASTER_RELEASE` four | cable, `PIP_DETACH_CLAMP` dixon | wingnut. Arm split / join steps (ESTIMATE, s per arm): "
+          + "; ".join(f"{k}: split " + " + ".join(f"{n} {t:g}" for n, t in v["split"]) + ", join " + " + ".join(f"{n} {t:g}" for n, t in v["join"])
+                      for k, v in SPLIT_STEPS.items()) + ".", ""]
+    L += ["## Where the money goes", "",
          "| Subsystem | Lines $ | Landed $ | Share | Largest lines |", "|---|---|---|---|---|"]
     for k in SUBSYS:
         v = sub[k]
@@ -467,17 +582,16 @@ def cost_down_report(I, tot):
           "only inline joint, the roll, is the largest single owner trade below.",
           "- Competitors ([competitors.md](competitors.md)): XLeRobot reaches ≈ $660 with STS3215 servos and one-handed payloads; Pip's money is in the 20 lb "
           "two-handed carry (R2c / R2d) and the safety chain, which the gates keep.", "",
-          "## Top 10 savings", "",
+          "## Top 10 savings (the W14c list as written, its estimates; D29's outcome per row is the table at the top)", "",
           "Ranked by landed saving. Row 1 is the queued belt-roll idea: it is the only large one and it is **not** gate-neutral (flagged); rows 2–10 keep "
           "R2 strength, R17 pinch, A10 tip and the thermal rows passing (each with the checks it needs before it lands).", "",
           "| # | Saving (landed) | What changes | Risk | Checks it needs | Owner | Gates touched |", "|---|---|---|---|---|---|---|"]
     for i, r in enumerate(S, 1):
         L.append(f"| {i} | **{r['s'] * c:,.0f}** ({r['s']:,.0f} lines) | **{r['t']}:** {r['change']} | {r['risk']} | {r['checks']} | {r['own']} | {r['gates']} |")
-    L += ["", f"**Rows 2–10 together: −${s_safe:,.0f} landed → ${tot - s_safe:,.0f} ({_sd(tot - s_safe - 5500)} against the $5,500 limit; "
-          f"${tot + d20 - s_safe:,.0f} with D20, {_sd(tot + d20 - s_safe - 5500)}).** With row 1 as well: ${tot - s_all:,.0f} "
-          f"({_sd(tot - s_all - 5500)}; with D20 ${tot + d20 - s_all:,.0f}, {_sd(tot + d20 - s_all - 5500)}). "
-          "The gate-neutral list does not reach $5,500 on its own: the rest is an owner trade (the belt roll, D20's scope, or the D9 sensor pack), "
-          "not an engineering saving.", "",
+    L += ["", f"**As written (W14c, on ${D29_BEFORE:,.0f}): rows 2–10 together −${s_safe:,.0f} landed → ${D29_BEFORE - s_safe:,.0f}; with row 1 "
+          f"${D29_BEFORE - s_all:,.0f}.** D29 counted −${s29:,.0f} of it (top table): the row-1 belt roll is off (owner), rows 3 / 8 skipped, row 4 is a "
+          "note, and rows 5 / 6 did not pass; rows 9 and 10 passed at a smaller or different part than the list assumed. "
+          "The gap to $5,500 is carried until the next cost-down idea (an owner trade: D20's scope or the D9 sensor pack).", "",
           "## Considered and not recommended", "",
           "| Idea | Saving | Why not |", "|---|---|---|",
           "| All-inline arm (I1 / I2a / I2b) | −(+$585…1,068) | costs more, misses A10 or the hug at 0.25 m (inline_study.md, Astra #3 Part A) |",
@@ -513,7 +627,8 @@ def report(d=BASELINE):
     L = ["# Bill of materials v4 (auto-generated by `python -m rnd.bom`)", "",
          f"**Total ≈ ${tot:,.0f} landed** (${sub:,.0f} + {CONTINGENCY:.0%} contingency; target ≤ $4,000 since D9 (owner: sensors over savings); limit $5,500 (owner, 2026-11-27; was $5,000); excludes the owner's Pi 5 and tools). Single-unit online prices; hardware lines are ESTIMATEs.", "",
          f"**Waves 12–13 refresh (2026-11-28, the merged design after Astra review #3): ${W12_TOTAL:,.0f} → ${tot:,.0f} landed ({_sd(tot - W12_TOTAL)}); "
-         f"with D20 ${tot + HOLDS['d20']:,.0f}.** Where the money goes and the top-10 savings: [cost_down.md](cost_down.md). Line changes (before → after, $ of lines, no contingency):", "",
+         f"with D20 ${tot + HOLDS['d20']:,.0f}.** Where the money goes, the top-10 savings and the **D29 outcome** (${D29_BEFORE:,.0f} → ${tot:,.0f}): "
+         "[cost_down.md](cost_down.md). Line changes (before → after, $ of lines, no contingency):", "",
          "| Line | Before $ | After $ | Source / check |", "|---|---|---|---|"] + [
          f"| {w} | {b:,.0f} | {a:,.0f} | {src} |" for w, b, a, src in REFRESH_ROWS] + [
          "", f"Refresh lines {_sd(sum(a - b for _, b, a, _ in REFRESH_ROWS))} before contingency. Step-1 test equipment (scope, probes, the 20 A CC supply, dummy banks) "
@@ -605,6 +720,8 @@ if __name__ == "__main__":
     (DOCS / "bom.json").write_text(json.dumps({"total": tot, "with_d20": tot + HOLDS["d20"], "with_d20_inline": tot + HOLDS["d20"],
                                                "options": {n[:60]: q * u * (1 + CONTINGENCY) for n, q, u, _, _ in options()},
                                                "subsystems": {k: round(v * (1 + CONTINGENCY), 2) for k, v in subsystems(I).items()},
+                                               "d29": {"before": D29_BEFORE, "before_d20": D29_BEFORE_D20,
+                                                       "rows": [{"n": i, "item": t, "status": st, "landed": round(s * (1 + CONTINGENCY), 2)} for i, t, st, _, s in d29_rows(I)[0]]},
                                                "savings_top10": [{"item": r["t"], "landed": round(r["s"] * (1 + CONTINGENCY), 2), "gate_neutral": not r.get("flag")} for r in sv]},
                                               indent=1))
     print(md[:1500])

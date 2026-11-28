@@ -1,25 +1,91 @@
 {
- "total": 6712.7,
- "with_d20": 6887.5,
- "with_d20_inline": 6887.5,
+ "total": 6366.16,
+ "with_d20": 6632.96,
+ "with_d20_inline": 6632.96,
  "options": {
   "**Roll latch** (PIP_ROLL_GUARD=latch, default off; power_off": 32.199999999999996
  },
  "subsystems": {
-  "Arms \u00d72: actuators": 1550.2,
-  "Arms \u00d72: drive, joints, bones": 1546.06,
-  "Base: wheels, tip, ballast": 743.76,
-  "Lift + mast": 276.94,
+  "Arms \u00d72: actuators": 1412.2,
+  "Arms \u00d72: drive, joints, bones": 1512.48,
+  "Base: wheels, tip, ballast": 663.26,
+  "Lift + mast": 253.94,
   "Head + face": 170.53,
-  "Power + safety electronics": 936.05,
+  "Power + safety electronics": 865.51,
   "Compute, sensing, comms": 1002.22,
   "Printing + covers + misc. fasteners": 402.48,
   "Dock": 83.95
  },
+ "d29": {
+  "before": 6713.0,
+  "before_d20": 6888.0,
+  "rows": [
+   {
+    "n": 1,
+    "item": "Belt shoulder roll",
+    "status": "skipped (owner, D29: \"I don't love more belts\")",
+    "landed": 0.0
+   },
+   {
+    "n": 2,
+    "item": "GIM6010-8 at the $70 listing (11 units)",
+    "status": "**adopted** (sourcing only)",
+    "landed": 253.0
+   },
+   {
+    "n": 3,
+    "item": "4130 pitch sleeves",
+    "status": "skipped (D29: stall margin 1.18\u00d7 \u2192 1.08\u00d7 too thin)",
+    "landed": 0.0
+   },
+   {
+    "n": 4,
+    "item": "Batch metal quote",
+    "status": "note only (not in totals until quoted)",
+    "landed": 0.0
+   },
+   {
+    "n": 5,
+    "item": "Stock round heatsinks for the 6 rear caps",
+    "status": "not adopted (PIP_REAR_CAP=stock)",
+    "landed": 0.0
+   },
+   {
+    "n": 6,
+    "item": "MT6701 encoders (7 shaft-end joints)",
+    "status": "not adopted (PIP_JOINT_ENCODER=mt6701)",
+    "landed": 0.0
+   },
+   {
+    "n": 7,
+    "item": "NH-50 clamp resistors at a distributor price",
+    "status": "**adopted** (ESTIMATE kept)",
+    "landed": 41.4
+   },
+   {
+    "n": 8,
+    "item": "Roll 61806 bonded with the epoxy",
+    "status": "skipped (D29: rnd/parts/roll.py is another engineer's)",
+    "landed": 0.0
+   },
+   {
+    "n": 9,
+    "item": "One caster solenoid pulling 4 cables",
+    "status": "**adopted** (PIP_CASTER_RELEASE=cable)",
+    "landed": 17.64
+   },
+   {
+    "n": 10,
+    "item": "Generic 3\" clamps for the arm detach",
+    "status": "**adopted** (PIP_DETACH_CLAMP=wingnut)",
+    "landed": 33.58
+   }
+  ]
+ },
  "savings_top10": [
   {
    "item": "Belt shoulder roll instead of the inline GIM8108-36 (queued idea; `PIP_ROLL_DRIVE=belt`, CAD + checks in the tree)",
-   "landed": 563.36,
+   "landed": 609.36,
    "gate_neutral": false
   },
   {
