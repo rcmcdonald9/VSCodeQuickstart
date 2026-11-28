@@ -261,8 +261,15 @@ R_REACH = 0.7             # m: a person this close (mast axis → their body) ca
 T_PERCEPT = 0.2           # s: person detection + fusion latency (ESTIMATE; PeopleNearTrigger counts > 0.5 s stale as near)
 V_LIFT = 0.20             # m/s: lift speed at rated rpm (lift.md)
 W_SLEW = 1.5              # rad/s: the supervisor's default per-joint slew (Supervisor v_max)
-T_SETDOWN = 5.0           # s: stop (0.3 m/s at 0.3 m/s²) + lower a 9 kg basket 0.8 m on the lift + release (ESTIMATE)
-V_BASE = {"locked": 0.3, "transit": 0.8, "threshold": 0.12}   # m/s before the person appears (sw/safety.py caps)
+T_LOWER = 4.0             # s: lower a 9 kg basket 0.8 m on the lift + release (ESTIMATE); the stop before it is v_locked / A_LOAD
+                          # (was T_SETDOWN 5.0 = this + the 1.0 s stop from the old 0.3 m/s cap)
+def v_base(payload=0.0):
+    """Base speed (m/s) before the person appears, per caster mode: the caps sw/safety.py enforces, read from the module
+    (W17: the locked cap was hard-coded 0.3 here after W16a lowered it to 0.25). The locked cap follows the payload once
+    the supervisor has the proposed SW-T8 `caster_locked_v_for(payload)`; until then it is CASTER_LOCKED_V for any load."""
+    from sw import safety as s
+    f = getattr(s.Supervisor, "caster_locked_v_for", None)
+    return {"locked": float(f(payload)) if f else s.CASTER_LOCKED_V, "transit": s.BASE_V_MAX, "threshold": s.THRESHOLD_SPEED}
 
 
 def sw_more():
@@ -296,16 +303,17 @@ def transition(d, body, P, rules):
         return out
     m = sw_more()
     rows = []
-    for name, qs, v0, a in (("≤ 1 kg, arms straight out (lift mid / top)", P["straight"] + P["straight_high"], V_BASE["locked"], rules.accel(1.0)),
-                            ("2.5 kg in the load box", P["box"], V_BASE["locked"], rules.accel(2.5)),
-                            ("unloaded transit, casters released", P["tuck"], V_BASE["transit"], m.released_a),
-                            ("2.5 kg threshold crossing, casters released", P["box"], V_BASE["threshold"], min(rules.accel(2.5), m.released_a))):
+    for name, qs, v0, a in (("≤ 1 kg, arms straight out (lift mid / top)", P["straight"] + P["straight_high"], v_base(1.0)["locked"], rules.accel(1.0)),
+                            ("2.5 kg in the load box", P["box"], v_base(2.5)["locked"], rules.accel(2.5)),
+                            ("unloaded transit, casters released", P["tuck"], v_base()["transit"], m.released_a),
+                            ("2.5 kg threshold crossing, casters released", P["box"], v_base()["threshold"], min(rules.accel(2.5), m.released_a))):
         tb = max(v0 - A_PERSON, 0.0) / a
         ta = t_arms(qs)
         t = max(tb, ta)
         rows.append(dict(name=name, t_brake=tb, t_arms=ta, t=t, R=R_REACH + V_WALK * (T_PERCEPT + t)))
-    rows.append(dict(name="R2d basket 9.07 kg: stop and set it down", t_brake=V_BASE["locked"] / rules.accel(9.07), t_arms=T_SETDOWN, t=T_SETDOWN,
-                     R=R_REACH + V_WALK * (T_PERCEPT + T_SETDOWN)))
+    tb = v_base(9.07)["locked"] / rules.accel(9.07)
+    rows.append(dict(name="R2d basket 9.07 kg: stop and set it down", t_brake=tb, t_arms=T_LOWER, t=tb + T_LOWER,
+                     R=R_REACH + V_WALK * (T_PERCEPT + tb + T_LOWER)))
     t_avail = {r: max((r - R_REACH) / V_WALK - T_PERCEPT, 0.0) for r in (m.near, m.prep or m.near)}
     return rows, t_avail
 
@@ -350,13 +358,289 @@ def estop_rows(d, body, P, rules, cas):
     return rows
 
 
+# ------------------------------------------------------------- W17: a locked-caster snag at the locked cap, real carry poses
+# W15b's model (rnd/safety_board_sim.caster_snag, called read-only) ran with the arms parked; W16a fed it the basket's 9.07 kg
+# at the tuck-pose hand point (113 % of the tip energy at 0.25 m/s). Here: the real poses (both arms, the lift where the IK
+# puts it, the basket hanging below its handles with its own inertia) on the twin's mass and inertia, and the pivot fixed.
+BASKET_BOX = (0.45, 0.60, 0.28)   # m: basket depth (x), length between the end handles (y), height (z) (rnd/basket.py: ≈ 60 × 45 × 28 cm)
+BASKET_DROP = 0.12                # m: basket + laundry COM below the handle slots (slots just under the rim of a 0.28 m basket; ESTIMATE)
+BASKET_SHARE = 0.62               # heavier-hand share at which rnd/basket.py's rule aborts a carry: the COM moves (2s − 1)·0.30 m sideways
+SNAG_V = (0.10, 0.12, 0.15, 0.20, 0.25)
+CAP_STEP = 0.05                   # proposed caps are rounded down to this
+CAP_KG = (0.0, 1.0, 2.5, 6.0, 10.0)   # payload bands (kg, upper ends) for the proposed SW-T8 table; 10 kg ≥ 1.1 × 9.07 (basket.py refuses above)
+
+
+def snag_state(B, d, q, load, at=None, I_load=None, dy=0.0, name=""):
+    """Mass, COM and inertia about the COM (twin bodies) with both arms in q (left mirrors right) and `load` at `at` (default:
+    the hand midpoint) + dy sideways, plus the load's own inertia: the state dict rnd.safety_board_sim.caster_snag takes."""
+    B.com(q, 0.0)
+    m, dat = B.m, B.d
+    sid = [B.mj.mj_name2id(m, B.mj.mjtObj.mjOBJ_SITE, f"grasp_{s}") for s in "rl"]
+    hand = 0.5 * (dat.site_xpos[sid[0]] + dat.site_xpos[sid[1]])
+    pl = (hand if at is None else np.asarray(at, float)) + np.array([0.0, dy, 0.0])
+    w = m.body_mass[1:]
+    M0 = float(w.sum())
+    c = ((w[:, None] * dat.xipos[1:]).sum(axis=0) + load * pl) / (M0 + load)
+    I = np.zeros((3, 3))
+    for b in range(1, m.nbody):
+        R = dat.ximat[b].reshape(3, 3)
+        r = dat.xipos[b] - c
+        I += R @ np.diag(m.body_inertia[b]) @ R.T + m.body_mass[b] * (r @ r * np.eye(3) - np.outer(r, r))
+    r = pl - c
+    I += load * (r @ r * np.eye(3) - np.outer(r, r)) + (I_load if I_load is not None else 0.0)
+    return dict(d=d, M=M0 + load, c=c, I=I, load=load, lift=f"{q[0]:.2f}", hand=hand, at=pl, name=name)
+
+
+def snag_poly(st):
+    """W15b's dead stop at the leading locked caster(s), but the robot pitches about the support polygon (locked casters +
+    wheels: the octagon) instead of the chord through the snagged casters. At a wheel heading that chord is 65 mm behind
+    the leading wheel, which is still on the floor (or on the step it has just climbed), so the base cannot rotate about
+    the chord without driving that wheel into the floor; it rotates about the wheel (or a wheel-caster edge), and the
+    caster's horizontal impulse at floor level has no moment about that line. Candidates per heading u (5° steps): each
+    octagon edge facing u (angular momentum M v h (u·n) about it) and the extreme vertex along u (axis ⊥ u, the full
+    M v h); the one with the largest energy fraction governs. Force: the same impulse over SNAG_DELTA as W15b."""
+    from .safety_board_sim import F_ROD, SNAG_DELTA, SNAG_FRAC
+    d, M, c, I = st["d"], st["M"], st["c"], st["I"]
+    h, rc = float(c[2]), d.base.caster_r
+    poly = octagon(d, rc)
+    worst, v_force, fmax1 = None, math.inf, 0.0
+    for az in range(0, 360, 5):
+        u = np.array([math.cos(math.radians(az)), math.sin(math.radians(az))])
+        cands = []
+        for i in range(8):
+            a, b = poly[i], poly[(i + 1) % 8]
+            e = (b - a) / np.linalg.norm(b - a)
+            n = np.array([e[1], -e[0]])
+            if u @ n > 1e-9:
+                cands.append((float((a - c[:2]) @ n), np.array([e[0], e[1], 0.0]), float(u @ n)))
+        j = int(np.argmax(poly @ u))
+        cands.append((float((poly[j] - c[:2]) @ u), np.array([-u[1], u[0], 0.0]), 1.0))
+        best = None
+        for de, t, k in cands:
+            Ie = float(t @ I @ t) + M * (h * h + de * de)
+            pe = M * G * (math.hypot(h, de) - h) if de > 0 else 0.0
+            f1 = (M * h * k) ** 2 / (2 * Ie) / pe if pe > 0 else math.inf        # energy fraction at 1 m/s (∝ v²)
+            if best is None or f1 > best[0]:
+                best = (f1, de, Ie, k)
+        f1, de, Ie, k = best
+        lead = [math.cos(math.radians(az - ca)) for ca in (45, 135, 225, 315)]
+        n_snag = sum(1 for x_ in lead if x_ > max(lead) - 1e-6)
+        jv = M * (1 - M * h * h * k * k / Ie)                                     # horizontal impulse per m/s
+        r = dict(az=az, f1=f1, de=de, n=n_snag, jv=jv, v_frac=math.sqrt(SNAG_FRAC / f1) if f1 > 0 else math.inf)
+        worst = r if worst is None or f1 > worst["f1"] else worst
+        v_force = min(v_force, math.sqrt(0.5 * F_ROD * SNAG_DELTA * n_snag / jv))
+        fmax1 = max(fmax1, jv / SNAG_DELTA / n_snag)                             # peak force per foot per (m/s)², any heading
+    return dict(worst, v_force=v_force, fmax1=fmax1, v_allow=min(worst["v_frac"], v_force))
+
+
+def snag_eval(st, v):
+    """Both models at base speed v: the polygon pivot (this page) and W15b's chord (rnd.safety_board_sim.caster_snag)."""
+    from .safety_board_sim import F_ROD, SNAG_FRAC, caster_snag
+    p = snag_poly(st)
+    w = caster_snag([st], speeds=(v,))
+    wr = w["rows"][0]
+    frac, F = p["f1"] * v * v, p["fmax1"] * v * v
+    return dict(name=st["name"], load=st["load"], M=st["M"], x=float(st["c"][0]), h=float(st["c"][2]), lift=st["lift"], v=v,
+                frac=frac, F=F, az=p["az"], de=p["de"], v_frac=p["v_frac"], v_force=p["v_force"], v_allow=p["v_allow"],
+                ok=bool(frac <= SNAG_FRAC + 1e-9 and F <= 0.5 * F_ROD + 1e-9),
+                w15b=dict(frac=wr["frac"], x=wr["x"], az=wr["az"], F=wr["F_max"], v_frac=w["v_frac"], v_force=w["v_force"], v_allow=w["v_allow"]))
+
+
+def basket_states():
+    """The R2d basket in its real carry poses (rnd/basket.py: D20 motors, the actuator masses on their bodies, the bounded IK
+    with both hands pointing down in the end slots, the lift where the IK puts it). Travel poses only: the carry with the
+    handles at 0.70 / 0.80 m and the basket centre 0.35–0.45 m out (D21's planner limit); the floor pick and the bed
+    set-down are done with the base stopped. Each IK solution is a pose the planner may use, so the worst one counts."""
+    from . import basket
+    from .inline_study import corrected_bodies
+    Ib = basket.TOTAL / 12 * np.diag([BASKET_BOX[1] ** 2 + BASKET_BOX[2] ** 2, BASKET_BOX[0] ** 2 + BASKET_BOX[2] ** 2,
+                                      BASKET_BOX[0] ** 2 + BASKET_BOX[1] ** 2])
+    out = []
+    with corrected_bodies():
+        d = basket.design("d20")
+        R, sols = basket._solutions(d)
+        B = Body(d)
+        for pose, x, z, rule, qs in sols:
+            if rule != "carry" or "bed" in pose or "washer" in pose or x > 0.45 + 1e-9 or not qs:
+                continue
+            tag = f"basket {basket.TOTAL:.2f} kg, {pose.replace('carry, ', '')}{'' if '0.80' in pose else ', handles at 0.70'}, centre {x:.2f} m out"
+            for var, kw in (("nominal", {}), ("hand point", {"hand": True}), ("share", {"dy": (2 * BASKET_SHARE - 1) * basket.HALF_SPAN})):
+                worst = None
+                for q in qs:
+                    st0 = snag_state(B, d, q, 0.0)
+                    at = st0["hand"] if kw.get("hand") else st0["hand"] - np.array([0.0, 0.0, BASKET_DROP])
+                    st = snag_state(B, d, q, basket.TOTAL, at=at, I_load=None if kw.get("hand") else Ib, dy=kw.get("dy", 0.0), name=tag)
+                    p = snag_poly(st)
+                    if worst is None or p["v_allow"] < worst[1]["v_allow"]:
+                        worst = (st, p)
+                out.append(dict(var=var, x=x, z=z, st=worst[0]))
+    return out
+
+
+def snag_study(d1, b1, P):
+    """Locked-travel snag for every carry state the supervisor allows, both pivot models; the payload-dependent cap."""
+    from sw import safety as s
+    from .safety_board_sim import F_ROD, SNAG_DELTA, SNAG_FRAC
+    from .twin import TUCK
+    lift_top = float(b1.m.jnt_range[b1.mj.mj_name2id(b1.m, b1.mj.mjtObj.mjOBJ_JOINT, "lift")][1])
+    tuck_top = np.array([lift_top] + [TUCK[j] for j in ARM_J])
+
+    def worst_of(qs, load, name):
+        sts = [snag_state(b1, d1, q, load, name=name) for q in qs]
+        return min(sts, key=lambda st: snag_poly(st)["v_allow"])
+    states = [snag_state(b1, d1, P["tuck"][0], 0.0, name="unloaded, arms parked, lift mid (W15b)"),
+              snag_state(b1, d1, tuck_top, 0.0, name="unloaded, arms parked, lift top (W15b)"),
+              worst_of(P["straight"] + P["straight_high"], 0.0, "unloaded, arms straight out at shoulder height, lift mid / top"),
+              worst_of(P["straight"] + P["straight_high"], 1.0, f"1.0 kg, arms straight out at shoulder height, lift mid / top (≤ LOAD_KG)"),
+              worst_of(P["box"], 1.0, "1.0 kg at the LOAD_WS far face (x 0.45 m, z ≤ 0.80 m)")]
+    for kg in CAP_KG[2:]:
+        states.append(worst_of(P["box"], kg, f"{kg:.1f} kg at the LOAD_WS far face (x 0.45 m, z ≤ 0.80 m), held at the hands"))
+    bk = basket_states()
+    v_today = lambda kg: v_base(kg)["locked"]
+    rows = [snag_eval(st, v_today(st["load"])) for st in states]
+    brows = [dict(snag_eval(b["st"], v_today(b["st"]["load"])), var=b["var"]) for b in bk]
+    # the W16a reading (9.07 kg at the tuck-pose hand point, lift top) for the before → after line
+    from .safety_board_sim import base_state, caster_snag
+    w16a = caster_snag([base_state("top", 9.07)], speeds=(v_today(9.07),))["rows"][0]
+    # proposed SW-T8: per payload band, the lowest allowed speed of any state in it (polygon pivot), rounded down
+    caps, lo = [], -1.0
+    for kg in CAP_KG:
+        band = [r for r in rows + [b for b in brows if b["var"] != "hand point"] if lo + 1e-9 < r["load"] <= kg + 1e-9]
+        v_al = min(r["v_allow"] for r in band)
+        caps.append(dict(lo=lo, kg=kg, v_allow=v_al, v_chord=min(r["w15b"]["v_allow"] for r in band),
+                         cap=min(s.CASTER_LOCKED_V, math.floor(v_al / CAP_STEP + 1e-9) * CAP_STEP),
+                         who=min(band, key=lambda r: r["v_allow"])["name"]))
+        lo = kg
+    steps = []                                   # merged: consecutive bands with the same cap
+    for c in caps:
+        if steps and abs(steps[-1]["cap"] - c["cap"]) < 1e-9:
+            steps[-1]["kg"] = c["kg"]
+        else:
+            steps.append(dict(lo=c["lo"], kg=c["kg"], cap=c["cap"]))
+    cap_for = lambda kg: next((c["cap"] for c in caps if kg <= c["kg"] + 1e-9), 0.0)
+    ok_today = all(r["ok"] for r in rows + brows)
+    with_rule = [snag_eval(st, cap_for(st["load"])) for st in states] + [snag_eval(b["st"], cap_for(b["st"]["load"])) for b in bk]
+    ok_rule = all(r["ok"] for r in with_rule)
+    enforced = hasattr(s.Supervisor, "caster_locked_v_for")
+    # option B: carry the basket only in threshold mode (casters released, THRESHOLD_SPEED): wheels-only tip reserve while braking,
+    # and the snag if the hardware locks the casters on the way (Q9 timer, power loss)
+    nom = [b for b in bk if b["var"] != "hand point"]
+    a_rel = min(s.A_LOAD, s.CASTER_RELEASED_A)
+    rel = []
+    for b in nom:
+        st = b["st"]
+        r0, at0 = reserve(d1, None, st["c"][:2], float(st["c"][2]), float(st["c"][2]) * a_rel / G)
+        rel.append(dict(name=st["name"], var=b["var"], reserve=r0, at=at0, snag=snag_eval(st, s.THRESHOLD_SPEED)))
+    # D28 / SW-T7: the clear radius the basket needs (stop from the locked cap at A_LOAD, then lower and release)
+    r_clear = lambda v: R_REACH + V_WALK * (T_PERCEPT + v / s.A_LOAD + T_LOWER)
+    d28 = dict(r_today=r_clear(v_today(9.07)), r_rule=r_clear(cap_for(9.07)), r_set=getattr(s, "BASKET_CLEAR_R", None), kg=s.PERSON_MAX_KG)
+    d28["ok"] = bool(d28["r_set"] and d28["r_set"] >= max(d28["r_today"], d28["r_rule"]) - 1e-9)
+    st_txt = "; ".join((f"≤ {c['kg']:.0f} kg" if c["lo"] < 0 else f"{c['lo']:.0f}–{c['kg']:.0f} kg") + f": {c['cap']:.2f} m/s" for c in steps)
+    sw_text = (f"`Supervisor.caster_locked_v_for(payload)` (a staticmethod, as `base_stop_decel_for`) → the base speed cap with the casters locked (or locking / pulsing), replacing the flat "
+               f"CASTER_LOCKED_V {s.CASTER_LOCKED_V} m/s in `base_speed_limit()`: **{st_txt}; above {CAP_KG[-1]:.0f} kg: 0 (no travel)** "
+               "(snag table: the lowest allowed speed of any pose the supervisor allows at that payload, rounded down to 0.05 m/s). "
+               "`set_payload()` to a heavier band while moving brakes to the new cap at the limit in force before anything else. "
+               "A deferred forced lock (SW-T2) engages at ≤ min(V_CASTER_LOCK, that cap). Threshold mode keeps THRESHOLD_SPEED "
+               f"({s.THRESHOLD_SPEED} m/s ≤ every cap). Tests: the cap at each band edge, a payload step while moving, the deferred lock "
+               "at the lower V. rnd/tip.py reads the function when it exists (the scorecard's snag row then counts it as enforced).")
+    return dict(rows=rows, basket=brows, caps=caps, steps=steps, d28=d28, sw_text=sw_text,
+                chord_gap=d1.base.wheel_radius_pos - d1.base.caster_r * math.cos(math.radians(45)), ok_today=ok_today, ok_rule=ok_rule, enforced=enforced, with_rule=with_rule,
+                v_locked=s.CASTER_LOCKED_V, w16a=dict(frac=w16a["frac"], x=w16a["x"], h=w16a["h"], v=v_today(9.07)),
+                released=rel, a_released=a_rel, v_threshold=s.THRESHOLD_SPEED, frac_lim=SNAG_FRAC, f_lim=0.5 * F_ROD, delta=SNAG_DELTA,
+                basket_v_allow=min(b["v_allow"] for b in brows if b["var"] != "hand point"),
+                basket_cap=cap_for(9.07), cap_25=cap_for(2.5), v_allow_25=min(r["v_allow"] for r in rows if 1.0 < r["load"] <= 2.5 + 1e-9))
+
+
+def snag_lines(sn, rules, more):
+    """tip.md section for the snag study."""
+    from .safety_board_sim import F_ROD
+    pc = lambda x: f"{x * 100:.0f} %" if x < 10 else f"{x * 100:,.0f} %"
+    ok = lambda r: "✅" if r["ok"] else "❌"
+    w = sn["w16a"]
+    allrows = sn["rows"] + sn["basket"]
+    bnom = [b for b in sn["basket"] if b["var"] != "hand point"]
+    fails = [r for r in allrows if not r["ok"]]
+    L = ["", "## Snag at the locked cap (W17: the real carry poses; W16a open point)", "",
+         "W15b's model (rnd/safety_board_sim.py `caster_snag`, called here read-only): a locked D18b foot meets a step edge (rug edge, tile lip, "
+         "cable) at speed and stops dead; angular momentum about the pivot is kept and the robot pitches about it. Pass: snag energy ≤ "
+         f"{sn['frac_lim'] * 100:.0f} % of the tip-over energy and peak force ≤ {sn['f_lim']:.0f} N per foot (½ × the {F_ROD:.0f} N that yields its two Ø8 rods, "
+         f"{sn['delta'] * 1000:.0f} mm contact compliance: ESTIMATES). W16a fed it the basket's 9.07 kg at the tuck-pose hand point, lift top: "
+         f"**{pc(w['frac'])} at {w['v']:.2f} m/s** (COM {w['x'] * 1000:.0f} mm behind its pivot, h {w['h']:.2f} m). Here every travel state the supervisor "
+         "allows, on the twin (CAD masses and body inertias, both arms, the lift where the pose puts it): the basket in rnd/basket.py's IK carry "
+         f"poses (D20, the actuator masses on their bodies, every collision-free solution: the worst counts), hung {BASKET_DROP:.2f} m below the "
+         f"handles as a rigid {BASKET_BOX[0]:.2f} × {BASKET_BOX[1]:.2f} × {BASKET_BOX[2]:.2f} m box with its own inertia (ESTIMATE), also at the hand point, and "
+         f"with its COM moved sideways by the {BASKET_SHARE * 100:.0f} % share at which basket.py's rule aborts; loads up to 10 kg at the LOAD_WS far face "
+         "(x 0.45 m, z 0.20–0.80 m, the worst of tip.py's box poses); unloaded and 1 kg with the arms straight out at shoulder height.", "",
+         "**Pivot.** W15b pivots about the chord through the snagged casters. At a wheel heading (0°, 90°, …) that chord is "
+         f"{sn['chord_gap'] * 1000:.0f} mm behind the leading wheel, which is still on the "
+         "floor (or on the step it has just climbed), so the base cannot rotate about the chord without driving that wheel into the floor: it "
+         "rotates about the support polygon's leading edge or vertex (the octagon of wheels and locked casters), and the caster's impulse at floor "
+         "level has no moment about that line. At a caster heading (45°, …) the two pivots are the same. Both are shown; the polygon pivot is "
+         "the result. Moving the pivot out also stops less of the momentum in rotation, so the force per foot rises (the rod limit then sets most "
+         "of the allowed speeds).", "",
+         f"| State (at today's locked cap) | Mass kg | COM x / h (m) | Lift q | v m/s | Energy / tip energy | Peak force per foot | Allowed v: energy / force (m/s) | W15b chord: energy at v, allowed v | |",
+         "|---|---|---|---|---|---|---|---|---|---|"]
+    for r in sn["rows"]:
+        L.append(f"| {r['name']} | {r['M']:.1f} | {r['x']:.3f} / {r['h']:.2f} | {r['lift']} | {r['v']:.2f} | {pc(r['frac'])} | {r['F']:.0f} N | "
+                 f"{r['v_frac']:.2f} / **{r['v_force']:.2f}** | {pc(r['w15b']['frac'])}, {r['w15b']['v_allow']:.2f} | {ok(r)} |")
+    L += ["", "| Basket travel pose (rnd/basket.py IK) | Load at | Mass kg | COM x / h (m) | Lift q | v m/s | Energy / tip energy | Peak force per foot | Allowed v: energy / force (m/s) | W15b chord: energy at v, allowed v | |",
+          "|---|---|---|---|---|---|---|---|---|---|---|"]
+    lab = {"nominal": f"basket COM ({BASKET_DROP:.2f} m below the handles)", "hand point": "hand point (W16a's convention)",
+           "share": f"basket COM, {BASKET_SHARE * 100:.0f} % share (sideways)"}
+    for r in sn["basket"]:
+        L.append(f"| {r['name']} | {lab[r['var']]} | {r['M']:.1f} | {r['x']:.3f} / {r['h']:.2f} | {r['lift']} | {r['v']:.2f} | {pc(r['frac'])} | {r['F']:.0f} N | "
+                 f"{r['v_frac']:.2f} / {r['v_force']:.2f} | {pc(r['w15b']['frac'])}, {r['w15b']['v_allow']:.2f} | {ok(r)} |")
+    L += ["", f"**At today's cap ({sn['v_locked']} m/s for any payload): {len(allrows) - len(fails)}/{len(allrows)} states pass.** The basket uses "
+          f"{pc(min(b['frac'] for b in bnom))}–{pc(max(b['frac'] for b in bnom))} of the tip energy (not W16a's {pc(w['frac'])}: the basket hangs "
+          f"lower than the tuck-pose hand point and the pivot is the polygon, not the chord) and {min(b['F'] for b in bnom):.0f}–{max(b['F'] for b in bnom):.0f} N "
+          f"per foot; every state with a load or the arms out exceeds the {sn['f_lim']:.0f} N rod limit. The W15b chord model would fail the same states "
+          "on energy instead (the basket at 0.45 m out: " + pc(max(b['w15b']['frac'] for b in bnom)) + ").", "",
+          "**Allowed locked speed per payload band** (polygon pivot; the lowest of any state in the band, the basket rows without the hand-point variant):", "",
+          "| Payload band | Sets it | Allowed (polygon) | W15b chord | Proposed cap |", "|---|---|---|---|---|"]
+    lo = lambda c: "unloaded" if c["lo"] < 0 else f"{c['lo']:.1f}–{c['kg']:.1f} kg"
+    L += [f"| {lo(c)} | {c['who']} | {c['v_allow']:.3f} m/s | {c['v_chord']:.3f} m/s | **{c['cap']:.2f} m/s** |" for c in sn["caps"]]
+    lt6 = dict(vF=min(r["v_force"] for r in sn["rows"] if r["load"] <= 6.0 + 1e-9), vE=min(r["v_frac"] for r in sn["rows"] if r["load"] <= 6.0 + 1e-9))
+    rel = sn["released"]
+    rel_nom = [r for r in rel if r["var"] == "nominal"]
+    d28 = sn["d28"]
+    L += ["", f"**Basket: {sn['basket_v_allow']:.2f} m/s allowed → {sn['basket_cap']:.2f} m/s cap; 2.5 kg: {sn['v_allow_25']:.2f} → {sn['cap_25']:.2f} m/s.** "
+          f"At the proposed caps every state passes: {'✅' if sn['ok_rule'] else '❌'} (the basket then uses ≤ "
+          f"{pc(max(r['frac'] for r in sn['with_rule'] if r['load'] > 6))} of the tip energy and ≤ {max(r['F'] for r in sn['with_rule'] if r['load'] > 6):.0f} N). "
+          f"Rule options for the basket:", "",
+          f"1. **Payload-dependent locked cap (proposed, SW-T8 below):** " + "; ".join(
+              (f"≤ {c['kg']:.0f} kg" if c["lo"] < 0 else f"{c['lo']:.0f}–{c['kg']:.0f} kg") + f" {c['cap']:.2f} m/s" for c in sn["steps"]) +
+          f"; no travel above {CAP_KG[-1]:.0f} kg. The octagon keeps carrying the braking and push cases (A10 rows above, unchanged), and the snag "
+          f"has ≥ {(sn['basket_v_allow'] / sn['basket_cap']) ** 2:.1f}× margin on the basket's energy and force.",
+          f"2. **Basket only in threshold mode** (casters released, {sn['v_threshold']} m/s): no snag while the feet float, but braking at "
+          f"{sn['a_released']} m/s² then rests on the wheel diamond alone: reserve {min(r['reserve'] for r in rel_nom) * 1000:.0f}–"
+          f"{max(r['reserve'] for r in rel_nom) * 1000:.0f} mm, {min(r['reserve'] for r in rel) * 1000:.0f} mm with the {BASKET_SHARE * 100:.0f} % share "
+          f"(need 30), and a hardware lock on the way (Q9 timer, power loss) snags at ≤ {pc(max(r['snag']['frac'] for r in rel))}. It passes, thinly and "
+          "slower, and loses the casters exactly when the load is highest: not proposed.",
+          f"3. **Bench snag test** (would justify more): a locked D18b foot with its guide and rods on a sled ballasted to {sn['basket'][0]['M']:.0f} kg "
+          "with the COM height of the basket carry, driven into a 5 / 10 / 15 mm step and a Ø8 cable at 0.10–0.25 m/s, at a wheel heading and a "
+          "caster heading; load cell on the foot (peak force, pulse length = the real compliance), IMU on the sled (pitch reached), the rods "
+          "measured for set after each run. The force limit sets most bands, and it rests on two ESTIMATES (3 mm compliance, the rods' 40 mm "
+          "lever and yield; the printed guide is unrated): a measured pulse twice as long, or rods and guide good for 2× the load, raise the "
+          f"force-limited speeds by √2 (≤ 6 kg: {lt6['vF']:.2f} → {lt6['vF'] * math.sqrt(2):.2f} m/s, energy limit {lt6['vE']:.2f}), which would put "
+          f"that band back at {min(0.25, math.floor(min(lt6['vF'] * math.sqrt(2), lt6['vE']) / CAP_STEP + 1e-9) * CAP_STEP):.2f} m/s. It cannot buy the basket much: its energy limit (polygon pivot) is "
+          f"{min(b['v_frac'] for b in bnom):.2f} m/s, so ≤ 0.15 → 0.20 at best. The same rig checks the pivot correction (pitch at a wheel heading).", "",
+          f"**D28 still holds.** Its rule is about people, not snags: with more than {d28['kg']} kg the base moves only while nobody is within "
+          f"BASKET_CLEAR_R ({d28['r_set']} m). The radius the stop-and-set-down needs falls with the slower cap: {d28['r_today']:.1f} m from today's "
+          f"{sn['v_locked']} m/s, {d28['r_rule']:.1f} m from {sn['basket_cap']:.2f} m/s (stop at A_LOAD, then {T_LOWER:.0f} s to lower and release, ESTIMATE) "
+          f"{'≤' if d28['ok'] else '>'} {d28['r_set']} m {'✅' if d28['ok'] else '❌'}. The snag is a separate failure (the robot falls with nobody "
+          f"near), so it needs its own rule (option 1); D28's {d28['kg']} kg boundary is not a snag boundary (the caps step at "
+          + ", ".join(f"{c['kg']:.0f} kg" for c in sn["steps"][:-1]) + ").",
+          ""]
+    return L
+
+
 SW_CHANGES = [
     ("SW-T1 person within reach", "`Supervisor.set_person_near(bool)`: when perception reports a person within reach (≈ 1 m), the supervisor caps the base at ≤ 0.1 m/s and ≤ 0.1 m/s² "
      f"(`base_accel_limit()` → A_PERSON) and rejects hand targets outside LOAD_WS whatever the payload, with x ≤ {PERSON_X:.2f} m and z ≤ {PERSON_Z:.2f} m (the arms come in and the lift goes down first). "
      "A push can only come from a person, so the 8 push cases are evaluated under this rule. With the R2d basket (> 2.5 kg) the base stops and the basket "
      "is set down before the person is within reach. sw/safety.py has no person input today."),
     ("SW-T2 caster lock (D18b)", "Casters stay locked (solenoids off, spring-applied, so an e-stop or power loss locks them) except in two planner modes: "
-     "(a) a threshold or rug crossing (D2b: 45°, ≤ 0.15 m/s), started only with no person within reach; (b) unloaded transit with the arms parked above 0.3 m/s. "
+     "(a) a threshold or rug crossing (D2b: 45°, ≤ 0.15 m/s), started only with no person within reach; (b) unloaded transit with the arms parked above the locked cap (CASTER_LOCKED_V). "
      "Release pulse (≈ 100 ms) at every stop and every 0.3 m of locked travel so a lock never ratchets down into a floor dip and lifts a wheel. "
      "Needs a caster-lock output and a `Supervisor.casters_locked()` state the base planner checks before moving. "
      "rnd/tip.py counts SW-T1/T2 as enforced (scorecard gate) once `set_person_near` and `casters_locked` exist in sw/safety.py."),
@@ -441,6 +725,7 @@ def main():
     trans, t_avail = transition(d1, b1, P, rules)
     rex = real_extras(d1, b1, P, rules, c18b)
     est = estop_rows(d1, b1, P, rules, c18b)
+    sn = snag_study(d1, b1, P)
     more = sw_more()
     r_need = max(t["R"] for t in trans if "basket" not in t["name"])
     r_basket = next(t["R"] for t in trans if "basket" in t["name"])
@@ -474,6 +759,13 @@ def main():
          f"The basket needs nobody within {r_basket:.1f} m (SW-T7, BASKET_CLEAR_R {more.basket_r} m{'' if basket_ok else ': NOT enforced'}). "
          "Still open: the lock take-up and pad sinkage (sensitivity below), an e-stop that brakes harder than the planner (table below), "
          "one failed caster lock, and the ballast interlock (A10 counts the blocks as fitted).", "",
+         f"**Snag at the locked cap (W17, section below): {'PASS' if (sn['ok_rule'] if sn['enforced'] else sn['ok_today']) else 'FAIL'} with the rules "
+         f"sw/safety.py enforces.** Travelling locked at {sn['v_locked']} m/s, a caster meeting a step edge overloads its rods in every state with a load "
+         f"or the arms out, and the basket in its real carry poses uses up to {max(b['frac'] for b in sn['basket'] if b['var'] != 'hand point') * 100:.0f} % of "
+         f"the tip energy (limit {sn['frac_lim'] * 100:.0f} %; W16a's tuck-pose reading: {sn['w16a']['frac'] * 100:.0f} %). Allowed: basket "
+         f"{sn['basket_v_allow']:.2f} m/s, 2.5 kg {sn['v_allow_25']:.2f} m/s. Proposed SW-T8 locked cap by payload: "
+         + "; ".join((f"≤ {c['kg']:.0f} kg" if c["lo"] < 0 else f"{c['lo']:.0f}–{c['kg']:.0f} kg") + f" {c['cap']:.2f} m/s" for c in sn["steps"])
+         + f"{' (in sw/safety.py)' if sn['enforced'] else ' (NOT in sw/safety.py yet)'}. D28 / SW-T7 still holds.", "",
          "## What changed (A10 v2)", "",
          f"1. **Mass low in the base.** The battery already sat on the belly (z ≈ 33–98 mm). The A5 v2 power stage (contactor, pre-charge, "
          f"clamp plate, bulk cap: {d1.base.power_board_mass:.2f} kg, ESTIMATE) was in no budget; it now sits on the belly in the front-right sector "
@@ -551,8 +843,10 @@ def main():
           "| Design | Speed | Mass (+ 2 kg) | COM h | Crossed | Peak wheel torque | Margin to GIM peak (≥ 1.5×) |", "|---|---|---|---|---|---|---|"]
     for n, t in (("before", th0), ("A10 v2", th1), ("A10 v2, SW-T4", th2)):
         L.append(f"| {n} | {t['speed']:.2f} m/s | {t['mass']:.1f} kg | {t['com_h']:.2f} m | {'✅' if t['crossed'] else '❌'} | {t['peak']:.1f} N·m | {t['margin']:.2f}× {'✅' if t['margin'] >= 1.5 else '❌'} |")
+    L += snag_lines(sn, rules, more)
+    sw_all = SW_CHANGES + [("SW-T8 payload-dependent locked speed", sn["sw_text"])]
     L += ["", "## Supervisor rule changes for the software owner (sw/safety.py is read-only here)", ""]
-    L += [f"- **{k}:** {v}" for k, v in SW_CHANGES]
+    L += [f"- **{k}:** {v}" for k, v in sw_all]
     L += ["", "**Reading.** A 1.3 m robot on a Ø50 cm base can't take a firm push at shoulder height while it holds a load out in front "
           "on hardware alone: the push term alone (≈ 100–120 mm) uses most of the 148 mm between wheels. The hardware changes make every case pass "
           "that the robot can meet without a person next to it, and SW-T1 is what makes the push cases pass. The R2d basket "
@@ -563,10 +857,19 @@ def main():
     js = dict(worst=sa[0], n_ok=sa[1], n=16, n_fail=16 - sa[1], worst_sw_today=st[0], n_ok_sw_today=st[1], worst_before=sb[0], n_ok_before=sb[1],
               worst_loop40=s40[0], n_ok_loop40=s40[1], worst_no_ballast=snb[0], n_ok_no_ballast=snb[1],
               threshold=dict(before=th0, after=th1, after_slow=th2), push_tip_n=dict(before=f0, after=f1),
-              extras=ex, sw_changes=[k for k, _ in SW_CHANGES if "keep" not in k], rows=after,
+              extras=ex, sw_changes=[k for k, _ in sw_all if "keep" not in k and not (k.startswith("SW-T8") and sn["enforced"])], rows=after,
               real=dict(worst=sr[0], n_ok=sr[1], worst_with_rules=sra[0], n_ok_with_rules=sra[1], approach_enforced=approach_ok,
                         basket_clear_enforced=basket_ok, r_need=r_need, r_basket=r_basket, t_avail=t_avail, transition=trans, rows=real,
                         extras=rex, estop=est))
+    keep = ("name", "var", "load", "M", "x", "h", "lift", "v", "frac", "F", "az", "de", "v_frac", "v_force", "v_allow", "ok", "w15b")
+    js["snag"] = dict({k: sn[k] for k in ("ok_today", "ok_rule", "enforced", "steps", "caps", "v_locked", "w16a", "basket_v_allow", "basket_cap",
+                                           "cap_25", "v_allow_25", "frac_lim", "f_lim", "d28")},
+                      ok=bool(sn["ok_rule"] if sn["enforced"] else sn["ok_today"]), n=len(sn["rows"]) + len(sn["basket"]),
+                      n_ok_today=sum(r["ok"] for r in sn["rows"] + sn["basket"]),
+                      basket_frac_max=max(b["frac"] for b in sn["basket"] if b["var"] != "hand point"),
+                      basket_f_max=max(b["F"] for b in sn["basket"] if b["var"] != "hand point"),
+                      rows=[{k: r[k] for k in keep if k in r} for r in sn["rows"] + sn["basket"]],
+                      released=[dict(name=r["name"], var=r["var"], reserve=r["reserve"], snag_frac=r["snag"]["frac"]) for r in sn["released"]])
     # D29 #9: A10 on both caster-release layouts (the lock geometry does not move; only the base mass does) + force / timing
     from .params import CASTER_RELEASES
     var = {}

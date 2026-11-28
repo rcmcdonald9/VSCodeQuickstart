@@ -96,3 +96,7 @@ The joints set the limit: the heavier hand may carry at most **64 %** of the bas
 6. **Log** F_r, F_l, W and the refusal reason for every basket lift: the field data that replaces the ESTIMATE seating factor (1.3) and the sensing uncertainty.
 
 The 100 % row is the case the rule must catch in the air (one hook released or slipped): every heavy joint is far past its rule, so the supervisor's response is a controlled set-down, not 'hold on'. The wrist bearing, the hook and the gripper's own capture load with one hand carrying 70–100 % are outside these joint checks (Astra #3 major 10: test them tethered).
+
+## Travel with the basket (rnd/tip.py *Snag at the locked cap*, W17)
+
+The carry poses above (handles 0.70 / 0.80 m, basket centre 0.35–0.45 m out, every IK solution, the basket COM 0.12 m below the handles, the 62 % abort share) travel with the casters locked. A locked caster meeting a step edge at today's cap (0.25 m/s) uses 18–43 % of the tip energy (limit 25 %) and 599–699 N per foot (limit 440 N). Allowed: **0.19 m/s → locked cap 0.15 m/s with the basket** (SW-T8, NOT in sw/safety.py yet). The floor pick and the bed set-down (centre 0.50 m out) are done with the base stopped. D28 / SW-T7 (nobody within BASKET_CLEAR_R while the base moves) still holds: 8.2 m needed at 0.15 m/s, 9.5 m set.
