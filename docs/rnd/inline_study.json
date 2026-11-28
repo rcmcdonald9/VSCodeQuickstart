@@ -1,0 +1,2828 @@
+{
+ "B0": {
+  "wm": {
+   "shoulder_pitch": {
+    "p95": 8.774819358095273,
+    "max": 12.132280556878666,
+    "rated": 14.25,
+    "peak": 31.349999999999998,
+    "m_rated": 1.6239650548308506,
+    "m_peak": 2.5840154168068112
+   },
+   "shoulder_roll": {
+    "p95": 13.079500142661916,
+    "max": 16.832362612113464,
+    "rated": 35.1,
+    "peak": 102.9,
+    "m_rated": 2.683588792931999,
+    "m_peak": 6.113223816004753
+   },
+   "upper_yaw": {
+    "p95": 5.232752487832432,
+    "max": 6.945396579531063,
+    "rated": 9.5,
+    "peak": 20.9,
+    "m_rated": 1.8154881244794352,
+    "m_peak": 3.0091874179791067
+   },
+   "elbow": {
+    "p95": 6.115943888937472,
+    "max": 6.9464499328255815,
+    "rated": 9.5,
+    "peak": 20.9,
+    "m_rated": 1.5533170631574325,
+    "m_peak": 3.0087311075599423
+   },
+   "wrist_pitch": {
+    "p95": 1.7678809158007394,
+    "max": 1.858646771063933,
+    "rated": 3.0,
+    "peak": 7.0,
+    "m_rated": 1.6969468775792445,
+    "m_peak": 3.766180916663921
+   }
+  },
+  "hug": {
+   "pitch": 1.2241900153206735,
+   "elbow": 0.816126676880449,
+   "worst": 0.816126676880449
+  },
+  "arm_kg": 4.796,
+  "arm_items": [
+   [
+    "arm shoulder_roll",
+    1.0
+   ],
+   [
+    "arm upper_yaw",
+    0.388
+   ],
+   [
+    "arm elbow",
+    0.388
+   ],
+   [
+    "arm wrist_pitch",
+    0.3
+   ],
+   [
+    "arm wrist_roll",
+    0.055
+   ],
+   [
+    "arm gripper",
+    0.055
+   ],
+   [
+    "arm bones+shells",
+    1.1800000000000002
+   ],
+   [
+    "gripper mechanism",
+    0.28
+   ],
+   [
+    "wrist camera",
+    0.05
+   ],
+   [
+    "upper-arm yaw belt stage",
+    0.69
+   ],
+   [
+    "roll stage",
+    0.41
+   ]
+  ],
+  "arm_moment_nm": 9.432615578400002,
+  "elbow_node_kg": 0.388,
+  "outboard_elbow_kg": 1.4080000000000001,
+  "pitch_side_kg": 1.318,
+  "speed_rpm": {
+   "shoulder_pitch": 39.9999662134454,
+   "shoulder_roll": 47.99995945613447,
+   "upper_yaw": 59.99994932016809,
+   "elbow": 59.99994932016809
+  },
+  "thermal": {
+   "shoulder_pitch": {
+    "act": "GIM6010-8",
+    "T": 145.17685687048566,
+    "t_limit": 534.9011549042601,
+    "cont": 9.318670028040458,
+    "max": 12.132280556878666
+   },
+   "shoulder_roll": {
+    "act": "GIM8108-36",
+    "T": 70.63520283027766,
+    "t_limit": null,
+    "cont": 22.733281994684553,
+    "max": 16.832362612113464
+   },
+   "upper_yaw": {
+    "act": "GIM6010-8",
+    "T": 116.2422803574655,
+    "t_limit": 965.8908388408626,
+    "cont": 6.212446685360305,
+    "max": 6.945396579531063
+   },
+   "elbow": {
+    "act": "GIM6010-8",
+    "T": 116.266924972663,
+    "t_limit": 965.1631220044992,
+    "cont": 6.212446685360305,
+    "max": 6.9464499328255815
+   },
+   "wrist_pitch": {
+    "act": "DM-J4310-2EC_V1.1",
+    "T": 92.65244428598456,
+    "t_limit": null,
+    "cont": 1.9735342939254479,
+    "max": 1.858646771063933
+   }
+  },
+  "tip": {
+   "worst": 0.034797009559234926,
+   "n_ok": 16,
+   "n": 16,
+   "basket_extra": [
+    {
+     "name": "R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s\u00b2, no person within reach",
+     "reserve": 0.04370902378271237,
+     "ok": true
+    },
+    {
+     "name": "R2d basket 9.07 kg, person within reach: held at x \u2264 0.35 m, z \u2264 0.60 m, braking 0.1 m/s\u00b2 + 30 N push",
+     "reserve": 0.00639822659714415,
+     "ok": false
+    }
+   ]
+  },
+  "com": {
+   "M": 31.462000000000003,
+   "h_parked": 0.3894915404174907,
+   "x_parked": 0.012174348142092587,
+   "h_straight": 0.42311754815342456,
+   "x_straight": 0.06293443686156787
+  },
+  "push_tip_n": 53.35037055901921,
+  "basket": {
+   "worst": 0.6546412037603643,
+   "all_ik": true,
+   "tip_wheel": 0.06224642101719892,
+   "rise_max": 22.913314826255345
+  },
+  "backdrive": {
+   "shoulder_pitch": {
+    "act": "GIM6010-8",
+    "N": 24.0,
+    "stages": 1,
+    "eta_b": 0.924731182795699,
+    "J": 0.013824,
+    "T": 0.638984088127295,
+    "F": 1.0649734802121584,
+    "F_lo": 0.5324867401060792,
+    "F_hi": 2.129946960424317,
+    "m_hand": 0.0384,
+    "trip_rise": 0.3194920440636475,
+    "F_trip": 5.865820073439413
+   },
+   "shoulder_roll": {
+    "act": "GIM8108-36",
+    "N": 36.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.07776,
+    "T": 0.9399643738010413,
+    "F": 1.5666072896684022,
+    "F_lo": 0.7833036448342011,
+    "F_hi": 3.1332145793368045,
+    "m_hand": 0.216,
+    "trip_rise": 0.4699821869005206,
+    "F_trip": 4.783303644834201
+   },
+   "upper_yaw": {
+    "act": "GIM6010-8",
+    "N": 16.0,
+    "stages": 1,
+    "eta_b": 0.924731182795699,
+    "J": 0.006144,
+    "T": 0.4426560587515299,
+    "F": 1.0294326947709997,
+    "F_lo": 0.5147163473854999,
+    "F_hi": 2.0588653895419995,
+    "m_hand": 0.03322877230935641,
+    "trip_rise": 0.22132802937576496,
+    "F_trip": 4.23564657994364
+   },
+   "elbow": {
+    "act": "GIM6010-8",
+    "N": 16.0,
+    "stages": 1,
+    "eta_b": 0.924731182795699,
+    "J": 0.006144,
+    "T": 0.4426560587515299,
+    "F": 1.0294326947709997,
+    "F_lo": 0.5147163473854999,
+    "F_hi": 2.0588653895419995,
+    "m_hand": 0.03322877230935641,
+    "trip_rise": 0.22132802937576496,
+    "F_trip": 6.096111696222709
+   }
+  },
+  "meff": {
+   "reach (pitch \u221260\u00b0, elbow \u221260\u00b0)": {
+    "links only": {
+     "worst": 2.2510230330965024,
+     "x": 2.2510230330965024,
+     "y": 1.4350774670772384,
+     "z": 1.3606610232135088
+    },
+    "with reflected rotor inertia": {
+     "worst": 2.3978238054805288,
+     "x": 2.3978238054805288,
+     "y": 1.4953692318078127,
+     "z": 1.4187612874757092
+    }
+   },
+   "arm straight out (pitch \u221290\u00b0)": {
+    "links only": {
+     "worst": 1.8292724327143195,
+     "x": null,
+     "y": 1.8292724327143195,
+     "z": 1.1325634198957433
+    },
+    "with reflected rotor inertia": {
+     "worst": 1.9756569480129234,
+     "x": null,
+     "y": 1.9756569480129234,
+     "z": 1.1651445813439039
+    }
+   }
+  },
+  "acc": {
+   "rss": 4.286153798987786,
+   "joints": {
+    "shoulder_pitch": {
+     "deg": 0.1966736069168386,
+     "mm": 2.0595611954831563
+    },
+    "shoulder_roll": {
+     "deg": 0.25000074505694947,
+     "mm": 2.618001680209624
+    },
+    "upper_yaw": {
+     "deg": 0.24681306917073384,
+     "mm": 1.9384653122918172
+    },
+    "elbow": {
+     "deg": 0.24930204523066138,
+     "mm": 1.870990854129273
+    },
+    "wrist_pitch": {
+     "deg": 0.05,
+     "mm": 0.1308996938995747
+    }
+   }
+  },
+  "acc_enc": {
+   "rss": 0.9276141743971493,
+   "joints": {
+    "shoulder_pitch": {
+     "deg": 0.05,
+     "mm": 0.5235987755982988
+    },
+    "shoulder_roll": {
+     "deg": 0.05,
+     "mm": 0.5235987755982988
+    },
+    "upper_yaw": {
+     "deg": 0.05,
+     "mm": 0.39269908169872414
+    },
+    "elbow": {
+     "deg": 0.05,
+     "mm": 0.3752457891787809
+    },
+    "wrist_pitch": {
+     "deg": 0.05,
+     "mm": 0.1308996938995747
+    }
+   }
+  },
+  "cost": {
+   "lines": [
+    [
+     "shoulder_pitch",
+     "actuator GIM6010-8",
+     1,
+     90.0,
+     "aifitlab $90 with SDC104 (loop 14); Robotics Center lists $70, backordered (2026-11-27)"
+    ],
+    [
+     "shoulder_pitch",
+     "turned C45 drive stub (\u00d812 h6 shaft, 8 \u00d7 M3 flange)",
+     1,
+     12.0,
+     "ESTIMATE: JLCCNC-class turning \u2265 $5 + bar (m1_kit SLEEVE basis)"
+    ],
+    [
+     "shoulder_pitch",
+     "8 \u00d7 DIN 7984 M3 \u00d7 6 stub screws + key",
+     1,
+     1.8,
+     "ESTIMATE (m1_kit M3X6_PACK / KEYS shares)"
+    ],
+    [
+     "shoulder_pitch",
+     "keyed 20T HTD 5M pulley aluminium",
+     1,
+     12.0,
+     "m1_kit HOLD_A / KEYED_PULLEY"
+    ],
+    [
+     "shoulder_pitch",
+     "6001-2RS + bushing adhesive share",
+     1,
+     1.5,
+     "ESTIMATE"
+    ],
+    [
+     "shoulder_pitch",
+     "HTD 5M 15 mm belt rubber",
+     1,
+     9.0,
+     "m1_kit HOLD_A / BELT"
+    ],
+    [
+     "shoulder_pitch",
+     "4 flange-ear M4 screws + nuts + washers",
+     1,
+     1.3,
+     "ESTIMATE (bom flange-ear line \u00f7 28)"
+    ],
+    [
+     "shoulder_pitch",
+     "aluminium finned rear cap (closed-sleeve thermal fix) + NTC",
+     1,
+     15.6,
+     "m1_kit AL_CAP / HOLD_A"
+    ],
+    [
+     "shoulder_pitch",
+     "slotted idler: 2 \u00d7 625-2RS, M5 axle + nut + spacers, M4 jack screw",
+     1,
+     2.5,
+     "ESTIMATE (bom 625ZZ $0.25)"
+    ],
+    [
+     "shoulder_pitch",
+     "AS5048A joint encoder + magnet on the shaft end",
+     1,
+     12.0,
+     "rnd/bom.py sensor pack v2 line"
+    ],
+    [
+     "shoulder_roll",
+     "actuator GIM8108-36",
+     1,
+     240.0,
+     "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots)"
+    ],
+    [
+     "shoulder_roll",
+     "inline roll hardware (adapter, 61806, clamp ring, dowels, W8c rear mount; same in every variant)",
+     1,
+     77.0,
+     "m1_kit HOLD_B (per arm, robot-wide consumables excluded)"
+    ],
+    [
+     "shoulder_roll",
+     "off-axis joint encoder (ring magnet round the motor)",
+     1,
+     20.0,
+     "ESTIMATE (the motor fills the axis; same in every variant)"
+    ],
+    [
+     "upper_yaw",
+     "actuator GIM6010-8",
+     1,
+     90.0,
+     "aifitlab $90 with SDC104 (loop 14); Robotics Center lists $70, backordered (2026-11-27)"
+    ],
+    [
+     "upper_yaw",
+     "turned C45 drive stub (\u00d812 h6 shaft, 8 \u00d7 M3 flange)",
+     1,
+     12.0,
+     "ESTIMATE: JLCCNC-class turning \u2265 $5 + bar (m1_kit SLEEVE basis)"
+    ],
+    [
+     "upper_yaw",
+     "8 \u00d7 DIN 7984 M3 \u00d7 6 stub screws + key",
+     1,
+     1.8,
+     "ESTIMATE (m1_kit M3X6_PACK / KEYS shares)"
+    ],
+    [
+     "upper_yaw",
+     "keyed 20T HTD 5M pulley aluminium",
+     1,
+     12.0,
+     "m1_kit HOLD_A / KEYED_PULLEY"
+    ],
+    [
+     "upper_yaw",
+     "6001-2RS + bushing adhesive share",
+     1,
+     1.5,
+     "ESTIMATE"
+    ],
+    [
+     "upper_yaw",
+     "HTD 5M 15 mm belt rubber",
+     1,
+     9.0,
+     "m1_kit HOLD_A / BELT"
+    ],
+    [
+     "upper_yaw",
+     "4 flange-ear M4 screws + nuts + washers",
+     1,
+     1.3,
+     "ESTIMATE (bom flange-ear line \u00f7 28)"
+    ],
+    [
+     "upper_yaw",
+     "aluminium finned rear cap (closed-sleeve thermal fix) + NTC",
+     1,
+     15.6,
+     "m1_kit AL_CAP / HOLD_A"
+    ],
+    [
+     "upper_yaw",
+     "AS5048A joint encoder + magnet on the shaft end",
+     1,
+     12.0,
+     "rnd/bom.py sensor pack v2 line"
+    ],
+    [
+     "elbow",
+     "actuator GIM6010-8",
+     1,
+     90.0,
+     "aifitlab $90 with SDC104 (loop 14); Robotics Center lists $70, backordered (2026-11-27)"
+    ],
+    [
+     "elbow",
+     "turned C45 drive stub (\u00d812 h6 shaft, 8 \u00d7 M3 flange)",
+     1,
+     12.0,
+     "ESTIMATE: JLCCNC-class turning \u2265 $5 + bar (m1_kit SLEEVE basis)"
+    ],
+    [
+     "elbow",
+     "8 \u00d7 DIN 7984 M3 \u00d7 6 stub screws + key",
+     1,
+     1.8,
+     "ESTIMATE (m1_kit M3X6_PACK / KEYS shares)"
+    ],
+    [
+     "elbow",
+     "keyed 20T HTD 5M pulley aluminium",
+     1,
+     12.0,
+     "m1_kit HOLD_A / KEYED_PULLEY"
+    ],
+    [
+     "elbow",
+     "6001-2RS + bushing adhesive share",
+     1,
+     1.5,
+     "ESTIMATE"
+    ],
+    [
+     "elbow",
+     "HTD 5M 15 mm belt rubber",
+     1,
+     9.0,
+     "m1_kit HOLD_A / BELT"
+    ],
+    [
+     "elbow",
+     "4 flange-ear M4 screws + nuts + washers",
+     1,
+     1.3,
+     "ESTIMATE (bom flange-ear line \u00f7 28)"
+    ],
+    [
+     "elbow",
+     "aluminium finned rear cap (closed-sleeve thermal fix) + NTC",
+     1,
+     15.6,
+     "m1_kit AL_CAP / HOLD_A"
+    ],
+    [
+     "elbow",
+     "AS5048A joint encoder + magnet on the shaft end",
+     1,
+     12.0,
+     "rnd/bom.py sensor pack v2 line"
+    ]
+   ],
+   "arm": 805.1,
+   "arm_hi": 884.09,
+   "actuators": 510.0,
+   "drive_parts": 295.1,
+   "robot_landed": 1851.73,
+   "robot_landed_hi": 2033.407
+  },
+  "simple": {
+   "parts": 50,
+   "fasteners": 108,
+   "drive_minutes": 113,
+   "arm_hours": 6.133333333333334,
+   "print_g_saved": 0.0,
+   "print_h_saved_p2s": 0.0,
+   "belt_joints": [
+    "shoulder_pitch",
+    "upper_yaw",
+    "elbow"
+   ],
+   "inline_joints": []
+  },
+  "joints": {
+   "shoulder_pitch": [
+    "GIM6010-8",
+    3.0
+   ],
+   "shoulder_roll": [
+    "GIM8108-36",
+    1.0
+   ],
+   "upper_yaw": [
+    "GIM6010-8",
+    2.0
+   ],
+   "elbow": [
+    "GIM6010-8",
+    2.0
+   ]
+  },
+  "mass_lines": {}
+ },
+ "B1": {
+  "wm": {
+   "shoulder_pitch": {
+    "p95": 8.837101259141791,
+    "max": 12.213616369498208,
+    "rated": 21.375,
+    "peak": 62.699999999999996,
+    "m_rated": 2.418779571852028,
+    "m_peak": 5.133614656227818
+   },
+   "shoulder_roll": {
+    "p95": 13.14816112371615,
+    "max": 16.914596863278508,
+    "rated": 35.1,
+    "peak": 102.9,
+    "m_rated": 2.669574830254245,
+    "m_peak": 6.08350295497703
+   },
+   "upper_yaw": {
+    "p95": 5.232752487832432,
+    "max": 6.945396579531064,
+    "rated": 9.5,
+    "peak": 20.9,
+    "m_rated": 1.8154881244794352,
+    "m_peak": 3.0091874179791063
+   },
+   "elbow": {
+    "p95": 6.115943888937472,
+    "max": 6.946449932825583,
+    "rated": 21.375,
+    "peak": 62.699999999999996,
+    "m_rated": 3.494963392104223,
+    "m_peak": 9.026193322679825
+   },
+   "wrist_pitch": {
+    "p95": 1.767880915800739,
+    "max": 1.8586467710639312,
+    "rated": 3.0,
+    "peak": 7.0,
+    "m_rated": 1.696946877579245,
+    "m_peak": 3.7661809166639246
+   }
+  },
+  "hug": {
+   "pitch": 1.8362850229810104,
+   "elbow": 1.8362850229810104,
+   "worst": 1.8362850229810104
+  },
+  "arm_kg": 4.834,
+  "arm_items": [
+   [
+    "arm shoulder_roll",
+    1.0
+   ],
+   [
+    "arm upper_yaw",
+    0.388
+   ],
+   [
+    "arm elbow",
+    0.396
+   ],
+   [
+    "arm wrist_pitch",
+    0.3
+   ],
+   [
+    "arm wrist_roll",
+    0.055
+   ],
+   [
+    "arm gripper",
+    0.055
+   ],
+   [
+    "arm bones+shells",
+    1.21
+   ],
+   [
+    "gripper mechanism",
+    0.28
+   ],
+   [
+    "wrist camera",
+    0.05
+   ],
+   [
+    "upper-arm yaw belt stage",
+    0.69
+   ],
+   [
+    "roll stage",
+    0.41
+   ]
+  ],
+  "arm_moment_nm": 9.500304578400002,
+  "elbow_node_kg": 0.396,
+  "outboard_elbow_kg": 1.4160000000000001,
+  "pitch_side_kg": 1.346,
+  "speed_rpm": {
+   "shoulder_pitch": 19.9999831067227,
+   "shoulder_roll": 47.99995945613447,
+   "upper_yaw": 59.99994932016809,
+   "elbow": 19.9999831067227
+  },
+  "thermal": {
+   "shoulder_pitch": {
+    "act": "GIM8108-8",
+    "T": 85.23605292663913,
+    "t_limit": null,
+    "cont": 13.892909232481877,
+    "max": 12.213616369498208
+   },
+   "shoulder_roll": {
+    "act": "GIM8108-36",
+    "T": 70.98424385124781,
+    "t_limit": null,
+    "cont": 22.733281994684553,
+    "max": 16.914596863278508
+   },
+   "upper_yaw": {
+    "act": "GIM6010-8",
+    "T": 116.24228035746552,
+    "t_limit": 965.8908388408619,
+    "cont": 6.212446685360305,
+    "max": 6.945396579531064
+   },
+   "elbow": {
+    "act": "GIM8108-8",
+    "T": 51.24997808796629,
+    "t_limit": null,
+    "cont": 13.892909232481877,
+    "max": 6.946449932825583
+   },
+   "wrist_pitch": {
+    "act": "DM-J4310-2EC_V1.1",
+    "T": 92.65244428598446,
+    "t_limit": null,
+    "cont": 1.9735342939254479,
+    "max": 1.8586467710639312
+   }
+  },
+  "tip": {
+   "worst": 0.0347466082293096,
+   "n_ok": 16,
+   "n": 16,
+   "basket_extra": [
+    {
+     "name": "R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s\u00b2, no person within reach",
+     "reserve": 0.0436918832624214,
+     "ok": true
+    },
+    {
+     "name": "R2d basket 9.07 kg, person within reach: held at x \u2264 0.35 m, z \u2264 0.60 m, braking 0.1 m/s\u00b2 + 30 N push",
+     "reserve": 0.006430448498585529,
+     "ok": false
+    }
+   ]
+  },
+  "com": {
+   "M": 31.582800000000006,
+   "h_parked": 0.39015309398437364,
+   "x_parked": 0.012300281838422081,
+   "h_straight": 0.4241765866231951,
+   "x_straight": 0.06339749016992312
+  },
+  "push_tip_n": 53.51686535341287,
+  "basket": {
+   "worst": 1.4670747041136538,
+   "all_ik": true,
+   "tip_wheel": 0.0623189246138448,
+   "rise_max": 10.224428216191201
+  },
+  "backdrive": {
+   "shoulder_pitch": {
+    "act": "GIM8108-8",
+    "N": 24.0,
+    "stages": 1,
+    "eta_b": 0.924731182795699,
+    "J": 0.03456,
+    "T": 0.7755813953488372,
+    "F": 1.2926356589147288,
+    "F_lo": 0.6463178294573644,
+    "F_hi": 2.5852713178294575,
+    "m_hand": 0.096,
+    "trip_rise": 0.3877906976744186,
+    "F_trip": 5.979651162790698
+   },
+   "shoulder_roll": {
+    "act": "GIM8108-36",
+    "N": 36.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.07776,
+    "T": 0.9399643738010413,
+    "F": 1.5666072896684022,
+    "F_lo": 0.7833036448342011,
+    "F_hi": 3.1332145793368045,
+    "m_hand": 0.216,
+    "trip_rise": 0.4699821869005206,
+    "F_trip": 4.783303644834201
+   },
+   "upper_yaw": {
+    "act": "GIM6010-8",
+    "N": 16.0,
+    "stages": 1,
+    "eta_b": 0.924731182795699,
+    "J": 0.006144,
+    "T": 0.4426560587515299,
+    "F": 1.0294326947709997,
+    "F_lo": 0.5147163473854999,
+    "F_hi": 2.0588653895419995,
+    "m_hand": 0.03322877230935641,
+    "trip_rise": 0.22132802937576496,
+    "F_trip": 4.23564657994364
+   },
+   "elbow": {
+    "act": "GIM8108-8",
+    "N": 24.0,
+    "stages": 1,
+    "eta_b": 0.924731182795699,
+    "J": 0.03456,
+    "T": 0.7755813953488372,
+    "F": 1.803677663601947,
+    "F_lo": 0.9018388318009735,
+    "F_hi": 3.607355327203894,
+    "m_hand": 0.18691184424012983,
+    "trip_rise": 0.3877906976744186,
+    "F_trip": 6.483234180638182
+   }
+  },
+  "meff": {
+   "reach (pitch \u221260\u00b0, elbow \u221260\u00b0)": {
+    "links only": {
+     "worst": 2.261167628498963,
+     "x": 2.261167628498963,
+     "y": 1.435690861793803,
+     "z": 1.3619382083481044
+    },
+    "with reflected rotor inertia": {
+     "worst": 2.611664087939836,
+     "x": 2.611664087939836,
+     "y": 1.4960841787656864,
+     "z": 1.4495170681676808
+    }
+   },
+   "arm straight out (pitch \u221290\u00b0)": {
+    "links only": {
+     "worst": 1.8331826397327482,
+     "x": null,
+     "y": 1.8331826397327482,
+     "z": 1.1325651968990162
+    },
+    "with reflected rotor inertia": {
+     "worst": 1.9795671546358404,
+     "x": null,
+     "y": 1.9795671546358404,
+     "z": 1.1653445639642013
+    }
+   }
+  },
+  "acc": {
+   "rss": 4.141100635888962,
+   "joints": {
+    "shoulder_pitch": {
+     "deg": 0.1970981971841123,
+     "mm": 2.064007494364666
+    },
+    "shoulder_roll": {
+     "deg": 0.25000074505694947,
+     "mm": 2.618001680209624
+    },
+    "upper_yaw": {
+     "deg": 0.24681306917073384,
+     "mm": 1.9384653122918172
+    },
+    "elbow": {
+     "deg": 0.2003069974438578,
+     "mm": 1.5032871466770492
+    },
+    "wrist_pitch": {
+     "deg": 0.05,
+     "mm": 0.1308996938995747
+    }
+   }
+  },
+  "acc_enc": {
+   "rss": 0.9276141743971493,
+   "joints": {
+    "shoulder_pitch": {
+     "deg": 0.05,
+     "mm": 0.5235987755982988
+    },
+    "shoulder_roll": {
+     "deg": 0.05,
+     "mm": 0.5235987755982988
+    },
+    "upper_yaw": {
+     "deg": 0.05,
+     "mm": 0.39269908169872414
+    },
+    "elbow": {
+     "deg": 0.05,
+     "mm": 0.3752457891787809
+    },
+    "wrist_pitch": {
+     "deg": 0.05,
+     "mm": 0.1308996938995747
+    }
+   }
+  },
+  "cost": {
+   "lines": [
+    [
+     "shoulder_pitch",
+     "actuator GIM8108-8",
+     1,
+     115.0,
+     "ESTIMATE: aifitlab $85 bare (no driver, backordered) + \u2248 $25 driver (the GIM6010 gap $70 \u2192 $90); openelab.com $113.99\u2013213.99 by variant"
+    ],
+    [
+     "shoulder_pitch",
+     "turned C45 drive stub (\u00d812 h6 shaft, 8 \u00d7 M3 flange)",
+     1,
+     12.0,
+     "ESTIMATE: JLCCNC-class turning \u2265 $5 + bar (m1_kit SLEEVE basis)"
+    ],
+    [
+     "shoulder_pitch",
+     "8 \u00d7 DIN 7984 M3 \u00d7 6 stub screws + key",
+     1,
+     1.8,
+     "ESTIMATE (m1_kit M3X6_PACK / KEYS shares)"
+    ],
+    [
+     "shoulder_pitch",
+     "keyed 20T HTD 5M pulley steel C45",
+     1,
+     18.0,
+     "m1_kit HOLD_A / KEYED_PULLEY"
+    ],
+    [
+     "shoulder_pitch",
+     "6001-2RS + bushing adhesive share",
+     1,
+     1.5,
+     "ESTIMATE"
+    ],
+    [
+     "shoulder_pitch",
+     "HTD 5M 15 mm belt PU steel-cord",
+     1,
+     15.0,
+     "m1_kit HOLD_A / BELT"
+    ],
+    [
+     "shoulder_pitch",
+     "4 flange-ear M4 screws + nuts + washers",
+     1,
+     1.3,
+     "ESTIMATE (bom flange-ear line \u00f7 28)"
+    ],
+    [
+     "shoulder_pitch",
+     "aluminium finned rear cap (closed-sleeve thermal fix) + NTC",
+     1,
+     18.6,
+     "m1_kit AL_CAP / HOLD_A"
+    ],
+    [
+     "shoulder_pitch",
+     "slotted idler: 2 \u00d7 625-2RS, M5 axle + nut + spacers, M4 jack screw",
+     1,
+     2.5,
+     "ESTIMATE (bom 625ZZ $0.25)"
+    ],
+    [
+     "shoulder_pitch",
+     "AS5048A joint encoder + magnet on the shaft end",
+     1,
+     12.0,
+     "rnd/bom.py sensor pack v2 line"
+    ],
+    [
+     "shoulder_roll",
+     "actuator GIM8108-36",
+     1,
+     240.0,
+     "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots)"
+    ],
+    [
+     "shoulder_roll",
+     "inline roll hardware (adapter, 61806, clamp ring, dowels, W8c rear mount; same in every variant)",
+     1,
+     77.0,
+     "m1_kit HOLD_B (per arm, robot-wide consumables excluded)"
+    ],
+    [
+     "shoulder_roll",
+     "off-axis joint encoder (ring magnet round the motor)",
+     1,
+     20.0,
+     "ESTIMATE (the motor fills the axis; same in every variant)"
+    ],
+    [
+     "upper_yaw",
+     "actuator GIM6010-8",
+     1,
+     90.0,
+     "aifitlab $90 with SDC104 (loop 14); Robotics Center lists $70, backordered (2026-11-27)"
+    ],
+    [
+     "upper_yaw",
+     "turned C45 drive stub (\u00d812 h6 shaft, 8 \u00d7 M3 flange)",
+     1,
+     12.0,
+     "ESTIMATE: JLCCNC-class turning \u2265 $5 + bar (m1_kit SLEEVE basis)"
+    ],
+    [
+     "upper_yaw",
+     "8 \u00d7 DIN 7984 M3 \u00d7 6 stub screws + key",
+     1,
+     1.8,
+     "ESTIMATE (m1_kit M3X6_PACK / KEYS shares)"
+    ],
+    [
+     "upper_yaw",
+     "keyed 20T HTD 5M pulley aluminium",
+     1,
+     12.0,
+     "m1_kit HOLD_A / KEYED_PULLEY"
+    ],
+    [
+     "upper_yaw",
+     "6001-2RS + bushing adhesive share",
+     1,
+     1.5,
+     "ESTIMATE"
+    ],
+    [
+     "upper_yaw",
+     "HTD 5M 15 mm belt rubber",
+     1,
+     9.0,
+     "m1_kit HOLD_A / BELT"
+    ],
+    [
+     "upper_yaw",
+     "4 flange-ear M4 screws + nuts + washers",
+     1,
+     1.3,
+     "ESTIMATE (bom flange-ear line \u00f7 28)"
+    ],
+    [
+     "upper_yaw",
+     "aluminium finned rear cap (closed-sleeve thermal fix) + NTC",
+     1,
+     15.6,
+     "m1_kit AL_CAP / HOLD_A"
+    ],
+    [
+     "upper_yaw",
+     "AS5048A joint encoder + magnet on the shaft end",
+     1,
+     12.0,
+     "rnd/bom.py sensor pack v2 line"
+    ],
+    [
+     "elbow",
+     "actuator GIM8108-8",
+     1,
+     115.0,
+     "ESTIMATE: aifitlab $85 bare (no driver, backordered) + \u2248 $25 driver (the GIM6010 gap $70 \u2192 $90); openelab.com $113.99\u2013213.99 by variant"
+    ],
+    [
+     "elbow",
+     "turned C45 drive stub (\u00d812 h6 shaft, 8 \u00d7 M3 flange)",
+     1,
+     12.0,
+     "ESTIMATE: JLCCNC-class turning \u2265 $5 + bar (m1_kit SLEEVE basis)"
+    ],
+    [
+     "elbow",
+     "8 \u00d7 DIN 7984 M3 \u00d7 6 stub screws + key",
+     1,
+     1.8,
+     "ESTIMATE (m1_kit M3X6_PACK / KEYS shares)"
+    ],
+    [
+     "elbow",
+     "keyed 20T HTD 5M pulley steel C45",
+     1,
+     18.0,
+     "m1_kit HOLD_A / KEYED_PULLEY"
+    ],
+    [
+     "elbow",
+     "6001-2RS + bushing adhesive share",
+     1,
+     1.5,
+     "ESTIMATE"
+    ],
+    [
+     "elbow",
+     "HTD 5M 15 mm belt PU steel-cord",
+     1,
+     15.0,
+     "m1_kit HOLD_A / BELT"
+    ],
+    [
+     "elbow",
+     "4 flange-ear M4 screws + nuts + washers",
+     1,
+     1.3,
+     "ESTIMATE (bom flange-ear line \u00f7 28)"
+    ],
+    [
+     "elbow",
+     "aluminium finned rear cap (closed-sleeve thermal fix) + NTC",
+     1,
+     18.6,
+     "m1_kit AL_CAP / HOLD_A"
+    ],
+    [
+     "elbow",
+     "AS5048A joint encoder + magnet on the shaft end",
+     1,
+     12.0,
+     "rnd/bom.py sensor pack v2 line"
+    ]
+   ],
+   "arm": 885.1,
+   "arm_hi": 1154.0700000000002,
+   "actuators": 560.0,
+   "drive_parts": 325.1,
+   "robot_landed": 2035.7299999999998,
+   "robot_landed_hi": 2654.3610000000003
+  },
+  "simple": {
+   "parts": 50,
+   "fasteners": 108,
+   "drive_minutes": 113,
+   "arm_hours": 6.133333333333334,
+   "print_g_saved": 0.0,
+   "print_h_saved_p2s": 0.0,
+   "belt_joints": [
+    "shoulder_pitch",
+    "upper_yaw",
+    "elbow"
+   ],
+   "inline_joints": []
+  },
+  "joints": {
+   "shoulder_pitch": [
+    "GIM8108-8",
+    3.0
+   ],
+   "shoulder_roll": [
+    "GIM8108-36",
+    1.0
+   ],
+   "upper_yaw": [
+    "GIM6010-8",
+    2.0
+   ],
+   "elbow": [
+    "GIM8108-8",
+    3.0
+   ]
+  },
+  "mass_lines": {}
+ },
+ "I1": {
+  "wm": {
+   "shoulder_pitch": {
+    "p95": 9.880261254115272,
+    "max": 13.718929505330806,
+    "rated": 35.1,
+    "peak": 102.9,
+    "m_rated": 3.552537640174276,
+    "m_peak": 7.500585228608095
+   },
+   "shoulder_roll": {
+    "p95": 14.417426196610672,
+    "max": 18.436537746479907,
+    "rated": 35.1,
+    "peak": 102.9,
+    "m_rated": 2.4345538185069056,
+    "m_peak": 5.581308237749071
+   },
+   "upper_yaw": {
+    "p95": 5.232752487832431,
+    "max": 6.945396579531064,
+    "rated": 30.0,
+    "peak": 66.0,
+    "m_rated": 5.733120393092954,
+    "m_peak": 9.502697109407706
+   },
+   "elbow": {
+    "p95": 6.115943888937472,
+    "max": 6.946449932825583,
+    "rated": 35.1,
+    "peak": 102.9,
+    "m_rated": 5.739097780718514,
+    "m_peak": 14.813322055881246
+   },
+   "wrist_pitch": {
+    "p95": 1.767880915800739,
+    "max": 1.8586467710639312,
+    "rated": 3.0,
+    "peak": 7.0,
+    "m_rated": 1.696946877579245,
+    "m_peak": 3.7661809166639246
+   }
+  },
+  "hug": {
+   "pitch": 3.0153733008951327,
+   "elbow": 3.0153733008951327,
+   "worst": 3.0153733008951327
+  },
+  "arm_kg": 5.187,
+  "arm_items": [
+   [
+    "arm shoulder_roll",
+    1.0
+   ],
+   [
+    "arm upper_yaw",
+    0.777
+   ],
+   [
+    "arm elbow",
+    1.0
+   ],
+   [
+    "arm wrist_pitch",
+    0.3
+   ],
+   [
+    "arm wrist_roll",
+    0.055
+   ],
+   [
+    "arm gripper",
+    0.055
+   ],
+   [
+    "arm bones+shells",
+    0.8300000000000001
+   ],
+   [
+    "gripper mechanism",
+    0.28
+   ],
+   [
+    "wrist camera",
+    0.05
+   ],
+   [
+    "upper-arm yaw belt stage",
+    0.42999999999999994
+   ],
+   [
+    "roll stage",
+    0.41
+   ]
+  ],
+  "arm_moment_nm": 10.9421511066,
+  "elbow_node_kg": 1.0,
+  "outboard_elbow_kg": 2.02,
+  "pitch_side_kg": 1.8,
+  "speed_rpm": {
+   "shoulder_pitch": 47.99995945613447,
+   "shoulder_roll": 47.99995945613447,
+   "upper_yaw": 19.999983106722702,
+   "elbow": 47.99995945613447
+  },
+  "thermal": {
+   "shoulder_pitch": {
+    "act": "GIM8108-36",
+    "T": 58.67170430918132,
+    "t_limit": null,
+    "cont": 22.733281994684553,
+    "max": 13.718929505330806
+   },
+   "shoulder_roll": {
+    "act": "GIM8108-36",
+    "T": 77.75115102441873,
+    "t_limit": null,
+    "cont": 22.733281994684553,
+    "max": 18.436537746479907
+   },
+   "upper_yaw": {
+    "act": "GIM6010-48",
+    "T": 43.29145106383677,
+    "t_limit": null,
+    "cont": 19.44636603894547,
+    "max": 6.945396579531064
+   },
+   "elbow": {
+    "act": "GIM8108-36",
+    "T": 41.06896870445264,
+    "t_limit": null,
+    "cont": 22.733281994684553,
+    "max": 6.946449932825583
+   },
+   "wrist_pitch": {
+    "act": "DM-J4310-2EC_V1.1",
+    "T": 92.65244428598446,
+    "t_limit": null,
+    "cont": 1.9735342939254479,
+    "max": 1.8586467710639312
+   }
+  },
+  "tip": {
+   "worst": 0.02826027413488529,
+   "n_ok": 14,
+   "n": 16,
+   "basket_extra": [
+    {
+     "name": "R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s\u00b2, no person within reach",
+     "reserve": 0.037204582860839934,
+     "ok": true
+    },
+    {
+     "name": "R2d basket 9.07 kg, person within reach: held at x \u2264 0.35 m, z \u2264 0.60 m, braking 0.1 m/s\u00b2 + 30 N push",
+     "reserve": 0.0009726644030427382,
+     "ok": false
+    }
+   ]
+  },
+  "com": {
+   "M": 32.351200000000006,
+   "h_parked": 0.38800705525160684,
+   "x_parked": 0.013850532321722746,
+   "h_straight": 0.43072789571957276,
+   "x_straight": 0.0733329722711568
+  },
+  "push_tip_n": 54.38765654052986,
+  "basket": {
+   "worst": 2.3941986872414454,
+   "all_ik": true,
+   "tip_wheel": 0.06282190237943032,
+   "rise_max": 4.0767260591702685
+  },
+  "backdrive": {
+   "shoulder_pitch": {
+    "act": "GIM8108-36",
+    "N": 36.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.07776,
+    "T": 0.9399643738010413,
+    "F": 1.5666072896684022,
+    "F_lo": 0.7833036448342011,
+    "F_hi": 3.1332145793368045,
+    "m_hand": 0.216,
+    "trip_rise": 0.4699821869005206,
+    "F_trip": 6.116636978167535
+   },
+   "shoulder_roll": {
+    "act": "GIM8108-36",
+    "N": 36.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.07776,
+    "T": 0.9399643738010413,
+    "F": 1.5666072896684022,
+    "F_lo": 0.7833036448342011,
+    "F_hi": 3.1332145793368045,
+    "m_hand": 0.216,
+    "trip_rise": 0.4699821869005206,
+    "F_trip": 4.783303644834201
+   },
+   "upper_yaw": {
+    "act": "GIM6010-48",
+    "N": 48.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.055296,
+    "T": 0.8688572211564811,
+    "F": 2.0205981887360025,
+    "F_lo": 1.0102990943680012,
+    "F_hi": 4.041196377472005,
+    "m_hand": 0.2990589507842077,
+    "trip_rise": 0.43442861057824056,
+    "F_trip": 4.731229326926141
+   },
+   "elbow": {
+    "act": "GIM8108-36",
+    "N": 36.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.07776,
+    "T": 0.9399643738010413,
+    "F": 2.1859636600024217,
+    "F_lo": 1.0929818300012109,
+    "F_hi": 4.371927320004843,
+    "m_hand": 0.42055164954029206,
+    "trip_rise": 0.4699821869005206,
+    "F_trip": 6.67437717883842
+   }
+  },
+  "meff": {
+   "reach (pitch \u221260\u00b0, elbow \u221260\u00b0)": {
+    "links only": {
+     "worst": 2.4713075782576133,
+     "x": 2.4713075782576133,
+     "y": 1.4439596645303194,
+     "z": 1.386662691736355
+    },
+    "with reflected rotor inertia": {
+     "worst": 2.9634405088990303,
+     "x": 2.9634405088990303,
+     "y": 1.7686099920679434,
+     "z": 1.4817247702512675
+    }
+   },
+   "arm straight out (pitch \u221290\u00b0)": {
+    "links only": {
+     "worst": 1.9234218984786666,
+     "x": null,
+     "y": 1.9234218984786666,
+     "z": 1.132654267302787
+    },
+    "with reflected rotor inertia": {
+     "worst": 2.069806414131199,
+     "x": null,
+     "y": 2.069806414131199,
+     "z": 1.1656643494849122
+    }
+   }
+  },
+  "acc": {
+   "rss": 4.593537145794483,
+   "joints": {
+    "shoulder_pitch": {
+     "deg": 0.25000074505694947,
+     "mm": 2.618001680209624
+    },
+    "shoulder_roll": {
+     "deg": 0.25000074505694947,
+     "mm": 2.618001680209624
+    },
+    "upper_yaw": {
+     "deg": 0.2500004190948073,
+     "mm": 1.9634987000565403
+    },
+    "elbow": {
+     "deg": 0.25000074505694947,
+     "mm": 1.876234537483564
+    },
+    "wrist_pitch": {
+     "deg": 0.05,
+     "mm": 0.1308996938995747
+    }
+   }
+  },
+  "acc_enc": {
+   "rss": 0.9276141743971493,
+   "joints": {
+    "shoulder_pitch": {
+     "deg": 0.05,
+     "mm": 0.5235987755982988
+    },
+    "shoulder_roll": {
+     "deg": 0.05,
+     "mm": 0.5235987755982988
+    },
+    "upper_yaw": {
+     "deg": 0.05,
+     "mm": 0.39269908169872414
+    },
+    "elbow": {
+     "deg": 0.05,
+     "mm": 0.3752457891787809
+    },
+    "wrist_pitch": {
+     "deg": 0.05,
+     "mm": 0.1308996938995747
+    }
+   }
+  },
+  "cost": {
+   "lines": [
+    [
+     "shoulder_pitch",
+     "actuator GIM8108-36",
+     1,
+     240.0,
+     "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots)"
+    ],
+    [
+     "shoulder_pitch",
+     "7075 output adapter \u00d876 (CNC) + dowels + screws",
+     1,
+     39.0,
+     "ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B)"
+    ],
+    [
+     "shoulder_pitch",
+     "far-side support bearing",
+     1,
+     3.0,
+     "ESTIMATE (61806 class, as the roll)"
+    ],
+    [
+     "shoulder_pitch",
+     "off-axis joint encoder (ring magnet round the motor; the on-axis AS5048A has no axis to sit on)",
+     1,
+     20.0,
+     "ESTIMATE"
+    ],
+    [
+     "shoulder_roll",
+     "actuator GIM8108-36",
+     1,
+     240.0,
+     "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots)"
+    ],
+    [
+     "shoulder_roll",
+     "inline roll hardware (adapter, 61806, clamp ring, dowels, W8c rear mount; same in every variant)",
+     1,
+     77.0,
+     "m1_kit HOLD_B (per arm, robot-wide consumables excluded)"
+    ],
+    [
+     "shoulder_roll",
+     "off-axis joint encoder (ring magnet round the motor)",
+     1,
+     20.0,
+     "ESTIMATE (the motor fills the axis; same in every variant)"
+    ],
+    [
+     "upper_yaw",
+     "actuator GIM6010-48",
+     1,
+     135.0,
+     "aifitlab $135 (backordered; $156 regular elsewhere, sold out), 2026-11-28 search snippets"
+    ],
+    [
+     "upper_yaw",
+     "7075 output adapter \u00d860 (CNC) + dowels + screws",
+     1,
+     25.0,
+     "ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B)"
+    ],
+    [
+     "upper_yaw",
+     "off-axis joint encoder (ring magnet round the motor; the on-axis AS5048A has no axis to sit on)",
+     1,
+     20.0,
+     "ESTIMATE"
+    ],
+    [
+     "elbow",
+     "actuator GIM8108-36",
+     1,
+     240.0,
+     "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots)"
+    ],
+    [
+     "elbow",
+     "7075 output adapter \u00d876 (CNC) + dowels + screws",
+     1,
+     39.0,
+     "ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B)"
+    ],
+    [
+     "elbow",
+     "far-side support bearing",
+     1,
+     3.0,
+     "ESTIMATE (61806 class, as the roll)"
+    ],
+    [
+     "elbow",
+     "off-axis joint encoder (ring magnet round the motor; the on-axis AS5048A has no axis to sit on)",
+     1,
+     20.0,
+     "ESTIMATE"
+    ]
+   ],
+   "arm": 1121.0,
+   "arm_hi": 1342.97,
+   "actuators": 855.0,
+   "drive_parts": 266.0,
+   "robot_landed": 2578.2999999999997,
+   "robot_landed_hi": 3088.8309999999997
+  },
+  "simple": {
+   "parts": 20,
+   "fasteners": 67,
+   "drive_minutes": 95,
+   "arm_hours": 5.833333333333334,
+   "print_g_saved": 657.6464285714286,
+   "print_h_saved_p2s": 16.501749999999998,
+   "belt_joints": [],
+   "inline_joints": [
+    "shoulder_pitch",
+    "upper_yaw",
+    "elbow"
+   ]
+  },
+  "joints": {
+   "shoulder_pitch": [
+    "GIM8108-36",
+    1.0
+   ],
+   "shoulder_roll": [
+    "GIM8108-36",
+    1.0
+   ],
+   "upper_yaw": [
+    "GIM6010-48",
+    1.0
+   ],
+   "elbow": [
+    "GIM8108-36",
+    1.0
+   ]
+  },
+  "mass_lines": {
+   "bone_mass_upper": [
+    [
+     "elbow D26 direct stage: C45 stub, alu 20T, 6001 + bonded bushing",
+     -0.159,
+     "FROM CAD"
+    ],
+    [
+     "elbow can nose / flange / rear cap",
+     -0.033,
+     "FROM CAD"
+    ],
+    [
+     "elbow shaft + integral 40T (the motor output carries a printed forearm hub instead)",
+     -0.099,
+     "FROM CAD"
+    ],
+    [
+     "elbow 6061 core tube (no elbow shaft left to stiffen; owner: rigidity adders not a constraint)",
+     -0.051,
+     "FROM CAD"
+    ],
+    [
+     "elbow belt + its share of screws / inserts",
+     -0.02,
+     "ESTIMATE"
+    ],
+    [
+     "one of the two 61808 (the motor's output bearing is the second support)",
+     -0.02,
+     "ESTIMATE"
+    ],
+    [
+     "elbow housing 168 \u2192 \u2248 120 mm tall, cassette plates gone (\u2248 30 % of the \u2248 0.25 kg housing)",
+     -0.08,
+     "ESTIMATE"
+    ],
+    [
+     "7075 output adapter (as the roll's, 61 g FROM CAD) + printed forearm hub",
+     0.101,
+     "ESTIMATE"
+    ],
+    [
+     "motor seat ring / rear cover + 8 \u00d7 M4 (PCD 84)",
+     0.03,
+     "ESTIMATE"
+    ],
+    [
+     "neck 25 mm shorter (yaw drop + 25 mm)",
+     -0.017249999999999998,
+     "params ROLL_DRIVES neck g/mm"
+    ]
+   ],
+   "pitch_module_mass": [
+    [
+     "D26 drive stub + idler + can nose / flange / cap",
+     -0.107,
+     "FROM CAD"
+    ],
+    [
+     "60T half of the integral pitch shaft (a plain \u00d840 tube stays on the 2 \u00d7 61808)",
+     -0.081,
+     "ESTIMATE (\u00bd of 0.162 FROM CAD)"
+    ],
+    [
+     "D26 exit-slot key + 6061 strap (belt-pull bracket stiffness)",
+     -0.02,
+     "FROM CAD"
+    ],
+    [
+     "pitch belt",
+     -0.02,
+     "ESTIMATE"
+    ],
+    [
+     "7075 output adapter + motor seat in the bracket (8 \u00d7 M4)",
+     0.101,
+     "ESTIMATE"
+    ]
+   ],
+   "yaw_stage_mass": [
+    [
+     "yaw D26 direct stage + bolted can flange / nose / cap",
+     -0.198,
+     "FROM CAD"
+    ],
+    [
+     "40T half of the yaw shaft",
+     -0.032,
+     "ESTIMATE (\u00bd of 0.063 FROM CAD)"
+    ],
+    [
+     "yaw belt",
+     -0.01,
+     "ESTIMATE"
+    ],
+    [
+     "yaw block: the off-axis cartridge bay (x \u221281 \u2026 \u2212129) goes, \u00d880 seat instead (\u2248 35 % of 0.231)",
+     -0.08,
+     "ESTIMATE"
+    ],
+    [
+     "\u00d860 7075 output adapter + motor seat ring + 6 \u00d7 M4",
+     0.06,
+     "ESTIMATE"
+    ]
+   ]
+  }
+ },
+ "I2a": {
+  "wm": {
+   "shoulder_pitch": {
+    "p95": 9.449967148170694,
+    "max": 13.101923272929234,
+    "rated": 35.1,
+    "peak": 102.9,
+    "m_rated": 3.71429862661423,
+    "m_peak": 7.853808777266207
+   },
+   "shoulder_roll": {
+    "p95": 13.887293006149694,
+    "max": 17.81271603926905,
+    "rated": 35.1,
+    "peak": 102.9,
+    "m_rated": 2.5274904176398314,
+    "m_peak": 5.776772041565793
+   },
+   "upper_yaw": {
+    "p95": 5.232752487832431,
+    "max": 6.945396579531064,
+    "rated": 9.0,
+    "peak": 27.0,
+    "m_rated": 1.7199361179278863,
+    "m_peak": 3.887466999303152
+   },
+   "elbow": {
+    "p95": 6.115943888937472,
+    "max": 6.9464499328255815,
+    "rated": 35.1,
+    "peak": 102.9,
+    "m_rated": 5.739097780718514,
+    "m_peak": 14.81332205588125
+   },
+   "wrist_pitch": {
+    "p95": 1.7678809158007396,
+    "max": 1.8586467710639347,
+    "rated": 3.0,
+    "peak": 7.0,
+    "m_rated": 1.6969468775792442,
+    "m_peak": 3.7661809166639175
+   }
+  },
+  "hug": {
+   "pitch": 3.0153733008951327,
+   "elbow": 3.0153733008951327,
+   "worst": 3.0153733008951327
+  },
+  "arm_kg": 4.752,
+  "arm_items": [
+   [
+    "arm shoulder_roll",
+    1.0
+   ],
+   [
+    "arm upper_yaw",
+    0.362
+   ],
+   [
+    "arm elbow",
+    1.0
+   ],
+   [
+    "arm wrist_pitch",
+    0.3
+   ],
+   [
+    "arm wrist_roll",
+    0.055
+   ],
+   [
+    "arm gripper",
+    0.055
+   ],
+   [
+    "arm bones+shells",
+    0.8400000000000001
+   ],
+   [
+    "gripper mechanism",
+    0.28
+   ],
+   [
+    "wrist camera",
+    0.05
+   ],
+   [
+    "upper-arm yaw belt stage",
+    0.39999999999999997
+   ],
+   [
+    "roll stage",
+    0.41
+   ]
+  ],
+  "arm_moment_nm": 10.571275227600001,
+  "elbow_node_kg": 1.0,
+  "outboard_elbow_kg": 2.02,
+  "pitch_side_kg": 1.8,
+  "speed_rpm": {
+   "shoulder_pitch": 47.99995945613447,
+   "shoulder_roll": 47.99995945613447,
+   "upper_yaw": 35.99996959210086,
+   "elbow": 47.99995945613447
+  },
+  "thermal": {
+   "shoulder_pitch": {
+    "act": "GIM8108-36",
+    "T": 56.590325103041444,
+    "t_limit": null,
+    "cont": 22.733281994684553,
+    "max": 13.101923272929234
+   },
+   "shoulder_roll": {
+    "act": "GIM8108-36",
+    "T": 74.90702633788666,
+    "t_limit": null,
+    "cont": 22.733281994684553,
+    "max": 17.81271603926905
+   },
+   "upper_yaw": {
+    "act": "DM-J4340-2EC",
+    "T": 125.23509236953753,
+    "t_limit": 764.5096931451255,
+    "cont": 5.894758176642949,
+    "max": 6.945396579531064
+   },
+   "elbow": {
+    "act": "GIM8108-36",
+    "T": 41.06896870445264,
+    "t_limit": null,
+    "cont": 22.733281994684553,
+    "max": 6.9464499328255815
+   },
+   "wrist_pitch": {
+    "act": "DM-J4310-2EC_V1.1",
+    "T": 92.65244428598467,
+    "t_limit": null,
+    "cont": 1.9735342939254479,
+    "max": 1.8586467710639347
+   }
+  },
+  "tip": {
+   "worst": 0.029625772403828386,
+   "n_ok": 15,
+   "n": 16,
+   "basket_extra": [
+    {
+     "name": "R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s\u00b2, no person within reach",
+     "reserve": 0.03395675218918857,
+     "ok": true
+    },
+    {
+     "name": "R2d basket 9.07 kg, person within reach: held at x \u2264 0.35 m, z \u2264 0.60 m, braking 0.1 m/s\u00b2 + 30 N push",
+     "reserve": 0.00207252431963938,
+     "ok": false
+    }
+   ]
+  },
+  "com": {
+   "M": 31.481200000000005,
+   "h_parked": 0.38338878844254626,
+   "x_parked": 0.012575166805792569,
+   "h_straight": 0.42328641538451667,
+   "x_straight": 0.06965826120156308
+  },
+  "push_tip_n": 53.30348386487458,
+  "basket": {
+   "worst": 2.429644265863519,
+   "all_ik": true,
+   "tip_wheel": 0.060999456644329444,
+   "rise_max": 3.958644690823664
+  },
+  "backdrive": {
+   "shoulder_pitch": {
+    "act": "GIM8108-36",
+    "N": 36.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.07776,
+    "T": 0.9399643738010413,
+    "F": 1.5666072896684022,
+    "F_lo": 0.7833036448342011,
+    "F_hi": 3.1332145793368045,
+    "m_hand": 0.216,
+    "trip_rise": 0.4699821869005206,
+    "F_trip": 6.116636978167535
+   },
+   "shoulder_roll": {
+    "act": "GIM8108-36",
+    "N": 36.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.07776,
+    "T": 0.9399643738010413,
+    "F": 1.5666072896684022,
+    "F_lo": 0.7833036448342011,
+    "F_hi": 3.1332145793368045,
+    "m_hand": 0.216,
+    "trip_rise": 0.4699821869005206,
+    "F_trip": 4.783303644834201
+   },
+   "upper_yaw": {
+    "act": "DM-J4340-2EC",
+    "N": 40.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.012799999999999999,
+    "T": 0.5844286105782406,
+    "F": 1.359136303670327,
+    "F_lo": 0.6795681518351635,
+    "F_hi": 2.718272607340654,
+    "m_hand": 0.06922660897782586,
+    "trip_rise": 0.2922143052891203,
+    "F_trip": 4.400498384393303
+   },
+   "elbow": {
+    "act": "GIM8108-36",
+    "N": 36.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.07776,
+    "T": 0.9399643738010413,
+    "F": 2.1859636600024217,
+    "F_lo": 1.0929818300012109,
+    "F_hi": 4.371927320004843,
+    "m_hand": 0.42055164954029206,
+    "trip_rise": 0.4699821869005206,
+    "F_trip": 6.67437717883842
+   }
+  },
+  "meff": {
+   "reach (pitch \u221260\u00b0, elbow \u221260\u00b0)": {
+    "links only": {
+     "worst": 2.433404639999942,
+     "x": 2.433404639999942,
+     "y": 1.4415569670134034,
+     "z": 1.3825014875742863
+    },
+    "with reflected rotor inertia": {
+     "worst": 2.9218369455944524,
+     "x": 2.9218369455944524,
+     "y": 1.545585871014247,
+     "z": 1.4795413356342124
+    }
+   },
+   "arm straight out (pitch \u221290\u00b0)": {
+    "links only": {
+     "worst": 1.9058394121083457,
+     "x": null,
+     "y": 1.9058394121083457,
+     "z": 1.132653023161367
+    },
+    "with reflected rotor inertia": {
+     "worst": 2.0522239288195987,
+     "x": null,
+     "y": 2.0522239288195987,
+     "z": 1.1656445601269723
+    }
+   }
+  },
+  "acc": {
+   "rss": 4.1712670657052175,
+   "joints": {
+    "shoulder_pitch": {
+     "deg": 0.25000074505694947,
+     "mm": 2.618001680209624
+    },
+    "shoulder_roll": {
+     "deg": 0.25000074505694947,
+     "mm": 2.618001680209624
+    },
+    "upper_yaw": {
+     "deg": 0.05,
+     "mm": 0.39269908169872414
+    },
+    "elbow": {
+     "deg": 0.25000074505694947,
+     "mm": 1.876234537483564
+    },
+    "wrist_pitch": {
+     "deg": 0.05,
+     "mm": 0.1308996938995747
+    }
+   }
+  },
+  "acc_enc": {
+   "rss": 0.9276141743971493,
+   "joints": {
+    "shoulder_pitch": {
+     "deg": 0.05,
+     "mm": 0.5235987755982988
+    },
+    "shoulder_roll": {
+     "deg": 0.05,
+     "mm": 0.5235987755982988
+    },
+    "upper_yaw": {
+     "deg": 0.05,
+     "mm": 0.39269908169872414
+    },
+    "elbow": {
+     "deg": 0.05,
+     "mm": 0.3752457891787809
+    },
+    "wrist_pitch": {
+     "deg": 0.05,
+     "mm": 0.1308996938995747
+    }
+   }
+  },
+  "cost": {
+   "lines": [
+    [
+     "shoulder_pitch",
+     "actuator GIM8108-36",
+     1,
+     240.0,
+     "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots)"
+    ],
+    [
+     "shoulder_pitch",
+     "7075 output adapter \u00d876 (CNC) + dowels + screws",
+     1,
+     39.0,
+     "ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B)"
+    ],
+    [
+     "shoulder_pitch",
+     "far-side support bearing",
+     1,
+     3.0,
+     "ESTIMATE (61806 class, as the roll)"
+    ],
+    [
+     "shoulder_pitch",
+     "off-axis joint encoder (ring magnet round the motor; the on-axis AS5048A has no axis to sit on)",
+     1,
+     20.0,
+     "ESTIMATE"
+    ],
+    [
+     "shoulder_roll",
+     "actuator GIM8108-36",
+     1,
+     240.0,
+     "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots)"
+    ],
+    [
+     "shoulder_roll",
+     "inline roll hardware (adapter, 61806, clamp ring, dowels, W8c rear mount; same in every variant)",
+     1,
+     77.0,
+     "m1_kit HOLD_B (per arm, robot-wide consumables excluded)"
+    ],
+    [
+     "shoulder_roll",
+     "off-axis joint encoder (ring magnet round the motor)",
+     1,
+     20.0,
+     "ESTIMATE (the motor fills the axis; same in every variant)"
+    ],
+    [
+     "upper_yaw",
+     "actuator DM-J4340-2EC",
+     1,
+     155.0,
+     "aifitlab / rcdrone $155 (backordered / sold out); Robotics Center $215 (24 V), 2026-11-28"
+    ],
+    [
+     "upper_yaw",
+     "7075 output adapter \u00d860 (CNC) + dowels + screws",
+     1,
+     25.0,
+     "ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B)"
+    ],
+    [
+     "elbow",
+     "actuator GIM8108-36",
+     1,
+     240.0,
+     "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots)"
+    ],
+    [
+     "elbow",
+     "7075 output adapter \u00d876 (CNC) + dowels + screws",
+     1,
+     39.0,
+     "ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B)"
+    ],
+    [
+     "elbow",
+     "far-side support bearing",
+     1,
+     3.0,
+     "ESTIMATE (61806 class, as the roll)"
+    ],
+    [
+     "elbow",
+     "off-axis joint encoder (ring magnet round the motor; the on-axis AS5048A has no axis to sit on)",
+     1,
+     20.0,
+     "ESTIMATE"
+    ]
+   ],
+   "arm": 1121.0,
+   "arm_hi": 1381.97,
+   "actuators": 875.0,
+   "drive_parts": 246.0,
+   "robot_landed": 2578.2999999999997,
+   "robot_landed_hi": 3178.531
+  },
+  "simple": {
+   "parts": 17,
+   "fasteners": 65,
+   "drive_minutes": 85,
+   "arm_hours": 5.666666666666667,
+   "print_g_saved": 657.6464285714286,
+   "print_h_saved_p2s": 16.501749999999998,
+   "belt_joints": [],
+   "inline_joints": [
+    "shoulder_pitch",
+    "upper_yaw",
+    "elbow"
+   ]
+  },
+  "joints": {
+   "shoulder_pitch": [
+    "GIM8108-36",
+    1.0
+   ],
+   "shoulder_roll": [
+    "GIM8108-36",
+    1.0
+   ],
+   "upper_yaw": [
+    "DM-J4340-2EC",
+    1.0
+   ],
+   "elbow": [
+    "GIM8108-36",
+    1.0
+   ]
+  },
+  "mass_lines": {
+   "bone_mass_upper": [
+    [
+     "elbow D26 direct stage: C45 stub, alu 20T, 6001 + bonded bushing",
+     -0.159,
+     "FROM CAD"
+    ],
+    [
+     "elbow can nose / flange / rear cap",
+     -0.033,
+     "FROM CAD"
+    ],
+    [
+     "elbow shaft + integral 40T (the motor output carries a printed forearm hub instead)",
+     -0.099,
+     "FROM CAD"
+    ],
+    [
+     "elbow 6061 core tube (no elbow shaft left to stiffen; owner: rigidity adders not a constraint)",
+     -0.051,
+     "FROM CAD"
+    ],
+    [
+     "elbow belt + its share of screws / inserts",
+     -0.02,
+     "ESTIMATE"
+    ],
+    [
+     "one of the two 61808 (the motor's output bearing is the second support)",
+     -0.02,
+     "ESTIMATE"
+    ],
+    [
+     "elbow housing 168 \u2192 \u2248 120 mm tall, cassette plates gone (\u2248 30 % of the \u2248 0.25 kg housing)",
+     -0.08,
+     "ESTIMATE"
+    ],
+    [
+     "7075 output adapter (as the roll's, 61 g FROM CAD) + printed forearm hub",
+     0.101,
+     "ESTIMATE"
+    ],
+    [
+     "motor seat ring / rear cover + 8 \u00d7 M4 (PCD 84)",
+     0.03,
+     "ESTIMATE"
+    ],
+    [
+     "neck 15 mm shorter (yaw drop + 15 mm)",
+     -0.01035,
+     "params ROLL_DRIVES neck g/mm"
+    ]
+   ],
+   "pitch_module_mass": [
+    [
+     "D26 drive stub + idler + can nose / flange / cap",
+     -0.107,
+     "FROM CAD"
+    ],
+    [
+     "60T half of the integral pitch shaft (a plain \u00d840 tube stays on the 2 \u00d7 61808)",
+     -0.081,
+     "ESTIMATE (\u00bd of 0.162 FROM CAD)"
+    ],
+    [
+     "D26 exit-slot key + 6061 strap (belt-pull bracket stiffness)",
+     -0.02,
+     "FROM CAD"
+    ],
+    [
+     "pitch belt",
+     -0.02,
+     "ESTIMATE"
+    ],
+    [
+     "7075 output adapter + motor seat in the bracket (8 \u00d7 M4)",
+     0.101,
+     "ESTIMATE"
+    ]
+   ],
+   "yaw_stage_mass": [
+    [
+     "yaw D26 direct stage + bolted can flange / nose / cap",
+     -0.198,
+     "FROM CAD"
+    ],
+    [
+     "40T half of the yaw shaft",
+     -0.032,
+     "ESTIMATE (\u00bd of 0.063 FROM CAD)"
+    ],
+    [
+     "yaw belt",
+     -0.01,
+     "ESTIMATE"
+    ],
+    [
+     "yaw block: the off-axis cartridge bay goes, \u00d857 seat instead (\u2248 45 % of 0.231)",
+     -0.1,
+     "ESTIMATE"
+    ],
+    [
+     "\u00d846 7075 output adapter + motor seat ring + 6 \u00d7 M3",
+     0.05,
+     "ESTIMATE"
+    ]
+   ]
+  }
+ },
+ "I2b": {
+  "wm": {
+   "shoulder_pitch": {
+    "p95": 9.218390279168425,
+    "max": 12.779357626636706,
+    "rated": 35.1,
+    "peak": 102.9,
+    "m_rated": 3.8076062020631127,
+    "m_peak": 8.052047920274175
+   },
+   "shoulder_roll": {
+    "p95": 13.60439551163175,
+    "max": 17.486587320318264,
+    "rated": 35.1,
+    "peak": 102.9,
+    "m_rated": 2.5800484828590524,
+    "m_peak": 5.8845101171019785
+   },
+   "upper_yaw": {
+    "p95": 5.232752487832432,
+    "max": 6.945396579531063,
+    "rated": 9.0,
+    "peak": 27.0,
+    "m_rated": 1.719936117927886,
+    "m_peak": 3.8874669993031525
+   },
+   "elbow": {
+    "p95": 6.115943888937471,
+    "max": 6.946449932825583,
+    "rated": 20.0,
+    "peak": 40.0,
+    "m_rated": 3.270141185594595,
+    "m_peak": 5.758337047961611
+   },
+   "wrist_pitch": {
+    "p95": 1.7678809158007394,
+    "max": 1.858646771063933,
+    "rated": 3.0,
+    "peak": 7.0,
+    "m_rated": 1.6969468775792445,
+    "m_peak": 3.766180916663921
+   }
+  },
+  "hug": {
+   "pitch": 3.0153733008951327,
+   "elbow": 1.7181614250114716,
+   "worst": 1.7181614250114716
+  },
+  "arm_kg": 4.638,
+  "arm_items": [
+   [
+    "arm shoulder_roll",
+    1.0
+   ],
+   [
+    "arm upper_yaw",
+    0.362
+   ],
+   [
+    "arm elbow",
+    0.896
+   ],
+   [
+    "arm wrist_pitch",
+    0.3
+   ],
+   [
+    "arm wrist_roll",
+    0.055
+   ],
+   [
+    "arm gripper",
+    0.055
+   ],
+   [
+    "arm bones+shells",
+    0.8300000000000001
+   ],
+   [
+    "gripper mechanism",
+    0.28
+   ],
+   [
+    "wrist camera",
+    0.05
+   ],
+   [
+    "upper-arm yaw belt stage",
+    0.39999999999999997
+   ],
+   [
+    "roll stage",
+    0.41
+   ]
+  ],
+  "arm_moment_nm": 10.250488227600002,
+  "elbow_node_kg": 0.896,
+  "outboard_elbow_kg": 1.9160000000000001,
+  "pitch_side_kg": 1.8,
+  "speed_rpm": {
+   "shoulder_pitch": 47.99995945613447,
+   "shoulder_roll": 47.99995945613447,
+   "upper_yaw": 35.99996959210086,
+   "elbow": 99.99991553361349
+  },
+  "thermal": {
+   "shoulder_pitch": {
+    "act": "GIM8108-36",
+    "T": 55.54031625873988,
+    "t_limit": null,
+    "cont": 22.733281994684553,
+    "max": 12.779357626636706
+   },
+   "shoulder_roll": {
+    "act": "GIM8108-36",
+    "T": 73.45910737015672,
+    "t_limit": null,
+    "cont": 22.733281994684553,
+    "max": 17.486587320318264
+   },
+   "upper_yaw": {
+    "act": "DM-J4340-2EC",
+    "T": 125.2350923695375,
+    "t_limit": 764.5096931451259,
+    "cont": 5.894758176642949,
+    "max": 6.945396579531063
+   },
+   "elbow": {
+    "act": "DM-J8009-2EC",
+    "T": 53.753131439780844,
+    "t_limit": null,
+    "cont": 12.93250602391713,
+    "max": 6.946449932825583
+   },
+   "wrist_pitch": {
+    "act": "DM-J4310-2EC_V1.1",
+    "T": 92.65244428598456,
+    "t_limit": null,
+    "cont": 1.9735342939254479,
+    "max": 1.858646771063933
+   }
+  },
+  "tip": {
+   "worst": 0.030712200016190867,
+   "n_ok": 16,
+   "n": 16,
+   "basket_extra": [
+    {
+     "name": "R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s\u00b2, no person within reach",
+     "reserve": 0.035086757137424374,
+     "ok": true
+    },
+    {
+     "name": "R2d basket 9.07 kg, person within reach: held at x \u2264 0.35 m, z \u2264 0.60 m, braking 0.1 m/s\u00b2 + 30 N push",
+     "reserve": 0.0027856495702393486,
+     "ok": false
+    }
+   ]
+  },
+  "com": {
+   "M": 31.253200000000003,
+   "h_parked": 0.38318746671751236,
+   "x_parked": 0.012229190650765904,
+   "h_straight": 0.4212677197855915,
+   "x_straight": 0.0675995626860177
+  },
+  "push_tip_n": 53.013650696630066,
+  "basket": {
+   "worst": 1.5563276339801162,
+   "all_ik": true,
+   "tip_wheel": 0.06110051124824821,
+   "rise_max": 4.49027896763909
+  },
+  "backdrive": {
+   "shoulder_pitch": {
+    "act": "GIM8108-36",
+    "N": 36.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.07776,
+    "T": 0.9399643738010413,
+    "F": 1.5666072896684022,
+    "F_lo": 0.7833036448342011,
+    "F_hi": 3.1332145793368045,
+    "m_hand": 0.216,
+    "trip_rise": 0.4699821869005206,
+    "F_trip": 6.116636978167535
+   },
+   "shoulder_roll": {
+    "act": "GIM8108-36",
+    "N": 36.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.07776,
+    "T": 0.9399643738010413,
+    "F": 1.5666072896684022,
+    "F_lo": 0.7833036448342011,
+    "F_hi": 3.1332145793368045,
+    "m_hand": 0.216,
+    "trip_rise": 0.4699821869005206,
+    "F_trip": 4.783303644834201
+   },
+   "upper_yaw": {
+    "act": "DM-J4340-2EC",
+    "N": 40.0,
+    "stages": 2,
+    "eta_b": 0.8437969707480635,
+    "J": 0.012799999999999999,
+    "T": 0.5844286105782406,
+    "F": 1.359136303670327,
+    "F_lo": 0.6795681518351635,
+    "F_hi": 2.718272607340654,
+    "m_hand": 0.06922660897782586,
+    "trip_rise": 0.2922143052891203,
+    "F_trip": 4.400498384393303
+   },
+   "elbow": {
+    "act": "DM-J8009-2EC",
+    "N": 9.0,
+    "stages": 1,
+    "eta_b": 0.924731182795699,
+    "J": 0.005265,
+    "T": 0.24598837209302327,
+    "F": 0.572065981611682,
+    "F_lo": 0.286032990805841,
+    "F_hi": 1.144131963223364,
+    "m_hand": 0.028474851270957276,
+    "trip_rise": 0.12299418604651163,
+    "F_trip": 5.867428339643051
+   }
+  },
+  "meff": {
+   "reach (pitch \u221260\u00b0, elbow \u221260\u00b0)": {
+    "links only": {
+     "worst": 2.391913811854471,
+     "x": 2.391913811854471,
+     "y": 1.4398208748498993,
+     "z": 1.3777833023356973
+    },
+    "with reflected rotor inertia": {
+     "worst": 2.7575965796870223,
+     "x": 2.7575965796870223,
+     "y": 1.5448360330175002,
+     "z": 1.454414317521546
+    }
+   },
+   "arm straight out (pitch \u221290\u00b0)": {
+    "links only": {
+     "worst": 1.8872222430588905,
+     "x": null,
+     "y": 1.8872222430588905,
+     "z": 1.1326380458420384
+    },
+    "with reflected rotor inertia": {
+     "worst": 2.033606761031899,
+     "x": null,
+     "y": 2.033606761031899,
+     "z": 1.165245271447582
+    }
+   }
+  },
+  "acc": {
+   "rss": 3.744332022682719,
+   "joints": {
+    "shoulder_pitch": {
+     "deg": 0.25000074505694947,
+     "mm": 2.618001680209624
+    },
+    "shoulder_roll": {
+     "deg": 0.25000074505694947,
+     "mm": 2.618001680209624
+    },
+    "upper_yaw": {
+     "deg": 0.05,
+     "mm": 0.39269908169872414
+    },
+    "elbow": {
+     "deg": 0.05,
+     "mm": 0.3752457891787809
+    },
+    "wrist_pitch": {
+     "deg": 0.05,
+     "mm": 0.1308996938995747
+    }
+   }
+  },
+  "acc_enc": {
+   "rss": 0.9276141743971493,
+   "joints": {
+    "shoulder_pitch": {
+     "deg": 0.05,
+     "mm": 0.5235987755982988
+    },
+    "shoulder_roll": {
+     "deg": 0.05,
+     "mm": 0.5235987755982988
+    },
+    "upper_yaw": {
+     "deg": 0.05,
+     "mm": 0.39269908169872414
+    },
+    "elbow": {
+     "deg": 0.05,
+     "mm": 0.3752457891787809
+    },
+    "wrist_pitch": {
+     "deg": 0.05,
+     "mm": 0.1308996938995747
+    }
+   }
+  },
+  "cost": {
+   "lines": [
+    [
+     "shoulder_pitch",
+     "actuator GIM8108-36",
+     1,
+     240.0,
+     "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots)"
+    ],
+    [
+     "shoulder_pitch",
+     "7075 output adapter \u00d876 (CNC) + dowels + screws",
+     1,
+     39.0,
+     "ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B)"
+    ],
+    [
+     "shoulder_pitch",
+     "far-side support bearing",
+     1,
+     3.0,
+     "ESTIMATE (61806 class, as the roll)"
+    ],
+    [
+     "shoulder_pitch",
+     "off-axis joint encoder (ring magnet round the motor; the on-axis AS5048A has no axis to sit on)",
+     1,
+     20.0,
+     "ESTIMATE"
+    ],
+    [
+     "shoulder_roll",
+     "actuator GIM8108-36",
+     1,
+     240.0,
+     "SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots)"
+    ],
+    [
+     "shoulder_roll",
+     "inline roll hardware (adapter, 61806, clamp ring, dowels, W8c rear mount; same in every variant)",
+     1,
+     77.0,
+     "m1_kit HOLD_B (per arm, robot-wide consumables excluded)"
+    ],
+    [
+     "shoulder_roll",
+     "off-axis joint encoder (ring magnet round the motor)",
+     1,
+     20.0,
+     "ESTIMATE (the motor fills the axis; same in every variant)"
+    ],
+    [
+     "upper_yaw",
+     "actuator DM-J4340-2EC",
+     1,
+     155.0,
+     "aifitlab / rcdrone $155 (backordered / sold out); Robotics Center $215 (24 V), 2026-11-28"
+    ],
+    [
+     "upper_yaw",
+     "7075 output adapter \u00d860 (CNC) + dowels + screws",
+     1,
+     25.0,
+     "ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B)"
+    ],
+    [
+     "elbow",
+     "actuator DM-J8009-2EC",
+     1,
+     470.0,
+     "aifitlab $470 (backordered); J8009P $395\u2013480, 2026-11-28"
+    ],
+    [
+     "elbow",
+     "7075 output adapter \u00d876 (CNC) + dowels + screws",
+     1,
+     39.0,
+     "ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B)"
+    ],
+    [
+     "elbow",
+     "far-side support bearing",
+     1,
+     3.0,
+     "ESTIMATE (61806 class, as the roll)"
+    ]
+   ],
+   "arm": 1331.0,
+   "arm_hi": 1534.98,
+   "actuators": 1105.0,
+   "drive_parts": 226.0,
+   "robot_landed": 3061.2999999999997,
+   "robot_landed_hi": 3530.4539999999997
+  },
+  "simple": {
+   "parts": 14,
+   "fasteners": 63,
+   "drive_minutes": 75,
+   "arm_hours": 5.5,
+   "print_g_saved": 657.6464285714286,
+   "print_h_saved_p2s": 16.501749999999998,
+   "belt_joints": [],
+   "inline_joints": [
+    "shoulder_pitch",
+    "upper_yaw",
+    "elbow"
+   ]
+  },
+  "joints": {
+   "shoulder_pitch": [
+    "GIM8108-36",
+    1.0
+   ],
+   "shoulder_roll": [
+    "GIM8108-36",
+    1.0
+   ],
+   "upper_yaw": [
+    "DM-J4340-2EC",
+    1.0
+   ],
+   "elbow": [
+    "DM-J8009-2EC",
+    1.0
+   ]
+  },
+  "mass_lines": {
+   "bone_mass_upper": [
+    [
+     "elbow D26 direct stage: C45 stub, alu 20T, 6001 + bonded bushing",
+     -0.159,
+     "FROM CAD"
+    ],
+    [
+     "elbow can nose / flange / rear cap",
+     -0.033,
+     "FROM CAD"
+    ],
+    [
+     "elbow shaft + integral 40T (the motor output carries a printed forearm hub instead)",
+     -0.099,
+     "FROM CAD"
+    ],
+    [
+     "elbow 6061 core tube (no elbow shaft left to stiffen; owner: rigidity adders not a constraint)",
+     -0.051,
+     "FROM CAD"
+    ],
+    [
+     "elbow belt + its share of screws / inserts",
+     -0.02,
+     "ESTIMATE"
+    ],
+    [
+     "one of the two 61808 (the motor's output bearing is the second support)",
+     -0.02,
+     "ESTIMATE"
+    ],
+    [
+     "elbow housing 168 \u2192 \u2248 120 mm tall, cassette plates gone (\u2248 30 % of the \u2248 0.25 kg housing)",
+     -0.08,
+     "ESTIMATE"
+    ],
+    [
+     "7075 output adapter (as the roll's, 61 g FROM CAD) + printed forearm hub",
+     0.101,
+     "ESTIMATE"
+    ],
+    [
+     "motor seat ring / rear cover + 8 \u00d7 M4 (PCD 84)",
+     0.03,
+     "ESTIMATE"
+    ],
+    [
+     "neck 15 mm shorter (yaw drop + 15 mm)",
+     -0.01035,
+     "params ROLL_DRIVES neck g/mm"
+    ],
+    [
+     "AS5048A elbow bracket / board / magnet (the DM-J8009-2EC reads its output itself)",
+     -0.012,
+     "params D24 v2 note (ESTIMATE)"
+    ]
+   ],
+   "pitch_module_mass": [
+    [
+     "D26 drive stub + idler + can nose / flange / cap",
+     -0.107,
+     "FROM CAD"
+    ],
+    [
+     "60T half of the integral pitch shaft (a plain \u00d840 tube stays on the 2 \u00d7 61808)",
+     -0.081,
+     "ESTIMATE (\u00bd of 0.162 FROM CAD)"
+    ],
+    [
+     "D26 exit-slot key + 6061 strap (belt-pull bracket stiffness)",
+     -0.02,
+     "FROM CAD"
+    ],
+    [
+     "pitch belt",
+     -0.02,
+     "ESTIMATE"
+    ],
+    [
+     "7075 output adapter + motor seat in the bracket (8 \u00d7 M4)",
+     0.101,
+     "ESTIMATE"
+    ]
+   ],
+   "yaw_stage_mass": [
+    [
+     "yaw D26 direct stage + bolted can flange / nose / cap",
+     -0.198,
+     "FROM CAD"
+    ],
+    [
+     "40T half of the yaw shaft",
+     -0.032,
+     "ESTIMATE (\u00bd of 0.063 FROM CAD)"
+    ],
+    [
+     "yaw belt",
+     -0.01,
+     "ESTIMATE"
+    ],
+    [
+     "yaw block: the off-axis cartridge bay goes, \u00d857 seat instead (\u2248 45 % of 0.231)",
+     -0.1,
+     "ESTIMATE"
+    ],
+    [
+     "\u00d846 7075 output adapter + motor seat ring + 6 \u00d7 M3",
+     0.05,
+     "ESTIMATE"
+    ]
+   ]
+  }
+ },
+ "stow": {
+  "today": {
+   "w45": 0.5668521497216662,
+   "sets": [
+    "robot:cylinder2",
+    "roll_xarm_r"
+   ]
+  },
+  "I1": {
+   "w45": 0.5668521497216662
+  },
+  "I2a": {
+   "w45": 0.5668521497216662
+  },
+  "I2b": {
+   "w45": 0.5668521497216662
+  }
+ }
+}
