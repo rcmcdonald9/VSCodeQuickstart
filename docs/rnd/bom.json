@@ -1,19 +1,19 @@
 {
- "total": 6484.56,
- "with_d20": 6751.360000000001,
- "with_d20_inline": 6751.360000000001,
+ "total": 6541.16,
+ "with_d20": 6807.96,
+ "with_d20_inline": 6807.96,
  "base_timer": {
   "selected": "board",
   "status": "pending owner decision (W15b U20; default board provisionally)",
   "totals": {
    "board": {
-    "total": 6484.56,
-    "with_d20": 6751.360000000001,
+    "total": 6541.16,
+    "with_d20": 6807.96,
     "unit": 8.0
    },
    "g9sa": {
-    "total": 7051.94,
-    "with_d20": 7318.74,
+    "total": 7108.54,
+    "with_d20": 7375.34,
     "unit": 501.38
    }
   }
@@ -22,18 +22,22 @@
   "before": 6366.16,
   "before_d20": 6632.96
  },
+ "w16c": {
+  "before": 6484.56,
+  "before_d20": 6751.36
+ },
  "options": {
   "**Roll latch** (PIP_ROLL_GUARD=latch, default off; power_off": 32.199999999999996
  },
  "subsystems": {
   "Arms \u00d72: actuators": 1412.2,
-  "Arms \u00d72: drive, joints, bones": 1512.48,
+  "Arms \u00d72: drive, joints, bones": 1572.28,
   "Base: wheels, tip, ballast": 663.26,
   "Lift + mast": 253.94,
   "Head + face": 170.53,
   "Power + safety electronics": 990.29,
   "Compute, sensing, comms": 992.45,
-  "Printing + covers + misc. fasteners": 405.24,
+  "Printing + covers + misc. fasteners": 402.48,
   "Dock": 83.95
  },
  "d29": {
@@ -105,7 +109,7 @@
  "savings_top10": [
   {
    "item": "Belt shoulder roll instead of the inline GIM8108-36 (queued idea; `PIP_ROLL_DRIVE=belt`, CAD + checks in the tree)",
-   "landed": 609.36,
+   "landed": 669.16,
    "gate_neutral": false
   },
   {
@@ -119,8 +123,8 @@
    "gate_neutral": true
   },
   {
-   "item": "One batch quote for the custom metal (pinions, tension rings, C1 rings / flanges / cranks, roll adapters, rear plates, stop bushes, straps, chassis ring)",
-   "landed": 101.26,
+   "item": "One batch quote for the custom metal (pinions, tension rings, C1 rings / flanges / cranks, roll adapters, rear plates, front stop rings, straps, chassis ring)",
+   "landed": 109.19,
    "gate_neutral": true
   },
   {
