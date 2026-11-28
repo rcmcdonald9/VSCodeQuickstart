@@ -189,6 +189,211 @@ def test_bus_realism():
             f"in {f['bus_off']['supervisor_stop_ms']:.0f} ms; {corrupted} corrupted payloads → {rej} dropped by the plausibility gate, bring-up passes ✅")
 
 
+HARD_FAULTS = ["e-stop", "process hang", "NaN feedback", "bus silent", "bus-off", "over-temperature", "supply trip"]
+
+
+def test_integrated_stop():
+    """Astra review #3, critical 4: the production path detector → supervisor → heartbeat → safety board on the virtual
+    bench. (i) A contact latches the collision fault only: compliant hold with the heartbeat running and the contactor
+    closed. (ii) A hard fault during that hold (e-stop, hung loop, NaN feedback, silent bus, bus-off, over-temperature, a
+    supply trip) drops the heartbeat within its detection budget, overrides the hold (stop, not compliant), opens the
+    contactor and removes drive torque within 50 ms; nothing re-arms until the operator does. (iii) Heartbeat gaps (sim
+    time: cycles where a healthy loop would not toggle the line) and the host's per-cycle compute (wall clock) under every
+    bus-realism profile with the observer in the loop. The board is set to its worst case: monostable +20 %, 10 ms release."""
+    import json
+    from sw import bus_sim
+    from sw.bringup import ARM, STEPS, build_virtual, load_cfg
+    from sw.bus_realism import PROFILE_ORDER
+    from sw.safety import TEMP_C
+    from rnd import electrical as el
+    cfg = load_cfg()
+    cfg["cal_speed"] = 0.5
+    bu, arm = build_virtual(cfg=cfg, log=_quiet)
+    bu.run_all(until="gravity")
+    bad = {s: bu.steps[s].status for s in STEPS[:STEPS.index("gravity") + 1] if bu.steps[s].status != "PASS"}
+    assert not bad, bad
+    io = arm.io
+    wd = float(cfg["watchdog_s"])
+    io.WD_S, io.t_release = wd * (1 + el.WATCHDOG["tol"]), el.CONTACTOR["t_release"]
+    sim = json.loads((Path("docs/rnd/safety_board_sim.json")).read_text()) if Path("docs/rnd/safety_board_sim.json").exists() else {}
+    t_tail = next((d["t_uvlo_far"] for d in sim.get("discharge", []) if d["which"] == "M1"), None) or el.stop_timing("M1")["rows"][3][1]
+    t_tail += 0.001                                          # board: aux → FORCE → far drive < UVLO; then the phase current (electrical.md)
+    j0 = bu.names[0]
+    k6 = ARM.index(j0)
+    ct = bu.steps["gravity"].data["collision_thresholds"]
+    thr6 = float(ct["thr"][k6])
+    online = [m for m in arm.motors if m.name in bu.names]
+    dt = bu.dt
+
+    def torque_on():
+        return any(m.powered and m.enabled for m in online)
+
+    def session(n_hold=150):
+        if io.button:
+            io.release()
+        if io.estop_active():
+            bu.arm()                                         # the operator re-arms (raises StepFail if it cannot)
+        bu.clear_errors()
+        bu.disable_all()
+        sup = bu.supervisor(collision=bu.collision())
+        bu.start(sup)
+        bu.enable_all(sup)
+        for _ in range(n_hold):
+            v, fb = bu.cycle(sup, *bu._cmd_hold(bu.feedback()))
+            assert not v.stop and not v.compliant, v.reasons
+        return sup
+
+    def contact(sup, hold_s=1.0):
+        """2 × the threshold at the joint for 0.2 s, then the compliant hold for hold_s: heartbeat every cycle, contactor closed."""
+        arm.ext_tau[k6] = 2.0 * thr6
+        t0, t_trip = bu.now(), None
+        hb0 = len(bu.hb_gaps)
+        n = int((0.2 + hold_s) / dt)
+        for i in range(n):
+            if i == int(0.2 / dt):
+                arm.ext_tau[k6] = 0.0
+            v, fb = bu.cycle(sup, *bu._cmd_hold(bu.feedback()))
+            assert not v.stop, ("collision must not stop", v.reasons)
+            if v.compliant and t_trip is None:
+                t_trip = bu.now() - t0
+            if t_trip is not None:
+                assert v.compliant and sup.latched == ["collision"], (sup.latched, v.reasons)
+                assert sup.heartbeat_ok() and io.closed and torque_on(), "compliant hold must keep the heartbeat, the contactor and the drives"
+        assert t_trip is not None and t_trip <= 0.025, t_trip
+        return t_trip, max(bu.hb_gaps[hb0:]) if len(bu.hb_gaps) > hb0 else None
+
+    # (i) + (ii): a contact, then each hard fault during the compliant hold
+    rows = []
+    orig_fb = bu.feedback
+    for kind in HARD_FAULTS:
+        sup = session()
+        t_trip, gap_hold = contact(sup)
+        saved = [(arm.imp[bn].p_drop, arm.imp[bn].ideal) for bn in arm.imp]
+        t_f = bu.now()
+        t_hb_last = bu.t_hb
+        t_drop = t_override = t_torque = None
+        if kind == "e-stop":
+            bu.op.press_estop()
+        elif kind == "NaN feedback":
+            def nan_fb():
+                f = orig_fb()
+                f.q[0] = np.nan
+                return f
+            bu.feedback = nan_fb
+        elif kind == "bus silent":
+            for i in arm.imp.values():
+                i.p_drop, i.ideal = 1.0, False
+        elif kind == "bus-off":
+            for i in arm.imp.values():
+                i.ideal, i.bus_off_at, i.bus_off_ms = False, t_f, 100.0
+        elif kind == "over-temperature":
+            for m in online:
+                m.temp = TEMP_C + 15.0
+        elif kind == "supply trip":
+            io.drop()
+        t_end = t_f + 0.2
+        while bu.now() < t_end:
+            if kind == "process hang":
+                arm.step(dt)                                 # the host is silent: no cycle, no heartbeat, no command
+                if bu.now() - t_f > 0.1:
+                    break
+            else:
+                v, fb = bu.cycle(sup, *bu._cmd_hold(bu.feedback()))
+                if t_drop is None and not sup.heartbeat_ok():
+                    t_drop = bu.now() - t_f
+                if t_override is None and v.stop:
+                    assert not v.compliant
+                    t_override = bu.now() - t_f
+            if t_torque is None and not torque_on():
+                t_torque = bu.now() - t_f
+        if kind == "process hang":
+            t_drop = t_override = 0.0
+        t_open = None if io.t_open is None or io.t_open < t_f else io.t_open - t_f
+        assert t_drop is not None and t_override is not None, (kind, t_drop, t_override, sup.latched)
+        assert t_open is not None and not io.closed, (kind, "contactor did not open")
+        assert t_torque is not None and t_torque <= el.SW2_BUDGET, (kind, t_torque)
+        hw_end = t_open + t_tail                              # contacts open → bus below UVLO at the far drive (simulated board)
+        # clear the fault: nothing may re-arm by itself
+        bu.feedback = orig_fb
+        for i, (pd, idl) in zip(arm.imp.values(), saved):
+            i.p_drop, i.ideal, i.bus_off_at = pd, idl, None
+        for m in online:
+            m.temp = 32.0
+        if kind == "e-stop":
+            bu.op.release_estop()
+        if kind != "process hang":
+            for _ in range(100):
+                v, fb = bu.cycle(sup, *bu._cmd_hold(bu.feedback()))
+                assert v.stop and not sup.heartbeat_ok() and not io.closed, (kind, "self re-arm", sup.latched)
+        else:
+            for _ in range(100):
+                bu.refresh_cycle()
+            assert not io.closed, "hang: self re-arm"
+        rows.append(dict(fault=kind, collision_trip_ms=round(t_trip * 1e3, 1), hold_gap_max_ms=round(gap_hold * 1e3, 2) if gap_hold else None,
+                         hb_drop_ms=round(t_drop * 1e3, 1), override_ms=round(t_override * 1e3, 1), contactor_open_ms=round(t_open * 1e3, 1),
+                         torque_off_ms=round(t_torque * 1e3, 1), hw_no_torque_ms=round(min(hw_end, el.SW2_BUDGET * 9) * 1e3, 1),
+                         latched=list(sup.latched)))
+        assert min(t_torque, hw_end) <= el.SW2_BUDGET, rows[-1]
+    # (iii) heartbeat gaps + host compute per bus profile, observer in the loop
+    from time import perf_counter
+    plant_t = [0.0]
+    step0 = arm.step
+
+    def timed_step(d):
+        t = perf_counter()
+        step0(d)
+        plant_t[0] += perf_counter() - t
+    arm.step = timed_step
+    gaps = {}
+    for prof in PROFILE_ORDER:
+        for bn in arm.imp:
+            arm.imp[bn] = bus_sim.make(prof, np.random.default_rng(11), bn)
+            bu.buses[bn].err_source = arm.imp[bn].error_counters
+        sup = session(n_hold=50)
+        hb0 = len(bu.hb_gaps)
+        centre = bu.hold_q[j0]
+        host, stops, trips = [], 0, 0
+        for i in range(int(3.0 / dt)):                        # 3 s of a 0.5 Hz ±20° sine, then a contact and 0.5 s of compliant hold
+            t = (i + 1) * dt
+            if t < 2.5:
+                w = 2 * math.pi * 0.5
+                A = math.radians(20) * min(1.0, t)
+                bu.hold_q[j0], bu.hold_v[j0], bu.hold_a[j0] = centre + A * math.sin(w * t), A * w * math.cos(w * t), -A * w * w * math.sin(w * t)
+            else:
+                bu.hold_q[j0], bu.hold_v[j0], bu.hold_a[j0] = bu.hold_q[j0], 0.0, 0.0
+            arm.ext_tau[k6] = 2.0 * thr6 if 2.5 <= t < 2.6 else 0.0
+            p0, c0 = plant_t[0], perf_counter()
+            v, fb = bu.cycle(sup, *bu._cmd_hold(bu.feedback()))
+            host.append((perf_counter() - c0) - (plant_t[0] - p0))
+            stops += int(v.stop)
+            trips += int(v.compliant and t < 2.5)
+            if v.stop:
+                break
+        g = np.array(bu.hb_gaps[hb0:]) * 1e3
+        H = np.array(host) * 1e3
+        gaps[prof] = dict(cycles=len(H), hb_gap_max_ms=round(float(g.max()), 2), hb_gap_p999_ms=round(float(np.percentile(g, 99.9)), 2),
+                          supervisor_stops=stops, false_collision_trips=trips, compliant_at_end=bool(v.compliant),
+                          host_ms=dict(p50=round(float(np.percentile(H, 50)), 3), p999=round(float(np.percentile(H, 99.9)), 3), max=round(float(H.max()), 3)))
+        assert stops == 0 and v.compliant, (prof, gaps[prof])
+        assert g.max() <= 0.5 * wd * 1e3, (prof, gaps[prof])
+        if prof in ("ideal", "usb"):
+            assert trips == 0, (prof, gaps[prof])
+    arm.step = step0
+    arm.close()
+    out = dict(date=time.strftime("%Y-%m-%d"), watchdog_ms=wd * 1e3, board=dict(wd_ms=io.WD_S * 1e3, release_ms=io.t_release * 1e3, tail_ms=round(t_tail * 1e3, 2)),
+               faults=rows, profiles=gaps, joint=j0)
+    Path("docs/sw").mkdir(parents=True, exist_ok=True)
+    Path("docs/sw/integrated_stop.json").write_text(json.dumps(out, indent=1))
+    worst_hold = max(r["hold_gap_max_ms"] or 0 for r in rows)
+    fr = "; ".join(f"{r['fault']} {r['hb_drop_ms']:.0f}/{r['contactor_open_ms']:.0f}/{min(r['torque_off_ms'], r['hw_no_torque_ms']):.0f}" for r in rows)
+    pg = "; ".join(f"{p} {v['hb_gap_max_ms']:.1f} ms (host compute p99.9 {v['host_ms']['p999']:.2f} / max {v['host_ms']['max']:.1f} ms)" for p, v in gaps.items())
+    return (f"Integrated stop (Astra #3 critical 4; detector → supervisor → heartbeat → SimSafetyIO at monostable +20 % and a 10 ms release, {j0}; "
+            f"docs/sw/integrated_stop.json): a contact (2 × {thr6:.2f} N·m) latches the collision fault only and the arm holds compliantly for 1 s with the heartbeat "
+            f"every cycle (longest gap {worst_hold:.1f} ms) and the contactor closed; each hard fault then overrides the hold, ms to heartbeat drop / contactor open / "
+            f"no drive torque: {fr} (≤ 50 ms); none re-arms until the operator does. Heartbeat gaps with the observer in the loop, 3 s motion + contact + hold, "
+            f"longest per bus profile: {pg} (watchdog {wd * 1e3:.0f} ms) ✅")
+
+
 def test_sysid():
     from sw.rehearse_step1 import TOL_PCT, rehearse, write
     bu, arm, res = rehearse("usb", 0, log=_quiet)
@@ -263,7 +468,7 @@ def test_gim_discover():
 
 
 def main():
-    out = [test_protocol(), test_gim_discover(), test_bringup_dm(), test_bringup_full(), test_faults(), test_bus_realism(), test_sysid(),
+    out = [test_protocol(), test_gim_discover(), test_bringup_dm(), test_bringup_full(), test_faults(), test_bus_realism(), test_integrated_stop(), test_sysid(),
            test_soak(), test_teleop()]
     Path("docs/sw").mkdir(parents=True, exist_ok=True)
     Path("docs/sw/s2_tests.md").write_text("# S1 bring-up + S2 teleop tests (generated by `python -m sw.test_s2`)\n\n"

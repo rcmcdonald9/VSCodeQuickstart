@@ -273,6 +273,8 @@ class BringUp:
         self._sup = None              # the supervisor in charge of the loop (register waits keep cycling it: _reg_idle)
         self.t_hb = None
         self.hb_gap_max = 0.0
+        self.hb_gaps = []             # every interval between heartbeat edges while none was withheld on purpose (s)
+        self._hb_ref = None           # start of the current interval; None after a deliberate drop (a latched stop, the hang test)
         # Configuration keep-alive: while every drive is disabled (enumerate, limits, between steps) the host keeps the
         # contactor closed so the drives stay powered for register access; no ENABLE or control frame is sent then. Motion
         # always runs with the supervisor-gated heartbeat (start() switches the keep-alive off).
@@ -289,10 +291,18 @@ class BringUp:
 
     def hb(self):
         now = self.now()
-        if self.t_hb is not None and now - self.t_hb > self.hb_gap_max:
-            self.hb_gap_max = now - self.t_hb          # longest heartbeat gap outside the deliberate hang test (watchdog sizing)
+        if self._hb_ref is not None:                   # gaps while the loop meant to keep the contactor closed (watchdog sizing):
+            g = now - self._hb_ref                     # a latched stop or the deliberate hang test is not a jitter sample
+            self.hb_gap_max = max(self.hb_gap_max, g)
+            if len(self.hb_gaps) < 2_000_000:
+                self.hb_gaps.append(g)
+        self._hb_ref = now
         self.t_hb = now
         self.io.heartbeat()
+
+    def hb_withheld(self):
+        """The supervisor withheld the heartbeat on purpose (a latched fault): the gap that follows is the stop, not jitter."""
+        self._hb_ref = None
 
     # ---- helpers
     @property
@@ -355,12 +365,27 @@ class BringUp:
         self.wait()
         self.poll_all()
 
-    def supervisor(self, limits=None, torque=None, v_max=None):
+    def supervisor(self, limits=None, torque=None, v_max=None, collision=None):
+        """collision: an OnlineCollision (the momentum observer on the drives' measured torque, see below): cycle() then feeds
+        it every cycle and a contact latches a compliant hold that keeps the heartbeat (Astra review #3, critical 4)."""
         from sw.safety import Supervisor
         vm = v_max if v_max is not None else np.array([self.cfg["jog_speed_frac"] * self.J[j]["max_speed_rad_s"] for j in self.names])
         from sw.safety import FB_MAX_AGE
         return Supervisor(v_max=vm, clock=self.clock, joints=self.names, limits=limits, torque=torque,
-                          fb_max_age=float(self.cfg.get("fb_max_age_s", FB_MAX_AGE)))
+                          fb_max_age=float(self.cfg.get("fb_max_age_s", FB_MAX_AGE)), collision=collision)
+
+    def collision(self, thr=None, rel=None):
+        """An OnlineCollision for a supervisor: thresholds from the gravity step (bringup.yaml has none) unless given."""
+        from sw.collision import CollisionDetector
+        if thr is None:
+            ct = self.steps["gravity"].data.get("collision_thresholds")
+            if not ct:
+                raise StepFail("no collision thresholds: run the gravity step first")
+            thr = [np.inf if x is None else x for x in ct["thr"]]
+            rel = ct["rel"] if rel is None else rel
+        thr = np.asarray(thr, float)
+        rel = np.where(np.isfinite(thr), 0.10 if rel is None else rel, 0.0)
+        return OnlineCollision(self, CollisionDetector(self.twin, thr, rel))
 
     def cycle(self, sup, q=None, kp=None, kd=None, tff=None, idle=False):
         """One control period with the supervisor in the loop. idle: drives stay disabled (status requests only)."""
@@ -374,7 +399,7 @@ class BringUp:
         sup.tick()
         qw = fb.q.copy() if q is None else np.asarray(q, float)
         v = sup.check(qw, np.zeros(n) if kp is None else kp, np.zeros(n) if kd is None else kd, tff, fb.q, fb.v, fb.age,
-                      err=fb.err, temp=fb.temp, dt=self.dt)
+                      err=fb.err, temp=fb.temp, dt=self.dt, tau_meas=fb.t if sup.collision is not None else None)
         for k, j in enumerate(self.names):
             d = self.drivers[j]
             if idle:
@@ -385,6 +410,8 @@ class BringUp:
                 d.command(v.q[k], 0.0, v.kp[k], v.kd[k], v.t_ff[k])
         if sup.heartbeat_ok():
             self.hb()
+        else:
+            self.hb_withheld()
         self.wait()
         self.poll_all()
         self.n_cycles += 1
@@ -737,6 +764,7 @@ class BringUp:
             s.summary = "the hardware watchdog did not open the contactor: STOP, fix it"
             return
         self.t_hb = None                                      # the hang was deliberate: not a jitter sample
+        self._hb_ref = None
         self.arm()
         sup = self.supervisor(limits=self._raw_limits())
         self.start(sup)
@@ -1196,7 +1224,8 @@ class BringUp:
                   calibration=dict(offsets={j: self.drivers[j].offset for j in sorted(self.calibrated)},
                                    signs={j: self.drivers[j].sign for j in sorted(self.calibrated)}),
                   gim_todo=P.missing(self.tables["gim6010"]), cycles=self.n_cycles, wall_s=round(time.time() - self.t_start, 1),
-                  heartbeat_gap_max_ms=round(self.hb_gap_max * 1000, 2), watchdog_ms=round(float(self.cfg.get("watchdog_s", 0.025)) * 1000, 1))
+                  heartbeat_gap_max_ms=round(self.hb_gap_max * 1000, 2), watchdog_ms=round(float(self.cfg.get("watchdog_s", 0.025)) * 1000, 1),
+                  heartbeat_gap_p999_ms=round(float(np.percentile(self.hb_gaps, 99.9)) * 1000, 2) if self.hb_gaps else None)
         js["determinism"] = self.determinism()
         if self.plant is not None:
             js["virtual_truth"] = self.plant.truth()
@@ -1211,7 +1240,7 @@ class BringUp:
         L = [f"# M1 bring-up report {js['date']}{' (VIRTUAL: MuJoCo bench twin on a python-can virtual bus)' if js['virtual'] else ''}",
              "", f"Generated by `python -m sw.bringup` ({js['bus']}); data: [{jname}]({jname}). Online: **{', '.join(js['joints_online']) or '—'}**; "
              f"blocked: {', '.join(js['blocked']) or '—'}; {js['cycles']} control cycles at {self.cfg['control_hz']} Hz. "
-             f"Longest heartbeat gap {js['heartbeat_gap_max_ms']:.1f} ms against the {js['watchdog_ms']:.0f} ms hardware watchdog"
+             f"Longest heartbeat gap {js['heartbeat_gap_max_ms']:.1f} ms (p99.9 {js.get('heartbeat_gap_p999_ms')} ms; latched stops and the hang test excluded) against the {js['watchdog_ms']:.0f} ms hardware watchdog"
              f"{'' if js['virtual'] else ' (real loop: if it is over half the watchdog, raise watchdog_s and re-check electrical.md)'}.", "",
              "| Step | Result | Summary |", "|---|---|---|"]
         for k in STEPS:
@@ -1267,6 +1296,36 @@ class BringUp:
                 err = "—" if f is None else f"{math.degrees(f - tru):+.3f}°"
                 L.append(f"| {j} | {tru:+.5f} | {found} | {err} |")
         return "\n".join(L) + "\n"
+
+
+class OnlineCollision:
+    """The collision observer (sw/collision.py: six joints in the twin's frame) as the supervisor of the online joints sees
+    it. update() expands the online joints' measured q, q̇ and drive torque to six (offline joints held at the fixture, still,
+    carrying the twin's gravity, which they don't trip on: their thresholds are inf when offline); twin.gravity() gives the
+    compliant hold the gravity torque of the online joints (balancer included). The production path of Astra review #3
+    critical 4: detector → supervisor (collision latch → compliant hold) → heartbeat → the safety board."""
+
+    def __init__(self, bu, det):
+        self.bu, self.det = bu, det
+        self.twin = self
+
+    def gravity(self, q_online):
+        return self.bu.gravity_online(np.asarray(q_online, float))
+
+    def update(self, q, qd, tau, dt):
+        bu = self.bu
+        q6 = bu.full_q(np.asarray(q, float))
+        v6, t6 = np.zeros(6), bu.twin.gravity(q6)
+        for k, j in enumerate(bu.names):
+            v6[ARM.index(j)], t6[ARM.index(j)] = qd[k], tau[k]
+        return self.det.update(q6, v6, t6, dt)
+
+    def reset(self):
+        self.det.reset()
+
+    @property
+    def tripped(self):
+        return self.det.tripped
 
 
 def _set(cmd, k, q, kp, kd, tff):

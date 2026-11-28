@@ -55,8 +55,8 @@ def main():
          f"netlist + block diagram + state table (electrical.md); heartbeat lost → no torque {st_m1['total'] * 1000:.1f} ms (SW2 50); "
          f"watchdog {wd:.0f} ms vs the loop's longest measured heartbeat gap {jmax:.1f} ms (sw/loop_jitter.py, this machine, loaded)",
          "netlist v3 (Neon #2 F1: NH-50 + freewheel Schottky, TLV3202, K1 holds on AUX, LATCH cleared by any K1 opening, U6 on Ā, 60 A main fuse); not built", "medium (60 %)",
-         "First-time build of a 146 A-pulse board: **KiCad schematic + LTspice of the clamp loop + a second reviewer before the board parts are ordered**; "
-         "board tests (electrical.md) before any motor; re-run sw/loop_jitter.py on the Pi."),
+         "First-time build of a 146 A-pulse board: simulated (rnd/safety_board_sim.py, ngspice: 6 netlist changes, safety_board_sim.md); **KiCad schematic + the "
+         "independent review checklist before the board parts are ordered**; motorless tests T0–T16 (safety_board_tests.md) before any motor; re-run sw/loop_jitter.py on the Pi."),
         ("1", "Thermal (M7)", f"closed ASA sleeve: {th.get('dt_rated_sleeve', nan):.0f} K at rated → 0.65 × rated continuous; task-day winding "
          f"{th.get('task_max_c', nan):.0f} °C (old open + 10 K model {th.get('task_max_c_open_model', nan):.0f} °C); with a finned aluminium cap "
          f"{th.get('task_max_c_al_cap', nan):.0f} °C (thermal.md)", E, "low (45 %)",
@@ -97,12 +97,20 @@ def main():
          "limit in flash (Fable M4).",
          "- Send the seller questions the same day (below); they gate Step 2's motors.",
          "- Neon review #2 (2026-11-27) trimmed it: no D40 / unkeyed stage, no CNC cap before seller question 6, no 12 V servos without a 12 V rail; "
-         "the safety board follows netlist v3 and is drawn in KiCad and simulated (clamp loop in LTspice) before its parts are ordered.", "",
+         "the safety board follows the electrical.md netlist and is drawn in KiCad before its parts are ordered.",
+         "- Astra review #3 (critical 3): the board was simulated (`python -m rnd.safety_board_sim`, ngspice + a logic model; docs/rnd/safety_board_sim.md) and "
+         "netlist v3 changed: as drawn the clamp rang at MHz (filter + 50 µs minimum on-time; on 26.0 / off 25.7 V), the coil driver was a 30 V part seeing ≈ 52 V, "
+         "a stuck AUX bypassed pre-charge, a welded K1 / broken AUX went undetected, a dead 12 V left K1 closed with no clamp, and the 20 A fuse leaves the "
+         "in-arm 16 AWG unprotected at 18–35 A. **The Step-1 GO covers buying the parts; powering the rig needs the board's motorless tests** "
+         "(docs/rnd/safety_board_tests.md, T0–T16) **and the independent schematic/layout review checklist signed.**", "",
          "**Step 1 exit criteria (all needed before Step 2 is bought):**",
-         "1. Safety board built and its bench tests passed without a motor: ARM refused with a mushroom pressed or without a heartbeat; "
-         "pre-charge then K1; the 10 Ω dummy load trips the pre-charge timeout; the discharge one-shot fires on every opening and never during "
-         f"pre-charge; heartbeat stopped → K1 open ≤ {wd * 1.2:.0f} ms; K1 coil interrupted while armed → LATCH clears, no self re-arm; the supply cycled → "
-         "the board comes up disarmed; clamp at 26.4 V with the MOSFET drain ≤ 48 V on the scope.",
+         "1. **Gate before any drive is powered:** the independent review checklist (docs/rnd/safety_board_tests.md) signed by someone who did not draw "
+         "the board, then the board built and **every motorless test T0–T16 of docs/rnd/safety_board_tests.md passed** (bench supply + dummy capacitor bank "
+         "+ resistor bank + CC regen source, scope at the board, at the drive end and on the drains; pass/fail numbers from rnd/safety_board_sim.py): ARM refused "
+         "with a mushroom pressed, without a heartbeat or with AUX stuck; pre-charge then K1; the 10 Ω dummy load trips the pre-charge timeout; FORCE on every opening, "
+         f"never during pre-charge; WD_OK low {wd * 0.9:.1f}–{wd * 1.2:.0f} ms after the last edge and last edge → drive-end bus < 10 V ≤ 50 ms (scope, not software "
+         "timestamps); no self re-arm; disarmed after a supply cycle; clamp on at 26.0 V ± 1 %, no MHz bursts, drain ≤ 48 V, drive end ≤ 27.5 V at the regen limit; "
+         "loss of the 12 V, broken / stuck AUX and a linked-out K1 each end in a stop.",
          "2. `python -m sw.gim_discover` on the GIM6010-8: an MIT / impedance mode answers, and the GIM table in sw/drivers/gim.py is filled "
          "(`python -m sw.drivers.gim`: no TODO).",
          "3. `python -m sw.bringup --joints yaw,wpitch` on the Step-1 rig passes enumerate, limits (torque limit in flash, read back, kept over a "

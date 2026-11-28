@@ -110,11 +110,16 @@ FREEWHEEL = dict(name="Vishay VS-40CPQ060-N3 (60 V, 2 × 20 A common-cathode Sch
 # typical, 55 ns max over −40…125 °C at 5 V / 15 pF (TI SBOS561C), push-pull, 2.7–5.5 V. Same dual pinout class.
 COMP = dict(name="TI TLV3202 dual push-pull comparator (40 ns typ, 55 ns max)", t_pd=55e-9, src="TI SBOS561C")
 COMP_OLD = dict(name="TI TLV3702 (nanopower)", t_pd=36e-6, src="TI TLV3702 product page: 36 µs")
+CMP_FILTER, T_ON_MIN = 2e-6, 50e-6     # comparator divider RC; minimum clamp on-time (one-shot ORed into the gate): safety_board_sim.py
 T_SW, L_LOOP = 0.3e-6, 30e-9         # gate-resistor-set MOSFET switching time; MOSFET–diode–film-cap loop inductance (ESTIMATE: tight layout)
 IRFB7530_VDS = 60.0
 # Thresholds (finding 1 asked for ~0.8 V of hysteresis): with ± 1 % on the threshold, 0.8 V cannot satisfy both "off above a full
-# pack" (v_on·0.99 − h > 25.2 V) and "peak ≤ 28 − 0.5 V" (v_on·1.01 + h ≤ 27.5 V): those need h ≤ 0.6 V. So 26.4 V / 0.6 V.
-CLAMP = dict(v_on=26.4, v_tol=0.01, hyst=0.6, n_res=3, r_each=0.56, adiabatic=0.25,
+# pack" (v_on·0.99 − h > 25.2 V) and "peak ≤ 28 − 0.5 V" (v_on·1.01 + h ≤ 27.5 V): those need h ≤ 0.6 V. Netlist v3 used 26.4 V / 0.6 V
+# (on at 27.0, off at 25.8 V). Astra review #3 / rnd/safety_board_sim.py: (1) as drawn the clamp rings at MHz, because its own turn-on
+# step at the board node (≈ 146 A × C1's ESR + the film cap's sag ≈ 2 V) is bigger than the 1.2 V window: a 2 µs divider filter and a
+# 50 µs minimum on-time fix it, and the on-time (not the hysteresis) now sets the swing; (2) the drives sit 1–3 V above the board
+# (regen current × harness R), so the window moves down: on at 26.0 V, off at 25.7 V (v_on 25.85 ± 0.15; ± 1 %: off ≥ 25.44 V > 25.2 V).
+CLAMP = dict(v_on=25.85, v_tol=0.01, hyst=0.15, n_res=3, r_each=0.56, adiabatic=0.25,
              mosfet="3 × Infineon IRFB7530PbF (60 V, 2.0 mΩ max, 195 A package limit; one per resistor)")
 N_DRIVERS = {"robot": 15, "M1": 5}   # 13 GIM + 2 DM-J4310; M1: 4 GIM + 1 DM-J4310
 C_BULK, C_DRIVER = 4700e-6, 470e-6   # the bus capacitor + per-driver input capacitance (ESTIMATE, not published)
@@ -246,7 +251,7 @@ def clamp_check(rb, m1=None):
         i_reg = P / c["v_on"]                                         # worst regen current into the bus
         rise = i_reg / C                                              # V/s with the clamp off
         fall = v_hi / R / C                                           # V/s with the clamp on and no regen (worst undershoot)
-        f_max = (v_hi / R) / (4 * C * c["hyst"])                       # hysteretic chopper, worst at i_reg = I_clamp / 2
+        f_max = min((v_hi / R) / (4 * C * 2 * c["hyst"]), 1 / (2 * T_ON_MIN))   # hysteretic chopper (worst at i_reg = I_clamp / 2), bounded by the on-time
         sw[which] = dict(C=C, i_reg=i_reg, f_max=f_max,
                          over_new=rise * COMP["t_pd"], over_old=rise * COMP_OLD["t_pd"],
                          under_new=fall * COMP["t_pd"], under_old=fall * COMP_OLD["t_pd"],
@@ -408,7 +413,7 @@ def safety_board_lines():
         "                  │                                                                                             ├─ C1 4.7mF 35V ┬ C2 10µF film ┬ D3 SMDJ33A (edge snubber)",
         "                  │                                                                                             ├─ R6 1kΩ 3W bleeder (permanent)",
         "                  │                                                                                             ├─ R1–R3 0.56Ω NH-50 ∥ D4–D6 VS-40CPQ060 ── Q1–Q3 IRFB7530 (R_G) ── GND",
-        "                  │                                                                                             └─ divider ─► U4 TLV3202: OV (26.4V, 0.6V hyst) and PRE_OK (VBUS ≥ VIN−3V)",
+        "                  │                                                                                             └─ divider + 2µs RC ─► U4 TLV3202: OV (on 26.0 / off 25.7V) ∨ U16 50µs min on-time; PRE_OK (VBUS ≥ VIN−3V)",
         "                  └─F2 1A─ U2 24→12V buck ─ U3 3.3V LDO (watchdog / logic only)",
         "",
         "Coil loop (hardware only):  +24V_L ─ S1a NC ─ S2a NC ─ K1 coil (D1 + Z1 suppression) ─ Q4 drain;  Q4 gate = U8: LATCH ∧ WD_OK ∧ (PRE_OK ∨ AUX)",
@@ -424,17 +429,26 @@ def safety_board_lines():
         ("U1, Q6", "LM74700-Q1 ideal-diode controller + IRFB7530 (60 V, 2 mΩ)", "F1_OUT → VIN", "blocks regen into the PSU (a PSU cannot sink)"),
         ("K1", "TE Kilovac ALEV100, 24 V coil, 100 A, 1 Form A aux", "VIN ↔ VBUS; coil COIL+ / COIL−; aux AUX_A / AUX_B", "main contactor (category-0 stop)"),
         ("D1, Z1", "1N4007 + 24 V Zener (e.g. 1N5359B) in series across the K1 coil", "COIL+ / COIL−", "coil suppression that keeps the release time short (diode alone slows it)"),
-        ("Q4", "IRLB8721 logic-level N-MOSFET", "COIL− → GND, gate U8_OUT", "coil driver: closes on LATCH ∧ WD_OK ∧ PRE_OK, then holds on AUX (finding 1: PRE_OK alone in the hold term)"),
+        ("Q4", "**100 V** logic-level N-MOSFET (IRL540N class; was the 30 V IRLB8721: the D1 + Z1 suppression puts ≈ 52 V on the drain at every turn-off, "
+               "safety_board_sim.md)", "COIL− → GND, gate U8_OUT", "coil driver: closes on LATCH ∧ WD_OK ∧ PRE_OK, then holds on AUX (finding 1: PRE_OK alone in the hold term)"),
         ("U8", "SN74LVC1G11 3-input AND + SN74LVC1G32 OR (PRE_OK ∨ AUX)", "LATCH, WD_OK, PRE_OK, AUX → Q4 gate", "close on a charged bus, hold on the aux contact"),
         ("S1, S2", "2 × two-channel latching mushroom, 2 NC each", "S1a/S2a: +24V_L → COIL+ (series); S1b/S2b: 3V3 → U10 / U13", "ch1 opens the coil loop directly; ch2 tells the logic and the Pi"),
         ("SB1", "ARM / reset pushbutton, NO", "3V3 → U10 CLK", "monitored manual reset (never re-closes on its own)"),
-        ("U10", "SN74LVC1G74 D flip-flop", "D = S1b ∧ S2b ∧ WD_OK, CLK = SB1, CLR̄ = ¬(STOP ∨ FORCE ∨ POR)", "LATCH: armed state; **any K1 opening clears it** (FORCE fires on every aux falling edge), so K2 cannot re-close by itself"),
+        ("U10", "SN74LVC1G74 D flip-flop", "D = S1b ∧ S2b ∧ WD_OK ∧ TH1 ∧ **¬AUX** (a stuck AUX would bypass pre-charge), CLK = SB1, CLR̄ = ¬(STOP ∨ FORCE ∨ POR ∨ DISC ∨ UV12 ∨ OC)", "LATCH: armed state; **any K1 opening clears it** (FORCE fires on every aux falling edge), so K2 cannot re-close by itself"),
         ("R9, C9", "100 kΩ + 1 µF (τ 0.1 s) on U10 CLR̄", "3V3 → CLR̄", "power-on reset: after a supply trip the board powers up disarmed"),
         ("K2, Q5", "10 A / 30 VDC relay (24 V coil, e.g. Omron G5LE-1) + IRLML6344", "VIN → K2_C → R3 → VBUS; gate = K2_DRIVE", "pre-charge, opens as soon as K1's aux closes"),
         ("R3", f"Vishay RH-50 {R_PRE} Ω (relay-switched: no fast edge, wirewound is fine)", "K2_C → VBUS", f"pre-charge resistor (τ {R_PRE * c_bus('M1') * 1e3:.0f} ms on the M1 bus)"),
         ("U11", "RC + comparator (or a third LVC1G123), 1 s", "starts on LATCH ↑, output PRE_TIMEOUT clears U10 if AUX is still open", "pre-charge timeout (latched fault)"),
-        ("U4", f"{COMP['name']} + TL431B reference", "VBUS divider (0.1 % resistors) → OV (26.4 V, 0.6 V hysteresis by positive feedback) and PRE_OK (VBUS ≥ VIN − 3 V)",
+        ("U4", f"{COMP['name']} + TL431B reference", f"VBUS divider (0.1 % resistors) + {CMP_FILTER * 1e6:.0f} µs RC → OV (on {CLAMP['v_on'] + CLAMP['hyst']:.1f} V, "
+               f"off {CLAMP['v_on'] - CLAMP['hyst']:.1f} V by positive feedback; was 27.0 / 25.8 V) and PRE_OK (VBUS ≥ VIN − 3 V)",
          "clamp threshold; closes K1 only on a charged bus (was the 36 µs TLV3702)"),
+        ("U16", f"SN74LVC1G123 one-shot, {T_ON_MIN * 1e6:.0f} µs", "B = OV (rising), output ORed into U7", "minimum clamp on-time: as drawn the 55 ns comparator rang at MHz on the "
+               "clamp's own ESR step (safety_board_sim.md)"),
+        ("U17", "K1 discrepancy monitor: SN74LVC1G86 XOR + RC (30 ms) + comparator", "XOR(Q4 gate, AUX) → DISC", "coil command ≠ AUX for > 30 ms (welded K1, broken / stuck AUX, "
+               "K1 failed to close) → FORCE (U6 trigger) and LATCH cleared; with a welded K1 the clamp loads the bench supply until it latches off"),
+        ("U18", "12 V UVLO (TLV3012-class comparator + reference, 10.5 V)", "U2 output → UV12", "no gate-driver supply → STOP (a dead U2 otherwise leaves K1 closed with no clamp)"),
+        ("U19", "ACS724-30A Hall sensor + 5 s RC + comparator (16 A)", "VBUS → F3 branch → OC", "arm-branch overload trip: the 20 A slow-blow leaves the in-arm 16 AWG "
+               "unprotected at 18–35 A (Step 2 gate; safety_board_sim.md *Fuse coordination*)"),
         ("U6", f"SN74LVC1G123 one-shot, R {r_os / 1e3:.0f} kΩ, C 1 µF", "**Ā = AUX** (falling edge = K1 opened), B = 3V3, CLR̄ = ¬K2_DRIVE",
          f"FORCE: {T_FORCE * 1e3:.0f} ms forced discharge on the opening edge only (B is the rising-edge input: finding 1), never during pre-charge"),
         ("U15", "SN74LVC1G04 inverter", "K2_DRIVE → U6 CLR̄", "the old netlist tied CLR̄ to K2_DRIVE itself, which held the one-shot cleared whenever K2 was off: FORCE could never fire"),
@@ -454,7 +468,7 @@ def safety_board_lines():
     seq = [
         ("OFF / STOPPED", "K1 open, K2 open, LATCH 0 (also after power-up: R9·C9)", "after any stop: FORCE fires once for 100 ms, then the bleeder holds VBUS near 0 V"),
         ("ARM pressed", "needs both mushrooms released (S1b, S2b), WD_OK (the Pi already toggles the heartbeat), TH1 closed", "LATCH ← 1; K2 closes; U11 timer starts"),
-        ("PRE-CHARGE", f"VBUS rises through {R_PRE} Ω, τ ≈ {R_PRE * c_bus('M1') * 1e3:.0f} ms (M1)", "FORCE inhibited (no aux edge, and CLR̄ held low while K2 is driven); OV never trips below 26.1 V"),
+        ("PRE-CHARGE", f"VBUS rises through {R_PRE} Ω, τ ≈ {R_PRE * c_bus('M1') * 1e3:.0f} ms (M1)", f"FORCE inhibited (no aux edge, and CLR̄ held low while K2 is driven); OV never trips below {CLAMP['v_on'] * (1 - CLAMP['v_tol']) + CLAMP['hyst']:.2f} V"),
         ("RUN", "PRE_OK → Q4 on → K1 closes; aux closes → K2 drops out; Q4 now holds on AUX", "drives powered; a bus sag cannot open K1 (PRE_OK has left the hold term), the bring-up enables the drives only after this"),
         ("STOP (any)", "mushroom, WD_OK low, TH1, PRE_TIMEOUT, the Pi (stops the heartbeat), or K1 dropping out for any other reason (coil dip, shock)",
          "Q4 off → K1 opens (≤ 10 ms) → aux falls → FORCE 100 ms (bus < UVLO in ≈ 2 ms) **and LATCH cleared** → K2 stays open; only SB1 re-arms"),
@@ -474,8 +488,64 @@ def safety_board_lines():
          "", "Bench tests of the board before any motor (bring-up step 0): ARM refused with a mushroom pressed or without a heartbeat; pre-charge "
          "reaches VIN − 3 V and K1 closes; a 10 Ω RH-50 dummy load across VBUS holds it under VIN − 3 V and trips PRE_TIMEOUT; heartbeat stopped → K1 opens within "
          f"{t_wd * 1.2 * 1e3:.0f} ms; FORCE pulse seen on the scope at every opening and never during pre-charge; **K1 coil interrupted by hand while armed → LATCH clears and "
-         "K2 stays open** (no self re-arm); supply switched off and on → board comes up disarmed; clamp at 26.4 V from a lab supply through 1 Ω with the drain voltage "
-         "on the scope (≤ 48 V).", ""]
+         "K2 stays open** (no self re-arm); supply switched off and on → board comes up disarmed; clamp at 26.0 V from a lab supply through 1 Ω with the drain voltage "
+         "on the scope (≤ 48 V). **The full procedure with pass/fail numbers is [safety_board_tests.md](safety_board_tests.md)** (Step-1 gate).", ""] + sim_lines()
+    return L
+
+
+def sim_lines():
+    """Summary of rnd/safety_board_sim.py (ngspice + logic model), read from its cached JSON (Astra review #3, critical 3)."""
+    p = DOCS / "safety_board_sim.json"
+    if not p.exists():
+        return ["*Run `python -m rnd.safety_board_sim` for the board simulation.*", ""]
+    import json
+    R = json.loads(p.read_text())
+    dm = {(d["which"], d["variant"], d["scale"], d["envelope"], d["corner"]): d for d in R["dumps"]}
+    g = lambda w, v="fix", sc=1.0, e=True, c="high": dm.get((w, v, sc, e, c), {})
+    coil = R["coil"]
+    dis = {d["which"]: d for d in R["discharge"]}
+    sc = R["stop_chain"]
+    pre = [x for x in R["precharge"] if not x.get("timeout")]
+    logic_bad = [x for x in R["logic"] if x["variant"] == "v3 as drawn" and not x["ok"]]
+    fuse_bad = [f for f in R["fuses"] if not f["protected"]]
+    L = ["### Safety board simulation (Astra review #3, critical 3)",
+         f"`python -m rnd.safety_board_sim` ({R['method'].split(' /')[0]}; [safety_board_sim.md](safety_board_sim.md)): the clamp with the harness to every drive, "
+         "pre-charge, the coil drop and the forced discharge as circuits; the logic as an event model of this netlist; fuses against the wires' heating. "
+         "A model of an unbuilt board: it changed the netlist above and sets the bench numbers, it does not show that the built board works.", "",
+         "| Check | Netlist v3 as drawn | With the changes | |", "|---|---|---|---|",
+         f"| Clamp chopper (M1, 1.3 kW regen) | rings at {g('M1', 'v3').get('f_sw_mean', 0) / 1e6:.0f} MHz (simulation aborts): turn-on step ≈ 2 V > 1.2 V window | "
+         f"{g('M1').get('f_sw_mean', 0) / 1e3:.1f} kHz with the {CMP_FILTER * 1e6:.0f} µs filter + {T_ON_MIN * 1e6:.0f} µs on-time | ✅ |",
+         f"| Highest drive voltage, rated-limit stop (×0.45) M1 / robot | 27.0 V window (v3, with the filter): {g('M1', 'v3+ton').get('v_drive_max', float('nan')):.2f} V already at full regen | "
+         f"{g('M1', sc=0.45).get('v_drive_max', float('nan')):.2f} / {g('robot', sc=0.45).get('v_drive_max', float('nan')):.2f} V (≤ 27.5) | ✅ |",
+         f"| Highest drive voltage, every joint at peak torque at once M1 / robot | – | {g('M1').get('v_drive_max', float('nan')):.2f} / {g('robot').get('v_drive_max', float('nan')):.2f} V "
+         f"(elbow, behind ≈ 0.1 Ω of harness) | ❌ → regen ≤ {R['regen_limit']['M1']['P_max']:.0f} W (M1) / {R['regen_limit']['robot']['P_max']:.0f} W (robot) |",
+         f"| Resistor energy, full worst-case dump | – | {g('M1').get('e_res_each', 0):.0f} J (M1) / {g('robot').get('e_res_each', 0):.0f} J (robot, 323 J) per NH-50 ≤ 312 J | ✅ |",
+         f"| MOSFET drain peak | – | {max(g('M1').get('v_drain_max', 0), g('robot').get('v_drain_max', 0)):.1f} V ≤ 48 V | ✅ |",
+         f"| K1 coil driver drain at turn-off (D1 + Z1) | {coil[0]['v_drain_max']:.0f} V on a 30 V part (avalanche every stop) | {coil[1]['v_drain_max']:.0f} V on a 100 V part | ✅ |",
+         f"| Pre-charge: PRE_OK / K1 making current M1, robot | " + " / ".join(f"{x['t_pre_ok'] * 1e3:.0f} ms, {x['i_make']:.0f} A" for x in pre[:2]) +
+         " | robot idle draw must stay < ≈ 0.8 A (×1.5 of the ESTIMATE → PRE_TIMEOUT); robot making current vs the ALEV100 make rating | ⚠️ |",
+         f"| K1 open → far drive < UVLO M1 / robot | {dis['M1']['t_uvlo_far'] * 1e3:.1f} / {dis['robot']['t_uvlo_far'] * 1e3:.1f} ms | – | ✅ |",
+         f"| Heartbeat lost → no torque, worst tolerances (M1) | {sc['M1']['total_datasheet'] * 1e3:.1f} ms with the datasheet release ({sc['M1']['total'] * 1e3:.1f} coil model) | ≤ 50 | ✅ |",
+         f"| Logic single faults | {len(logic_bad)} fail: " + "; ".join(x["case"] for x in logic_bad) + " | all pass (¬AUX on ARM, discrepancy monitor, 12 V UVLO) | ✅ |",
+         f"| Wire protection | " + "; ".join(f"{f['case'].split(':')[0]} unprotected at {min(f['gap']):.0f}–{max(f['gap']):.0f} A" for f in fuse_bad[:1]) +
+         " | branch current monitor (U19) | ✅ |", "",
+         "**Regen requirement (sw / planner):** the board clamps its own node; each drive sits above it by its regen current × harness resistance. A controlled "
+         f"stop may return at most ≈ {R['regen_limit']['M1']['P_max']:.0f} W on the M1 bench arm ({R['regen_limit']['robot']['P_max']:.0f} W on the robot, both arms + lift): "
+         "drive limits at rated (bring-up's default) meet it; a peak-limit strength test runs one joint at a time (already the bench rule); the planner's "
+         "deceleration limit must keep the sum of τ·ω of the braking joints under it. Board test T12 scopes the bus **at the drive**.", ""]
+    ip = ROOT / "docs" / "sw" / "integrated_stop.json"
+    if ip.exists():
+        I = json.loads(ip.read_text())
+        f = {r["fault"]: r for r in I["faults"]}
+        bs = f.get("bus silent", {})
+        L += [f"**Integrated stop on the virtual bench** (sw/test_s2.py `test_integrated_stop`, docs/sw/integrated_stop.json; board model at monostable +20 % and a "
+              f"{I['board']['release_ms']:.0f} ms release): a contact latches the collision fault only and the compliant hold keeps the heartbeat and K1; every hard fault "
+              "then overrides it (ms to heartbeat drop / contactor open / no torque: " +
+              "; ".join(f"{k} {r['hb_drop_ms']:.0f} / {r['contactor_open_ms']:.0f} / {r['torque_off_ms']:.0f}" for k, r in f.items()) +
+              f"). **A silent bus or bus-off is the slow case:** the supervisor needs fb_max_age (20 ms) to call it, then the watchdog runs, so the contactor opens at "
+              f"{bs.get('contactor_open_ms', float('nan')):.0f} ms and the hardware path alone ends at ≈ {bs.get('hw_no_torque_ms', float('nan')):.0f} ms, over the 50 ms budget; "
+              f"torque is gone at {bs.get('torque_off_ms', float('nan')):.0f} ms only because the drive's own CAN timeout (30 ms) fires. That timeout is unverified on the GIM "
+              "(Step 1, sw.gim_discover): without it the hardware path must lose ≈ 11 ms: fb_max_age ≤ 9 ms on the real adapter (it is 20 ms for the 0–9 ms pil9 bus), or watchdog_s ≤ 15 ms (sized at 25 ms on loop jitter).", ""]
     return L
 
 
@@ -522,7 +592,7 @@ def a5v2_section(d=BASELINE):
           f"**Part (Neon review #2 finding 1):** {CLAMP['n_res']} × **Vishay Dale NH-50, {CLAMP['r_each']} Ω** (the RH-50's housing with a non-inductive Ayrton-Perry winding: "
           f"Vishay gives the NH the same ratings as the RH, 50 W on its heatsink, short-time overload {NH50['overload']:.0f} × rated for {NH50['t_overload']:.0f} s = "
           f"**{cc['e_rating']:.0f} J per resistor**) in parallel = {cc['R']:.2f} Ω, switched by {CLAMP['mosfet']}, **each resistor with a {FREEWHEEL['name']} across it** "
-          f"(freewheel path), a {COMP['name']} with a TL431B reference (threshold {CLAMP['v_on']} V ± 1 %, {CLAMP['hyst']} V hysteresis), a UCC27524 gate driver with gate resistors "
+          f"(freewheel path), a {COMP['name']} with a TL431B reference (on {CLAMP['v_on'] + CLAMP['hyst']:.1f} V, off {CLAMP['v_on'] - CLAMP['hyst']:.1f} V, ± 1 %; {CMP_FILTER * 1e6:.0f} µs filter, {T_ON_MIN * 1e6:.0f} µs minimum on-time), a UCC27524 gate driver with gate resistors "
           f"that set ≈ {T_SW * 1e6:.1f} µs switching edges, 10 µF film capacitors at the MOSFETs, and an 85 °C NC thermal switch on the resistor plate. "
           "**Mandatory on the M1 bench** (a bench PSU cannot sink current). The 33 V TVS stays only as an edge snubber: a TVS that does not conduct at 25.2 V "
           "clamps far above 28 V at current, so it cannot enforce the drive limit (Astra 17). On the bench, an ideal-diode stage stops regen reaching the PSU.", "",
@@ -547,7 +617,11 @@ def a5v2_section(d=BASELINE):
           f"{x['f_max'] / 1e3:.1f} kHz | {x['p_sw']:.1f} W |" for w, x in cc["sw"].items()] + ["",
           f"With the TLV3702's 36 µs the old thresholds (26.5 V, 0.4 V) would have dipped to {cc['v_off_min_old']:.2f} V, under a full pack (the clamp then drains the supply / pack), "
           f"and overshot by up to {max(x['over_old'] for x in cc['sw'].values()):.2f} V; with the TLV3202 both are negligible. 0.8 V of hysteresis (the review's suggestion) "
-          f"does not fit inside 25.2 … 27.5 V with a ± 1 % threshold, so {CLAMP['hyst']} V; no minimum-on-time monostable is needed at these frequencies.", "",
+          "does not fit inside 25.2 … 27.5 V with a ± 1 % threshold. **Astra review #3 (rnd/safety_board_sim.py, ngspice):** the fast comparator alone rings at MHz, "
+          "because the clamp's own turn-on step at the board node (≈ 146 A × C1's ESR plus the film capacitor's sag, ≈ 2 V) exceeds the window; a "
+          f"{CMP_FILTER * 1e6:.0f} µs divider filter and a {T_ON_MIN * 1e6:.0f} µs minimum on-time (U16) bound the chopper to a few kHz, and the window moved "
+          f"down to on {CLAMP['v_on'] + CLAMP['hyst']:.1f} / off {CLAMP['v_on'] - CLAMP['hyst']:.1f} V because the drives sit above the board by their regen current × harness "
+          "resistance (*Safety board simulation* below).", "",
           "Check on the restrained rig (Astra 17): a dummy capacitive energy source first, then one axis; scope the bus **at the drive** and the **MOSFET drains** for a simultaneous stop, "
           "a PSU trip and a contactor opening. Confirm the NH-50 pulse capability for a ≈ 5× / 0.4 s pulse with Vishay (the 5 s rating and the √t scaling are not a pulse curve), "
           "and simulate the clamp loop (LTspice: bus C, NH-50 + lead L, diode, MOSFET, gate R) before ordering the board.", "",
@@ -561,9 +635,9 @@ def a5v2_section(d=BASELINE):
           f"**Fable M2 (pre-charge fought the clamp):** the earlier text forced the clamp on *while* the contactor was open, and pre-charge runs *while* it is open, so "
           f"{R_PRE} Ω would have fed {pc['R_clamp']:.2f} Ω and the bus would sit at {pc['v_fight']:.1f} V until K_PRE timed out. Now the forced discharge is a "
           f"**{T_FORCE * 1e3:.0f} ms one-shot on the contactor's opening edge** (second SN74LVC1G123, triggered by the aux contact opening), **ANDed with NOT K_PRE**; "
-          f"the overvoltage comparator stays a level (it never fires below 26.2 V, so not during pre-charge). {T_FORCE * 1e3:.0f} ms is {pc['n_tau_force']:.0f} × the "
+          f"the overvoltage comparator stays a level (it never fires below {CLAMP['v_on'] * (1 - CLAMP['v_tol']) + CLAMP['hyst']:.2f} V, so not during pre-charge). {T_FORCE * 1e3:.0f} ms is {pc['n_tau_force']:.0f} × the "
           f"{pc['tau_dis'] * 1e3:.1f} ms discharge time constant (bus < 0.1 V, {pc['E_dis']:.1f} J into the clamp). Anything that recharges the bus later "
-          f"(a falling arm back-driving its motors) is held under 26.5 V by the comparator and bled by a permanent {R_BLEED / 1000:.0f} kΩ resistor "
+          f"(a falling arm back-driving its motors) is held under {CLAMP['v_on'] * (1 + CLAMP['v_tol']) + CLAMP['hyst']:.1f} V by the comparator and bled by a permanent {R_BLEED / 1000:.0f} kΩ resistor "
           f"(≈ {pc['t_bleed']:.0f} s to 10 V; {pc['i_bleed'] * 1000:.0f} mA, {pc['droop_bleed']:.2f} V of pre-charge droop). Sequence and netlist: *Safety board* below.", "",
           "### Watchdog timing budget (SW2 < 50 ms)",
           f"The control loop runs at {WATCHDOG['loop_hz']:.0f} Hz and toggles the heartbeat line only after a complete healthy cycle. The watchdog is an SN74LVC1G123 "
@@ -638,7 +712,7 @@ def report(d=BASELINE):
          "6S2P 10 Ah pack ─ JK-B2A8S20P BMS (200 A) ─ XT90 ─ MAIN FUSE 60 A ─┬─ LOGIC branch (always on): 5 V 5 A DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters",
          "                                                         └─ E-STOP CONTACTOR (ALEV100, DC-rated; coil: mushroom NC ×2 in series → watchdog MOSFET; aux contact → feedback + discharge)",
          "                                                            └─ PRE-CHARGE branch around it: relay K_PRE (opens on every stop) + 3.3 Ω RH-50 (A5 v2: switched, never permanent)",
-         "                                                              ├─ REGEN CLAMP / BUS DISCHARGE on the motor bus: 26.4 V ± 1 % TLV3202 comparator, 0.6 V hysteresis → 3 × IRFB7530 → 3 × 0.56 Ω NH-50, each with a freewheel Schottky (Neon #2 F1); forced on by a 100 ms one-shot on the contactor's opening edge (never while K_PRE is closed)",
+         "                                                              ├─ REGEN CLAMP / BUS DISCHARGE on the motor bus: TLV3202 comparator on 26.0 / off 25.7 V ± 1 %, 2 µs filter, 50 µs min on-time → 3 × IRFB7530 → 3 × 0.56 Ω NH-50, each with a freewheel Schottky (Neon #2 F1); forced on by a 100 ms one-shot on the contactor's opening edge (never while K_PRE is closed)",
          "                                                              ├─ 12 V 10 A DC-DC → STS3215 servos (A5: now downstream of the contactor)",
          "                                                              ├─ F 20 A → base: 4 wheel cartridges (CAN bus A)",
          "                                                              ├─ F 10 A → lift cartridge + pawl solenoid (CAN bus A)",

@@ -1,0 +1,1532 @@
+{
+ "method": "ngspice /usr/bin/ngspice",
+ "date": "2026-11-28",
+ "dumps": [
+  {
+   "which": "M1",
+   "envelope": true,
+   "scale": 1.0,
+   "corner": "high",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.28393429907368783,
+   "t_run": 0.2839,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 25.390752,
+   "regen_P": 1327.8695041803255,
+   "regen_E": 118.6884972387394,
+   "v_board_max": 30.660975,
+   "v_board_min": 24.657517,
+   "v_drive_max": 29.068105,
+   "worst_node": {
+    "branch": "arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 27.428,
+    "n0R": 28.662,
+    "n0Y": 28.805,
+    "n0E": 29.068,
+    "n0W": 29.058
+   },
+   "v_drain_max": 28.126971,
+   "i_leg_max": 44.2386,
+   "i_fw_max": 29.945669,
+   "e_res_each": 49.111536622925136,
+   "e_res_total": 147.3346098687754,
+   "edges": 974,
+   "f_sw_mean": 3438.0985728622577
+  },
+  {
+   "which": "M1",
+   "envelope": true,
+   "scale": 1.0,
+   "corner": "high",
+   "variant": "v3",
+   "method": "ngspice",
+   "t_end": 0.004,
+   "t_run": 0.00089999953,
+   "aborted": true,
+   "why": "doAnalyses: TRAN:  Timestep too small; time = 0.0009, timestep = 2.5e-18: trouble with node \"c1a\"",
+   "rise_fall": [
+    27.27,
+    26.057999999999996
+   ],
+   "v_drive_min": null,
+   "regen_P": 1327.8695041803255,
+   "regen_E": 118.6884972387394,
+   "v_board_max": 31.409114,
+   "v_board_min": null,
+   "v_drive_max": 28.870292,
+   "worst_node": {
+    "branch": "arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 27.964,
+    "n0R": 28.631,
+    "n0Y": 28.717,
+    "n0E": 28.87,
+    "n0W": 28.822
+   },
+   "v_drain_max": 32.717212,
+   "i_leg_max": 28.691818,
+   "i_fw_max": 14.853145,
+   "e_res_each": 0.01808443757657626,
+   "e_res_total": 0.05425331272972878,
+   "edges": 1934,
+   "f_sw_mean": 31632060.581774734
+  },
+  {
+   "which": "M1",
+   "envelope": true,
+   "scale": 1.0,
+   "corner": "high",
+   "variant": "v3+ton",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    27.27,
+    26.057999999999996
+   ],
+   "v_drive_min": 26.759418,
+   "regen_P": 1327.8695041803255,
+   "regen_E": 118.6884972387394,
+   "v_board_max": 28.344489,
+   "v_board_min": 25.000497,
+   "v_drive_max": 29.886236,
+   "worst_node": {
+    "branch": "arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 28.387,
+    "n0R": 29.542,
+    "n0Y": 29.668,
+    "n0E": 29.886,
+    "n0W": 29.87
+   },
+   "v_drain_max": 29.194109,
+   "i_leg_max": 45.069724,
+   "i_fw_max": 30.036852,
+   "e_res_each": 17.08516723052643,
+   "e_res_total": 51.255501691545206,
+   "edges": 299,
+   "f_sw_mean": 6082.609550196459
+  },
+  {
+   "which": "M1",
+   "envelope": false,
+   "scale": 1.0,
+   "corner": "high",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 25.647781,
+   "regen_P": 1327.8695041803255,
+   "regen_E": 52.2510222638274,
+   "v_board_max": 30.613005,
+   "v_board_min": 24.683116,
+   "v_drive_max": 29.02132,
+   "worst_node": {
+    "branch": "arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 27.409,
+    "n0R": 28.628,
+    "n0Y": 28.769,
+    "n0E": 29.021,
+    "n0W": 29.011
+   },
+   "v_drain_max": 28.174856,
+   "i_leg_max": 44.237704,
+   "i_fw_max": 29.950738,
+   "e_res_each": 16.712174879169567,
+   "e_res_total": 50.1365246375087,
+   "edges": 329,
+   "f_sw_mean": 6660.441602004064
+  },
+  {
+   "which": "M1",
+   "envelope": true,
+   "scale": 0.25,
+   "corner": "high",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 25.439942,
+   "regen_P": 331.9673760450814,
+   "regen_E": 29.67212430968485,
+   "v_board_max": 30.613175,
+   "v_board_min": 24.662131,
+   "v_drive_max": 26.874324,
+   "worst_node": {
+    "branch": "arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 26.536,
+    "n0R": 26.813,
+    "n0Y": 26.839,
+    "n0E": 26.874,
+    "n0W": 26.864
+   },
+   "v_drain_max": 27.900082,
+   "i_leg_max": 44.194569,
+   "i_fw_max": 29.941715,
+   "e_res_each": 6.378422678863384,
+   "e_res_total": 19.13526803659015,
+   "edges": 126,
+   "f_sw_mean": 2581.848172983827
+  },
+  {
+   "which": "M1",
+   "envelope": true,
+   "scale": 0.45,
+   "corner": "high",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 25.68153,
+   "regen_P": 597.5412768811465,
+   "regen_E": 53.40982375743273,
+   "v_board_max": 30.535914,
+   "v_board_min": 24.688543,
+   "v_drive_max": 27.469911,
+   "worst_node": {
+    "branch": "arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 26.785,
+    "n0R": 27.324,
+    "n0Y": 27.379,
+    "n0E": 27.47,
+    "n0W": 27.459
+   },
+   "v_drain_max": 28.024582,
+   "i_leg_max": 44.206963,
+   "i_fw_max": 29.950246,
+   "e_res_each": 11.32833427013024,
+   "e_res_total": 33.98500281039072,
+   "edges": 220,
+   "f_sw_mean": 4479.574251228917
+  },
+  {
+   "which": "M1",
+   "envelope": true,
+   "scale": 1.25,
+   "corner": "high",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 26.557124,
+   "regen_P": 1659.8368802254067,
+   "regen_E": 148.36062154842423,
+   "v_board_max": 30.553073,
+   "v_board_min": 24.759505,
+   "v_drive_max": 29.749426,
+   "worst_node": {
+    "branch": "arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 27.676,
+    "n0R": 29.217,
+    "n0Y": 29.403,
+    "n0E": 29.749,
+    "n0W": 29.741
+   },
+   "v_drain_max": 28.300336,
+   "i_leg_max": 44.252205,
+   "i_fw_max": 30.066191,
+   "e_res_each": 28.348896727973656,
+   "e_res_total": 85.04669018392097,
+   "edges": 563,
+   "f_sw_mean": 11383.465775576784
+  },
+  {
+   "which": "M1",
+   "envelope": true,
+   "scale": 1.0,
+   "corner": "low",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    25.74,
+    25.443
+   ],
+   "v_drive_min": 26.008892,
+   "regen_P": 1327.8695041803255,
+   "regen_E": 118.6884972387394,
+   "v_board_max": 30.050596,
+   "v_board_min": 24.361284,
+   "v_drive_max": 28.641376,
+   "worst_node": {
+    "branch": "arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 26.893,
+    "n0R": 28.185,
+    "n0Y": 28.345,
+    "n0E": 28.641,
+    "n0W": 28.635
+   },
+   "v_drain_max": 27.620978,
+   "i_leg_max": 43.932997,
+   "i_fw_max": 30.251487,
+   "e_res_each": 30.236769887004645,
+   "e_res_total": 90.71030966101394,
+   "edges": 612,
+   "f_sw_mean": 12347.07278295853
+  },
+  {
+   "which": "robot",
+   "envelope": true,
+   "scale": 1.0,
+   "corner": "high",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.5255847031698652,
+   "t_run": 0.5256,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 24.841036,
+   "regen_P": 2767.160401642897,
+   "regen_E": 323.3879636225206,
+   "v_board_max": 34.870579,
+   "v_board_min": 24.27723,
+   "v_drive_max": 28.417884,
+   "worst_node": {
+    "branch": "left arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 27.084,
+    "n0R": 28.103,
+    "n0Y": 28.19,
+    "n0E": 28.418,
+    "n0W": 28.409,
+    "n1T": 27.084,
+    "n1R": 28.103,
+    "n1Y": 28.19,
+    "n1E": 28.418,
+    "n1W": 28.409,
+    "n2L": 26.737,
+    "n3B": 26.244
+   },
+   "v_drain_max": 30.536507,
+   "i_leg_max": 44.969484,
+   "i_fw_max": 32.7619,
+   "e_res_each": 111.95211959022004,
+   "e_res_total": 335.8563587706599,
+   "edges": 2176,
+   "f_sw_mean": 4144.127566786303
+  },
+  {
+   "which": "robot",
+   "envelope": true,
+   "scale": 1.0,
+   "corner": "high",
+   "variant": "v3",
+   "method": "ngspice",
+   "t_end": 0.004,
+   "t_run": 0.00087395816,
+   "aborted": true,
+   "why": "doAnalyses: TRAN:  Timestep too small; time = 0.000873958, timestep = 2.5e-18: trouble with dideal-instance did",
+   "rise_fall": [
+    27.27,
+    26.057999999999996
+   ],
+   "v_drive_min": null,
+   "regen_P": 2767.160401642897,
+   "regen_E": 323.3879636225206,
+   "v_board_max": 36.812786,
+   "v_board_min": null,
+   "v_drive_max": 28.474128,
+   "worst_node": {
+    "branch": "left arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 27.647,
+    "n0R": 28.215,
+    "n0Y": 28.295,
+    "n0E": 28.474,
+    "n0W": 28.426,
+    "n1T": 27.647,
+    "n1R": 28.215,
+    "n1Y": 28.295,
+    "n1E": 28.474,
+    "n1W": 28.426,
+    "n2L": 27.639,
+    "n3B": 27.136
+   },
+   "v_drain_max": 33.305095,
+   "i_leg_max": 39.437681,
+   "i_fw_max": 14.83232,
+   "e_res_each": 0.0797055854753475,
+   "e_res_total": 0.23911675642604252,
+   "edges": 3142,
+   "f_sw_mean": 21727314.595195655
+  },
+  {
+   "which": "robot",
+   "envelope": true,
+   "scale": 1.0,
+   "corner": "high",
+   "variant": "v3+ton",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    27.27,
+    26.057999999999996
+   ],
+   "v_drive_min": 25.476991,
+   "regen_P": 2767.160401642897,
+   "regen_E": 323.3879636225206,
+   "v_board_max": 36.027476,
+   "v_board_min": 24.427403,
+   "v_drive_max": 29.341253,
+   "worst_node": {
+    "branch": "left arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 28.064,
+    "n0R": 29.044,
+    "n0Y": 29.127,
+    "n0E": 29.341,
+    "n0W": 29.331,
+    "n1T": 28.064,
+    "n1R": 29.044,
+    "n1Y": 29.127,
+    "n1E": 29.341,
+    "n1W": 29.331,
+    "n2L": 27.728,
+    "n3B": 27.127
+   },
+   "v_drain_max": 31.361516,
+   "i_leg_max": 46.664346,
+   "i_fw_max": 33.12264,
+   "e_res_each": 38.707408050840414,
+   "e_res_total": 116.12222415252124,
+   "edges": 665,
+   "f_sw_mean": 13497.66537001713
+  },
+  {
+   "which": "robot",
+   "envelope": false,
+   "scale": 1.0,
+   "corner": "high",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 24.873402,
+   "regen_P": 2767.160401642897,
+   "regen_E": 141.83387025046247,
+   "v_board_max": 34.82941,
+   "v_board_min": 24.273655,
+   "v_drive_max": 28.292197,
+   "worst_node": {
+    "branch": "left arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 27.033,
+    "n0R": 27.988,
+    "n0Y": 28.066,
+    "n0E": 28.292,
+    "n0W": 28.287,
+    "n1T": 27.033,
+    "n1R": 27.988,
+    "n1Y": 28.066,
+    "n1E": 28.292,
+    "n1W": 28.287,
+    "n2L": 26.732,
+    "n3B": 26.159
+   },
+   "v_drain_max": 30.532702,
+   "i_leg_max": 44.966556,
+   "i_fw_max": 32.275921,
+   "e_res_each": 33.460044226753745,
+   "e_res_total": 100.38013268026123,
+   "edges": 647,
+   "f_sw_mean": 13075.894822351649
+  },
+  {
+   "which": "robot",
+   "envelope": true,
+   "scale": 0.25,
+   "corner": "high",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 24.86664,
+   "regen_P": 691.7901004107242,
+   "regen_E": 80.84699090563015,
+   "v_board_max": 31.941621,
+   "v_board_min": 24.288771,
+   "v_drive_max": 26.684238,
+   "worst_node": {
+    "branch": "left arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 26.442,
+    "n0R": 26.652,
+    "n0Y": 26.661,
+    "n0E": 26.684,
+    "n0W": 26.673,
+    "n1T": 26.442,
+    "n1R": 26.652,
+    "n1Y": 26.661,
+    "n1E": 26.684,
+    "n1W": 26.673,
+    "n2L": 26.398,
+    "n3B": 26.227
+   },
+   "v_drain_max": 29.481551,
+   "i_leg_max": 44.733696,
+   "i_fw_max": 31.104278,
+   "e_res_each": 11.427161020297095,
+   "e_res_total": 34.28148306089129,
+   "edges": 220,
+   "f_sw_mean": 4494.047773652103
+  },
+  {
+   "which": "robot",
+   "envelope": true,
+   "scale": 0.45,
+   "corner": "high",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 24.822941,
+   "regen_P": 1245.2221807393037,
+   "regen_E": 145.5245836301343,
+   "v_board_max": 33.304074,
+   "v_board_min": 24.247358,
+   "v_drive_max": 27.152559,
+   "worst_node": {
+    "branch": "left arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 26.618,
+    "n0R": 27.048,
+    "n0Y": 27.078,
+    "n0E": 27.153,
+    "n0W": 27.14,
+    "n1T": 26.618,
+    "n1R": 27.048,
+    "n1Y": 27.078,
+    "n1E": 27.153,
+    "n1W": 27.14,
+    "n2L": 26.491,
+    "n3B": 26.197
+   },
+   "v_drain_max": 29.838122,
+   "i_leg_max": 44.78019,
+   "i_fw_max": 31.446522,
+   "e_res_each": 19.85620509070971,
+   "e_res_total": 59.568615272129136,
+   "edges": 378,
+   "f_sw_mean": 7679.2740686171055
+  },
+  {
+   "which": "robot",
+   "envelope": true,
+   "scale": 1.25,
+   "corner": "high",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 24.916506,
+   "regen_P": 3458.9505020536208,
+   "regen_E": 404.2349545281508,
+   "v_board_max": 34.925706,
+   "v_board_min": 24.280411,
+   "v_drive_max": 28.907458,
+   "worst_node": {
+    "branch": "left arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 27.152,
+    "n0R": 28.317,
+    "n0Y": 28.493,
+    "n0E": 28.907,
+    "n0W": 28.905,
+    "n1T": 27.152,
+    "n1R": 28.317,
+    "n1Y": 28.493,
+    "n1E": 28.907,
+    "n1W": 28.905,
+    "n2L": 26.364,
+    "n3B": 26.058
+   },
+   "v_drain_max": 30.207899,
+   "i_leg_max": 44.943901,
+   "i_fw_max": 32.68673,
+   "e_res_each": 50.713172148266985,
+   "e_res_total": 152.13951644480096,
+   "edges": 973,
+   "f_sw_mean": 19642.465100695772
+  },
+  {
+   "which": "robot",
+   "envelope": true,
+   "scale": 1.0,
+   "corner": "low",
+   "variant": "fix",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    25.74,
+    25.443
+   ],
+   "v_drive_min": 24.7138,
+   "regen_P": 2767.160401642897,
+   "regen_E": 323.3879636225206,
+   "v_board_max": 32.15765,
+   "v_board_min": 24.278266,
+   "v_drive_max": 28.012976,
+   "worst_node": {
+    "branch": "left arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 26.424,
+    "n0R": 27.526,
+    "n0Y": 27.671,
+    "n0E": 28.013,
+    "n0W": 28.011,
+    "n1T": 26.424,
+    "n1R": 27.526,
+    "n1Y": 27.671,
+    "n1E": 28.013,
+    "n1W": 28.011,
+    "n2L": 25.897,
+    "n3B": 25.573
+   },
+   "v_drain_max": 29.626791,
+   "i_leg_max": 44.340321,
+   "i_fw_max": 31.875741,
+   "e_res_each": 50.50594864462602,
+   "e_res_total": 151.51784593387495,
+   "edges": 985,
+   "f_sw_mean": 19846.727759366437
+  }
+ ],
+ "regen_limit": {
+  "M1": {
+   "P_max": 611.2910757361072,
+   "pts": [
+    [
+     331.9673760450814,
+     26.874324
+    ],
+    [
+     597.5412768811465,
+     27.469911
+    ],
+    [
+     1327.8695041803255,
+     29.068105
+    ],
+    [
+     1659.8368802254067,
+     29.749426
+    ]
+   ]
+  },
+  "robot": {
+   "P_max": 1663.1256738410482,
+   "pts": [
+    [
+     691.7901004107242,
+     26.684238
+    ],
+    [
+     1245.2221807393037,
+     27.152559
+    ],
+    [
+     2767.160401642897,
+     28.417884
+    ],
+    [
+     3458.9505020536208,
+     28.907458
+    ]
+   ]
+  }
+ },
+ "precharge": [
+  {
+   "which": "M1",
+   "t_pre_ok": 0.05896969,
+   "t_k1": 0.08396969,
+   "t_operate": 0.025,
+   "dv_at_close": 1.6280470000000022,
+   "i_inrush": 7.5010678,
+   "i_make": 59.887398,
+   "e_r3": 2.448973778376819,
+   "v_final": 25.193999,
+   "timeout": false,
+   "idle_scale": 1.0,
+   "method": "ngspice",
+   "C": 0.007050000000000001
+  },
+  {
+   "which": "robot",
+   "t_pre_ok": 0.12753114,
+   "t_k1": 0.15253113999999998,
+   "t_operate": 0.025,
+   "dv_at_close": 2.4963799354974614,
+   "i_inrush": 7.5202548,
+   "i_make": 135.50788,
+   "e_r3": 4.40583668689478,
+   "v_final": 25.165222,
+   "timeout": false,
+   "idle_scale": 1.0,
+   "method": "ngspice",
+   "C": 0.01175
+  },
+  {
+   "which": "M1",
+   "t_pre_ok": 0.05896969,
+   "t_k1": 0.06396969,
+   "t_operate": 0.005,
+   "dv_at_close": 2.603155000000001,
+   "i_inrush": 7.5010678,
+   "i_make": 98.687438,
+   "e_r3": 2.423020581643229,
+   "v_final": 25.193999,
+   "timeout": false,
+   "idle_scale": 1.0,
+   "method": "ngspice",
+   "C": 0.007050000000000001
+  },
+  {
+   "which": "robot",
+   "t_pre_ok": 0.12753114,
+   "t_k1": 0.13253114,
+   "t_operate": 0.005,
+   "dv_at_close": 2.7910750322728903,
+   "i_inrush": 7.5202548,
+   "i_make": 152.1158,
+   "e_r3": 4.360556664814374,
+   "v_final": 25.165222,
+   "timeout": false,
+   "idle_scale": 1.0,
+   "method": "ngspice",
+   "C": 0.01175
+  },
+  {
+   "which": "robot",
+   "t_pre_ok": null,
+   "v_final": 22.114095,
+   "shortfall": 3.0435090000000002,
+   "i_inrush": 7.5202555,
+   "e_r3": 5.349428370842124,
+   "timeout": true,
+   "method": "ngspice",
+   "dummy": null,
+   "idle_scale": 1.5
+  },
+  {
+   "which": "M1",
+   "t_pre_ok": null,
+   "v_final": 18.383875,
+   "shortfall": 6.745342000000001,
+   "i_inrush": 7.501118,
+   "e_r3": 16.773694330464494,
+   "timeout": true,
+   "method": "ngspice",
+   "dummy": 10.0,
+   "idle_scale": 1.0
+  }
+ ],
+ "coil": [
+  {
+   "suppression": "D1 + Z1",
+   "i_hold": 0.14823596681904763,
+   "t_dropout": 0.0030643438999999996,
+   "v_drain_max": 33.130215,
+   "method": "ngspice",
+   "t_release": 0.0070643439,
+   "q4": "IRLB8721 (30 V, as drawn)"
+  },
+  {
+   "suppression": "D1 + Z1",
+   "i_hold": 0.14823596681904763,
+   "t_dropout": 0.0015860808,
+   "v_drain_max": 51.705406,
+   "method": "ngspice",
+   "t_release": 0.0055860808000000005,
+   "q4": "100 V part (proposed)"
+  },
+  {
+   "suppression": "D1 only",
+   "i_hold": 0.14823598488636366,
+   "t_dropout": 0.005144543,
+   "v_drain_max": 25.991253,
+   "method": "ngspice",
+   "t_release": 0.009144543,
+   "q4": "100 V part (proposed)"
+  }
+ ],
+ "discharge": [
+  {
+   "which": "M1",
+   "t_uvlo_board": 0.0017209688,
+   "t_uvlo_far": 0.0020059688,
+   "far": "n0W",
+   "far_desc": {
+    "branch": "arm",
+    "segment": "16 AWG 0.95 m (elbow spiral + forearm)",
+    "node": "W",
+    "joint": null,
+    "drivers": 1
+   },
+   "i_peak": 123.34078199999999,
+   "v_after_force": 5.8180647e-07,
+   "method": "ngspice"
+  },
+  {
+   "which": "robot",
+   "t_uvlo_board": 0.0025784468,
+   "t_uvlo_far": 0.0028384468,
+   "far": "n0W",
+   "far_desc": {
+    "branch": "left arm",
+    "segment": "16 AWG 0.95 m (elbow spiral + forearm)",
+    "node": "W",
+    "joint": null,
+    "drivers": 1
+   },
+   "i_peak": 127.63426199999999,
+   "v_after_force": 0.00017055222,
+   "method": "ngspice"
+  }
+ ],
+ "stop_chain": {
+  "M1": {
+   "rows": [
+    [
+     "heartbeat lost just after an edge: one 2 ms cycle + 25 ms monostable at +20 %",
+     0.032
+    ],
+    [
+     "coil current to drop-out (D1 + Z1, coil 170 \u03a9 / 0.5 H ESTIMATE) + armature 4 ms",
+     0.0055860808000000005
+    ],
+    [
+     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
+     0.0020059688
+    ],
+    [
+     "phase current decays once the drive stops switching (ESTIMATE)",
+     0.001
+    ]
+   ],
+   "total": 0.0405920496,
+   "total_datasheet": 0.045005968800000004,
+   "rows_datasheet": [
+    [
+     "heartbeat lost just after an edge: one 2 ms cycle + 25 ms monostable at +20 %",
+     0.032
+    ],
+    [
+     "contactor release, datasheet maximum (suppression unspecified)",
+     0.01
+    ],
+    [
+     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
+     0.0020059688
+    ],
+    [
+     "phase current decays once the drive stops switching (ESTIMATE)",
+     0.001
+    ]
+   ],
+   "budget": 0.05,
+   "wd_max_for_budget": 0.029161692666666666
+  },
+  "robot": {
+   "rows": [
+    [
+     "heartbeat lost just after an edge: one 2 ms cycle + 25 ms monostable at +20 %",
+     0.032
+    ],
+    [
+     "coil current to drop-out (D1 + Z1, coil 170 \u03a9 / 0.5 H ESTIMATE) + armature 4 ms",
+     0.0055860808000000005
+    ],
+    [
+     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
+     0.0028384468
+    ],
+    [
+     "phase current decays once the drive stops switching (ESTIMATE)",
+     0.001
+    ]
+   ],
+   "total": 0.041424527600000004,
+   "total_datasheet": 0.0458384468,
+   "rows_datasheet": [
+    [
+     "heartbeat lost just after an edge: one 2 ms cycle + 25 ms monostable at +20 %",
+     0.032
+    ],
+    [
+     "contactor release, datasheet maximum (suppression unspecified)",
+     0.01
+    ],
+    [
+     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
+     0.0028384468
+    ],
+    [
+     "phase current decays once the drive stops switching (ESTIMATE)",
+     0.001
+    ]
+   ],
+   "budget": 0.05,
+   "wd_max_for_budget": 0.028467961
+  }
+ },
+ "fuses": [
+  {
+   "case": "bench: SE-1000-24 \u2192 F1 60 A \u2192 board \u2192 F3 20 A \u2192 14 AWG arm lead",
+   "rating": 20,
+   "wire": "14 AWG silicone, free air (bench lead, umbilical)",
+   "rows": [
+    {
+     "I": 22.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": Infinity,
+     "T_wire": 74.8,
+     "ok": true
+    },
+    {
+     "I": 25.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 6640.044747468636,
+     "T_wire": 86.7,
+     "ok": true
+    },
+    {
+     "I": 27.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 600.0,
+     "T_wire": 95.9,
+     "ok": true
+    },
+    {
+     "I": 30.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 166.26387095430374,
+     "T_wire": 97.1,
+     "ok": true
+    },
+    {
+     "I": 40.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 4.999999999999999,
+     "T_wire": 45.9,
+     "ok": true
+    },
+    {
+     "I": 43.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 3.7131055957127534,
+     "T_wire": 45.1,
+     "ok": true
+    },
+    {
+     "I": 52.0,
+     "opens": "supply latch (43.8\u201352.1 A)",
+     "t_open_s": 0.01,
+     "T_wire": 40.0,
+     "ok": true
+    },
+    {
+     "I": 80.0,
+     "opens": "supply latch (43.8\u201352.1 A)",
+     "t_open_s": 0.01,
+     "T_wire": 40.0,
+     "ok": true
+    },
+    {
+     "I": 150.0,
+     "opens": "supply latch (43.8\u201352.1 A)",
+     "t_open_s": 0.01,
+     "T_wire": 40.2,
+     "ok": true
+    }
+   ],
+   "i_continuous_service": 28.7,
+   "i_continuous_fault": 35.1,
+   "protected": true,
+   "gap": [],
+   "bench": true
+  },
+  {
+   "case": "bench Step 2 / robot: F3 20 A \u2192 arm 16 AWG in the clock springs",
+   "rating": 20,
+   "wire": "16 AWG ETFE in a clock-spring cassette (ASA)",
+   "rows": [
+    {
+     "I": 22.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": Infinity,
+     "T_wire": 112.4,
+     "ok": false
+    },
+    {
+     "I": 25.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 6640.044747468636,
+     "T_wire": 141.3,
+     "ok": false
+    },
+    {
+     "I": 27.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 600.0,
+     "T_wire": 165.8,
+     "ok": false
+    },
+    {
+     "I": 30.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 166.26387095430374,
+     "T_wire": 183.9,
+     "ok": false
+    },
+    {
+     "I": 40.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 4.999999999999999,
+     "T_wire": 56.0,
+     "ok": true
+    },
+    {
+     "I": 43.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 3.7131055957127534,
+     "T_wire": 53.9,
+     "ok": true
+    },
+    {
+     "I": 52.0,
+     "opens": "supply latch (43.8\u201352.1 A)",
+     "t_open_s": 0.01,
+     "T_wire": 40.1,
+     "ok": true
+    },
+    {
+     "I": 80.0,
+     "opens": "supply latch (43.8\u201352.1 A)",
+     "t_open_s": 0.01,
+     "T_wire": 40.1,
+     "ok": true
+    },
+    {
+     "I": 150.0,
+     "opens": "supply latch (43.8\u201352.1 A)",
+     "t_open_s": 0.01,
+     "T_wire": 40.5,
+     "ok": true
+    }
+   ],
+   "i_continuous_service": 12.6,
+   "i_continuous_fault": 18.1,
+   "protected": false,
+   "gap": [
+    22.0,
+    25.0,
+    27.0,
+    30.0
+   ],
+   "bench": true
+  },
+  {
+   "case": "robot: F 20 A \u2192 16 AWG in the clock springs (pack + BMS, no supply latch)",
+   "rating": 20,
+   "wire": "16 AWG ETFE in a clock-spring cassette (ASA)",
+   "rows": [
+    {
+     "I": 22.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": Infinity,
+     "T_wire": 112.4,
+     "ok": false
+    },
+    {
+     "I": 25.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 6640.044747468636,
+     "T_wire": 141.3,
+     "ok": false
+    },
+    {
+     "I": 27.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 600.0,
+     "T_wire": 165.8,
+     "ok": false
+    },
+    {
+     "I": 30.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 166.26387095430374,
+     "T_wire": 183.9,
+     "ok": false
+    },
+    {
+     "I": 40.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 4.999999999999999,
+     "T_wire": 56.0,
+     "ok": true
+    },
+    {
+     "I": 43.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 3.7131055957127534,
+     "T_wire": 53.9,
+     "ok": true
+    },
+    {
+     "I": 52.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 1.6987940403487158,
+     "T_wire": 49.4,
+     "ok": true
+    },
+    {
+     "I": 80.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 0.2252388546980932,
+     "T_wire": 42.9,
+     "ok": true
+    },
+    {
+     "I": 150.0,
+     "opens": "fuse 20 A (max curve)",
+     "t_open_s": 0.02,
+     "T_wire": 40.9,
+     "ok": true
+    }
+   ],
+   "i_continuous_service": 12.6,
+   "i_continuous_fault": 18.1,
+   "protected": false,
+   "gap": [
+    22.0,
+    25.0,
+    27.0,
+    30.0
+   ],
+   "bench": false
+  },
+  {
+   "case": "proposed: F3 15 A at the board for the arm branch",
+   "rating": 15,
+   "wire": "16 AWG ETFE in a clock-spring cassette (ASA)",
+   "rows": [
+    {
+     "I": 16.5,
+     "opens": "fuse 15 A (max curve)",
+     "t_open_s": Infinity,
+     "T_wire": 76.5,
+     "ok": true
+    },
+    {
+     "I": 20.2,
+     "opens": "fuse 15 A (max curve)",
+     "t_open_s": 648.1684458654918,
+     "T_wire": 98.6,
+     "ok": false
+    },
+    {
+     "I": 25.0,
+     "opens": "fuse 15 A (max curve)",
+     "t_open_s": 46.072791307848895,
+     "T_wire": 84.4,
+     "ok": true
+    },
+    {
+     "I": 30.0,
+     "opens": "fuse 15 A (max curve)",
+     "t_open_s": 4.999999999999999,
+     "T_wire": 48.9,
+     "ok": true
+    },
+    {
+     "I": 40.0,
+     "opens": "fuse 15 A (max curve)",
+     "t_open_s": 1.5307325508843883,
+     "T_wire": 45.0,
+     "ok": true
+    },
+    {
+     "I": 43.0,
+     "opens": "fuse 15 A (max curve)",
+     "t_open_s": 1.1367543200456958,
+     "T_wire": 44.3,
+     "ok": true
+    },
+    {
+     "I": 52.0,
+     "opens": "fuse 15 A (max curve)",
+     "t_open_s": 0.5200798669620372,
+     "T_wire": 42.9,
+     "ok": true
+    },
+    {
+     "I": 80.0,
+     "opens": "fuse 15 A (max curve)",
+     "t_open_s": 0.04041213447259639,
+     "T_wire": 40.5,
+     "ok": true
+    },
+    {
+     "I": 150.0,
+     "opens": "fuse 15 A (max curve)",
+     "t_open_s": 0.02,
+     "T_wire": 40.9,
+     "ok": true
+    }
+   ],
+   "i_continuous_service": 12.6,
+   "i_continuous_fault": 18.1,
+   "protected": false,
+   "gap": [
+    20.2
+   ],
+   "bench": false
+  },
+  {
+   "case": "robot: F 10 A \u2192 lift 18 AWG",
+   "rating": 10,
+   "wire": "18 AWG silicone, drag chain (lift)",
+   "rows": [
+    {
+     "I": 11.0,
+     "opens": "fuse 10 A (max curve)",
+     "t_open_s": Infinity,
+     "T_wire": 70.3,
+     "ok": true
+    },
+    {
+     "I": 13.5,
+     "opens": "fuse 10 A (max curve)",
+     "t_open_s": 600.0,
+     "T_wire": 88.3,
+     "ok": true
+    },
+    {
+     "I": 25.0,
+     "opens": "fuse 10 A (max curve)",
+     "t_open_s": 1.996299975295808,
+     "T_wire": 45.6,
+     "ok": true
+    },
+    {
+     "I": 30.0,
+     "opens": "fuse 10 A (max curve)",
+     "t_open_s": 0.9428184340618867,
+     "T_wire": 43.8,
+     "ok": true
+    },
+    {
+     "I": 40.0,
+     "opens": "fuse 10 A (max curve)",
+     "t_open_s": 0.2252388546980932,
+     "T_wire": 41.6,
+     "ok": true
+    },
+    {
+     "I": 43.0,
+     "opens": "fuse 10 A (max curve)",
+     "t_open_s": 0.14624216876751336,
+     "T_wire": 41.2,
+     "ok": true
+    },
+    {
+     "I": 52.0,
+     "opens": "fuse 10 A (max curve)",
+     "t_open_s": 0.047008456810144095,
+     "T_wire": 40.6,
+     "ok": true
+    },
+    {
+     "I": 80.0,
+     "opens": "fuse 10 A (max curve)",
+     "t_open_s": 0.02,
+     "T_wire": 40.6,
+     "ok": true
+    },
+    {
+     "I": 150.0,
+     "opens": "fuse 10 A (max curve)",
+     "t_open_s": 0.02,
+     "T_wire": 42.0,
+     "ok": true
+    }
+   ],
+   "i_continuous_service": 15.3,
+   "i_continuous_fault": 18.7,
+   "protected": true,
+   "gap": [],
+   "bench": false
+  }
+ ],
+ "logic": [
+  {
+   "case": "heartbeat stops while running",
+   "variant": "v3 as drawn",
+   "ok": true,
+   "detail": "K1 open 33.2 ms after the last edge (wd 25 ms + release), FORCE yes, heartbeat back \u2192 K1 stays open"
+  },
+  {
+   "case": "ARM with a mushroom pressed / without heartbeat",
+   "variant": "v3 as drawn",
+   "ok": true,
+   "detail": "LATCH False / False"
+  },
+  {
+   "case": "logic supply lost and restored (PSU trip, brownout)",
+   "variant": "v3 as drawn",
+   "ok": true,
+   "detail": "after power returns: LATCH False, K1 open (power-on reset)"
+  },
+  {
+   "case": "mushroom tapped (coil loop broken for 0.5 ms) while armed",
+   "variant": "v3 as drawn",
+   "ok": true,
+   "detail": "LATCH False, K1 open"
+  },
+  {
+   "case": "AUX wire breaks while running",
+   "variant": "v3 as drawn",
+   "ok": false,
+   "detail": "no FORCE (U6 is held cleared: K2_DRIVE = LATCH \u2227 \u00acAUX goes high and K2 re-closes), K1 stays closed on PRE_OK: a latent fault; the next stop gets **no forced discharge** (\u2248 300 ms of bus on the drives' idle draw). Only the Pi sees it (AUX_OK low \u2192 supervisor e-stop latch)"
+  },
+  {
+   "case": "AUX stuck closed, then ARM",
+   "variant": "v3 as drawn",
+   "ok": false,
+   "detail": "K1 closes on an empty bus (pre-charge bypassed: Q4 holds on AUX, K2_DRIVE = \u00acAUX is off), bus 0.0 V at closing \u2192 inrush limited only by ESR / wiring; and no aux edge at the next stop, so no FORCE"
+  },
+  {
+   "case": "K1 main contacts welded, heartbeat stops",
+   "variant": "v3 as drawn",
+   "ok": false,
+   "detail": "no aux edge \u2192 no FORCE; the bus stays powered from the supply; only the Pi (DISABLE frames) and the drives' CAN timeout remain"
+  },
+  {
+   "case": "12 V gate-driver supply lost (U2 / F2) while running",
+   "variant": "v3 as drawn",
+   "ok": false,
+   "detail": "the comparator still switches but UCC27524 has no supply: no clamp, no FORCE, and K1 stays closed. Regen then charges the bus without limit (M1 1.3 kW into 7 mF: 25 \u2192 28 V in \u2248 0 ms)"
+  },
+  {
+   "case": "heartbeat stops while running",
+   "variant": "v3 + fixes",
+   "ok": true,
+   "detail": "K1 open 33.2 ms after the last edge (wd 25 ms + release), FORCE yes, heartbeat back \u2192 K1 stays open"
+  },
+  {
+   "case": "ARM with a mushroom pressed / without heartbeat",
+   "variant": "v3 + fixes",
+   "ok": true,
+   "detail": "LATCH False / False"
+  },
+  {
+   "case": "logic supply lost and restored (PSU trip, brownout)",
+   "variant": "v3 + fixes",
+   "ok": true,
+   "detail": "after power returns: LATCH False, K1 open (power-on reset)"
+  },
+  {
+   "case": "mushroom tapped (coil loop broken for 0.5 ms) while armed",
+   "variant": "v3 + fixes",
+   "ok": true,
+   "detail": "LATCH False, K1 open"
+  },
+  {
+   "case": "AUX wire breaks while running",
+   "variant": "v3 + fixes",
+   "ok": true,
+   "detail": "discrepancy \u2192 FORCE at +30 ms and LATCH cleared, K1 open at +40 ms (the clamp loads the supply for the release time: the bench supply may latch); stop, fail-safe"
+  },
+  {
+   "case": "AUX stuck closed, then ARM",
+   "variant": "v3 + fixes",
+   "ok": true,
+   "detail": "ARM refused (\u00acAUX on the ARM condition)"
+  },
+  {
+   "case": "K1 main contacts welded, heartbeat stops",
+   "variant": "v3 + fixes",
+   "ok": true,
+   "detail": "FORCE 53 ms after the last edge: the clamp loads the supply at 135 A \u2192 the bench supply latches off (\u2265 43.8 A); on the robot the pack keeps the bus up: needs a second break (BMS discharge FET off)"
+  },
+  {
+   "case": "12 V gate-driver supply lost (U2 / F2) while running",
+   "variant": "v3 + fixes",
+   "ok": true,
+   "detail": "12 V UVLO \u2192 STOP: K1 opens, LATCH cleared (the bus then has no clamp: the 1 k\u03a9 bleeder and the SMDJ33A only)"
+  }
+ ]
+}

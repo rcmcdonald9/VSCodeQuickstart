@@ -1,0 +1,183 @@
+{
+ "date": "2026-11-28",
+ "watchdog_ms": 25.0,
+ "board": {
+  "wd_ms": 30.0,
+  "release_ms": 10.0,
+  "tail_ms": 3.01
+ },
+ "faults": [
+  {
+   "fault": "e-stop",
+   "collision_trip_ms": 14.0,
+   "hold_gap_max_ms": 2.0,
+   "hb_drop_ms": 12.0,
+   "override_ms": 12.0,
+   "contactor_open_ms": 10.0,
+   "torque_off_ms": 10.0,
+   "hw_no_torque_ms": 13.0,
+   "latched": [
+    "collision",
+    "e-stop",
+    "feedback missing, NaN or stale"
+   ]
+  },
+  {
+   "fault": "process hang",
+   "collision_trip_ms": 14.0,
+   "hold_gap_max_ms": 2.0,
+   "hb_drop_ms": 0.0,
+   "override_ms": 0.0,
+   "contactor_open_ms": 38.0,
+   "torque_off_ms": 32.0,
+   "hw_no_torque_ms": 41.0,
+   "latched": [
+    "collision"
+   ]
+  },
+  {
+   "fault": "NaN feedback",
+   "collision_trip_ms": 14.0,
+   "hold_gap_max_ms": 2.0,
+   "hb_drop_ms": 2.0,
+   "override_ms": 2.0,
+   "contactor_open_ms": 38.0,
+   "torque_off_ms": 2.0,
+   "hw_no_torque_ms": 41.0,
+   "latched": [
+    "collision",
+    "feedback missing, NaN or stale",
+    "e-stop"
+   ]
+  },
+  {
+   "fault": "bus silent",
+   "collision_trip_ms": 14.0,
+   "hold_gap_max_ms": 2.0,
+   "hb_drop_ms": 22.0,
+   "override_ms": 22.0,
+   "contactor_open_ms": 58.0,
+   "torque_off_ms": 32.0,
+   "hw_no_torque_ms": 61.0,
+   "latched": [
+    "collision",
+    "feedback missing, NaN or stale",
+    "e-stop"
+   ]
+  },
+  {
+   "fault": "bus-off",
+   "collision_trip_ms": 14.0,
+   "hold_gap_max_ms": 2.0,
+   "hb_drop_ms": 22.0,
+   "override_ms": 22.0,
+   "contactor_open_ms": 58.0,
+   "torque_off_ms": 32.0,
+   "hw_no_torque_ms": 61.0,
+   "latched": [
+    "collision",
+    "feedback missing, NaN or stale",
+    "e-stop"
+   ]
+  },
+  {
+   "fault": "over-temperature",
+   "collision_trip_ms": 14.0,
+   "hold_gap_max_ms": 2.0,
+   "hb_drop_ms": 10.0,
+   "override_ms": 10.0,
+   "contactor_open_ms": 46.0,
+   "torque_off_ms": 10.0,
+   "hw_no_torque_ms": 49.0,
+   "latched": [
+    "collision",
+    "over temperature or bad temperature reading",
+    "e-stop",
+    "feedback missing, NaN or stale"
+   ]
+  },
+  {
+   "fault": "supply trip",
+   "collision_trip_ms": 14.0,
+   "hold_gap_max_ms": 2.0,
+   "hb_drop_ms": 2.0,
+   "override_ms": 2.0,
+   "contactor_open_ms": 0.0,
+   "torque_off_ms": 2.0,
+   "hw_no_torque_ms": 3.0,
+   "latched": [
+    "collision",
+    "e-stop",
+    "feedback missing, NaN or stale"
+   ]
+  }
+ ],
+ "profiles": {
+  "ideal": {
+   "cycles": 1500,
+   "hb_gap_max_ms": 2.0,
+   "hb_gap_p999_ms": 2.0,
+   "supervisor_stops": 0,
+   "false_collision_trips": 0,
+   "compliant_at_end": true,
+   "host_ms": {
+    "p50": 0.497,
+    "p999": 7.06,
+    "max": 33.22
+   }
+  },
+  "usb": {
+   "cycles": 1500,
+   "hb_gap_max_ms": 2.0,
+   "hb_gap_p999_ms": 2.0,
+   "supervisor_stops": 0,
+   "false_collision_trips": 0,
+   "compliant_at_end": true,
+   "host_ms": {
+    "p50": 0.536,
+    "p999": 8.853,
+    "max": 32.44
+   }
+  },
+  "pil9": {
+   "cycles": 1500,
+   "hb_gap_max_ms": 2.0,
+   "hb_gap_p999_ms": 2.0,
+   "supervisor_stops": 0,
+   "false_collision_trips": 0,
+   "compliant_at_end": true,
+   "host_ms": {
+    "p50": 0.577,
+    "p999": 6.613,
+    "max": 8.275
+   }
+  },
+  "lossy": {
+   "cycles": 1500,
+   "hb_gap_max_ms": 2.0,
+   "hb_gap_p999_ms": 2.0,
+   "supervisor_stops": 0,
+   "false_collision_trips": 0,
+   "compliant_at_end": true,
+   "host_ms": {
+    "p50": 0.563,
+    "p999": 1.559,
+    "max": 2.867
+   }
+  },
+  "corrupt": {
+   "cycles": 1500,
+   "hb_gap_max_ms": 2.0,
+   "hb_gap_p999_ms": 2.0,
+   "supervisor_stops": 0,
+   "false_collision_trips": 0,
+   "compliant_at_end": true,
+   "host_ms": {
+    "p50": 0.641,
+    "p999": 2.302,
+    "max": 3.817
+   }
+  }
+ },
+ "joint": "wpitch"
+}

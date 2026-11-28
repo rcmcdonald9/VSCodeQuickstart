@@ -15,12 +15,12 @@
   "yaw": {
    "coulomb": {
     "true": 0.32,
-    "fit": 0.33499,
-    "err_pct": 4.68
+    "fit": 0.335,
+    "err_pct": 4.69
    },
    "viscous": {
     "true": 0.85,
-    "fit": 0.79921,
+    "fit": 0.7992,
     "err_pct": -5.98
    },
    "kt": {
@@ -52,7 +52,7 @@
    },
    "kt": {
     "true": 1.035,
-    "fit": 1.03439,
+    "fit": 1.03438,
     "err_pct": -0.06
    },
    "backlash": {
@@ -72,10 +72,10 @@
    "joint": "yaw",
    "kind": "gim6010",
    "serial": 7804993,
-   "date": "2026-11-27",
+   "date": "2026-11-28",
    "source": "virtual bench (rehearsal)",
-   "coulomb_nm": 0.33499,
-   "viscous_nms": 0.79921,
+   "coulomb_nm": 0.335,
+   "viscous_nms": 0.7992,
    "kt_scale": 0.94481,
    "backlash_rad": 0.004959,
    "latency_ms": {
@@ -107,14 +107,14 @@
      ],
      [
       0.77123,
-      1.00766
+      1.00768
      ],
      [
       1.3234,
-      1.47272
+      1.47271
      ]
     ],
-    "friction_resid_nm": 0.00472,
+    "friction_resid_nm": 0.00471,
     "kt": {
      "dg": [
       -1.7054,
@@ -160,7 +160,7 @@
       -2.2067,
       -2.2107
      ],
-     "resid_nm": 0.14615088832218914
+     "resid_nm": 0.14615415482181682
     },
     "backlash_samples_rad": [
      0.00496,
@@ -171,19 +171,19 @@
      0.00534,
      0.00496
     ],
-    "backlash_pose_deg": -0.0
+    "backlash_pose_deg": 0.0
    },
-   "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-a909f3bdefa66e7ac/sw/out/rehearse_step1/actuators/actuators_7804993.yaml"
+   "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-a384acd4a673755be/sw/out/rehearse_step1/actuators/actuators_7804993.yaml"
   },
   "wpitch": {
    "joint": "wpitch",
    "kind": "dm_j4310",
    "serial": 6095693,
-   "date": "2026-11-27",
+   "date": "2026-11-28",
    "source": "virtual bench (rehearsal)",
    "coulomb_nm": 0.05418,
    "viscous_nms": 0.42008,
-   "kt_scale": 1.03439,
+   "kt_scale": 1.03438,
    "backlash_rad": 0.004578,
    "latency_ms": {
     "n": 30,
@@ -251,8 +251,8 @@
       0.7098,
       0.6966,
       0.6758,
-      0.6647,
-      0.647,
+      0.6648,
+      0.6471,
       0.6316,
       0.6075,
       0.5854,
@@ -260,14 +260,14 @@
       0.7169,
       0.7072,
       0.6932,
-      0.6763,
+      0.6764,
       0.6666,
       0.6468,
       0.6193,
       0.6035,
       0.5756
      ],
-     "resid_nm": 0.007400050552630599
+     "resid_nm": 0.007377514948905706
     },
     "backlash_samples_rad": [
      0.00458,
@@ -280,7 +280,7 @@
     ],
     "backlash_pose_deg": -0.0
    },
-   "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-a909f3bdefa66e7ac/sw/out/rehearse_step1/actuators/actuators_6095693.yaml"
+   "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-a384acd4a673755be/sw/out/rehearse_step1/actuators/actuators_6095693.yaml"
   }
  },
  "bus_stats": {
