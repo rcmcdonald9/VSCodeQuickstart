@@ -376,7 +376,7 @@ def precharge_sim(which="M1", t_operate=T_K1_OPERATE[1], idle_scale=1.0, dummy=N
     if t_ok is None:                                 # never charged: PRE_TIMEOUT clears LATCH → K2 opens at 1 s
         e_r3 = float(np.trapezoid((d1["v(vin)"] - d1["v(vbus)"]) ** 2 / el.R_PRE, d1["time"]))
         return dict(which=which, t_pre_ok=None, v_final=float(d1["v(vbus)"][-1]), shortfall=float(d1["v(vin)"][-1] - d1["v(vbus)"][-1]),
-                    i_inrush=float(np.max(-d1["i(VPSU)"])), e_r3=e_r3, timeout=True, method="ngspice")
+                    i_inrush=float(np.max(-d1["i(VPSU)"])), e_r3=e_r3, timeout=True, method="ngspice", dummy=dummy, idle_scale=idle_scale)
     t_k1 = t_ok + t_operate
     d2 = run_spice(deck(t_k1, t_k1 + T_AUX_LAG + T_K2_RELEASE)[0], vec, "pre2")
     t = d2["time"]
@@ -404,7 +404,8 @@ def _ode_precharge(which, t_operate, idle_scale, dummy, v_in, t_end):
             t_ok = t
             break
     if t_ok is None:
-        return dict(which=which, t_pre_ok=None, v_final=v, shortfall=v_in - v, i_inrush=v_in / el.R_PRE, e_r3=e, timeout=True, method="python ODE")
+        return dict(which=which, t_pre_ok=None, v_final=v, shortfall=v_in - v, i_inrush=v_in / el.R_PRE, e_r3=e, timeout=True, method="python ODE",
+                    dummy=dummy, idle_scale=idle_scale)
     v_close = v_in - (v_in - v) * math.exp(-t_operate / (el.R_PRE * C))
     return dict(which=which, t_pre_ok=t_ok, t_k1=t_ok + t_operate, t_operate=t_operate, dv_at_close=v_in - v_close, i_inrush=v_in / el.R_PRE,
                 i_make=(v_in - v_close) / 0.02, e_r3=e, v_final=v_in, timeout=False, idle_scale=idle_scale, method="python ODE", C=C)
@@ -879,7 +880,8 @@ def report_md(R):
     L += ["", "## 2. Pre-charge", "", "| Case | PRE_OK after | K1 closes | ΔV at closing → making current | Inrush (K2 + R3) | Energy in R3 | |", "|---|---|---|---|---|---|---|"]
     for p in R["precharge"]:
         if p.get("timeout"):
-            L.append(f"| {p['which']} with a 10 Ω dummy load | never (bus {p['v_final']:.1f} V, {p['shortfall']:.1f} V short) | PRE_TIMEOUT at 1 s, K2 opens | – | "
+            what = f"with a {p['dummy']:.0f} Ω dummy load" if p.get("dummy") else f"idle draw ×{p.get('idle_scale', 1):.1f} ({15 * el.I_IDLE_DRIVER * p.get('idle_scale', 1):.2f} A)"
+            L.append(f"| {p['which']} {what} | never (bus {p['v_final']:.1f} V, {p['shortfall']:.1f} V short) | PRE_TIMEOUT at 1 s, K2 opens | – | "
                      f"{p['i_inrush']:.1f} A | {p['e_r3']:.0f} J (rating {el.RH50['overload'] * el.RH50['p_rated'] * el.RH50['t_overload']:.0f}) | ✅ |")
         else:
             L.append(f"| {p['which']}, K1 operate {p['t_operate'] * 1e3:.0f} ms, idle ×{p['idle_scale']:.1f} | {p['t_pre_ok'] * 1e3:.0f} ms | {p['t_k1'] * 1e3:.0f} ms | "
@@ -887,7 +889,9 @@ def report_md(R):
     i_lim = PRE_OK_DV / el.R_PRE
     L += ["", f"PRE_OK needs the bus's total idle draw under {i_lim:.2f} A (3 V across 3.3 Ω, before the ±0.25 V of comparator tolerance): the robot's "
           f"15 drivers at the {el.I_IDLE_DRIVER * 1e3:.0f} mA ESTIMATE draw {15 * el.I_IDLE_DRIVER:.2f} A, plus the 12 V DC-DC and the nodes downstream of the "
-          "contactor. **Board test T3 measures the real idle draw; the robot needs R3 ≤ 2.2 Ω (with a relay rated for the 11.5 A inrush) if it is over 0.6 A.**", "",
+          "contactor; at ×1.5 (0.90 A) the robot never reaches PRE_OK. **Board test T3 measures the real idle draw; the robot needs R3 ≤ 2.2 Ω (with a relay rated for "
+          "the 11.5 A inrush) if its idle draw is over ≈ 0.8 A.** K1's making current (ΔV left at closing over ≈ 20 mΩ) is 60–100 A on M1 and 136–152 A on the robot: "
+          "check the ALEV100 make rating, or close K1 on a tighter PRE_OK once the idle draw is known.", "",
           "## 3. Watchdog loss → contactor drop → forced discharge", "",
           "| Coil suppression | Q4 | Hold current | Coil current to drop-out (15 %) | Q4 drain peak | |", "|---|---|---|---|---|---|"]
     for c in R["coil"]:

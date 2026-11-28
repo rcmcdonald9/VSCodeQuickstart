@@ -42,10 +42,10 @@ Nodes: T = shoulder pitch drive (end of the bench lead / lift umbilical), R = ro
 | robot, K1 operate 25 ms, idle ×1.0 | 128 ms | 153 ms | 2.50 V → 136 A | 7.5 A | 4.4 J | ⚠️ |
 | M1, K1 operate 5 ms, idle ×1.0 | 59 ms | 64 ms | 2.60 V → 99 A | 7.5 A | 2.4 J | ✅ |
 | robot, K1 operate 5 ms, idle ×1.0 | 128 ms | 133 ms | 2.79 V → 152 A | 7.5 A | 4.4 J | ⚠️ |
-| robot with a 10 Ω dummy load | never (bus 22.1 V, 3.0 V short) | PRE_TIMEOUT at 1 s, K2 opens | – | 7.5 A | 5 J (rating 1250) | ✅ |
+| robot idle draw ×1.5 (0.90 A) | never (bus 22.1 V, 3.0 V short) | PRE_TIMEOUT at 1 s, K2 opens | – | 7.5 A | 5 J (rating 1250) | ✅ |
 | M1 with a 10 Ω dummy load | never (bus 18.4 V, 6.7 V short) | PRE_TIMEOUT at 1 s, K2 opens | – | 7.5 A | 17 J (rating 1250) | ✅ |
 
-PRE_OK needs the bus's total idle draw under 0.91 A (3 V across 3.3 Ω, before the ±0.25 V of comparator tolerance): the robot's 15 drivers at the 40 mA ESTIMATE draw 0.60 A, plus the 12 V DC-DC and the nodes downstream of the contactor. **Board test T3 measures the real idle draw; the robot needs R3 ≤ 2.2 Ω (with a relay rated for the 11.5 A inrush) if it is over 0.6 A.**
+PRE_OK needs the bus's total idle draw under 0.91 A (3 V across 3.3 Ω, before the ±0.25 V of comparator tolerance): the robot's 15 drivers at the 40 mA ESTIMATE draw 0.60 A, plus the 12 V DC-DC and the nodes downstream of the contactor; at ×1.5 (0.90 A) the robot never reaches PRE_OK. **Board test T3 measures the real idle draw; the robot needs R3 ≤ 2.2 Ω (with a relay rated for the 11.5 A inrush) if its idle draw is over ≈ 0.8 A.** K1's making current (ΔV left at closing over ≈ 20 mΩ) is 60–100 A on M1 and 136–152 A on the robot: check the ALEV100 make rating, or close K1 on a tighter PRE_OK once the idle draw is known.
 
 ## 3. Watchdog loss → contactor drop → forced discharge
 

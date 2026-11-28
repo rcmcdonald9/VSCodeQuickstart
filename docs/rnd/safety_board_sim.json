@@ -876,7 +876,9 @@
    "i_inrush": 7.5202555,
    "e_r3": 5.349428370842124,
    "timeout": true,
-   "method": "ngspice"
+   "method": "ngspice",
+   "dummy": null,
+   "idle_scale": 1.5
   },
   {
    "which": "M1",
@@ -886,7 +888,9 @@
    "i_inrush": 7.501118,
    "e_r3": 16.773694330464494,
    "timeout": true,
-   "method": "ngspice"
+   "method": "ngspice",
+   "dummy": 10.0,
+   "idle_scale": 1.0
   }
  ],
  "coil": [

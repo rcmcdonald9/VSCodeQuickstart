@@ -523,7 +523,7 @@ def sim_lines():
          f"| MOSFET drain peak | – | {max(g('M1').get('v_drain_max', 0), g('robot').get('v_drain_max', 0)):.1f} V ≤ 48 V | ✅ |",
          f"| K1 coil driver drain at turn-off (D1 + Z1) | {coil[0]['v_drain_max']:.0f} V on a 30 V part (avalanche every stop) | {coil[1]['v_drain_max']:.0f} V on a 100 V part | ✅ |",
          f"| Pre-charge: PRE_OK / K1 making current M1, robot | " + " / ".join(f"{x['t_pre_ok'] * 1e3:.0f} ms, {x['i_make']:.0f} A" for x in pre[:2]) +
-         " | robot idle draw must stay < 0.6 A (×1.5 → PRE_TIMEOUT) | ⚠️ |",
+         " | robot idle draw must stay < ≈ 0.8 A (×1.5 of the ESTIMATE → PRE_TIMEOUT); robot making current vs the ALEV100 make rating | ⚠️ |",
          f"| K1 open → far drive < UVLO M1 / robot | {dis['M1']['t_uvlo_far'] * 1e3:.1f} / {dis['robot']['t_uvlo_far'] * 1e3:.1f} ms | – | ✅ |",
          f"| Heartbeat lost → no torque, worst tolerances (M1) | {sc['M1']['total_datasheet'] * 1e3:.1f} ms with the datasheet release ({sc['M1']['total'] * 1e3:.1f} coil model) | ≤ 50 | ✅ |",
          f"| Logic single faults | {len(logic_bad)} fail: " + "; ".join(x["case"] for x in logic_bad) + " | all pass (¬AUX on ARM, discrepancy monitor, 12 V UVLO) | ✅ |",

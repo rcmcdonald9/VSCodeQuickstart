@@ -229,7 +229,7 @@ Bench tests of the board before any motor (bring-up step 0): ARM refused with a 
 | Resistor energy, full worst-case dump | – | 49 J (M1) / 112 J (robot, 323 J) per NH-50 ≤ 312 J | ✅ |
 | MOSFET drain peak | – | 30.5 V ≤ 48 V | ✅ |
 | K1 coil driver drain at turn-off (D1 + Z1) | 33 V on a 30 V part (avalanche every stop) | 52 V on a 100 V part | ✅ |
-| Pre-charge: PRE_OK / K1 making current M1, robot | 59 ms, 60 A / 128 ms, 136 A | robot idle draw must stay < 0.6 A (×1.5 → PRE_TIMEOUT) | ⚠️ |
+| Pre-charge: PRE_OK / K1 making current M1, robot | 59 ms, 60 A / 128 ms, 136 A | robot idle draw must stay < ≈ 0.8 A (×1.5 of the ESTIMATE → PRE_TIMEOUT); robot making current vs the ALEV100 make rating | ⚠️ |
 | K1 open → far drive < UVLO M1 / robot | 2.0 / 2.8 ms | – | ✅ |
 | Heartbeat lost → no torque, worst tolerances (M1) | 45.0 ms with the datasheet release (40.6 coil model) | ≤ 50 | ✅ |
 | Logic single faults | 4 fail: AUX wire breaks while running; AUX stuck closed, then ARM; K1 main contacts welded, heartbeat stops; 12 V gate-driver supply lost (U2 / F2) while running | all pass (¬AUX on ARM, discrepancy monitor, 12 V UVLO) | ✅ |
