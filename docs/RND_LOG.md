@@ -1373,3 +1373,9 @@ One long push instead of half-hour runs. In order:
 ### 2026-11-28 — Owner: run the all-inline arm study and ask Astra's opinion
 - Study launched (rnd/inline_study.py): B0 today / B1 + D20 / I1 all-inline SteadyWin (GIM8108-36 pitch/roll/elbow, GIM6010-48 yaw) / I2 mixed (DM-J4340-2EC yaw, GIM8108-36 or DM-J8009 elbow): cost incl. removed belt parts, mass + tip + basket/hug, back-drive force and collision effective mass, accuracy with backlash, envelope, part count, build hours; reviewer brief docs/review/inline_study_question.md.
 - Astra (once/day, window open) runs after the study + the lift/BOM track land, with the study question in its packet.
+
+### 2026-11-28 — All-inline arm study merged (docs/rnd/inline_study.md; reviewer brief docs/review/inline_study_question.md)
+- Best variant I2b: GIM8108-36 pitch + roll, DM-J4340-2EC yaw, DM-J8009-2EC elbow. Hug 1.72×, basket 1.56, tip 16/16 (30.7 mm — I1 / I2a miss the gate at 14/16, 15/16), arm 4.64 kg, accuracy 3.7 / 0.9 mm, drive pieces per arm 50 → 14, build 6.1 → 5.5 h, −16.5 h printing per arm.
+- Cost: +$1,210 landed vs today, **+$1,026 vs D20** (a belt stage only costs ≈ $60–70; the actuators cost $45–380 more each). Hand effective mass 2.40 → 2.76 kg; first chest impact ≈ 131 N at 0.5 m/s, peaks at 15–17 ms, the same window the collision detector trips in. Back-drive ≤ 2.2 N at the hand (ESTIMATE, 4× range).
+- Not checked (no inline CAD): pitch motor packaging next to the balancer in the torso (biggest risk), elbow fold, stiffness/FEA, pinch. Bench gates: back-drive torque, backlash, rotor inertia, Damiao output encoder across power cycles, 24 V torque/speed, GIM8108-36 bearing rating.
+- Found: rnd/twin.py IK solver shares one RNG across calls, so tip results depend on run order (queue: seed per call).
