@@ -1,0 +1,459 @@
+{
+ "sh_rolllink": {
+  "sources": [
+   "roll_link x\u20265.0"
+  ],
+  "volume_cm3": 344.6,
+  "bounds_mm": [
+   [
+    -45.0,
+    8.0,
+    -47.9
+   ],
+   [
+    5.0,
+    117.0,
+    60.0
+   ]
+  ]
+ },
+ "sh_rolllink2": {
+  "sources": [
+   "roll_link x5.0\u2026"
+  ],
+  "volume_cm3": 195.8,
+  "bounds_mm": [
+   [
+    5.0,
+    8.0,
+    -28.0
+   ],
+   [
+    76.9,
+    69.0,
+    62.0
+   ]
+  ]
+ },
+ "sh_rollcart": {
+  "sources": [
+   "roll_gim_housing",
+   "cover_roll_front"
+  ],
+  "volume_cm3": 517.5,
+  "bounds_mm": [
+   [
+    -26.0,
+    21.0,
+    -48.0
+   ],
+   [
+    46.5,
+    117.0,
+    47.9
+   ]
+  ]
+ },
+ "sh_cap": {
+  "sources": [
+   "roll_spring_ring",
+   "roll_enc_pcb"
+  ],
+  "volume_cm3": 62.2,
+  "bounds_mm": [
+   [
+    64.5,
+    29.0,
+    -40.0
+   ],
+   [
+    76.9,
+    109.0,
+    40.0
+   ]
+  ]
+ },
+ "sh_ferrule": {
+  "sources": [
+   "ferrule_m",
+   "pitch_hub y-5.0\u2026"
+  ],
+  "volume_cm3": 122.8,
+  "bounds_mm": [
+   [
+    -45.4,
+    -5.0,
+    -45.5
+   ],
+   [
+    45.5,
+    18.0,
+    45.5
+   ]
+  ]
+ },
+ "roll_yawblock": {
+  "sources": [
+   "yaw_block z\u2026-50.0",
+   "yaw_band",
+   "yaw_plate_bot",
+   "yaw_flange",
+   "yaw_spring_ring",
+   "yaw_stop_pin",
+   "yaw_shaft",
+   "yaw_enc_pcb"
+  ],
+  "volume_cm3": 983.8,
+  "bounds_mm": [
+   [
+    -131.5,
+    -49.1,
+    -105.8
+   ],
+   [
+    70.5,
+    50.0,
+    -50.0
+   ]
+  ]
+ },
+ "roll_yawcart": {
+  "sources": [
+   "yaw_can",
+   "yaw_can_cap",
+   "yaw_tension_ring",
+   "roll_arm_rear",
+   "cover_yaw",
+   "cover_yaw_tpu_skirt"
+  ],
+  "volume_cm3": 839.9,
+  "bounds_mm": [
+   [
+    -131.5,
+    -57.0,
+    -53.5
+   ],
+   [
+    -28.5,
+    48.5,
+    35.5
+   ]
+  ]
+ },
+ "roll_xarm": {
+  "sources": [
+   "yaw_block z-50.0\u2026,x40.0\u2026",
+   "roll_outflange",
+   "roll_spring_hub"
+  ],
+  "volume_cm3": 211.4,
+  "bounds_mm": [
+   [
+    29.0,
+    -42.0,
+    -50.0
+   ],
+   [
+    74.8,
+    42.0,
+    42.0
+   ]
+  ]
+ },
+ "upper_neck": {
+  "sources": [
+   "upper_bone z-60.0\u2026-6.0",
+   "cf_neck"
+  ],
+  "volume_cm3": 111.0,
+  "bounds_mm": [
+   [
+    -23.0,
+    -23.0,
+    -74.7
+   ],
+   [
+    23.0,
+    23.0,
+    -6.0
+   ]
+  ]
+ },
+ "upper_flange": {
+  "sources": [
+   "upper_bone z-8.0\u2026"
+  ],
+  "volume_cm3": 45.6,
+  "bounds_mm": [
+   [
+    -44.9,
+    -45.0,
+    -8.0
+   ],
+   [
+    45.0,
+    45.0,
+    0.0
+   ]
+  ]
+ },
+ "upper_housing": {
+  "sources": [
+   "upper_bone z\u2026-55.0",
+   "bone_cap",
+   "e_cassette",
+   "e_seat_cap_m",
+   "e_seat_cap_p",
+   "e_belt",
+   "enc_bracket",
+   "enc_pcb",
+   "cover_collar_door"
+  ],
+  "volume_cm3": 2086.3,
+  "bounds_mm": [
+   [
+    -49.0,
+    -72.8,
+    -242.7
+   ],
+   [
+    54.3,
+    77.5,
+    -55.0
+   ]
+  ]
+ },
+ "upper_elbow_cart": {
+  "sources": [
+   "e_can",
+   "e_can_cap",
+   "e_motor",
+   "cover_elbow_bay"
+  ],
+  "volume_cm3": 616.3,
+  "bounds_mm": [
+   [
+    -53.7,
+    -71.6,
+    -176.8
+   ],
+   [
+    53.7,
+    5.2,
+    -75.7
+   ]
+  ]
+ },
+ "fore_hub": {
+  "sources": [
+   "forearm z-45.0\u2026",
+   "cover_elbow_cap"
+  ],
+  "volume_cm3": 153.6,
+  "bounds_mm": [
+   [
+    -40.0,
+    79.5,
+    -45.0
+   ],
+   [
+    40.0,
+    115.5,
+    40.0
+   ]
+  ]
+ },
+ "fore_shaft": {
+  "sources": [
+   "e_shaft40",
+   "e_hub_core",
+   "enc_magnet_holder"
+  ],
+  "volume_cm3": 400.8,
+  "bounds_mm": [
+   [
+    -33.2,
+    -66.0,
+    -33.2
+   ],
+   [
+    33.3,
+    101.5,
+    33.2
+   ]
+  ]
+ },
+ "fore_link": {
+  "sources": [
+   "forearm z-245.0\u2026-35.0",
+   "cf_fore",
+   "cover_forearm_f",
+   "cover_forearm_r"
+  ],
+  "volume_cm3": 507.8,
+  "bounds_mm": [
+   [
+    -28.0,
+    43.0,
+    -248.0
+   ],
+   [
+    28.0,
+    115.7,
+    -34.2
+   ]
+  ]
+ },
+ "fore_wrist": {
+  "sources": [
+   "forearm z\u2026-235.0",
+   "wrist_can",
+   "wrist_motor",
+   "wrist_adapter",
+   "cover_wrist_f",
+   "cover_wrist_r"
+  ],
+  "volume_cm3": 463.0,
+  "bounds_mm": [
+   [
+    -44.2,
+    33.0,
+    -324.2
+   ],
+   [
+    44.2,
+    115.5,
+    -235.0
+   ]
+  ]
+ },
+ "wristb_plate": {
+  "sources": [
+   "hand_palm y\u2026-17.0"
+  ],
+  "volume_cm3": 16.8,
+  "bounds_mm": [
+   [
+    -30.0,
+    -20.0,
+    -98.1
+   ],
+   [
+    37.8,
+    -17.0,
+    24.0
+   ]
+  ]
+ },
+ "wristb_palm": {
+  "sources": [
+   "hand_palm y-17.0\u202617.0",
+   "hand_wr_sleeve",
+   "hand_wr_cap",
+   "hand_wr_brg_U",
+   "hand_wr_brg_L"
+  ],
+  "volume_cm3": 253.0,
+  "bounds_mm": [
+   [
+    -30.0,
+    -19.0,
+    -99.6
+   ],
+   [
+    44.5,
+    19.0,
+    24.0
+   ]
+  ]
+ },
+ "wristb_wpcollar": {
+  "sources": [
+   "hand_palm y17.0\u2026"
+  ],
+  "volume_cm3": 82.2,
+  "bounds_mm": [
+   [
+    -30.0,
+    17.0,
+    -98.1
+   ],
+   [
+    37.8,
+    37.7,
+    24.0
+   ]
+  ]
+ },
+ "hand_gripbase": {
+  "sources": [
+   "hand_grip_base",
+   "hand_grip_servo_sleeve",
+   "hand_grip_servo",
+   "hand_wr_dog",
+   "hand_wr_spindle",
+   "hand_wrist_cam",
+   "hand_palm_tof"
+  ],
+  "volume_cm3": 227.6,
+  "bounds_mm": [
+   [
+    -47.0,
+    -23.0,
+    -97.8
+   ],
+   [
+    64.2,
+    30.0,
+    -29.0
+   ]
+  ]
+ },
+ "hand_jaws": {
+  "sources": [
+   "hand_jaw_moving",
+   "hand_jaw_fixed",
+   "hand_finray_fixed",
+   "hand_pad_fixed",
+   "hand_finger_hook"
+  ],
+  "volume_cm3": 174.5,
+  "bounds_mm": [
+   [
+    -34.1,
+    -20.5,
+    -136.0
+   ],
+   [
+    47.5,
+    30.0,
+    -70.4
+   ]
+  ]
+ },
+ "torso_pitchmod": {
+  "sources": [
+   "bracket y\u2026195.0",
+   "bracket_wall y\u2026195.0",
+   "can y\u2026195.0",
+   "can_cap y\u2026195.0",
+   "motor y\u2026195.0",
+   "bracket_wall_spring_ring y\u2026195.0",
+   "pulleyA y\u2026195.0",
+   "enc_pcb y\u2026195.0"
+  ],
+  "volume_cm3": 2781.3,
+  "bounds_mm": [
+   [
+    -90.0,
+    56.6,
+    -65.0
+   ],
+   [
+    110.0,
+    190.0,
+    85.0
+   ]
+  ]
+ }
+}
