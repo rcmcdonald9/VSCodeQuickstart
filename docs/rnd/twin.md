@@ -9,7 +9,7 @@ Model generated from `rnd/params.py`: arm 0.3+0.28+0.156 m, wrist ±120°, shoul
 | dishwasher low rack (z 0.20, down) | 95% | X wheel-fwd R.21 (chosen): 101 / 2.8; X edge-fwd R.21: 86 / 2.4; kiwi R.21 (rejected): 69 / 1.9 |
 | table top (z 0.78, down) | 96% | X wheel-fwd R.21 (chosen): 105 / 2.0; X edge-fwd R.21: 93 / 1.8; kiwi R.21 (rejected): 72 / 1.4 |
 | counter top-down only (z 0.95) [info: counters use top-down OR 45°, see D4b] | 71% | X wheel-fwd R.21 (chosen): 105 / 2.0; X edge-fwd R.21: 93 / 1.8; kiwi R.21 (rejected): 72 / 1.4 |
-| shelf (z 1.20, horizontal) | 100% | X wheel-fwd R.21 (chosen): 115 / 2.2; X edge-fwd R.21: 103 / 1.9; kiwi R.21 (rejected): 79 / 1.5 |
+| shelf (z 1.20, horizontal) | 100% | X wheel-fwd R.21 (chosen): 115 / 2.1; X edge-fwd R.21: 103 / 1.9; kiwi R.21 (rejected): 79 / 1.5 |
 | high shelf (z 1.40, horizontal) | 100% | X wheel-fwd R.21 (chosen): 118 / 2.0; X edge-fwd R.21: 111 / 1.9; kiwi R.21 (rejected): 81 / 1.4 |
 
 ## Two-handed tasks (shared lift, both arms, collision-free)
