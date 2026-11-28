@@ -242,17 +242,21 @@ P1 = (-(_R_TOP + _C_TOP) - 6.0, -(_R_TOP + _C_TOP))    # top plate z-span (beari
 YAW_TOP = P1[1] - 0.5
 ZF = P1[0] - JA[0]                     # flange plane of the yaw cartridge = the top plate's top face (D24; the KX face was 23.7 higher)
 BAND_CH = 12.0                         # inline: 45° chamfer on the yaw band's inboard top edge (yaw_band)
+BAND_IN = 48.5                         # yaw band's inboard face, mm inboard of the yaw axis (outboard face stays at +50). R17
+                                       # (2026-11-28, rnd/pinch.py pitch row yaw_band × torso_shell 24.0 … 29.1): at 50 the face sat
+                                       # 24.0 mm off the torso's side wall at every pitch angle; at 48.5 it is 25.5 (≥ 25 mm, ISO
+                                       # 13854 finger). Its inner face is then 0.5 mm off the plates' edges (±46; fused pair)
 
 
 def ferrule_sweep_gap(roll_y, roll_deg=ROLL_MIN):
-    """Inline roll: smallest gap (mm) between the roll output's inboard edge (yaw plates/walls at ±46, the band at ±50 with
+    """Inline roll: smallest gap (mm) between the roll output's inboard edge (yaw plates/walls at ±46, the band at −BAND_IN with
     its BAND_CH chamfer) and the arm-side ferrule (flat Ø91 × 3, 20° taper to y 8, Ø64 spigot to y 18) at full adduction,
     in the plane x = 0 where the ferrule is widest. The roll link's own boss/frame stay above z −28 (roll_link_inline)."""
     import numpy as np
     top_b, z_bot = P1[1] + 1.5, P1[1] - 60.0
     moving = [(-46.0, z) for z in np.linspace(z_bot, P1[1], 40)] + [(y, P1[1]) for y in np.linspace(-46, 0, 30)]
-    moving += [(-50.0, z) for z in np.linspace(z_bot, top_b - BAND_CH, 40)]
-    moving += [(-50.0 + BAND_CH * t, top_b - BAND_CH * (1 - t)) for t in np.linspace(0, 1, 30)] + [(y, top_b) for y in np.linspace(-50 + BAND_CH, 0, 30)]
+    moving += [(-BAND_IN, z) for z in np.linspace(z_bot, top_b - BAND_CH, 40)]
+    moving += [(-BAND_IN + BAND_CH * t, top_b - BAND_CH * (1 - t)) for t in np.linspace(0, 1, 30)] + [(y, top_b) for y in np.linspace(-BAND_IN + BAND_CH, 0, 30)]
     r8 = FERRULE["od"] / 2 - (FERRULE["t"] - 3.0) * math.tan(math.radians(90 - FERRULE["taper_deg"])) * 0.35
     prof = [(0.0, 0.0), (0.0, FERRULE["od"] / 2), (3.0, FERRULE["od"] / 2), (8.0, r8), (8.0, 32.0), (FER_FACE, 32.0), (FER_FACE, 0.0)]
     seg = lambda p, a, b: float(np.hypot(*(p - (a + np.clip(np.dot(p - a, b - a) / max(np.dot(b - a, b - a), 1e-9), 0, 1) * (b - a)))))
@@ -528,10 +532,11 @@ def roll_link_inline() -> Part:
     zlo, zhi = -28.0, 40.0
     p = Pos(0, 8, 0) * Rot(-90, 0, 0) * Cylinder(45, 4, align=MIN)
     p &= Pos(0, 10, (zlo + 60) / 2) * Box(100, 10, 60 - zlo)
-    p -= Pos(FRONT_FRAME["x"], 10, FRONT_FRAME["z_lo"]) * Box(100, 12, 100, align=(Align.MIN, Align.CENTER, Align.MAX))   # R17: as the frame (FRONT_FRAME)
+    p -= Pos(FRONT_FRAME["x"], 10, FRONT_FRAME["boss_z_lo"]) * Box(100, 12, 100, align=(Align.MIN, Align.CENTER, Align.MAX))   # R17 (FRONT_FRAME)
     sx1 = ROLL_SPR_X[1] + 1.6
     xa = FRONT_FRAME["x"]                                                                                       # R17: frame front part raised (FRONT_FRAME)
-    p += _plate_x(xf0, xa, 8, 18, zlo, zhi, 6) + _plate_x(xa - 6, sx1, 8, 18, FRONT_FRAME["z_lo"], FRONT_FRAME["z_hi"], 6)
+    ff = FRONT_FRAME
+    p += _plate_x(xf0, xa, 8, 18, zlo, zhi, 6) + _plate_x(xa - 6, sx1, ff["y0"], ff["y1"], ff["z_lo"], ff["z_hi"], 4)
     p -= Pos(0, 13, 0) * Rot(-90, 0, 0) * Cylinder(32.3, 12)                                                  # frame around the spigot
     p += Pos(xf0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, xf1 - xf0, align=MIN)                            # floor
     p += Pos(xf1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(R_MOT, CUP_H, align=MIN) - Cylinder(CUP_R, CUP_H, align=MIN))   # cup around the driver (its pilot)
@@ -566,7 +571,13 @@ def roll_link_inline() -> Part:
 # then stays ≥ 26 mm from it over −16.5…104° (worst at the hard stop: edge segment vs the corner at (y 18, z_lo)). The
 # spring bar leaves the ring at SPR_BAR_ANG (was −90°, level with the roll axis) and meets the raised frame; it stays
 # ≈ 88° clear of the arm's sweep, 2.5 mm in front of the arm's +X face like the spring ring itself.
-FRONT_FRAME = dict(x=25.0, z_lo=14.0, z_hi=62.0)   # x: the side block's front face (the motor body's)
+# R17 (2026-11-28, rnd/pinch.py pitch row roll_link × torso_shell 13.0 … 37.2): the front frame's inboard face (y 8) sat 13 mm
+# off the torso's side wall, and 65–87 mm from the pitch axis, past the wall's flat patch: pitching moved it over the
+# wall's rounded corners (13 → 37 mm). Out here it carries only the spring bar and ring, so it moves outboard to
+# y0…y1 = 21…26 (26 mm off the wall at every pitch angle) and starts at z_lo 32: its nearest edge stays r ≥ 53.6 from the
+# roll axis, so the +X clevis boss (r 42) keeps the front collar (≈ 9.8 mm) as its nearest static part (the shear row
+# yaw_block × roll_link) and the clevis arm's inboard edge stays ≥ 30 mm off it at the −16.5° stop.
+FRONT_FRAME = dict(x=25.0, z_lo=32.0, z_hi=62.0, y0=21.0, y1=26.0, boss_z_lo=14.0)   # x: the side block's front face (the motor body's); the ferrule boss in front of it starts at boss_z_lo
 SPR_BAR_ANG = -135.0                    # deg, roll convention (0 = −Z, + toward +Y): the bar points up and inboard, midway
                                         # between two clevis M5 (PCD 64, every 45°) so their Ø12 driver path stays clear (R14 c)
 
@@ -574,8 +585,10 @@ SPR_BAR_ANG = -135.0                    # deg, roll convention (0 = −Z, + towa
 def inline_spring_bar(grow=0.0) -> Part:
     """Inline roll: the roll link's bar from the frame to the spring ring (the ring is cut by it), turned to SPR_BAR_ANG."""
     x0, x1 = ROLL_SPR_X
-    r_in, r_out = ROLL_SPR[1] - 0.5, (ROLL_Y - 13.0) / -math.sin(math.radians(SPR_BAR_ANG))   # ring wall → into the frame (y 13)
-    b = Pos((x0 + 1 + x1 + 1.6) / 2, 0, -(r_in + r_out) / 2) * Box(x1 + 1.6 - x0 - 1 + 2 * grow, 14 + 2 * grow, r_out - r_in + 2 * grow)
+    a, hw = math.radians(SPR_BAR_ANG), 7.0
+    r_in = ROLL_SPR[1] - 0.5                                                       # ring wall → into the front frame: the bar's
+    r_out = (ROLL_Y - hw * abs(math.cos(a)) - FRONT_FRAME["y0"] - 0.5) / -math.sin(a)   # inboard end corner 0.5 mm inside its face
+    b = Pos((x0 + 1 + x1 + 1.6) / 2, 0, -(r_in + r_out) / 2) * Box(x1 + 1.6 - x0 - 1 + 2 * grow, 2 * hw + 2 * grow, r_out - r_in + 2 * grow)
     return Pos(0, ROLL_Y, 0) * Rot(SPR_BAR_ANG, 0, 0) * b
 
 
@@ -757,6 +770,7 @@ def yaw_plate_bot() -> Part:
         pl -= Pos(xx, yy, P2[0]) * Cylinder(2.75, 20, align=MIN)                  # post bolts
     t = math.radians(STOP_PIN_AZ)
     pl -= Pos(STOP_PIN_R * math.cos(t), ROLL_Y + STOP_PIN_R * math.sin(t), P2[0]) * Cylinder(2.95, 20, align=MIN)   # stop pin seat (through; pin flush with the cavity floor)
+    pl += yaw_skirt()                                                             # R17: round skirt over the flange + bone flange
     if INLINE:                                                                    # R2b: 2 × M4 up into the +X end wall (end_wall)
         for s in (-1, 1):
             pl -= Pos((END_WALL["x0"] + X_PL1) / 2, ROLL_Y + s * END_WALL["bolt_y"], P2[0] - 1) * Cylinder(2.25, 10, align=MIN)
@@ -978,6 +992,23 @@ YAW_STOP_DEG = 155                    # hard stops (software limit ±150°, rnd/
 STOP_PIN_R, STOP_PIN_AZ = 38.0, 180.0 # stop pin radius and azimuth at yaw 0 (under the bottom plate, toward −X)
 
 
+# R17 (2026-11-28, rnd/pinch.py yaw row arm_upper_bone × roll_yaw_stop_pin 5.8 … 8.3 mm): the upper bone's Ø90 flange (z −105.3
+# … −99.3) turned under the bottom plate's flat underside (x −129.5 … 62.5, y ±46, not round about the yaw axis), the yaw
+# band's bottom edge and the stop pin where it crosses the 2.3 mm gap above the yaw flange: its rim cells saw 6.3 … 12 mm,
+# changing with the yaw angle. The plate's flange pocket wall (r 47) now runs on down as a 1.8 mm skirt to 0.5 mm below
+# the bone flange: every part that turns with yaw there is round about the yaw axis inside a round static wall (2.0 mm
+# radial, R15 moving ≥ 2.0), so each gap is the same at every yaw angle, and the pin and the plate's corners are behind it.
+# Outer r 48.8 keeps the post bolts' Ø12 driver paths (r 55.7 − 6) 0.9 mm clear (R14 c). The flange and the bone still
+# come up into it (r 45 < 47).
+YAW_SKIRT = dict(r_in=FL_R + 2.0, t=1.8, below=0.5)
+
+
+def yaw_skirt() -> Part:
+    k = YAW_SKIRT
+    z_bot = -YAW_DROP - 6.0 - k["below"]                                          # the upper bone's flange is 6 mm (arm.upper_bone)
+    return Pos(0, ROLL_Y, z_bot) * (Cylinder(k["r_in"] + k["t"], P2[0] - z_bot, align=MIN) - Cylinder(k["r_in"], P2[0] - z_bot, align=MIN))
+
+
 def yaw_stop_pin() -> Part:
     """Ø6 hardened dowel pressed through the 3.8 mm pocket ceiling of the bottom yaw plate (top flush with the cavity floor),
     across the 2.3 mm gap and 3.2 mm into the flange's blind arc slot. A fault drive into the stop at the yaw's 20.9 N·m
@@ -1032,11 +1063,14 @@ def yaw_band() -> Part:
     from .soft import soft_box
     x0, x1 = -YAW_C - 50, X_PL1 + 8           # loop 40: +6 at +X for the ribbon from the roll spring
     zc, hz = (P2[0] + P1[1]) / 2, P1[1] - P2[0] + 3
-    b = Pos((x0 + x1) / 2, ROLL_Y, zc) * (soft_box(x1 - x0, 100, hz, 30, 6) - soft_box(x1 - x0 - 4, 96, hz + 2, 28, 0.6))
+    yc = ROLL_Y + (50.0 - BAND_IN) / 2                                       # R17: inboard face at −BAND_IN, outboard at +50
+    b = Pos((x0 + x1) / 2, yc, zc) * (soft_box(x1 - x0, 50.0 + BAND_IN, hz, 30, 6) - soft_box(x1 - x0 - 4, 46.0 + BAND_IN, hz + 2, 28, 0.6))
     if INLINE:                                # 45° chamfer on the inboard top edge: it passes the ferrule at roll −15°
         c = BAND_CH
-        b -= Pos(0, ROLL_Y - 50, P1[1] + 1.5) * Rot(45, 0, 0) * Box(400, c * math.sqrt(2), c * math.sqrt(2))
-    return b
+        b -= Pos(0, ROLL_Y - BAND_IN, P1[1] + 1.5) * Rot(45, 0, 0) * Box(400, c * math.sqrt(2), c * math.sqrt(2))
+    # R17 (BAND_IN): its inner face is 46.5 off the yaw axis, inside the flange pocket's r 47, so the yaw flange's top edge
+    # (r 45) would pass 1.5 mm under it; the band's foot is cut back to the pocket radius over the pocket depth (R15 ≥ 2.0)
+    return b - Pos(0, ROLL_Y, P2[0] - 1) * Cylinder(YAW_SKIRT["r_in"], FL_POCKET + 1.3, align=MIN)
 
 
 def module():
