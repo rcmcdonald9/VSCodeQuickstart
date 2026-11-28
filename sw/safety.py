@@ -126,11 +126,11 @@ THRESHOLD_MAX_KG = 2.5            # SW-T2: heaviest load a threshold release is 
 V_STOPPED = 0.01                  # m/s: below this the base counts as stopped (re-seat pulse on stopping)
 # 13. people-near hand speed (rnd/hand_speed.py: 140 N on 75 N/mm, worst people-near pose, today's arm and D20, rotors included)
 PN_JOINT_V = 0.75                 # rad/s per-joint slew in people-near mode (at the 1.5 rad/s default a folded-elbow pose reaches 140 N at 0.07 m/s, D20)
-V_HAND_PN = ((0.0, 0.330), (1.0, 0.240), (2.5, 0.195), (4.535, 0.160))   # (payload kg up to, closing-speed cap m/s); rnd/hand_speed.py caps()
+V_HAND_PN = ((0.0, 0.345), (1.0, 0.210), (2.5, 0.160), (4.535, 0.140))   # (payload kg up to, closing-speed cap m/s); rnd/hand_speed.py caps() (sampled worst × 0.9)
 HAND_LEVER = {"pitch": 0.74, "roll": 0.74, "yaw": 0.44, "elbow": 0.44, "wpitch": 0.16, "wroll": 0.03}   # m: max hand distance from each axis (params l_upper 0.30 + l_fore 0.28 + l_hand 0.156)
 # 14./15. SW-T6 person approaching, SW-T7 basket carry (rnd/tip.py: R = R_reach 0.7 + 1.6 m/s × (0.2 s perception + transition))
 PN_PREP_RADIUS, PN_PREP_RELEASE = 3.5, 4.0     # m: transition ≤ 1.5 s (arms into PERSON_WS at the 1.5 rad/s slew, base braked)
-BASKET_CLEAR_R = 9.0                            # m: stop + set the basket down ≈ 5 s (ESTIMATE)
+BASKET_CLEAR_R = 9.5                            # m: ≥ 0.7 + 1.6 × (0.2 + 5 s to stop + set the basket down, ESTIMATE) = 9.0
 # 16. roll latch (rnd/power_off.py O2)
 ROLL_GUARD = os.environ.get("PIP_ROLL_GUARD", "none")   # "none" | "latch" (CAD: rnd/parts/roll.py; default off, owner's call)
 LATCH_RETRACT_S = 0.05            # s: solenoid pull-in + pin travel before the roll may go below +5° without a switch (ESTIMATE)
