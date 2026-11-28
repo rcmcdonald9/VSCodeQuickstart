@@ -2,39 +2,39 @@
 
 PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto supports. P2S time ≈ generic × 0.35 (ESTIMATE until the first print is timed).
 
-**Total: 14.8 kg of PETG (≈ $295 at $20/kg); 1005 h generic ≈ 352 h on the P2S (≈ 14.7 days of continuous printing).**
+**Total: 14.8 kg of PETG (≈ $297 at $20/kg); 1010 h generic ≈ 354 h on the P2S (≈ 14.7 days of continuous printing).**
 
-**One arm ≈** (shoulder pitch module + arm + hand, the M1 print): 3.12 kg, 222 h generic ≈ 78 h on the P2S.
+**One arm ≈** (shoulder pitch module + arm + hand, the M1 print): 3.13 kg, 222 h generic ≈ 78 h on the P2S.
 
-**Since the last plan:** 13.8 → 14.8 kg, 325 → 352 h on the P2S; one arm 84 → 78 h.
+**Since the last plan:** 14.8 → 14.8 kg, 352 → 354 h on the P2S; one arm 78 → 78 h.
 
-**Wave 1 (D24 bolted cartridges, D19 one-piece shafts):** the arm no longer prints KX74/KX56 hubs + collars or the KX cartridge adapters (8 KX74 collars, 2 KX56 sockets, 8 KX cans/adapters retired from the arm), nor split pulleys; it prints bolted cans + rear caps, the one-piece pitch/roll/yaw/elbow shaft-pulleys and the D19 seat caps. Inline roll (D24, the default since the owner's OK): −2 bolted cans/caps, −2 roll shafts, −4 roll seat caps, −4 clevis caps, −4 eccentric bushings; + 2 rear roll arms (inline roll link). **W10 (2026-11-27):** the 8 printed ASA Oldham tongue adapters are gone (W8b: 0.74× friction at the peak; the motor-side hub is 6061, a BOM line) and the lift is a bolted D13/D24 stage (lift v2: its KX74 collar, KX74 hub v2 and KX can/adapter go, a bolted can + cap come in).
+**Wave 1 (D24 bolted cartridges, D19 one-piece shafts):** the arm no longer prints KX74/KX56 hubs + collars or the KX cartridge adapters (8 KX74 collars, 2 KX56 sockets, 8 KX cans/adapters retired from the arm), nor split pulleys; it prints bolted cans + rear caps, the one-piece pitch/roll/yaw/elbow shaft-pulleys and the D19 seat caps. Inline roll (D24, the default since the owner's OK): −2 bolted cans/caps, −2 roll shafts, −4 roll seat caps, −4 clevis caps, −2 wall-B bushings; + 2 rear roll arms (inline roll link). **W10 (2026-11-27):** the 8 printed ASA Oldham tongue adapters are gone (W8b: 0.74× friction at the peak; the motor-side hub is 6061, a BOM line) and the lift is a bolted D13/D24 stage (lift v2: its KX74 collar, KX74 hub v2 and KX can/adapter go, a bolted can + cap come in). **D26 (wave 11):** the couplings go, so the 14 eccentric bushings do too; +7 bonded wall-B bushings (one per direct stage), +2 pitch idler rollers, +2 pitch exit-slot keys.
 
 | Part | Qty | Filament (g, all) | Generic time (h, all) | Note |
 |---|---|---|---|---|
 | torso_shell | 1 | 1537 | 94.0 | 2 halves |
-| upper bone | 2 | 1035 | 70.8 |  |
-| head_shell | 1 | 960 | 53.8 |  |
+| upper bone | 2 | 1036 | 70.8 |  |
+| head_shell | 1 | 901 | 49.1 |  |
 | cartridge M can (bolted, D24) | 7 | 735 | 46.3 | pitch, yaw, elbow × 2 arms + the lift: Ø86.6 sleeve + flange with 4 ear lobes per site (cartridge_m.EAR_SITES; one is sliced) (ASA, A6) |
 | skirt quarter | 4 | 602 | 42.4 |  |
-| deck quarter | 4 | 602 | 41.9 |  |
-| shoulder bracket body | 2 | 606 | 41.4 | mirror for the right arm |
+| deck quarter | 4 | 606 | 42.2 |  |
+| shoulder bracket body | 2 | 594 | 41.0 | mirror for the right arm |
+| clevis + yaw block | 2 | 466 | 34.1 |  |
 | dock_wing_l | 2 | 542 | 34.0 | self-docking charger: left + mirrored right wing |
-| clevis + yaw block | 2 | 463 | 33.8 |  |
-| roll link | 2 | 460 | 30.7 | inline roll link (GIM8108-36 seat, D24) |
+| roll link | 2 | 460 | 30.6 | inline roll link (GIM8108-36 seat, D24) |
 | carriage | 1 | 384 | 23.1 |  |
-| shoulder bracket outer wall | 2 | 307 | 22.9 | bolted print (D19: the pitch shaft drops in) |
+| shoulder bracket outer wall | 2 | 308 | 22.8 | bolted print (D19: the pitch shaft drops in) |
 | forearm (ends) | 2 | 329 | 22.6 | elbow end + clamp, wrist rim with M3 inserts, CF sockets |
 | wheel pod | 4 | 356 | 22.2 |  |
 | palm | 2 | 328 | 21.3 |  |
 | elbow pulley hub | 2 | 277 | 18.7 |  |
+| yoke | 1 | 274 | 18.1 | D22 fork to the tilt pivot |
 | cartridge M can | 4 | 260 | 17.2 | KX cartridges: the 4 wheels |
 | pitch shaft (integral 60T) | 2 | 238 | 17.2 | D19 one piece: Ø40 tube + 60T |
 | cover elbow_bay | 2 | 240 | 15.6 | R17/D23, mirror for the right arm |
 | KX74 hub | 4 | 183 | 12.7 | wheel hubs, bolted to the GIM output (D17) |
-| lift cover | 1 | 195 | 12.1 | R17 v3, closed |
-| elbow cassette plate A | 2 | 118 | 11.6 | the elbow cartridge bolts to it (D24) |
-| yoke | 1 | 165 | 10.8 | D22 fork to the tilt pivot |
+| lift cover | 1 | 197 | 12.2 | R17 v3, closed |
+| elbow cassette plate A | 2 | 117 | 11.7 | the elbow cartridge bolts to it (D24) |
 | pitch hub (balancer disc + ferrule) | 2 | 151 | 10.7 | bolted to the shaft end |
 | cartridge M adapter | 4 | 127 | 9.8 | KX74 male face (wheels) |
 | dock_tower | 1 | 196 | 9.6 | dock contact tower |
@@ -73,7 +73,6 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | cover belt_duct [4/5] | 1 | 37 | 3.6 | R17 belt duct segment |
 | cover belt_duct [5/5] | 1 | 37 | 3.6 | R17 belt duct segment |
 | cartridge S horn adapter | 4 | 44 | 3.5 |  |
-| eccentric bushing | 14 | 44 | 3.4 | 2 per D13 stage: 6 arm + lift (belt tension) |
 | head_bracket | 1 | 56 | 3.3 |  |
 | KX44 collar | 2 | 44 | 3.3 |  |
 | gripper grip_base | 2 | 48 | 3.2 |  |
@@ -82,16 +81,19 @@ PrusaSlicer generic profile: PETG, 0.2 mm layers, 4 walls, 25 % infill, auto sup
 | cover elbow_cap | 2 | 39 | 3.1 | R17/D23, mirror for the right arm |
 | gripper jaw_moving | 2 | 28 | 2.7 |  |
 | e_tray | 1 | 33 | 2.3 |  |
+| head_pivot_stub | 1 | 30 | 2.2 | D22 passive pivot (6805) |
 | cartridge D adapter | 2 | 20 | 2.0 |  |
 | cover collar_top | 1 | 23 | 2.0 | R17/D23 |
-| head_pivot_stub | 1 | 27 | 2.0 | D22 passive pivot (6805) |
+| wall-B bearing bushing (D26) | 7 | 29 | 1.9 | 1 per direct stage: 6 arm + lift, bonded in wall B round the 6001 (lift: 61901, 6 mm wide) |
+| pitch exit-slot key (D26) | 2 | 19 | 1.8 | fills the inner wall's exit slot under the 6061 strap; mirror for the right arm |
 | cover collar_door | 2 | 19 | 1.7 | R17/D23, mirror for the right arm |
+| pitch idler roller (D26) | 2 | 22 | 1.6 | flat roller Ø25 × 16 with 1.5 mm flanges on 2 × 625-2RS (PETG-CF) |
 | elbow seat cap B (−Y) | 2 | 13 | 1.6 | D19 bolted seat cap, 2 × M4 |
 | elbow cassette spacer | 4 | 18 | 1.4 |  |
 | cover collar_bot | 1 | 16 | 1.4 | R17/D23 |
 | handle | 1 | 21 | 1.3 |  |
 | elbow seat cap A (+Y) | 2 | 10 | 1.3 | D19 bolted seat cap, 2 × M3 into lug inserts |
-| head_drive_stub | 1 | 8 | 0.7 | D22 tilt drive disc |
+| head_drive_stub | 1 | 11 | 0.9 | D22 tilt drive disc |
 | gripper jaw_fixed | 2 | 8 | 0.5 |  |
 | cover back_plate | 1 | 1 | 0.1 | R17/D23 |
 | fin-ray finger | 4 | 0 | 0.0 | TPU 95A, 2 per gripper |

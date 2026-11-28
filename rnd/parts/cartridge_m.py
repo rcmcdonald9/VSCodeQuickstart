@@ -224,7 +224,7 @@ EXIT_SITES = {"pitch": 90.0, "lift": 180.0, "lift4": 180.0}
 # flange, so the flange is whole again; where the cartridge cannot be pulled its stub's length (pitch: the lift carriage
 # 12.6 mm behind), wall A gets a U-slot instead (WALL_EXIT: the direction the pulley and stub leave, from the stage +X,
 # after 8.5 mm along the axis frees the 6001 from wall B).
-DIRECT_SITES = {"pitch4", "elbow", "yaw", "roll_belt"}   # + "lift" / "lift4" once upper.py moves the lift to the direct stage
+DIRECT_SITES = {"pitch4", "elbow", "yaw", "roll_belt", "lift", "lift4"}   # D26: the lift on the direct stage too (upper.lift_drive)
 WALL_EXIT = {"pitch4": 270.0, "lift": 0.0, "lift4": 0.0}   # lift: up (stage +X), once its open belt is unclamped at the carriage and lifted off the 20T
 DIRECT_LIFT = 8.5                            # axial travel that frees the 6001 (8 wide, flush with wall B's pulley face) + 0.5
 EXIT_LIFT = 4.5                              # axial travel before the side move: adapter tongue (3.7 in the disc) + 0.8
