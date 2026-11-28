@@ -63,7 +63,7 @@ two-joint combinations (each joint is swept with the others at the reference pos
 
 **Soft-guarded (PIP_WEDGE_GUARD=skirt, item 7; not rigid passes): 2 of the 4 joint-nip fails (2 of 2 with people near) are closed to the probe only by the TPU skirt; 2 open with no guard (0 with people near). Second barrier: the roll joint's collision trip (threshold + rel·|τ|, sw/collision.py) must stay ≤ 4.1 N·m with people near (140 N at r 29 mm, the skirt's closest root to the axis).
 
-Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 24.8 min.
+Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 21.6 min.
 
 ## Exposed drive parts (accessible to the Ø12 probe at some step)
 
@@ -92,7 +92,7 @@ Soft parts with no declared spans (kept as drawn, not judged): roll_cover_yaw_tp
 
 | Guard | Joint (range) | Wall / slot (mm) | Root points: live / trimmed / crushed | Stack margin (mm) | Largest tip opening (mm) | Deepest fin intrusion (mm, fin length) | Fin force per 10 mm (N, ESTIMATE) | Trip budget (N·m at r mm) | Mass (g) | |
 |---|---|---|---|---|---|---|---|---|---|---|
-| cover_yaw_tpu_skirt | roll (-15…100°) | 1.6 / 4.4 | 2183 / 193 / 0 | 0.2 | 68.6 | 8.7 (10.2) | 2.2 | 4.1 at 29 | 31 | ✅ judged |
+| cover_yaw_tpu_skirt | roll (-15…100°) | 1.6 / 4.4 | 2183 / 193 / 0 | 0.2 | 67.9 | 8.7 (10.3) | 2.1 | 4.1 at 29 | 31 | ✅ judged |
 
 Soft-guarded rows (fail with the guard taken out, unreachable by the probe with it in):
 
