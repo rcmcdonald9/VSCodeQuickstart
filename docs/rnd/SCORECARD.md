@@ -33,7 +33,7 @@
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 1.6× (6.8 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md): tracked, no hard target (owner 2026-11-26); lower is a priority | 24 h | minimise | — |
-| R8 cost from the itemised BOM (BOM_v4.md) | $6,609 | ≤ $5,500 limit (owner 2026-11-27; aim $4,000) | ❌ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $6,713 | ≤ $5,500 limit (owner 2026-11-27; aim $4,000) | ❌ |
 | R13 printed pieces that fit the P2S (256 mm) | 97/97 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
