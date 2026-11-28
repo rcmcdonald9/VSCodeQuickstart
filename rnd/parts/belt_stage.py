@@ -358,6 +358,12 @@ MOTOR_BRG_DEPTH = 6.0                                 # motor output bearing cen
 # a catalogue service; price ESTIMATE in docs/rnd/belts.md).
 PINION = {"GIM6010-8": dict(neck=16.0, bore=10.0, collar=15.0, bore_to=-24.5), "GIM8108-8": dict(neck=18.0, bore=10.0, collar=15.0, bore_to=-24.5)}
 PINION_FILLET = dict(neck=1.5, teeth=1.0, relief=0.4)
+# Astra review #3, major 6 (2026-11-28): D26 tension ring at the fixed-centre stages (elbow, yaw; rnd/belts.py
+# D26_TENSION): turned 6061-T6 ring, bore = the cartridge's centring lip (fitted), bore eccentric by e to the OD, 1.2 mm
+# minimum wall, as tall as the lip (the flange clamps it); wall A's counterbore grows to its OD. Drawn concentric (the
+# ± 0.30 mm it moves the motor is below every clearance check).
+TENSION_RING = dict(e=0.30, wall=1.2, material="6061-T6, turned", marks=36)
+TENSION_RING_SITES = ("elbow", "yaw")
 STEEL = 7.85e-3                                       # g/mm³
 
 
@@ -518,6 +524,17 @@ def stub_sections(motor: dict | None = None, version: str = "v5", brg: dict | No
     return secs, segs
 
 
+def tension_ring(motor: dict | None = None, site: str = "default"):
+    """The D26 tension ring in the stage frame (around the lip, z −lip … 0), or None where the site has none."""
+    from . import cartridge_m as cm
+    if site not in TENSION_RING_SITES:
+        return None
+    MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
+    n, _ = cm.nose_flange(motor, site)
+    R = n["r_out"] + TENSION_RING["wall"] + TENSION_RING["e"]
+    return Pos(0, 0, -n["lip"]) * (Cylinder(R, n["lip"], align=MINZ) - Cylinder(n["r_out"] + 0.02, n["lip"], align=MINZ))
+
+
 def stub_metal_mass(st: dict) -> float:
     """g: the stub's turned steel (flange + shaft + integral teeth) from the CAD volumes (small_stage_v4 parts)."""
     return (st["kx_hub_v2"].volume + st["shaft_12"].volume + st["al_pulley"].volume) * STEEL
@@ -533,6 +550,9 @@ def wall_a_cuts_v4(motor: dict | None = None, site: str = "default") -> Part:
     MINZ = (Align.CENTER, Align.CENTER, Align.MIN)
     c = wall_a_cuts(motor, site)
     c += Pos(0, 0, -20) * Cylinder(WALL_A_HOLE_R, 40, align=MINZ)
+    if site in TENSION_RING_SITES:                                     # Astra #3 m6: the counterbore takes the tension ring
+        n, _ = cm.nose_flange(motor, site)
+        c += Pos(0, 0, -n["lip"] - 0.1) * Cylinder(n["r_out"] + TENSION_RING["wall"] + TENSION_RING["e"] + 0.05, 5, align=MINZ)
     if site in cm.WALL_EXIT:                                           # after the lift only the toothed body (r 15.35) is in wall A's plane
         c += Rot(0, 0, cm.WALL_EXIT[site]) * Pos(0, 0, -6.5) * Box(300, 2 * WALL_SLOT_HW, 7.0, align=(Align.MIN, Align.CENTER, Align.MIN))
     return c
@@ -542,7 +562,9 @@ def bolted_stage_v4(T, teeth: int = 20, prefix: str = "", motor: dict | None = N
                     brg: dict | None = None):
     """D26: cartridge + direct stage v4 (+ idler) mapped by T, names prefixed. One call per joint. brg: the wall-B bearing
     (BRG_B 6001 by default; BRG_B6 61901 where wall B has nothing behind it to spare, the lift)."""
-    return [(prefix + n, T * p, c) for n, p, c in bolted_cartridge(motor, site) + small_stage_v4(teeth, motor, idler, brg)]
+    ring = tension_ring(motor, site)
+    extra = [("tension_ring", ring, "steel")] if ring is not None else []
+    return [(prefix + n, T * p, c) for n, p, c in bolted_cartridge(motor, site) + small_stage_v4(teeth, motor, idler, brg) + extra]
 
 
 def belt_band(circles, z0: float, width: float = 15.0, t: float = 3.6, back: float = 0.97) -> Part:

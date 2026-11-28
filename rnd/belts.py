@@ -73,7 +73,14 @@ RELEASE_SLACK = 0.5                 # slack with the idler at the retracted end 
 IDLERS = {"shoulder_pitch": dict(kind="back", side=1, f=0.45), "elbow": dict(kind="inside", side=1, f=0.62),
           "upper_yaw": dict(kind="inside", side=-1, f=0.55), "elbow_d20": dict(kind="inside", side=1, f=0.6),
           "lift": dict(kind="back", side=1, f=0.5)}
-IDLER_HW = dict(back=dict(r_roll=12.5, flange=2.5, width=16.0), inside=dict(teeth=18, flange=2.0, width=16.0))
+IDLER_HW = dict(back=dict(r_roll=15.0, flange=2.5, width=16.0), inside=dict(teeth=18, flange=2.0, width=16.0))
+# Astra #3 m6 (2026-11-28): the back roller was Ø25 (r 12.5), under Gates' minimum backside idler for 5 mm HTD (1.00 in =
+# 25.4 mm, PowerGrip design manual minimum-idler table, ESTIMATE until checked against the current edition) and well under
+# what a PU steel-cord 5M belt accepts in reverse bending (≥ 30 mm, ESTIMATE: BRECO / Mädler steel-cord minimum backbend
+# class; supplier to confirm for the D20 belt) → Ø30. Roller: 16 wide between 1.5 mm flanges (the 15 mm belt runs with 0.5
+# mm a side), its two 625-2RS at the two ends (0 … 5 and 11 … 16) so the roller cannot tilt on the M5 shank.
+IDLER_ROLLER = dict(d_min_glass=25.4, d_min_steel=30.0, brg="625-2RS", brg_C=1.72e3, brg_C0=0.68e3, n_brg=2, axle_d=5.0,
+                    axle_span=32.0, axle_sy=940.0)   # axle: ISO 4762 M5 12.9 plain shank, σ_y ≥ 1100 (ISO 898-1 R_p0.2 ≥ 1100; 940 used = 0.85 ×)
 
 
 def _strand(z_small, z_big, centre, side):
@@ -193,8 +200,31 @@ def adjuster(d: Design = BASELINE):
 #     (it self-tensions as it climbs), so the low end costs smoothness, not torque; printing the plates after the belts
 #     are measured (centre_for on the measured length + FIXED_CENTRE) takes the belt term out (± 0.1 mm left);
 #   - lift: its open belt is tensioned at the carriage clamps already (no eccentric was ever needed there).
-FIXED_CENTRE = {"elbow": 0.25, "upper_yaw": 0.25, "elbow_d20": 0.25}
+FIXED_CENTRE = {"elbow": 0.25, "upper_yaw": 0.25, "elbow_d20": 0.25}   # D26 as first drawn (kept for the 'before' rows)
 PRINT_CENTRE_TOL = 0.1               # mm, two bearing seats in one FDM print (ESTIMATE; ream in a drill jig if the coupon misses it)
+# Astra review #3, major 6 (2026-11-28): the fixed centres gave 0–165 / 0–156 N per strand vs the 173 N target, because the
+# stock belt's ± 0.46 mm length class sat inside the ± 0.25 mm of centre that sets the whole preload. No idler fits inside the
+# elbow / yaw loops (an 18T inside idler at f 0.6 overlaps the big pulley's flange in the belt plane; Gates' minimum inside
+# idler for 5 mm HTD is 14 grooves, still no room), and printing plates to measured belts leaves the print's ± 0.1 mm
+# (± 34 N) plus the belt's EA spread. Fix: D26 TENSION RING (belt_stage.TENSION_RING) at elbow and yaw: a turned 6061
+# ring with an eccentric bore (e 0.30 mm) between the cartridge's centring lip and wall A's counterbore. Turning it moves
+# the motor ± e along the belt line; the tension is MEASURED, not computed:
+#   1. pre-run the belt 30 min at the target (stretch-in out, ≤ 0.05 mm residual, ESTIMATE);
+#   2. belt on, cartridge in with the ring, ears snug, the 6001 bushing held in its seat by its three bonding wedges;
+#   3. turn the ring (36 marks, 10° apart, on wall A) until the span frequency (phone sonic meter, as Gates' 508C; mass
+#      D26_TENSION mu) sits at the target, torque the ears (the flange clamps the ring), re-measure;
+#   4. bond the 6001 bushing (align-and-bond, as D26) — the ring is set BEFORE the bond, so it never offsets the stub;
+#   5. accept on the D26_TENSION window; after a swap the ring stays in wall A, so the new cartridge returns to the same
+#      centre (re-check the frequency; re-set only with a fresh bond).
+# Achievable band (tension_band): the set error (frequency ± 2 % → ± 4 % in T; belt mass ± 5 %; span ± 1 % → ± 2 %; ring step
+# ± e·sin 5° → ± 0.026 mm; the bond's own shift ± 0.02 mm, ESTIMATE) RSS, then the residual stretch-in and the housing's
+# thermal growth (PETG α 68e-6 vs the cord ≈ 6e-6 /K, −10 … +20 K from assembly, ESTIMATE) as operating swings.
+D26_TENSION = dict(f_err=0.04, mu_err=0.05, span_err=0.02, step=0.30 * math.sin(math.radians(5.0)), bond=0.02, runin=0.05,
+                   alpha=68e-6 - 6e-6, dT=(-10.0, 20.0), mu_kg_m=0.06, window=(0.75, 1.35), EA_steel=150e3)
+# mu: HTD 5M 15 mm ≈ 60 g/m (ESTIMATE, weigh one belt); EA_steel: PU steel cord (shoulder.idler, ESTIMATE)
+D26_OFFSET = {"elbow": 0.51, "upper_yaw": 0.55, "elbow_d20": 0.44}   # CAD: mm over the stock belt's exact centre = the target stretch
+
+
 GIM6010_OUT_BRG_N = 800.0            # GIM6010-8 output: "max radial load 800 N, max axial 200 N" (OpenELAB reseller listing, found
                                      # 2026-11-27, https://openelab.io/a/s/products/steadywin-gim6010-8-robot-motor; load point not stated,
                                      # no SteadyWin datasheet reached from this session: ESTIMATE until the seller confirms)
@@ -219,6 +249,52 @@ def fixed_centre(joint, z_small, z_big, centre, belt_teeth, peak_pull):
                 T0_hi=hi, T0_lo_measured=lo_meas, tol_c=tol_c, tim=tim, preload_target=tk["preload"] * peak_pull)
 
 
+def tension_band(joint, z_small, z_big, belt_teeth, peak_pull, EA=None, centre=None):
+    """Astra #3 m6: preload band per strand (N) with the D26 tension ring set by span frequency (procedure above). Returns
+    target, the ring's reach in N, band lo/hi, the span-frequency window, the CAD centre (stock belt + D26_OFFSET)."""
+    from .parts import belt_stage as bs
+    tk, ts = IDLER_TAKEUP, D26_TENSION
+    EA = EA or tk["EA"]
+    L_belt = belt_teeth * PITCH
+    exact = centre_for(z_small, z_big, belt_teeth)
+    dLdC = (pitch_length(z_small, z_big, exact + 0.01) - pitch_length(z_small, z_big, exact - 0.01)) / 0.02
+    k = EA / L_belt                                                  # N per mm of loop stretch, per strand
+    target = tk["preload"] * peak_pull
+    off_t = target / (k * dLdC)
+    c = exact + D26_OFFSET[joint] if centre is None else centre
+    kc = k * dLdC                                                    # N per mm of centre
+    e = bs.TENSION_RING["e"]
+    need = math.hypot(tk["tol_belt"] / 2, PRINT_CENTRE_TOL)           # centre error the ring must absorb (stock belt + print)
+    set_rel = math.sqrt(ts["f_err"] ** 2 + ts["mu_err"] ** 2 + ts["span_err"] ** 2)
+    set_abs = kc * math.hypot(ts["step"], ts["bond"])
+    sig = math.hypot(set_rel * target, set_abs)
+    th = lambda dT: kc * c * ts["alpha"] * dT
+    lo = target - sig - k * ts["runin"] + th(ts["dT"][0])
+    hi = target + sig + th(ts["dT"][1])
+    D, d = pd(z_big), pd(z_small)
+    span = math.sqrt(c * c - ((D - d) / 2) ** 2)
+    f = lambda T: math.sqrt(T / ts["mu_kg_m"]) / (2 * span / 1000)
+    return dict(joint=joint, belt=L_belt, exact=exact, cad=c, offset=c - exact, off_target=off_t, EA=EA, target=target, T0=target,
+                lo=max(0.0, lo), hi=hi, sig=sig, e=e, need=need, reach_ok=e >= need, span=span,
+                f_lo=f(ts["window"][0] * target), f_hi=f(ts["window"][1] * target), f_nom=f(target),
+                ok=max(0.0, lo) >= ts["window"][0] * target and hi <= ts["window"][1] * target and e >= need)
+
+
+def idler_roller_check():
+    """Pitch back-side idler (Astra #3 m6): roller Ø vs the reverse-bend minimum for the belt in use, the two 625s (static C0 vs
+    the idler load at the peak), and the M5 axle in bending (between the walls, simply supported: conservative)."""
+    from .parts import cartridge_m as cm, shoulder
+    hw, ir = IDLER_HW["back"], IDLER_ROLLER
+    g = shoulder.idler()
+    steel = shoulder.MOT is cm.MOTOR_8108
+    dmin = ir["d_min_steel"] if steel else ir["d_min_glass"]
+    F = g["F_idler"]
+    M = F * ir["axle_span"] / 4
+    sig = 32 * M / (math.pi * ir["axle_d"] ** 3)
+    return dict(d=2 * hw["r_roll"], d_min=dmin, steel=steel, F=F, per_brg=F / ir["n_brg"], sf_C0=ir["brg_C0"] * ir["n_brg"] / F,
+                axle_sigma=sig, sf_axle=ir["axle_sy"] / sig, width=hw["width"], wrap=g["wrap_idler"], p=g["T1"] / (hw["r_roll"] * 15.0))
+
+
 def d26_stages(d: Design = BASELINE):
     """Tension method per arm stage (D26) for the active motor set: (joint, method, dict)."""
     from .parts import arm, roll, shoulder
@@ -226,8 +302,15 @@ def d26_stages(d: Design = BASELINE):
     pk = lambda j: act(d.arm.joints[j][0])["peak"] * 1000 / (pd(20) / 2)
     out.append(("shoulder_pitch", "idler", shoulder.idler()))
     ek = "elbow_d20" if arm.E_TEETH == 60 else "elbow"
-    out.append(("elbow", "fixed", fixed_centre(ek, 20, arm.E_TEETH, arm.BELT_C, STOCK_TEETH[ek], pk("elbow"))))
-    out.append(("upper_yaw", "fixed", fixed_centre("upper_yaw", 20, 40, roll.YAW_C, STOCK_TEETH["upper_yaw"], pk("upper_yaw"))))
+    ea = D26_TENSION["EA_steel"] if ek == "elbow_d20" else None     # D20: PU steel-cord belt (cartridge_m.parts_list)
+    before = lambda j, zb, n, p: fixed_centre(j, 20, zb, centre_for(20, zb, n) + FIXED_CENTRE[j], n, p)
+    g = fixed_centre(ek, 20, arm.E_TEETH, arm.BELT_C, STOCK_TEETH[ek], pk("elbow"))
+    g.update(before=before(ek, arm.E_TEETH, STOCK_TEETH[ek], pk("elbow")), band=tension_band(ek, 20, arm.E_TEETH, STOCK_TEETH[ek], pk("elbow"), ea, arm.BELT_C))
+    out.append(("elbow", "fixed", g))
+    g = fixed_centre("upper_yaw", 20, 40, roll.YAW_C, STOCK_TEETH["upper_yaw"], pk("upper_yaw"))
+    g.update(before=before("upper_yaw", 40, STOCK_TEETH["upper_yaw"], pk("upper_yaw")),
+             band=tension_band("upper_yaw", 20, 40, STOCK_TEETH["upper_yaw"], pk("upper_yaw"), None, roll.YAW_C))
+    out.append(("upper_yaw", "fixed", g))
     return out
 
 
@@ -246,7 +329,7 @@ def motor_bearing_rows(d: Design = BASELINE):
 def d26_report(d: Design = BASELINE):
     from .parts import belt_stage as bs
     L = ["", "## D26 direct stages: tension, teeth in mesh, motor bearing (no Oldham)", "",
-         "Each GIM stage drives its 20T from a turned C45 stub bolted to the motor output (8 × M3), supported by the motor's own "
+         "Each GIM stage drives its belt from a one-piece C45+QT integral pinion shaft (stub v5, Astra #3 m7: flange + neck + hobbed 20T + 6001 seat) bolted to the motor output (8 × M3), supported by the motor's own "
          f"output bearing and a {bs.BRG_B['name']} in wall B (bonded align-and-bond bushing); the motor is fixed (belt_stage.small_stage_v4).", "",
          "| Joint | Tension | Belt | Centre CAD / exact | Preload per strand | Teeth in mesh (nominal / worst) | Idler load at peak |", "|---|---|---|---|---|---|---|"]
     for j, meth, g in d26_stages(d):
@@ -255,11 +338,26 @@ def d26_report(d: Design = BASELINE):
                      f"(δ {g['d_lo']:.1f} … {g['d_hi']:.1f}, nominal {g['d_nom']:.1f}) | {g['belt']:.0f}-5M | {g['cad']:.2f} / "
                      f"{centre_for(20, 60, round(g['belt'] / PITCH)):.2f} | {g['T0']:.0f} N set at the idler ✅ | {g['tim']:.2f} / {g['tim_min']:.2f} "
                      f"{'✅' if g['tim_min'] >= MIN_TEETH_IN_MESH else '❌'} | {g['F_idler']:.0f} N on 2 × 625 (C0 1.36 kN) → {1360 / g['F_idler']:.1f}× |")
+            ic = idler_roller_check()
         else:
-            L.append(f"| {j} | fixed centre (+{g['offset']:.2f} mm over the stock belt's exact centre), no tensioner | {g['belt']:.0f}-5M | "
-                     f"{g['cad']:.2f} / {g['exact']:.2f} | {g['T0']:.0f} N nominal, {g['T0_lo']:.0f}–{g['T0_hi']:.0f} N over ± {g['tol_c']:.2f} mm "
-                     f"({g['T0_lo_measured']:.0f} N worst with the plates printed to the measured belt; target {g['preload_target']:.0f}) ⚠️ | "
+            b, bf = g["band"], g["before"]
+            L.append(f"| {j} | D26 tension ring (6061, e {b['e']:.2f} mm ≥ the {b['need']:.2f} mm of stock-belt + print error) under the cartridge lip, "
+                     f"set by span frequency before the 6001 bond | {g['belt']:.0f}-5M{' PU steel cord' if b['EA'] > 1e5 else ''} | {b['cad']:.2f} / {b['exact']:.2f} | "
+                     f"{b['target']:.0f} N set (± {b['sig']:.0f} N), **{b['lo']:.0f}–{b['hi']:.0f} N** over stretch-in and −10/+20 K "
+                     f"= {b['lo'] / b['target']:.2f}–{b['hi'] / b['target']:.2f} × target; span {b['span']:.1f} mm, accept {b['f_lo']:.0f}–{b['f_hi']:.0f} Hz "
+                     f"({b['f_nom']:.0f} Hz at target) {'✅' if b['ok'] else '⚠️'} (was stock belt +0.25 fixed: {bf['T0_lo']:.0f}–{bf['T0_hi']:.0f} N) | "
                      f"{g['tim']:.2f} {'✅' if g['tim'] >= MIN_TEETH_IN_MESH else '❌'} | — |")
+    L += ["", f"- Pitch idler roller (Astra #3 m6): Ø{ic['d']:.0f} flat PETG-CF roller vs the reverse-bend minimum Ø{ic['d_min']:.1f} for the "
+          f"{'PU steel-cord' if ic['steel'] else 'glass-cord'} belt {'✅' if ic['d'] >= ic['d_min'] else '❌'} (was Ø25 < 25.4 Gates 5 mm HTD); "
+          f"{ic['width']:.0f} mm face between 1.5 mm flanges for the 15 mm belt, one 625-2RS at each end (tilt-free on the M5 shank); "
+          f"idler load {ic['F']:.0f} N at the peak = {ic['per_brg']:.0f} N per 625 → {ic['sf_C0']:.1f}× C0 (2 × 0.68 kN); belt-back pressure "
+          f"{ic['p']:.1f} MPa on the print; M5 12.9 axle {ic['axle_sigma']:.0f} MPa simply supported over {IDLER_ROLLER['axle_span']:.0f} mm "
+          f"→ {ic['sf_axle']:.1f}× (static: the axle does not turn). Backside idlers on a reversing drive see both strands' tension: the "
+          "tight-side value is used.",
+          "- Fixed-centre stages: tooth jump under reversing load is not proven by the teeth-in-mesh count. With the ring band's low end "
+          "the slack strand stays loaded up to ≈ 2 × T0 of effective pull; above that the drive runs on the tight strand alone, normal "
+          "for timing belts at peak. Bench test (M1 exit test 6 replacement): both torque directions to the drive limit, hot (+20 K) and "
+          "cold, at the band's low end, 1000 reversals, look for skip, tracking and tension drift (span frequency before / after)."]
     L += ["", "| Motor bearing check | Shaft load (F + 2·T0) | Motor bearing (share) | Its rating | 6001 in wall B | 6001 C0 |", "|---|---|---|---|---|---|"]
     for r in motor_bearing_rows(d):
         rt = f"{r['rating']:.0f} N (reseller listing, ESTIMATE) → {r['rating'] / r['motor']:.1f}×" if r["rating"] else "not published (seller question) ⚠️"
@@ -270,8 +368,8 @@ def d26_report(d: Design = BASELINE):
           f"6001 {b:.1f} mm below. An overhung pulley on the bare output (no wall-B bearing) would put the whole {motor_bearing_rows(d)[0]['shaft']:.0f} N "
           f"plus ≈ {motor_bearing_rows(d)[0]['shaft'] * (a + 0.0) / 1000:.0f} N·m of tilting on the GIM6010's bearing: over the 800 N listing before the moment, rejected.",
           "- Hyperstatic check: the stub is simply supported only if the motor's bearing tilts a few arcmin (a single deep-groove "
-          "row, ESTIMATE). If it is moment-rigid, the bushing's align-and-bond keeps the offset ≲ 0.05 mm → ≲ 100 N of preload "
-          "(stub cantilever ≈ 2 kN/mm); a swapped motor re-centres within the spigot fit (≈ 0.15 mm → ≲ 300 N, inside the 6001's margin)."]
+          "row, ESTIMATE). If it is moment-rigid, see the stub table below (Astra #3 m7: the v5 stub is 15.6 kN/mm, the old ≈ 2 kN/mm figure "
+          "was the Ø12 shaft alone; STUB_SUPPORT_RULE)."]
     return L
 
 
@@ -310,7 +408,7 @@ FAT = dict(f_W=0.45, Rz=6.3, aR=0.22, n_target=1.5)
 STUB_DUTY = [("basket carry × 1.5 (D20 pitch 23.3 N·m / 3:1)", "GIM8108-8", 23.3 / 3 / 0.95 * 1.5, 1.1e3),
              ("R2c hug × 1.5 (D20 elbow ≈ 14 N·m at 0.25 m / 3:1)", "GIM8108-8", 14.0 / 3 / 0.95 * 1.5, 2.7e3),
              ("teleop 1 kg p95 (GIM6010 elbow / yaw, motor side)", "GIM6010-8", 5.0, 2.6e6)]
-PRELOAD_BAND_HI = 1.3
+PRELOAD_BAND_HI = 1.35                   # = D26_TENSION window top (the ring band's hot end)
 
 
 def _kt_step(D, d, r):
@@ -521,7 +619,7 @@ def stage(joint, ratio, z_small, centre_mm, width_mm, d: Design = BASELINE):
 # centres = the CAD's (cad_centres(); the elbow from params.elbow_belt_c). Fable M5 (2026-11-27): the elbow is set to the
 # exact centre for its stock belt (70.70 for 295-5M, D20 83.89 for 380-5M); pitch 70 → 70.15 and yaw 80 → 80.93 belong to
 # shoulder.py / roll.py (adjuster() reports what each CAD centre leaves of the ±1 mm eccentric).
-STAGES = [("shoulder_pitch", 3.0, 20, 70, 15), ("shoulder_roll", 80 / 18, 18, 103.3, 15), ("upper_yaw", 2.0, 20, 81.18, 15),
+STAGES = [("shoulder_pitch", 3.0, 20, 70, 15), ("shoulder_roll", 80 / 18, 18, 103.3, 15), ("upper_yaw", 2.0, 20, 81.48, 15),
           ("elbow", BASELINE.arm.elbow_teeth / 20, 20, round(BASELINE.arm.elbow_belt_c * 1000, 2), 15)]   # D20 switch: 20T:40T or 20T:60T
 from .params import ROLL_DRIVE as _RD                     # D24 (owner, 2026-11-27): the inline GIM8108-36 roll has no belt
 if _RD == "inline":
