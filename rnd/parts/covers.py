@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import math
 
-from build123d import Align, Axis, Box, Cylinder, Pos, Rot, fillet
+from build123d import Align, Axis, Box, Cylinder, Pos, Rot
 
 from .soft import soft_box, soft_shell
 
@@ -108,7 +108,7 @@ def pitch_frame():
     """Concept: rides on the pitch body (static w.r.t. roll): a dome over the roll link, the roll cartridge, the 80T
     pulley and its belt, down to just above the roll axis; open underneath where the yaw block swings out.
     Belt roll only: on the D24 inline roll (default) there is no roll belt, and this dome sat across the yaw cartridge
-    (≈ 6 cm³ of overlap); the inline roll's static cover belongs with the shoulder boot (open, see roll_frame)."""
+    (≈ 6 cm³ of overlap). Inline roll: the static front collar on the motor face (roll_front_collar, R17 2026-11-28)."""
     from . import roll
     if roll.INLINE:
         return [("cover_roll_front", roll_front_collar(), "white")]
@@ -149,7 +149,6 @@ def roll_front_collar():
 
 
 _HOOD = []
-HOOD_BOX_DX = 16.0    # the yaw hood's box (rear) part ends this far in front of the yaw axis; round in front of it
 _FUZZ = 1e-5          # mm
 
 
@@ -185,33 +184,8 @@ def _yaw_hood():
         t, g = WALL, 3.0
         x0, x1, y0, y1 = can.min.X - g - t, can.max.X + g + t, can.min.Y - g - t, can.max.Y + g + t
         z0, z1 = roll.ZF + 0.5, can.max.Z + g + t
-        # R17 (2026-11-28): round front. The box's front corners (x −33…−60 at y 14…19 and 119…124) stood beside the
-        # roll link's ferrule boss and the side block's −X face and swung past them (cover_yaw × roll_link 1.1…10.9 mm,
-        # × housing to 10 mm). The front half is now a cylinder about the yaw axis (the can's sleeve + g + t), so the
-        # hood's front (x > −51) stays within the rear arm's sector and in front of the round floor / rear plate; the box
-        # stays behind x −YAW_C + HOOD_BOX_DX over the cap's screw tabs (±49.5 at the yaw axis).
-        xc, rf = -roll.YAW_C, x1 + roll.YAW_C
-        xb = xc + HOOD_BOX_DX
-        # the can's front flange ears (r ≈ 52.5 about the yaw axis at ±48°, z ≤ −46) get a low band of their own radius + g + t
-        ears = [p for n, p, _ in roll.module() if n == "yaw_can"][0] & (Pos(xb - t - g, roll.ROLL_Y, z0) * Box(200, 200, 2 * (roll.ZF + 8 - z0), align=(Align.MIN, Align.CENTER, Align.CENTER)))   # in front of the box
-        eb = ears.bounding_box()
-        re_ = max(math.hypot(v.X - xc, v.Y - roll.ROLL_Y) for v in ears.tessellate(0.05, 0.1)[0]) + g + t
-        ze, xe = eb.max.Z + g + t, eb.max.X + g + t
-        MZ = (Align.CENTER, Align.CENTER, Align.MIN)
-
-        def _solid(o, zt):
-            bx = Pos((x0 + o + xb - o) / 2, (y0 + y1) / 2, (z0 - 20 + zt) / 2) * soft_box(xb - x0 - 2 * o, y1 - y0 - 2 * o, zt - z0 + 20, 14 - o, max(8 - o, 0.6))
-            cy = Pos(xc, roll.ROLL_Y, z0 - 20) * Cylinder(rf - o, zt - z0 + 20, align=MZ)
-            try:
-                cy = fillet(cy.edges().group_by(Axis.Z)[-1], max(8 - o, 0.6))
-            except Exception:
-                pass
-            band = Pos(xc, roll.ROLL_Y, z0 - 20) * Cylinder(re_ - o, ze - o - z0 + 20, align=MZ)
-            band &= Pos(xe - o, roll.ROLL_Y, z0 - 20) * Box(xe - xb + 20 - 2 * o, 300, 100, align=(Align.MAX, Align.CENTER, Align.MIN))   # in front of the box only
-            return bx + cy + band
-
-        h = _solid(0.0, z1) - _solid(t, z1 - t)
-        h &= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(400, 400, 2 * (z1 - z0), align=(Align.CENTER, Align.CENTER, Align.MIN))
+        h = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 14, 8, t)
+        h -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 - 2 * t, y1 - y0 - 2 * t, 2 * t + 1)
         R = lambda a: Pos(0, o[1], o[2]) * Rot(a, 0, 0) * Pos(0, -o[1], -o[2])
         hx = h.bounding_box().max.X
         for a in range(int(lo) - 3, int(hi) + 4, 3):
@@ -232,19 +206,23 @@ def _yaw_hood():
     return _HOOD[0]
 
 
-# Roll nips the D25 people-near limit leaves (R17 neck/shoulder pass, 2026-11-27; rnd/pinch.py on the merged tree):
-# - cover_yaw × roll_link (0.6…14.8 mm) and cover_yaw × roll_gim_housing (1.4…9.4): the hood's front end is cut round
-#   the roll link's rear walls swept over the roll range, so its cells sit 0.6 mm from a wall at one angle and 10–26 mm at
-#   another. No cover-only fix: the static side is not round about the roll axis. Needed in roll.py: the link's rear end
-#   (x −45…−27, round the 61806) as a boss of revolution about the roll axis (r ≤ 45, nothing wider behind x −27); the
-#   hood is then cut with a concentric bore at a constant 3 mm.
-# - yaw_block × roll_link (9.6…13.6) and roll_outflange × roll_gim_housing (8.4…9.5): the clevis boss (R_ARM 42, round)
-#   faces flat link walls. roll.py: bore the link's front walls (x 38…50) concentric at R_ARM + 4 (constant 4 mm).
-# - cover_yaw × ferrule_m (3.5…10.5, left) and the inboard wedge (yaw block / band × ferrule, 2.5 / 2.7 mm at −15°):
-#   arm part against arm part, so no torso or cover change opens them (a static filler only moves the nip: the block
-#   swings 115°). Mechanical fixes: a roll hard stop at ≥ +5° (roll.STOP_AT / ROLL_MIN, the people-near limit made
-#   permanent: R16 across-body 71 → 49 %) or ROLL_Y + 23 mm. upper.TORSO_RECESS (PIP_TORSO_RECESS=1) fixes only the
-#   shoulder–torso rows.
+# Roll nips (R17; 2026-11-28 pass, rnd/pinch.py):
+# - Front, closed: roll_outflange × roll_gim_housing and yaw_block × roll_gim_housing by the static collar on the motor
+#   face (roll_front_collar, above); yaw_block × roll_link and yaw_band × roll_link by raising the roll link's frame and
+#   ferrule boss in front of the side block (roll.FRONT_FRAME) and turning its spring bar up (roll.SPR_BAR_ANG). The
+#   lesson: a rotating cell passes only if static stays within 8 mm of it at every angle (a surface of revolution round
+#   it) or never comes within 25 mm; a flat static wall beside a rotating round boss fails both ways.
+# - Rear, open: cover_yaw × roll_gim_housing / roll_link. Tried (2026-11-28): a round-fronted hood (front half a cylinder
+#   about the yaw axis): it moved the hood's walls to 10–18 mm from the rear plate (worse: 3 rows with people near
+#   instead of 2) and uncovered roll_arm_rear. Root causes: (1) the two hard-stop bushes stand 8 mm proud of the rear
+#   plate at r 42 (roll.STOP_BUSH), the only non-round static feature behind the hood, and every hood cell within 25 mm
+#   of their sweep sees them come and go (the gap is Euclidean, the hood front cannot hide them); (2) the yaw can's front
+#   is 1.7 mm behind the rear arm, so the hood must stay within ≈ 22 mm of the roll link's ferrule boss (inboard wedge).
+#   Next: move the hard stop off the rear plate face (e.g. inside the rear arm's boss or a stop ring that is round where
+#   the hood can see it), then square the hood's front at a constant ≤ 7 mm from the plate.
+# - Inboard wedge (yaw block / band × ferrule, 2.6 / 2.7 mm at −15°): arm part against arm part, closed with people near
+#   by the D25 soft limit (≥ +5°). Full-range fixes: a roll hard stop at ≥ +5° (R16 across-body 71 → 49 %) or ROLL_Y + 23
+#   mm. upper.TORSO_RECESS (PIP_TORSO_RECESS=1) fixes only the shoulder–torso rows.
 def roll_frame():
     """Concept: rides on the roll output: a sleeve round the whole yaw block (both plates, the belt, the yaw
     cartridge, its KX collar and torque fork), open at the top (the clevis arms) and the bottom (the yaw flange).
@@ -517,6 +495,7 @@ def printed():
     from . import roll
     if roll.INLINE:
         P["cover yaw hood (inline roll)"] = _yaw_hood()
+        P["cover roll front collar (inline roll)"] = roll_front_collar()
     duct = belt_duct()[0][1]
     x0, x1, y0, y1, z0, z1 = _bb(duct)
     k = math.ceil((z1 - z0) / 200)

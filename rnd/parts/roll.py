@@ -456,14 +456,17 @@ def _ang(deg, r):
 def roll_link_inline() -> Part:
     """Static roll link: ferrule boss (Ø90 × 4 on the ferrule's back, cut below z −28), a 10 mm frame around the spigot
     (y 8…18, z −28…40) running from the floor to the spring bar, the floor (Ø100 × 6, 6 × M4 counterbored on PCD 84), the
-    Ø30 support stub with its Ø34 shoulder, two hard-stop lugs and the spring bar."""
+    Ø30 support stub with its Ø34 shoulder, two hard-stop lugs and the spring bar. R17 (2026-11-28): in front of the side
+    block (x > FRONT_FRAME["x"]) the frame and the ferrule boss start at z FRONT_FRAME["z_lo"] and the bar is turned up
+    (inline_spring_bar), clear of the +X clevis arm's sweep."""
     xf0, xf1 = X_FLOOR
     zlo, zhi = -28.0, 40.0
     p = Pos(0, 8, 0) * Rot(-90, 0, 0) * Cylinder(45, 4, align=MIN)
     p &= Pos(0, 10, (zlo + 60) / 2) * Box(100, 10, 60 - zlo)
+    p -= Pos(FRONT_FRAME["x"], 10, FRONT_FRAME["z_lo"]) * Box(100, 12, 100, align=(Align.MIN, Align.CENTER, Align.MAX))   # R17: as the frame (FRONT_FRAME)
     sx1 = ROLL_SPR_X[1] + 1.6
     xa = FRONT_FRAME["x"]                                                                                       # R17: frame front part raised (FRONT_FRAME)
-    p += _plate_x(xf0, xa + 6, 8, 18, zlo, zhi, 6) + _plate_x(xa, sx1, 8, 18, FRONT_FRAME["z_lo"], zhi, 6)
+    p += _plate_x(xf0, xa, 8, 18, zlo, zhi, 6) + _plate_x(xa - 6, sx1, 8, 18, FRONT_FRAME["z_lo"], zhi, 6)
     p -= Pos(0, 13, 0) * Rot(-90, 0, 0) * Cylinder(32.3, 12)                                                  # frame around the spigot
     p += Pos(xf0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, xf1 - xf0, align=MIN)                            # floor
     p += Pos(xf1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(R_MOT, CUP_H, align=MIN) - Cylinder(CUP_R, CUP_H, align=MIN))   # cup around the driver (its pilot)
@@ -498,7 +501,7 @@ def roll_link_inline() -> Part:
 # then stays ≥ 26 mm from it over −16.5…104° (worst at the hard stop: edge segment vs the corner at (y 18, z_lo)). The
 # spring bar leaves the ring at SPR_BAR_ANG (was −90°, level with the roll axis) and meets the raised frame; it stays
 # ≥ 60° (≥ 45 mm) clear of the arm's sweep, 2.5 mm in front of the arm's +X face like the spring ring itself.
-FRONT_FRAME = dict(x=30.0, z_lo=14.0)
+FRONT_FRAME = dict(x=25.0, z_lo=14.0)   # x: the side block's front face (the motor body's)
 SPR_BAR_ANG = -115.0                    # deg, roll convention (0 = −Z, + toward +Y): the bar points up and inboard
 
 
