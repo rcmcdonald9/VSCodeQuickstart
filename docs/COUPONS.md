@@ -4,7 +4,7 @@
 
 **Step-1 coupons (M1 exit criterion 6, Fable review #2 M4): C12 insert pull-out, C13 4-ear flange, C14 drive stub**, plus C9 (the bolt circles C14 needs). Pass numbers come from the repo's load cases (`rnd/coupons.py step1_coupons()`).
 
-**Total:** 315 g, 26.2 h with PrusaSlicer's generic profile ≈ **9.2 h on the P2S** (ESTIMATE).
+**Total:** 458 g, 35.9 h with PrusaSlicer's generic profile ≈ **12.6 h on the P2S** (ESTIMATE).
 
 STLs: `rnd/out/coupons/`.
 
@@ -20,6 +20,10 @@ STLs: `rnd/out/coupons/`.
 | C13_flange_plate | PETG | 5.0 | 66 | Stage wall A coupon (elbow 4-ear pattern, nut pockets up); flat |
 | C13_flange_can | ASA | 2.7 | 40 | The bolted can's lip + flange + nose, with a test-only load arm; flange face down |
 | C14_stub_template | PETG | 0.3 | 3 | Drilling template / stand-in flange: 8 × Ø3.4 on MOTOR['out_pcd'] + Ø20 pilot; re-generate after C9 |
+| C15_creep_tube | PETG | 2.7 | 42 | The pitch tube's wall r 11–20 × 69.6, axis vertical (as the tube), 4 perimeters |
+| C20_bond_sleeve | PETG | 1.7 | 22 | The elbow shaft's Ø40 tube over the 16 mm bond + a 36 AF hex collar; axis vertical (as the shaft) |
+| C21_ferrule_male | PETG | 2.6 | 39 | Arm-side KX-V ferrule with the 0.2 mm land relief; face down |
+| C21_ferrule_female | PETG | 2.7 | 40 | Pitch-side KX-V ferrule (as the pitch hub's); face down |
 
 ## Step-1 coupons (C12–C14)
 
@@ -84,6 +88,139 @@ STLs: `rnd/out/coupons/`.
 | measured | |
 | pass / fail | |
 
+## Load-chain coupons (C15–C21; Fable #2 majors 4–5, a Step-2 gate)
+
+Pass numbers from the load-chain rows of [rnd/joints.md](rnd/joints.md) (`rnd/coupons.py joint_coupons()`).
+
+### C15: Creep coefficient φ of a print-clamped tube (Neon #3, C1 'before' rows) — Step 2 prints (no motor); 6 weeks on the bed
+
+**Proves:** the creep coefficient φ behind every print-clamped joint (joints.py CREEP: φ 2.0 design / 1.0 nominal, ESTIMATE from printed-PETG data), the reason the C1 ties run in crush sleeves and the D29 V-band needs the W21 disc stack.
+
+**Pass:**
+
+- tube r 11–20 × 69.6 (the pitch tube's wall) bare on an M8 + Belleville-free steel washers at 8.8 MPa (≈ 7.7 kN, the wave-3 stress), 1000 h at 40 °C (the P2S bed + a box): the squeeze grows by ≤ 2.0 × its elastic part extrapolated to 2 × 10⁴ h (Findley t^n fit of the 1, 10, 100, 1000 h readings) → φ ≤ 2.0
+- φ ≤ 1.0 (the nominal) lets the C1 'before' rows and the V-band's creep term relax; φ > 2.0 fails the design value: the W21 disc stack is resized
+
+**Print and test:** Print `C15_creep_tube` in the arm's PETG, flat, 4 perimeters. Measure the length on the witness flats with the 0.002 mm dial at 20 °C, clamp to the load with a calibrated torque on the M8 (or a dead weight on a lever), read at 1, 10, 100, 1000 h, cool to 20 °C for each reading.
+
+**Updates:** joints.py CREEP phi / phi_nom; the V-band life preload (joints.py vband).
+
+| Result | |
+|---|---|
+| measured | |
+| pass / fail | |
+
+### C16: Sleeved tie joints: moment to gap (C1 pitch + yaw ties, the bone tie) — Step 2, with the turned sleeves and the metal parts
+
+**Proves:** the crush-sleeve model (joints.py SleeveClamp): metal stack, preload after embedding, the no-gap moment of each tie.
+
+**Pass:**
+
+- pitch hub ↔ tube: no gap (≤ 5 µm at the tension edge) at **30 N·m** (the worst service row), gap onset ≥ 39 N·m (0.7 × the model's 56 N·m at the life preload); yaw flange ↔ tube: no gap (≤ 5 µm at the tension edge) at **33 N·m** (the worst service row), gap onset ≥ 37 N·m (0.7 × the model's 54 N·m at the life preload); bone ↔ yaw flange: no gap (≤ 5 µm at the tension edge) at **32 N·m** (the worst service row), gap onset ≥ 105 N·m (0.7 × the model's 151 N·m at the life preload)
+- after 72 h at 50 °C under the preload alone, the same no-gap moment within 10 % and each nut's breakaway ≥ its build torque
+
+**Print and test:** Assemble each joint on its real printed parts (pitch tube + hub; yaw tube + flange; the upper bone's top piece + the yaw flange) with the bought studs, sleeves and rings at the build torque. Clamp the metal side in the vise, hang the luggage scale on a 300 mm lever bolted to the printed side, a dial test indicator across the interface at the far edge from the load: the gap moment is where the reading leaves the linear (closed-joint) slope.
+
+**Updates:** joints.py SLEEVE_STOCK / preloads; a short row → a longer sleeve or a higher preload.
+
+| Result | |
+|---|---|
+| measured | |
+| pass / fail | |
+
+### C17: Tapped M3 threads in the 7075 flange (yaw tie, bone studs) — Step 2, on the flange or a 7075 offcut from the same plate
+
+**Proves:** the thread-strip strength (FED-STD-H28 at the 6g/6H limits, joints.py thread_strip) of the two M3 thread sets in the 7075-T6 yaw flange.
+
+**Pass:**
+
+- yaw tie (8.3 mm engaged, ISO 4762 12.9): strip ≥ **3.6 kN** (1.5 × the 2.38 kN fault bolt force; model 14.3)
+- bone studs (3.4 mm tapped through the recess floor, DIN 976 10.9 + Loctite 270): strip ≥ **3.0 kN** (1.5 × 1.97; model 4.9), and the stud does not turn at 2 × its 0.8 N·m nut torque after 24 h cure
+
+**Print and test:** Tap a 7075 offcut 5 mm thick through (the bone floor: face it to 3.6 mm) and blind 8.3 mm (the yaw tie) with the production tap; pull each screw / stud through a steel spacer with the 5:1 lever and the water bucket (as C12) or a press with the luggage scale; three of each.
+
+**Updates:** roll.YAW_TIE / BONE_TIE engagement; joints.py TAU['7075-T6'].
+
+| Result | |
+|---|---|
+| measured | |
+| pass / fail | |
+
+### C18: R17 front stop: 7075 dog on its block (W16c) — Step 2, before the inline roll is powered
+
+**Proves:** the anodised 7075-on-7075 contact of the roll hard stop (joints.py M1 stop row: one dog takes the stall, 3.91× on strength) in wear and dent.
+
+**Pass:**
+
+- static: the dog on its block at **3.05 kN** (the 102.9 N·m stall at r 33.75, one dog) for 10 s: no yield (dial ≤ 0.01 mm set), no crack
+- 100 hits at the drive limit (1.04 kN, 35.1 N·m; a 1 kg drop weight from the height that gives the stop's impact energy, ESTIMATE): dent ≤ 0.05 mm on either face, the hard anodise unbroken (no bright metal under 10× loupe)
+
+**Print and test:** The two machined parts (an adapter dog and a front-ring block, or offcuts with the same 5.5 mm contact band), hard-anodised, in the press with the luggage scale for the static load; the hits with the drop weight in a tube guide. Depth gauge on the contact band before / after.
+
+**Updates:** roll.FRONT_STOP (anodise spec, dog width); joints.py M1 stop row.
+
+| Result | |
+|---|---|
+| measured | |
+| pass / fail | |
+
+### C19: Inline roll output dowels: slip torque (Neon 6a) — Step 2, on the seller GIM8108-36 (or its output boss drawing + a cast offcut)
+
+**Proves:** the dowel load sharing and the bearing allowable in the motor's output boss (joints.py DOWEL: 150 MPa cast, ESTIMATE; dowels bonded with Loctite 638).
+
+**Pass:**
+
+- the 7075 adapter on the output, 3 × Ø4 dowels bonded in situ + 3 × M4 × 10 csk: no slip (witness ≤ 0.02 mm at r 30) at **103 N·m** (the stall; model 106 N·m = 1.03×), 10 × each way; dry dowels recorded for comparison (model 69 N·m)
+
+**Print and test:** Motor unpowered, its housing on the rig plate; the adapter's lever (the 300 mm stock) and the luggage scale at 300 mm (35 kg = 103 N·m; a 600 mm lever halves it). Only with the seller's agreement, or on a scrap unit.
+
+**Updates:** joints.py DOWEL sb / d_fit; roll.ADAPT.
+
+| Result | |
+|---|---|
+| measured | |
+| pass / fail | |
+
+### C20: Elbow core bond: 6061 tube in the printed shaft (Neon #2 finding 7) — Step 2 prints + the 6061 offcut
+
+**Proves:** the epoxy bond between the 6061 Ø30 × 1.5 core and the printed Ø30 bore (joints.py BOND: 3 MPa fault, 1 MPa sustained, ESTIMATE), which carries ≈ 86 % of the elbow torque out of the core under the 40T and under the forearm clamp.
+
+**Pass:**
+
+- torque-out of the 16 mm bond ≥ **68 N·m** (3 MPa: the fault row's 62.7 N·m elbow peak, 86% in the core, needs 2.37 MPa under the 40T)
+- sustained: 23 N·m (1 MPa) held 72 h at 50 °C: no rotation (witness line ≤ 0.1 mm at r 20)
+- the failure is cohesive in the print or the adhesive, not a clean peel off the abraded bore (else: a knurled core, or the D-flat key)
+
+**Print and test:** Print `C20_bond_sleeve` axis-vertical as the shaft (layers across the axis), abrade the bore (80 grit) and the tube (Scotch-Brite + IPA), bond 16 mm of the 6061 offcut with the build epoxy, cure as the datasheet; the hex collar in the vise, the lever on the tube through a cross pin.
+
+**Updates:** joints.py BOND; arm.ELBOW_CORE bond note (length under the 40T).
+
+| Result | |
+|---|---|
+| measured | |
+| pass / fail | |
+
+### C21: Arm detach V-band clamp on the printed ferrules (D29 + W21 disc stack) — Step 2 prints + one bought 3" clamp, before the arm is built
+
+**Proves:** that the clamp keeps its preload on two printed flanges (joints.py vband: the band is ≈ 1 µm/kN stiff axially, so embedding and creep take a wing nut's whole preload; the W21 stack gives it the stroke) and that the arm's moment does not open the faces.
+
+**Pass:**
+
+- stack to its stop: T-bolt **410 N** (stack height on the calibration curve, ± 10 %); the face (outer land r 41–45.5) shows no gap at the rim (dial, ≤ 5 µm) up to **26.7 N·m** (the hug row × 1.5), fresh and after 72 h at 50 °C (the model keeps 1.39 kN, gap at 29 N·m)
+- stack height after the hold: ≥ the stop minus 0.5 mm (the creep budget of the 2.7 mm stroke)
+- fault: 183 N·m for 10 s (the stall row): no disengagement, no lip crack, the faces re-close
+- as designed (D29 wing nut, no stack, full face): record the gap moment fresh at a light hand and after the hold (the model: 13 N·m fresh, ≈ 0 after)
+- a timed two-arm join with the lever nut ≤ 30 s (R3)
+
+**Print and test:** Print `C21_ferrule_male` (with the 0.2 mm land relief) and `C21_ferrule_female` in the arm's PETG; three Ø6 dowels; the clamp with the stack and the stop sleeve. Calibrate the stack height against load on the 5:1 lever first. Bolt the female to the stand through its spigot, a 1 m lever on the male: the luggage scale gives the moment (1 kg = 9.8 N·m).
+
+**Updates:** roll.DETACH (stack, land, band ESTIMATEs); joints.py vband; bom D29 line.
+
+| Result | |
+|---|---|
+| measured | |
+| pass / fail | |
+
 ## Other coupons: fill in the Result column
 
 | # | Measure | Pass if | Updates | Result |
@@ -104,14 +241,6 @@ STLs: `rnd/out/coupons/`.
 | C1 | KX74 socket + collar: lock twist ≤ 3 N·m, slip ≥ 12 N·m, re-seat 0.05 mm, 72 h creep hold | D24 (owner 2026-11-27): every arm cartridge bolts in; the wheels bolt to the GIM output (D17) and the lift is a bolted stage (W12), so no KX74 socket is left |
 | C2 | KX74 male face: balls flush ± 0.05, ball pull-out ≥ 20 N | D24, as C1 (the head KX44 male faces are a different size; C4 covers their fits) |
 | C5 | Eccentric bushing: 6804 seat, rotates and holds 300 N belt pull | D26 (owner 2026-11-27): no eccentrics; fixed centres with a tension ring (elbow, yaw) or a slotted idler (pitch) |
-
-## Queued, not defined yet (joints.md; a Step-2 gate)
-
-- printed tube clamped as wave 3 (no sleeves) at 8.8 MPa, 1000 h at 40 °C with a load washer: measures φ, the creep ESTIMATE behind joints.md
-- the sleeved C1 joint's moment to gap (pitch hub ↔ tube, yaw flange ↔ tube)
-- the 7075-T6 yaw flange's tapped M3 threads (strip vs the 12.9 screw)
-- the R17 front stop: a 7075 dog on its block at 3 kN, anodised pair, 100 hits (wear and dent) (W16c; replaces the old stop-bush coupon)
-- the inline roll output dowels' slip torque on a seller motor (bonded with Loctite 638)
 
 **Small parts for the coupons:** C12–C14 use the Step 1a kit's inserts, M4 × 12 + washers + nuts, M3 × 6, Loctite 243, the lever stock, the luggage scale, the dial test indicator and the 6061 offcut. Others (≈ $15): Ø3 × 8 dowel pins and Ø6 G25 balls (C4, the head KX44), a 300–400 mm HTD 5M-15 belt (C6), TPU filament (C7).
 

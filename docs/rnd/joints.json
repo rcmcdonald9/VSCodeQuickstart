@@ -24,6 +24,8 @@
    "M": 17.27,
    "T": 39.62,
    "pose": "floor pick, x 0.50",
+   "F_bolt": 1634,
+   "strip": 7641,
    "margin": 2.94,
    "verdict": true,
    "text": "no gap up to 56 N\u00b7m at the life preload; bolt 1.63 kN; print contact 4.1 MPa (\u2264 12)",
@@ -36,6 +38,8 @@
    "M": 30.29,
    "T": 24.05,
    "pose": "yaw 45\u00b0, elbow 90\u00b0",
+   "F_bolt": 1735,
+   "strip": 7641,
    "margin": 1.83,
    "verdict": true,
    "text": "no gap up to 56 N\u00b7m at the life preload; bolt 1.74 kN; print contact 4.4 MPa (\u2264 12)",
@@ -48,6 +52,8 @@
    "M": 130.88,
    "T": 113.0,
    "pose": "abducted 90\u00b0, -Z",
+   "F_bolt": 3238,
+   "strip": 7641,
    "margin": 1.57,
    "verdict": true,
    "text": "gaps; bolt 3.24 kN vs proof 7.29 kN; thread strip (the weaker of the 7075-T6 crank (4 mm tapped through, 2.95 effective) and the 10.9 stud) 7.6 kN (2.36\u00d7 the bolt, need 1.5\u00d7); sleeve 212 MPa (\u2264 750); print contact 8.2 MPa (\u2264 40)",
@@ -60,6 +66,8 @@
    "M": 184.21,
    "T": 115.8,
    "pose": "roll stall, elbow 90\u00b0",
+   "F_bolt": 4316,
+   "strip": 7641,
    "margin": 1.18,
    "verdict": true,
    "text": "gaps; bolt 4.32 kN vs proof 7.29 kN; thread strip (the weaker of the 7075-T6 crank (4 mm tapped through, 2.95 effective) and the 10.9 stud) 7.6 kN (1.77\u00d7 the bolt, need 1.5\u00d7); sleeve 282 MPa (\u2264 750); print contact 10.6 MPa (\u2264 40)",
@@ -88,6 +96,8 @@
    "M": 32.64,
    "T": 2.37,
    "pose": "floor pick, x 0.50",
+   "F_bolt": 1488,
+   "strip": 14314,
    "margin": 1.62,
    "verdict": true,
    "text": "no gap up to 53 N\u00b7m at the life preload; bolt 1.49 kN; print contact 6.3 MPa (\u2264 12)",
@@ -100,6 +110,8 @@
    "M": 24.05,
    "T": 0.0,
    "pose": "yaw -45\u00b0, elbow -90\u00b0",
+   "F_bolt": 1413,
+   "strip": 14314,
    "margin": 2.03,
    "verdict": true,
    "text": "no gap up to 53 N\u00b7m at the life preload; bolt 1.41 kN; print contact 5.9 MPa (\u2264 12)",
@@ -112,6 +124,8 @@
    "M": 96.21,
    "T": 61.04,
    "pose": "abducted 90\u00b0, -Z",
+   "F_bolt": 2318,
+   "strip": 14314,
    "margin": 2.11,
    "verdict": true,
    "text": "gaps; bolt 2.32 kN vs proof 4.88 kN; thread strip (the weaker of the 7075-T6 flange (8.3 mm tapped, 7.8 effective) and the 12.9 screw) 14.3 kN (6.18\u00d7 the bolt, need 1.5\u00d7); sleeve 346 MPa (\u2264 750); print contact 10.0 MPa (\u2264 40)",
@@ -124,10 +138,84 @@
    "M": 98.65,
    "T": 149.55,
    "pose": "elbow stall, forward",
+   "F_bolt": 2379,
+   "strip": 14314,
    "margin": 2.05,
    "verdict": true,
    "text": "gaps; bolt 2.38 kN vs proof 4.88 kN; thread strip (the weaker of the 7075-T6 flange (8.3 mm tapped, 7.8 effective) and the 12.9 screw) 14.3 kN (6.02\u00d7 the bolt, need 1.5\u00d7); sleeve 353 MPa (\u2264 750); print contact 10.2 MPa (\u2264 40)",
    "before": 0.49
+  },
+  {
+   "joint": "bone \u2194 yaw flange",
+   "case": "preload (assembly \u2192 life)",
+   "verdict": true,
+   "margin": 4.44,
+   "F0": 1300.0,
+   "F_life": 1144,
+   "F_req": 257,
+   "F_bare": 402,
+   "F_req_bare": 282,
+   "disc": {
+    "F_life": 901,
+    "F_req": 496
+   },
+   "text": "6 \u00d7 M3 10.9 at 1.30 kN in \u00d84.5/3.3 steel crush sleeves (35.5 mm, 41 kN/mm; the print sandwiched with a 0.05 mm squeeze \u2248 2.5 MPa that may creep away): metal stack, embedding only \u2192 life preload **1.14 kN (88 %)** vs 0.26 kN for no gap under the worst service wrench (32.4 N\u00b7m, 102 N) \u2192 **4.44\u00d7**. Before: not drawn (the 6 mm printed bone flange only touched the 7075 flange; Fable #2 major 5). Not chosen: a short tie through the 6 mm bone flange alone (14 \u00b5m of elastic stack against \u2248 10 \u00b5m of metal embedding: it loses most of its preload)."
+  },
+  {
+   "joint": "bone \u2194 yaw flange",
+   "case": "basket \u00d7 1.5",
+   "N": 102.0,
+   "M": 32.44,
+   "T": 2.37,
+   "pose": "floor pick, x 0.50",
+   "F_bolt": 1611,
+   "strip": 4863,
+   "margin": 2.2,
+   "verdict": true,
+   "text": "no gap up to 149 N\u00b7m at the life preload; bolt 1.61 kN; print contact 5.5 MPa (\u2264 12)",
+   "before": null
+  },
+  {
+   "joint": "bone \u2194 yaw flange",
+   "case": "hug \u00d7 1.5",
+   "N": 102.6,
+   "M": 24.05,
+   "T": 0.0,
+   "pose": "yaw -45\u00b0, elbow -90\u00b0",
+   "F_bolt": 1563,
+   "strip": 4863,
+   "margin": 2.3,
+   "verdict": true,
+   "text": "no gap up to 149 N\u00b7m at the life preload; bolt 1.56 kN; print contact 5.2 MPa (\u2264 12)",
+   "before": null
+  },
+  {
+   "joint": "bone \u2194 yaw flange",
+   "case": "bump 140 N",
+   "N": 163.9,
+   "M": 95.62,
+   "T": 61.04,
+   "pose": "abducted 90\u00b0, -Z",
+   "F_bolt": 1956,
+   "strip": 4863,
+   "margin": 1.66,
+   "verdict": true,
+   "text": "gaps; bolt 1.96 kN vs proof 4.17 kN; thread strip (the weaker of the 7075-T6 flange floor (3.4 mm tapped through, 2.65 effective) and the 10.9 stud) 4.9 kN (2.49\u00d7 the bolt, need 1.5\u00d7); sleeve 241 MPa (\u2264 440); print contact 6.8 MPa (\u2264 40)",
+   "before": null
+  },
+  {
+   "joint": "bone \u2194 yaw flange",
+   "case": "stall (pitch 63 / roll 103 / elbow 63 N\u00b7m)",
+   "N": 167.7,
+   "M": 98.05,
+   "T": 149.55,
+   "pose": "elbow stall, forward",
+   "F_bolt": 1969,
+   "strip": 4863,
+   "margin": 1.65,
+   "verdict": true,
+   "text": "gaps; bolt 1.97 kN vs proof 4.17 kN; thread strip (the weaker of the 7075-T6 flange floor (3.4 mm tapped through, 2.65 effective) and the 10.9 stud) 4.9 kN (2.47\u00d7 the bolt, need 1.5\u00d7); sleeve 243 MPa (\u2264 440); print contact 6.9 MPa (\u2264 40)",
+   "before": null
   }
  ],
  "roll": [
@@ -197,5 +285,265 @@
    "T": 112.9,
    "note": "roll stall, elbow 90\u00b0"
   }
+ },
+ "detach_fit": {
+  "band_roll_link": 1.07,
+  "hw_roll_link": 3.52,
+  "band_pitch_hub": 0.07,
+  "band_spring_ring": 1.17,
+  "roll_out": [
+   1.33,
+   "yaw_block",
+   -15
+  ],
+  "sweep_2d": 1.48,
+  "sweep_2d_stop": 0.02,
+  "sweep_2d_y1": 2.36,
+  "band_torso": 2.76,
+  "hw_torso_shift": {
+   "0.0": 0.0,
+   "4.0": 1.0,
+   "5.0": 2.0,
+   "6.0": 3.0
+  },
+  "clock": 15.0
+ },
+ "chain": [
+  {
+   "link": "detach V-band (KX-V, D29 + W21 disc stack)",
+   "margin": 1.07,
+   "case": "service: basket / hug \u00d7 1.5",
+   "what": "detach V-band: preload over life",
+   "ok": true,
+   "open": [
+    "fit: the stock clamp's hardware meets the torso wall (0.0 mm), lead / owner call"
+   ],
+   "src": "vband_rows"
+  },
+  {
+   "link": "pitch hub \u2194 pitch tube (C1 tie)",
+   "margin": 1.18,
+   "case": "stall (pitch 63 / roll 103 / elbow 63 N\u00b7m)",
+   "what": "pitch hub \u2194 tube",
+   "ok": true,
+   "open": [],
+   "src": "joint_rows"
+  },
+  {
+   "link": "roll output boss / rear mount / 61806 / stops (M1)",
+   "margin": 1.03,
+   "case": "stall",
+   "what": "M1 output boss \u2194 7075 adapter (torque path)",
+   "ok": true,
+   "open": [],
+   "src": "roll_rows"
+  },
+  {
+   "link": "yaw flange \u2194 yaw tube (C1 tie)",
+   "margin": 1.61,
+   "case": "preload (assembly \u2192 life)",
+   "what": "yaw flange \u2194 tube",
+   "ok": true,
+   "open": [],
+   "src": "joint_rows"
+  },
+  {
+   "link": "upper bone \u2194 yaw flange (bone tie)",
+   "margin": 1.31,
+   "case": "rated hold 9.5 / yaw peak 20.9 N\u00b7m",
+   "what": "bone \u2194 yaw flange: torque",
+   "ok": true,
+   "open": [],
+   "src": "joint_rows + bone_extra_rows"
+  },
+  {
+   "link": "elbow shaft: 6061 core + bond + 61808",
+   "margin": 1.1,
+   "case": "basket \u00d7 1.5/hug \u00d7 1.5: M 14.3 N\u00b7m at the +Y 61808 (floor pick, x 0.50), T 24.1 N\u00b7m (max of the rows and the elbow rated hold)",
+   "what": "elbow core + bond (service)",
+   "ok": true,
+   "open": [],
+   "src": "elbow_rows"
+  },
+  {
+   "link": "wrist-pitch output (flange screws; motor bearing open)",
+   "margin": 1.08,
+   "case": "fault tilting 54 N\u00b7m",
+   "what": "wrist-pitch output flange screws",
+   "ok": true,
+   "open": [
+    "wrist-pitch output support (DM-J4310 bearing)"
+   ],
+   "src": "wrist_rows"
+  },
+  {
+   "link": "wrist-roll spindle (bearings, spindle, cap)",
+   "margin": 1.1,
+   "case": "basket hook 335 N + 73 N axial / fault 3352 N",
+   "what": "wrist-roll spindle bearings",
+   "ok": true,
+   "open": [],
+   "src": "wrist_rows"
+  }
+ ],
+ "bone": [
+  {
+   "item": "bone \u2194 yaw flange: torque",
+   "ok": true,
+   "margin": 1.3059383966105538,
+   "case": "rated hold 9.5 / yaw peak 20.9 N\u00b7m",
+   "text": "sleeve-end friction 6 \u00d7 1.14 kN (life) \u00d7 \u03bc 0.15 (steel on 7075, ESTIMATE) \u00d7 r 26.5 = 27.3 N\u00b7m vs 1.5 \u00d7 the service torsion 9.5 N\u00b7m (the yaw's rated hold; the twin's service rows 2.4) and the yaw's 20.9 N\u00b7m peak (a stop hit or stall: the joint backdrives beyond it; the twin's rigid-joint fault torsion is 150 N\u00b7m); behind it the 6 studs as dowels in shear, 499 N\u00b7m (0.15 mm radial lash in the sleeves)"
+  },
+  {
+   "item": "bone \u2194 yaw flange: 7075 floor",
+   "ok": true,
+   "margin": 1.9958463925461771,
+   "case": "worst service / fault stud force",
+   "text": "the 3.6 mm recess floor carries the most-loaded stud's share of the joint load (the preload closes in the stud \u2194 sleeve loop), 0.43 / 1.26 kN (service / fault), 15.5 mm in to the yaw tie's taps (a 19.6 mm strip, both ends guided: M = F\u00b7L/2): 78 / 230 MPa vs 7075-T6 R_p 460 (service \u2264 R_p / 1.5); the stud ends stand 0.2 mm under the floor (bearing B's outer race is 0.5 mm above it)"
+  }
+ ],
+ "vband": [
+  {
+   "item": "detach V-band: preload over life",
+   "case": "service: basket / hug \u00d7 1.5",
+   "ok": true,
+   "margin": 1.0742975699250266,
+   "before": "D29 wing nut by hand: 1.0\u20135.8 kN fresh (bom.detach_recheck) \u2192 **0.00\u20130.00 kN** after embedding + creep (the band is 1.0 \u00b5m/kN axially, the two printed flanges 1.6, 3 printed interfaces \u00d7 10 \u00b5m) vs **2.12 kN** for no face gap under the worst service row (26.7 N\u00b7m; full face r 15\u201345.5: lever 12.6 mm) \u274c. The D29 row's 832 N used the face as a ring at r 40 (P\u00b7r: 3.2\u00d7 the face's real lever) and kx_check's 22.2 N\u00b7m (the static socket moment \u00d7 1.5), under this file's hug row; fresh at a light hand it gaps at 13 N\u00b7m",
+   "text": "8 \u00d7 DIN 2093 B 16 \u00d7 8.2 \u00d7 0.6 in series under a one-wing lever nut, a steel stop sleeve inside the stack at 0.75 h0: tighten until it stops \u2192 T-bolt 410 N (F(s) of the stack, not the hand), 0.65 N\u00b7m on the lever (\u2264 1.3); P 2.2\u20133.8 kN (\u03bc 0.30\u20130.15); the stack's 2.7 mm of stroke makes the band 63 \u00b5m/kN axially \u2192 life **1.39 kN** vs **1.30 kN** (faces on the outer land r 41\u201345.5: lever 20.6 mm)"
+  },
+  {
+   "item": "detach V-band: printed flanges (service)",
+   "case": "fresh preload, high end",
+   "ok": true,
+   "margin": 3.8828410109671663,
+   "text": "flank 2.0 MPa (P 3.8 kN on a 6.9 mm slant over r 43), land 3.1 MPa (\u2264 12); FEA: fea.md *KX-V ferrule*"
+  },
+  {
+   "item": "detach V-band: fault (bump / stall)",
+   "case": "M 183 N\u00b7m, pull-off 343 N",
+   "ok": true,
+   "margin": 4.347985467917815,
+   "text": "the face opens; tipping about the land's far edge needs P = M / R_o + N = 4.4 kN from the band (stack solid on its sleeve): band yield / T-bolt / hinge limit T 3.5 kN \u2192 19.0 kN at \u03bc 0.30; flank 5 MPa on the tension half (\u2264 40); the band grows 9 \u00b5m radially (4.8 mm of lip overlap): it does not ride off"
+  },
+  {
+   "item": "detach V-band: pitch torque",
+   "case": "rated hold 39.6 / pitch peak 62.7 N\u00b7m",
+   "ok": true,
+   "margin": 1.308430085815245,
+   "text": "3 \u00d7 \u00d86 dowels at r 30 in bearing on the printed holes (\u2248 8 mm a side, ESTIMATE): 9.2 / 14.5 MPa (\u2264 12 / 40); land friction at the life preload 15 N\u00b7m helps"
+  }
+ ],
+ "vband_model": {
+  "before": {
+   "P_lo": 1036.5252455382713,
+   "P_hi": 5832.90959734971,
+   "life_lo": 0.0,
+   "life_hi": 0.0,
+   "need": 2117.9479359546895,
+   "k_face": 12.611263736263735,
+   "d29_need": 831.8218290975,
+   "d29_m": 22.1819154426,
+   "m_svc": 26.71
+  },
+  "after": {
+   "T_set": 410.0792546857961,
+   "k_disc": 861.7306585211331,
+   "P0_lo": 2238.63616747429,
+   "P0_hi": 3779.289248122658,
+   "life_lo": 1392.1750970665612,
+   "need": 1295.893368877041,
+   "k_face": 20.611263736263737,
+   "torque": 0.647925222403558,
+   "stroke": 2.7,
+   "c_ax": 63.282921536442565,
+   "c_ax0": 0.9782748110640804,
+   "c_p": 7.4960581203633,
+   "flank": 2.0225715902107453,
+   "face": 3.090520566282716
+  },
+  "M_f": 183.48,
+  "N_f": 343.0,
+  "P_f": 4375.527472527472,
+  "T_cap": 3485.0,
+  "P_cap": 19024.729865024616,
+  "p_flank_f": 4.6833237559241025,
+  "dR": 0.009081251912421331,
+  "T_svc": 39.62,
+  "T_flt": 62.699999999999996,
+  "p_dow": [
+   9.171296296296296,
+   14.513888888888888
+  ],
+  "T_fric": 15.070295425745524,
+  "r_lo": 5.459032959834897,
+  "r_hi": 9.215997163812542,
+  "c_circ": 0.00014576688595290598
+ },
+ "elbow": [
+  {
+   "item": "elbow core + bond (service)",
+   "case": "basket \u00d7 1.5/hug \u00d7 1.5: M 14.3 N\u00b7m at the +Y 61808 (floor pick, x 0.50), T 24.1 N\u00b7m (max of the rows and the elbow rated hold)",
+   "ok": true,
+   "margin": 1.099597376251222,
+   "text": "core 85% of the bending / 86% of the torque: 13 MPa bending + 11 shear \u2192 24 MPa vM (\u2264 96: 6061-T6 fatigue); printed tube 1.0 MPa (Kt 1.5, \u2264 12); bond 0.62 MPa under the clamp (23.5 mm) / 0.91 under the 40T (16 mm) (\u2264 1.0, structural epoxy on abraded PETG); moment into the core over 50 mm: 0.9 MPa on the bore; 61808 139 N \u2192 s0 24.8 (\u2265 1.5), boss 0.4 MPa; the belt's own 7.0 N\u00b7m between the 6708s (elbow_shaft_stress) is a different section"
+  },
+  {
+   "item": "elbow core + bond (fault)",
+   "case": "bump 140 N/stall (pitch 63 / roll 103 / elbow 63 N\u00b7m): M 149.6 N\u00b7m at the +Y 61808 (roll stall, elbow 90\u00b0), T 62.7 N\u00b7m (the elbow peak (stall / stop hit; twin 65))",
+   "ok": true,
+   "margin": 1.2653261674087026,
+   "text": "core 85% of the bending / 86% of the torque: 139 MPa bending + 29 shear \u2192 148 MPa vM (\u2264 240: 6061-T6 R_p); printed tube 8.3 MPa (Kt 1.5, \u2264 24); bond 1.61 MPa under the clamp (23.5 mm) / 2.37 under the 40T (16 mm) (\u2264 3.0, structural epoxy on abraded PETG); moment into the core over 50 mm: 9.9 MPa on the bore; 61808 1431 N \u2192 s0 2.4 (\u2265 1.0), boss 3.9 MPa; the belt's own 18.3 N\u00b7m between the 6708s (elbow_shaft_stress) is a different section"
+  }
+ ],
+ "wrist": [
+  {
+   "item": "wrist-pitch output support (DM-J4310 bearing)",
+   "case": "service 7.6 / fault 53.5 N\u00b7m tilting",
+   "ok": null,
+   "margin": null,
+   "text": "the hand hangs on the motor's own output bearing \u2248 5 mm inside its face (ESTIMATE): it needs 73 N radial + 25 N axial + **7.6 N\u00b7m** tilting in service (basket hook, floor pick, x 0.45), 148 N + 343 N + **54 N\u00b7m** at a fault (wrist torsion capped at the 7 N\u00b7m peak: it backdrives). No rating is published (actuators.yaml); **open: seller question** (output bearing type, C0, tilting M0), as the GIM8108's",
+   "open": true
+  },
+  {
+   "item": "wrist-pitch output flange screws",
+   "case": "fault tilting 54 N\u00b7m",
+   "ok": true,
+   "margin": 1.0769850448149778,
+   "text": "6 \u00d7 M3 12.9 on PCD 24 into the motor output at \u2248 1.0 kN: + 1.49 kN at the fault tilt \u2192 2.49 kN vs proof 4.88; strip in \u2248 4 mm of the output's thread (wrought-Al \u03c4, ESTIMATE) 4.0 kN (1.6\u00d7). The printed ASA flange between them: fea.md *Wrist output flange*"
+  },
+  {
+   "item": "wrist-roll spindle bearings",
+   "case": "basket hook 335 N + 73 N axial / fault 3352 N",
+   "ok": true,
+   "margin": 1.1039470582794537,
+   "before": "2 \u00d7 SKF 61804 (20 \u00d7 32 \u00d7 7): s0 6.9 service / **0.69** fault \u274c (the pair is 7 mm apart, so a hand load becomes a big radial couple)",
+   "text": "2 \u00d7 6804 full complement (full-complement 6804 (20 \u00d7 32 \u00d7 7, no cage; bike-pivot grade, e.g. Enduro MAX): C0 \u2248 1.6 \u00d7 the caged 61804's 2.32 kN, ESTIMATE until a datasheet is in hand): s0 11.1 service / 1.10 fault (\u2265 1.5 / 1.0); the printed skirt seat 15.0 MPa at the fault (\u2264 40; FEA: fea.md *Wrist-roll skirt*)"
+  },
+  {
+   "item": "wrist-roll spindle + cap",
+   "case": "fault couple 23.5 N\u00b7m; hanging 73 N",
+   "ok": true,
+   "margin": 7.828650064530762,
+   "before": "printed PETG spindle (D16): 31 MPa at the fault couple vs 24 MPa \u274c",
+   "text": "spindle turned 6061-T6 (\u00d820, \u00d88 wire bore; the gripper's 4 \u00d7 M3 tapped in metal): 3.1 / 31 MPa (\u2264 96 / 240); the hanging load goes lower outer race \u2192 cap \u2192 3 \u00d7 M2.5 inserts, now in lugs at r 21.5 (they cut the r 16 bearing seat at r 17.4): 24 N each in pull-out (C12-class, \u2265 0.4 kN ESTIMATE)"
+  }
+ ],
+ "wrist_loads": {
+  "service": [
+   334.8,
+   73.28
+  ],
+  "fault": [
+   3351.61,
+   144.36
+  ],
+  "pitch_service": [
+   7.61,
+   73.31
+  ],
+  "pitch_fault": [
+   53.51,
+   148.18
+  ]
  }
 }

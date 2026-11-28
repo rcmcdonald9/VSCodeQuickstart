@@ -10,7 +10,7 @@
 | cover belly_0 | 2 × 246 × 246 | 74 | ✅ |
 | cover belly_1 | 2 × 246 × 246 | 74 | ✅ |
 | cover belly_3 | 2 × 246 × 246 | 74 | ✅ |
-| upper bone | 98 × 136 × 233 | 284 | ✅ |
+| upper bone | 98 × 136 × 233 | 291 | ✅ |
 | torso_shell [1] | 180 × 195 × 230 | 293 | ✅ |
 | torso_shell [2] | 180 × 195 × 230 | 293 | ✅ |
 | head_shell | 176 × 230 × 230 | 245 | ✅ |
@@ -42,8 +42,8 @@
 | cover mast_cap | 54 × 84 × 135 | 69 | ✅ |
 | elbow cassette plate | 5 × 81 × 129 | 19 | ✅ |
 | wheel pod | 26 × 80 × 124 | 114 | ✅ |
-| palm | 58 × 75 × 122 | 193 | ✅ |
-| roll link | 110 × 112 × 121 | 192 | ✅ |
+| palm | 63 × 75 × 122 | 194 | ✅ |
+| roll link | 110 × 112 × 121 | 190 | ✅ |
 | lift cover | 89 × 109 × 118 | 95 | ✅ |
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
 | cover collar_bot | 2 × 110 × 110 | 15 | ✅ |
@@ -71,7 +71,7 @@
 | roll arm rear | 18 × 71 × 88 | 32 | ✅ |
 | cartridge M can | 44 × 87 × 87 | 50 | ✅ |
 | KX56 collar | 19 × 78 × 85 | 28 | ✅ |
-| cover yaw hood TPU skirt (PIP_WEDGE_GUARD=skirt, TPU 95A) | 39 × 69 × 82 | 26 | ✅ |
+| cover yaw hood TPU skirt (PIP_WEDGE_GUARD=skirt, TPU 95A) | 39 × 69 × 82 | 25 | ✅ |
 | KX74 male | 8 × 80 × 80 | 29 | ✅ |
 | cartridge M adapter | 12 × 80 × 80 | 45 | ✅ |
 | cartridge M rear cap (D24) | 4 × 80 × 80 | 18 | ✅ |

@@ -1,6 +1,6 @@
 {
- "hours_p2s": 9.153569444444443,
- "grams": 314.78,
+ "hours_p2s": 12.556055555555554,
+ "grams": 457.71999999999997,
  "step1": [
   {
    "id": "C12",
@@ -31,6 +31,67 @@
     "(a) PCD, pilot \u00d8 and thread depth read to \u00b1 0.1 mm (C9 disc + calipers) into cartridge_m.MOTOR['out_pcd'] and belt_stage.STUB; the thread depth \u2265 4 mm for M3 \u00d7 6 under a 1.8 mm counterbore",
     "(b) on the dummy output: no slip (witness \u2264 0.05 mm at r 17) at **16.5 N\u00b7m**, 10 \u00d7 each way, with a **360 N** radial pull at the flange (the motor bearing's share of the 1158 N shaft load at the peak, belts.md hinged); breakaway of each screw \u2265 its build torque after (the model holds 27.2 N\u00b7m: \u03bc 0.2 \u00d7 8 \u00d7 1.0 kN \u00d7 r 17, 2.47\u00d7)",
     "(c) 1b, on the rig: the drive at its 11 N\u00b7m peak against the hard stop, 10 \u00d7: no slip (witness mark)"
+   ]
+  }
+ ],
+ "load_chain": [
+  {
+   "id": "C15",
+   "name": "Creep coefficient \u03c6 of a print-clamped tube (Neon #3, C1 'before' rows)",
+   "passes": [
+    "tube r 11\u201320 \u00d7 69.6 (the pitch tube's wall) bare on an M8 + Belleville-free steel washers at 8.8 MPa (\u2248 7.7 kN, the wave-3 stress), 1000 h at 40 \u00b0C (the P2S bed + a box): the squeeze grows by \u2264 2.0 \u00d7 its elastic part extrapolated to 2 \u00d7 10\u2074 h (Findley t^n fit of the 1, 10, 100, 1000 h readings) \u2192 \u03c6 \u2264 2.0",
+    "\u03c6 \u2264 1.0 (the nominal) lets the C1 'before' rows and the V-band's creep term relax; \u03c6 > 2.0 fails the design value: the W21 disc stack is resized"
+   ]
+  },
+  {
+   "id": "C16",
+   "name": "Sleeved tie joints: moment to gap (C1 pitch + yaw ties, the bone tie)",
+   "passes": [
+    "pitch hub \u2194 tube: no gap (\u2264 5 \u00b5m at the tension edge) at **30 N\u00b7m** (the worst service row), gap onset \u2265 39 N\u00b7m (0.7 \u00d7 the model's 56 N\u00b7m at the life preload); yaw flange \u2194 tube: no gap (\u2264 5 \u00b5m at the tension edge) at **33 N\u00b7m** (the worst service row), gap onset \u2265 37 N\u00b7m (0.7 \u00d7 the model's 54 N\u00b7m at the life preload); bone \u2194 yaw flange: no gap (\u2264 5 \u00b5m at the tension edge) at **32 N\u00b7m** (the worst service row), gap onset \u2265 105 N\u00b7m (0.7 \u00d7 the model's 151 N\u00b7m at the life preload)",
+    "after 72 h at 50 \u00b0C under the preload alone, the same no-gap moment within 10 % and each nut's breakaway \u2265 its build torque"
+   ]
+  },
+  {
+   "id": "C17",
+   "name": "Tapped M3 threads in the 7075 flange (yaw tie, bone studs)",
+   "passes": [
+    "yaw tie (8.3 mm engaged, ISO 4762 12.9): strip \u2265 **3.6 kN** (1.5 \u00d7 the 2.38 kN fault bolt force; model 14.3)",
+    "bone studs (3.4 mm tapped through the recess floor, DIN 976 10.9 + Loctite 270): strip \u2265 **3.0 kN** (1.5 \u00d7 1.97; model 4.9), and the stud does not turn at 2 \u00d7 its 0.8 N\u00b7m nut torque after 24 h cure"
+   ]
+  },
+  {
+   "id": "C18",
+   "name": "R17 front stop: 7075 dog on its block (W16c)",
+   "passes": [
+    "static: the dog on its block at **3.05 kN** (the 102.9 N\u00b7m stall at r 33.75, one dog) for 10 s: no yield (dial \u2264 0.01 mm set), no crack",
+    "100 hits at the drive limit (1.04 kN, 35.1 N\u00b7m; a 1 kg drop weight from the height that gives the stop's impact energy, ESTIMATE): dent \u2264 0.05 mm on either face, the hard anodise unbroken (no bright metal under 10\u00d7 loupe)"
+   ]
+  },
+  {
+   "id": "C19",
+   "name": "Inline roll output dowels: slip torque (Neon 6a)",
+   "passes": [
+    "the 7075 adapter on the output, 3 \u00d7 \u00d84 dowels bonded in situ + 3 \u00d7 M4 \u00d7 10 csk: no slip (witness \u2264 0.02 mm at r 30) at **103 N\u00b7m** (the stall; model 106 N\u00b7m = 1.03\u00d7), 10 \u00d7 each way; dry dowels recorded for comparison (model 69 N\u00b7m)"
+   ]
+  },
+  {
+   "id": "C20",
+   "name": "Elbow core bond: 6061 tube in the printed shaft (Neon #2 finding 7)",
+   "passes": [
+    "torque-out of the 16 mm bond \u2265 **68 N\u00b7m** (3 MPa: the fault row's 62.7 N\u00b7m elbow peak, 86% in the core, needs 2.37 MPa under the 40T)",
+    "sustained: 23 N\u00b7m (1 MPa) held 72 h at 50 \u00b0C: no rotation (witness line \u2264 0.1 mm at r 20)",
+    "the failure is cohesive in the print or the adhesive, not a clean peel off the abraded bore (else: a knurled core, or the D-flat key)"
+   ]
+  },
+  {
+   "id": "C21",
+   "name": "Arm detach V-band clamp on the printed ferrules (D29 + W21 disc stack)",
+   "passes": [
+    "stack to its stop: T-bolt **410 N** (stack height on the calibration curve, \u00b1 10 %); the face (outer land r 41\u201345.5) shows no gap at the rim (dial, \u2264 5 \u00b5m) up to **26.7 N\u00b7m** (the hug row \u00d7 1.5), fresh and after 72 h at 50 \u00b0C (the model keeps 1.39 kN, gap at 29 N\u00b7m)",
+    "stack height after the hold: \u2265 the stop minus 0.5 mm (the creep budget of the 2.7 mm stroke)",
+    "fault: 183 N\u00b7m for 10 s (the stall row): no disengagement, no lip crack, the faces re-close",
+    "as designed (D29 wing nut, no stack, full face): record the gap moment fresh at a light hand and after the hold (the model: 13 N\u00b7m fresh, \u2248 0 after)",
+    "a timed two-arm join with the lever nut \u2264 30 s (R3)"
    ]
   }
  ]

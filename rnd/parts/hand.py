@@ -157,7 +157,15 @@ def wrist_roll_face_z() -> float:
 # the palm; the servo drives it through a two-dog coupling (torque only, floats axially). Cartridge S still slides out of
 # the palm (2 screws); tools (suction cup, …) bolt to the spindle flange. The wrist-pitch KX56 stays: its bending lever is
 # only the ≈ 40 mm hub offset (≈ 0.9 N·m dynamic vs ≈ 1.5 N·m lift-off).
-BRG_WR = dict(d=20.0, D=32.0, B=7.0)          # 61804 (reused: the D13 stages freed the arm's 61804s)
+BRG_WR = dict(d=20.0, D=32.0, B=7.0)          # 20 × 32 × 7 (was 2 × 61804, reused from the D13 stages)
+# Fable #2 major 5 (2026-11-28, rnd/joints.py wrist rows): the two bearings sit 7 mm apart, so a load at the hand becomes a
+# big radial couple: the stall row puts ≈ 3.4 kN on one 61804 (C0 2.32 kN: s0 0.69), and the printed D16 spindle saw
+# ≈ 30 MPa at that couple. Now: full-complement 6804s in the same envelope (no cage, oscillating duty: bike-pivot grade,
+# C0 ≈ 1.6 × ESTIMATE), a turned 6061-T6 spindle (the gripper's 4 × M3 tapped in metal), and the cap's 3 × M2.5 inserts
+# moved out to lugs at r CAP_SCREW_R (at r 17.4 their Ø3.2 holes cut the r 16.05 bearing seat).
+WR_BEARING = "6804 full complement"
+CAP_SCREW_R = 21.5
+CAP_LUG_R = 4.0
 SPINDLE_DROP = 19.3                            # wrist-roll face → gripper base top (was KX44 gap + 12.6 = 13.2)
 # Wrist-roll range (2026-11-27): ±120° (params.Arm.wrist_roll_range_deg; the STS3215 is set to it in firmware, and the
 # palm clock spring r 14–24 gives 302° packed vs 288° needed). Kept the palm instead of growing the spiral to r_out 27.5: the
@@ -180,9 +188,11 @@ def wrist_roll_skirt() -> Part:
     sk -= Pos(0, 0, zf - 17.0) * Cylinder(BRG_WR["D"] / 2 + 0.05, 2 * BRG_WR["B"], align=MIN)   # bearing seats, open below
     sk -= Pos(0, 0, zf - 3.0) * Cylinder(13.0, 1.5, align=MIN)                     # shoulder over the upper outer race
     sk -= Pos(0, 0, zf - 1.5) * Cylinder(11.0, 40, align=MIN)                      # dog adapter clearance up to the servo
-    for k in range(3):                                                             # 3 × M2.5 into heat-set inserts for the cap
+    for k in range(3):                                                             # 3 × M2.5 into heat-set inserts for the cap, in lugs (Fable #2 M5)
         a = 2 * math.pi * k / 3 + math.pi / 6
-        sk -= Pos(17.4 * math.cos(a), 17.4 * math.sin(a), zf - 17.0) * Cylinder(1.6, 5, align=MIN)
+        at = Pos(CAP_SCREW_R * math.cos(a), CAP_SCREW_R * math.sin(a), zf - 17.0)
+        sk += at * Cylinder(CAP_LUG_R, 8.0, align=MIN)
+        sk -= at * Cylinder(1.6, 5, align=MIN)
     return sk
 
 
@@ -192,7 +202,9 @@ def wrist_roll_cap() -> Part:
     c = Pos(0, 0, zf - 18.5) * (Cylinder(19, 1.5, align=MIN) - Cylinder(13.0, 1.5, align=MIN))
     for k in range(3):
         a = 2 * math.pi * k / 3 + math.pi / 6
-        c -= Pos(17.4 * math.cos(a), 17.4 * math.sin(a), zf - 18.5) * Cylinder(1.4, 1.5, align=MIN)
+        at = Pos(CAP_SCREW_R * math.cos(a), CAP_SCREW_R * math.sin(a), zf - 18.5)
+        c += at * Cylinder(CAP_LUG_R, 1.5, align=MIN)
+        c -= at * Cylinder(1.4, 1.5, align=MIN)
     return c
 
 
@@ -309,6 +321,7 @@ def masses(density=1.27):
     printed = palm().volume + sum(p.volume for n, p, c in gripper_parts() if n in ("grip_base", "grip_servo_sleeve", "jaw_moving", "jaw_fixed"))
     return {"palm + gripper printed": printed / 1e6 * density * 0.7,
             "6 × M3 × 60 palm screws + 6 × M3 nuts (ESTIMATE)": 0.007,
-            "D16 wrist-roll spindle + dog (printed) + 2 × 61804": sum(p.volume for n, p, c in wrist_roll_parts() if n in ("wr_dog", "wr_spindle")) / 1e6 * density * 0.9 + 0.016,
+            "D16 wrist-roll dog (printed) + 6061 spindle (Fable #2 M5) + 2 × full-complement 6804": sum(p.volume for n, p, c in wrist_roll_parts() if n == "wr_dog") / 1e6 * density * 0.9
+            + sum(p.volume for n, p, c in wrist_roll_parts() if n == "wr_spindle") * 2.7e-6 + 0.018,
             "D21 finger hook (PETG-CF, 80 %) + Ø3 pin": finger_hook().volume / 1e6 * 1.3 * 0.8 + 0.004,
             "wrist camera module (ESTIMATE)": 0.05, "TPU pads, rail screws (ESTIMATE)": 0.02}

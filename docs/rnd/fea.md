@@ -11,7 +11,7 @@ Each case lists its loads (worst static ×1.5 dynamic, or actuator peak for belt
 | Case | Elements | Von Mises (99.5th pct) | Max displacement | Margin vs 12 MPa |
 |---|---|---|---|---|
 | KX74 collar (locked): teeth at 1.5 × preload (240 N) | 55,317 | 1.4 MPa (max 6.2) | 0.03 mm | 8.7× ✅ |
-| Upper bone / elbow housing: forearm load ×1.5 on the elbow bosses | 63,410 | 0.6 MPa (max 3.2) | 0.35 mm | 19.7× ✅ |
+| Upper bone / elbow housing: forearm load ×1.5 on the elbow bosses | 89,657 | 0.5 MPa (max 1.7) | 0.22 mm | 22.0× ✅ |
 | Wheel pod: wheel load 168 N (×2 bumps) + 0.5 g lateral | 72,187 | 0.2 MPa (max 0.4) | 0.03 mm | 53.2× ✅ |
 | Shoulder pitch bracket: arm moment 19 N·m + belt peak 691 N | 82,056 | 1.8 MPa (max 4.0) | 0.40 mm | 6.6× ✅ |
 | Elbow belt cassette plate: 60 % of the belt peak (415 N) | 17,078 | 1.2 MPa (max 1.6) | 0.04 mm | 9.7× ✅ |
@@ -19,7 +19,15 @@ Each case lists its loads (worst static ×1.5 dynamic, or actuator peak for belt
 | Pitch tube + hub (C1 tie, 4 × M4 in crush sleeves, print squeeze 0.9 kN), fault: bump/stall × 0.5, M 184 N·m, pull-off 343 N | 44,981 | 4.8 MPa (max 19.3) | 0.19 mm | 2.5× ✅ |
 | Yaw tube (C1 tie, 6 × M3 in crush sleeves, print squeeze 1.3 kN), service: basket/hug × 1.5, M 33 N·m, pull-off 101 N | 19,451 | 1.2 MPa (max 1.7) | 0.01 mm | 10.1× ✅ |
 | Yaw tube (C1 tie, 6 × M3 in crush sleeves, print squeeze 1.3 kN), fault: bump/stall × 0.5, M 99 N·m, pull-off 167 N | 19,451 | 1.5 MPa (max 2.1) | 0.01 mm | 7.9× ✅ |
+| Upper bone flange + bone-tie column (6 × M3 studs in crush sleeves, print squeeze 1.6 kN), service: basket/hug × 1.5, M 32 N·m, pull-off 102 N | 26,709 | 2.8 MPa (max 5.9) | 0.10 mm | 4.4× ✅ |
+| Upper bone flange + bone-tie column (6 × M3 studs in crush sleeves, print squeeze 1.6 kN), fault: bump/stall × 0.5, M 98 N·m, pull-off 168 N | 26,709 | 2.7 MPa (max 6.1) | 0.11 mm | 4.4× ✅ |
+| KX-V ferrule flange (printed, W21 V-band), service: set preload 3.8 kN | 42,770 | 0.5 MPa (max 0.9) | 0.00 mm | 22.9× ✅ |
+| KX-V ferrule flange (printed, W21 V-band), fault: tipping 4.4 kN on one half × 0.5 | 42,770 | 0.6 MPa (max 1.1) | 0.00 mm | 20.5× ✅ |
+| Wrist-roll skirt (palm, 2 × 6804 full complement), service: basket hook × 1.5: 335 N couple, 73 N hanging | 28,882 | 1.6 MPa (max 2.0) | 0.05 mm | 7.3× ✅ |
+| Wrist-roll skirt (palm, 2 × 6804 full complement), fault: stall × 0.5: 3352 N couple, 144 N hanging | 28,882 | 8.2 MPa (max 10.3) | 0.26 mm | 1.5× ✅ |
+| Wrist output flange (printed ASA, D24), service: basket hook × 1.5: tilting 7.6 N·m, radial 73 N | 33,051 | 1.0 MPa (max 1.8) | 0.01 mm | 12.1× ✅ |
+| Wrist output flange (printed ASA, D24), fault: bump/stall × 0.5: tilting 53.5 N·m, radial 148 N | 33,051 | 3.7 MPa (max 6.5) | 0.03 mm | 3.3× ✅ |
 | Lift carriage (D20 slot, side walls 4 mm): one arm per side, F (0, 0, -154) N, M (38, 58, 0) N·m × 1.5 (basket floor pick, x 0.50) | 87,064 | 0.7 MPa (max 2.9) | 0.02 mm | 17.0× ✅ |
-| Roll link (D24 inline): rear 61806 stub + GIM8108-36 floor, arm moment 19 N·m (couple 275 N) + roll torque 35 N·m | 148,733 | 1.0 MPa (max 6.7) | 0.11 mm | 12.3× ✅ |
+| Roll link (D24 inline): rear 61806 stub + GIM8108-36 floor, arm moment 19 N·m (couple 275 N) + roll torque 35 N·m | 125,312 | 1.1 MPa (max 6.1) | 0.11 mm | 10.9× ✅ |
 | Clevis + yaw block (D24 inline, + rear arm): yaw belt peak 691 N + arm moment 19 N·m (couple 525 N) | 128,979 | 0.5 MPa (max 1.8) | 0.08 mm | 23.3× ✅ |
 | Torque hanger (wheel): GIM peak 11 N·m → 367 N on the fork | 34,101 | 2.1 MPa (max 5.4) | 0.08 mm | 5.7× ✅ |

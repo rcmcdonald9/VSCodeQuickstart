@@ -9,7 +9,9 @@ Fable review #2 (2026-11-28, M4): Step-1 exit criterion 6 had no coupons behind 
   coupons, each with what it proves, a pass number computed from the repo's own load cases (step1_coupons()) and the print
   and test method; C9 (bolt circles) feeds C14.
 - C1 / C2 (KX74 socket + male face) and C5 (eccentric bushing) are retired (RETIRED): not printed, kept as history.
-- QUEUED: the joints.md coupons not defined yet (a Step-2 gate).
+- C15–C21 (2026-11-28, Fable #2 major 5): the joints.md coupons, defined (joint_coupons()), pass numbers read from the
+  load-chain rows in docs/rnd/joints.json (rnd/joints.py writes them): the creep coefficient, the sleeved ties' moment to
+  gap, the tapped 7075 threads, the front-stop dog, the output dowels, the elbow core bond and the V-band clamp. A Step-2 gate.
 """
 from __future__ import annotations
 
@@ -244,6 +246,10 @@ def parts():
         "C13_flange_plate": (fplate, "PETG", "Stage wall A coupon (elbow 4-ear pattern, nut pockets up); flat"),
         "C13_flange_can": (fcan, "ASA", "The bolted can's lip + flange + nose, with a test-only load arm; flange face down"),
         "C14_stub_template": (stub_template(), "PETG", "Drilling template / stand-in flange: 8 × Ø3.4 on MOTOR['out_pcd'] + Ø20 pilot; re-generate after C9"),
+        "C15_creep_tube": (creep_tube(), "PETG", f"The pitch tube's wall r {C15_TUBE['r'][0]:.0f}–{C15_TUBE['r'][1]:.0f} × {C15_TUBE['L']}, axis vertical (as the tube), 4 perimeters"),
+        "C20_bond_sleeve": (bond_sleeve(), "PETG", "The elbow shaft's Ø40 tube over the 16 mm bond + a 36 AF hex collar; axis vertical (as the shaft)"),
+        "C21_ferrule_male": (Rot(90, 0, 0) * __import__("rnd.parts.roll", fromlist=["x"]).detach_ferrule_male(), "PETG", "Arm-side KX-V ferrule with the 0.2 mm land relief; face down"),
+        "C21_ferrule_female": (__import__("rnd.parts.shoulder", fromlist=["x"]).ferrule(male=False), "PETG", "Pitch-side KX-V ferrule (as the pitch hub's); face down"),
     }
 
 
@@ -267,14 +273,133 @@ RETIRED = [
     ("C5", "Eccentric bushing: 6804 seat, rotates and holds 300 N belt pull", "D26 (owner 2026-11-27): no eccentrics; fixed centres with a tension ring "
      "(elbow, yaw) or a slotted idler (pitch)"),
 ]
-# joints.md "coupons to add" (Fable #2 M4): named, not defined yet; a Step-2 gate (rnd/joints.py owns the numbers)
-QUEUED = [
-    "printed tube clamped as wave 3 (no sleeves) at 8.8 MPa, 1000 h at 40 °C with a load washer: measures φ, the creep ESTIMATE behind joints.md",
-    "the sleeved C1 joint's moment to gap (pitch hub ↔ tube, yaw flange ↔ tube)",
-    "the 7075-T6 yaw flange's tapped M3 threads (strip vs the 12.9 screw)",
-    "the R17 front stop: a 7075 dog on its block at 3 kN, anodised pair, 100 hits (wear and dent) (W16c; replaces the old stop-bush coupon)",
-    "the inline roll output dowels' slip torque on a seller motor (bonded with Loctite 638)",
-]
+# joints.md "coupons to add" (Fable #2 M4) are defined since 2026-11-28 as C15–C21 (joint_coupons()); nothing is queued
+QUEUED = []
+C15_TUBE = dict(r=(11.0, 20.0), L=69.6)      # the pitch tube's clamped wall (shoulder.HUB_TIE tube_r_in … 20, the C1 stack length)
+C20_BOND = dict(od=40.0, bore=30.2, L=16.0, collar=24.0)   # the elbow shaft's printed tube, bonded over the 40T's 16 mm
+
+
+def creep_tube():
+    """C15: a printed tube as the pitch tube's wall (r 11–20 × 69.6), clamped bare (no sleeves) between two steel washers on
+    an M8 through the bore; 4 witness flats for the dial."""
+    r0, r1 = C15_TUBE["r"]
+    t = Cylinder(r1, C15_TUBE["L"], align=MIN) - Cylinder(r0, C15_TUBE["L"], align=MIN)
+    for k in range(4):
+        t -= Rot(0, 0, 90 * k) * Pos(r1 - 0.4, 0, C15_TUBE["L"] / 2) * Box(2, 8, C15_TUBE["L"] + 1)
+    return t
+
+
+def bond_sleeve():
+    """C20: the elbow shaft's printed Ø40 tube (Ø30.2 bore, as arm.elbow_pulley_hub + the bond gap) over the 16 mm bond length
+    of the 40T, plus a 24 mm hex collar (36 AF) for the vise; the 6061 Ø30 × 1.5 offcut is bonded in the bond length only."""
+    from build123d import RegularPolygon, extrude
+    c = C20_BOND
+    t = Cylinder(c["od"] / 2, c["L"], align=MIN) + Pos(0, 0, c["L"]) * extrude(RegularPolygon(36.0 / math.sqrt(3), 6), c["collar"])
+    return t - Cylinder(c["bore"] / 2, c["L"] + c["collar"], align=MIN)
+
+
+def _jj():
+    try:
+        return json.loads((DOCS / "rnd" / "joints.json").read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def joint_coupons():
+    """C15–C21: the coupons behind the load-chain rows of docs/rnd/joints.md, pass numbers from its JSON (rnd/joints.py)."""
+    from .joints import CREEP, joint_models
+    from .params import act
+    from .parts import arm, roll
+    J = _jj()
+    rows = J.get("joints", [])
+    jm = joint_models()
+    svc = lambda j: max((r for r in rows if r["joint"] == j and r["case"] in ("basket × 1.5", "hug × 1.5")), key=lambda r: r["M"], default=dict(M=0.0, N=0.0))
+    flt = lambda j: max((r for r in rows if r["joint"] == j and "F_bolt" in r and r["case"] not in ("basket × 1.5", "hug × 1.5")), key=lambda r: r["F_bolt"],
+                        default=dict(F_bolt=0.0, strip=0.0))
+    mg = {j: min(m.m_gap(0.0) for m in J_["models"]) for j, J_ in jm.items()}
+    c15 = dict(id="C15", name="Creep coefficient φ of a print-clamped tube (Neon #3, C1 'before' rows)", when="Step 2 prints (no motor); 6 weeks on the bed",
+               proves=f"the creep coefficient φ behind every print-clamped joint (joints.py CREEP: φ {CREEP['phi']} design / {CREEP['phi_nom']} nominal, ESTIMATE "
+                      "from printed-PETG data), the reason the C1 ties run in crush sleeves and the D29 V-band needs the W21 disc stack",
+               passes=[f"tube r {C15_TUBE['r'][0]:.0f}–{C15_TUBE['r'][1]:.0f} × {C15_TUBE['L']} (the pitch tube's wall) bare on an M8 + Belleville-free steel washers at "
+                       f"8.8 MPa (≈ {8.8 * math.pi * (C15_TUBE['r'][1] ** 2 - C15_TUBE['r'][0] ** 2) / 1000:.1f} kN, the wave-3 stress), 1000 h at 40 °C (the P2S bed + a box): "
+                       f"the squeeze grows by ≤ {CREEP['phi']:.1f} × its elastic part extrapolated to 2 × 10⁴ h (Findley t^n fit of the 1, 10, 100, 1000 h readings) → φ ≤ {CREEP['phi']}",
+                       "φ ≤ 1.0 (the nominal) lets the C1 'before' rows and the V-band's creep term relax; φ > 2.0 fails the design value: the W21 disc stack is resized"],
+               method="Print `C15_creep_tube` in the arm's PETG, flat, 4 perimeters. Measure the length on the witness flats with the 0.002 mm dial at 20 °C, "
+                      "clamp to the load with a calibrated torque on the M8 (or a dead weight on a lever), read at 1, 10, 100, 1000 h, cool to 20 °C for each reading.",
+               updates="joints.py CREEP phi / phi_nom; the V-band life preload (joints.py vband)")
+    c16_p = "; ".join(f"{j}: no gap (≤ 5 µm at the tension edge) at **{svc(j)['M']:.0f} N·m** (the worst service row), gap onset ≥ {0.7 * mg[j]:.0f} N·m "
+                      f"(0.7 × the model's {mg[j]:.0f} N·m at the life preload)" for j in jm)
+    c16 = dict(id="C16", name="Sleeved tie joints: moment to gap (C1 pitch + yaw ties, the bone tie)", when="Step 2, with the turned sleeves and the metal parts",
+               proves="the crush-sleeve model (joints.py SleeveClamp): metal stack, preload after embedding, the no-gap moment of each tie",
+               passes=[c16_p, "after 72 h at 50 °C under the preload alone, the same no-gap moment within 10 % and each nut's breakaway ≥ its build torque"],
+               method="Assemble each joint on its real printed parts (pitch tube + hub; yaw tube + flange; the upper bone's top piece + the yaw flange) with the "
+                      "bought studs, sleeves and rings at the build torque. Clamp the metal side in the vise, hang the luggage scale on a 300 mm lever bolted to the "
+                      "printed side, a dial test indicator across the interface at the far edge from the load: the gap moment is where the reading leaves the "
+                      "linear (closed-joint) slope.",
+               updates="joints.py SLEEVE_STOCK / preloads; a short row → a longer sleeve or a higher preload")
+    yb, bb = flt("yaw flange ↔ tube"), flt("bone ↔ yaw flange")
+    c17 = dict(id="C17", name="Tapped M3 threads in the 7075 flange (yaw tie, bone studs)", when="Step 2, on the flange or a 7075 offcut from the same plate",
+               proves="the thread-strip strength (FED-STD-H28 at the 6g/6H limits, joints.py thread_strip) of the two M3 thread sets in the 7075-T6 yaw flange",
+               passes=[f"yaw tie (8.3 mm engaged, ISO 4762 12.9): strip ≥ **{1.5 * yb['F_bolt'] / 1e3:.1f} kN** (1.5 × the {yb['F_bolt'] / 1e3:.2f} kN fault bolt force; model {yb['strip'] / 1e3:.1f})",
+                       f"bone studs (3.4 mm tapped through the recess floor, DIN 976 10.9 + Loctite 270): strip ≥ **{1.5 * bb['F_bolt'] / 1e3:.1f} kN** (1.5 × {bb['F_bolt'] / 1e3:.2f}; "
+                       f"model {bb['strip'] / 1e3:.1f}), and the stud does not turn at 2 × its 0.8 N·m nut torque after 24 h cure"],
+               method="Tap a 7075 offcut 5 mm thick through (the bone floor: face it to 3.6 mm) and blind 8.3 mm (the yaw tie) with the production tap; pull each "
+                      "screw / stud through a steel spacer with the 5:1 lever and the water bucket (as C12) or a press with the luggage scale; three of each.",
+               updates="roll.YAW_TIE / BONE_TIE engagement; joints.py TAU['7075-T6']")
+    f = roll.FRONT_STOP
+    rc = (f["dog"][0] + f["dog"][1]) / 2
+    stall, lim = act("GIM8108-36")["peak"], act("GIM8108-36")["rated"]
+    Fst, F35 = stall / (rc / 1000), lim / (rc / 1000)
+    c18 = dict(id="C18", name="R17 front stop: 7075 dog on its block (W16c)", when="Step 2, before the inline roll is powered",
+               proves="the anodised 7075-on-7075 contact of the roll hard stop (joints.py M1 stop row: one dog takes the stall, 3.91× on strength) in wear and dent",
+               passes=[f"static: the dog on its block at **{Fst / 1e3:.2f} kN** (the {stall:.1f} N·m stall at r {rc:.2f}, one dog) for 10 s: no yield (dial ≤ 0.01 mm set), no crack",
+                       f"100 hits at the drive limit ({F35 / 1e3:.2f} kN, {lim:.1f} N·m; a 1 kg drop weight from the height that gives the stop's impact energy, ESTIMATE): dent "
+                       "≤ 0.05 mm on either face, the hard anodise unbroken (no bright metal under 10× loupe)"],
+               method="The two machined parts (an adapter dog and a front-ring block, or offcuts with the same 5.5 mm contact band), hard-anodised, in the press "
+                      "with the luggage scale for the static load; the hits with the drop weight in a tube guide. Depth gauge on the contact band before / after.",
+               updates="roll.FRONT_STOP (anodise spec, dog width); joints.py M1 stop row")
+    c19 = dict(id="C19", name="Inline roll output dowels: slip torque (Neon 6a)", when="Step 2, on the seller GIM8108-36 (or its output boss drawing + a cast offcut)",
+               proves="the dowel load sharing and the bearing allowable in the motor's output boss (joints.py DOWEL: 150 MPa cast, ESTIMATE; dowels bonded with Loctite 638)",
+               passes=[f"the 7075 adapter on the output, 3 × Ø4 dowels bonded in situ + 3 × M4 × 10 csk: no slip (witness ≤ 0.02 mm at r 30) at **{stall:.0f} N·m** "
+                       f"(the stall; model 106 N·m = 1.03×), 10 × each way; dry dowels recorded for comparison (model 69 N·m)"],
+               method="Motor unpowered, its housing on the rig plate; the adapter's lever (the 300 mm stock) and the luggage scale at 300 mm (35 kg = 103 N·m; "
+                      "a 600 mm lever halves it). Only with the seller's agreement, or on a scrap unit.",
+               updates="joints.py DOWEL sb / d_fit; roll.ADAPT")
+    el = J.get("elbow", [])
+    import re
+    tq = lambda tag: next((r for r in el if tag in r["item"]), None)
+    r_f = tq("fault")
+    Tf = float(re.search(r"T ([0-9.]+) N·m", r_f["case"]).group(1)) if r_f else 62.7
+    cc = arm.ELBOW_CORE
+    T_bond = lambda tau, L: tau * 2 * math.pi * (cc["od"] / 2) ** 2 * L / 1000
+    c20 = dict(id="C20", name="Elbow core bond: 6061 tube in the printed shaft (Neon #2 finding 7)", when="Step 2 prints + the 6061 offcut",
+               proves="the epoxy bond between the 6061 Ø30 × 1.5 core and the printed Ø30 bore (joints.py BOND: 3 MPa fault, 1 MPa sustained, ESTIMATE), "
+                      "which carries ≈ 86 % of the elbow torque out of the core under the 40T and under the forearm clamp",
+               passes=[f"torque-out of the {C20_BOND['L']:.0f} mm bond ≥ **{T_bond(3.0, C20_BOND['L']):.0f} N·m** (3 MPa: the fault row's {Tf:.1f} N·m elbow peak, "
+                       f"{arm.elbow_shaft_stress()["share_tors"]:.0%} in the core, needs {arm.elbow_shaft_stress()["share_tors"] * Tf * 1000 / (2 * math.pi * (cc["od"] / 2) ** 2 * C20_BOND["L"]):.2f} MPa under the 40T)",
+                       f"sustained: {T_bond(1.0, C20_BOND['L']):.0f} N·m (1 MPa) held 72 h at 50 °C: no rotation (witness line ≤ 0.1 mm at r 20)",
+                       "the failure is cohesive in the print or the adhesive, not a clean peel off the abraded bore (else: a knurled core, or the D-flat key)"],
+               method="Print `C20_bond_sleeve` axis-vertical as the shaft (layers across the axis), abrade the bore (80 grit) and the tube (Scotch-Brite + IPA), bond "
+                      "16 mm of the 6061 offcut with the build epoxy, cure as the datasheet; the hex collar in the vise, the lever on the tube through a cross pin.",
+               updates="joints.py BOND; arm.ELBOW_CORE bond note (length under the 40T)")
+    vb = J.get("vband_model", {})
+    a_ = vb.get("after", {})
+    vrow = {r["item"]: r for r in J.get("vband", [])}
+    c21 = dict(id="C21", name="Arm detach V-band clamp on the printed ferrules (D29 + W21 disc stack)", when="Step 2 prints + one bought 3\" clamp, before the arm is built",
+               proves="that the clamp keeps its preload on two printed flanges (joints.py vband: the band is ≈ 1 µm/kN stiff axially, so embedding and creep take "
+                      "a wing nut's whole preload; the W21 stack gives it the stroke) and that the arm's moment does not open the faces",
+               passes=[f"stack to its stop: T-bolt **{a_.get('T_set', 410):.0f} N** (stack height on the calibration curve, ± 10 %); the face (outer land r 41–45.5) shows no "
+                       f"gap at the rim (dial, ≤ 5 µm) up to **{vb.get('before', {}).get('m_svc', 26.7):.1f} N·m** (the hug row × 1.5), fresh and after 72 h at 50 °C "
+                       f"(the model keeps {a_.get('life_lo', 1390) / 1e3:.2f} kN, gap at {a_.get('life_lo', 1390) * a_.get('k_face', 20.6) / 1e3:.0f} N·m)",
+                       f"stack height after the hold: ≥ the stop minus {0.5:.1f} mm (the creep budget of the {a_.get('stroke', 2.7):.1f} mm stroke)",
+                       f"fault: {vb.get('M_f', 183):.0f} N·m for 10 s (the stall row): no disengagement, no lip crack, the faces re-close",
+                       "as designed (D29 wing nut, no stack, full face): record the gap moment fresh at a light hand and after the hold (the model: 13 N·m fresh, ≈ 0 after)",
+                       "a timed two-arm join with the lever nut ≤ 30 s (R3)"],
+               method="Print `C21_ferrule_male` (with the 0.2 mm land relief) and `C21_ferrule_female` in the arm's PETG; three Ø6 dowels; the clamp with the stack "
+                      "and the stop sleeve. Calibrate the stack height against load on the 5:1 lever first. Bolt the female to the stand through its spigot, "
+                      "a 1 m lever on the male: the luggage scale gives the moment (1 kg = 9.8 N·m).",
+               updates="roll.DETACH (stack, land, band ESTIMATEs); joints.py vband; bom D29 line")
+    return [c15, c16, c17, c18, c19, c20, c21]
 
 
 def main():
@@ -288,6 +413,7 @@ def main():
         rows.append((name, mat, h or 0, g or 0, note))
     th, tg = sum(r[2] for r in rows), sum(r[3] for r in rows)
     S = step1_coupons()
+    JC = joint_coupons()
     L = ["# Coupons: test prints before buying hardware (generated by `python -m rnd.coupons`)", "",
          "**Why:** these are the riskiest mechanisms in the design. Most cost only filament; C12–C14 use parts in the Step 1a kit "
          "([M1_BENCH_ARM.md](M1_BENCH_ARM.md)). Print them first and record the measurements below; each result updates the named parameter, and the "
@@ -304,18 +430,27 @@ def main():
         L += [f"- {p}" for p in c["passes"]]
         L += ["", f"**Print and test:** {c['method']}", "", f"**Updates:** {c['updates']}.", "",
               "| Result | |", "|---|---|", "| measured | |", "| pass / fail | |", ""]
+    L += ["## Load-chain coupons (C15–C21; Fable #2 majors 4–5, a Step-2 gate)", "",
+          "Pass numbers from the load-chain rows of [rnd/joints.md](rnd/joints.md) (`rnd/coupons.py joint_coupons()`).", ""]
+    for c in JC:
+        L += [f"### {c['id']}: {c['name']} — {c['when']}", "", f"**Proves:** {c['proves']}.", "", "**Pass:**", ""]
+        L += [f"- {p}" for p in c["passes"]]
+        L += ["", f"**Print and test:** {c['method']}", "", f"**Updates:** {c['updates']}.", "",
+              "| Result | |", "|---|---|", "| measured | |", "| pass / fail | |", ""]
     L += ["## Other coupons: fill in the Result column", "", "| # | Measure | Pass if | Updates | Result |", "|---|---|---|---|---|"]
     L += [f"| {c} | {m} | {p} | {u} | |" for c, m, p, u in PROTOCOL]
     L += ["", "## Retired (not printed)", "", "| # | Was | Retired by |", "|---|---|---|"]
     L += [f"| {c} | {w} | {d} |" for c, w, d in RETIRED]
-    L += ["", "## Queued, not defined yet (joints.md; a Step-2 gate)", ""] + [f"- {q}" for q in QUEUED]
+    if QUEUED:
+        L += ["", "## Queued, not defined yet (joints.md; a Step-2 gate)", ""] + [f"- {q}" for q in QUEUED]
     L += ["", "**Small parts for the coupons:** C12–C14 use the Step 1a kit's inserts, M4 × 12 + washers + nuts, M3 × 6, Loctite 243, the lever "
           "stock, the luggage scale, the dial test indicator and the 6061 offcut. Others (≈ $15): Ø3 × 8 dowel pins and Ø6 G25 balls (C4, the head "
           "KX44), a 300–400 mm HTD 5M-15 belt (C6), TPU filament (C7).", "",
           "C9 and C14 (a) need the Step-1a GIM6010-8; C14 (c) needs the Step-1b rig."]
     (DOCS / "COUPONS.md").write_text("\n".join(L) + "\n")
     (ROOT.parent / "docs" / "rnd" / "coupons.json").write_text(json.dumps(
-        {"hours_p2s": th * 0.35, "grams": tg, "step1": [{"id": c["id"], "name": c["name"], "passes": c["passes"]} for c in S]}, indent=1))
+        {"hours_p2s": th * 0.35, "grams": tg, "step1": [{"id": c["id"], "name": c["name"], "passes": c["passes"]} for c in S],
+         "load_chain": [{"id": c["id"], "name": c["name"], "passes": c["passes"]} for c in JC]}, indent=1))
     print("\n".join(L[:12]))
 
 

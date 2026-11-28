@@ -18,6 +18,7 @@ import tempfile
 from pathlib import Path
 
 import numpy as np
+from build123d import Align, Box, Pos
 
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
 E, NU = 1800.0, 0.38                   # MPa
@@ -143,7 +144,7 @@ def cases():
     zE, zS, hy = -arm.ELBOW_Z, -arm.ELBOW_Z + arm.BELT_C, arm.HOUSING["y"] / 2
     fp, fm = w_out * (arm.FORE_Y + hy) / (2 * hy), -w_out * (arm.FORE_Y - hy) / (2 * hy)
     C.append(("Upper bone / elbow housing: forearm load ×1.5 on the elbow bosses", ub, 3.0,
-              lambda x: (x[2] > -80) & (np.hypot(x[0], x[1]) < 23),          # bonded to the CF neck tube in its socket
+              lambda x: (x[2] > -80) & (np.hypot(x[0], x[1]) < 22.1),        # bonded to the CF neck tube in its socket (r < 22.1: not the bone-tie bosses, r ≥ 22.2)
               [(lambda x: (np.hypot(x[0], x[2] - zE) < 26.5) & (np.abs(x[1] - hy) < 4.5), (fp, 0, 0)),
                (lambda x: (np.hypot(x[0], x[2] - zE) < 26.5) & (np.abs(x[1] + hy) < 4.5), (fm, 0, 0))]))
     # 3. Wheel pod: 1/3 robot weight × 2 (bumps) radial + 0.5 g lateral on the bearing seats, bolted under the deck
@@ -168,6 +169,7 @@ def cases():
               lambda x: np.hypot(x[0], x[2] - zE) < 25.3,
               [(lambda x: np.hypot(x[0], x[2] - zS) < 20.7, (0, 0, -0.6 * 691.0))]))
     C += c1_tie_cases()
+    C += chain_cases()
     C.append(carriage_case())
     # 6. Roll link: bolted to the arm-side ferrule; roll belt peak 768 N between the seats (half per wall) + the arm moment
     #    19 N·m as a couple on the two 61808 seats (walls 25.4 mm apart)
@@ -410,6 +412,87 @@ def inline_roll_cases(M=19.0, T=35.1, belt=691.0, weight=28.0):
               rl.clevis_and_yaw_block() + rl.yaw_plate_bot() + rl.roll_arm_rear(), 2.5, fixed,
               [(lambda x, P=P: (np.hypot(x[0], x[1] - RY) < 26.3) & inp(x, P), (-belt / 2 + sg * Fy, 0, -weight)) for P, sg in ((P1, 1), (P2, -1))]
               + [(lambda x, P=P: (np.hypot(x[0] + YC, x[1] - RY) < 20.7) & inp(x, P), (belt / 2, 0, 0)) for P in (P1, P2)]))   # D26: wall A has a Ø40.6 hole now (was the Ø38.2 eccentric seat)
+    return C
+
+
+def chain_cases():
+    """Fable #2 major 5 (2026-11-28): the printed parts of the rest of the arm's load chain (rnd/joints.py *Load chain*).
+    Service = the worst basket / hug × 1.5 (joints.json); fault = the worst bump / stall × 0.5 (so its margin vs 12 MPa equals
+    the full fault vs 24 MPa, as c1_tie_cases)."""
+    from .joints import DOCS as JD, SERVICE, joint_models
+    from .parts import arm, hand, roll as rl, shoulder as sh
+    try:
+        J = json.loads((JD / "joints.json").read_text())
+    except (OSError, ValueError):
+        J = {}
+    rows = J.get("joints", [])
+    vm = J.get("vband_model", {})
+    C = []
+    rho = lambda x: np.hypot(x[0], x[1])
+    # 1. upper bone flange + bone-tie column: held where the CF neck is bonded (the socket bore r 20.1 below the flange and the
+    #    disc's underside over the tube end); the joint moment as a couple on the flange's top face halves, the pull-off on the
+    #    ring seats (the studs hold the bone up through the ring), the print's squeeze pair (crush sleeves carry the preload)
+    t, lv = rl.BONE_TIE, rl.bone_tie_levels()
+    Fp = joint_models()["bone ↔ yaw flange"]["P_print"]
+    part = arm.upper_bone() & Pos(0, 0, -50) * Box(200, 200, 60, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    zc = _half_annulus_centroid(8.0, 45.0)
+    fixed = lambda x: (rho(x) < 20.5) & (x[2] < -6.2)
+    seat = lambda x: (np.abs(x[2] - lv["seat"]) < 0.3) & (np.abs(rho(x) - t["r"]) < t["boss_r"] + 0.3)
+
+    def worst(joint, service, default):
+        m = [(r["M"], r["N"]) for r in rows if r["joint"] == joint and "M" in r and (r["case"] in SERVICE) == service]
+        return max(m) if m else default
+    for tag, (M, N), k in (("service: basket/hug × 1.5", worst("bone ↔ yaw flange", True, (32.4, 102.0)), 1.0),
+                           ("fault: bump/stall × 0.5", worst("bone ↔ yaw flange", False, (98.1, 168.0)), 0.5)):
+        F = M * 1000 / (2 * zc)
+        C.append((f"Upper bone flange + bone-tie column ({t['n']} × M3 studs in crush sleeves, print squeeze {Fp / 1e3:.1f} kN), {tag}, M {M:.0f} N·m, pull-off {N:.0f} N",
+                  part, 2.5, fixed,
+                  [(seat, (0, 0, (Fp + N) * k)),
+                   (lambda x: (np.abs(x[2]) < 0.3) & (rho(x) > 8.0), (0, 0, -Fp * k)),
+                   (lambda x: (np.abs(x[2]) < 0.3) & (rho(x) > 8.0) & (x[0] > 0), (0, 0, F * k)),
+                   (lambda x: (np.abs(x[2]) < 0.3) & (rho(x) > 8.0) & (x[0] < 0), (0, 0, -F * k))]))
+    # 2. KX-V ferrule flange (printed, both sides alike; shoulder.ferrule frame: flat face z 0 … 3, taper 3 … 8, spigot to 18):
+    #    held on the contact land, the band's line load on the taper (axial P, radial P·tan α inward, by 30° sectors);
+    #    service = the W21 set preload at its high end, fault = the tipping band load on one half
+    a = math.radians(rl.DETACH["alpha"])
+    P_s = vm.get("after", {}).get("P0_hi", 3800.0)
+    P_f = vm.get("P_f", 4400.0)
+    land = rl.DETACH["land"]
+    fer = sh.ferrule(male=True)
+    on_taper = lambda x: (x[2] > 3.2) & (x[2] < 7.8) & (rho(x) > 40.5)
+    sect = lambda x, k0: on_taper(x) & (np.mod(np.degrees(np.arctan2(x[1], x[0])), 360.0) >= k0) & (np.mod(np.degrees(np.arctan2(x[1], x[0])), 360.0) < k0 + 30)
+    for tag, loads_ in (("service: set preload " + f"{P_s / 1e3:.1f} kN", [(P_s / 12, k0) for k0 in range(0, 360, 30)]),
+                        ("fault: tipping " + f"{P_f / 1e3:.1f} kN on one half × 0.5", [(0.5 * P_f / 6, k0) for k0 in range(-90, 90, 30)])):
+        L = []
+        for P, k0 in loads_:
+            c_ = math.radians(k0 + 15)
+            L.append((lambda x, k0=k0: sect(x, k0 % 360), (-P * math.tan(a) * math.cos(c_), -P * math.tan(a) * math.sin(c_), -P)))
+        C.append((f"KX-V ferrule flange (printed, W21 V-band), {tag}", fer, 2.0,
+                  lambda x: (np.abs(x[2]) < 0.3) & (rho(x) > land[0] - 0.2), L))
+    # 3. wrist-roll skirt (palm print): held where it joins the palm; the two bearings' radial couple on the seat halves facing
+    #    their load, the hanging load on the cap lugs
+    W = {r["item"]: r for r in J.get("wrist", [])}
+    zf = hand.wrist_roll_face_z()
+    zP = hand.SLEEVE_TOP - hand.cs.SERVO["case_h"] - hand.cs.SERVO["bottom"] - hand.cs.FLOOR + 2
+    sk = hand.wrist_roll_skirt()
+    wl = J.get("wrist_loads", {})
+    for tag, (R, Fa), k in (("service: basket hook × 1.5", wl.get("service", (335.0, 73.0)), 1.0), ("fault: stall × 0.5", wl.get("fault", (3352.0, 67.0)), 0.5)):
+        seat_u = lambda x: (np.abs(np.hypot(x[0], x[1]) - hand.BRG_WR["D"] / 2) < 0.3) & (x[2] > zf - 10.0) & (x[2] < zf - 3.0)
+        seat_l = lambda x: (np.abs(np.hypot(x[0], x[1]) - hand.BRG_WR["D"] / 2) < 0.3) & (x[2] > zf - 17.0) & (x[2] < zf - 10.0)
+        lugs = lambda x: (np.abs(x[2] - (zf - 17.0)) < 0.3) & (np.hypot(x[0], x[1]) > hand.BRG_WR["D"] / 2 + 0.5)
+        C.append((f"Wrist-roll skirt (palm, 2 × {hand.WR_BEARING}), {tag}: {R:.0f} N couple, {Fa:.0f} N hanging", sk, 1.5,
+                  lambda x: np.abs(x[2] - (zP + 1)) < 0.3,
+                  [(lambda x: seat_u(x) & (x[0] > 0), (R * k, 0, 0)), (lambda x: seat_l(x) & (x[0] < 0), (-R * k, 0, 0)), (lugs, (0, 0, -Fa * k))]))
+    # 4. wrist output flange (printed ASA, hand.adapter_d; frame: motor face z 0, palm face z 6): held at the 6 motor screw
+    #    holes' counterbore floors; the palm's tilting moment as a couple on the palm-face halves, its radial load
+    ad = hand.adapter_d()
+    for tag, (Mt, Fr), k in (("service: basket hook × 1.5", wl.get("pitch_service", (7.6, 73.0)), 1.0), ("fault: bump/stall × 0.5", wl.get("pitch_fault", (53.5, 148.0)), 0.5)):
+        zc2 = _half_annulus_centroid(8.0, 25.0)
+        F = Mt * 1000 / (2 * zc2)
+        on_face = lambda x: (np.abs(x[2] - hand.ADAPTER_T) < 0.3) & (rho(x) > 8.2)
+        C.append((f"Wrist output flange (printed ASA, D24), {tag}: tilting {Mt:.1f} N·m, radial {Fr:.0f} N", ad, 1.2,
+                  lambda x: ((np.abs(x[2] - 2.0) < 0.3) & (rho(x) < 15.0)) | ((np.abs(x[2]) < 0.3) & (rho(x) < 16.0)),
+                  [(lambda x: on_face(x) & (x[0] > 0), (Fr * k / 2, 0, F * k)), (lambda x: on_face(x) & (x[0] < 0), (Fr * k / 2, 0, -F * k))]))
     return C
 
 
