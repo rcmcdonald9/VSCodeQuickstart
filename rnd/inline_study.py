@@ -855,7 +855,7 @@ def report(res, keys):
         L += [f"**B1y vs B1 at the yaw, per arm:** B1's GIM6010-8 + 2:1 belt stage (stub, pulley, 6001, belt, flange screws, Al cap + NTC, "
               f"AS5048A) ${yaw_b1:,.2f} → B1y's DM-J4340-2EC + Ø60 adapter ${yaw_y - ring:,.2f} (+ the thermal ring ${ring:,.2f}) = ${yaw_y:,.2f}. "
               f"Robot landed: **{_sd(2 * (yaw_y - ring - yaw_b1) * 1.15)} without the ring (Astra's ≈ +$57), {_sd(cy['robot_landed'] - c1['robot_landed'])} with it**; "
-              f"at the dearest J4340 listing ($215) {_sd(cy['robot_landed_hi'] - c1['robot_landed'] - 0 * 0)} against B1 at its lowest.", ""]
+              f"at the dearest J4340 listing (${HI['DM-J4340-2EC']:.0f}) {_sd(cy['robot_landed'] - c1['robot_landed'] + 2 * 1.15 * (HI['DM-J4340-2EC'] - prices()['DM-J4340-2EC'][0]))} with the ring.", ""]
     for k in keys:
         c = res[k]["cost"]
         L += [f"**{NAME[k]}: ${c['arm']:,.0f} per arm** (dearest listings ${c['arm_hi']:,.0f})", "", "| Joint | Item | Qty | $ | Basis |", "|---|---|---|---|---|"]
@@ -1045,7 +1045,7 @@ def recommendation(res, keys):
           f"yaw J_r·N² {b1['backdrive']['upper_yaw']['J']:.4f} → {by['backdrive']['upper_yaw']['J']:.4f} kg·m² (40:1 two-stage against 16:1); "
           f"accuracy with the encoders each BOM buys: B1 {b1['acc_bom']['rss']:.1f} mm (AS5048A on the yaw shaft) → B1y {by['acc_bom']['rss']:.1f} mm with the 2EC as "
           f"an absolute reference only (the J4340's ≈ 15 arcmin backlash stays in the loop), {by['acc_enc']['rss']:.1f} mm only if an outer loop can be closed on the 2EC "
-          "(not yet demonstrated: a regression until it is); R1 coverage change {r1:+.0f} points at worst "
+          f"(not yet demonstrated: a regression until it is); R1 coverage change {r1:+.0f} points at worst "
           f"(kinematics identical, FK diff {rc.get('fk_max_diff_mm', float('nan')):.3f} mm); yaw block 175 × 92 → Ø92 plan with +15 mm drop; "
           f"drive pieces {b1['simple']['parts']} → {by['simple']['parts']}, one belt stage and its tension check fewer (D26's 0–156 N yaw spread gone). "
           f"**Thermal is the catch:** the bare J4340 under the cover holds the worst 1 kg yaw pose at {th_y['T']:.0f} °C nominal ({th_y['T_hi']:.0f} band hi; "
