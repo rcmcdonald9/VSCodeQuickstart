@@ -102,7 +102,7 @@ def items(d=BASELINE, timer=None):
     A("Compute & sensors", "IMU (BNO085) + optical-flow (PAA5100JE)", 1, 55.0, "components.yaml (flow)")
     A("Compute & sensors", "Mic array + speaker + chest/bumper LEDs (eyes are now drawn on the D11 screen)", 1, 36.0, "ESTIMATE")
     A("Compute & sensors", "D22 face screen: Waveshare ESP32-P4-WIFI6-Touch-LCD-7B (7\" 1024×600 cap. touch, CAN + RS485) + 24→5 V 2 A buck", 1, 46.99 + 6.0, "waveshare.com SKU 32510 (2026-11-27)")
-    A("Drive & structure", f"D23 consumer covers: TPU 95A gaiters/bumper skins (1 kg) + fasteners; the rigid PETG covers ({COVERS_KG} kg, covers.printed()) are in the PETG bundles below", 1, 30.0,
+    A("Drive & structure", f"D23 consumer covers: TPU 95A gaiters/bumper skins (1 kg, incl. the D31 shoulder wedge skirts ≈ 62 g, attachment TBD) + fasteners; the rigid PETG covers ({COVERS_KG} kg, covers.printed()) are in the PETG bundles below", 1, 30.0,
       "ESTIMATE (TPU 95A ≈ $20–25 / kg)")
     A("Bearings", "6808-2RS (40×52×7), no-name 10-pack (check the 2RS variant): 2 per wheel + 2 per arm belt stage", 8 + 2 * ns, 2.02, "AliExpress MOCHU snapshot (loop 14); Zoro generic $4.71")
     A("Bearings", "61804-2RS (20×32×7): D16 wrist-roll spindles, 2 per hand (the lift's small hub pair went with the lift's D26 direct stage, W12)", 4, 0.92, "AliExpress MOCHU snapshot; Zoro $4.69")

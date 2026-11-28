@@ -41,11 +41,11 @@ ROLL_DRIVE = os.environ.get("PIP_ROLL_DRIVE", "inline")   # owner approved the i
 # "latch" (O2: spring-applied, solenoid-retracted roll stop at +5°; CAD in rnd/parts/roll.py, supervisor in sw/safety.py).
 # Default off: the owner chooses (power_off.md).
 ROLL_GUARD = os.environ.get("PIP_ROLL_GUARD", "none")
-# R17 yaw hood's upper inboard wedge (cover_yaw × roll_link / ferrule_m; W18a: no rigid guard can close it): "none" (default)
-# or "skirt" (a TPU 95A comb skirt on the hood's inboard face, rnd/parts/covers.wedge_skirt; rnd/pinch.py counts the rows it
-# closes as soft-guarded, not as rigid passes, with the D25 / R17 force limit as the second barrier). Owner call pending:
-# this or ROLL_Y + 23–30 mm (R5).
-WEDGE_GUARD = os.environ.get("PIP_WEDGE_GUARD", "none")
+# R17 yaw hood's upper inboard wedge (cover_yaw × roll_link / ferrule_m; W18a: no rigid guard can close it): "none"
+# or "skirt" (default, D31) (a TPU 95A comb skirt on the hood's inboard face, rnd/parts/covers.wedge_skirt; rnd/pinch.py counts the rows it
+# closes as soft-guarded, not as rigid passes, with the D25 / R17 force limit as the second barrier). D31 (owner, 2026-11-28): the skirt is the default;
+# ROLL_Y + 23–30 mm was rejected (the link row stays open, R5).
+WEDGE_GUARD = os.environ.get("PIP_WEDGE_GUARD", "skirt")   # D31 (owner 2026-11-28): TPU comb skirt on by default; "none" for comparison
 assert WEDGE_GUARD in ("none", "skirt"), "PIP_WEDGE_GUARD must be none | skirt"
 ROLL_DRIVES = {
     # 2026-11-27 (wave 2, roll track): both roll-side stages on D24 bolted cartridges (roll 0.72 → 0.68: −65 g KX74 sockets/forks,
