@@ -229,7 +229,7 @@ def study(d, n=24, quick=False, seed=5):
                                              still_moving=float(np.mean([r["moving"] > 0.05 for r in rows])),
                                              g_roll_in=float(-min(min(r["g_roll"] for r in rows), 0.0))))
     res["push"] = push_force(base, rng, n)
-    res["latch"] = latch_loads(d, res)
+    res["latch"] = latch_loads(d, res, base)
     return res
 
 
@@ -250,20 +250,37 @@ def push_force(fall, rng, n):
     return out
 
 
-def latch_loads(d, res):
-    """Stop sizing for a latch / fixed stop at +5°: (1) the unpowered fall onto it (peak roll speed at contact from the
-    runs, peak torque ω·√(J·k_θ) + the gravity torque, k_θ = K_STOP_LIN·r²); (2) a powered fault driving into it at the
-    GIM8108-36 peak (as the fixed −16.5 / +104° stop bushes are sized, roll.drive_capacity)."""
+K_STOP_PU = 0.2e6         # N/m: the same stop with a 3 mm PU 90A cap on the pin (ESTIMATE)
+F_GUIDE = 400.0           # N: what the latch guide carries with print behind its sleeve (≈ 12 MPa on 11.5 × 3 mm; ESTIMATE)
+
+
+def latch_loads(d, res, fall=None):
+    """Stop sizing for a latch / fixed stop at +5°, per load: the unpowered fall onto it (peak roll speed at contact from
+    the runs; J = the twin's roll inertia hanging, rotor included; peak torque ω·√(J·k_θ) + the inward gravity torque,
+    k_θ = k·r², steel and PU-capped; overshoot past the contact ½Jω² = ½k_θδ²), and a powered fault driving into it
+    (rated, the drive's current limit, and the GIM8108-36 peak, as the fixed −16.5 / +104° stop bushes are sized)."""
     from .params import act
-    J_arm = 0.25            # kg·m²: arm + 2.5 kg about the roll axis, hanging (ESTIMATE from the twin: ≈ 3.5 kg at ≈ 0.25 m r.m.s.)
-    J = J_arm + drive_rows(d)["roll"]["J"]
-    k_th = K_STOP_LIN * R_STOP ** 2
-    lat = [c for c in res["cases"] if c["guard"] == "latch"]
-    w = max((c["v_roll_stop"] for c in lat), default=0.0)
-    g = max((c["g_roll_in"] for c in lat), default=0.0)
-    t_fall = w * math.sqrt(J * k_th) + g
-    t_fault = act(d.arm.joints["shoulder_roll"][0])["peak"]
-    return dict(omega=w, J=J, k_theta=k_th, T_fall=t_fall, F_fall=t_fall / R_STOP, T_fault=t_fault, F_fault=t_fault / R_STOP)
+    fall = fall or Fall(d)
+    rows = []
+    for c in [c for c in res["cases"] if c["guard"] == "latch"]:
+        loads = (c["load"], 0.0) if c["load"] <= 1.0 else (c["load"] / 2, c["load"] / 2)
+        fall.set(dict(lift=fall.lift_rng[1], pitch=0.0, roll=math.radians(LATCH_DEG), yaw=0.0, elbow=0.0, wpitch=0.0, wroll=0.0), loads)
+        M = np.zeros((fall.m.nv, fall.m.nv))
+        if hasattr(fall.dat, "qM"):
+            fall.mj.mj_fullM(fall.m, M, fall.dat.qM)
+        else:
+            fall.mj.mj_fullM(fall.m, fall.dat, M)
+        J = float(M[fall.da["roll_r"], fall.da["roll_r"]])
+        w, g = c["v_roll_stop"], c["g_roll_in"]
+        row = dict(load=c["load"], omega=w, J=J, g=g)
+        for key, k in (("steel", K_STOP_LIN), ("pu", K_STOP_PU)):
+            kt = k * R_STOP ** 2
+            T = w * math.sqrt(J * kt) + g
+            dlt = math.degrees(w * math.sqrt(J / kt) + g / kt)
+            row[key] = dict(T=T, F=T / R_STOP, over=dlt, wedge=wedge(LATCH_DEG - dlt))
+        rows.append(row)
+    a = act(d.arm.joints["shoulder_roll"][0])
+    return dict(rows=rows, T_rated=a["rated"], T_peak=a["peak"], F_rated=a["rated"] / R_STOP, F_peak=a["peak"] / R_STOP)
 
 
 # ------------------------------------------------------------------------------------------------------------- options
@@ -364,20 +381,44 @@ def report(res, res_d20=None):
           "|---|---|---|---|---|---|"]
     for o in options(res):
         L.append(f"| {o['key']} | {o['name']} | {o['guarantee']} | {o['cost']} | {o['mass']} | {o['reach']} |")
-    L += ["", "**Latch sizing (O1 / O2).** Falling onto a +5° stop unpowered: peak roll speed at contact "
-          f"{lt['omega']:.2f} rad/s, J ≈ {lt['J']:.2f} kg·m² (arm + load ≈ 0.25, ESTIMATE + rotor {dr['roll']['J']:.3f}), stop stiffness "
-          f"k_θ = k·r² ≈ {lt['k_theta']:.0f} N·m/rad (k {K_STOP_LIN / 1e6:.0f} kN/mm, ESTIMATE) → ≈ {lt['T_fall']:.0f} N·m, {lt['F_fall']:.0f} N on the pin. "
-          f"The sizing load is a powered fault driving into it at the GIM8108-36 peak: {lt['T_fault']:.0f} N·m → **{lt['F_fault'] / 1000:.2f} kN** at r "
-          f"{R_STOP * 1000:.0f} mm, the load the fixed −16.5 / +104° stop bushes already take (roll.drive_capacity: Ø10 42CrMo4, 8 mm proud). "
-          "The latch pin is the same section (Ø10 × 8 mm engaged, ISO 8734 hardened dowel, ≥ 1,500 MPa: bending ≈ 2.45 kN × 6 mm → 150 MPa) in a "
-          "steel guide bush through the 7075 rear plate + roll-link floor; its retract stroke 8.5 mm sits in the 22 mm of plate + floor + cup "
-          "ring at r 42 behind it. Placement: the same arm edge as the −16.5° bush, 21.5° further round (bush centre at roll −47.25°): 15.8 / "
-          "17.2 mm to the neighbouring bush / sleeve, so it needs no screw moved (CAD: PIP_ROLL_GUARD=latch, rnd/parts/roll.py).", "",
-          "**Supervisor half (sw/safety.py, ROLL_LATCH; off unless PIP_ROLL_GUARD=latch):** the solenoid is energised (pin retracted) only "
-          "while the supervisor is healthy, nobody is near and the pin-retracted switch confirms it; the roll may go below +5° only after "
-          f"that confirmation (LATCH_RETRACT_S); on a person near or any latched fault the pin is dropped; idle or before a planned power-down "
-          "the planner parks roll ≥ +8° (closes most of O2's residual window). The contactor feeds the solenoid, so e-stop / K1 open drops it "
-          "in hardware whatever the software does.", "",
+    L += ["", "## Latch sizing (O1 / O2)", "", "Unpowered fall onto a +5° stop, per load (people-near starts, back-drive ×1): contact speed from the "
+          f"runs, J = the twin's roll inertia hanging (rotor {dr['roll']['J']:.3f} kg·m² included), stop stiffness steel {K_STOP_LIN / 1e6:.0f} kN/mm or "
+          f"PU-capped {K_STOP_PU / 1e6:.1f} kN/mm at r {R_STOP * 1000:.0f} mm (ESTIMATE); overshoot = how far past +5° the arm presses in.", "",
+          "| Load | Contact speed (rad/s) | J (kg·m²) | Gravity in (N·m) | Steel: peak N·m / kN, overshoot ° → wedge mm | PU cap: peak N·m / kN, overshoot ° → wedge mm |",
+          "|---|---|---|---|---|---|"]
+    for r in lt["rows"]:
+        L.append(f"| {r['load']:g} kg | {r['omega']:.2f} | {r['J']:.2f} | {r['g']:.1f} | {r['steel']['T']:.0f} / {r['steel']['F'] / 1000:.2f}, "
+                 f"{r['steel']['over']:.1f}° → {r['steel']['wedge']:.0f} | {r['pu']['T']:.0f} / {r['pu']['F'] / 1000:.2f}, {r['pu']['over']:.1f}° → {r['pu']['wedge']:.0f} |")
+    geo = None
+    try:
+        from .parts import roll as RP
+        if RP.INLINE:
+            geo = RP.latch_geometry()
+    except Exception:
+        geo = None
+    L += ["", f"Powered fault into the pin: rated {lt['T_rated']:.0f} N·m → {lt['F_rated'] / 1000:.2f} kN, stall {lt['T_peak']:.0f} N·m → "
+          f"{lt['F_peak'] / 1000:.2f} kN (what the fixed −16.5 / +104° bushes are sized for: clamped by their M4 to the motor face, "
+          "roll.drive_capacity). **Design (CAD behind PIP_ROLL_GUARD=latch, rnd/parts/roll.py LATCH):** Ø10 hardened head (5 mm into the arm's 8 mm "
+          "edge, ISO 8734-style dowel, bending at 2.45 kN × 5 mm ≈ 125 MPa) guided by its hole in the 7075 rear plate and a Ø11.5 42CrMo4 sleeve in the "
+          "roll-link floor, a Ø6 stem in the cup ring to the spring and a pull cable to a 24 V solenoid in the side block; retract stroke 8 mm "
+          + (f"(pin centre at roll {geo['angle']:.1f}°, r {RP.LATCH['r']:g} mm; {geo['nearest']:.1f} mm to the nearest screw sleeve / bush, "
+             f"{geo['to_plate_in']:.2f} / {geo['to_plate_out']:.2f} mm plate ring walls, {geo['to_floor_edge']:.2f} mm print outside the sleeve, "
+             f"{geo['to_pilot']:.1f} mm to the driver pilot; the arm covers the pin over roll {geo['covered'][0]}…{geo['covered'][1]}°). " if geo else ". ")
+          + "**Its weak link is the print behind the sleeve** (≈ 0.4 kN at 12 MPa), not the pin: sw/safety.py caps the roll torque at LATCH_T_MAX = 16 N·m "
+          "(0.39 kN) while the pin may be in (people near, faults: there the drive only has to hold the arm, ≤ 14 N·m with the basket); with the "
+          f"PU cap the unpowered falls stay ≤ {F_GUIDE / 1000:.1f} kN up to "
+          f"{max([r['load'] for r in lt['rows'] if r['pu']['F'] <= F_GUIDE] or [0]):g} kg and reach "
+          + ", ".join(f"{r['pu']['F'] / 1000:.2f} kN at {r['load']:g} kg" for r in lt["rows"] if r["pu"]["F"] > F_GUIDE)
+          + ". So a metal path to the motor face (a flanged sleeve clamped under the two neighbouring M4) is the open detail before the "
+          "latch can be credited for loaded falls or a stall; falls with the 9 kg basket are also where SW-T7 (basket only with the area clear, "
+          "rnd/tip.py) does the work.", "",
+          "**Supervisor half (sw/safety.py item 16; `roll_latch`, on with PIP_ROLL_GUARD=latch, default off):** `roll_latch_solenoid()` is "
+          "energised (pin retracted) only while the supervisor is healthy and nobody is near; until the pin-retracted switch confirms "
+          "(`set_latch_switch`), or LATCH_RETRACT_S (50 ms) without one, the roll target stays ≥ the +5° bound (+3° margin, never above the "
+          "arm); a person near or any latched fault drops the pin at once; the roll torque is capped at LATCH_T_MAX while the pin may be in; "
+          "ROLL_PARK_DEG (+8°) is where the planner parks the roll when idle or before a planned power-down (closes most of O2's residual "
+          "window). Hardware half (electrical track): the solenoid is fed from the K1-switched bus through a supervisor-gated FET, so e-stop "
+          "/ K1 open drops it whatever the software does; one GPIO in, one out. Tested in sw/test_s1.py test_roll_latch.", "",
           "**Recommendation (owner's call):** O2 (latch) if the across-body / top-down reach with nobody near matters; O1 if a permanent "
           "R16 loss is acceptable (it is free and has no residual); add O2b if the band residual (unplanned power loss with the arm across the "
           "body and nobody near) is not acceptable. O3 and O5 do not stop a push; O4 spends the door width. Bench: the roll back-drive "
