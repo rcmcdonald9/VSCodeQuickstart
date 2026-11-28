@@ -557,8 +557,18 @@ class Board:
     this study proposes (¬AUX on the ARM condition; FORCE also from a K1 that fails to open)."""
     DT = 1e-4
 
-    def __init__(self, which="M1", fix=False, wd_scale=1.0, faults=()):
+    def __init__(self, which="M1", fix=False, wd_scale=1.0, faults=(), base=False, ss1_scale=1.0):
         self.which, self.fix, self.faults = which, fix, set(faults)
+        # base channel (robot board, §6): own watchdog WD_B, U20 OFF-delay safety relay, Q9 base switch, FORCE_B
+        self.base = base
+        self.t_ss1 = el.BASE_SS1["t_set"] * ss1_scale
+        self.last_hb_b = None
+        self.u20_in = self.u20_out = False
+        self.u20_off_t = None
+        self.base_on = False
+        self.force_b_until = -1.0
+        self.disc_b_t = None
+        self.base_log = []
         self.t = 0.0
         self.wd_t = el.WATCHDOG["t_nom"] * wd_scale
         self.s_pressed = False
@@ -594,6 +604,15 @@ class Board:
         return self.logic_on and self.last_hb is not None and self.t - self.last_hb <= self.wd_t
 
     @property
+    def wd_b_ok(self):
+        return (not self.base) or (self.logic_on and self.last_hb_b is not None and self.t - self.last_hb_b <= self.wd_t)
+
+    @property
+    def vbus_b(self):
+        """Base bus present: Q9 on (soft-started), or a shorted Q9 (fault q9_short) with VIN up."""
+        return self.base_on or "q9_short" in self.faults
+
+    @property
     def pre_ok(self):
         return self.vbus >= self.vin - PRE_OK_DV
 
@@ -601,13 +620,16 @@ class Board:
     def force(self):
         return self.t < self.force_until and "no_12v" not in self.faults
 
-    def heartbeat(self):
-        self.last_hb = self.t
+    def heartbeat(self, arm=True, base=True):
+        if arm:
+            self.last_hb = self.t
+        if base:
+            self.last_hb_b = self.t
 
     def press_arm(self):
         if not self.logic_on:
             return False
-        d = (not self.s_pressed) and self.wd_ok and self.th1 and (not self.fix or not self.aux)
+        d = (not self.s_pressed) and self.wd_ok and self.wd_b_ok and self.th1 and (not self.fix or not self.aux)
         clr = self.t < self.por_until
         if d and not clr:
             self.latch = True
@@ -632,6 +654,7 @@ class Board:
         self.t += self.DT
         t = self.t
         stop = self.s_pressed or not self.wd_ok or not self.th1 or not self.logic_on or (self.fix and "no_12v" in self.faults)   # fix 4: 12 V UVLO
+        stop = stop or not self.wd_b_ok                       # base channel: a lost base heartbeat is a board STOP too
         if self.latch and (stop or self.pre_timeout or t < self.por_until or self.force):
             self.latch = False
             self.events.append((t, "LATCH cleared"))
@@ -686,14 +709,46 @@ class Board:
             i -= (self.vbus / r_cl if clamp else 0.0) + el.N_DRIVERS[self.which] * el.I_IDLE_DRIVER * self.vbus / el.V_FULL + self.vbus / el.R_BLEED
             self.vbus = max(self.vbus + self.DT * i / el.c_bus(self.which), 0.0)
         self.log.append((t, self.latch, self.k1, self.k2, self.force, self.vbus))
+        if self.base:
+            self._base_step(t)
+
+    def _base_step(self, t):
+        """U20 (G9SA): input = mushroom channels c/d closed ∧ LATCH (photoMOS in channel 1); its OFF-delay contacts feed Q9's
+        enable, so they open t_ss1 after the input drops and close again only with the input back (ARM). FORCE_B: a 100 ms
+        one-shot on the enable's falling edge. DISC_B: base bus present > 50 ms with the enable off (shorted Q9)."""
+        u_in = (not self.s_pressed) and self.latch and self.logic_on
+        if self.u20_in and not u_in:
+            self.u20_off_t = t
+            self.events.append((t, "U20 input off (SS1 delay starts)"))
+        if u_in:
+            self.u20_out, self.u20_off_t = True, None
+        elif self.u20_out and self.u20_off_t is not None and t - self.u20_off_t >= self.t_ss1:
+            self.u20_out = False
+        self.u20_in = u_in
+        on = self.u20_out
+        if self.base_on and not on:
+            self.force_b_until = t + el.T_FORCE
+            self.events.append((t, "base switch off"))
+            self.events.append((t, "FORCE_B"))
+        elif on and not self.base_on:
+            self.events.append((t, "base switch on"))
+        self.base_on = on
+        if self.vbus_b and not on:
+            self.disc_b_t = t if self.disc_b_t is None else self.disc_b_t
+            if t - self.disc_b_t > 0.050 and not any(e == "DISC_B" for _, e in self.events):
+                self.events.append((t, "DISC_B"))
+        else:
+            self.disc_b_t = None
+        self.base_log.append((t, u_in, self.u20_out, self.base_on, t < self.force_b_until))
 
 
-def _run_hb(b, secs, hb=True, period=0.002):
+def _run_hb(b, secs, hb=True, period=0.002, hb_b=None):
+    hb_b = hb if hb_b is None else hb_b
     n = int(round(secs / b.DT))
     k = int(round(period / b.DT))
     for i in range(n):
-        if hb and i % k == 0:
-            b.heartbeat()
+        if (hb or hb_b) and i % k == 0:
+            b.heartbeat(arm=hb, base=hb_b)
         b.step()
 
 

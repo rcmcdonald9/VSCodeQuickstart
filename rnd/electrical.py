@@ -168,6 +168,26 @@ R_PATH = 0.010                       # BMS MOSFETs + XT90 + 10 AWG pack leads (�
 # Software pack-current budget (the supervisor sums the drives' estimated bus currents and scales the torque limits):
 SW_PACK = dict(i_peak=70.0, i_avg=28.0, t_avg=30.0, t_cell_max=60.0)   # A instantaneous; A over a 30 s rolling mean; °C cell (BMS NTC)
 V_UVLO = 10.0                        # driver under-voltage lockout: ESTIMATE (GIM range starts at 12 V)
+# ---- Base channel for the category-1 base stop (W14a docs/sw/base_stop.md; W15 electrical, rnd/safety_board_sim.py §6).
+# The base no longer hangs after K1: it has its own solid-state switch from VIN whose enable runs through the OFF-delay
+# safety contacts of a rated time-delay safety relay (the hardware SS1 ceiling). Any board STOP or e-stop starts the delay;
+# the base ramps (supervisor, or the drives' own CAN-timeout quick-stop) while its power stays on; the relay then removes
+# base power whatever the software does. Never a capacitor hold-up (electrical.md *Stop category*).
+BASE_SS1 = dict(t_set=2.0, tol=0.10, name="Omron G9SA-321-T075 AC/DC24 time-delay safety relay (dual-channel input, OFF-delay safety contacts "
+                                           "settable 0.5–7.5 s, set 2.0 s)", price=501.38,
+                src="DigiKey $501.38 (13-week lead), RS UK £344.61 ex VAT (2026-11-28 search); OFF-delay accuracy not found in the listings: "
+                    "± 10 % ESTIMATE, board test T17 measures it")
+BASE_SS1_ALT = dict(name="board-level dual timer (SN74LVC1G123 RC + an independent crystal-timed counter, either one drops the enable), set 2.25 s", tol=0.20,
+                    price=8.0, src="ESTIMATE (DigiKey-class); not a rated part: the cost-down option the owner may trade the G9SA for")
+BASE_SWITCH = dict(name="TI LM5069-1 hot-swap controller (latch-off) + IRFB7530 (60 V, 2 mΩ) + 1 mΩ sense", i_limit=35.0, t_soft=0.050,
+                   price=9.0, src="ESTIMATE (DigiKey-class: LM5069 ≈ $4, IRFB7530 ≈ $3, shunt + passives ≈ $2)")
+BASE_CLAMP_LEG = dict(name="1 × IRFB7530 + 1 × Vishay NH-50 0.56 Ω ∥ VS-40CPQ060-N3, TLV3202 (on 26.0 / off 25.7 V) + 2 µs filter + 50 µs "
+                           "min on-time + UCC27517 gate driver; FORCE_B 100 ms on the base switch's opening edge", price=48.0,
+                      src="ESTIMATE: NH-50 $30 (clamp line) + IRFB7530 $3 + VS-40CPQ060 $1.9 + TLV3202 / LVC1G123 / UCC27517 / passives ≈ $13")
+DRIVE_QS = dict(a_default=0.3, a_max=0.5, can_timeout=float(_BU.get("can_timeout_s", 0.030)))   # wheel-drive quick-stop (m/s² at the rim): default / never above
+LOGIC_MIN_W = 8.0                    # W, the always-on logic branch at its lowest (Pi 5 idle ≈ 3, lidar ≈ 2, screen ≈ 2, nodes ≈ 1): ESTIMATE
+C_VIN_ROBOT = 1.0e-3                 # F on the robot's VIN side (BMS output, DC-DC inputs): ESTIMATE
+CASTER_SOLENOID_A = 0.4              # A each, JF-1039 24 V pull solenoid (BOM line), 4 on the base channel while released
 
 
 def _arm_inertias(d=BASELINE, payload_hand=PAYLOAD_20LB / 2):
