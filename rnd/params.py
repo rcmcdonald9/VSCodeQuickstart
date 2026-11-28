@@ -113,6 +113,28 @@ ARM_MOTOR_SETS = {
 assert ARM_MOTORS in ARM_MOTOR_SETS, f"PIP_ARM_MOTORS must be one of {list(ARM_MOTOR_SETS)}"
 _AM = ARM_MOTOR_SETS[ARM_MOTORS]
 
+# D29 cost track (2026-11-28, docs/rnd/cost_down.md): each saving sits behind a switch; the default changes only once its
+# re-check passes (rnd/bom.py D29 rows).
+# #5 rear cap on the 6 arm belt-joint GIM6010 cartridges: "machined" = the CNC'd finned 6061 disc (default); "stock" = a
+# stock Ø90 × 10 round LED heatsink faced flat and drilled to the cap pattern, on a thermal pad (rnd/thermal.py CAPS).
+REAR_CAP = os.environ.get("PIP_REAR_CAP", "machined")
+assert REAR_CAP in ("machined", "stock"), "PIP_REAR_CAP must be machined | stock"
+# #6 joint-side encoders on the 7 shaft-end joints: "as5048a" (default) | "mt6701" (rnd/accuracy.py ENCODERS).
+JOINT_ENCODER = os.environ.get("PIP_JOINT_ENCODER", "as5048a")
+assert JOINT_ENCODER in ("as5048a", "mt6701"), "PIP_JOINT_ENCODER must be as5048a | mt6701"
+# #9 D18b caster lock release: "four" = one 24 V JF-1039 pull solenoid per caster; "cable" (default since D29, re-check passed:
+# A10 16/16, 35 mm; force 1.85× / 1.06× with a 55 N JF-1264B; release 31 / re-lock 22 ms, tip.md) = one central solenoid pulling
+# 4 Ø1 steel cables in PTFE liners (rnd/tip.py cable_release). caster_mass per caster: "cable" drops the 0.05 kg solenoid
+# and carries a quarter of the central solenoid + cables (ESTIMATE: JF-1264B ≈ 0.09 kg + 4 × 0.25 m cable/liner ≈ 0.03 kg).
+CASTER_RELEASE = os.environ.get("PIP_CASTER_RELEASE", "cable")
+CASTER_RELEASES = {"four": dict(caster_mass=0.18), "cable": dict(caster_mass=0.18 - 0.05 + (0.09 + 0.03) / 4)}
+assert CASTER_RELEASE in CASTER_RELEASES, f"PIP_CASTER_RELEASE must be one of {list(CASTER_RELEASES)}"
+# #10 arm-detach clamp (KX-V ferrule, 3" sanitary profile): "dixon" = Dixon 13MHHM-Q300 quick-release squeeze clamp;
+# "wingnut" (default since D29, re-check passed: preload 1.0–5.8 kN vs 832 N needed, two-arm split 16 s / join 24 s ≤ 30 s,
+# rnd/bom.py detach_recheck) = a generic 304 3" single-hinge wing-nut clamp (m1_kit DETACH_CLAMPS).
+DETACH_CLAMP = os.environ.get("PIP_DETACH_CLAMP", "wingnut")
+assert DETACH_CLAMP in ("dixon", "wingnut"), "PIP_DETACH_CLAMP must be dixon | wingnut"
+
 
 @dataclass
 class Arm:
@@ -186,7 +208,8 @@ class Base:
     caster_r: float = 0.205        # D18b ball contact radius at the 4 diagonals (FROM CAD: the housing clears the skirt and the 45° dock-pad carrier)
     caster_float: float = 0.022    # D18b free stroke when released: clears a 15 mm threshold + 7 mm of pile (R4)
     caster_take_up: float = 0.001  # ESTIMATE: travel before a locked caster carries load (rod-lock bite ≈ 0.5 mm + printed guide ≈ 0.5 mm); bench-test
-    caster_mass: float = 0.18      # each, ESTIMATE: D18b v2 (D26 skid foot): printed foot ≈ 0.03 + PTFE glide, 2 × Ø8 × 90 rods 0.07, steel top + lock plates 0.03, pull solenoid ≈ 0.05 (the 2" ball alone was 0.54 kg, not the 0.09 carried before)
+    caster_release: str = CASTER_RELEASE   # D29 #9: "four" | "cable" (CASTER_RELEASES above)
+    caster_mass: float = CASTER_RELEASES[CASTER_RELEASE]["caster_mass"]      # D29 #9 switch ("four": 0.18). Each, ESTIMATE: D18b v2 (D26 skid foot): printed foot ≈ 0.03 + PTFE glide, 2 × Ø8 × 90 rods 0.07, steel top + lock plates 0.03, pull solenoid ≈ 0.05 (the 2" ball alone was 0.54 kg, not the 0.09 carried before)
     caster_flank: float = 44.3     # deg, FROM CAD (base.FLANK): the skid foot's cone flank, PTFE glide r 9.5 at z 2 → r 30 at z 22
     caster_mu: float = 0.15        # ESTIMATE: PTFE tape on the flank against a threshold edge (wood / aluminium), 0.1–0.2
     ballast_mass: float = 4.9      # FROM CAD (rnd/parts/base.py ballast(): 2 × 92 × 44.45 × 76.2 mm steel (D26: saw-cut 1-3/4 × 3" flat bar), 7.85 g/cm³ = 2 × 2.45 kg): removable, lifts out through two deck hatches; carried as its own pieces (R3)

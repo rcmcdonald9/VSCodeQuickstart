@@ -32,6 +32,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .params import REAR_CAP
+
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
 AMBIENT, T_LIMIT = 30.0, 100.0      # °C: warm room; winding/driver limit (ESTIMATE: GIM/SDC104 class over-temp cut-out ~100 °C)
 DT_RATED = 60.0                     # K rise at rated torque, motor open in still air (ESTIMATE)
@@ -43,6 +45,13 @@ K_ASA, T_WALL = 0.17, 0.003         # W/mK, m: ASA sleeve wall
 F_WC = 0.30                         # share of the open-air rise that is winding → case (stator to housing)
 R_CONTACT = 0.5                     # K/W motor rear face → aluminium cap through a thermal pad, 3 screws
 FIN_AREA = 3.0                      # finned cap face = 3 × its disc area open to the room
+# D29 #5 (cost_down.md): the rear cap the BOM buys, params PIP_REAR_CAP. "machined": the CNC'd finned 6061 disc (Ø86–96 × 6
+# with fins, FIN_AREA / R_CONTACT above). "stock": a stock Ø90 × 10 round LED heatsink (radial fins on one face, the flat LED
+# face to the motor), faced flat and drilled to the cap pattern, on the same thermal pad. Its fin area is an ESTIMATE from
+# the listing geometry (≈ 36 radial fins × 7 mm × 30 mm, 2 faces, + the base ≈ 3.5 × the disc area); its contact is
+# unmeasured (an as-extruded face, faced by the builder), so nominal 1.0 K/W and a wider band; the fin area gets a band too.
+CAPS = {"machined": dict(fin=FIN_AREA, r_contact=R_CONTACT, band=dict(r_contact=(0.25, 2.0))),
+        "stock": dict(fin=3.5, r_contact=1.0, band=dict(r_contact=(0.5, 3.0), fin=(2.5, 4.5)))}
 COVER_DT = 5.0                      # K: local air under the R17 covers above the room (ESTIMATE; the old model's flat 10 K covered sleeve + covers)
 # Motor envelope (actuators.yaml / drawings); the sleeve is Ø+6.6 mm and 30 mm longer (cartridge_m: Ø86.6 for the GIM6010)
 ENVELOPE = {"GIM6010-8": (0.080, 0.040), "GIM8108-8": (0.096, 0.045), "GIM8108-36": (0.096, 0.057), "DM-J4310-2EC_V1.1": (0.056, 0.046),
@@ -58,14 +67,16 @@ ACT_OF = {"pitch": "shoulder_pitch", "roll": "shoulder_roll", "yaw": "upper_yaw"
 CAN_LIMIT = {"PETG": 55.0, "ASA": 75.0}   # long-term wall limits (HDT 70 / 94 °C less creep margin)
 
 
-def network(name="GIM6010-8", h_o=None, h_i=None, r_contact=None, f_wc=None, mount="sleeve"):
+def network(name="GIM6010-8", h_o=None, h_i=None, r_contact=None, f_wc=None, mount="sleeve", cap_kind=None, fin=None):
     """Open, mounted and mounted + aluminium cap: case-to-ambient resistance ratios to the open motor, and the share of
     the mounted rise that the sleeve wall sees. mount "sleeve": the closed ASA cartridge sleeve (belt joints); "cover": an
     inline motor bare under the R17 cover. R_open is anchored to the maker's rating (still air at the nominal H_OUT): a
     lower real h_o raises the mount's resistance, not the rating's."""
+    ck = CAPS[cap_kind or REAR_CAP]
     h_o = H_OUT if h_o is None else h_o
     h_i = H_IN if h_i is None else h_i
-    r_contact = R_CONTACT if r_contact is None else r_contact
+    r_contact = ck["r_contact"] if r_contact is None else r_contact
+    fin = ck["fin"] if fin is None else fin
     f_wc = F_WC if f_wc is None else f_wc
     D, L = ENVELOPE.get(name, ENVELOPE["GIM6010-8"])
     A_m = math.pi * D * L + 2 * math.pi * (D / 2) ** 2
@@ -77,7 +88,7 @@ def network(name="GIM6010-8", h_o=None, h_i=None, r_contact=None, f_wc=None, mou
     R_open = 1 / (H_OUT * A_m)
     R_wall = t / (K_ASA * A_s) + 1 / (h_o * A_s)
     R_sl = 1 / (h_i * A_m) + R_wall
-    R_cap = r_contact + 1 / (h_o * FIN_AREA * math.pi * (Ds / 2) ** 2)
+    R_cap = r_contact + 1 / (h_o * fin * math.pi * (Ds / 2) ** 2)
     R_sc = 1 / (1 / R_sl + 1 / R_cap)
     R_wc = f_wc / (1 - f_wc) * R_open
     return dict(K=R_sl / R_open, K_cap=R_sc / R_open, R_open=R_open, R_sleeve=R_sl, R_cap=R_cap,
@@ -130,15 +141,18 @@ def winding(name, x2, mount="sleeve", cap=True, duration=None, t_start=None, amb
     return Tss + (T0 - Tss) * math.exp(-duration / tau)
 
 
-def band(name, x2, mount="sleeve", cap=True, duration=None, t_start=None):
+def band(name, x2, mount="sleeve", cap=True, duration=None, t_start=None, cap_kind=None):
     """Over every corner of BAND: dict(nom, lo, hi (30 °C room), hot (worst corner, 35 °C room), t_nom / t_lo (time to
     T_LIMIT from cold, steady duties), k_nom / k_hi (mount rise at rated, K)). t_start may be a callable of the corner (the
     task-day temperature in that corner) for a carry started hot."""
     import itertools
-    keys = [k for k in BAND if not (k == "r_contact" and not cap)]
+    ck = cap_kind or REAR_CAP
+    B = {**BAND, **(CAPS[ck]["band"] if cap else {})}                  # D29 #5: the stock heatsink widens r_contact and adds a fin-area band
+    keys = [k for k in B if not (k in ("r_contact", "fin") and not cap)]
     split = lambda kw: ({k: v for k, v in kw.items() if k not in ("cover_dt", "tau")}, kw.get("cover_dt", COVER_DT), kw.get("tau", TAU))
 
     def one(kw, ambient=AMBIENT, shift=0.0):
+        kw = {**kw, "cap_kind": ck}
         ts = t_start(kw) if callable(t_start) else t_start
         ts = None if ts is None else ts + shift
         T = winding(name, x2, mount, cap, duration, ts, ambient=ambient, **dict(kw))
@@ -148,7 +162,7 @@ def band(name, x2, mount="sleeve", cap=True, duration=None, t_start=None):
         return T, t, rise
     T0, t0, k0 = one({})
     out = dict(nom=T0, t_nom=t0, k_nom=k0, lo=math.inf, hi=-math.inf, hot=-math.inf, t_lo=math.inf, k_hi=0.0)
-    for c in itertools.product(*(BAND[k] for k in keys)):
+    for c in itertools.product(*(B[k] for k in keys)):
         kw = dict(zip(keys, c))
         T, t, k = one(kw)
         Th, _, _ = one(kw, AMBIENT_HOT, AMBIENT_HOT - AMBIENT)
@@ -186,7 +200,7 @@ def r_contact_max(name, x2, mount="sleeve", ambient=AMBIENT, **kw):
     return lo
 
 
-def design_duties(d, label, basket_rows=None, options=True, basket70=None):
+def design_duties(d, label, basket_rows=None, options=True, basket70=None, cap_kinds=(REAR_CAP,)):
     """Task day (MuJoCo fetch cycle, Monte Carlo worst corner), worst 1 kg hold, the R2c hug at 0.25 m and the R2d basket
     carry for design d, per big joint, in the BOM's mount (and, options=True, an inline joint with an aluminium finned
     ring / cap through its cover as the mitigation row). Returns rows (dict)."""
@@ -226,13 +240,31 @@ def design_duties(d, label, basket_rows=None, options=True, basket70=None):
                     tb = max(b["t"][key] for b in br)
                     cases.append((lab_b, (tb / rated) ** 2, 120.0, task_T, tb, rated))
             for name, x2, dur, ts, tq, rt in cases:
-                b = band(n, x2, mount, cap, dur, ts)
-                ml = mount + (" + Al cap" if cap else "") + ("" if (mount, cap) == (mount0, cap0) else " (option)")
-                rows.append(dict(design=label, joint=j, act=n, mount=ml, case=name, torque=tq, rated=rt, x=math.sqrt(x2), **b,
-                                 cont_nom=continuous(rt, b["k_nom"]), cont_lo=continuous(rt, b["k_hi"]),
-                                 rise_allowed=allowed_rise(x2) if dur is None else None,
-                                 rc_max=r_contact_max(n, x2, mount) if (cap and dur is None) else None))
+                for ck in (cap_kinds if cap else (REAR_CAP,)):
+                    b = band(n, x2, mount, cap, dur, ts, cap_kind=ck)
+                    ml = mount + ((" + Al cap" if ck == "machined" else " + stock heatsink") if cap else "") + ("" if (mount, cap) == (mount0, cap0) else " (option)")
+                    rows.append(dict(design=label, joint=j, act=n, mount=ml, case=name, torque=tq, rated=rt, x=math.sqrt(x2), cap_kind=ck if cap else None, **b,
+                                     cont_nom=continuous(rt, b["k_nom"]), cont_lo=continuous(rt, b["k_hi"]),
+                                     rise_allowed=allowed_rise(x2) if dur is None else None,
+                                     rc_max=r_contact_max(n, x2, mount, cap_kind=ck) if (cap and dur is None) else None))
     return rows
+
+
+def cap_compare(rows):
+    """D29 #5: the capped rows with the machined cap vs the stock heatsink (same duty, same band corners otherwise).
+    Pass = no row that is within the limit with the machined cap (nominal, and at the band's 30 °C worst) leaves it with the
+    stock heatsink, and the task day stays within the limit at the band's worst. Returns (pairs, verdict dict)."""
+    key = lambda r: (r["design"], r["joint"], r["mount"].replace(" + stock heatsink", " + Al cap"), r["case"])
+    m = {key(r): r for r in rows if r.get("cap_kind") == "machined"}
+    s = {key(r): r for r in rows if r.get("cap_kind") == "stock"}
+    pairs = [(m[k], s[k]) for k in m if k in s]
+    new_nom = [(a, b) for a, b in pairs if a["nom"] <= T_LIMIT < b["nom"]]
+    new_hi = [(a, b) for a, b in pairs if a["hi"] <= T_LIMIT < b["hi"]]
+    task = [b for _, b in pairs if b["case"].startswith("task day")]
+    ok = not new_nom and not new_hi and all(b["hi"] <= T_LIMIT for b in task)
+    return pairs, dict(ok=ok, n=len(pairs), new_nom=len(new_nom), new_hi=len(new_hi), task_hi_max=max((b["hi"] for b in task), default=None),
+                       d_nom_max=max((b["nom"] - a["nom"] for a, b in pairs), default=0.0), d_hi_max=max((b["hi"] - a["hi"] for a, b in pairs), default=0.0),
+                       worst=max(pairs, key=lambda p: p[1]["hi"] - p[0]["hi"]) if pairs else None)
 
 
 def design_section(rows):
@@ -326,7 +358,7 @@ def main():
     from .spring import workspace_margins
     L = sim.limits()
     r = sim.run(video=False, can_mass=0.6, perturb=WORST)
-    rows, worst = [], dict(old=0.0, sleeve=0.0, cap=0.0, wall=0.0)
+    rows, worst = [], dict(old=0.0, sleeve=0.0, cap=0.0, wall=0.0, machined=0.0, stock=0.0)
     for n, f in r["force"].items():
         if n == "a_fing_a_r":
             continue
@@ -344,7 +376,8 @@ def main():
         else:                                        # wrist roll servo, lift and wheels: not in an arm sleeve
             t_sl = t_cap = t_old
             wall = AMBIENT
-        worst = {k: max(worst[k], v) for k, v in dict(old=t_old, sleeve=t_sl, cap=t_cap, wall=wall).items()}
+        caps = {ck: (AMBIENT + COVER_DT + dt_rated(network(act_name or "GIM6010-8", cap_kind=ck)["K_cap"]) * x2 if sleeved else t_old) for ck in CAPS}
+        worst = {k: max(worst[k], v) for k, v in dict(old=t_old, sleeve=t_sl, cap=t_cap, wall=wall, **caps).items()}
         rows.append((j, act_name, rms, rated, t_old, t_sl, t_cap, wall, sleeved))
     nw = network("GIM6010-8")
     nc = network("GIM6010-8", mount="cover")
@@ -384,9 +417,11 @@ def main():
                 f"**Some joints can't hold their worst pose forever in the closed sleeve (shortest {min(lim) / 60:.0f} min).** The planner must "
                 "derate long holds at full reach (the driver's thermal model already does this). Normal reaching is far below the worst pose.")]
     # 3. heavy-carry designs in the BOM's mount, with the sensitivity band (Astra #3 major 11)
-    drows = []
+    allrows = []
     for lab, dd, brows, b70 in designs():
-        drows += design_duties(dd, lab, brows, basket70=b70)
+        allrows += design_duties(dd, lab, brows, basket70=b70, cap_kinds=tuple(CAPS))
+    drows = [r for r in allrows if r.get("cap_kind") in (None, REAR_CAP)]
+    pairs, cv = cap_compare(allrows)
     Lr += ["", "## 3. D20 and B1y in the mount the BOM pays for, with a sensitivity band (Astra review #3 major 11)", "",
            "Belt joints: closed sleeve + aluminium finned rear cap (bom.py / m1_kit AL_CAP). Inline joints (the roll in every design, "
            "the B1y DM-J4340 yaw): bare under the R17 cover (cover Ø+20 mm, +40 mm, 2.5 mm ASA, ESTIMATE), no cap, no metal path. "
@@ -407,11 +442,32 @@ def main():
            "4. **The thermal time constant τ** from the heating curve (the 2-min basket rise and the hug hold time scale with it).",
            "5. **Repeat at the depleted-pack voltage** and with the neighbouring drives warm (pitch beside the torso electronics; yaw "
            "under the roll motor for B1y), then the two-minute basket cycle from hot."]
+    # 4. D29 #5: stock heatsink vs the machined cap, same duties (cost_down.md; params PIP_REAR_CAP)
+    ok = lambda T: "✅" if T <= T_LIMIT else "❌"
+    st, mc = CAPS["stock"], CAPS["machined"]
+    Lr += ["", f"## 4. D29 #5: stock round heatsink instead of the machined rear cap (PIP_REAR_CAP; section 3 above uses **{REAR_CAP}**)", "",
+           f"Machined cap: fin area {mc['fin']:g} × the disc, contact {mc['r_contact']:g} K/W (band {mc['band']['r_contact'][0]:g}–{mc['band']['r_contact'][1]:g}). "
+           f"Stock Ø90 × 10 LED heatsink, faced and drilled: fin area {st['fin']:g} × the disc (band {st['band']['fin'][0]:g}–{st['band']['fin'][1]:g}, ESTIMATE from "
+           f"the listing geometry), contact {st['r_contact']:g} K/W (band {st['band']['r_contact'][0]:g}–{st['band']['r_contact'][1]:g}: an unmeasured extruded face). "
+           "Every other constant and corner as section 3. **Pass** = no row within the limit with the machined cap (nominal or band worst at 30 °C) "
+           "leaves it with the stock part, and the task day stays within the limit at the band's worst.", "",
+           f"- Section 1 task day (worst corner, nominal constants): hottest winding {worst['machined']:.0f} °C machined → {worst['stock']:.0f} °C stock.",
+           f"- Section 3: {cv['n']} capped rows compared; new nominal failures {cv['new_nom']}, new band failures {cv['new_hi']}; task day band worst "
+           f"≤ {cv['task_hi_max']:.0f} °C; largest rise {cv['d_nom_max']:+.1f} K nominal, {cv['d_hi_max']:+.1f} K at the band's worst"
+           + (f" ({cv['worst'][1]['design']} {cv['worst'][1]['joint']} {cv['worst'][1]['case'].split(',')[0]}: {cv['worst'][0]['hi']:.0f} → {cv['worst'][1]['hi']:.0f} °C)" if cv["worst"] else "") + ".",
+           f"- **Thermal re-check: {'PASS' if cv['ok'] else 'FAIL'}.**", "",
+           "| Design | Joint | Duty | Machined: nominal / band hi | Stock: nominal / band hi | Contact needed (stock) |", "|---|---|---|---|---|---|"]
+    rcf = lambda r: "—" if r["rise_allowed"] is None else ("no cap passes" if r["rc_max"] is None else ("any" if math.isinf(r["rc_max"]) else f"≤ {r['rc_max']:.2f} K/W"))
+    Lr += [f"| {a['design']} | {a['joint']} ({a['act']}{', option' if 'option' in a['mount'] else ''}) | {a['case'].split(',')[0]} | {a['nom']:.0f} / {a['hi']:.0f} °C {ok(a['hi'])} | "
+           f"{b['nom']:.0f} / {b['hi']:.0f} °C {ok(b['hi'])} | {rcf(b)} |" for a, b in pairs]
     (DOCS / "thermal.md").write_text("\n".join(Lr) + "\n")
     (DOCS / "thermal.json").write_text(json.dumps({"task_max_c": worst["sleeve"], "task_max_c_open_model": worst["old"], "task_max_c_al_cap": worst["cap"],
                                                    "hold_min_s": min(lim) if lim else None, "can_max_c": worst["wall"],
                                                    "k_sleeve": nw["K"], "k_cap": nw["K_cap"], "dt_rated_sleeve": dt_rated(nw["K"]),
-                                                   "designs": drows, "band": BAND}, default=float))
+                                                   "designs": drows, "band": BAND, "rear_cap": REAR_CAP,
+                                                   "d29_stock_cap": dict(ok=cv["ok"], n=cv["n"], new_nom=cv["new_nom"], new_hi=cv["new_hi"],
+                                                                         task_hi_max=cv["task_hi_max"], d_nom_max=cv["d_nom_max"], d_hi_max=cv["d_hi_max"],
+                                                                         task_day_machined=worst["machined"], task_day_stock=worst["stock"])}, default=float))
     print("\n".join(Lr))
 
 
