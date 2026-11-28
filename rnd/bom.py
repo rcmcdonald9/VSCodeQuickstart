@@ -176,8 +176,9 @@ def items(d=BASELINE, timer=None):
     A("Drive & structure", "HTD 5M 15 mm open belt for the lift (2.4 m at $8.32/m) + 2 clamps", 1, 25.0, "Acorn listing")
     if inline:                                                  # D24 inline roll (rnd/parts/roll.py INLINE section), per arm
         A("Bearings", "61806-2RS (30×42×7): inline roll rear support on the roll link's stub", 2, 3.0, "ESTIMATE (m1_kit Hold B)")
-        A("Drive & structure", "Inline roll output adapter: 7075-T6 Ø76 × 7, Ø30 pilot, 3 × Ø4 H7 reamed + 3 × M4 csk, 8 × M5 tapped on PCD 64 (CNC, qty 2)", 2, 30.0,
-          "ESTIMATE: JLCCNC / PCBWay-class instant quote for a 3-axis Ø76 × 7 part ≈ $20–25 each at qty 2 + shipping share; a printed adapter fails (3 × M4 into PETG ≈ 85 N·m < 103 N·m stall, roll.py)")
+        A("Drive & structure", "Inline roll output adapter: 7075-T6 from a Ø76 × 19.5 blank (W16c: was × 7; the two R17 stop dogs stand on its back face), Ø30 pilot, "
+          "3 × Ø4 H7 reamed + 3 × M4 csk, 8 × M5 tapped on PCD 64 (CNC, qty 2)", 2, K.ADAPTER_7075[0],
+          K.ADAPTER_7075[1] + "; a printed adapter fails (3 × M4 into PETG ≈ 85 N·m < 103 N·m stall, roll.py)")
         A("Drive & structure", "Inline roll hardware: Ø80/Ø52 × 2 steel clamp ring (laser-cut, rides on the chassis-ring order), 8 × M5×16 DIN 7984 10.9, "
           "3 × M4×10 ISO 10642, 3 × Ø4 m6 dowels, end washer + M5 (W8c: the 8 × M4×18 + washers + DIN 988 shims are replaced by the rear-mount lines below)", 2, 9.0,
           "ESTIMATE (ring ≈ $5 SendCutSend class; screws/dowels ≈ $4)")
@@ -185,14 +186,16 @@ def items(d=BASELINE, timer=None):
             if "W8c" in g:
                 once = n.startswith(("Loctite", "E235+C", "Sleeve facing"))       # one buy for the robot (D26: the tube sticks + jig serve both arms)
                 A("Drive & structure", f"Inline roll (W8c{'' if once else ', both arms'}): {n}", q if once else 2 * q, u, src)
+            elif "W16c" in g and not n.startswith("Output adapter"):   # W16c R17 front stop (ring + screws); the adapter is the line above
+                A("Drive & structure", f"Inline roll front stop (W16c, both arms): {n}", 2 * q, u, src)
     A("Drive & structure", "Al square tube 60×60×2, 1.1 m (mast), black anodised", 1, 45.0, "no US listing found: ESTIMATE")
     A("Drive & structure", "Carbon tubes Ø40×38 (0.5 m) + Ø30×28 (1 m), roll-wrapped", 1, 70.0, "eBay / Carbonwebshop listings")
     A("Drive & structure", K.DETACH_CLAMP_P[1] + " (arm detach; flange OD 90.9 mm confirmed; D29 #10)", 2, K.DETACH_CLAMP_P[0], K.DETACH_CLAMP_P[2])
     A("Drive & structure", "Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards", 1, 35.0, "ESTIMATE")
     A("Drive & structure", "Balancers (A9): ISO 10243 green die spring Ø25/Ø12.5 × 115, 18.7 N/mm (Berger Tools V25-115 / Accu TJL25-115) + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
     A("Drive & structure", "Fasteners (other), heat-set inserts (base, torso, head), epoxy, grease", 1, 60.0)
-    A("Drive & structure", f"W14b R17 roll front collars (covers.roll_front_collar, one per arm): {W14B['screws']} × ISO 4762 M4 × 25 (4 per collar); the "
-      "collars' PETG is in the PETG line", W14B["screws"], *W14B["screw_p"])
+    # W16c (R17 roll stop under the front collar): the W14b collars' 8 × ISO 4762 M4 × 25 are gone (the collar takes 2 × M3 × 10 radial into the
+    # stop ring's blocks, in the front-stop line above; the front-face holes take the ring's countersunk M4 × 6)
     cov = pp.get("covers_kg", 0.0)                              # W10: the print plan now slices the D23 / R17 covers itself
     w14b = abs(cov - W14B["pp_covers_before"]) < 1e-3           # the print plan predates W14b: add its net PETG until it is re-sliced
     kg = pp["kg"] + (0.0 if cov else COVERS_KG) + (W14B["kg"] if w14b else 0.0)
@@ -295,7 +298,7 @@ def drivers(d=BASELINE):
         ("D26 direct drive (was the D50 Oldham + 6061 motor hub, W10): 7 C45+QT integral pinion shafts (v5, the 20T on the shaft) + M3 × 6, the pitch idlers and exit-slot straps",
          g(lambda n: n.startswith(("D26 integral pinion", "Stub screws", "D26 pitch"))) - OLD_LINES["oldham"],
          "none cheaper sourced: the stub is the one custom metal part per stage (ESTIMATE until the STEP is quoted)", 0.0),
-        ("Crush sleeves + stop bushes (W8c): 28 turned 42CrMo4 (pitch, yaw) + 4 stop bushes; since D26 the 28 clevis + rear sleeves are cut from stock tube",
+        ("Crush sleeves (W8c): 28 turned 42CrMo4 (pitch, yaw); since D26 the clevis + rear sleeves are cut from stock tube (32 since W16c: the 4 stop bushes went)",
          g(is_sl), "the 16 pitch sleeves from 1/4\" × .035\" 4130 tube (F_ty 517) once shoulder.py's sleeve hole goes Ø7.1 → Ø6.45 (located by the hole; "
          "the pitch stall row 1.18 → 1.08×, rnd/joints.py SLEEVE_STOCK); the yaw's Ø4.6 has no stock tube that clears its stall stress", 16 * (K.SLEEVE[0] - K.SLEEVE_ALT[0])),
         ("D18b lockable casters (W8d; D26: PTFE skid feet instead of 2\" ball transfers): glides + tape, rods + lock, 24 V solenoids, drivers", g(lambda n: n.startswith("D18b")) - OLD_LINES["casters"],
@@ -410,7 +413,7 @@ def savings(I):
     with lines $ saved (before contingency), what changes, risk, checks, owner, gates touched."""
     g = lambda f: sum(q * u for _, n, q, u, _ in I if f(n))
     metal = lambda n: n.startswith(("D26 integral pinion", "D26 tension ring", "D26 pitch exit-slot", "Chassis ring")) or (
-        n.startswith("C1 joint") and "sleeves" not in n) or "output adapter" in n or "Rear plate ring" in n or "hard-stop bushes" in n
+        n.startswith("C1 joint") and "sleeves" not in n) or "output adapter" in n or "Rear plate ring" in n or "front stop ring" in n
     batch = 0.15 * g(metal)
     n_gim = sum(q for _, n, q, _, _ in I if n == "GIM6010-8")
     return [
@@ -427,7 +430,7 @@ def savings(I):
              risk="backorder / lead time; a different reseller may ship the 48 V or GDS68 driver variant (seller question 6)",
              checks="seller question 6 answered in writing (24 V SDC104, drawing); arrival check of the label + firmware (M1 CHECKS)",
              own="cost/BOM (sourcing); owner buys", gates="none"),
-        dict(t="One batch quote for the custom metal (pinions, tension rings, C1 rings / flanges / cranks, roll adapters, rear plates, stop bushes, straps, chassis ring)",
+        dict(t="One batch quote for the custom metal (pinions, tension rings, C1 rings / flanges / cranks, roll adapters, rear plates, front stop rings, straps, chassis ring)",
              s=batch, change="quote all STEP files as one order at the robot quantity + M1 spares (qty 2–10 per part) instead of per-line instant quotes; "
                              "same drawings, same materials and certificates",
              risk="the −15 % is an ESTIMATE (no quote yet); one supplier's lead time gates everything; first-article inspection on the pinion teeth",
@@ -474,6 +477,17 @@ def savings(I):
 # --- D29 (owner 2026-11-28: no belt roll; the lead's route for the rest): what each row became -----------------------------------
 D29_BEFORE, D29_BEFORE_D20 = 6713.0, 6888.0     # bom.json before D29 (W14c)
 W15_BEFORE, W15_BEFORE_D20 = 6366.16, 6632.96    # bom.json after D29 (W15a), before the W15b base-channel and W14b pinch lines
+W16C_BEFORE, W16C_BEFORE_D20 = 6484.56, 6751.36   # bom.json after W15b + W14b, before the W16c R17 roll-stop lines
+# W16c line changes (before → after, $ of lines, no contingency): (item, before, after)
+W16C_ROWS = [
+    ("Stepped stop bushes, 42CrMo4+QT, 2 per arm (out)", 4 * K.STOP_BUSH_P[0], 0.0),
+    ("2 socket-head M4 × 25 per arm in the bushes → countersunk ISO 10642 (same rear-screw line); + 2 rear sleeves per arm from the tube stick", 0.0, 0.0),
+    ("W13 stainless wear strips in roll_arm_rear's edges, 2 per arm (out; never a priced line)", 0.0, 0.0),
+    ("W14b roll front collars' 8 × ISO 4762 M4 × 25 (out: too long for the 3.5 mm front-face threads)", 8 * W14B["screw_p"][0], 0.0),
+    ("Output adapter blank 7 → 19.5 mm (the two stop dogs), 2 × $30 → 2 × $38", 2 * 30.0, 2 * K.ADAPTER_7075[0]),
+    ("7075-T6 front stop ring + 2 blocks, 1 per arm (ESTIMATE $30–40)", 0.0, 2 * K.FRONT_STOP_RING[0]),
+    ("16 × ISO 10642 M4 × 6 (ring → motor) + 4 × ISO 4762 M3 × 10 (collar → blocks)", 0.0, 2 * K.FRONT_STOP_HW[0]),
+]
 
 
 def landed(I):
@@ -501,10 +515,17 @@ def w15_block(I, tot, d=BASELINE):
     new = [(n, q, u, src) for _, n, q, u, src in I if n.startswith(("Base channel (W15b)", "W14b "))]
     w15 = sum(q * u for n, q, u, _ in new if n.startswith("Base channel"))
     w14 = sum(q * u for n, q, u, _ in new if n.startswith("W14b"))
-    L = [f"**W15b base channel + W14b pinch parts (2026-11-28): ${W15_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - W15_BEFORE)}); with D20 "
-         f"${W15_BEFORE_D20:,.0f} → ${tot + HOLDS['d20']:,.0f}.** The base moved off K1 for the category-1 base stop (electrical.md *Base channel*, "
+    b, a = sum(r[1] for r in W16C_ROWS), sum(r[2] for r in W16C_ROWS)
+    L = [f"**W16c R17 roll stop (2026-11-28): ${W16C_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - W16C_BEFORE)}); with D20 ${W16C_BEFORE_D20:,.0f} → "
+         f"${tot + HOLDS['d20']:,.0f}.** The roll hard stop moved under the front collar (rnd/parts/roll.py FRONT_STOP: two 7075 dogs on the output "
+         f"adapter against two blocks on a 7075 ring, 3.91× at stall, joints.md): {_sd(a - b)} of lines ({_sd((a - b) * c)} landed). The M1 kit's Step 2 "
+         "(hold B yes) carries one arm of it.", "",
+         "| W16c line | Before $ | After $ |", "|---|---|---|"] + [f"| {n} | {x:,.2f} | {y:,.2f} |" for n, x, y in W16C_ROWS] + [
+         f"| **Net** | **{b:,.2f}** | **{a:,.2f}** ({_sd(a - b)}) |", ""]
+    L += [f"**W15b base channel + W14b pinch parts (2026-11-28): ${W15_BEFORE:,.0f} → ${W16C_BEFORE:,.0f} landed ({_sd(W16C_BEFORE - W15_BEFORE)}); with D20 "
+         f"${W15_BEFORE_D20:,.0f} → ${W16C_BEFORE_D20:,.0f}.** The base moved off K1 for the category-1 base stop (electrical.md *Base channel*, "
          f"docs/sw/base_stop.md): {_sd(w15)} of lines ({_sd(w15 * c)} landed) with the `{K.BASE_TIMER}` timer; the W14b roll front collars' 8 × M4 × 25 "
-         f"{_sd(w14)} of lines, their PETG (net ≈ +{W14B['kg'] * 1000:.0f} g) inside the PETG bundles already bought (no extra bundle). Robot only: the M1 kit "
+         f"{_sd(w14 or 8 * W14B['screw_p'][0])} of lines (removed again in W16c), their PETG (net ≈ +{W14B['kg'] * 1000:.0f} g) inside the PETG bundles already bought (no extra bundle). Robot only: the M1 kit "
          "changes only in its Step-1 test kit (M1_BENCH_ARM.md).", "",
          f"**Owner decision pending: the U20 2.0 s OFF-delay timer** (`PIP_BASE_TIMER`; the BOM uses `{K.BASE_TIMER}`, provisionally):", "",
          "| PIP_BASE_TIMER | U20 | Unit $ | Robot (landed) | With D20 | |", "|---|---|---|---|---|---|"]
@@ -617,7 +638,7 @@ def cost_down_report(I, tot):
         ((n, sum(x for k, x in _split(n, q, u) if k == subname)) for c_, n, q, u, _ in I if not c_.startswith(("Contingency", "Docking"))),
         key=lambda kv: -kv[1])[:3] if v > 0)
     kt = K.totals()
-    bench = ("Mean Well", "bench supply", "Bench stand", "Test lever", "Category-0 catch", "sw/bringup.py", "CAN FD HAT", "PETG 3 kg",
+    bench = ("Mean Well", "bench supply", "Bench stand", "Test lever", "Lever stock", "Optical lever", "C14 dummy output", "PLACEHOLDER", "Category-0 catch", "sw/bringup.py", "CAN FD HAT", "PETG 3 kg",
              "Epoxy (CF bonds)", "Stainless screw kit")
     m1 = K.step1() + K.step2_common() + K.HOLD_A["no"] + K.HOLD_B["yes"]
     reuse = sum(q * u for _, n, q, u, _, _ in m1 if not any(b in n for b in bench)) * c
@@ -635,9 +656,9 @@ def cost_down_report(I, tot):
           f"Owner: \"I don't love more belts. You can decide the best route for the other stuff\"; the lead's route: sourcing-only rows now, the rest only where "
           f"its re-check passes (each behind a params switch). **${D29_BEFORE:,.0f} → ${W15_BEFORE:,.0f} landed ({_sd(W15_BEFORE - D29_BEFORE)}); with D20 ${D29_BEFORE_D20:,.0f} → "
           f"${W15_BEFORE_D20:,.0f}** (D20's delta grows {_sd(d20 - (D29_BEFORE_D20 - D29_BEFORE))} because the GIM6010s it replaces got cheaper). "
-          f"Rows counted: −${s29:,.0f} landed. Since then the W15b base channel and the W14b pinch parts: **${tot:,.0f}** ({_sd(tot - W15_BEFORE)}, "
+          f"Rows counted: −${s29:,.0f} landed. Since then the W15b base channel, the W14b pinch parts and the W16c roll stop: **${tot:,.0f}** ({_sd(tot - W15_BEFORE)}, "
           f"U20 `{K.BASE_TIMER}` timer, owner decision pending; {tt_alt}), {_sd(tot - 5500)} against the $5,500 limit ({_sd(tot + d20 - 5500)} with D20). "
-          f"M1: Step 1 ${kt0['s1_c']:,.0f}, Step 2 ${kt0['s2_plan_c']:,.0f} (kit ${kt0['plan_c']:,.0f}).", "",
+          f"M1: Step 1a ${kt0['s1a_c']:,.0f}, Step 1b ${kt0['s1b_c']:,.0f}, Step 2 ${kt0['s2_plan_c']:,.0f} (kit ${kt0['plan_c']:,.0f}).", "",
           "| # | Row | D29 | Re-check / sourcing result | Counted (landed) |", "|---|---|---|---|---|"]
     L += [f"| {i} | {t} | {st} | {ck} | {f'−${s * c:,.0f}' if s else '—'} |" for i, t, st, ck, s in D]
     L += ["", "Switches (rnd/params.py; a default changes only when its row passes): `PIP_REAR_CAP` machined | stock, `PIP_JOINT_ENCODER` as5048a | mt6701, "
@@ -683,7 +704,7 @@ def cost_down_report(I, tot):
           "The M1 bench kit's arm and safety-board parts are the robot's (the bench board moves to the robot; the motors, bearings, pinions and hardware "
           "of one arm are one of the robot's two). The program's spend is the M1 kit plus the robot BOM less what M1 already bought; only the bench "
           "supplies, the stand, the lever, the catch, the coupons and the Step-1 test kit stay on the bench ([M1_BENCH_ARM.md](../M1_BENCH_ARM.md)).", "",
-          f"- M1 kit, today's plan, with contingency: ${kt['plan_c']:,.0f} (Step 1 ${kt['s1_c']:,.0f} incl. the test kit ${kt['s1_test_c']:,.0f}, Step 2 ${kt['s2_plan_c']:,.0f}).",
+          f"- M1 kit, today's plan, with contingency: ${kt['plan_c']:,.0f} (Step 1a ${kt['s1a_c']:,.0f}, Step 1b ${kt['s1b_c']:,.0f} incl. the test kit ${kt['s1_test_c']:,.0f}, Step 2 ${kt['s2_plan_c']:,.0f}).",
           f"- Of it, robot parts (ESTIMATE: every line except the bench-only ones and the test kit): ≈ ${reuse:,.0f} → the robot after M1 needs ≈ ${tot - reuse:,.0f} more, "
           f"and the program total is ≈ ${kt['plan_c'] + tot - reuse:,.0f} (≈ ${kt['plan_c'] - kt['s1_instr_c'] + tot - reuse:,.0f} if the owner already has the test instruments).", ""]
     return "\n".join(L) + "\n"
@@ -751,7 +772,7 @@ def report(d=BASELINE):
           "| Item | Before $ | After $ | Checks |", "|---|---|---|---|"]
     L += [f"| {w} | {b:,.0f} | {a:,.0f} | {ck} |" for w, b, a, ck in D26_ROWS]
     L += ["", f"Total ${D26_BEFORE:,.0f} → **${tot:,.0f}** landed (this table and any other wave-11 change merged in the tree), {_sd(tot - 5500)} against the $5,500 limit. "
-          "Stop bushes and the pitch / yaw sleeves stay turned (no stock part fits the CAD holes at their stall stress).", ""]
+          "The pitch / yaw sleeves stay turned (no stock part fits the CAD holes at their stall stress); the stop bushes went in W16c (R17 front stop).", ""]
     GT = gap_table(I[:-1])
     gs = sum(r[4] for r in GT)
     L += [f"**What is left of the gap ({_sd(tot - 5500)}): the largest lines by landed cost** (with contingency) and the cheapest credible alternative "
@@ -800,6 +821,7 @@ if __name__ == "__main__":
                                                "base_timer": {"selected": K.BASE_TIMER, "status": "pending owner decision (W15b U20; default board provisionally)",
                                                               "totals": timer_totals()},
                                                "w15b_w14b": {"before": W15_BEFORE, "before_d20": W15_BEFORE_D20},
+                                               "w16c": {"before": W16C_BEFORE, "before_d20": W16C_BEFORE_D20},
                                                "options": {n[:60]: q * u * (1 + CONTINGENCY) for n, q, u, _, _ in options()},
                                                "subsystems": {k: round(v * (1 + CONTINGENCY), 2) for k, v in subsystems(I).items()},
                                                "d29": {"before": D29_BEFORE, "before_d20": D29_BEFORE_D20,

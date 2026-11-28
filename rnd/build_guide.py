@@ -17,14 +17,15 @@ DOCS = Path(__file__).resolve().parent.parent / "docs"
 # (step, what, count, minutes each) — ESTIMATEs for a first build by one person with the parts printed
 STEPS = [
     ("1 Print", "Print the parts in print_plan.md order: the bolted cans and rear caps first in ASA (they let you bench-test motors early)", 1, 0),
-    ("2 Coupons", "Print + test the bolted-flange coupon (4 ears, M4 × 12 + washers into captive nuts, centring lip), the drive-stub coupon (C45 stub on the GIM "
-     "output, 8 × M3 × 6 + Loctite 243, 1.5 × the 11 N·m peak) and the GIM bolt-circle coupon; measure the printed C1 / rear-mount stacks and order or face the "
+    ("2 Coupons", "Print + test the Step-1 coupons (COUPONS.md): C9 GIM bolt circles, C12 insert pull-out (M3 / M4 inserts in 3 mm bosses), C13 4-ear "
+     "flange (M4 × 12 + washers into captive nuts, centring lip: 16.5 N·m proof, tipping, 72 h at 50 °C), C14 drive stub (the GIM output's tilt, PCD and "
+     "pilot; 8 × M3 × 6 + Loctite 243 to 1.5 × the 11 N·m peak on a dummy output); measure the printed C1 / rear-mount stacks and order or face the "
      "crush sleeves to print − 0.05 mm; adjust the flange / bolt circles in rnd/parts before mass printing", 1, 60),
     ("3 KX sockets", "D15 screwed socket, head pan + tilt only (D24: the arm has none; lift v2 bolts): 6 dowels, 6 coil springs, collar, retainer (3 × M3 into inserts); "
      "3 balls into the male face with retaining compound", 2, 8),
     ("4a Bolted cartridges", "D24 v2: 2 × M3 heat-set inserts in the sleeve lugs; motor into the sleeve from the rear, rear cap (3 × DIN 7984 M3 × 8 to the motor + "
-     "2 × M3 × 10 into the lugs); D26 drive stub on the output (8 × DIN 7984 M3 × 6, Loctite 243), key + 20T pulley on the stub, 6001 (lift: 61901) pressed "
-     "on its end; label + CAN ID (pitch, yaw, elbow × 2 + lift)", 7, 9),
+     "2 × M3 × 10 into the lugs); D26 integral pinion shaft (stub v5, the 20T hobbed on it: no key, no pulley) on the output (8 × DIN 7984 M3 × 6, "
+     "Loctite 243), 6001 (lift: 61901) pressed on its k5 seat; label + CAN ID (pitch, yaw, elbow × 2 + lift)", 7, 9),
     ("4b Wrist cartridges", "D24: DM-J4310 into its can, bolted can flange and output flange (inserts + 6 × M3 each); label + CAN ID", 2, 9),
     ("4c KX + servo cartridges", "Wheels ×4: motor into its can (3 screws), torque pin, KX adapter (4 screws); STS3215 sleeves ×6", 10, 6),
     ("5 Belt stages", "D26 direct stage + D19: the one-piece shaft-pulley with its bearings into the capped U-slots, caps on (2 × M4 / M3); belt round the "
@@ -39,9 +40,10 @@ STEPS = [
      "sleeves from the tube top (W8c)", 2, 95),
     ("7 Shoulders", "Pitch modules: bracket body, one-piece pitch shaft, C1 tie-rods (4 studs, crank, 8 Ø7 crush sleeves, clamp ring, nuts; W8c), outer wall "
      "(3 × M4), pitch hub, balancer (die spring, cord, pulley A at the 40–60 mm slot), V-band ferrule", 2, 55),
-    ("7b Inline roll", "GIM8108-36 into the roll link: output adapter on 3 dowels bonded with Loctite 638, rear plate + 6 Ø6 crush sleeves + 2 steel stop bushes, "
-     "6 × M4 × 25 csk + 2 × M4 × 25 SHCS into the motor; 61806 on the stub (DIN 471), outer race bonded with Loctite 660 at mid-travel; clevis-arm M5 in "
-     "8 Ø8 crush sleeves (W8c)", 2, 35),
+    ("7b Inline roll", "GIM8108-36 into the roll link: R17 front stop ring (7075, 2 blocks) on the motor's front face, 8 × M4 × 6 ISO 10642 flush (W16c); "
+     "output adapter (its 2 stop dogs in the channel between the blocks) on 3 dowels bonded with Loctite 638; front collar onto the ring, 2 × M3 × 10 "
+     "radial into the blocks; rear plate + 8 Ø6 crush sleeves, 8 × M4 × 25 ISO 10642 into the motor (no stop bushes since W16c); 61806 on the stub "
+     "(DIN 471), outer race bonded with Loctite 660 at mid-travel; clevis-arm M5 in 8 Ø8 crush sleeves (W8c)", 2, 38),
     ("8 Mast + torso + head", "Ratchet strip segments, lift drive + belt, carriage (8 × 625), torso halves around the carriage, head bracket + pan/tilt + shell", 1, 150),
     ("9 Base", "4 wheel modules (pods, shafts, hubs, wheels), deck quarters, skirt, coupling, battery bay, lidar, electronics; 4 D18b casters (rods, lock plate, "
      "spring, 24 V solenoid) into their guides, 2 ballast stacks bolted and dropped into their cradles (W8d)", 1, 150),
