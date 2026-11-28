@@ -29,6 +29,10 @@ R17 W18 (2026-11-28): the elbow scissor is closed by geometry (arm.ELBOW_GAP: th
 yaw row by a round skirt under the yaw plate (roll.yaw_skirt), two shoulder–torso rows by roll.FRONT_FRAME / roll.BAND_IN;
 the hood's inboard wedge is still open (see the roll notes above roll_frame()).
 
+R17 W20 (2026-11-28): the yaw can's rear-cap lugs at ±125° (cartridge_m.CAP_SITES) put the hood's inboard wall at y 20.5
+(cover_yaw × torso_shell closed); PIP_WEDGE_GUARD=skirt adds the TPU comb skirt over the hood's upper inboard wedge
+(wedge_skirt), reported by rnd/pinch.py as soft-guarded, not as a rigid pass.
+
 R17 pass (2026-11-28): the elbow bay dome is redrawn round the GIM6010 can (its flange ears stood outside the concept box)
 and the wrist boot is a round, closed boot (the can flange faced the hand): no exposed motor can left. The roll hard stop
 moved inside the front collar (roll.FRONT_STOP) and the yaw hood's front is squared off the now flat rear plate.
@@ -183,6 +187,21 @@ def _cut_main(h, q):
 _GROW = [(0, 0, 0)] + [tuple(s * 1.5 * (i == k) for i in range(3)) for k in range(3) for s in (1, -1)]   # ≈ 1.5 mm growth
 
 
+def _hood_box():
+    """(x0, x1, y0, y1, z0, z1) of the yaw hood's outer box (roll-module frame): WALL + 3 mm round the yaw can's bounding box
+    (R17 2026-11-28: with the can's rear-cap lugs at ±125°, cartridge_m.CAP_SITES, its inboard side is the sleeve, so
+    y0 = 69 − 43.3 − 5.2 = 20.5, 25.5 off the torso), its front squared HOOD_FRONT off the roll motor's rear plate."""
+    if not _HOOD_BOX:
+        from . import roll
+        can = [p for n, p, _ in roll.module() if n == "yaw_can"][0].bounding_box()
+        t, g = WALL, 3.0
+        _HOOD_BOX.append((can.min.X - g - t, roll.X_PLATE[0] - HOOD_FRONT, can.min.Y - g - t, can.max.Y + g + t, roll.ZF + 0.5, can.max.Z + g + t))
+    return _HOOD_BOX[0]
+
+
+_HOOD_BOX = []
+
+
 def _yaw_hood():
     """D24 inline roll (2026-11-27): rides on the roll output. A 2.2 mm hood 3 mm round the bolted yaw cartridge (can +
     rear cap), standing on the yaw block's top plate (the yaw belt is already inside the yaw band), its front squared
@@ -196,10 +215,8 @@ def _yaw_hood():
         from . import roll
         from .. import swept
         mv, st, o, _, (lo, hi) = swept.joints()["roll"]
-        can = [p for n, p, _ in roll.module() if n == "yaw_can"][0].bounding_box()
-        t, g = WALL, 3.0
-        x0, x1, y0, y1 = can.min.X - g - t, roll.X_PLATE[0] - HOOD_FRONT, can.min.Y - g - t, can.max.Y + g + t   # R17: front squared, HOOD_FRONT off the plate
-        z0, z1 = roll.ZF + 0.5, can.max.Z + g + t
+        t = WALL
+        x0, x1, y0, y1, z0, z1 = _hood_box()
         h = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 14, 8, t)
         h -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 - 2 * t, y1 - y0 - 2 * t, 2 * t + 1)
         R = lambda a: Pos(0, o[1], o[2]) * Rot(a, 0, 0) * Pos(0, -o[1], -o[2])
@@ -220,6 +237,153 @@ def _yaw_hood():
         # cut only by the static parts swept over the roll range (+1.5 mm) and the rear clevis arm (+1.5 mm).
         _HOOD.append(_main(h))
     return _HOOD[0]
+
+
+
+# PIP_WEDGE_GUARD=skirt (R17, 2026-11-28; owner call pending against ROLL_Y + 23–30 mm). The hood's upper inboard wedge:
+# its inboard face (y 20.5, x ≤ −29.5) and the inboard part of its top beside the roll link's ferrule boss (a Ø90 disc
+# about the pitch axis, outboard face y 12, x ≥ −45), the link above it and the ferrule rim. These are planes parallel to
+# the roll axis, so the gap at each point of the hood runs from ≈ 1–9 mm to 6–38 mm over −15…100° (no rigid fix, see the
+# notes below). The soft option keeps a finger off the hood there instead of holding a gap: a TPU 95A comb skirt bonded
+# and clipped to the hood over x WEDGE_SKIRT["x"] (inboard face, the rounded top-inboard edge and a top strip out to
+# y0 + top_w), fins in planes normal to the roll axis (each fin turns in its own plane; where the boss, the link or the
+# ferrule rim comes into a fin it is pushed sideways and lays over on its neighbour, it does not have to compress),
+# WEDGE_SKIRT["pitch"] apart (the slots between fins ≤ 8 mm, closed to a finger), fin_h tall off a backing sheet. The fins
+# are cut 1.5 mm clear of every static part at the reference pose (roll 0°) and of the rear clevis arm, and taken out
+# (± 2 mm) wherever a static part comes closer to the hood than the folded stack at some angle, so the TPU is never the
+# thing crushed. Inboard, fin_h ends the fins at y 12 (≥ 5.6 mm off the torso at roll −15°). It is not a pinch surface and
+# not a rigid guard: rnd/pinch.py takes it out for the gate and reports the rows it closes as soft-guarded, with the force
+# limit (D25 / R17) as the second barrier, and judges it by its rule (wedge_skirt_rule, skirt_roots, skirt_stack).
+WEDGE_SKIRT = dict(wall=1.6, pitch=6.0, x=(-100.0, -31.0), fin_h=8.5, top_w=30.0, clear=1.5, sheet=1.6,
+                   E_mpa=26.0)   # TPU 95A flexural modulus ≈ 26 MPa (typical filament datasheets: 20–40; ESTIMATE)
+_SKIRT = []
+
+
+def _skirt_fin_x():
+    """x of each fin's +X face (the front fin first)."""
+    k = WEDGE_SKIRT
+    out, x = [], k["x"][1]
+    while x - k["wall"] >= k["x"][0] - 1e-6:
+        out.append(x)
+        x -= k["pitch"]
+    return out
+
+
+def wedge_skirt():
+    """PIP_WEDGE_GUARD=skirt: the TPU 95A comb skirt on the yaw hood's inboard face and top edge (roll-module frame, rides
+    on the roll output). One TPU print, ≈ 69 × 39 × 83 mm."""
+    if not _SKIRT:
+        from .. import swept
+        mv, st, o, _, _ = swept.joints()["roll"]
+        k = WEDGE_SKIRT
+        x0, x1, y0, y1, z0, z1 = _hood_box()
+        xc, yc, zc = (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2
+        grow = lambda e: Pos(xc, yc, zc) * soft_box(x1 - x0 + 2 * e, y1 - y0 + 2 * e, z1 - z0 + 2 * e, 14 + e, 8 + e)
+        env = grow(0.0)                                                                          # the hood's outer solid
+        H, sh = k["fin_h"], k["sheet"]
+        ya, yb, za, zb = y0 - H - 1, y0 + k["top_w"], z0, z1 + H + 1
+        region = Pos((k["x"][0] + k["x"][1]) / 2, (ya + yb) / 2, (za + zb) / 2) * Box(k["x"][1] - k["x"][0], yb - ya, zb - za)
+        sheet = (grow(sh) - env) & region
+        shell = (grow(H) - env) & region
+        fins = None
+        for x in _skirt_fin_x():
+            f = Pos(x - k["wall"] / 2, (ya + yb) / 2, (za + zb) / 2) * Box(k["wall"], yb - ya, zb - za)
+            fins = f if fins is None else fins + f
+        sk = (shell & fins) + sheet
+        g = k["clear"]
+        cut = [p for _, p in st] + [p for n, p in mv if n == "roll_arm_rear"]
+        for p in cut:
+            for d in [(0, 0, 0)] + [tuple(sg * g * (i == j) for i in range(3)) for j in range(3) for sg in (1, -1)]:
+                sk = _cut_main(sk, Pos(*d) * p)
+        for c, size in _skirt_crush_boxes(st, o):                                               # no TPU where it would be crushed
+            sk = _cut_main(sk, Pos(*c) * Box(*size))
+        _SKIRT.append(_main(sk))
+    return _SKIRT[0]
+
+
+def skirt_roots():
+    """[(x, y, z, (nx, ny, nz), kind)] root points of the comb skirt on the hood surface (roll-module frame) with the
+    hood's outward normal there: kind "fin" at each fin's mid-plane, "sheet" half a pitch behind it; every ≈ 1 mm along the
+    inboard face (−Y), the rounded top-inboard edge (r 8) and the top strip (+Z)."""
+    k = WEDGE_SKIRT
+    x0, x1, y0, y1, z0, z1 = _hood_box()
+    re = 8.0
+    path = [(y0, float(z), (0.0, -1.0, 0.0)) for z in range(int(math.ceil(z0)), int(z1 - re))]
+    for a in range(0, 91, 8):
+        t = math.radians(a)
+        path.append((y0 + re - re * math.cos(t), z1 - re + re * math.sin(t), (0.0, -math.cos(t), math.sin(t))))
+    path += [(float(y), z1, (0.0, 0.0, 1.0)) for y in range(int(y0 + re) + 1, int(y0 + k["top_w"]) + 1)]
+    out = []
+    for x in _skirt_fin_x():
+        for xx, kind in ((x - k["wall"] / 2, "fin"), (x - k["wall"] - (k["pitch"] - k["wall"]) / 2, "sheet")):
+            dy = 0.0 if xx <= x1 - 14 else 14 - math.sqrt(max(0.0, 14 ** 2 - (xx - (x1 - 14)) ** 2))   # the hood's front-inboard corner (r 14)
+            out += [(xx, y + (dy if n[1] < -0.5 else 0.0), z, n, kind) for y, z, n in path]
+    return out
+
+
+def skirt_stack(kind="fin"):
+    """Thickness (mm) the skirt needs between the hood and a static part where it is pushed flat: the backing sheet plus,
+    at a fin, the fins laid over each other (fin height / pitch layers, ≥ 1)."""
+    k = WEDGE_SKIRT
+    if kind == "sheet":
+        return k["sheet"] + 1.0
+    return k["sheet"] + k["wall"] * max(1.0, k["fin_h"] / k["pitch"])
+
+
+def _skirt_field(st, o, step=2.5):
+    """Nearest static distance (mm) from each skirt root point over the roll range: (roots, array [root, angle], angles)."""
+    import numpy as np
+    import trimesh
+    from scipy.spatial import cKDTree
+    from ..twin import JR
+    S = []
+    for _, p in st:
+        v, t = p.tessellate(0.4, 0.3)
+        m = trimesh.Trimesh(np.array([(q.X, q.Y, q.Z) for q in v]), np.array(t), process=False)
+        S.append(trimesh.sample.sample_surface(m, max(40, int(m.area * 1.0)), seed=11)[0])
+    tree = cKDTree(np.concatenate(S))
+    R = skirt_roots()
+    P = np.array([r[:3] for r in R])
+    c = np.asarray(o, float)
+    ang = np.arange(JR["roll"][0], JR["roll"][1] + 1e-6, step)
+    G = np.empty((len(P), len(ang)))
+    for j, a in enumerate(ang):
+        t = math.radians(a)
+        M = np.array([[1, 0, 0], [0, math.cos(t), -math.sin(t)], [0, math.sin(t), math.cos(t)]])
+        G[:, j] = tree.query((P - c) @ M.T + c)[0]
+    return R, G, ang
+
+
+def _skirt_crush_boxes(st, o):
+    """[(centre, size)] boxes cut out of the skirt: a fin (or the sheet between two fins) wherever a static part comes
+    closer to the hood than skirt_stack() at some roll angle (1° steps), ± 2 mm along the surface, through the fin's height
+    (from the sheet's face up when the sheet alone still fits there)."""
+    k = WEDGE_SKIRT
+    R, G, _ = _skirt_field(st, o, step=1.0)
+    gmin = G.min(1)
+    boxes, prev = [], None
+    for i, ((x, y, z, n, kind), g) in enumerate(zip(R, gmin)):
+        if g >= skirt_stack(kind):
+            continue
+        h = (k["wall"] + 0.6 if kind == "fin" else k["pitch"] - k["wall"]) / 2
+        L = k["fin_h"] + 2.0
+        s0 = k["sheet"] + 0.05 if kind == "fin" and g >= skirt_stack("sheet") else -2.0   # keep the sheet under a fin if it fits
+        ys, zs = (y + n[1] * s0, y + n[1] * L), (z + n[2] * s0, z + n[2] * L)
+        b = [x - h, x + h, min(ys) - 2.0 * (abs(n[1]) < 0.9), max(ys) + 2.0 * (abs(n[1]) < 0.9), min(zs) - 2.0 * (abs(n[2]) < 0.9), max(zs) + 2.0 * (abs(n[2]) < 0.9)]
+        if prev is not None and prev[0] == i - 1 and prev[1] == (x, kind, s0 > 0):            # merge along the surface
+            c = boxes[-1]
+            boxes[-1] = [min(c[0], b[0]), max(c[1], b[1]), min(c[2], b[2]), max(c[3], b[3]), min(c[4], b[4]), max(c[5], b[5])]
+        else:
+            boxes.append(b)
+        prev = (i, (x, kind, s0 > 0))
+    return [(((b[0] + b[1]) / 2, (b[2] + b[3]) / 2, (b[4] + b[5]) / 2), (b[1] - b[0], b[3] - b[2], b[5] - b[4])) for b in boxes]
+
+
+def wedge_skirt_rule():
+    """Declared for rnd/pinch.py (the soft-guard rule there): the skirt's part-name suffix, joint, wall, fin pitch, fin
+    height and the fin bending stiffness input."""
+    k = WEDGE_SKIRT
+    return dict(part="cover_yaw_tpu_skirt", joint="roll", wall=k["wall"], pitch=k["pitch"], fin_h=k["fin_h"], E_mpa=k["E_mpa"])
 
 
 # Roll nips (R17; 2026-11-28 pass, rnd/pinch.py):
@@ -245,16 +409,23 @@ def _yaw_hood():
 #   x −45.5 … −29.5. A box study (the hood moved outboard by dy, gap to the ferrule + boss over −15 … 100°): dy 10 / 20 / 30
 #   mm gives 4.9 / 12.1 / 18.2 mm (18.2 at +100°, where the hood's top passes over the roll link's top), so even a yaw
 #   cartridge ≈ 30 mm outboard (≈ 21° about the yaw axis on the same 315-5M belt) does not reach 25 on its own. Options
-#   for an owner call: ROLL_Y + ≈ 23–30 mm (not verified for this wedge; R5: the stow is at 567 / 570 mm), or a soft (TPU)
-#   hood skirt in contact with the ferrule boss plus the D23 (5) force limit.
+#   for an owner call: ROLL_Y + ≈ 23–30 mm, or a soft (TPU) skirt plus the D23 (5) force limit. W20 (2026-11-28): the
+#   skirt is built behind PIP_WEDGE_GUARD=skirt (wedge_skirt above; rnd/pinch.py item 7 lists both rows as soft-guarded,
+#   the gate still counts them). ROLL_Y estimate (scratch study, hood + roll output + the link's far side moved out, the
+#   ferrule and the link's boss kept; no CAD rebuild): + 23 mm takes the hood > 25 mm off the ferrule (that row closes) but
+#   leaves cover_yaw × roll_link at 9.3 … 11.2 (the link's rear corner) and cells at 14 … 16 (near-shear, 1.2–1.9 mm swing);
+#   + 30 mm: 3.8 … 10.2 at the link's lower rear corner. Neither closes the link row without reshaping the link; R5 door stow
+#   W(45°) 560 → ≈ 577 (+ 23) / 583 (+ 30) mm by a twin re-search (≤ 570 allowed), W(0°) floor 644 → ≈ 690 / 704.
 # - Inboard wedge (yaw block / band × ferrule, 2.6 / 2.7 mm at −15°): arm part against arm part, closed with people near
 #   by the D25 soft limit (≥ +5°). Full-range fixes: a roll hard stop at ≥ +5° (R16 across-body 71 → 49 %) or ROLL_Y + 23
 #   mm.
 # - Shoulder–torso (pitch, W18 2026-11-28): roll_link × torso_shell closed by the front frame moved outboard (roll.FRONT_FRAME,
-#   26 mm off the torso wall), yaw_band × torso_shell by the band's inboard face (roll.BAND_IN, 25.5 mm). Still open:
-#   cover_yaw × torso_shell (19.3 … 39.9): the hood's inboard wall is 14.3 because the yaw can's rear-cap lugs point ±Y
-#   (cartridge_m.CAP ang ±90°, r 49.5; the can is r 43.3 elsewhere). With the lugs turned off ±Y the hood's inboard wall
-#   could step to y 20.5 (25.5 off the torso); or upper.TORSO_RECESS (PIP_TORSO_RECESS=1) closes it.
+#   26 mm off the torso wall), yaw_band × torso_shell by the band's inboard face (roll.BAND_IN, 25.5 mm). W20 (2026-11-28):
+#   cover_yaw × torso_shell (19.3 … 27.8) closed: the yaw can's rear-cap lugs turned from ±90° to ±125°
+#   (cartridge_m.CAP_SITES["yaw"]), so the can's inboard side is the r 43.3 sleeve and the hood's inboard wall is at y 20.5,
+#   25.5 off the torso (_hood_box). PIP_TORSO_RECESS was not needed. Side effect: the hood face now stands 8.5 mm (was 2.3)
+#   off the roll link's ferrule boss at roll 0 (the wedge rows above: cover_yaw × ferrule_m 1.9 … 9.4 → 5.8 … 8.3,
+#   cover_yaw × roll_link 0.8 … 9.1 → 3.1 … 19.1).
 def roll_frame():
     """Concept: rides on the roll output: a sleeve round the whole yaw block (both plates, the belt, the yaw
     cartridge, its KX collar and torque fork), open at the top (the clevis arms) and the bottom (the yaw flange).
@@ -262,7 +433,8 @@ def roll_frame():
     roll link and motor (≈ 30 cm³ of overlap)."""
     from . import roll
     if roll.INLINE:
-        return [("cover_yaw", _yaw_hood(), "white")]
+        from ..params import WEDGE_GUARD
+        return [("cover_yaw", _yaw_hood(), "white")] + ([("cover_yaw_tpu_skirt", wedge_skirt(), "dark")] if WEDGE_GUARD == "skirt" else [])
     z0, z1 = roll.P2[0] - 4, roll.ZF + roll.ZC + 14
     c = Pos(-38, roll.ROLL_Y, (z0 + z1) / 2) * soft_shell(198, 122, z1 - z0, 46, 18, 2.2)
     c -= Pos(-38, roll.ROLL_Y, z0) * Box(194, 118, 6)
@@ -590,6 +762,9 @@ def printed():
     if roll.INLINE:
         P["cover yaw hood (inline roll)"] = _yaw_hood()
         P["cover roll front collar (inline roll)"] = roll_front_collar()
+        from ..params import WEDGE_GUARD
+        if WEDGE_GUARD == "skirt":
+            P["cover yaw hood TPU skirt (PIP_WEDGE_GUARD=skirt, TPU 95A)"] = wedge_skirt()
     duct = belt_duct()[0][1]
     x0, x1, y0, y1, z0, z1 = _bb(duct)
     k = math.ceil((z1 - z0) / 200)

@@ -81,8 +81,10 @@ R_CAN = cm.MOTOR["od"] / 2 + cm.WALL + 0.3               # bolted can sleeve rad
 
 
 def _stage(T, teeth=20):
-    """D26: bolted cartridge + direct stage v4 (belt_stage.bolted_stage_v4: stub on the motor, 6001 in wall B), mapped by T."""
-    return bolted_stage_v4(T, teeth, site=EAR_SITE)
+    """D26: bolted cartridge + direct stage v4 (belt_stage.bolted_stage_v4: stub on the motor, 6001 in wall B), mapped by T.
+    R17 (2026-11-28): the rear cap is re-made for EAR_SITE's lug pattern (cartridge_m.cap_ang: ±125° on the yaw, so the
+    yaw hood's inboard wall clears the torso by 25.5 mm); belt_stage.bolted_cartridge builds it with the default ±90°."""
+    return [(n, T * cm.can_cap_bolted(None, EAR_SITE), c) if n == "can_cap" else (n, p, c) for n, p, c in bolted_stage_v4(T, teeth, site=EAR_SITE)]
 
 
 def _fl(b, r, dims):
@@ -759,7 +761,7 @@ def yaw_plate_bot() -> Part:
     below; the spring ring and ribbon go on; this plate comes up over bearing B; the flange bolts to the tube end last.
     (Loops 10–43 fused it to the top half, so nothing could be assembled; Astra review #2b finding 14.)"""
     pl = _plate_z(-YAW_C - 48, X_PL1, ROLL_Y - 46, ROLL_Y + 46, P2[0], P2[1], 16)
-    pl -= Pos(0, ROLL_Y, P2[0] - 1) * Cylinder(FL_R + 2.0, FL_POCKET + 1, align=MIN)          # flange pocket (R16: −2.2 mm yaw drop)
+    pl -= Pos(0, ROLL_Y, P2[0] - 1) * Cylinder(YAW_SKIRT["r_in"], FL_POCKET + 1, align=MIN)   # flange pocket (R16: −2.2 mm yaw drop), as the skirt bore
     pl += Pos(0, ROLL_Y, P2[0] + FL_POCKET - BOSS[2]) * Cylinder(BOSS[1], BOSS[2], align=MIN)   # bearing-B boss: 3.8 + 1.6 = 5.4 mm seat
     pl -= Pos(0, ROLL_Y, 0) * Cylinder(BOSS[0], 400)
     if DP2 > 0:                                                                   # boss under the D13 stage's bearing B (CAV_H)
@@ -1000,7 +1002,9 @@ STOP_PIN_R, STOP_PIN_AZ = 38.0, 180.0 # stop pin radius and azimuth at yaw 0 (un
 # radial, R15 moving ≥ 2.0), so each gap is the same at every yaw angle, and the pin and the plate's corners are behind it.
 # Outer r 48.8 keeps the post bolts' Ø12 driver paths (r 55.7 − 6) 0.9 mm clear (R14 c). The flange and the bone still
 # come up into it (r 45 < 47).
-YAW_SKIRT = dict(r_in=FL_R + 2.0, t=1.8, below=0.5)
+# R15 nit (W18a, rnd/spacing.py yaw_flange × yaw_plate_bot 2.0 mm on a 2.0 target): the pocket and the skirt bore go
+# 47.0 → 47.3 (2.3 mm radial to the flange); outer r 49.1, the post bolts' driver paths still 0.6 mm clear.
+YAW_SKIRT = dict(r_in=FL_R + 2.3, t=1.8, below=0.5)
 
 
 def yaw_skirt() -> Part:

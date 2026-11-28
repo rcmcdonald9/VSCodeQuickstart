@@ -41,23 +41,33 @@ working while the arm CAD changes:
    applied by sw/safety.py's people-near mode) are evaluated a second time over the restricted range only (the same
    sweep, its poses inside the restricted range, the soft limit itself added as a pose) and reported as a separate
    column; a scan lists, for each lower limit swept, which of that joint's tier-1 rows still fail.
+7. **Soft guards** (PIP_WEDGE_GUARD=skirt; names with tpu_skirt): a TPU skirt that keeps a finger out of a nip whose gap
+   cannot be held closed or open. It is never a rigid pass: the gate (items 3 and 5) is computed with the guard taken out
+   of the probe model, exactly as without it. A second probe pass per step with the guard in lists the gate's fails that
+   the guard alone closes to the probe as **soft-guarded** (a separate count), with the R17 force limit as the second
+   barrier: the joint's collision trip must stay under F_PINCH at the guard's smallest radius from the joint axis. The
+   guard is judged first (covers.wedge_skirt_rule(): wall ≥ TPU_WALL_MIN, slots between fins ≤ 8 mm, and nowhere a static
+   part closer to the hood face than the skirt's folded stack at any angle, so the TPU itself is never crushed); a guard
+   that fails is taken out of both passes. Like the boots, it keeps its drawn shape in the rigid sweep (ESTIMATE): where a
+   static part runs into a fin the fin is in reality laid over sideways (it still blocks), where the static moves away the
+   probe sees the real opening at the fin tips.
 
 Not covered: the gripper's own jaws (a gripper is meant to pinch; force-limited in software), wheel–floor nip,
 two-joint combinations (each joint is swept with the others at the reference pose), hair/clothing entanglement.
 
 **Tiers.** Tier 1 (counted, R17): the moving body against its parent link (the joint's own nips: elbow fold, shoulder–torso, wrist–forearm, head–neck), and for the lift the carriage body against the mast, base, head and bellows. Tier 2 (listed): everything else, e.g. a hand reaching the base at an extreme yaw or a hanging arm on the base rim at the lowest lift; those are clamping zones handled by the planner's keep-outs and force limiting (D23 (5)), not by cover geometry.
 
-**Result: 5 joint-nip gap fails, 0 exposed belt / pulley / motor parts. R17 needs 0 and 0.** Also listed: 38 reach-clamping zones (tier 2) and 8 exposed shafts (warnings).
+**Result: 4 joint-nip gap fails, 0 exposed belt / pulley / motor parts. R17 needs 0 and 0.** Also listed: 38 reach-clamping zones (tier 2) and 8 exposed shafts (warnings).
 
-**People near (D25 soft limits: roll 5…100°): 3 joint-nip gap fails, 0 exposed parts** (4 → 2 on roll; 34 reach-clamping zones; exposure is reported over the full range).
+**People near (D25 soft limits: roll 5…100°): 2 joint-nip gap fails, 0 exposed parts** (4 → 2 on roll; 34 reach-clamping zones; exposure is reported over the full range).
 
-Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 12.5 min.
+Swept: pitch, elbow, wrist, pan, tilt, roll, yaw, lift. Reference pose {"l": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "r": {"pitch": -30.0, "elbow": -60.0, "wrist": -20.0}, "head": {"pan": 0.0, "tilt": 0.0}} at lift 0.75 m. Run time 13.2 min.
 
 ## Exposed drive parts (accessible to the Ø12 probe at some step)
 
 | Part | Kind | Largest exposed patch (mm²) | Worst at | |
 |---|---|---|---|---|
-| w270_shaft | rotating shaft | 2660 | roll -15 | ⚠️ shaft |
+| w270_shaft | rotating shaft | 2660 | roll 30 | ⚠️ shaft |
 | w90_shaft | rotating shaft | 2629 | roll 15 | ⚠️ shaft |
 | w0_shaft | rotating shaft | 2509 | pitch 60 | ⚠️ shaft |
 | w180_shaft | rotating shaft | 2509 | yaw 115 | ⚠️ shaft |
@@ -80,11 +90,10 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 
 | Joint | Moving part | Static part | Sides | Min gap (mm) | Max gap (mm) | Min at | | People near (D25) |
 |---|---|---|---|---|---|---|---|---|
-| pitch | roll_cover_yaw | torso_shell | l/r | 19.3 | 27.8 | 40 | ❌ | same |
-| roll | roll_cover_yaw | roll_roll_link | l/r | 0.8 | 9.1 | -15 | ❌ | 1.0 … 11.0 ❌ |
-| roll | roll_cover_yaw | roll_ferrule_m | l/r | 1.9 | 9.4 | -15 | ❌ | 3.4 … 8.0 ❌ |
 | roll | roll_yaw_block | roll_ferrule_m | l/r | 2.6 | 11.7 | -15 | ❌ | ≥ 25 (or out of reach) ✅ |
-| roll | roll_yaw_band | roll_ferrule_m | l/r | 3.9 | 28.4 | -15 | ❌ | ≥ 25 (or out of reach) ✅ |
+| roll | roll_cover_yaw | roll_roll_link | l/r | 3.1 | 19.1 | -15 | ❌ | 6.5 … 14.5 ❌ |
+| roll | roll_yaw_band | roll_ferrule_m | l/r | 3.8 | 28.6 | -15 | ❌ | ≥ 25 (or out of reach) ✅ |
+| roll | roll_cover_yaw | roll_ferrule_m | l/r | 5.8 | 8.3 | 30 | ❌ | 5.8 … 8.2 ❌ |
 | elbow | arm_e_shaft40 | arm_enc_magnet_holder | l/r | 0.0 | 0.3 | -105 | ✅ | same |
 | elbow | arm_forearm | arm_upper_bone | l/r | 2.0 | 2.0 | -120 | ✅ | same |
 | elbow | arm_forearm | arm_e_seat_cap_p | l/r | 2.0 | 2.0 | -90 | ✅ | same |
@@ -112,7 +121,7 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 | pan | yoke | pan_sleeve | - | 10.6 | 10.6 | -90 | ⚠️ shear | same |
 | pitch | roll_ferrule_m | sh_pitch_hub | l/r | 0.0 | 0.3 | -140 | ✅ | same |
 | pitch | roll_roll_link | sh_pitch_hub | l/r | 8.0 | 8.0 | -40 | ⚠️ shear | same |
-| pitch | roll_cover_yaw | sh_pitch_hub | l/r | 14.3 | 14.3 | -100 | ⚠️ shear | same |
+| pitch | roll_cover_yaw | sh_pitch_hub | l/r | 20.5 | 20.5 | -60 | ⚠️ shear | same |
 | pitch | roll_cover_roll_front | sh_pitch_hub | l/r | 23.1 | 23.1 | -120 | ⚠️ shear | same |
 | pitch | roll_yaw_block | sh_pitch_hub | l/r | 24.0 | 24.1 | 60 | ⚠️ shear | same |
 | roll | roll_roll_spring_hub | roll_roll_spring_ring | l/r | 0.5 | 1.4 | 30 | ✅ | 0.5 … 1.4 ✅ |
@@ -123,24 +132,23 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 | roll | roll_roll_spring_hub | roll_roll_enc_pcb | l/r | 3.0 | 3.0 | 15 | ✅ | 3.0 … 3.0 ✅ |
 | roll | roll_yaw_enc_pcb | roll_roll_gim_housing | l/r | 3.0 | 3.3 | 45 | ✅ | 3.0 … 3.3 ✅ |
 | roll | roll_yaw_enc_pcb | roll_roll_link | l/r | 3.1 | 3.3 | 30 | ✅ | 3.1 … 3.3 ✅ |
-| roll | roll_cover_yaw | roll_roll_gim_housing | l/r | 3.5 | 3.5 | 90 | ✅ | 3.5 … 3.5 ✅ |
+| roll | roll_cover_yaw | roll_roll_gim_housing | l/r | 3.5 | 3.5 | 60 | ✅ | 3.5 … 3.5 ✅ |
 | roll | roll_yaw_block | roll_roll_gim_housing | l/r | 4.9 | 5.3 | -15 | ✅ | 4.9 … 5.4 ✅ |
 | roll | roll_yaw_block | roll_roll_link | l/r | 9.5 | 9.7 | 5 | ⚠️ shear | 9.5 … 9.7 ⚠️ shear |
 | roll | roll_yaw_enc_pcb | roll_ferrule_m | l | 10.7 | 11.3 | -15 | ⚠️ shear | ≥ 25 (or out of reach) ✅ |
-| roll | roll_yaw_band | roll_roll_spring_ring | l/r | 12.1 | 12.2 | 15 | ⚠️ shear | 12.1 … 12.2 ⚠️ shear |
+| roll | roll_yaw_band | roll_roll_spring_ring | l/r | 12.3 | 12.4 | -15 | ⚠️ shear | 12.3 … 12.4 ⚠️ shear |
 | roll | roll_yaw_band | roll_roll_gim_housing | l/r | 22.8 | 23.0 | 60 | ⚠️ shear | 22.8 … 23.0 ⚠️ shear |
-| roll | roll_yaw_band | roll_roll_link | l/r | 22.9 | 23.0 | 45 | ⚠️ shear | 22.9 … 23.0 ⚠️ shear |
-| roll | roll_yaw_band | roll_cover_roll_front | l/r | 23.8 | 24.1 | 60 | ⚠️ shear | 23.6 … 24.4 ⚠️ shear |
+| roll | roll_yaw_band | roll_roll_link | l/r | 22.9 | 23.0 | 30 | ⚠️ shear | 22.9 … 23.0 ⚠️ shear |
+| roll | roll_yaw_band | roll_cover_roll_front | l/r | 23.8 | 24.2 | 45 | ⚠️ shear | 23.8 … 24.2 ⚠️ shear |
 | tilt | head_shell | yoke | - | 3.8 | 4.0 | 15 | ✅ | same |
 | wrist | arm_hand_palm | arm_wrist_adapter | l/r | 0.0 | 0.2 | -20 | ✅ | same |
 | wrist | arm_hand_palm | arm_cover_wrist_f | l/r | 3.6 | 4.1 | -20 | ✅ | same |
 | wrist | arm_hand_palm | arm_cover_wrist_r | l/r | 3.6 | 4.0 | 0 | ✅ | same |
 | wrist | arm_hand_wr_sleeve | arm_cover_wrist_f | l/r | 17.9 | 17.9 | -60 | ⚠️ shear | same |
 | wrist | arm_hand_wr_sleeve | arm_cover_wrist_r | l/r | 17.9 | 17.9 | 120 | ⚠️ shear | same |
-| yaw | roll_yaw_flange | roll_yaw_stop_pin | r | 0.4 | 2.0 | -125 | ✅ | same |
-| yaw | arm_upper_bone | roll_yaw_stop_pin | l/r | 1.8 | 2.0 | -95 | ✅ | same |
-| yaw | arm_upper_bone | roll_yaw_plate_bot | l/r | 1.9 | 2.0 | -5 | ✅ | same |
-| yaw | arm_cf_neck | roll_yaw_plate_bot | l/r | 16.3 | 16.6 | -35 | ⚠️ shear | same |
+| yaw | arm_upper_bone | roll_yaw_stop_pin | l/r | 1.8 | 2.3 | -95 | ✅ | same |
+| yaw | arm_upper_bone | roll_yaw_plate_bot | l/r | 2.2 | 2.3 | 115 | ✅ | same |
+| yaw | arm_cf_neck | roll_yaw_plate_bot | l/r | 16.3 | 16.9 | 85 | ⚠️ shear | same |
 
 ## Tier 2: clamping at reach (listed; planner keep-outs + force limit, D23 (5))
 
@@ -173,10 +181,10 @@ Min/max over the sweep for the worst 20 mm cell of the moving part against the n
 | pitch | arm_hand_palm | rim | l/r | 18.3 | > 40 | 40 | ❌ | same |
 | pitch | arm_hand_palm | deck0 | l | 22.5 | > 40 | 40 | ❌ | same |
 | pitch | arm_hand_wr_brg_L | rim | r | 22.9 | > 40 | 40 | ❌ | same |
-| roll | roll_cover_yaw | torso_shell | l/r | 11.4 | 37.0 | -15 | ❌ | 17.2 … > 40 ❌ |
-| roll | roll_yaw_band | torso_shell | l/r | 11.7 | 36.8 | -15 | ❌ | ≥ 25 (or out of reach) ✅ |
+| roll | roll_yaw_band | torso_shell | l/r | 11.8 | 31.4 | -15 | ❌ | ≥ 25 (or out of reach) ✅ |
 | roll | roll_yaw_block | torso_shell | l/r | 14.3 | 34.8 | -15 | ❌ | ≥ 25 (or out of reach) ✅ |
-| roll | roll_yaw_plate_bot | torso_shell | l/r | 18.1 | > 40 | -15 | ❌ | ≥ 25 (or out of reach) ✅ |
+| roll | roll_cover_yaw | torso_shell | l/r | 17.6 | 35.6 | -15 | ❌ | 23.2 … > 40 ❌ |
+| roll | roll_yaw_plate_bot | torso_shell | l/r | 18.0 | > 40 | -15 | ❌ | ≥ 25 (or out of reach) ✅ |
 | roll | arm_upper_bone | torso_shell | l/r | 24.0 | > 40 | -15 | ❌ | ≥ 25 (or out of reach) ✅ |
 | yaw | arm_hand_grip_servo | deck2 | r | 0.1 | > 40 | -155 | ❌ | same |
 | yaw | arm_hand_grip_servo_sleeve | deck2 | r | 0.2 | > 40 | -155 | ❌ | same |
@@ -191,12 +199,12 @@ Tier-1 roll fails over L…100° for each lower limit L the sweep has a pose at 
 
 | Lower limit L (°) | Tier-1 fails | Still failing (min … max mm) |
 |---|---|---|
-| -15 | 4 | roll_cover_yaw × roll_roll_link 0.8 … 9.1; roll_cover_yaw × roll_ferrule_m 1.9 … 9.4; roll_yaw_block × roll_ferrule_m 2.6 … 11.7; roll_yaw_band × roll_ferrule_m 3.9 … 28.4 |
-| 0 | 3 | roll_cover_yaw × roll_roll_link 1.0 … 11.0; roll_cover_yaw × roll_ferrule_m 3.4 … 8.0; roll_yaw_band × roll_ferrule_m 24.4 … 28.4 |
-| 5 ← in use | 2 | roll_cover_yaw × roll_roll_link 1.0 … 11.0; roll_cover_yaw × roll_ferrule_m 3.4 … 8.0 |
-| 15 | 2 | roll_cover_yaw × roll_roll_link 1.0 … 11.0; roll_cover_yaw × roll_ferrule_m 3.4 … 8.0 |
-| 30 | 2 | roll_cover_yaw × roll_roll_link 2.1 … 11.2; roll_cover_yaw × roll_ferrule_m 3.4 … 8.0 |
-| 45 | 1 | roll_cover_yaw × roll_roll_link 6.5 … 11.0 |
-| 60 | 1 | roll_cover_yaw × roll_roll_link 8.1 … 9.3 |
+| -15 | 4 | roll_yaw_block × roll_ferrule_m 2.6 … 11.7; roll_cover_yaw × roll_roll_link 3.1 … 19.1; roll_yaw_band × roll_ferrule_m 3.8 … 28.6; roll_cover_yaw × roll_ferrule_m 5.8 … 8.3 |
+| 0 | 3 | roll_cover_yaw × roll_ferrule_m 5.8 … 8.2; roll_cover_yaw × roll_roll_link 6.5 … 14.5; roll_yaw_band × roll_ferrule_m 24.4 … 28.4 |
+| 5 ← in use | 2 | roll_cover_yaw × roll_ferrule_m 5.8 … 8.2; roll_cover_yaw × roll_roll_link 6.5 … 14.5 |
+| 15 | 2 | roll_cover_yaw × roll_ferrule_m 5.8 … 8.2; roll_cover_yaw × roll_roll_link 6.5 … 14.5 |
+| 30 | 2 | roll_cover_yaw × roll_ferrule_m 5.8 … 8.2; roll_cover_yaw × roll_roll_link 8.2 … 14.5 |
+| 45 | 1 | roll_cover_yaw × roll_roll_link 18.3 … 30.6 |
+| 60 | 1 | roll_cover_yaw × roll_roll_link 24.4 … 30.8 |
 | 75 | 0 | — |
 | 90 | 0 | — |

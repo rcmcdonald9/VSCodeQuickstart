@@ -48,9 +48,9 @@
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
 | cover collar_bot | 2 × 110 × 110 | 15 | ✅ |
 | forearm (ends) [2] | 36 × 80 × 110 | 91 | ✅ |
-| cover yaw hood (inline roll) | 71 × 102 × 109 | 70 | ✅ |
 | forearm (ends) [1] | 72 × 80 × 108 | 44 | ✅ |
 | KX74 collar | 20 × 98 × 103 | 38 | ✅ |
+| cover yaw hood (inline roll) | 71 × 97 × 102 | 64 | ✅ |
 | upper bone cap [1] | 10 × 97 × 102 | 12 | ✅ |
 | cover elbow_bay | 98 × 98 × 101 | 34 | ✅ |
 | mast coupling | 40 × 100 × 100 | 253 | ✅ |

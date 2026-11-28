@@ -139,7 +139,8 @@ def coupon_motor() -> Part:
 #     finding 2 (2026-11-27): 4 everywhere with gaps ≤ 120° (yaw ±50/±145, pitch4 ±40/160/−120 with the rear pair
 #     reversed, lift4 ±40/±140), see EAR_SITES and flange_joint() for the tipping / bolt-load calculation.
 #   - **Rear cap v2:** a 4 mm plug in the sleeve bore carries the motor (3 × M3 into the housing pattern, low heads in
-#     counterbores) and has two 3 mm ears that sit flush in notches in the sleeve's rear end (torque dogs) at ±90°. The
+#     counterbores) and has two 3 mm ears that sit flush in notches in the sleeve's rear end (torque dogs) at ±90° (the yaw:
+#     ±125°, CAP_SITES). The
 #     notches run into two lugs on the sleeve (r → sleeve + 6.2, 10 long, so at the elbow they stay outside the −Y wall);
 #     an M3 × 10 goes through each cap ear into a short heat-set insert (Ø4.0 × 4.0, ESTIMATE size) pressed into the lug
 #     from its FRONT face, so the screw pushes the insert into its boss (3 mm of lug between the insert and the notch).
@@ -233,6 +234,23 @@ CAP_T = FLOOR
 # rear cap v2: ears/lugs at ±90° (clear of the pigtail window at 0°, of the deck under the lift can, and 50° from the ears)
 CAP = dict(ear_t=3.0, ear_w=10.0, lug_h=10.0, lug_out=6.2, ins_d=4.0, ins_l=4.0, clr_d=3.4, ang=(90.0, -90.0),
            screw="ISO 7380 M3 × 10 into a short M3 heat-set insert (Ø4.0 hole × 4.0)", motor_screw="DIN 7984 M3 × 8 (low head)", cb=(6.2, 2.0))
+# Rear-cap lug angles per site (deg from the stage +X; CAP["ang"] elsewhere). R17 (2026-11-28, rnd/pinch.py pitch row
+# cover_yaw × torso_shell 19.3 … 27.8): at ±90° the yaw cartridge's lugs (r 49.5) are its widest point across the arm
+# (module ±Y: the yaw stage frame is the module frame shifted, roll.YAW_T), so the yaw hood's inboard wall stood at y 14.3,
+# 19.3 mm off the torso. At ±125° they stay inside the sleeve's r 43.3 across Y (44.5·sin 125° + 5 = 41.5) and inside the
+# ±145° flange-ear lobes along −X (x −30.5 vs −44.8 off the axis), so the can's footprint is the sleeve in Y and the hood's wall
+# steps to y 20.5 (25.5 off the torso). Clearances: the ±145° ear screws' Ø12 driver paths (r 48) 5.4 mm, the ±50° ones
+# 75° away, the pigtail window (0°) 125° away, the motor's rear screws (r 28.5 at ±120°) 16 mm centre to centre. The two
+# screws are 110° apart (not 180°): their clamp resultant sits 25.5 mm off the axis on the −X side, so the motor's front
+# face loads the sleeve step harder on that side; the motor is held square by its bore (0.3 mm radial) and the cap's
+# 3 × M3 into the motor, and the dogs carry the torque either way (ESTIMATE; the C12 insert coupon covers the lug).
+# The yaw site's pattern is also what the belt-roll fallback's roll cartridge would get (roll.EAR_SITE; unchecked there).
+CAP_SITES = {"yaw": (125.0, -125.0)}
+
+
+def cap_ang(site: str = "default") -> tuple:
+    """Rear-cap lug / dog angles (deg from the stage +X) for a cartridge site."""
+    return CAP_SITES.get(site, CAP["ang"])
 
 
 def bolted_levels(m: dict | None = None) -> dict:
@@ -326,7 +344,7 @@ def can_bolted(m: dict | None = None, site: str = "default") -> Part:
     z_rear = L["rear"]
     body = Pos(0, 0, L["step"][0]) * Cylinder(r_out, z_rear - L["step"][0], align=MIN)
     body = fillet(body.edges().group_by(Axis.Z)[0].sort_by(SortBy.RADIUS)[-1], 2.0)
-    for a in c["ang"]:                                                                    # rear-cap lugs
+    for a in cap_ang(site):                                                               # rear-cap lugs
         body += _lobe(r_out + c["lug_out"] - 5.0, a, 5.0, c["lug_h"], z_rear - c["lug_h"])
     body -= Pos(0, 0, L["motor_face"]) * Cylinder(r_in, z_rear, align=MIN)              # motor bore, open at the rear
     body += Pos(0, 0, f["t"]) * Cylinder(n["r_out"], L["step"][0] - f["t"] + 0.5, align=MIN)   # nose
@@ -350,7 +368,7 @@ def can_bolted(m: dict | None = None, site: str = "default") -> Part:
     body -= Pos(r_out, 0, (L["motor_face"] + z_rear) / 2) * Box(12, 16, m["h"] - 8)   # side window: CAN + power pigtail
     body -= Pos(0, 0, z_rear - c["lug_h"] - 4) * (Cylinder(r_out + 1, 2) - Cylinder(r_out - 1.2, 2))   # light-ring groove (in front of the lugs)
     r_s = cap_screw_r(m)
-    for a in c["ang"]:
+    for a in cap_ang(site):
         t = math.radians(a)
         body -= Pos(0, 0, z_rear - c["ear_t"]) * Rot(0, 0, a) * Pos((r_in + r_out + c["lug_out"]) / 2, 0, 0) * Box(r_out + c["lug_out"] - r_in + 2, c["ear_w"] + 0.4, c["ear_t"] + 1, align=MIN)   # notch = torque dog
         at = Pos(r_s * math.cos(t), r_s * math.sin(t), 0)
@@ -359,9 +377,10 @@ def can_bolted(m: dict | None = None, site: str = "default") -> Part:
     return body
 
 
-def can_cap_bolted(m: dict | None = None) -> Part:
+def can_cap_bolted(m: dict | None = None, site: str = "default") -> Part:
     """D24 v2 rear cap (stage frame): 4 mm plug in the sleeve bore carrying the motor (3 × M3 on its rear PCD, low heads
-    counterbored), two 3 mm ears in the sleeve's rear notches (torque dogs), screwed through into the lugs' inserts."""
+    counterbored), two 3 mm ears in the sleeve's rear notches (torque dogs), screwed through into the lugs' inserts.
+    site: the lug pattern (cap_ang; belt_stage.bolted_cartridge passes none, roll._stage re-makes the yaw cap)."""
     m = m or MOTOR
     L = bolted_levels(m)
     z0 = L["rear"] - CAP_T
@@ -369,7 +388,7 @@ def can_cap_bolted(m: dict | None = None) -> Part:
     r_out = can_r_out(m)
     r_s = cap_screw_r(m)
     cap = Pos(0, 0, z0) * Cylinder(m["od"] / 2 + 0.2, CAP_T, align=MIN)
-    for a in c["ang"]:
+    for a in cap_ang(site):
         t = math.radians(a)
         cap += Pos(0, 0, L["rear"] - c["ear_t"]) * Rot(0, 0, a) * Pos((r_out + c["lug_out"]) / 2, 0, 0) * Box(r_out + c["lug_out"], c["ear_w"], c["ear_t"], align=MIN)
         cap -= Pos(r_s * math.cos(t), r_s * math.sin(t), z0 - 1) * Cylinder(c["clr_d"] / 2, 10, align=MIN)
@@ -394,13 +413,13 @@ def can_envelope(m: dict | None = None, site: str = "default", clr: float = 0.6,
     return e
 
 
-def cap_fasteners(m: dict | None = None):
+def cap_fasteners(m: dict | None = None, site: str = "default"):
     """Rear-cap screws (bench: they stay in when the cartridge is swapped): (name, head-top point, axis) in the stage frame."""
     m = m or MOTOR
     L = bolted_levels(m)
     r_s = cap_screw_r(m)
     out = [(f"cap screw {a:+.0f}°", (r_s * math.cos(math.radians(a)), r_s * math.sin(math.radians(a)), L["rear"] + 1.65), (0.0, 0.0, 1.0))
-           for a in CAP["ang"]]
+           for a in cap_ang(site)]
     for k in range(0, m["rear_holes"], 2):
         a = 2 * math.pi * k / m["rear_holes"]
         out.append((f"motor screw {math.degrees(a):.0f}°", (m["rear_pcd"] / 2 * math.cos(a), m["rear_pcd"] / 2 * math.sin(a), L["rear"]), (0.0, 0.0, 1.0)))
