@@ -3,7 +3,8 @@ python -m rnd.m1_kit
 
 - **Step 1: prove the GIM protocol and the safety chain on ONE joint.** One GIM6010-8 (the yaw motor later), the DM-J4310,
   the CAN adapters, the bench supply and the whole safety board, a test lever bolted straight to the GIM output, the
-  joint's turned C45 drive stub (D26: no Oldham) for the stub coupon, thermistors, inserts and screws for the coupons,
+  joint's C45+QT integral pinion shaft (D26 v5: no Oldham, no keyed pulley) for the stub coupon, the motorless test kit for
+  the board tests T0–T16, thermistors, inserts and screws for the coupons,
   filament. Nothing in it waits on a
   seller answer or a CAD fix, and every part is reused in the arm (except the bench tools). Neon review #2 finding 15
   (2026-11-27): the D40 Oldham / plain Ø12 / set-screw pulley / 315 belt stage (belts.md: 0.86× / 0.65× at the motor peak,
@@ -96,6 +97,31 @@ B61808 = (2.02, "AliExpress MOCHU 10-pack snapshot (loop 14)")
 B6801 = (0.90, E)
 PSU = (174.80, "Bravo Electro $174.80; Master Electronics $170.13 (2026-11-27 search snapshots)")
 AL_CAP = (15.0, "ESTIMATE: 6061 Ø86–96 × 6 disc with fins, JLCCNC / PCBWay-class instant quote")
+# Waves 12–13 (Astra review #3, 2026-11-28): the parts the merged design added or changed.
+PINION = (35.0, "ESTIMATE (docs/rnd/belts.md, Astra #3 m7): one turned + hobbed C45+QT integral pinion shaft (stub v5: Ø42 × 4 flange, neck, "
+                "20T HTD 5M cut on the shaft, Ø15 collar, Ø12 k5 6001 seat) ≈ $35 each in 10s vs ≈ $25 for the v4 stub + keyed pulley + key; "
+                "quote from the STEP (belt_stage.small_stage_v4)")
+TENSION_RING = (8.0, "ESTIMATE: turned 6061-T6 ring, bore eccentric by 0.30 mm to the OD, 1.2 mm min wall, 36 index marks (belt_stage.TENSION_RING, "
+                     "belts.md D26 tension ring); basis: JLCCNC CNC turning from $5.00 a part (jlccnc.com, 2026-11-27 search) + bar")
+C45_RING = (8.0, "ESTIMATE: turned C45+QT clamp ring (EN 10083-2, R_e ≥ 490), 2 mm, holes drilled (joints.md C1 contact faces, Astra #3 m9); "
+                 "JLCCNC turning from $5.00 a part + QT bar")
+YAW_FLANGE_7075 = (30.0, "ESTIMATE: 7075-T6 machined yaw flange (hex spigot, 6 × M3 tapped at the hex corners; was 6061-T6 at $25: Astra #3 m9, "
+                         "joints.md); 7075 plate premium over 6061 ≈ +$5 at qty 2 (instant-quote class)")
+# Safety board netlist v3 additions (Astra #3 critical 3, rnd/safety_board_sim.py, electrical.md netlist): ESTIMATE, DigiKey-class unit prices
+BOARD_V3 = (14.0, "ESTIMATE (DigiKey-class): Q4 100 V logic-level MOSFET IRL540N class ≈ $2 (was the 30 V IRLB8721), U16 LVC1G123 50 µs "
+                  "min-on one-shot ≈ $1, U17 LVC1G86 XOR + RC + comparator ≈ $2, U18 TLV3012-class 12 V UVLO + reference ≈ $2.5, "
+                  "U19 ACS724-30A Hall sensor ≈ $5.5 + RC + comparator ≈ $1")
+ACS724 = (6.5, "ESTIMATE: ACS724LLCTR-30AB ≈ $5.5 (DigiKey-class) + RC + comparator (one per arm branch on the robot board)")
+# R17 roll latch (PIP_ROLL_GUARD=latch, default off: an OPTION, not in any total): power_off.md option O2
+ROLL_LATCH = (14.0, "ESTIMATE (docs/rnd/power_off.md O2): 24 V pull solenoid $6–9, Ø10 pin + 42CrMo4 guide sleeve $3, spring $0.5, "
+                    "hall switch + magnet $2, FET + wiring $1; ≈ 45 g per arm (rnd/parts/roll.py LATCH)")
+# Step-1 gate: motorless test equipment (docs/rnd/safety_board_tests.md, Equipment); instruments are tools the owner may own
+SCOPE = (499.0, "Siglent SDS1104X-E (100 MHz, 4 ch, 1 GSa/s) $499 list at siglentna.com / Transcat (2026-11-28 search)")
+DIFF_PROBE = (175.0, "Micsig DP10013 (100 MHz, ±1300 V): Woot $139.99 (sold out), Telonic £174.16 inc VAT (out of stock) (2026-11-28 search); ESTIMATE $175")
+CLAMP_100A = (220.0, "Micsig CP2100A (DC–800 kHz, 10 / 100 A): Digitalzakka $219.99, SainSmart $259.99 (2026-11-28 search); note 800 kHz < the "
+                     "test spec's ≥ 1 MHz: the CP2100B (2.5 MHz) is €699 net at Batronix")
+CLAMP_LOW = (70.0, "ESTIMATE: Hantek CC-65-class DC/AC clamp (K1 coil ≈ 0.4 A, supply lead ≤ 30 A)")
+CC_20A = (216.99, "Newegg 0–32 V / 0–20 A switching bench supply $216.99 (2026-11-28 search; confirm CC/CV on the datasheet); Extech 382276 $529 at TestEquity")
 
 
 # (group, item, qty, unit $, why / where, source)
@@ -127,7 +153,11 @@ def step1():
          "LEV100A5ANG $92 (Master Electronics); rest ESTIMATE"),
         ("Power (M2)", "Safety-board logic (netlist v3 in electrical.md): LM74700-Q1 + IRFB7530 ideal diode, 2nd LVC1G123 (discharge one-shot on Ā), LVC1G74 latch + power-on reset, "
          "**TLV3202** + TL431B, LVC1G11 + LVC1G32 (K1 hold on AUX), LVC1G04, UCC27524, 12 V buck + 3.3 V LDO, 1 kΩ 3 W bleeder, 10 Ω RH-50 dummy load, 2 × PC817, 2-layer PCB", 1, 45.0,
-         "**order after the KiCad schematic + LTspice clamp simulation are reviewed** (M1_READINESS Step 1 gate); board tests before any motor", E),
+         "**order after the KiCad schematic is drawn and the independent review checklist is signed** (safety_board_tests.md; M1_READINESS Step 1 gate); board tests before any motor", E),
+        ("Power (netlist v3)", "Safety-board netlist v3 additions (Astra #3 critical 3, safety_board_sim.md): **Q4 100 V logic-level coil driver** (IRL540N class; "
+         "the 30 V IRLB8721 saw ≈ 52 V at every turn-off), U16 50 µs minimum-on one-shot, **U17 AUX / K1 discrepancy monitor** (LVC1G86 XOR + 30 ms RC + comparator), "
+         "**U18 12 V UVLO** (TLV3012 class, 10.5 V), **U19 arm-branch current trip** (ACS724-30A + 5 s RC + comparator at 16 A)", 1, *BOARD_V3[:1],
+         "design changes 0–5 of the board simulation: no MHz ringing, no avalanche, welded K1 / stuck AUX / dead 12 V each end in a stop, the in-arm 16 AWG protected at 18–35 A", BOARD_V3[1]),
         ("Bring-up IO (S1)", "sw/bringup.py `--estop gpiod:gpiochip0:17:27`: reset/ARM pushbutton, coil MOSFET + suppression, opto "
          "(aux contact → GPIO27), heartbeat lead GPIO17 → watchdog, 3 m 4-core cable for the remote mushroom, terminal blocks", 1, 20.0,
          "safety step (e-stop, watchdog, reset refused while pressed); operator outside the fall envelope", E),
@@ -138,10 +168,10 @@ def step1():
         ("Step-1 rig", "Test lever: 6061 flat bar 40 × 6 × 300 mm, drilled on arrival to the GIM6010-8's measured output pattern and bolted straight to it "
          "+ 1 kg and 2 kg weights + luggage scale", 1, 25.0,
          "protocol, torque constant, friction, the drive's torque limit, the catch, the collision trip on one joint: no belt stage needed (Neon #2 F15)", E),
-        ("Drive (D26)", "Turned **C45 drive stub** for the Step-1 GIM6010 joint (belt_stage.STUB: Ø42 × 4 flange, 8 × Ø3.4 + c'bore on the measured output PCD, "
-         "Ø12 h6 shaft + 4 mm keyway, k6 seat for the wall-B 6001)", 1, *STUB[:1],
-         "the yaw stage's stub, reused in Step 2; now the stub coupon: 8 × M3 × 6 + Loctite 243 on the GIM output to 1.5 × the 11 N·m peak (COUPONS.md); "
-         "no Oldham since D26", STUB[1]),
+        ("Drive (D26 v5)", "**C45+QT integral pinion shaft** for the Step-1 GIM6010 joint (stub v5, Astra #3 m7: Ø42 × 4 flange, 8 × Ø3.4 + c'bore on the "
+         "measured output PCD, Ø16/10 neck, 20T HTD 5M hobbed on the shaft, Ø15 collar, Ø12 k5 seat for the wall-B 6001; no key, no pulley)", 1, *PINION[:1],
+         "the yaw stage's pinion, reused in Step 2 (so Step 2 buys no yaw pulley or key); now the stub coupon: 8 × M3 × 6 + Loctite 243 on the GIM output "
+         "to 1.5 × the 11 N·m peak (COUPONS.md)", PINION[1]),
         ("Fasteners (D26)", "DIN 7984 M3 × 6 8.8, 100-pack", 1, *M3X6_PACK[:1], "8 per drive stub: the Step-1 stub now, the arm's others in Step 2", M3X6_PACK[1]),
         ("Thermal (M7)", "10 × 10 k NTC thermistors (epoxy bead) + Kapton tape", 1, 6.0, "motor case and winding-side temperatures from day 1 (thermal.md)", E),
         ("Fasteners (coupons)", "M4 brass heat-set inserts, **short** (Ø5.6 hole × 5.7 mm), 100-pack", 1, 15.93,
@@ -155,6 +185,31 @@ def step1():
     ]
 
 
+def step1_test():
+    """Step 1's gate equipment: what the motorless board tests T0–T16 need (docs/rnd/safety_board_tests.md, Equipment).
+    Group 'Test kit' is consumed by the tests (bought); group 'Test instruments' are tools: skip any the owner already owns."""
+    return [
+        ("Test kit (T3–T8)", "Dummy drive bank: 5 × 470 µF 35 V low-ESR electrolytics (2.35 mF, the M1 drivers' input capacitance) on 0.5 m of 14 AWG + ring lugs, "
+         "after the real 1.5 m arm lead and F3", 1, 8.0, "pre-charge, watchdog, release, forced-discharge and end-to-end stop tests at the drive end (TP2)", E),
+        ("Test kit (T3–T12)", "Load resistors: 5.6 Ω and 2.2 Ω, 50 W aluminium-housed (the 10 Ω RH-50 pre-charge fault load is on the board line), on the "
+         "clamp's heatsink plate", 2, 6.0, "the 2.2 Ω stands in for a drive in T8 / T16", E),
+        ("Test kit (T11–T12)", "Regen-source diode: one spare VS-40CPQ060-N3 (2 × 20 A Schottky), in series with the CC supply into the dummy bank", 1, 2.0,
+         "**safety_board_tests.md names a 1N5822-class diode: that is a 3 A part, too small for the 10 / 20 / 30 A regen steps of T12** (flagged for the "
+         "board-sim owner)", "RS £37 / 25 (the clamp line's VS-40CPQ060-N3 snapshot)"),
+        ("Test kit (T12)", "Energy bank 22 mF 50 V (2 × 10,000 µF + 2 × 1,000 µF 50 V, screw terminals) + a 10 A charge switch", 1, 18.0,
+         "9.9 J at 30 V dumped into TP2 10× in 1 s (the pulse duty of the clamp resistors)", E),
+        ("Test instruments (tools)", "4-channel oscilloscope ≥ 100 MHz, 1 GS/s", 1, *SCOPE[:1], "TP1–TP11: every pass / fail number is read on the scope, not in software", SCOPE[1]),
+        ("Test instruments (tools)", "High-voltage differential probe ≥ 100 V, ≥ 50 MHz", 1, *DIFF_PROBE[:1], "TP3 Q1 drain and TP7 Q4 drain (≤ 48 V / ≤ 80 % of V_DS)", DIFF_PROBE[1]),
+        ("Test instruments (tools)", "DC current clamp 100 A", 1, *CLAMP_100A[:1], "clamp leg 1 (49 A pulses), inrush ≤ 8.4 A", CLAMP_100A[1]),
+        ("Test instruments (tools)", "Low-current DC clamp (≤ 30 A)", 1, *CLAMP_LOW[:1], "K1 coil current, supply lead", CLAMP_LOW[1]),
+        ("Test instruments (tools)", "Second CC/CV supply 0–30 V / 20 A (the regen source; the 10 A Step-1 supply covers T0 / T9)", 1, *CC_20A[:1],
+         "T10–T12: pushes current *into* the bus, which the SE-1000 cannot sink (≈ 500 W simulated regen)", CC_20A[1]),
+        ("Test instruments (tools)", "DMM with a K-type thermocouple input + bead thermocouple", 1, 35.0, "rails (T0), resistor plate ≤ 60 °C (T12), wiring ≤ 60 °C (T16)", E),
+        ("Test instruments (tools)", "Heartbeat source: the Pi's GPIO17 (a gpiod square at 250 Hz, stopped at a random phase) instead of a function generator", 1, 0.0,
+         "T5 / T8 / T9 (the Pi drives GPIO17 on the robot anyway)", "owner has the Pi"),
+    ]
+
+
 def step2_common():
     """Step 2, independent of both holds: the rest of the arm."""
     return [
@@ -162,9 +217,12 @@ def step2_common():
         ("Bearings", "6708 (40×50×6) thin", 2, 2.5, "elbow belt cassette", E),
         ("Bearings", "61804 (20×32×7)", 2, 0.92, "D16 wrist-roll spindle", "AliExpress MOCHU snapshot; Zoro $4.69"),
         ("Bearings (M8)", "608-2Z bearings (C0 1.37 kN) with printed POM tyres on a Ø8 axle fork", 2, 2.5, "A9 balancer pulley A + tackle pulley (Fable M8: a U604 carried 634–748 N on C0 ≈ 0.3 kN; M8 track 3220161)", E),
-        ("Joints (C1/M1 fixes)", "Pitch-hub tie-rod: 4 × M4 class 10.9 studs (DIN 976-1) + M4 nuts + 6061 clamp ring; yaw flange 6 × M3 × 45 12.9 + steel clamp ring",
-         1, 12.0, "the arm hung from M3 inserts in pull-out (Fable C1; rnd/joints.py on the C1/M1 track)", E),
-        ("Joints (C1/M1 fixes)", "Machined 6061-T6 yaw flange (hex spigot, M3 tapped at the hex corners)", 1, 25.0, "Fable C1 (C1/M1 track ESTIMATE)", E),
+        ("Joints (C1/M1 fixes)", "Pitch-hub tie-rod: 4 × M4 class 10.9 studs (DIN 976-1) + ISO 4032 M4 nuts on a **C45+QT clamp ring** r 11–21 × 2 (was 6061-T6); "
+         "yaw flange 6 × M3 × 40 ISO 4762 12.9 on a **C45+QT clamp ring** r 8.5–16.8 × 2 (was S235)", 1, 4.0 + 2 * C45_RING[0],
+         "Fable C1 (the arm hung from M3 inserts in pull-out); Astra #3 m9 contact faces: nut on 6061 0.70×, sleeve on S235 0.64× → C45+QT 1.34–2.52× (joints.md)",
+         "ESTIMATE: studs, nuts, screws ≈ $4; rings " + C45_RING[1]),
+        ("Joints (C1/M1 fixes)", "Machined **7075-T6** yaw flange (hex spigot, 6 × M3 tapped at the hex corners; was 6061-T6)", 1, *YAW_FLANGE_7075[:1],
+         "Astra #3 m9: the yaw sleeve feet on the spigot top, 6061 0.75× → 7075-T6 1.43× (joints.md)", YAW_FLANGE_7075[1]),
         ("Joints (C1/M1 fixes)", "7075-T6 balancer crank Ø44 × 4 with a pressed Ø6 pin, tapped for the tie-rod studs", 1, 20.0,
          "custom metal part missing from the kit (Fable minor)", E),
         ("Joints (C1, W8c)", "Steel crush sleeves, turned 42CrMo4+QT: pitch tie-rods 8 × Ø7 / 4.3 (4 × 49.75 + 4 × 19.75 mm) + yaw flange 6 × Ø4.6 / 3.2 × 29.65 mm "
@@ -185,10 +243,10 @@ def step2_common():
         ("Actuators (from Step 1)", "Feetech STS3215-C018 **12 V** (30 kg·cm)", 2, 19.5, "wrist roll (D16 spindle), gripper: on the elbow node's 12 V 6 A buck (below), "
          "which Step 1 did not have (Neon #2 F15: the 1 A logic buck must never feed them)", "loop 14 retailer snapshot"),
         ("Electronics (from Step 1)", "USB TTL bus-servo adapter (STS3215 ID setup only)", 1, 8.0, "servo IDs 1 / 2", E),
-        ("Yaw stage (D24 v2, from Step 1)", "Aluminium HTD 5M 20T, 12 H7 + 4 mm keyway", 1, *KEYED_PULLEY[:1], "yaw small pulley", KEYED_PULLEY[1]),
-        ("Yaw stage (D24 v2, from Step 1)", "DIN 6885 4 × 4 key assortment (16 mm)", 1, *KEYS[:1], "one under each stage's pulley (yaw, pitch, elbow)", KEYS[1]),
-        ("Yaw stage (D24 v2, from Step 1)", "HTD 5M-15 closed belt 315 mm (yaw, 20T:40T) at the **80.93 mm** exact centre", 1, *BELT[:1],
-         "belts.md: the CAD's 80.00 mm uses 93 % of the ±1 mm adjuster; the CAD track moves it before printing", BELT[1]),
+        ("Yaw stage (D26 v5)", "HTD 5M-15 closed belt 315 mm (yaw, 20T:40T; the 20T is the Step-1 pinion shaft, so no pulley or key here)", 1, *BELT[:1],
+         "belts.md: CAD centre 81.48 mm = stock belt 80.93 + the target stretch (D26_OFFSET), set by the tension ring", BELT[1]),
+        ("Yaw stage (D26 v5)", "D26 tension ring, yaw (turned 6061-T6, e 0.30 mm) under the cartridge's centring lip", 1, *TENSION_RING[:1],
+         "Astra #3 m6: fixed-centre preload 0–156 N → 134–220 N (0.77–1.27 × target), set by span frequency before the 6001 bond (belts.md)", TENSION_RING[1]),
         ("Yaw stage (D24 v2, from Step 1)", "61808 (40×52×7) × 2", 1, 2 * B61808[0], "yaw one-piece shaft (D19)", B61808[1]),
         ("Stages (D26)", "6001-2RS (12×28×8): the stub's far end in wall B's bonded bushing", 3, *B6001[:1], "yaw, pitch, elbow (the 6801 pairs went with the Oldham shafts)", B6001[1]),
         ("Stages (D26)", "Pitch idler: 2 × 625-2RS + M5 axle, captive nut, spacers, M4 jack screw", 1, 2 * B625[0] + IDLER_HW[0],
@@ -213,22 +271,25 @@ HOLD_A = dict(
           "and the D20 drive redesign (Fable M6)",
     yes=[("Actuators", "SteadyWin GIM8108-8, **24 V-capable driver version** (confirm which: SDC104 / GDZ468 / GDS68)", 2, GIM8108_8[0],
           "shoulder pitch (3:1) + elbow (3:1, 20T:60T): 1.8× rated on the 20 lb hug (R2c)", GIM8108_8[1]),
-         ("Drive (D20, D26)", "Turned C45 drive stub for the GIM8108-8 output (8 × Ø3.4 on its PCD; no Oldham since D26)", 2, STUB[0],
-          "pitch + elbow (cartridge_m.parts_list_direct(MOTOR_8108): 6001 2.0×, stub 8 × M3 1.7× at the 18 N·m flash limit)", STUB[1]),
+         ("Drive (D20, D26 v5)", "C45+QT integral pinion shaft for the GIM8108-8 output (Ø18/10 neck, 20T hobbed, 8 × Ø3.4 on its PCD; replaces the v4 stub + "
+          "steel keyed 20T)", 2, PINION[0],
+          "pitch + elbow (belts.md stub table: D20 fatigue 0.68 → 2.63× at the 18 N·m limit; 6001 2.0×, 8 × M3 1.7×)", PINION[1]),
          ("Drive (D20, D26)", "DIN 7984 M3 × 6 **10.9**, 50-pack", 1, M3X6_109[0], "8 per D20 stub (the 8.8 pack serves the GIM6010 stubs)", M3X6_109[1]),
-         ("Drive (D20, W8b)", "Steel C45 HTD 5M 20T, 15 mm belt, 12 H7 + 4 mm keyway (key 4 × 4 × 20; 6001s from the common line)", 2, 18.0,
-          "the direct stage's 20T (belt_stage.AL_PULLEY note: steel 20T for 22 N·m)", E),
+         ("Drive (D20, D26 v5)", "D26 tension ring, elbow (turned 6061-T6, e 0.30 mm; bore = the GIM8108-8 cartridge lip)", 1, TENSION_RING[0],
+          "elbow fixed-centre stage, PU steel-cord 380-5M (belts.md)", TENSION_RING[1]),
          ("Drive (D20, W8b)", "HTD 5M 15 mm **PU steel-cord** closed belts 355-5M (pitch) + 380-5M (elbow)", 2, 15.0,
           "cartridge_m.parts_list(MOTOR_8108) (Fable M6: a rubber 15 mm belt is 2.8× over ultimate/3 at 22 N·m)", E),
          ("Thermal (M7)", "Aluminium finned rear caps, Ø96 class", 2, 18.0, "pitch + elbow GIM8108-8 cartridges", E)],
     no=[("Actuators", "SteadyWin GIM6010-8 24 V SDC104", 2, GIM6010[0], "pitch + elbow as today (bench-valid at 1 kg; 0.6–0.8× on the 20 lb hug)", GIM6010[1]),
-        ("Drive (D26)", "Turned C45 drive stub for the GIM6010-8 output, 8 × DIN 7984 M3 × 6 from the Step-1 pack", 2, STUB[0], "pitch + elbow (no Oldham since D26)", STUB[1]),
-        ("Drive (D24 v2)", "Aluminium HTD 5M 20T, 15 mm belt, 12 H7 + 4 mm keyway (keys from the common assortment)", 2, KEYED_PULLEY[0], "pitch + elbow small pulleys", KEYED_PULLEY[1]),
+        ("Drive (D26 v5)", "C45+QT integral pinion shaft for the GIM6010-8 output (20T hobbed), 8 × DIN 7984 M3 × 6 from the Step-1 pack", 2, PINION[0],
+         "pitch + elbow (replaces the v4 stub + keyed aluminium 20T + key; belts.md fatigue 1.19 → 3.13×)", PINION[1]),
+        ("Drive (D26 v5)", "D26 tension ring, elbow (turned 6061-T6, e 0.30 mm)", 1, TENSION_RING[0], "elbow 295-5M fixed centre: 0–165 N → 134–218 N (belts.md)", TENSION_RING[1]),
         ("Drive", "HTD 5M-15 closed belts 355 (pitch, 20T:60T) + 295 (elbow, 20T:40T) mm", 2, BELT[0], "pitch + elbow", BELT[1]),
         ("Thermal (M7)", "Aluminium finned rear caps, Ø86 class", 2, AL_CAP[0], "pitch + elbow GIM6010 cartridges", AL_CAP[1])],
     note="Fable M6: the D20 swap is a drive redesign, not a motor swap. The cartridge track's D20 list (cartridge_m.parts_list_direct(MOTOR_8108), D26) "
-         "puts the steel 20T on a turned C45 stub bolted to the GIM8108-8 output with 8 × M3 × 6 10.9 (1.7× at the 18 N·m flash limit), a 6001 in wall B "
-         "(2.0×), PU steel-cord 15 mm belts; the D63 Oldham sets and doweled hubs of W8b went with the couplings (D26). "
+         "puts the 20T on a C45+QT integral pinion shaft (stub v5, Astra #3 m7: the keyed v4 stub was 0.68× in fatigue) bolted to the GIM8108-8 output with "
+         "8 × M3 × 6 10.9 (1.7× at the 18 N·m flash limit), a 6001 in wall B (2.0×), PU steel-cord 15 mm belts, a D26 tension ring at the elbow; the D63 "
+         "Oldham sets and doweled hubs of W8b went with the couplings (D26). "
          "The 24 V question is the other gate: most GIM8108-8 listings are 48 V nominal.",
     hi=lambda: 2 * (GIM8108_8_HI - GIM8108_8[0]) + line_sum(HOLD_A["yes"]) - line_sum(HOLD_A["no"]),
 )
@@ -263,8 +324,8 @@ HOLD_B = dict(
          ("Drive (D24 inline, W8c)", "Loctite 660 (61806 outer race, 0.3 mm gap) + Loctite 638 (output dowels into Ø4.1 adapter holes)", 1, LOCTITE[0],
           "the 61806 floats ± 0.3 mm (forced load ≤ 800 N); dowels bonded seated in the motor's holes (150 MPa with load sharing)", LOCTITE[1])],
     no=[("Actuators", "SteadyWin GIM6010-8 24 V SDC104", 1, GIM6010[0], "shoulder roll on the 18T:80T belt (4.44:1)", GIM6010[1]),
-        ("Drive (D24 v2)", "Aluminium HTD 5M 18T, 15 mm, 12 H7 + 4 mm keyway (+ keys)", 1, KEYED_PULLEY[0] + 2.5, "roll small pulley", KEYED_PULLEY[1]),
-        ("Drive (D26)", "Turned C45 drive stub + 6001-2RS (direct stage, no Oldham)", 1, STUB[0] + B6001[0], "roll stage", STUB[1] + "; 6001: " + B6001[1]),
+        ("Drive (D26 v5)", "C45+QT integral pinion shaft, **18T** hobbed, + 6001-2RS (direct stage)", 1, PINION[0] + B6001[0], "roll stage (18T:80T)",
+         PINION[1] + "; 6001: " + B6001[1]),
         ("Drive", "HTD 5M-15 closed belt 475 mm", 1, BELT[0], "roll (80T)", BELT[1]),
         ("Bearings", "61808 (40×52×7)", 2, B61808[0], "roll one-piece shaft (D19)", B61808[1]),
         ("Thermal (M7)", "Aluminium finned rear cap, Ø86 class", 1, AL_CAP[0], "roll GIM6010 cartridge", AL_CAP[1])],
@@ -299,6 +360,15 @@ SELLER_QUESTIONS = [
 ]
 
 
+# Options: priced, never in a total (an owner decision pending; the CAD is behind a params switch)
+OPTIONS = [
+    ("Option (R17, D25 / Astra #3 F1)", "**Roll latch** (PIP_ROLL_GUARD=latch, default off; power_off.md option O2): spring-applied Ø10 hardened pin in a 42CrMo4 "
+     "guide sleeve at roll +5°, 24 V pull solenoid (JF-0730B class) on a cable, pin-retracted hall switch + magnet, supervisor-gated FET", 1, *ROLL_LATCH[:1],
+     "a safe unpowered roll state (the arm cannot be pushed into the inboard wedge); ≈ 45 g per arm; the print behind the sleeve carries ≈ 0.4 kN until a "
+     "metal path to the motor face is drawn (power_off.md)", ROLL_LATCH[1]),
+]
+
+
 def sd(x):
     """Signed dollars: +$57 / −$12."""
     return f"{'+' if x >= 0 else '−'}${abs(x):,.0f}"
@@ -314,6 +384,14 @@ def items():
 
 
 CHANGES = [
+    "**Waves 12–13 refresh (2026-11-28, Astra review #3):** the drive stub is now a **C45+QT integral pinion shaft** with the 20T hobbed on it (stub v5, m7: "
+    "the keyed v4 stub was 0.68× / 1.19× in rotating-bending fatigue): Step 1's stub line becomes the pinion ($35 ESTIMATE, belts.md), and Step 2 no "
+    "longer buys the yaw's keyed aluminium 20T or the key assortment; hold A / B pulleys + stubs become pinions. **D26 tension rings** (turned 6061-T6, "
+    "e 0.30 mm; m6) at the yaw (common) and the elbow (hold A yes / no). **C1 faces (m9):** both clamp rings C45+QT (were 6061 / S235), the yaw flange "
+    "7075-T6 (was 6061), yaw screws M3 × 40. **Safety board netlist v3 (critical 3):** a 100 V coil-driver MOSFET, the 50 µs minimum-on one-shot, the "
+    "AUX / K1 discrepancy monitor, the 12 V UVLO and the arm-branch current trip are a new Step-1 line. **Step-1 gate test kit** (motorless tests T0–T16): "
+    "dummy drive bank, load resistors, regen diode, energy bank, and the instruments (scope, differential probe, two current clamps, a 20 A CC supply, "
+    "DMM). **Option:** the R17 roll latch ($14 per arm ESTIMATE, PIP_ROLL_GUARD=latch, default off), never in a total.",
     "**D26 cost-down (owner, 2026-11-27): the Oldham couplings go.** Each GIM6010 / GIM8108-8 stage drives its 20T from a turned C45 stub bolted to "
     "the motor output (8 × M3 × 6), the stub's far end in a 6001-2RS in wall B (the lift: a 61901); the pitch belt is tensioned by a slotted idler "
     "(2 × 625-2RS, M5 axle, M4 jack screw), elbow / yaw at fixed centres. Out: the D50 sets + 6061 motor hubs (Step 1 and hold A / B *no*), the D63 "
@@ -356,16 +434,24 @@ CHECKS = [
     "Crush sleeves (W8c, D26): measure each printed stack; pitch / yaw sleeves turned 42CrMo4+QT (R_p0.2 ≥ 750 MPa on the certificate) to print − 0.05 mm; clevis / rear sleeves cut from the E235+C tube sticks and faced in the jig to print − 0.05 ± 0.02 (micrometer).",
     "Vishay NH-50 (not RH-50) for the three clamp resistors: the part number starts NH050; the pre-charge and dummy-load resistors stay RH-50.",
     "Heat-set inserts: the short M4 (5.7 mm) the flange calls for; the long 8.1 mm ones don't fit the 6 mm flange.",
+    "Integral pinion shafts (v5): quote from the STEP after the GIM output PCD is measured; check the hobbed 20T against a stock HTD 5M belt (pitch diameter "
+    "31.83 mm, root Ø26.6), the Ø12 k5 seat and the C45+QT certificate (R_e ≥ 490 MPa).",
+    "C1 clamp rings: C45+QT on the certificate (R_e ≥ 490 MPa), not plain C45 or S235; the yaw flange 7075-T6 (T651 plate), not 6061.",
+    "Test instruments: the CP2100A is DC–800 kHz, under the test sheet's ≥ 1 MHz for the clamp leg: accept it for T3 / T12 currents (≈ ms events) or use a "
+    "CP2100B (2.5 MHz); the differential probe ≥ 100 V and ≥ 50 MHz for TP3 / TP7.",
 ]
 
 
 def totals():
     c = 1 + CONTINGENCY
-    s1, s2 = line_sum(step1()), line_sum(step2_common())
+    s1p, s1t = line_sum(step1()), line_sum(step1_test())
+    s1i = line_sum([r for r in step1_test() if "instruments" in r[0]])
+    s1, s2 = s1p + s1t, line_sum(step2_common())
     a_yes, a_no = line_sum(HOLD_A["yes"]), line_sum(HOLD_A["no"])
     b_yes, b_no = line_sum(HOLD_B["yes"]), line_sum(HOLD_B["no"])
     plan2 = s2 + a_no + b_yes                     # today's plan: GIM6010 at pitch + elbow, inline roll
-    return dict(s1=s1, s1_c=s1 * c, s2=s2, a_yes=a_yes, a_no=a_no, b_yes=b_yes, b_no=b_no,
+    return dict(s1=s1, s1_c=s1 * c, s1_parts=s1p, s1_parts_c=s1p * c, s1_test=s1t, s1_test_c=s1t * c, s1_instr=s1i, s1_instr_c=s1i * c,
+                opt=line_sum(OPTIONS), opt_c=line_sum(OPTIONS) * c, s2=s2, a_yes=a_yes, a_no=a_no, b_yes=b_yes, b_no=b_no,
                 s2_plan=plan2, s2_plan_c=plan2 * c, s2_d20_c=(s2 + a_yes + b_yes) * c, s2_belt_c=(s2 + a_no + b_no) * c,
                 d_a=(a_yes - a_no) * c, d_b=(b_yes - b_no) * c, d_a_hi=HOLD_A["hi"]() * c, d_b_hi=HOLD_B["hi"]() * c,
                 plan_c=(s1 + plan2) * c, d20_c=(s1 + s2 + a_yes + b_yes) * c, belt_c=(s1 + s2 + a_no + b_no) * c,
@@ -385,21 +471,24 @@ def _sub(L, x, label):
 
 
 def main():
-    S1, S2 = step1(), step2_common()
+    S1, S1T, S2 = step1(), step1_test(), step2_common()
     t = totals()
     c = CONTINGENCY
     est = lambda rows: sum(1 for *_, s in rows if s.startswith("ESTIMATE"))
     L = ["# Milestone M1: one-arm bench kit in two steps (generated by `python -m rnd.m1_kit`)", "",
-         f"**Step 1 (one joint: GIM protocol + safety chain): ${t['s1']:,.0f} + {c:.0%} = ${t['s1_c']:,.0f}.** "
+         f"**Step 1 (one joint: GIM protocol + safety chain): ${t['s1']:,.0f} + {c:.0%} = ${t['s1_c']:,.0f}**, of which the parts ${t['s1_parts_c']:,.0f} "
+         f"and the motorless test kit for the Step-1 gate ${t['s1_test_c']:,.0f} (instruments ${t['s1_instr_c']:,.0f} of it: skip any the owner already owns, "
+         f"→ ${t['s1_c'] - t['s1_instr_c']:,.0f}). "
          f"**Step 2 (the rest of the arm, today's plan): ${t['s2_plan']:,.0f} + {c:.0%} = ${t['s2_plan_c']:,.0f}.** "
-         f"Whole kit ${t['plan_c']:,.0f} with contingency (the previous list: $1,945, with a 10 A supply, no safety-board logic, a motors-only hold A and none of the C1/M1/M7 fix parts).", "",
+         f"Whole kit ${t['plan_c']:,.0f} with contingency (W12 list: Step 1 $1,397, Step 2 $1,545, kit $2,941, before the wave-13 parts and the test kit). "
+         f"Option, not in any total: the R17 roll latch {sd(t['opt'])} per arm ({sd(t['opt_c'])} with contingency).", "",
          "| Scenario (with contingency) | Step 2 | Whole kit |", "|---|---|---|",
          f"| **Today's plan**: GIM6010 at pitch + elbow, approved inline roll | ${t['s2_plan_c']:,.0f} | **${t['plan_c']:,.0f}** |",
          f"| Hold A yes (D20, with its drive parts) + inline roll | ${t['s2_d20_c']:,.0f} | ${t['d20_c']:,.0f} |",
          f"| Fallback: belt roll (hold B no), GIM6010 at pitch + elbow | ${t['s2_belt_c']:,.0f} | ${t['belt_c']:,.0f} |", "",
          f"Hold A (D20) costs **{sd(t['d_a'])}** against the GIM6010 lines (up to {sd(t['d_a_hi'])} at the dearest motor listing); the inline roll "
-         f"{sd(t['d_b'])} against the belt roll (up to {sd(t['d_b_hi'])}). Step 1: {len(S1) - est(S1)} of {len(S1)} lines priced from retailer snapshots, "
-         f"{est(S1)} ESTIMATE. Everything except the two supplies, the stand, the test lever and the catch is reused in the arm and the robot.", "",
+         f"{sd(t['d_b'])} against the belt roll (up to {sd(t['d_b_hi'])}). Step 1: {len(S1 + S1T) - est(S1 + S1T)} of {len(S1 + S1T)} lines priced from retailer snapshots, "
+         f"{est(S1 + S1T)} ESTIMATE. Everything except the supplies, the stand, the test lever, the catch and the test kit is reused in the arm and the robot.", "",
          "**Why two steps (Fable review 2026-11-27, verdict):** no GIM can be commanded until its CAN protocol is known, the arm mixes three "
          "SteadyWin drivers (docs/sw/gim_protocol_notes.md), and the arm CAD has fixes to land before printing (C1 insert pull-out, C3 rear cap, "
          "M1 inline boss/stops, M5 belt centres). Step 1 settles the protocol and the safety chain on one real GIM with only one GIM bought; the bench supply and the safety board are most of its cost and any arm needs them; "
@@ -413,6 +502,12 @@ def main():
          "sag (R2b) and, if the encoder mounts and node firmware exist by then (Fable M3), hand accuracy; the fin-ray grasp; CAN timing (SW1).", "",
          "## Step 1: buy now (one joint, the protocol and the safety chain)", ""]
     _table(L, S1)
+    L += [f"| | **Step 1 parts subtotal** | | | **{t['s1_parts']:,.0f}** | | |", "",
+          "### Step-1 gate: motorless test kit (docs/rnd/safety_board_tests.md *Equipment*, tests T0–T16)", "",
+          "The board must pass T0–T16 with no motor connected before any drive gets power. The kit lines are consumed by the tests; the instrument "
+          "lines are tools (the robot BOM excludes tools): skip any the owner already owns or can borrow.", ""]
+    _table(L, S1T)
+    L += [f"| | **Test kit subtotal** (instruments {t['s1_instr']:,.0f}) | | | **{t['s1_test']:,.0f}** | | |", ""]
     _sub(L, t["s1"], "Step 1")
     L += ["## Step 2: the rest of the arm (after Step 1's exit criteria)", "", "### Common to every Step-2 scenario", ""]
     _table(L, S2)
@@ -425,6 +520,9 @@ def main():
         _table(L, H["no"])
         L += ["", f"**Delta: {sd(y - n)} before contingency, {sd(t[f'd_{k}'])} with it** (at the dearest motor listing {sd(t[f'd_{k}_hi'])}). {H['note']}", ""]
     L += [f"**Step 2, today's plan (common + hold A *no* + hold B *yes*): ${t['s2_plan']:,.0f} + {c:.0%} = ${t['s2_plan_c']:,.0f}.**", "",
+          "### Option (not in any total)", "", "Priced so the owner's decision costs nothing to make; bought with Step 2 only if the owner picks it.", ""]
+    _table(L, OPTIONS)
+    L += ["",
           "## Questions for the seller (send as one message now; they gate Step 2's motors)", ""]
     L += [f"{i}. {q}" for i, q in enumerate(SELLER_QUESTIONS, 1)]
     L += ["", "Ask Damiao (or the DM-J4310 reseller) separately: the V1.1 output bearing's allowable radial load and moment.", "",
