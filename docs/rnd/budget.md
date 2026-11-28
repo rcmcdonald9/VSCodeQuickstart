@@ -6,8 +6,8 @@
 | battery | 1.10 | ≤ 3 | ✅ |
 | ballast (2 removable blocks) | 4.90 | ≤ 10 | ✅ |
 | upper | 8.88 | ≤ 10 | ✅ |
-| arm (each, detachable) | 4.90 | ≤ 10 | ✅ |
-| **total robot** | **32.37** | | |
+| arm (each, detachable) | 4.94 | ≤ 10 | ✅ |
+| **total robot** | **32.45** | | |
 
 **base detail**
 
@@ -53,7 +53,7 @@
 | arm bones+shells | 1.230 |
 | arm shoulder_roll | 1.000 |
 | upper-arm yaw belt stage | 0.740 |
-| roll stage | 0.410 |
+| roll stage | 0.450 |
 | arm upper_yaw | 0.388 |
 | arm elbow | 0.388 |
 | arm wrist_pitch | 0.300 |

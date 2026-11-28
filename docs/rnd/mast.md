@@ -4,7 +4,7 @@ Worst static moment at the mast foot: **50 N·m** (both arms straight forward wi
 
 | Option | I (mm⁴) | kg/m | Sway at the torso | Stress |
 |---|---|---|---|---|
-| 2040 extrusion (v0 placeholder) | 69,000 | 0.50 | 5.9 mm ⚠️ | 15 MPa |
+| 2040 extrusion (v0 placeholder) | 69,000 | 0.50 | 6.0 mm ⚠️ | 15 MPa |
 | 40×40×2 Al square tube | 73,365 | 0.82 | 5.6 mm ⚠️ | 14 MPa |
 | 50×50×2 Al square tube | 147,712 | 1.04 | 2.8 mm ⚠️ | 9 MPa |
 | 60×60×2 Al square tube **← chosen** | 260,459 | 1.25 | 1.6 mm ✅ | 6 MPa |

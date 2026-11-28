@@ -115,6 +115,6 @@
 |---|---|
 | base | 7.70 |
 | upper core | 8.88 |
-| arm (each) | 4.90 |
+| arm (each) | 4.94 |
 | battery | 1.10 |
-| total robot | 27.47 |
+| total robot | 27.55 |
