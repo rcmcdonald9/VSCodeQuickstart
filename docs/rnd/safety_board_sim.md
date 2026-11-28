@@ -70,8 +70,8 @@ PRE_OK needs the bus's total idle draw under 0.91 A (3 V across 3.3 Ω, before t
 |---|---|
 | heartbeat lost just after an edge: one 2 ms cycle + 25 ms monostable at +20 % | 32.0 |
 | coil current to drop-out (D1 + Z1, coil 170 Ω / 0.5 H ESTIMATE) + armature 4 ms | 5.6 |
-| aux contact lags the mains (ESTIMATE) → FORCE → far drive below UVLO (simulated) | 2.0 |
 | AUX debounce, opening → AUX_DB low at the slow corner (v4) | 0.5 |
+| aux contact lags the mains (ESTIMATE) → FORCE → far drive below UVLO (simulated) | 2.0 |
 | phase current decays once the drive stops switching (ESTIMATE) | 1.0 |
 | **total (coil model)** | **41.1** |
 | total with the datasheet release (10 ms) instead | 45.5 |
@@ -83,8 +83,8 @@ PRE_OK needs the bus's total idle draw under 0.91 A (3 V across 3.3 Ω, before t
 |---|---|
 | heartbeat lost just after an edge: one 2 ms cycle + 25 ms monostable at +20 % | 32.0 |
 | coil current to drop-out (D1 + Z1, coil 170 Ω / 0.5 H ESTIMATE) + armature 4 ms | 5.6 |
-| aux contact lags the mains (ESTIMATE) → FORCE → far drive below UVLO (simulated) | 2.8 |
 | AUX debounce, opening → AUX_DB low at the slow corner (v4) | 0.5 |
+| aux contact lags the mains (ESTIMATE) → FORCE → far drive below UVLO (simulated) | 2.8 |
 | phase current decays once the drive stops switching (ESTIMATE) | 1.0 |
 | **total (coil model)** | **41.9** |
 | total with the datasheet release (10 ms) instead | 46.3 |
@@ -248,7 +248,7 @@ The bench supply latches off at 43.8–52.1 A; F1 (60 A) never acts on the bench
 
 ### E-stop sequence (board event model at 0.1 ms + the base's speed; arm watchdog at +20 %)
 
-Transit: 31.9 kg (twin), 0.8 m/s with the casters released, ramp at 0.5 m/s² (CASTER_RELEASED_A, the limit in force); basket: +9.07 kg at 0.25 m/s (the locked cap CASTER_LOCKED_V, lowered from 0.3 in W16a), ramp at 0.3 m/s² (load mode). Arm torque off = K1 open + far drive below UVLO (§3) + 1 ms. Base power off = U20's delayed contacts open (Q9 off; FORCE_B then empties VBUS_B in 1.5 ms). Caster lock = SW-T2 as implemented in W16a (sw/safety.py `_caster_tick`): a forced lock is deferred until the base is at ≤ V_CASTER_LOCK = 0.25 m/s, or its power is off (the solenoid drops with VBUS_B). The W15b column *forced at the fault latch* is gone: that was the software before W16a.
+Transit: 31.9 kg (twin), 0.8 m/s with the casters released, ramp at 0.5 m/s² (CASTER_RELEASED_A, the limit in force); basket: +9.07 kg at 0.15 m/s (its locked cap, SW-T8 `caster_locked_v_for(9.07)`: 0.3 → 0.25 in W16a → 0.15 in W18b), ramp at 0.3 m/s² (load mode). Arm torque off = K1 open + far drive below UVLO (§3) + 1 ms. Base power off = U20's delayed contacts open (Q9 off; FORCE_B then empties VBUS_B in 1.5 ms). Caster lock = SW-T2 as implemented in W16a (sw/safety.py `_caster_tick`): a forced lock is deferred until the base is at ≤ V_CASTER_LOCK = 0.25 m/s, or its power is off (the solenoid drops with VBUS_B). The W15b column *forced at the fault latch* is gone: that was the software before W16a.
 
 | Case | Arm torque off | Base stopped | Base power off | Speed at power off | Distance | Casters lock (s @ m/s) | |
 |---|---|---|---|---|---|---|---|
@@ -259,7 +259,7 @@ Transit: 31.9 kg (twin), 0.8 m/s with the casters released, ramp at 0.5 m/s² (C
 | Pi hung (both heartbeats stop), drive quick-stop written to 0.5 m/s² | 42 ms | 1.63 s | 2.03 s | 0.00 m/s | 0.66 m | 1.13 @ 0.25 | ✅ |
 | Pi hung, drive quick-stop at its default 0.3 m/s² | 42 ms | 3.39 s | 2.03 s | 0.20 m/s | 1.16 m | 1.86 @ 0.25 | ✅ |
 | Pi hung, default quick-stop, U20 at −10 % | 42 ms | 3.60 s | 1.83 s | 0.26 m/s | 1.21 m | 1.83 @ 0.26 | ✅ |
-| mushroom, R2d basket carry 9.07 kg at 0.25 m/s (CASTER_LOCKED_V) | 14 ms | 0.84 s | 2.00 s | 0.00 m/s | 0.10 m | 0.00 @ 0.25 | ✅ |
+| mushroom, R2d basket carry 9.07 kg at 0.15 m/s (caster_locked_v_for(9.07)) | 14 ms | 0.50 s | 2.00 s | 0.00 m/s | 0.04 m | 0.00 @ 0.15 | ✅ |
 | pack / supply lost (BMS trip): everything off, base coasts | — (no power) | 5.44 s | 0 s (all power) | 0.80 m/s | 2.17 m | 0.00 @ 0.80 | ⚠️ residual |
 
 Pass: the base is stopped before U20 removes its power, or at most ≈ 0.25 m/s is left (then it coasts out with the casters locked). U20 at its low corner (1.8 s) still clears the longest software ramp (1.6 s; with the 0.3 s grace 1.9 s, which only matters if the wheels never report a stop). With the Pi hung the drives' own CAN-timeout quick-stop does the ramp: at 0.5 m/s² it stops in time; at the 0.3 m/s² default it leaves ≤ 0.26 m/s at the timer, which coasts out. A pack / supply loss is the residual case: the base coasts from full speed with the casters spring-locked (no stop function survives losing all power; the planner's speed is the only bound).
@@ -290,17 +290,19 @@ A wheel drive that shorts its phases on disable or power loss brakes each GIM601
 | State | Speed | Worst heading (casters on the snag line) | COM behind the line | Energy / tip energy | Pitch reached | Max force per foot (any heading) | |
 |---|---|---|---|---|---|---|---|
 | unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.12 m/s | 0° (2) | 132 mm | 2% | 0.2° | 81 N | ✅ |
+| unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.20 m/s | 0° (2) | 132 mm | 5% | 0.5° | 226 N | ✅ |
 | unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.25 m/s | 0° (2) | 132 mm | 8% | 0.7° | 353 N | ✅ |
 | unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.30 m/s | 0° (2) | 132 mm | 11% | 1.1° | 508 N | ❌ |
 | unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.50 m/s | 0° (2) | 132 mm | 31% | 3.2° | 1411 N | ❌ |
 | unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.80 m/s | 0° (2) | 132 mm | 81% | 10.4° | 3612 N | ❌ |
 | unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.12 m/s | 0° (2) | 132 mm | 3% | 0.2° | 73 N | ✅ |
+| unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.20 m/s | 0° (2) | 132 mm | 7% | 0.5° | 203 N | ✅ |
 | unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.25 m/s | 0° (2) | 132 mm | 11% | 0.8° | 318 N | ✅ |
 | unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.30 m/s | 0° (2) | 132 mm | 16% | 1.2° | 457 N | ❌ |
 | unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.50 m/s | 0° (2) | 132 mm | 46% | 3.6° | 1270 N | ❌ |
 | unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.80 m/s | 0° (2) | 132 mm | 117% **tips** | 13.5° | 3252 N | ❌ |
 
-**Verdict: the casters must not lock at 0.8 m/s.** A snag at 0.8 m/s uses 81%–117% of the tip energy (it tips with the lift at the top; the tip speed is 0.74 m/s) and puts ≈ 3.6 kN on a foot whose rods yield at ≈ 880 N. The lowest allowed speed over the states and headings is 0.28 m/s (energy 0.37, rod force 0.28 m/s), so **the forced lock waits for ≤ 0.25 m/s** ✅ (sw/safety.py V_CASTER_LOCK, W16a). The locked-travel cap (CASTER_LOCKED_V 0.25 m/s, W16a; it was 0.3 m/s, just over the rod-force limit on the diagonal heading) is within the limits in this model ✅. Open (W16a log, not this board's): the basket at 0.25 m/s in the tuck-pose model; a bench snag test of a locked foot into a 10 mm step is still the evidence to get.
+**Verdict: the casters must not lock at 0.8 m/s.** A snag at 0.8 m/s uses 81%–117% of the tip energy (it tips with the lift at the top; the tip speed is 0.74 m/s) and puts ≈ 3.6 kN on a foot whose rods yield at ≈ 880 N. The lowest allowed speed over the states and headings is 0.28 m/s (energy 0.37, rod force 0.28 m/s), so **the forced lock waits for ≤ 0.25 m/s** ✅ (sw/safety.py V_CASTER_LOCK, W16a). The locked-travel cap (SW-T8 `caster_locked_v_for(payload)`: 0.20 m/s unloaded; 0.3 m/s before W16a was just over the rod-force limit on the diagonal heading) is within the limits in this model ✅. The R2d basket at its own cap (0.15 m/s) in this tuck-pose chord model: 41% of the tip energy, 155 N per foot ❌ (the A10 result is tip.md's real carry poses with the polygon pivot, which pass at that cap); a bench snag test of a locked foot into a 10 mm step is still the evidence to get.
 
 **SW-T2 status (sw/safety.py `_caster_tick`, implemented in W16a; this list is now the check of it):**
 
@@ -322,5 +324,5 @@ A wheel drive that shorts its phases on disable or power loss brakes each GIM601
 6. **Branch fuse vs the in-arm 16 AWG:** a 20 A slow-blow leaves the clock-spring 16 AWG unprotected from ≈ 18 A to ≈ 35 A (it may take minutes at 22–30 A; section 4), and a 15 A fuse still leaves ≈ 20 A for up to 600 s (and is under 1.25 × the arm's 14.8 A sustained). The fuse stays 20 A for shorts; overloads get a **branch current monitor**: a Hall sensor per arm branch on the board (ACS724-30A class) → 5 s RC → comparator at 16 A → STOP (into U10's CLR̄, latched). Needed before the arm's own harness is powered (Step 2); Step 1 (≤ 13.8 A peak on a 14 AWG lead) is protected by the 20 A fuse and the supply latch as it is.
 7. **Base channel off K1 (robot board, §6; W14a base_stop.md items 1–2):** Q9 solid-state base switch (LM5069-1 + IRFB7530; its soft-start is the base pre-charge) from VIN, enabled through the OFF-delay safety contacts of U20 (Omron G9SA-321-T075, set 2.0 s), whose dual-channel input is a third and fourth NC block on each mushroom plus LATCH; WD_B (base heartbeat, 25 ms) is a STOP and ARM term; the caster-release solenoid on VBUS_B. E-stop: arm torque off at 14 ms (mushroom) / 42 ms (hung loop), base ramped, base power off at 2.0 s ± 10 % at the latest. Not on the M1 bench (no base).
 8. **Base clamp leg + FORCE_B + DISC_B** (§6 regen): with the BMS charge FET off the base's ramp energy has nowhere to go but the logic load; at half the load / idle estimates the drives see 36–45 V. One more NH-50 leg on VBUS_B holds 26.3 V; FORCE_B empties VBUS_B when Q9 opens; DISC_B catches a shorted Q9 (→ BMS discharge FET off, the second break).
-9. **Requirements outside the board:** wheel drives float their phases on disable / CAN timeout / UVLO (a phase short brakes ≈ 2.8 m/s² at 0.8 m/s); drive quick-stop on CAN timeout ≤ 0.3 m/s² by default, written to the supervisor's base_stop_decel() (≤ 0.5) when it changes; SW-T2's forced caster lock waits for ≤ 0.25 m/s (a locked caster at 0.8 m/s turns a floor step into a snag that can tip the robot): **done in W16a** (sw/safety.py V_CASTER_LOCK, CASTER_LOCKED_V 0.25 m/s).
+9. **Requirements outside the board:** wheel drives float their phases on disable / CAN timeout / UVLO (a phase short brakes ≈ 2.8 m/s² at 0.8 m/s); drive quick-stop on CAN timeout ≤ 0.3 m/s² by default, written to the supervisor's base_stop_decel() (≤ 0.5) when it changes; SW-T2's forced caster lock waits for ≤ 0.25 m/s (a locked caster at 0.8 m/s turns a floor step into a snag that can tip the robot): **done in W16a** (sw/safety.py V_CASTER_LOCK); the locked-travel cap follows the payload since W18b (SW-T8 `caster_locked_v_for`: ≤ 6 kg 0.20, ≤ 10 kg 0.15 m/s).
 10. **Netlist v4, Fable #2 M2 (the uncommanded drop-out race) + AUX debounce:** a RUN latch (U28 SN74LVC1G74: CLK = AUX_DB ↑, CLR̄ = LATCH) and K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT, so a K1 opening the logic did not command fires FORCE on its own edge and K2 never re-closes; AUX debounced by an asymmetric RC + 74LVC1G17 (U29: AUX_DB rises after ≥ 2.1 ms closed, falls ≤ 0.5 ms after an opening), sized from the K1 bounce ESTIMATE (3 ms burst, 1 ms longest closed interval; T3 measures it); every logic input reads AUX_DB; the discrepancy window 30 → 40 ms ± 10 %; PRE_TIMEOUT on ¬RUN. Coil unplugged (T7): FORCE 30 ms → < 1 ms after AUX, far end < 10 V at ≈ 2 ms (≤ 4 ms), no pre-charge re-close (section 5).

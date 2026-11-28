@@ -74,7 +74,7 @@ COIL = dict(R=170.0, L=0.5, i_drop_frac=0.15, t_mech=0.004)   # Ω, H, drop-out 
 V_Z1 = 24.0 * 1.05                          # 1N5359B at its +5 % corner, plus its dynamic resistance below
 R_Z1 = 3.0
 Q4_VDS = {"IRLB8721 (as drawn)": 30.0}      # the coil driver's rating (Infineon datasheet: 30 V)
-T_AUX_LAG = 0.0005                          # aux contact opens this long after the main contacts (ESTIMATE; T4 measures)
+T_AUX_LAG = el.T_AUX_LAG                    # aux contact opens this long after the main contacts (ESTIMATE; T4 measures)
 T_K2_RELEASE = 0.005                        # Omron G5LE release (datasheet ≤ 5 ms)
 T_K1_OPERATE = (0.005, 0.025)               # ALEV100 operate time, min (ESTIMATE) / max (datasheet)
 PRE_OK_DV = 3.0                             # PRE_OK: VBUS ≥ VIN − 3 V (±1 % of VIN → ±0.25 V)
@@ -476,15 +476,11 @@ def stop_chain(which, coil, dis):
     """Heartbeat lost → no torque at worst tolerances: last edge → monostable +20 % → coil drop-out + armature → aux →
     FORCE → far drive below UVLO → phase current gone."""
     w = el.WATCHDOG
-    rows = [("heartbeat lost just after an edge: one 2 ms cycle + 25 ms monostable at +20 %", 1 / w["loop_hz"] + w["t_nom"] * (1 + w["tol"])),
-            (f"coil current to drop-out ({coil['suppression']}, coil {COIL['R']:.0f} Ω / {COIL['L']} H ESTIMATE) + armature {COIL['t_mech'] * 1e3:.0f} ms",
-             coil["t_release"]),
-            ("aux contact lags the mains (ESTIMATE) → FORCE → far drive below UVLO (simulated)", dis["t_uvlo_far"] or math.nan),
-            ("AUX debounce, opening → AUX_DB low at the slow corner (v4)", el.aux_debounce()["t_fall"][1]),
-            ("phase current decays once the drive stops switching (ESTIMATE)", 0.001)]
-    datasheet = el.CONTACTOR["t_release"]
-    rows_ds = list(rows)
-    rows_ds[1] = ("contactor release, datasheet maximum (suppression unspecified)", datasheet)
+    dstep = ("aux contact lags the mains (ESTIMATE) → FORCE → far drive below UVLO (simulated)", dis["t_uvlo_far"] or math.nan)
+    # the same steps electrical.stop_timing sums (el.stop_chain_rows), so the two totals agree once electrical reads this JSON
+    rows = el.stop_chain_rows((f"coil current to drop-out ({coil['suppression']}, coil {COIL['R']:.0f} Ω / {COIL['L']} H ESTIMATE) + armature "
+                               f"{COIL['t_mech'] * 1e3:.0f} ms", coil["t_release"]), dstep)
+    rows_ds = el.stop_chain_rows(("contactor release, datasheet maximum (suppression unspecified)", el.CONTACTOR["t_release"]), dstep)
     tot = sum(t for _, t in rows)
     tot_ds = sum(t for _, t in rows_ds)
     return dict(rows=rows, total=tot, total_datasheet=tot_ds, rows_datasheet=rows_ds, budget=el.SW2_BUDGET,
@@ -1072,6 +1068,14 @@ def base_state(lift="mid", load=0.0):
     return dict(M=float(M), c=c, I=I, d=d, lift=lift, load=load)
 
 
+def locked_cap(payload):
+    """The locked-caster travel cap sw/safety.py enforces for a payload (kg): SW-T8 `Supervisor.caster_locked_v_for` (W18b:
+    ≤ 6 kg 0.20, ≤ 10 kg 0.15, above 0 m/s), or the flat CASTER_LOCKED_V for a supervisor without it."""
+    s = _sw()
+    f = getattr(s.Supervisor, "caster_locked_v_for", None)
+    return float(f(payload)) if f else float(s.CASTER_LOCKED_V)
+
+
 def caster_snag(states, speeds=(0.12, 0.25, 0.30, 0.50, 0.80)):
     """A locked D18b caster can follow the floor down but not be pushed up (tip.md), so a step edge in its path (a rug edge,
     tile lip, cable, a dip's far side) meets a rigid foot: at speed the base cannot be lifted over it in time and the
@@ -1100,7 +1104,7 @@ def caster_snag(states, speeds=(0.12, 0.25, 0.30, 0.50, 0.80)):
                 ke = L * L / (2 * Ip)
                 theta = a0 - math.acos(min(math.cos(a0) + ke / (M * G * rho), 1.0)) if ke < pe else a0
                 J = M * v * (1 - M * h * h / Ip)
-                rows.append(dict(state=label, az=az, v=v, n_snag=n_snag, x=x, h=h, M=M, frac=ke / pe, theta_deg=math.degrees(theta), J=J,
+                rows.append(dict(state=label, load=st["load"], cap=locked_cap(st["load"]), az=az, v=v, n_snag=n_snag, x=x, h=h, M=M, frac=ke / pe, theta_deg=math.degrees(theta), J=J,
                                  F_each=J * v / SNAG_DELTA / n_snag, v_tip=math.sqrt(pe * 2 * Ip) / (M * h),
                                  v_frac=math.sqrt(SNAG_FRAC * pe * 2 * Ip) / (M * h),
                                  v_force=math.sqrt(0.5 * F_ROD * SNAG_DELTA * n_snag * Ip / (M * (Ip - M * h * h)))))
@@ -1113,10 +1117,11 @@ def caster_snag(states, speeds=(0.12, 0.25, 0.30, 0.50, 0.80)):
     ok_at = lambda r: r["frac"] <= SNAG_FRAC and r["F_each"] <= 0.5 * F_ROD
     v_frac, v_force = min(r["v_frac"] for r in rows), min(r["v_force"] for r in rows)
     return dict(rows=sorted(worst.values(), key=lambda r: (r["state"], r["v"])), F_rod=F_ROD, delta=SNAG_DELTA, frac_lim=SNAG_FRAC,
-                v_lock=V_CASTER_LOCK, v_locked_cap=s.CASTER_LOCKED_V, v_frac=v_frac, v_force=v_force, v_allow=min(v_frac, v_force),
+                v_lock=V_CASTER_LOCK, v_locked_cap=max(locked_cap(st["load"]) for st in states),
+                v_locked_caps={float(st["load"]): locked_cap(st["load"]) for st in states}, v_frac=v_frac, v_force=v_force, v_allow=min(v_frac, v_force),
                 v_tip=min(r["v_tip"] for r in rows),
                 lock_ok=all(ok_at(r) for r in rows if r["v"] <= V_CASTER_LOCK + 1e-9),
-                locked_cap_ok=all(ok_at(r) for r in rows if r["v"] <= s.CASTER_LOCKED_V + 1e-9),
+                locked_cap_ok=all(ok_at(r) for r in rows if r["v"] <= r["cap"] + 1e-9),        # each state at its own payload's cap
                 fast_ok=all(ok_at(r) for r in rows))
 
 
@@ -1310,7 +1315,7 @@ def base_section():
     M = st_mid["M"]
     a_tr = min(s.CASTER_RELEASED_A, s.Supervisor.base_stop_decel_for(0.0))       # transit, casters released: the limit in force
     a_bk = min(s.A_LOAD, s.Supervisor.base_stop_decel_for(9.07))                  # basket carry: load-mode cap vs the tip table
-    v_tr, v_bk = s.BASE_V_MAX, s.CASTER_LOCKED_V
+    v_tr, v_bk = s.BASE_V_MAX, locked_cap(9.07)                                    # SW-T8: the basket's own locked cap (0.15 m/s)
     qs = el.DRIVE_QS
     seqs = [base_sequence("mushroom, Pi alive: transit 0.8 m/s, casters released", v_tr, a_tr, M),
             base_sequence("supervisor fault (e.g. over-temperature), Pi alive: transit", v_tr, a_tr, M, trigger="fault"),
@@ -1319,14 +1324,17 @@ def base_section():
             base_sequence(f"Pi hung (both heartbeats stop), drive quick-stop written to {qs['a_max']:.1f} m/s²", v_tr, a_tr, M, pi_alive=False, trigger="fault", a_qs=qs["a_max"]),
             base_sequence(f"Pi hung, drive quick-stop at its default {qs['a_default']:.1f} m/s²", v_tr, a_tr, M, pi_alive=False, trigger="fault", a_qs=qs["a_default"]),
             base_sequence(f"Pi hung, default quick-stop, U20 at −10 %", v_tr, a_tr, M, pi_alive=False, trigger="fault", a_qs=qs["a_default"], ss1_scale=1 - el.BASE_SS1["tol"]),
-            base_sequence(f"mushroom, R2d basket carry 9.07 kg at {v_bk:.2f} m/s (CASTER_LOCKED_V)", v_bk, a_bk, M + 9.07),
+            base_sequence(f"mushroom, R2d basket carry 9.07 kg at {v_bk:.2f} m/s (caster_locked_v_for(9.07))", v_bk, a_bk, M + 9.07),
             base_sequence("pack / supply lost (BMS trip): everything off, base coasts", v_tr, a_tr, M, pi_alive=False, trigger="fault", power_lost=True)]
     s0 = seqs[0]
     regen = []
     for sink, clamp, lw, ids in ((True, False, None, 1.0), (False, False, None, 1.0), (False, False, 4.0, 0.5), (False, False, 0.0, 0.5),
                                  (False, True, 0.0, 0.5), (False, True, None, 1.0)):
         regen.append(base_regen(M, v_tr, a_tr, s0["t_ramp_start"], s0["t_base_off"], sink=sink, clamp=clamp, logic_w=lw, idle_scale=ids))
-    snag = caster_snag([st_mid, st_top])
+    v_cap0 = locked_cap(st_mid["load"])
+    snag = caster_snag([st_mid, st_top], speeds=tuple(sorted({0.12, v_cap0, 0.25, 0.30, 0.50, 0.80})))
+    # the basket at its own cap in the same tuck-pose chord model (rnd/tip.py's real poses + polygon pivot are the A10 result)
+    snag_bk = caster_snag([base_state(lift, 9.07) for lift in ("mid", "top")], speeds=(v_bk,))
     # phase-short braking (requirement 4): back-EMF into the shorted winding, x-drive wheels at 45°
     g = el.MOTOR_CU["GIM6010-8"]
     r_w = st_mid["d"].base.wheel_d / 2
@@ -1336,6 +1344,8 @@ def base_section():
     a_short = min(F / M, 0.5 * G)
     v_short_ok = 0.5 / (F / M / v_tr)
     return dict(M=M, h_mid=float(st_mid["c"][2]), h_top=float(st_top["c"][2]), a_transit=a_tr, a_basket=a_bk, v_basket=v_bk, seqs=seqs, regen=regen, snag=snag,
+                snag_basket=dict(v=v_bk, frac=max(r["frac"] for r in snag_bk["rows"]), F=max(r["F_max"] for r in snag_bk["rows"]),
+                                 ok=all(r["frac"] <= SNAG_FRAC and r["F_max"] <= 0.5 * F_ROD for r in snag_bk["rows"])),
                 phase_short=dict(a=a_short, a_lin=F / M, v_ok=v_short_ok, i=i_sc), ss1=el.BASE_SS1, qs=qs,
                 ramp_max=v_tr / a_tr, grace=s.BASE_STOP_GRACE)
 
@@ -1568,7 +1578,7 @@ def base_md(B):
          "GPIO + the BMS discharge FET off over CAN, the robot's second break.", "",
          "### E-stop sequence (board event model at 0.1 ms + the base's speed; arm watchdog at +20 %)", "",
          f"Transit: {B['M']:.1f} kg (twin), 0.8 m/s with the casters released, ramp at {B['a_transit']:.1f} m/s² (CASTER_RELEASED_A, the limit in force); "
-         f"basket: +9.07 kg at {B['v_basket']:.2f} m/s (the locked cap CASTER_LOCKED_V, lowered from 0.3 in W16a), ramp at {B['a_basket']:.1f} m/s² (load mode). "
+         f"basket: +9.07 kg at {B['v_basket']:.2f} m/s (its locked cap, SW-T8 `caster_locked_v_for(9.07)`: 0.3 → 0.25 in W16a → 0.15 in W18b), ramp at {B['a_basket']:.1f} m/s² (load mode). "
          "Arm torque off = K1 open + far drive below UVLO (§3) + 1 ms. "
          f"Base power off = U20's delayed contacts open (Q9 off; FORCE_B then empties VBUS_B in {_f(rc.get('t_uvlo_after_off') and 1e3 * rc['t_uvlo_after_off'], 1, ' ms')}). "
          f"Caster lock = SW-T2 as implemented in W16a (sw/safety.py `_caster_tick`): a forced lock is deferred until the base is at ≤ V_CASTER_LOCK = {V_CASTER_LOCK} m/s, "
@@ -1631,9 +1641,11 @@ def base_md(B):
           f"tip energy (it tips with the lift at the top; the tip speed is {sn['v_tip']:.2f} m/s) and puts ≈ {max(r['F_max'] for r in fast) / 1e3:.1f} kN on a foot whose "
           f"rods yield at ≈ {sn['F_rod']:.0f} N. The lowest allowed speed over the states and headings is {sn['v_allow']:.2f} m/s (energy {sn['v_frac']:.2f}, rod force "
           f"{sn['v_force']:.2f} m/s), so **the forced lock waits for ≤ {V_CASTER_LOCK} m/s** {ok(sn['lock_ok'])} (sw/safety.py V_CASTER_LOCK, W16a). The locked-travel cap "
-          f"(CASTER_LOCKED_V {sn['v_locked_cap']} m/s, W16a; it was 0.3 m/s, just over the rod-force limit on the diagonal heading) is "
-          f"{'within' if sn['locked_cap_ok'] else 'over'} the limits in this model {ok(sn['locked_cap_ok'])}. Open (W16a log, not this board's): the basket at 0.25 m/s in the "
-          "tuck-pose model; a bench snag test of a locked foot into a 10 mm step is still the evidence to get.", "",
+          f"(SW-T8 `caster_locked_v_for(payload)`: {sn['v_locked_cap']:.2f} m/s unloaded; 0.3 m/s before W16a was just over the rod-force limit on the diagonal heading) is "
+          f"{'within' if sn['locked_cap_ok'] else 'over'} the limits in this model {ok(sn['locked_cap_ok'])}. The R2d basket at its own cap "
+          f"({B['snag_basket']['v']:.2f} m/s) in this tuck-pose chord model: {B['snag_basket']['frac']:.0%} of the tip energy, {B['snag_basket']['F']:.0f} N per foot "
+          f"{ok(B['snag_basket']['ok'])} (the A10 result is tip.md's real carry poses with the polygon pivot, which pass at that cap); a bench snag test of a "
+          "locked foot into a 10 mm step is still the evidence to get.", "",
           "**SW-T2 status (sw/safety.py `_caster_tick`, implemented in W16a; this list is now the check of it):**", "",
           f"1. A forced lock (a latched fault, a person approaching or near, a payload past the mode's limit) does **not** de-energise the "
           f"solenoid while the base moves faster than **V_CASTER_LOCK = {V_CASTER_LOCK} m/s**. The casters stay released, the base ramps at the "
@@ -1685,7 +1697,7 @@ DESIGN_CHANGES = [
     "9. **Requirements outside the board:** wheel drives float their phases on disable / CAN timeout / UVLO (a phase short brakes ≈ 2.8 m/s² at "
     "0.8 m/s); drive quick-stop on CAN timeout ≤ 0.3 m/s² by default, written to the supervisor's base_stop_decel() (≤ 0.5) when it changes; "
     "SW-T2's forced caster lock waits for ≤ 0.25 m/s (a locked caster at 0.8 m/s turns a floor step into a snag that can tip the robot): **done in W16a** "
-    "(sw/safety.py V_CASTER_LOCK, CASTER_LOCKED_V 0.25 m/s).",
+    "(sw/safety.py V_CASTER_LOCK); the locked-travel cap follows the payload since W18b (SW-T8 `caster_locked_v_for`: ≤ 6 kg 0.20, ≤ 10 kg 0.15 m/s).",
     "10. **Netlist v4, Fable #2 M2 (the uncommanded drop-out race) + AUX debounce:** a RUN latch (U28 SN74LVC1G74: CLK = AUX_DB ↑, CLR̄ = LATCH) and "
     "K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT, so a K1 opening the logic did not command fires FORCE on its own edge and K2 never re-closes; AUX debounced by an "
     "asymmetric RC + 74LVC1G17 (U29: AUX_DB rises after ≥ 2.1 ms closed, falls ≤ 0.5 ms after an opening), sized from the K1 bounce ESTIMATE (3 ms burst, 1 ms "

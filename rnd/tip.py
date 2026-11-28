@@ -265,8 +265,9 @@ T_LOWER = 4.0             # s: lower a 9 kg basket 0.8 m on the lift + release (
                           # (was T_SETDOWN 5.0 = this + the 1.0 s stop from the old 0.3 m/s cap)
 def v_base(payload=0.0):
     """Base speed (m/s) before the person appears, per caster mode: the caps sw/safety.py enforces, read from the module
-    (W17: the locked cap was hard-coded 0.3 here after W16a lowered it to 0.25). The locked cap follows the payload once
-    the supervisor has the proposed SW-T8 `caster_locked_v_for(payload)`; until then it is CASTER_LOCKED_V for any load."""
+    (W17: the locked cap was hard-coded 0.3 here after W16a lowered it to 0.25). The locked cap follows the payload:
+    SW-T8 `Supervisor.caster_locked_v_for(payload)` (W18b); the flat CASTER_LOCKED_V is only the fallback for a
+    supervisor without it."""
     from sw import safety as s
     f = getattr(s.Supervisor, "caster_locked_v_for", None)
     return {"locked": float(f(payload)) if f else s.CASTER_LOCKED_V, "transit": s.BASE_V_MAX, "threshold": s.THRESHOLD_SPEED}
@@ -508,9 +509,11 @@ def snag_study(d1, b1, P):
         band = [r for r in rows + [b for b in brows if b["var"] != "hand point"] if lo + 1e-9 < r["load"] <= kg + 1e-9]
         v_al = min(r["v_allow"] for r in band)
         caps.append(dict(lo=lo, kg=kg, v_allow=v_al, v_chord=min(r["w15b"]["v_allow"] for r in band),
-                         cap=min(s.CASTER_LOCKED_V, math.floor(v_al / CAP_STEP + 1e-9) * CAP_STEP),
+                         cap=min(s.V_CASTER_LOCK, math.floor(v_al / CAP_STEP + 1e-9) * CAP_STEP), sw=v_today(kg),
                          who=min(band, key=lambda r: r["v_allow"])["name"]))
         lo = kg
+    # (derived caps are clipped at V_CASTER_LOCK, the W16a flat cap and the deferred-lock speed, not at CASTER_LOCKED_V: since
+    # W18b that is the top SW-T8 band, i.e. this table's own output)
     steps = []                                   # merged: consecutive bands with the same cap
     for c in caps:
         if steps and abs(steps[-1]["cap"] - c["cap"]) < 1e-9:
@@ -522,6 +525,12 @@ def snag_study(d1, b1, P):
     with_rule = [snag_eval(st, cap_for(st["load"])) for st in states] + [snag_eval(b["st"], cap_for(b["st"]["load"])) for b in bk]
     ok_rule = all(r["ok"] for r in with_rule)
     enforced = hasattr(s.Supervisor, "caster_locked_v_for")
+    caps_match = all(abs(c["cap"] - c["sw"]) < 1e-9 for c in caps)
+    # one flat cap for every payload (the pre-SW-T8 rule) at the top band's speed: the snag scales with v² (energy and force)
+    v_top = max(c["sw"] for c in caps)
+    flat = [dict(name=r["name"], var=r.get("var"), load=r["load"], frac=r["frac"] * (v_top / r["v"]) ** 2, F=r["F"] * (v_top / r["v"]) ** 2)
+            for r in rows + brows if r["v"] > 0]
+    flat_fail = [f for f in flat if f["frac"] > SNAG_FRAC + 1e-9 or f["F"] > 0.5 * F_ROD + 1e-9]
     # option B: carry the basket only in threshold mode (casters released, THRESHOLD_SPEED): wheels-only tip reserve while braking,
     # and the snag if the hardware locks the casters on the way (Q9 timer, power loss)
     nom = [b for b in bk if b["var"] != "hand point"]
@@ -536,19 +545,43 @@ def snag_study(d1, b1, P):
     d28 = dict(r_today=r_clear(v_today(9.07)), r_rule=r_clear(cap_for(9.07)), r_set=getattr(s, "BASKET_CLEAR_R", None), kg=s.PERSON_MAX_KG)
     d28["ok"] = bool(d28["r_set"] and d28["r_set"] >= max(d28["r_today"], d28["r_rule"]) - 1e-9)
     st_txt = "; ".join((f"≤ {c['kg']:.0f} kg" if c["lo"] < 0 else f"{c['lo']:.0f}–{c['kg']:.0f} kg") + f": {c['cap']:.2f} m/s" for c in steps)
-    sw_text = (f"`Supervisor.caster_locked_v_for(payload)` (a staticmethod, as `base_stop_decel_for`) → the base speed cap with the casters locked (or locking / pulsing), replacing the flat "
-               f"CASTER_LOCKED_V {s.CASTER_LOCKED_V} m/s in `base_speed_limit()`: **{st_txt}; above {CAP_KG[-1]:.0f} kg: 0 (no travel)** "
+    sw_text = (f"`Supervisor.caster_locked_v_for(payload)` (a staticmethod, as `base_stop_decel_for`) → the base speed cap with the casters locked (or locking / pulsing), "
+               f"{'which replaced' if enforced else 'replacing'} W16a's flat 0.25 m/s for any payload in `base_speed_limit()`: **{st_txt}; above {CAP_KG[-1]:.0f} kg: 0 (no travel)** "
                "(snag table: the lowest allowed speed of any pose the supervisor allows at that payload, rounded down to 0.05 m/s). "
                "`set_payload()` to a heavier band while moving brakes to the new cap at the limit in force before anything else. "
                "A deferred forced lock (SW-T2) engages at ≤ min(V_CASTER_LOCK, that cap). Threshold mode keeps THRESHOLD_SPEED "
                f"({s.THRESHOLD_SPEED} m/s ≤ every cap). Tests: the cap at each band edge, a payload step while moving, the deferred lock "
-               "at the lower V. rnd/tip.py reads the function when it exists (the scorecard's snag row then counts it as enforced).")
+               "at the lower V. rnd/tip.py reads the function when it exists (the scorecard's snag row then counts it as enforced)"
+               + (f"; in sw/safety.py since W18b (CASTER_LOCKED_V_BY {tuple(s.CASTER_LOCKED_V_BY)}, {'= this table' if caps_match else 'DIFFERS from this table'})." if enforced else "."))
     return dict(rows=rows, basket=brows, caps=caps, steps=steps, d28=d28, sw_text=sw_text,
                 chord_gap=d1.base.wheel_radius_pos - d1.base.caster_r * math.cos(math.radians(45)), ok_today=ok_today, ok_rule=ok_rule, enforced=enforced, with_rule=with_rule,
-                v_locked=s.CASTER_LOCKED_V, w16a=dict(frac=w16a["frac"], x=w16a["x"], h=w16a["h"], v=v_today(9.07)),
-                released=rel, a_released=a_rel, v_threshold=s.THRESHOLD_SPEED, frac_lim=SNAG_FRAC, f_lim=0.5 * F_ROD, delta=SNAG_DELTA,
+                caps_match=caps_match, v_top=v_top, flat_fail=flat_fail, n_over_force=sum(r["F"] > 0.5 * F_ROD + 1e-9 for r in rows + brows),
+                v_locked=s.CASTER_LOCKED_V, v_locked_by=[list(b) for b in getattr(s, "CASTER_LOCKED_V_BY", ())], basket_v_sw=v_today(9.07),
+                cap_25_sw=v_today(2.5), w16a=dict(frac=w16a["frac"], x=w16a["x"], h=w16a["h"], v=v_today(9.07)),
+                released=rel, a_released=a_rel, a_load=s.A_LOAD, v_threshold=s.THRESHOLD_SPEED, frac_lim=SNAG_FRAC, f_lim=0.5 * F_ROD, delta=SNAG_DELTA,
                 basket_v_allow=min(b["v_allow"] for b in brows if b["var"] != "hand point"),
                 basket_cap=cap_for(9.07), cap_25=cap_for(2.5), v_allow_25=min(r["v_allow"] for r in rows if 1.0 < r["load"] <= 2.5 + 1e-9))
+
+
+def flat_txt(ff):
+    """The states a flat locked cap fails, grouped: basket rows / the rest (energy share and force per foot, the worst)."""
+    out = []
+    for lab, g in (("basket rows", [f for f in ff if f.get("var")]), ("other", [f for f in ff if not f.get("var")])):
+        if g:
+            what = f"{len(g)} {lab} up to" if lab == "basket rows" else " and ".join(f"{f['load']:g} kg" for f in g) + " at the far face,"
+            out.append(f"{what} {max(f['frac'] for f in g) * 100:.0f} % / {max(f['F'] for f in g):.0f} N")
+    return "; ".join(out)
+
+
+def cap_txt(sn):
+    """The locked caps sw/safety.py enforces, by payload (SW-T8), or the flat cap without it."""
+    if not (sn["enforced"] and sn["v_locked_by"]):
+        return f"{sn['v_locked']} m/s for any payload"
+    lo, out = None, []
+    for kg, v in sn["v_locked_by"]:
+        out.append((f"≤ {kg:.0f} kg" if lo is None else f"{lo:.0f}–{kg:.0f} kg") + f" {v:.2f}")
+        lo = kg
+    return "; ".join(out) + f" m/s; above {lo:.0f} kg 0"
 
 
 def snag_lines(sn, rules, more):
@@ -578,7 +611,7 @@ def snag_lines(sn, rules, more):
          "level has no moment about that line. At a caster heading (45°, …) the two pivots are the same. Both are shown; the polygon pivot is "
          "the result. Moving the pivot out also stops less of the momentum in rotation, so the force per foot rises (the rod limit then sets most "
          "of the allowed speeds).", "",
-         f"| State (at today's locked cap) | Mass kg | COM x / h (m) | Lift q | v m/s | Energy / tip energy | Peak force per foot | Allowed v: energy / force (m/s) | W15b chord: energy at v, allowed v | |",
+         f"| State (at its locked cap: caster_locked_v_for(payload)) | Mass kg | COM x / h (m) | Lift q | v m/s | Energy / tip energy | Peak force per foot | Allowed v: energy / force (m/s) | W15b chord: energy at v, allowed v | |",
          "|---|---|---|---|---|---|---|---|---|---|"]
     for r in sn["rows"]:
         L.append(f"| {r['name']} | {r['M']:.1f} | {r['x']:.3f} / {r['h']:.2f} | {r['lift']} | {r['v']:.2f} | {pc(r['frac'])} | {r['F']:.0f} N | "
@@ -590,24 +623,31 @@ def snag_lines(sn, rules, more):
     for r in sn["basket"]:
         L.append(f"| {r['name']} | {lab[r['var']]} | {r['M']:.1f} | {r['x']:.3f} / {r['h']:.2f} | {r['lift']} | {r['v']:.2f} | {pc(r['frac'])} | {r['F']:.0f} N | "
                  f"{r['v_frac']:.2f} / {r['v_force']:.2f} | {pc(r['w15b']['frac'])}, {r['w15b']['v_allow']:.2f} | {ok(r)} |")
-    L += ["", f"**At today's cap ({sn['v_locked']} m/s for any payload): {len(allrows) - len(fails)}/{len(allrows)} states pass.** The basket uses "
+    vset = sorted({r["v"] for r in allrows}, reverse=True)
+    ff = sn["flat_fail"]
+    L += ["", f"**At the caps sw/safety.py enforces ({cap_txt(sn)}): {len(allrows) - len(fails)}/{len(allrows)} states pass** "
+          f"(each row runs at its own payload's cap: {' / '.join(f'{v:.2f}' for v in vset)} m/s). The basket at {sn['basket_v_sw']:.2f} m/s uses "
           f"{pc(min(b['frac'] for b in bnom))}–{pc(max(b['frac'] for b in bnom))} of the tip energy (not W16a's {pc(w['frac'])}: the basket hangs "
           f"lower than the tuck-pose hand point and the pivot is the polygon, not the chord) and {min(b['F'] for b in bnom):.0f}–{max(b['F'] for b in bnom):.0f} N "
-          f"per foot; every state with a load or the arms out exceeds the {sn['f_lim']:.0f} N rod limit. The W15b chord model would fail the same states "
-          "on energy instead (the basket at 0.45 m out: " + pc(max(b['w15b']['frac'] for b in bnom)) + ").", "",
+          f"per foot; {sn['n_over_force']} of {len(allrows)} states exceed the {sn['f_lim']:.0f} N rod limit. "
+          + (f"One flat cap at the top band's {sn['v_top']:.2f} m/s for every payload (the pre-SW-T8 rule) would fail {len(ff)} states: "
+             f"{flat_txt(ff)}. " if ff else f"One flat cap at the top band's {sn['v_top']:.2f} m/s would also pass. ")
+          + "The W15b chord model would fail on energy instead (the basket at 0.45 m out: " + pc(max(b['w15b']['frac'] for b in bnom)) + ").", "",
           "**Allowed locked speed per payload band** (polygon pivot; the lowest of any state in the band, the basket rows without the hand-point variant):", "",
-          "| Payload band | Sets it | Allowed (polygon) | W15b chord | Proposed cap |", "|---|---|---|---|---|"]
+          "| Payload band | Sets it | Allowed (polygon) | W15b chord | Derived cap | sw/safety.py `caster_locked_v_for` |", "|---|---|---|---|---|---|"]
     lo = lambda c: "unloaded" if c["lo"] < 0 else f"{c['lo']:.1f}–{c['kg']:.1f} kg"
-    L += [f"| {lo(c)} | {c['who']} | {c['v_allow']:.3f} m/s | {c['v_chord']:.3f} m/s | **{c['cap']:.2f} m/s** |" for c in sn["caps"]]
+    L += [f"| {lo(c)} | {c['who']} | {c['v_allow']:.3f} m/s | {c['v_chord']:.3f} m/s | {c['cap']:.2f} m/s | **{c['sw']:.2f} m/s** "
+          f"{'✅' if abs(c['cap'] - c['sw']) < 1e-9 else ('(lower)' if c['sw'] < c['cap'] else '❌ above the derived cap')} |" for c in sn["caps"]]
     lt6 = dict(vF=min(r["v_force"] for r in sn["rows"] if r["load"] <= 6.0 + 1e-9), vE=min(r["v_frac"] for r in sn["rows"] if r["load"] <= 6.0 + 1e-9))
     rel = sn["released"]
     rel_nom = [r for r in rel if r["var"] == "nominal"]
     d28 = sn["d28"]
-    L += ["", f"**Basket: {sn['basket_v_allow']:.2f} m/s allowed → {sn['basket_cap']:.2f} m/s cap; 2.5 kg: {sn['v_allow_25']:.2f} → {sn['cap_25']:.2f} m/s.** "
-          f"At the proposed caps every state passes: {'✅' if sn['ok_rule'] else '❌'} (the basket then uses ≤ "
+    L += ["", f"**Basket: {sn['basket_v_allow']:.2f} m/s allowed → {sn['basket_cap']:.2f} m/s derived, {sn['basket_v_sw']:.2f} m/s enforced; "
+          f"2.5 kg: {sn['v_allow_25']:.2f} → {sn['cap_25']:.2f} m/s derived, {sn['cap_25_sw']:.2f} m/s enforced.** "
+          f"At the derived caps every state passes: {'✅' if sn['ok_rule'] else '❌'} (the basket then uses ≤ "
           f"{pc(max(r['frac'] for r in sn['with_rule'] if r['load'] > 6))} of the tip energy and ≤ {max(r['F'] for r in sn['with_rule'] if r['load'] > 6):.0f} N). "
           f"Rule options for the basket:", "",
-          f"1. **Payload-dependent locked cap (proposed, SW-T8 below):** " + "; ".join(
+          f"1. **Payload-dependent locked cap ({'SW-T8, in sw/safety.py since W18b' if sn['enforced'] else 'proposed, SW-T8 below'}):** " + "; ".join(
               (f"≤ {c['kg']:.0f} kg" if c["lo"] < 0 else f"{c['lo']:.0f}–{c['kg']:.0f} kg") + f" {c['cap']:.2f} m/s" for c in sn["steps"]) +
           f"; no travel above {CAP_KG[-1]:.0f} kg. The octagon keeps carrying the braking and push cases (A10 rows above, unchanged), and the snag "
           f"has ≥ {(sn['basket_v_allow'] / sn['basket_cap']) ** 2:.1f}× margin on the basket's energy and force.",
@@ -625,8 +665,9 @@ def snag_lines(sn, rules, more):
           f"that band back at {min(0.25, math.floor(min(lt6['vF'] * math.sqrt(2), lt6['vE']) / CAP_STEP + 1e-9) * CAP_STEP):.2f} m/s. It cannot buy the basket much: its energy limit (polygon pivot) is "
           f"{min(b['v_frac'] for b in bnom):.2f} m/s, so ≤ 0.15 → 0.20 at best. The same rig checks the pivot correction (pitch at a wheel heading).", "",
           f"**D28 still holds.** Its rule is about people, not snags: with more than {d28['kg']} kg the base moves only while nobody is within "
-          f"BASKET_CLEAR_R ({d28['r_set']} m). The radius the stop-and-set-down needs falls with the slower cap: {d28['r_today']:.1f} m from today's "
-          f"{sn['v_locked']} m/s, {d28['r_rule']:.1f} m from {sn['basket_cap']:.2f} m/s (stop at A_LOAD, then {T_LOWER:.0f} s to lower and release, ESTIMATE) "
+          f"BASKET_CLEAR_R ({d28['r_set']} m). The radius the stop-and-set-down needs falls with the slower cap: {d28['r_today']:.1f} m from the "
+          f"basket's enforced {sn['basket_v_sw']:.2f} m/s, {d28['r_rule']:.1f} m from the derived {sn['basket_cap']:.2f} m/s (W16a's flat 0.25 m/s: "
+          f"{R_REACH + V_WALK * (T_PERCEPT + 0.25 / sn['a_load'] + T_LOWER):.1f} m; stop at A_LOAD, then {T_LOWER:.0f} s to lower and release, ESTIMATE) "
           f"{'≤' if d28['ok'] else '>'} {d28['r_set']} m {'✅' if d28['ok'] else '❌'}. The snag is a separate failure (the robot falls with nobody "
           f"near), so it needs its own rule (option 1); D28's {d28['kg']} kg boundary is not a snag boundary (the caps step at "
           + ", ".join(f"{c['kg']:.0f} kg" for c in sn["steps"][:-1]) + ").",
@@ -640,7 +681,7 @@ SW_CHANGES = [
      "A push can only come from a person, so the 8 push cases are evaluated under this rule. With the R2d basket (> 2.5 kg) the base stops and the basket "
      "is set down before the person is within reach. sw/safety.py has no person input today."),
     ("SW-T2 caster lock (D18b)", "Casters stay locked (solenoids off, spring-applied, so an e-stop or power loss locks them) except in two planner modes: "
-     "(a) a threshold or rug crossing (D2b: 45°, ≤ 0.15 m/s), started only with no person within reach; (b) unloaded transit with the arms parked above the locked cap (CASTER_LOCKED_V). "
+     "(a) a threshold or rug crossing (D2b: 45°, ≤ 0.15 m/s), started only with no person within reach; (b) unloaded transit with the arms parked above the locked cap (`caster_locked_v_for(payload)`, SW-T8: 0.20 m/s unloaded). "
      "Release pulse (≈ 100 ms) at every stop and every 0.3 m of locked travel so a lock never ratchets down into a floor dip and lifts a wheel. "
      "Needs a caster-lock output and a `Supervisor.casters_locked()` state the base planner checks before moving. "
      "rnd/tip.py counts SW-T1/T2 as enforced (scorecard gate) once `set_person_near` and `casters_locked` exist in sw/safety.py."),
@@ -760,12 +801,15 @@ def main():
          "Still open: the lock take-up and pad sinkage (sensitivity below), an e-stop that brakes harder than the planner (table below), "
          "one failed caster lock, and the ballast interlock (A10 counts the blocks as fitted).", "",
          f"**Snag at the locked cap (W17, section below): {'PASS' if (sn['ok_rule'] if sn['enforced'] else sn['ok_today']) else 'FAIL'} with the rules "
-         f"sw/safety.py enforces.** Travelling locked at {sn['v_locked']} m/s, a caster meeting a step edge overloads its rods in every state with a load "
-         f"or the arms out, and the basket in its real carry poses uses up to {max(b['frac'] for b in sn['basket'] if b['var'] != 'hand point') * 100:.0f} % of "
-         f"the tip energy (limit {sn['frac_lim'] * 100:.0f} %; W16a's tuck-pose reading: {sn['w16a']['frac'] * 100:.0f} %). Allowed: basket "
-         f"{sn['basket_v_allow']:.2f} m/s, 2.5 kg {sn['v_allow_25']:.2f} m/s. Proposed SW-T8 locked cap by payload: "
-         + "; ".join((f"≤ {c['kg']:.0f} kg" if c["lo"] < 0 else f"{c['lo']:.0f}–{c['kg']:.0f} kg") + f" {c['cap']:.2f} m/s" for c in sn["steps"])
-         + f"{' (in sw/safety.py)' if sn['enforced'] else ' (NOT in sw/safety.py yet)'}. D28 / SW-T7 still holds.", "",
+         f"sw/safety.py enforces.** Travelling locked at each payload's cap ({cap_txt(sn)}), "
+         f"{sum(r['ok'] for r in sn['rows'] + sn['basket'])}/{len(sn['rows']) + len(sn['basket'])} states pass; the basket in its real carry poses "
+         f"at {sn['basket_v_sw']:.2f} m/s uses up to {max(b['frac'] for b in sn['basket'] if b['var'] != 'hand point') * 100:.0f} % of "
+         f"the tip energy (limit {sn['frac_lim'] * 100:.0f} %; W16a's tuck-pose reading: {sn['w16a']['frac'] * 100:.0f} %) and "
+         f"{max(b['F'] for b in sn['basket'] if b['var'] != 'hand point'):.0f} N per foot (limit {sn['f_lim']:.0f} N). Allowed: basket "
+         f"{sn['basket_v_allow']:.2f} m/s, 2.5 kg {sn['v_allow_25']:.2f} m/s. "
+         + (f"One flat {sn['v_top']:.2f} m/s for every payload would fail {len(sn['flat_fail'])} states ({flat_txt(sn['flat_fail'])}). " if sn["flat_fail"] else "")
+         + "The caps this page derives (" + "; ".join((f"≤ {c['kg']:.0f} kg" if c["lo"] < 0 else f"{c['lo']:.0f}–{c['kg']:.0f} kg") + f" {c['cap']:.2f} m/s" for c in sn["steps"])
+         + (f"; {'= ' if sn['caps_match'] else 'DIFFER FROM '}SW-T8 in sw/safety.py)" if sn['enforced'] else '; SW-T8, NOT in sw/safety.py yet)') + ". D28 / SW-T7 still holds.", "",
          "## What changed (A10 v2)", "",
          f"1. **Mass low in the base.** The battery already sat on the belly (z ≈ 33–98 mm). The A5 v2 power stage (contactor, pre-charge, "
          f"clamp plate, bulk cap: {d1.base.power_board_mass:.2f} kg, ESTIMATE) was in no budget; it now sits on the belly in the front-right sector "
@@ -862,8 +906,9 @@ def main():
                         basket_clear_enforced=basket_ok, r_need=r_need, r_basket=r_basket, t_avail=t_avail, transition=trans, rows=real,
                         extras=rex, estop=est))
     keep = ("name", "var", "load", "M", "x", "h", "lift", "v", "frac", "F", "az", "de", "v_frac", "v_force", "v_allow", "ok", "w15b")
-    js["snag"] = dict({k: sn[k] for k in ("ok_today", "ok_rule", "enforced", "steps", "caps", "v_locked", "w16a", "basket_v_allow", "basket_cap",
-                                           "cap_25", "v_allow_25", "frac_lim", "f_lim", "d28")},
+    js["snag"] = dict({k: sn[k] for k in ("ok_today", "ok_rule", "enforced", "steps", "caps", "v_locked", "v_locked_by", "caps_match", "w16a",
+                                           "basket_v_allow", "basket_cap", "basket_v_sw", "cap_25", "cap_25_sw", "v_allow_25", "frac_lim", "f_lim", "d28",
+                                           "v_top", "n_over_force")}, n_flat_fail=len(sn["flat_fail"]),
                       ok=bool(sn["ok_rule"] if sn["enforced"] else sn["ok_today"]), n=len(sn["rows"]) + len(sn["basket"]),
                       n_ok_today=sum(r["ok"] for r in sn["rows"] + sn["basket"]),
                       basket_frac_max=max(b["frac"] for b in sn["basket"] if b["var"] != "hand point"),
