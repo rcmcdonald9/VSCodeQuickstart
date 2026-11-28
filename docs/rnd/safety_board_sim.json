@@ -355,6 +355,94 @@
    "f_sw_mean": 12347.07278295853
   },
   {
+   "which": "M1",
+   "envelope": true,
+   "scale": 0.45,
+   "corner": "high",
+   "variant": "rh50",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 25.694533,
+   "regen_P": 597.5412768811465,
+   "regen_E": 53.461863182942,
+   "v_board_max": 30.091339,
+   "v_board_min": 24.692986,
+   "v_drive_max": 27.487093,
+   "worst_node": {
+    "branch": "arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 26.788,
+    "n0R": 27.333,
+    "n0Y": 27.391,
+    "n0E": 27.487,
+    "n0W": 27.477
+   },
+   "v_drain_max": 28.184336,
+   "i_leg_max": 43.930448,
+   "i_fw_max": 39.860877,
+   "e_res_each": 10.47005222697548,
+   "e_res_total": 31.410156680926,
+   "edges": 233,
+   "f_sw_mean": 4744.3053998440355
+  },
+  {
+   "which": "M1",
+   "envelope": true,
+   "scale": 1.0,
+   "corner": "high",
+   "variant": "rh50",
+   "method": "ngspice",
+   "t_end": 0.05,
+   "t_run": 0.05,
+   "aborted": false,
+   "why": "",
+   "rise_fall": [
+    26.26,
+    25.957000000000004
+   ],
+   "v_drive_min": 26.327087,
+   "regen_P": 1327.8695041803255,
+   "regen_E": 118.80414040653777,
+   "v_board_max": 30.718818,
+   "v_board_min": 23.995989,
+   "v_drive_max": 29.091943,
+   "worst_node": {
+    "branch": "arm",
+    "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
+    "node": "E",
+    "joint": "elbow",
+    "drivers": 2,
+    "id": "n0E"
+   },
+   "drives": {
+    "n0T": 27.433,
+    "n0R": 28.674,
+    "n0Y": 28.822,
+    "n0E": 29.092,
+    "n0W": 29.083
+   },
+   "v_drain_max": 28.830578,
+   "i_leg_max": 44.016895,
+   "i_fw_max": 40.938789,
+   "e_res_each": 21.80429442200086,
+   "e_res_total": 65.41288326600258,
+   "edges": 487,
+   "f_sw_mean": 9859.247442035306
+  },
+  {
    "which": "robot",
    "envelope": true,
    "scale": 1.0,
@@ -371,10 +459,10 @@
    ],
    "v_drive_min": 24.841009,
    "regen_P": 2767.160401642897,
-   "regen_E": 323.9161350772916,
-   "v_board_max": 34.724237,
-   "v_board_min": 24.27333,
-   "v_drive_max": 28.417741,
+   "regen_E": 323.96615920004234,
+   "v_board_max": 34.890173,
+   "v_board_min": 24.270902,
+   "v_drive_max": 28.417618,
    "worst_node": {
     "branch": "left arm",
     "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
@@ -385,23 +473,23 @@
    },
    "drives": {
     "n0T": 27.085,
-    "n0R": 28.103,
+    "n0R": 28.102,
     "n0Y": 28.19,
     "n0E": 28.418,
     "n0W": 28.409,
     "n1T": 27.085,
-    "n1R": 28.103,
+    "n1R": 28.102,
     "n1Y": 28.19,
     "n1E": 28.418,
     "n1W": 28.409,
     "n2L": 26.737,
-    "n3B": 26.251
+    "n3B": 26.244
    },
    "v_drain_max": 30.562739,
    "i_leg_max": 44.969484,
-   "i_fw_max": 32.235741,
-   "e_res_each": 112.23503848360325,
-   "e_res_total": 336.7051154508097,
+   "i_fw_max": 32.24286,
+   "e_res_each": 112.19310162267224,
+   "e_res_total": 336.5793048679169,
    "edges": 2180,
    "f_sw_mean": 4151.745448342895
   },
@@ -422,7 +510,7 @@
    ],
    "v_drive_min": null,
    "regen_P": 2767.160401642897,
-   "regen_E": 323.9161350772916,
+   "regen_E": 323.96615920004234,
    "v_board_max": 36.812786,
    "v_board_min": null,
    "v_drive_max": 28.474128,
@@ -471,12 +559,12 @@
     27.27,
     26.057999999999996
    ],
-   "v_drive_min": 25.478026,
+   "v_drive_min": 25.479064,
    "regen_P": 2767.160401642897,
-   "regen_E": 323.9161350772916,
+   "regen_E": 323.96615920004234,
    "v_board_max": 36.027476,
    "v_board_min": 24.438185,
-   "v_drive_max": 29.32144,
+   "v_drive_max": 29.33888,
    "worst_node": {
     "branch": "left arm",
     "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
@@ -486,26 +574,26 @@
     "id": "n0E"
    },
    "drives": {
-    "n0T": 28.057,
-    "n0R": 29.029,
-    "n0Y": 29.11,
-    "n0E": 29.321,
-    "n0W": 29.311,
-    "n1T": 28.057,
-    "n1R": 29.029,
-    "n1Y": 29.11,
-    "n1E": 29.321,
-    "n1W": 29.311,
+    "n0T": 28.062,
+    "n0R": 29.042,
+    "n0Y": 29.125,
+    "n0E": 29.339,
+    "n0W": 29.328,
+    "n1T": 28.062,
+    "n1R": 29.042,
+    "n1Y": 29.125,
+    "n1E": 29.339,
+    "n1W": 29.328,
     "n2L": 27.728,
     "n3B": 27.127
    },
    "v_drain_max": 31.361516,
    "i_leg_max": 46.664346,
    "i_fw_max": 33.12264,
-   "e_res_each": 38.82301309794214,
-   "e_res_total": 116.46903929382641,
-   "edges": 667,
-   "f_sw_mean": 13538.25985233297
+   "e_res_each": 38.772985018969976,
+   "e_res_total": 116.31895505690993,
+   "edges": 666,
+   "f_sw_mean": 13517.96261117505
   },
   {
    "which": "robot",
@@ -522,12 +610,12 @@
     26.26,
     25.957000000000004
    ],
-   "v_drive_min": 24.87487,
+   "v_drive_min": 24.87711,
    "regen_P": 2767.160401642897,
-   "regen_E": 142.26327359619063,
-   "v_board_max": 34.658776,
-   "v_board_min": 24.245287,
-   "v_drive_max": 28.292191,
+   "regen_E": 142.31329771894136,
+   "v_board_max": 33.971174,
+   "v_board_min": 24.234738,
+   "v_drive_max": 28.290011,
    "worst_node": {
     "branch": "left arm",
     "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
@@ -537,26 +625,26 @@
     "id": "n0E"
    },
    "drives": {
-    "n0T": 27.033,
-    "n0R": 27.989,
-    "n0Y": 28.066,
-    "n0E": 28.292,
-    "n0W": 28.287,
-    "n1T": 27.033,
-    "n1R": 27.989,
-    "n1Y": 28.066,
-    "n1E": 28.292,
-    "n1W": 28.287,
-    "n2L": 26.733,
-    "n3B": 26.158
+    "n0T": 27.031,
+    "n0R": 27.987,
+    "n0Y": 28.065,
+    "n0E": 28.29,
+    "n0W": 28.285,
+    "n1T": 27.031,
+    "n1R": 27.987,
+    "n1Y": 28.065,
+    "n1E": 28.29,
+    "n1W": 28.285,
+    "n2L": 26.73,
+    "n3B": 26.159
    },
-   "v_drain_max": 30.564845,
-   "i_leg_max": 44.966802,
-   "i_fw_max": 32.050988,
-   "e_res_each": 33.535031161543166,
-   "e_res_total": 100.60509348462949,
-   "edges": 647,
-   "f_sw_mean": 13075.894822351649
+   "v_drain_max": 30.278692,
+   "i_leg_max": 44.964883,
+   "i_fw_max": 32.100433,
+   "e_res_each": 33.50727639936412,
+   "e_res_total": 100.5218291980921,
+   "edges": 646,
+   "f_sw_mean": 13055.684783986346
   },
   {
    "which": "robot",
@@ -573,12 +661,12 @@
     26.26,
     25.957000000000004
    ],
-   "v_drive_min": 24.867901,
+   "v_drive_min": 24.867446,
    "regen_P": 691.7901004107242,
-   "regen_E": 80.9790337693229,
+   "regen_E": 80.99153980001059,
    "v_board_max": 31.941621,
    "v_board_min": 24.288771,
-   "v_drive_max": 26.680027,
+   "v_drive_max": 26.680777,
    "worst_node": {
     "branch": "left arm",
     "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
@@ -588,24 +676,24 @@
     "id": "n0E"
    },
    "drives": {
-    "n0T": 26.44,
-    "n0R": 26.649,
-    "n0Y": 26.658,
-    "n0E": 26.68,
-    "n0W": 26.668,
-    "n1T": 26.44,
-    "n1R": 26.649,
-    "n1Y": 26.658,
-    "n1E": 26.68,
-    "n1W": 26.668,
+    "n0T": 26.441,
+    "n0R": 26.65,
+    "n0Y": 26.659,
+    "n0E": 26.681,
+    "n0W": 26.669,
+    "n1T": 26.441,
+    "n1R": 26.65,
+    "n1Y": 26.659,
+    "n1E": 26.681,
+    "n1W": 26.669,
     "n2L": 26.398,
     "n3B": 26.227
    },
-   "v_drain_max": 29.481551,
+   "v_drain_max": 29.488641,
    "i_leg_max": 44.733696,
    "i_fw_max": 31.104278,
-   "e_res_each": 11.48635290281882,
-   "e_res_total": 34.45905870845646,
+   "e_res_each": 11.480097821610492,
+   "e_res_total": 34.44029346483148,
    "edges": 220,
    "f_sw_mean": 4494.047773652103
   },
@@ -624,12 +712,12 @@
     26.26,
     25.957000000000004
    ],
-   "v_drive_min": 24.907435,
+   "v_drive_min": 24.908491,
    "regen_P": 1245.2221807393037,
-   "regen_E": 145.76226078478123,
+   "regen_E": 145.78477164001904,
    "v_board_max": 33.304074,
    "v_board_min": 24.270704,
-   "v_drive_max": 27.14761,
+   "v_drive_max": 27.145613,
    "worst_node": {
     "branch": "left arm",
     "segment": "16 AWG 1.15 m (yaw spiral + upper arm)",
@@ -640,23 +728,23 @@
    },
    "drives": {
     "n0T": 26.616,
-    "n0R": 27.045,
-    "n0Y": 27.074,
-    "n0E": 27.148,
-    "n0W": 27.135,
+    "n0R": 27.044,
+    "n0Y": 27.072,
+    "n0E": 27.146,
+    "n0W": 27.133,
     "n1T": 26.616,
-    "n1R": 27.045,
-    "n1Y": 27.074,
-    "n1E": 27.148,
-    "n1W": 27.135,
+    "n1R": 27.044,
+    "n1Y": 27.072,
+    "n1E": 27.146,
+    "n1W": 27.133,
     "n2L": 26.491,
     "n3B": 26.197
    },
    "v_drain_max": 29.780939,
    "i_leg_max": 44.78019,
    "i_fw_max": 31.446522,
-   "e_res_each": 19.91451984164371,
-   "e_res_total": 59.74355952493113,
+   "e_res_each": 19.879256652500466,
+   "e_res_total": 59.6377699575014,
    "edges": 378,
    "f_sw_mean": 7679.2740686171055
   },
@@ -675,11 +763,11 @@
     26.26,
     25.957000000000004
    ],
-   "v_drive_min": 24.917167,
+   "v_drive_min": 24.916886,
    "regen_P": 3458.9505020536208,
-   "regen_E": 404.8951688466145,
-   "v_board_max": 34.725014,
-   "v_board_min": 24.278273,
+   "regen_E": 404.9576990000529,
+   "v_board_max": 34.766963,
+   "v_board_min": 24.247585,
    "v_drive_max": 28.907458,
    "worst_node": {
     "branch": "left arm",
@@ -690,24 +778,24 @@
     "id": "n0E"
    },
    "drives": {
-    "n0T": 27.163,
+    "n0T": 27.136,
     "n0R": 28.317,
     "n0Y": 28.493,
     "n0E": 28.907,
     "n0W": 28.905,
-    "n1T": 27.163,
+    "n1T": 27.136,
     "n1R": 28.317,
     "n1Y": 28.493,
     "n1E": 28.907,
     "n1W": 28.905,
     "n2L": 26.364,
-    "n3B": 26.059
+    "n3B": 26.058
    },
-   "v_drain_max": 30.212115,
-   "i_leg_max": 44.948765,
+   "v_drain_max": 30.207899,
+   "i_leg_max": 44.935236,
    "i_fw_max": 32.68673,
-   "e_res_each": 50.734327846356486,
-   "e_res_total": 152.20298353906946,
+   "e_res_each": 50.76523729444475,
+   "e_res_total": 152.29571188333426,
    "edges": 974,
    "f_sw_mean": 19662.652629062366
   },
@@ -726,11 +814,11 @@
     25.74,
     25.443
    ],
-   "v_drive_min": 24.713606,
+   "v_drive_min": 24.714094,
    "regen_P": 2767.160401642897,
-   "regen_E": 323.9161350772916,
+   "regen_E": 323.96615920004234,
    "v_board_max": 32.15765,
-   "v_board_min": 24.250924,
+   "v_board_min": 24.28183,
    "v_drive_max": 28.012976,
    "worst_node": {
     "branch": "left arm",
@@ -741,24 +829,24 @@
     "id": "n0E"
    },
    "drives": {
-    "n0T": 26.424,
+    "n0T": 26.414,
     "n0R": 27.526,
     "n0Y": 27.671,
     "n0E": 28.013,
     "n0W": 28.011,
-    "n1T": 26.424,
+    "n1T": 26.414,
     "n1R": 27.526,
     "n1Y": 27.671,
     "n1E": 28.013,
     "n1W": 28.011,
     "n2L": 25.897,
-    "n3B": 25.574
+    "n3B": 25.573
    },
    "v_drain_max": 29.626791,
-   "i_leg_max": 44.340228,
-   "i_fw_max": 31.874158,
-   "e_res_each": 50.50615666351927,
-   "e_res_total": 151.5184699905577,
+   "i_leg_max": 44.33879,
+   "i_fw_max": 31.868796,
+   "e_res_each": 50.52294117328839,
+   "e_res_total": 151.56882351986516,
    "edges": 985,
    "f_sw_mean": 19846.727759366437
   }
@@ -786,19 +874,19 @@
    ]
   },
   "robot": {
-   "P_max": 1667.4745386962522,
+   "P_max": 1669.2418349791537,
    "pts": [
     [
      691.7901004107242,
-     26.680027
+     26.680777
     ],
     [
      1245.2221807393037,
-     27.14761
+     27.145613
     ],
     [
      2767.160401642897,
-     28.417741
+     28.417618
     ],
     [
      3458.9505020536208,
@@ -972,12 +1060,16 @@
      0.0020059688
     ],
     [
+     "AUX debounce, opening \u2192 AUX_DB low at the slow corner (v4)",
+     0.0004752329360165458
+    ],
+    [
      "phase current decays once the drive stops switching (ESTIMATE)",
      0.001
     ]
    ],
-   "total": 0.0405920496,
-   "total_datasheet": 0.045005968800000004,
+   "total": 0.04106728253601655,
+   "total_datasheet": 0.045481201736016545,
    "rows_datasheet": [
     [
      "heartbeat lost just after an edge: one 2 ms cycle + 25 ms monostable at +20 %",
@@ -992,12 +1084,16 @@
      0.0020059688
     ],
     [
+     "AUX debounce, opening \u2192 AUX_DB low at the slow corner (v4)",
+     0.0004752329360165458
+    ],
+    [
      "phase current decays once the drive stops switching (ESTIMATE)",
      0.001
     ]
    ],
    "budget": 0.05,
-   "wd_max_for_budget": 0.029161692666666666
+   "wd_max_for_budget": 0.028765665219986216
   },
   "robot": {
    "rows": [
@@ -1014,12 +1110,16 @@
      0.0028384468
     ],
     [
+     "AUX debounce, opening \u2192 AUX_DB low at the slow corner (v4)",
+     0.0004752329360165458
+    ],
+    [
      "phase current decays once the drive stops switching (ESTIMATE)",
      0.001
     ]
    ],
-   "total": 0.041424527600000004,
-   "total_datasheet": 0.0458384468,
+   "total": 0.041899760536016545,
+   "total_datasheet": 0.04631367973601655,
    "rows_datasheet": [
     [
      "heartbeat lost just after an edge: one 2 ms cycle + 25 ms monostable at +20 %",
@@ -1034,12 +1134,16 @@
      0.0028384468
     ],
     [
+     "AUX debounce, opening \u2192 AUX_DB low at the slow corner (v4)",
+     0.0004752329360165458
+    ],
+    [
      "phase current decays once the drive stops switching (ESTIMATE)",
      0.001
     ]
    ],
    "budget": 0.05,
-   "wd_max_for_budget": 0.028467961
+   "wd_max_for_budget": 0.028071933553319543
   }
  },
  "fuses": [
@@ -1436,7 +1540,7 @@
    "case": "heartbeat stops while running",
    "variant": "v3 as drawn",
    "ok": true,
-   "detail": "K1 open 33.2 ms after the last edge (wd 25 ms + release), FORCE yes, heartbeat back \u2192 K1 stays open"
+   "detail": "K1 open 33.0 ms after the last edge (wd 25 ms + release), FORCE yes, heartbeat back \u2192 K1 stays open"
   },
   {
    "case": "ARM with a mushroom pressed / without heartbeat",
@@ -1460,6 +1564,7 @@
    "case": "AUX wire breaks while running",
    "variant": "v3 as drawn",
    "ok": false,
+   "t_force": null,
    "detail": "no FORCE (U6 is held cleared: K2_DRIVE = LATCH \u2227 \u00acAUX goes high and K2 re-closes), K1 stays closed on PRE_OK: a latent fault; the next stop gets **no forced discharge** (\u2248 300 ms of bus on the drives' idle draw). Only the Pi sees it (AUX_OK low \u2192 supervisor e-stop latch)"
   },
   {
@@ -1472,6 +1577,7 @@
    "case": "K1 main contacts welded, heartbeat stops",
    "variant": "v3 as drawn",
    "ok": false,
+   "t_q4_force": null,
    "detail": "no aux edge \u2192 no FORCE; the bus stays powered from the supply; only the Pi (DISABLE frames) and the drives' CAN timeout remain"
   },
   {
@@ -1481,97 +1587,304 @@
    "detail": "the comparator still switches but UCC27524 has no supply: no clamp, no FORCE, and K1 stays closed. Regen then charges the bus without limit (M1 1.3 kW into 7 mF: 25 \u2192 28 V in \u2248 0 ms)"
   },
   {
-   "case": "heartbeat stops while running",
-   "variant": "v3 + fixes",
+   "case": "K1 coil unplugged while running (T7, T9 b), replugged after 0.25 s",
+   "variant": "v3 as drawn",
+   "ok": false,
+   "t7": null,
+   "k2_reclose": true,
+   "detail": "AUX opens at +10 ms; **no FORCE**; the AUX edge triggers U6 and clears it in the same edge (race); **K2 re-closes at +20 ms** (pre-charge starts again with LATCH high); **K1 re-closes at +275 ms without ARM**; end: LATCH True, K1 closed"
+  },
+  {
+   "case": "K1 coil supply dips for 20 ms (coil wire intermittent, shock)",
+   "variant": "v3 as drawn",
+   "ok": false,
+   "t7": null,
+   "k2_reclose": true,
+   "detail": "AUX opens at +10 ms; **no FORCE**; the AUX edge triggers U6 and clears it in the same edge (race); **K2 re-closes at +20 ms** (pre-charge starts again with LATCH high); **K1 re-closes at +45 ms without ARM**; end: LATCH True, K1 closed"
+  },
+  {
+   "case": "K1 closing with a 3 ms aux bounce (ESTIMATE burst) at ARM",
+   "variant": "v3 as drawn",
+   "ok": false,
+   "detail": "4 bounce gaps each trigger U6 and clear it on the same edge (K2_DRIVE = LATCH \u2227 \u00acAUX follows every gap): a ns FORCE pulse into U10's CLR\u0304 that may or may not clear LATCH, so the board arms only some of the time; if it takes, the clamp sits across a closed K1 and the bench supply latches off"
+  },
+  {
+   "case": "aux contact glitches open for 0.1 ms while running (shock)",
+   "variant": "v3 as drawn",
+   "ok": false,
+   "detail": "race on the glitch edge (U6 triggered and cleared together); K2_DRIVE pulses"
+  },
+  {
+   "case": "pre-charge into a 10 \u03a9 load (T4): never reaches PRE_OK",
+   "variant": "v3 as drawn",
    "ok": true,
-   "detail": "K1 open 33.2 ms after the last edge (wd 25 ms + release), FORCE yes, heartbeat back \u2192 K1 stays open"
+   "detail": "K1 never closes, PRE_TIMEOUT clears LATCH at 1000 ms; FORCE once at +1000 ms as K2_DRIVE falls (SN74LVC1G123 CLR\u0304 \u2191 with \u0100 low): empties the partly charged bus; none during the pre-charge"
+  },
+  {
+   "case": "heartbeat stops while running",
+   "variant": "v3 + fixes (W13b)",
+   "ok": true,
+   "detail": "K1 open 33.0 ms after the last edge (wd 25 ms + release), FORCE yes, heartbeat back \u2192 K1 stays open"
   },
   {
    "case": "ARM with a mushroom pressed / without heartbeat",
-   "variant": "v3 + fixes",
+   "variant": "v3 + fixes (W13b)",
    "ok": true,
    "detail": "LATCH False / False"
   },
   {
    "case": "logic supply lost and restored (PSU trip, brownout)",
-   "variant": "v3 + fixes",
+   "variant": "v3 + fixes (W13b)",
    "ok": true,
    "detail": "after power returns: LATCH False, K1 open (power-on reset)"
   },
   {
    "case": "mushroom tapped (coil loop broken for 0.5 ms) while armed",
-   "variant": "v3 + fixes",
+   "variant": "v3 + fixes (W13b)",
    "ok": true,
    "detail": "LATCH False, K1 open"
   },
   {
    "case": "AUX wire breaks while running",
-   "variant": "v3 + fixes",
+   "variant": "v3 + fixes (W13b)",
    "ok": true,
-   "detail": "discrepancy \u2192 FORCE at +30 ms and LATCH cleared, K1 open at +40 ms (the clamp loads the supply for the release time: the bench supply may latch); stop, fail-safe"
+   "t_force": 0.030020000000030023,
+   "detail": "FORCE at +30.0 ms (discrepancy monitor) and LATCH cleared, K1 open at +40 ms; K2 re-closes at +10 ms first (harmless here: K1 is still closed) (the clamp loads the supply for the release time: the bench supply may latch); stop, fail-safe"
   },
   {
    "case": "AUX stuck closed, then ARM",
-   "variant": "v3 + fixes",
+   "variant": "v3 + fixes (W13b)",
    "ok": true,
    "detail": "ARM refused (\u00acAUX on the ARM condition)"
   },
   {
    "case": "K1 main contacts welded, heartbeat stops",
-   "variant": "v3 + fixes",
+   "variant": "v3 + fixes (W13b)",
    "ok": true,
-   "detail": "FORCE 53 ms after the last edge: the clamp loads the supply at 135 A \u2192 the bench supply latches off (\u2265 43.8 A); on the robot the pack keeps the bus up: needs a second break (BMS discharge FET off)"
+   "t_q4_force": 0.030000000000030003,
+   "detail": "FORCE 53 ms after the last edge (30 ms after Q4 off, \u2264 50): the clamp loads the supply at 135 A \u2192 the bench supply latches off (\u2265 43.8 A); on the robot the pack keeps the bus up: needs a second break (BMS discharge FET off)"
   },
   {
    "case": "12 V gate-driver supply lost (U2 / F2) while running",
-   "variant": "v3 + fixes",
+   "variant": "v3 + fixes (W13b)",
    "ok": true,
    "detail": "12 V UVLO \u2192 STOP: K1 opens, LATCH cleared (the bus then has no clamp: the 1 k\u03a9 bleeder and the SMDJ33A only)"
   },
   {
+   "case": "K1 coil unplugged while running (T7, T9 b), replugged after 0.25 s",
+   "variant": "v3 + fixes (W13b)",
+   "ok": false,
+   "t7": 0.03150596880003,
+   "k2_reclose": true,
+   "detail": "AUX opens at +10 ms; FORCE 30.0 ms after AUX (discrepancy monitor) \u2192 far end < 10 V at 31.5 ms (T7 \u2264 4); the AUX edge triggers U6 and clears it in the same edge (race); **K2 re-closes at +20 ms** (pre-charge starts again with LATCH high); end: LATCH False, K1 open"
+  },
+  {
+   "case": "K1 coil supply dips for 20 ms (coil wire intermittent, shock)",
+   "variant": "v3 + fixes (W13b)",
+   "ok": false,
+   "t7": 0.03150596880003,
+   "k2_reclose": true,
+   "detail": "AUX opens at +10 ms; FORCE 30.0 ms after AUX (discrepancy monitor) \u2192 far end < 10 V at 31.5 ms (T7 \u2264 4); the AUX edge triggers U6 and clears it in the same edge (race); **K2 re-closes at +20 ms** (pre-charge starts again with LATCH high); end: LATCH False, K1 open"
+  },
+  {
+   "case": "K1 closing with a 3 ms aux bounce (ESTIMATE burst) at ARM",
+   "variant": "v3 + fixes (W13b)",
+   "ok": false,
+   "detail": "4 bounce gaps each trigger U6 and clear it on the same edge (K2_DRIVE = LATCH \u2227 \u00acAUX follows every gap): a ns FORCE pulse into U10's CLR\u0304 that may or may not clear LATCH, so the board arms only some of the time; if it takes, the clamp sits across a closed K1 and the bench supply latches off"
+  },
+  {
+   "case": "aux contact glitches open for 0.1 ms while running (shock)",
+   "variant": "v3 + fixes (W13b)",
+   "ok": false,
+   "detail": "race on the glitch edge (U6 triggered and cleared together); K2_DRIVE pulses"
+  },
+  {
+   "case": "pre-charge into a 10 \u03a9 load (T4): never reaches PRE_OK",
+   "variant": "v3 + fixes (W13b)",
+   "ok": true,
+   "detail": "K1 never closes, PRE_TIMEOUT clears LATCH at 1000 ms; FORCE once at +1000 ms as K2_DRIVE falls (SN74LVC1G123 CLR\u0304 \u2191 with \u0100 low): empties the partly charged bus; none during the pre-charge"
+  },
+  {
+   "case": "heartbeat stops while running",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "detail": "K1 open 33.0 ms after the last edge (wd 25 ms + release), FORCE yes, heartbeat back \u2192 K1 stays open"
+  },
+  {
+   "case": "ARM with a mushroom pressed / without heartbeat",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "detail": "LATCH False / False"
+  },
+  {
+   "case": "logic supply lost and restored (PSU trip, brownout)",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "detail": "after power returns: LATCH False, K1 open (power-on reset)"
+  },
+  {
+   "case": "mushroom tapped (coil loop broken for 0.5 ms) while armed",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "detail": "LATCH False, K1 open"
+  },
+  {
+   "case": "AUX wire breaks while running",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "t_force": 0.00048000000000048004,
+   "detail": "FORCE at +0.5 ms (the AUX_DB edge) and LATCH cleared, K1 open at +11 ms (the clamp loads the supply for the release time: the bench supply may latch); stop, fail-safe"
+  },
+  {
+   "case": "AUX stuck closed, then ARM",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "detail": "ARM refused (\u00acAUX on the ARM condition)"
+  },
+  {
+   "case": "K1 main contacts welded, heartbeat stops",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "t_q4_force": 0.040000000000040004,
+   "detail": "FORCE 63 ms after the last edge (40 ms after Q4 off, \u2264 50): the clamp loads the supply at 135 A \u2192 the bench supply latches off (\u2265 43.8 A); on the robot the pack keeps the bus up: needs a second break (BMS discharge FET off)"
+  },
+  {
+   "case": "12 V gate-driver supply lost (U2 / F2) while running",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "detail": "12 V UVLO \u2192 STOP: K1 opens, LATCH cleared (the bus then has no clamp: the 1 k\u03a9 bleeder and the SMDJ33A only)"
+  },
+  {
+   "case": "K1 coil unplugged while running (T7, T9 b), replugged after 0.25 s",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "t7": 0.00196596880000046,
+   "k2_reclose": false,
+   "detail": "AUX opens at +10 ms; FORCE 0.5 ms after AUX (AUX_DB edge) \u2192 far end < 10 V at 2.0 ms (T7 \u2264 4); end: LATCH False, K1 open"
+  },
+  {
+   "case": "K1 coil supply dips for 20 ms (coil wire intermittent, shock)",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "t7": 0.00196596880000046,
+   "k2_reclose": false,
+   "detail": "AUX opens at +10 ms; FORCE 0.5 ms after AUX (AUX_DB edge) \u2192 far end < 10 V at 2.0 ms (T7 \u2264 4); end: LATCH False, K1 open"
+  },
+  {
+   "case": "K1 closing with a 3 ms aux bounce at ARM, fast-rise debounce corner (least rejection)",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "detail": "armed (K1 closed at +89 ms), no FORCE, no race"
+  },
+  {
+   "case": "K1 closing with a 3 ms aux bounce at ARM, slow debounce corner + discrepancy window at \u221210% (nuisance trip)",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "detail": "armed (K1 closed at +89 ms), no FORCE, no race"
+  },
+  {
+   "case": "aux contact glitches open for 0.1 ms while running (shock), fast-fall debounce corner",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "detail": "ignored: still armed, no FORCE (glitches under 0.17 ms never reach AUX_DB)"
+  },
+  {
+   "case": "pre-charge into a 10 \u03a9 load (T4): never reaches PRE_OK",
+   "variant": "v4 (race fix + AUX debounce)",
+   "ok": true,
+   "detail": "K1 never closes, PRE_TIMEOUT clears LATCH at 1000 ms; FORCE once at +1000 ms as K2_DRIVE falls (SN74LVC1G123 CLR\u0304 \u2191 with \u0100 low): empties the partly charged bus; none during the pre-charge"
+  },
+  {
    "case": "mushroom pressed while running (base channel)",
-   "variant": "v3 + fixes + base channel (robot)",
+   "variant": "v4 + base channel (robot)",
    "ok": true,
    "detail": "K1 open at +10 ms (arm category 0); the base switch stays on through the ramp and opens at +2.000 s (U20 OFF-delay 2.0 s); FORCE_B fires"
   },
   {
    "case": "base heartbeat stops while running (arm loop alive)",
-   "variant": "v3 + fixes + base channel (robot)",
+   "variant": "v4 + base channel (robot)",
    "ok": true,
    "detail": "WD_B low \u2192 STOP: K1 open at +33 ms, base switch off at +2.023 s (the drives' CAN timeout ramps the base meanwhile)"
   },
   {
    "case": "heartbeats return during the SS1 delay",
-   "variant": "v3 + fixes + base channel (robot)",
+   "variant": "v4 + base channel (robot)",
    "ok": true,
    "detail": "base switch off at +2.023 s anyway, K1 open, LATCH False: only ARM re-energises U20"
   },
   {
    "case": "ARM without the base heartbeat",
-   "variant": "v3 + fixes + base channel (robot)",
+   "variant": "v4 + base channel (robot)",
    "ok": true,
    "detail": "LATCH False"
   },
   {
    "case": "Q9 (base switch) shorted, mushroom pressed",
-   "variant": "v3 + fixes + base channel (robot)",
+   "variant": "v4 + base channel (robot)",
    "ok": true,
    "detail": "enable off at +2.000 s but the base bus stays: DISC_B at +2.050 s \u2192 GPIO + the BMS discharge FET off over CAN (second break, as for a welded K1); the drives are already disabled / quick-stopped"
   }
  ],
+ "debounce": {
+  "tau_c": 0.004699999999999999,
+  "tau_d": 0.00021098376313276025,
+  "t_stable": [
+   0.00211827946786983,
+   0.005679825532414128
+  ],
+  "t_fall": [
+   0.00016501758774284983,
+   0.0004752329360165458
+  ],
+  "closed_reject": 0.0018538183578387867,
+  "gap_reject": 0.00016501758774284983,
+  "need": 0.03367982553241413,
+  "window": [
+   0.036000000000000004,
+   0.044000000000000004
+  ],
+  "checks": [
+   [
+    "bounce: longest closed interval rejected (fast corner) vs the ESTIMATE",
+    0.0018538183578387867,
+    0.0015,
+    true
+   ],
+   [
+    "opening \u2192 AUX_DB low, slow corner (adds to the stop chain and to T7)",
+    0.0004752329360165458,
+    0.001,
+    true
+   ],
+   [
+    "discrepancy window, low corner vs operate max + bounce + slowest t_stable (no nuisance trip at ARM)",
+    0.036000000000000004,
+    0.03367982553241413,
+    true
+   ],
+   [
+    "discrepancy window, high corner: a welded K1 caught after the coil goes off",
+    0.044000000000000004,
+    0.05,
+    true
+   ]
+  ],
+  "ok": true
+ },
  "base": {
-  "M": 31.942000000000004,
-  "h_mid": 0.39323081775405616,
-  "h_top": 0.5498553246728463,
+  "M": 31.942,
+  "h_mid": 0.3947585868355164,
+  "h_top": 0.5522596825715377,
   "a_transit": 0.5,
   "a_basket": 0.3,
+  "v_basket": 0.25,
   "seqs": [
    {
     "name": "mushroom, Pi alive: transit 0.8 m/s, casters released",
     "v0": 0.8,
     "a_sw": 0.5,
     "a_qs": null,
-    "M": 31.942000000000004,
+    "M": 31.942,
     "pi_alive": true,
     "trigger": "mushroom",
     "ss1_scale": 1.0,
@@ -1582,22 +1895,18 @@
     "t_ramp_start": 0.0020999999999997687,
     "t_stopped": 1.6021000000001613,
     "x_stop": 0.6416400000000699,
-    "lock_proposed": [
+    "lock_sw": [
      1.1020999999998788,
      0.24995000000006062
     ],
-    "lock_today": [
-     0.0020999999999997687,
-     0.79995
-    ],
-    "E_kin": 10.221440000000003
+    "E_kin": 10.221440000000001
    },
    {
     "name": "supervisor fault (e.g. over-temperature), Pi alive: transit",
     "v0": 0.8,
     "a_sw": 0.5,
     "a_qs": null,
-    "M": 31.942000000000004,
+    "M": 31.942,
     "pi_alive": true,
     "trigger": "fault",
     "ss1_scale": 1.0,
@@ -1608,22 +1917,18 @@
     "t_ramp_start": 0.0,
     "t_stopped": 1.6000000000001569,
     "x_stop": 0.63996000000007,
-    "lock_proposed": [
+    "lock_sw": [
      1.0999999999998789,
      0.24995000000006062
     ],
-    "lock_today": [
-     0.0,
-     0.79995
-    ],
-    "E_kin": 10.221440000000003
+    "E_kin": 10.221440000000001
    },
    {
     "name": "mushroom, U20 at \u221210 %",
     "v0": 0.8,
     "a_sw": 0.5,
     "a_qs": null,
-    "M": 31.942000000000004,
+    "M": 31.942,
     "pi_alive": true,
     "trigger": "mushroom",
     "ss1_scale": 0.9,
@@ -1634,22 +1939,18 @@
     "t_ramp_start": 0.0020999999999997687,
     "t_stopped": 1.6021000000001613,
     "x_stop": 0.6416400000000699,
-    "lock_proposed": [
+    "lock_sw": [
      1.1020999999998788,
      0.24995000000006062
     ],
-    "lock_today": [
-     0.0020999999999997687,
-     0.79995
-    ],
-    "E_kin": 10.221440000000003
+    "E_kin": 10.221440000000001
    },
    {
     "name": "mushroom, U20 at +10 %",
     "v0": 0.8,
     "a_sw": 0.5,
     "a_qs": null,
-    "M": 31.942000000000004,
+    "M": 31.942,
     "pi_alive": true,
     "trigger": "mushroom",
     "ss1_scale": 1.1,
@@ -1660,22 +1961,18 @@
     "t_ramp_start": 0.0020999999999997687,
     "t_stopped": 1.6021000000001613,
     "x_stop": 0.6416400000000699,
-    "lock_proposed": [
+    "lock_sw": [
      1.1020999999998788,
      0.24995000000006062
     ],
-    "lock_today": [
-     0.0020999999999997687,
-     0.79995
-    ],
-    "E_kin": 10.221440000000003
+    "E_kin": 10.221440000000001
    },
    {
     "name": "Pi hung (both heartbeats stop), drive quick-stop written to 0.5 m/s\u00b2",
     "v0": 0.8,
     "a_sw": 0.5,
     "a_qs": 0.5,
-    "M": 31.942000000000004,
+    "M": 31.942,
     "pi_alive": false,
     "trigger": "fault",
     "ss1_scale": 1.0,
@@ -1686,22 +1983,18 @@
     "t_ramp_start": null,
     "t_stopped": 1.6301000000002204,
     "x_stop": 0.6640400000000699,
-    "lock_proposed": [
+    "lock_sw": [
      1.1300999999998758,
      0.24995000000006062
     ],
-    "lock_today": [
-     2.0281000000010603,
-     0.0
-    ],
-    "E_kin": 10.221440000000003
+    "E_kin": 10.221440000000001
    },
    {
     "name": "Pi hung, drive quick-stop at its default 0.3 m/s\u00b2",
     "v0": 0.8,
     "a_sw": 0.5,
     "a_qs": 0.3,
-    "M": 31.942000000000004,
+    "M": 31.942,
     "pi_alive": false,
     "trigger": "fault",
     "ss1_scale": 1.0,
@@ -1712,22 +2005,18 @@
     "t_ramp_start": null,
     "t_stopped": 3.391300000003937,
     "x_stop": 1.1603718500491516,
-    "lock_proposed": [
+    "lock_sw": [
      1.8634000000007127,
      0.2499800000004677
     ],
-    "lock_today": [
-     2.0281000000010603,
-     0.200585285000464
-    ],
-    "E_kin": 10.221440000000003
+    "E_kin": 10.221440000000001
    },
    {
     "name": "Pi hung, default quick-stop, U20 at \u221210 %",
     "v0": 0.8,
     "a_sw": 0.5,
     "a_qs": 0.3,
-    "M": 31.942000000000004,
+    "M": 31.942,
     "pi_alive": false,
     "trigger": "fault",
     "ss1_scale": 0.9,
@@ -1738,19 +2027,15 @@
     "t_ramp_start": null,
     "t_stopped": 3.5990000000037132,
     "x_stop": 1.208278353558748,
-    "lock_proposed": [
+    "lock_sw": [
      1.8281000000006382,
      0.2605852850004587
     ],
-    "lock_today": [
-     1.8281000000006382,
-     0.2605852850004587
-    ],
-    "E_kin": 10.221440000000003
+    "E_kin": 10.221440000000001
    },
    {
-    "name": "mushroom, R2d basket carry 9.07 kg at 0.3 m/s",
-    "v0": 0.3,
+    "name": "mushroom, R2d basket carry 9.07 kg at 0.25 m/s (CASTER_LOCKED_V)",
+    "v0": 0.25,
     "a_sw": 0.3,
     "a_qs": null,
     "M": 41.012,
@@ -1762,24 +2047,20 @@
     "t_base_off": 2.000100000001001,
     "v_at_base_off": 0.0,
     "t_ramp_start": 0.0020999999999997687,
-    "t_stopped": 1.0020999999998899,
-    "x_stop": 0.1506150000000313,
-    "lock_proposed": [
-     0.16869999999998142,
-     0.24999000000004248
+    "t_stopped": 0.8353999999999081,
+    "x_stop": 0.10467916699999236,
+    "lock_sw": [
+     0.0,
+     0.25
     ],
-    "lock_today": [
-     0.0020999999999997687,
-     0.29997
-    ],
-    "E_kin": 1.84554
+    "E_kin": 1.281625
    },
    {
     "name": "pack / supply lost (BMS trip): everything off, base coasts",
     "v0": 0.8,
     "a_sw": 0.5,
     "a_qs": null,
-    "M": 31.942000000000004,
+    "M": 31.942,
     "pi_alive": false,
     "trigger": "fault",
     "ss1_scale": 1.0,
@@ -1790,15 +2071,11 @@
     "t_ramp_start": null,
     "t_stopped": 5.436599999999431,
     "x_stop": 2.1746117160837213,
-    "lock_proposed": [
+    "lock_sw": [
      0.0,
      0.799985285
     ],
-    "lock_today": [
-     0.0,
-     0.799985285
-    ],
-    "E_kin": 10.221440000000003
+    "E_kin": 10.221440000000001
    }
   ],
   "regen": [
@@ -1806,7 +2083,7 @@
     "sink": true,
     "clamp": false,
     "corner": "high",
-    "M": 31.942000000000004,
+    "M": 31.942,
     "v0": 0.8,
     "a": 0.5,
     "t_off": 2.000100000001001,
@@ -1828,7 +2105,7 @@
     "sink": false,
     "clamp": false,
     "corner": "high",
-    "M": 31.942000000000004,
+    "M": 31.942,
     "v0": 0.8,
     "a": 0.5,
     "t_off": 2.000100000001001,
@@ -1850,7 +2127,7 @@
     "sink": false,
     "clamp": false,
     "corner": "high",
-    "M": 31.942000000000004,
+    "M": 31.942,
     "v0": 0.8,
     "a": 0.5,
     "t_off": 2.000100000001001,
@@ -1872,7 +2149,7 @@
     "sink": false,
     "clamp": false,
     "corner": "high",
-    "M": 31.942000000000004,
+    "M": 31.942,
     "v0": 0.8,
     "a": 0.5,
     "t_off": 2.000100000001001,
@@ -1894,7 +2171,7 @@
     "sink": false,
     "clamp": true,
     "corner": "high",
-    "M": 31.942000000000004,
+    "M": 31.942,
     "v0": 0.8,
     "a": 0.5,
     "t_off": 2.000100000001001,
@@ -1916,7 +2193,7 @@
     "sink": false,
     "clamp": true,
     "corner": "high",
-    "M": 31.942000000000004,
+    "M": 31.942,
     "v0": 0.8,
     "a": 0.5,
     "t_off": 2.000100000001001,
@@ -1942,183 +2219,183 @@
      "az": 0,
      "v": 0.12,
      "n_snag": 2,
-     "x": 0.13245831957012483,
-     "h": 0.39323081775405616,
-     "M": 31.942000000000004,
-     "frac": 0.017948053620197073,
-     "theta_deg": 0.16928764901539217,
-     "J": 1.7980970964172385,
-     "F_each": 35.96194192834477,
-     "v_tip": 0.8957206093733978,
-     "v_frac": 0.4478603046866989,
-     "v_force": 0.41966102064953037,
-     "F_max": 81.54456494722731
+     "x": 0.1323080472014566,
+     "h": 0.3947585868355164,
+     "M": 31.942,
+     "frac": 0.01812419263374824,
+     "theta_deg": 0.17014622304275873,
+     "J": 1.790187954594634,
+     "F_each": 35.80375909189268,
+     "v_tip": 0.8913574759383625,
+     "v_frac": 0.4456787379691812,
+     "v_force": 0.4205870408878965,
+     "F_max": 81.27028989737475
     },
     {
      "state": "unloaded transit, arms parked, lift mid",
      "az": 0,
      "v": 0.25,
      "n_snag": 2,
-     "x": 0.13245831957012483,
-     "h": 0.39323081775405616,
-     "M": 31.942000000000004,
-     "frac": 0.07789953828210537,
-     "theta_deg": 0.7459692156280171,
-     "J": 3.7460356175359135,
-     "F_each": 156.08481739732972,
-     "v_tip": 0.8957206093733978,
-     "v_frac": 0.4478603046866989,
-     "v_force": 0.41966102064953037,
-     "F_max": 353.92606313900745
+     "x": 0.1323080472014566,
+     "h": 0.3947585868355164,
+     "M": 31.942,
+     "frac": 0.07866403052842116,
+     "theta_deg": 0.7498712708923203,
+     "J": 3.729558238738821,
+     "F_each": 155.39825994745087,
+     "v_tip": 0.8913574759383625,
+     "v_frac": 0.4456787379691812,
+     "v_force": 0.4205870408878965,
+     "F_max": 352.73563323513343
     },
     {
      "state": "unloaded transit, arms parked, lift mid",
      "az": 0,
      "v": 0.3,
      "n_snag": 2,
-     "x": 0.13245831957012483,
-     "h": 0.39323081775405616,
-     "M": 31.942000000000004,
-     "frac": 0.11217533512623172,
-     "theta_deg": 1.0839065360373619,
-     "J": 4.495242741043096,
-     "F_each": 224.76213705215483,
-     "v_tip": 0.8957206093733978,
-     "v_frac": 0.4478603046866989,
-     "v_force": 0.41966102064953037,
-     "F_max": 509.6535309201707
+     "x": 0.1323080472014566,
+     "h": 0.3947585868355164,
+     "M": 31.942,
+     "frac": 0.11327620396092647,
+     "theta_deg": 1.0896827246397591,
+     "J": 4.475469886486585,
+     "F_each": 223.77349432432925,
+     "v_tip": 0.8913574759383625,
+     "v_frac": 0.4456787379691812,
+     "v_force": 0.4205870408878965,
+     "F_max": 507.9393118585922
     },
     {
      "state": "unloaded transit, arms parked, lift mid",
      "az": 0,
      "v": 0.5,
      "n_snag": 2,
-     "x": 0.13245831957012483,
-     "h": 0.39323081775405616,
-     "M": 31.942000000000004,
-     "frac": 0.3115981531284215,
-     "theta_deg": 3.191606747645878,
-     "J": 7.492071235071827,
-     "F_each": 624.3392695893189,
-     "v_tip": 0.8957206093733978,
-     "v_frac": 0.4478603046866989,
-     "v_force": 0.41966102064953037,
-     "F_max": 1415.7042525560298
+     "x": 0.1323080472014566,
+     "h": 0.3947585868355164,
+     "M": 31.942,
+     "frac": 0.31465612211368466,
+     "theta_deg": 3.2108837321977988,
+     "J": 7.459116477477642,
+     "F_each": 621.5930397898035,
+     "v_tip": 0.8913574759383625,
+     "v_frac": 0.4456787379691812,
+     "v_force": 0.4205870408878965,
+     "F_max": 1410.9425329405337
     },
     {
      "state": "unloaded transit, arms parked, lift mid",
      "az": 0,
      "v": 0.8,
      "n_snag": 2,
-     "x": 0.13245831957012483,
-     "h": 0.39323081775405616,
-     "M": 31.942000000000004,
-     "frac": 0.7976912720087587,
-     "theta_deg": 10.27211538386674,
-     "J": 11.987313976114923,
-     "F_each": 1598.3085301486565,
-     "v_tip": 0.8957206093733978,
-     "v_frac": 0.4478603046866989,
-     "v_force": 0.41966102064953037,
-     "F_max": 3624.2028865434363
+     "x": 0.1323080472014566,
+     "h": 0.3947585868355164,
+     "M": 31.942,
+     "frac": 0.8055196726110331,
+     "theta_deg": 10.386542704103498,
+     "J": 11.934586363964229,
+     "F_each": 1591.2781818618973,
+     "v_tip": 0.8913574759383625,
+     "v_frac": 0.4456787379691812,
+     "v_force": 0.4205870408878965,
+     "F_max": 3612.0128843277676
     },
     {
      "state": "unloaded transit, arms parked, lift top",
      "az": 0,
      "v": 0.12,
      "n_snag": 2,
-     "x": 0.13245831957012483,
-     "h": 0.5498553246728463,
-     "M": 31.942000000000004,
-     "frac": 0.02605126388493325,
-     "theta_deg": 0.17840252120621475,
-     "J": 1.693004844864221,
-     "F_each": 33.86009689728442,
-     "v_tip": 0.743475817337411,
-     "v_frac": 0.3717379086687055,
-     "v_force": 0.432490031611472,
-     "F_max": 73.47639599556499
+     "x": 0.1323080472014566,
+     "h": 0.5522596825715377,
+     "M": 31.942,
+     "frac": 0.026320928633058276,
+     "theta_deg": 0.17930048038591326,
+     "J": 1.684821211970714,
+     "F_each": 33.69642423941428,
+     "v_tip": 0.7396574607481248,
+     "v_frac": 0.3698287303740624,
+     "v_force": 0.4335391198314303,
+     "F_max": 73.1684661268807
     },
     {
      "state": "unloaded transit, arms parked, lift top",
      "az": 0,
      "v": 0.25,
      "n_snag": 2,
-     "x": 0.13245831957012483,
-     "h": 0.5498553246728463,
-     "M": 31.942000000000004,
-     "frac": 0.11306972172280057,
-     "theta_deg": 0.7920625563730246,
-     "J": 3.52709342680046,
-     "F_each": 146.96222611668583,
-     "v_tip": 0.743475817337411,
-     "v_frac": 0.3717379086687055,
-     "v_force": 0.432490031611472,
-     "F_max": 318.90796873075084
+     "x": 0.1323080472014566,
+     "h": 0.5522596825715377,
+     "M": 31.942,
+     "frac": 0.11424014163653763,
+     "theta_deg": 0.7962494876051472,
+     "J": 3.510044191605654,
+     "F_each": 146.25184131690224,
+     "v_tip": 0.7396574607481248,
+     "v_frac": 0.3698287303740624,
+     "v_force": 0.4335391198314303,
+     "F_max": 317.5714675645863
     },
     {
      "state": "unloaded transit, arms parked, lift top",
      "az": 0,
      "v": 0.3,
      "n_snag": 2,
-     "x": 0.13245831957012483,
-     "h": 0.5498553246728463,
-     "M": 31.942000000000004,
-     "frac": 0.16282039928083283,
-     "theta_deg": 1.1563213387248392,
-     "J": 4.232512112160553,
-     "F_each": 211.62560560802763,
-     "v_tip": 0.743475817337411,
-     "v_frac": 0.3717379086687055,
-     "v_force": 0.432490031611472,
-     "F_max": 459.22747497228124
+     "x": 0.1323080472014566,
+     "h": 0.5522596825715377,
+     "M": 31.942,
+     "frac": 0.1645058039566142,
+     "theta_deg": 1.162621132579845,
+     "J": 4.212053029926785,
+     "F_each": 210.60265149633923,
+     "v_tip": 0.7396574607481248,
+     "v_frac": 0.3698287303740624,
+     "v_force": 0.4335391198314303,
+     "F_max": 457.3029132930043
     },
     {
      "state": "unloaded transit, arms parked, lift top",
      "az": 0,
      "v": 0.5,
      "n_snag": 2,
-     "x": 0.13245831957012483,
-     "h": 0.5498553246728463,
-     "M": 31.942000000000004,
-     "frac": 0.45227888689120227,
-     "theta_deg": 3.530994973885936,
-     "J": 7.05418685360092,
-     "F_each": 587.8489044667433,
-     "v_tip": 0.743475817337411,
-     "v_frac": 0.3717379086687055,
-     "v_force": 0.432490031611472,
-     "F_max": 1275.6318749230034
+     "x": 0.1323080472014566,
+     "h": 0.5522596825715377,
+     "M": 31.942,
+     "frac": 0.4569605665461505,
+     "theta_deg": 3.5549976616782395,
+     "J": 7.020088383211308,
+     "F_each": 585.007365267609,
+     "v_tip": 0.7396574607481248,
+     "v_frac": 0.3698287303740624,
+     "v_force": 0.4335391198314303,
+     "F_max": 1270.2858702583453
     },
     {
      "state": "unloaded transit, arms parked, lift top",
      "az": 0,
      "v": 0.8,
      "n_snag": 2,
-     "x": 0.13245831957012483,
-     "h": 0.5498553246728463,
-     "M": 31.942000000000004,
-     "frac": 1.157833950441478,
-     "theta_deg": 13.544301020941587,
-     "J": 11.286698965761472,
-     "F_each": 1504.893195434863,
-     "v_tip": 0.743475817337411,
-     "v_frac": 0.3717379086687055,
-     "v_force": 0.432490031611472,
-     "F_max": 3265.6175998028893
+     "x": 0.1323080472014566,
+     "h": 0.5522596825715377,
+     "M": 31.942,
+     "frac": 1.1698190503581456,
+     "theta_deg": 13.472749123783993,
+     "J": 11.232141413138095,
+     "F_each": 1497.6188550850793,
+     "v_tip": 0.7396574607481248,
+     "v_frac": 0.3698287303740624,
+     "v_force": 0.4335391198314303,
+     "F_max": 3251.9318278613646
     }
    ],
    "F_rod": 879.645943005142,
    "delta": 0.003,
    "frac_lim": 0.25,
    "v_lock": 0.25,
-   "v_locked_cap": 0.3,
-   "v_frac": 0.3717379086687055,
-   "v_force": 0.27869083720216103,
-   "v_allow": 0.27869083720216103,
-   "v_tip": 0.743475817337411,
+   "v_locked_cap": 0.25,
+   "v_frac": 0.3698287303740624,
+   "v_force": 0.27916071100418827,
+   "v_allow": 0.27916071100418827,
+   "v_tip": 0.7396574607481248,
    "lock_ok": true,
-   "locked_cap_ok": false,
+   "locked_cap_ok": true,
    "fast_ok": false
   },
   "phase_short": {
