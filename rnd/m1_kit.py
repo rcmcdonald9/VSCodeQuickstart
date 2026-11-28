@@ -8,9 +8,12 @@ python -m rnd.m1_kit
   thermistors, inserts, screws, filament, and the coupon tools (C12 insert pull-out, C13 4-ear flange, C14 drive stub:
   the GIM output's tilt stiffness, PCD and pilot, and the 8 × M3 joint on a dummy output). Fable #2 verdict.
 - **Step 1b (later): the loaded rig and the safety chain.** The SE-1000-24, every safety-board part, the motorless test
-  kit and its instruments, the catch, the integral pinion (quoted after C14) and the rig parts (rig track, placeholder).
-  Bought only when the 1a → 1b gate is met (STEP1B_GATE): discovery done, the board drawn in KiCad and reviewed with the
-  logic race fixed, the rig designed.
+  kit and its instruments, the integral pinion (quoted after C14) and the rig's loaded parts (W17a: second lever, steel
+  discs, rubber stops, polycarbonate guard, interlock switch; docs/M1_RIG.md §5). The rig's stand, plate stock, tilt
+  mandrel, indicators and scale are 1a lines. The category-0 catch moved to Step 2 (W17a: the pendulum rig cannot fall).
+  Bought only when the 1a → 1b gate is met (STEP1B_GATE): discovery done, the board drawn in KiCad and reviewed (G-SB)
+  with the logic race fixed (netlist v4, W17b), the rig designed (W17a), C14 measured. The G-SB review itself is an
+  optional service line (SERVICES), outside every parts total.
 - Old Step 1 (before the split): one GIM6010-8, the DM-J4310,
   the CAN adapters, the bench supply and the whole safety board, a test lever bolted straight to the GIM output, the
   joint's C45+QT integral pinion shaft (D26 v5: no Oldham, no keyed pulley) for the stub coupon, the motorless test kit for
@@ -96,8 +99,14 @@ FRONT_STOP_RING = (35.0, "ESTIMATE ($30–40): 7075-T6 front stop ring Ø95 / Ø
 FRONT_STOP_HW = (3.0, "ESTIMATE: 8 × ISO 10642 M4 × 6 10.9 (ring → motor front face) ≈ $0.25 + 2 × ISO 4762 M3 × 10 (collar → blocks) ≈ $0.10, "
                       "from 25–50 packs")
 # Fable #2 (2026-11-28) coupon tools for Step 1a (C12–C14, docs/COUPONS.md)
-DTI = (35.0, "ESTIMATE: laser pointer + Ø25 front-surface mirror (the C14 optical lever, ≈ $10) + a 0.002 mm dial test indicator with magnetic base (≈ $25)")
-DUMMY_OUT = (8.0, "ESTIMATE: 6061 offcut ≈ 60 × 60 × 10 (C14 dummy output: 8 × M3 drilled + tapped on the measured PCD) + S-hook + 10 L bucket")
+# W17a reconciliation (2026-11-28): the rig's optical-lever line carries the laser + mirror (this line had them at ≈ $10), and the
+# rig's 10 mm 6061 plate is ordered 60 mm longer so the C14 dummy output comes off it (the $8 offcut line had it at ≈ $3).
+DTI = (25.0, "ESTIMATE: a 0.002 mm dial test indicator with magnetic base (≈ $25); the laser pointer + mirror that were in this line (≈ $10) "
+             "are the rig's optical-lever line since W17a")
+DUMMY_OUT = (5.0, "ESTIMATE: S-hook + 10 L bucket (the C12 / C14 loads); the 6061 60 × 60 × 10 offcut is cut from the rig's 10 mm plate since W17a (RIG_STOCK)")
+# W17a Step-1 lever rig (docs/M1_RIG.md §5, rnd/parts/rig.py; prices ESTIMATE)
+RIG_STOCK = (38.0, "ESTIMATE: W17a $35 for the 300 × 150 plate, Ø65 bar, 12 mm stop plate and 50 × 40 bar, + ≈ $3 for the 60 mm longer plate "
+                   "(the C14 dummy output, formerly a separate offcut)")
 PLATE_RING = (10.0, "ESTIMATE: 3 mm 7075-T6 ring Ø96 / 70 + 8 holes, SendCutSend 7075-T6 .125\" (their .25\" aluminium 4 × 2\" example $13.33 at 1, $5.30 at 10)")
 LOCTITE = (28.99 + 20.44, "Loctite 660 50 ml $28.99 (Walmart, 'Press Fit Repair 660'; Ellsworth $59.82) + Loctite 638 10 ml $20.44 (Hisco / TestEquity), 2026-11-27")
 ELBOW_TUBE = (15.0, "ESTIMATE: 6061-T6 Ø30 × 1.5 metric tube, 0.5 m (Zoro 6061 1.5\" × 0.083\" is $100.99 / 6 ft ≈ $17 / ft, the imperial reference)")
@@ -136,7 +145,9 @@ AL_CAP = AL_CAP_STOCK if REAR_CAP == "stock" else AL_CAP_MACHINED
 # Vishay's NH code: NH050R1000FC02 = 100 mΩ, NH05050R00FE02 = 50 Ω); no distributor listing of that value was found
 NH50 = (18.0, "ESTIMATE $18 each for NH050R5600FE02: NH-50 single-unit listings IBS NH05050R00FE02 $15.01 (10 wk), Tedss NH-50 0.5 Ω $19.99, "
               "0.2 Ω $15 ($12 at 5+), Quest NH-50 50 Ω $15 at 1 / $6.5 at 28 (2026-11-28 search; no 0.56 Ω price published, was $30 ESTIMATE); "
-              "not the RH050R5600FE05 (wirewound RH, Neon #2 F1)")
+              "the wirewound RH-50 RH050R5600FE05 is the accepted alternate only with the freewheel Schottky (W17b; Neon #2 F1 was the RH-50 without one)")
+NH50_ALT = ("Vishay RH-50 0.56 Ω 1 % (RH050R5600FE05 class), each with the same freewheel Schottky across it: the **accepted alternate** "
+            "(W17b, electrical.md regen-clamp table: drain 31.5 V ≤ 48 V, L/R ≈ 9 µs vs the 50 µs minimum on-time) if the NH-50 lead time bites")
 CLAMP_PARTS = 37.0      # the regen-clamp line less its 3 NH-50: Schottkys, MOSFETs, driver, caps, thermal switch, plate (ESTIMATE)
 # D29 #9 (PIP_CASTER_RELEASE=cable): one central solenoid pulling the 4 lock plates (rnd/tip.py cable_release: the JF-1039 is 0.84×)
 SOLENOID_55N = (26.62, "eBay JF-1264B 24 V push-pull solenoid, 55 N, 10 mm (2026-11-28 search snapshot); rnd/tip.py: 1.85× / 1.06× the 4-cable pull")
@@ -188,6 +199,9 @@ YAW_FLANGE_7075 = (30.0, "ESTIMATE: 7075-T6 machined yaw flange (hex spigot, 6 �
 BOARD_V3 = (14.0, "ESTIMATE (DigiKey-class): Q4 100 V logic-level MOSFET IRL540N class ≈ $2 (was the 30 V IRLB8721), U16 LVC1G123 50 µs "
                   "min-on one-shot ≈ $1, U17 LVC1G86 XOR + RC + comparator ≈ $2, U18 TLV3012-class 12 V UVLO + reference ≈ $2.5, "
                   "U19 ACS724-30A Hall sensor ≈ $5.5 + RC + comparator ≈ $1")
+# Safety board netlist v4 (W17b, Fable #2 M2: the logic race fixed; electrical.md netlist U28 / U29)
+BOARD_V4 = (1.50, "ESTIMATE (DigiKey-class): U28 SN74LVC1G74 RUN latch ≈ $0.50, U29 74LVC1G17 Schmitt buffer (AUX debounce) ≈ $0.40, BAT54 ≈ $0.15, "
+                  "C_db 47 nF C0G ≈ $0.30, R_c 100 kΩ + R_d 4.7 kΩ 1 % ≈ $0.15 (W17b: ≈ +$1.50 a board)")
 ACS724 = (6.5, "ESTIMATE: ACS724LLCTR-30AB ≈ $5.5 (DigiKey-class) + RC + comparator (one per arm branch on the robot board)")
 # R17 roll latch (PIP_ROLL_GUARD=latch, default off: an OPTION, not in any total): power_off.md option O2
 ROLL_LATCH = (14.0, "ESTIMATE (docs/rnd/power_off.md O2): 24 V pull solenoid $6–9, Ø10 pin + 42CrMo4 guide sleeve $3, spring $0.5, "
@@ -201,6 +215,15 @@ CLAMP_LOW = (70.0, "ESTIMATE: Hantek CC-65-class DC/AC clamp (K1 coil ≈ 0.4 A,
 CC_20A = (216.99, "Newegg 0–32 V / 0–20 A switching bench supply $216.99 (2026-11-28 search; confirm CC/CV on the datasheet); Extech 382276 $529 at TestEquity")
 
 
+# Services: priced so the owner can choose, never in a parts total. (group, item, $ low, $ high, why, source)
+SERVICES = [
+    ("Service (G-SB, optional)", "**Review gate G-SB, route A: hired EE review** of the safety-board KiCad schematic + layout, fixed scope (the whole "
+     "checklist, the logic as a state machine with the v4 race fix, the power stage, the T0–T16 limits, a written verdict; "
+     "docs/rnd/safety_board_tests.md *Review gate G-SB*)", 400.0, 1200.0,
+     "1b gate 2: before any 1b board part is ordered. **Route B: two qualified maker-community reviewers, $0** (or a small honorarium), 2–4 weeks "
+     "instead of 1–2. The owner chooses the route and the person (W17b)", "ESTIMATE (W17b: 4–8 h of a degree-level power-electronics EE)"),
+]
+
 # (group, item, qty, unit $, why / where, source)
 J4310 = (150.0, "Robotics Center $150 in stock (2026-11-27); AIFIT $125 backordered")
 
@@ -210,14 +233,16 @@ STEP1B_GATE = [
     "low-gain impedance hold work on the unloaded output; the drive's **CAN timeout** disables it when frames stop; a **torque limit saved to flash** "
     "reads back after a power cycle (or the manual / vendor tool names the registers). If there is no impedance mode, no CAN timeout or no flash "
     "limit: do not buy 1b; redesign the safety argument first (the board's timing budget is part of it).",
-    "**Board drawn and reviewed with the logic race fixed** (electrical track, Fable #2 M2): the safety board is a KiCad schematic in the tree; AUX "
-    "is debounced (RC + Schmitt, ≈ 1 ms); LATCH clears directly from \"Q4 commanded on and AUX low\", not through the U6 one-shot; the coil-open "
-    "case is in the logic model (rnd/safety_board_sim.py) and T7 agrees with it; the U10 clear terms match between the checklist and the netlist; the "
-    "review checklist is signed by a named reviewer who did not draw the board.",
-    "**Rig designed** (rig track: rnd/rig.py, docs/M1_RIG.md; Fable #2 C1): a `step1` rig entry in the software (ratio 1.0, rated 5 / peak 11 N·m, "
-    "the lever + weight as the gravity model, limits ±90°); two steel hard stops at ≈ ±100° on a motor plate checked for 11 N·m plus a stop "
-    "impact; weights bolted through the bar; a polycarbonate shield or a marked keep-out wider than the lever circle; soak mass 0.85 kg; a "
-    "rehearsal that models this rig. Its parts list replaces the placeholder line in 1b.",
+    "**Board drawn and reviewed with the logic race fixed** (electrical track, Fable #2 M2). **Race fixed on paper in netlist v4 (W17b):** the RUN "
+    "latch U28 makes K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT, so an uncommanded K1 drop-out fires FORCE on its own edge (coil unplugged: far end "
+    "< 10 V in 2.0 ms vs T7's 4 ms); AUX is debounced by U29 (t_stable 2.1–5.7 ms); the discrepancy window is 40 ms; the U10 terms are unified. "
+    "**Still open:** the KiCad schematic in the tree, and the review gate G-SB (docs/rnd/safety_board_tests.md): route A a hired EE "
+    "(≈ $400–1,200, the optional service line) or route B two qualified community reviewers ($0); the owner picks the route and the person.",
+    "**Rig designed: delivered in W17a** (docs/M1_RIG.md, rnd/parts/rig.py, sw/config/rig_step1.yaml; Fable #2 C1): `--rig step1` in the "
+    "software (ratio 1.0, rated 5 / peak 11 N·m, software range −10° … +90°, the weighed lever as the gravity model); natural-rubber stops at "
+    "−15° (reference) and +100° at the centre of percussion; steel discs bolted through the bar at 0.27 m; an interlocked 3 mm polycarbonate "
+    "guard ≥ 40 mm clear of every swept part; soak 4 / 2 discs (RMS 55 / 57 % of rated, band 45–65 %); rig rehearsals pass. Its parts are the "
+    "1a / 1b rig lines below.",
     "**C14 measured** (1a, docs/COUPONS.md): the GIM output's tilt stiffness, bearing layout, PCD and pilot. Only then is the integral pinion quoted, "
     "as drawn (hinged output) or as the overhung variant (moment-rigid output; rnd/belts.py STUB_SUPPORT_RULE).",
 ]
@@ -241,11 +266,30 @@ def step1a():
         ("Power (A5)", "Adjustable 0–30 V / 10 A CC/CV bench supply, set **24.0 V, 1 A** for 1a", 1, 65.71,
          "the only supply in 1a: discovery on the bare output at a 1 A current limit (sw/gim_discover.py); its output switch is the stop. "
          "Later the 1 A first power-up and T0 / T9", "Newegg generic 30 V 10 A CC/CV $65.71 (2026-11-27)"),
-        ("Bench", "Bench stand: 2 × 40×40 aluminium extrusion 400 mm + corner brackets + 2 bench clamps", 1, 30.0,
-         "the motor fixture for discovery and C14, the C12 pull-out lever now; the rig's frame in 1b; the shoulder later (Fable minor: no stand in the kit)", E),
-        ("Bench", "Lever stock: 6061 flat bar 40 × 6 × 300 mm + 1 kg and 2 kg weights + luggage scale (50 kg)", 1, 25.0,
+        ("Step-1 rig (W17a)", "Rig stand (docs/M1_RIG.md §1): 40×40 B-type slot-8 profile cut to 2 × 900, 2 × 172, 2 × 469 (2.88 m); 40×80 × 360 crossbar; "
+         "10 corner brackets; M6 / M8 T-nuts and screws; 4 × M8 core-bore screws; **keeps the 2 bench clamps** of the old stand line", 1, 75.0,
+         "the H-base: the GIM and the DM back to back, axes 370 mm up; the 1a motor fixture and the 1a-11 tilt anchor now, the loaded rig's frame in 1b. "
+         "Replaces \"Bench stand: 2 × 40×40 × 400 + brackets + 2 bench clamps\" ($30; +$45)", "ESTIMATE (W17a, M1_RIG.md §5)"),
+        ("Step-1 rig (W17a)", "6061-T6 stock: 10 mm plate **300 × 210** (2 motor plates 130 × 150 + the 60 × 60 C14 dummy output); Ø65 round bar 30 mm "
+         "(2 hubs Ø64 × 10); 12 mm plate 60 × 270 (upper stop plate); 50 × 40 bar 200 mm (2 lower stop blocks 94 mm)", 1, *RIG_STOCK[:1],
+         "drilled and tapped on a drill press; a lathe or a printed centring ring for the hub pilot. One cut order for the rig and the C14 dummy output", RIG_STOCK[1]),
+        ("Step-1 rig (W17a)", "Tilt mandrel, 6061-T6 turned (rnd/out/rig/tilt_mandrel.step: Ø50 flange on the output's 8 × M3, Ø25 boss, Ø12 end) + 6001-2RS "
+         "loading bearing at 97 mm", 1, 27.0, "1a-11 (= C14 (a)): the GIM output's tilt stiffness k_t and dead band under a 0–200 N radial load (Fable #2 M3)",
+         "ESTIMATE: quote from the STEP (W17a)"),
+        ("Step-1 rig tools (tools)", "2 × dial indicator 0.01 mm / 10 mm + 2 magnetic bases; 6 × 50 × 300 steel flat bar (the bases' reference, clamped to "
+         "the motor plate)", 1, 46.0, "1a-11: the Ø25 boss read at 20 and 80 mm from the output face; skip what the owner has", "ESTIMATE (W17a)"),
+        ("Step-1 rig (W17a)", "Optical lever: laser pointer + 10 mm mirror; M6 turnbuckle + Dyneema cord", 1, 13.0,
+         "1a-11: 1 mm of spot = 0.25 mrad at 2.0 m (decides a moment-rigid output); the radial load through the luggage scale to an anchor on the stand's leg. "
+         "Also the C14 optical lever (it was in the dial-test-indicator line)", "ESTIMATE (W17a)"),
+        ("Step-1 rig tools (tools)", "Kitchen scale 5 kg / 1 g", 1, 12.0,
+         "weigh every bar, hub, carrier plate, disc and bolt to ±1 g: the torque constant is fitted against the weighed lever (`kt_method: absolute`)", "ESTIMATE (W17a)"),
+        ("Step-1 rig (W17a)", "Rig fasteners: 16 × M3 × 10 12.9 (hubs), 8 × M5 × 12 (bars), 8 × M6 × 35 + 8 Ø12 × 20 spacers (motor plates), 4 × M8 × 110, "
+         "2 × M8 × 65 8.8 + nylocs (weight bolts), 4 × M10 nuts (bumper studs), 60 × M4 × 8 button heads (guard clips)", 1, 20.0,
+         "the rig as drawn (rnd/parts/rig.py)", "ESTIMATE (W17a)"),
+        ("Bench", "Lever stock: 6061 flat bar 40 × 6 × 300 mm (the GIM lever) + luggage scale (50 kg, peak hold); W17a: the 1 kg and 2 kg weights "
+         "are out (the rig's steel discs replace them, −$12)", 1, 13.0,
          "1a: **unloaded** (no weight on the motor before the 1b rig, Fable #2 C1); the stub-flange stand-in for C14 (8 × M3 × 6 on the measured "
-         "PCD), the C12 pull lever, the C13 torque pulls; 1b: the loaded lever on the rig (docs/M1_RIG.md)", E),
+         "PCD), the C12 pull lever, the C13 torque pulls; the scale for the 1a-9 stall and the 1a-11 load; 1b: the GIM lever on the rig (docs/M1_RIG.md)", E),
         ("Thermal (M7)", "10 × 10 k NTC thermistors (epoxy bead) + Kapton tape", 1, 6.0,
          "motor case and winding-side temperatures (thermal.md); read with the DMM by hand in Step 1 (no ADC in the kit, Fable #2 minor)", E),
         ("Fasteners (coupons)", "M4 brass heat-set inserts, **short** (Ø5.6 hole × 5.7 mm), 100-pack", 1, 15.93,
@@ -258,9 +302,11 @@ def step1a():
         ("Consumables", "Epoxy (CF bonds), grease, thread locker 243 / 270, PTFE washers", 1, 15.0, "Loctite 243 on the C14 joint", E),
         ("Filament (A6)", "PETG 3 kg + ASA 1 kg (coupons C9 / C12–C14, the first cartridge can + cap) + TPU 95A 0.25 kg", 1, 90.0,
          "coupons now, the arm in Step 2 (print_plan.md)", E),
-        ("Coupon tools (tools)", "Optical lever (laser pointer + mirror) + 0.002 mm dial test indicator with magnetic base", 1, *DTI[:1],
-         "C14: the GIM output's tilt under a known moment (Fable #2 M3: hinged or moment-rigid decides the pinion)", DTI[1]),
-        ("Coupons (C12, C14)", "C14 dummy output: 6061 offcut, 8 × M3 drilled + tapped by the builder on the measured PCD; S-hook + bucket for the C12 / C14 loads",
+        ("Coupon tools (tools)", "0.002 mm dial test indicator with magnetic base (the laser + mirror are in the rig's optical-lever line)", 1, *DTI[:1],
+         "C14 / 1a-11: the third indicator, on the motor housing rim (subtracts the plate's and the housing's own tilt), and the flange-rim reading "
+         "at r ≈ 20 (Fable #2 M3: hinged or moment-rigid decides the pinion)", DTI[1]),
+        ("Coupons (C12, C14)", "C14 dummy output (the 60 × 60 × 10 piece of the rig's 6061 plate, 8 × M3 drilled + tapped by the builder on the measured PCD); "
+         "S-hook + bucket for the C12 / C14 loads",
          1, *DUMMY_OUT[:1], "the 8 × M3 × 6 + 243 joint to 1.5 × the 11 N·m peak without risking the motor (its own 11 N·m cannot hold 16.5)", DUMMY_OUT[1]),
     ]
 
@@ -274,15 +320,16 @@ def step1b():
          1, 30.0, "electrical.md safety-board netlist F1, F3, C1 (Neon #2 F1: a 40 A ATO never clears on the 41.7 A supply)", E),
         ("Power (A5 v2)", "Regen clamp / bus discharge: 3 × **Vishay NH-50 0.56 Ω (non-inductive)** + 3 × **VS-40CPQ060-N3 freewheel Schottky** + 3 × IRFB7530 + gate driver + gate resistors, film caps, 85 °C thermal switch, heatsink plate",
          1, 3 * NH50[0] + CLAMP_PARTS, "mandatory on a bench supply; Neon #2 F1: the wirewound RH-50 with no freewheel path avalanched the MOSFETs (electrical.md). "
-         "Fable #2 minor: with the freewheel Schottky a stock RH-50 is acceptable if the NH-50 lead time bites (electrical track to confirm)",
+         "**Accepted alternate:** " + NH50_ALT,
          "NH-50 (NH050R5600FE02) " + NH50[1] + "; VS-40CPQ060-N3 RS £37 / 25; rest ESTIMATE"),
         ("Power (A5 v2)", "E-stop: 2 two-channel latching mushrooms + TE ALEV100 DC contactor (24 V coil, aux contact) + K_PRE relay + 3.3 Ω RH-50 pre-charge "
          "+ SN74LVC1G123 watchdog on its own LDO", 1, 150.0, "category-0 stop; watchdog 25 ms (sized on sw/loop_jitter.py)",
          "LEV100A5ANG $92 (Master Electronics); rest ESTIMATE"),
-        ("Power (M2)", "Safety-board logic (netlist v3 in electrical.md): LM74700-Q1 + IRFB7530 ideal diode, 2nd LVC1G123 (discharge one-shot on Ā), LVC1G74 latch + power-on reset, "
-         "**TLV3202** + TL431B, LVC1G11 + LVC1G32 (K1 hold on AUX), LVC1G04, UCC27524, 12 V buck + 3.3 V LDO, 1 kΩ 3 W bleeder, 10 Ω RH-50 dummy load, 2 × PC817, 2-layer PCB", 1, 45.0,
-         "**order after the KiCad schematic is drawn, the logic race is fixed and the review checklist is signed** (1b gate 2); board tests before any motor. "
-         "The AUX debounce (RC + Schmitt) and the direct LATCH clear add cents of parts (Fable #2 M2)", E),
+        ("Power (M2)", "Safety-board logic (netlist v4 in electrical.md): LM74700-Q1 + IRFB7530 ideal diode, 2nd LVC1G123 (discharge one-shot on Ā), LVC1G74 latch + power-on reset, "
+         "**TLV3202** + TL431B, LVC1G11 + LVC1G32 (K1 hold on AUX), LVC1G04, UCC27524, 12 V buck + 3.3 V LDO, 1 kΩ 3 W bleeder, 10 Ω RH-50 dummy load, 2 × PC817, 2-layer PCB; "
+         "**v4 (W17b): U28 SN74LVC1G74 RUN latch, U29 74LVC1G17 AUX debounce + BAT54 + 47 nF C0G + 2 × 1 % resistors**", 1, 45.0 + BOARD_V4[0],
+         "**order after the KiCad schematic is drawn and the review gate G-SB is closed** (1b gate 2; the race is fixed in netlist v4); board tests before any motor",
+         "ESTIMATE $45; v4 parts " + BOARD_V4[1]),
         ("Power (netlist v3)", "Safety-board netlist v3 additions (Astra #3 critical 3, safety_board_sim.md): **Q4 100 V logic-level coil driver** (IRL540N class; "
          "the 30 V IRLB8721 saw ≈ 52 V at every turn-off), U16 50 µs minimum-on one-shot, **U17 AUX / K1 discrepancy monitor** (LVC1G86 XOR + 30 ms RC + comparator), "
          "**U18 12 V UVLO** (TLV3012 class, 10.5 V), **U19 arm-branch current trip** (ACS724-30A + 5 s RC + comparator at 16 A)", 1, *BOARD_V3[:1],
@@ -290,12 +337,17 @@ def step1b():
         ("Bring-up IO (S1)", "sw/bringup.py `--estop gpiod:gpiochip0:17:27`: reset/ARM pushbutton, coil MOSFET + suppression, opto "
          "(aux contact → GPIO27), heartbeat lead GPIO17 → watchdog, 3 m 4-core cable for the remote mushroom, terminal blocks", 1, 20.0,
          "safety step (e-stop, watchdog, reset refused while pressed); operator outside the fall envelope", E),
-        ("Commissioning (A5 v2)", "Category-0 catch: adjustable padded cradle (Al bar + EVA foam) + Dyneema tether ≥ 600 N + payload tray", 1, 25.0,
-         "drop energy ≤ 3 J with ≤ 50 mm gap (electrical.md)", E),
-        ("Step-1 rig (PLACEHOLDER)", "**PLACEHOLDER: the Step-1 lever rig's own parts (rig track: rnd/rig.py, docs/M1_RIG.md): motor plate, two steel hard stops at "
-         "≈ ±100°, through-bolted weights, polycarbonate shield or keep-out marking (Fable #2 C1). The rig engineer reports the lines; replace this row.**",
-         1, 0.0, "Fable #2 C1: the lever does not go on the motor without stops and a guard; the stand and the lever stock are 1a lines",
-         "PLACEHOLDER: not priced yet, $0 in every total until the rig list lands"),
+        ("Step-1 rig (W17a)", "Second 6061 flat bar 40 × 6 × 300 (the DM-J4310 lever)", 1, 8.0, "the wpitch lever on the rig's −Y face", "ESTIMATE (W17a)"),
+        ("Step-1 rig (W17a)", "Weights: 8 × Ø60 × 10 S235 discs (Ø8.5 hole, 0.2175 kg) + 4 × Ø60 × 3 carrier plates, laser-cut or saw-cut bright bar", 1, 36.0,
+         "bolted **through** the bar at r 270 (M8 × 65 + nyloc), in pairs; soak 4 discs on the GIM / 2 on the DM. Replaces the 1 kg and 2 kg weights "
+         "of the 1a lever-stock line (−$12)", "ESTIMATE (W17a)"),
+        ("Step-1 rig (W17a)", "4 × natural-rubber buffer 60 Sh A, Ø50 × 50, type D (one M10 stud)", 1, 12.0,
+         "hard stops at −15° (reference) and +100°, struck by the disc rim at the centre of percussion; stiffness checked in 1b-0 (accept 90–360 kN/m)", "ESTIMATE (W17a)"),
+        ("Step-1 rig (W17a)", "Polycarbonate 3 mm clear, cut: 2 × 626 × 597, 2 × 362 × 597 (2 notches each), 1 × 626 × 362 (cable slot) = 1.39 m²", 1, 70.0,
+         "the lift-off guard, ≥ 40 mm outside every swept part; 15 × 60 slot 149 mm above the swept volume (ISO 13857); printed PETG clips and corners", "ESTIMATE (W17a)"),
+        ("Step-1 rig (W17a)", "Magnetic coded safety switch, NC, with actuator", 1, 15.0,
+         "the guard interlock, in series with the e-stop mushrooms: lifting the guard opens the contactor (check the sensing distance against the 5 mm riser gap)",
+         "ESTIMATE (W17a)"),
         ("Drive (D26 v5)", "**C45+QT integral pinion shaft** for the Step-1 GIM6010 joint (stub v5, Astra #3 m7: Ø42 × 4 flange, 8 × Ø3.4 + c'bore on the "
          "measured output PCD, Ø16/10 neck, 20T HTD 5M hobbed on the shaft, Ø15 collar, Ø12 k5 seat for the wall-B 6001; no key, no pulley)", 1, *PINION[:1],
          "**quote only after C14** (Fable #2 M3: between the bearings or overhung depends on the output's tilt stiffness; a single piece may cost $100+, S); "
@@ -338,6 +390,8 @@ def step1_test():
 def step2_common():
     """Step 2, independent of both holds: the rest of the arm."""
     return [
+        ("Commissioning (A5 v2)", "Category-0 catch: adjustable padded cradle (Al bar + EVA foam) + Dyneema tether ≥ 600 N + payload tray", 1, 25.0,
+         "drop energy ≤ 3 J with ≤ 50 mm gap (electrical.md); moved from Step 1b in W17a: the pendulum rig cannot fall, the cradle is for the arm", E),
         ("Bearings", "61808 (40×52×7)", 4, *B61808[:1], "pitch and elbow one-piece shafts (D19), 2 each", B61808[1]),
         ("Bearings", "6708 (40×50×6) thin", 2, 2.5, "elbow belt cassette", E),
         ("Bearings", "61804 (20×32×7)", 2, 0.92, "D16 wrist-roll spindle", "AliExpress MOCHU snapshot; Zoro $4.69"),
@@ -520,6 +574,17 @@ def items():
 
 
 CHANGES = [
+    "**W17a / W17b (2026-11-28): the Step-1 rig priced, safety board v4.** The $0 rig placeholder in 1b is replaced by W17a's lines "
+    "(docs/M1_RIG.md §5, ESTIMATE): in 1a the rig stand ($75, replaces the $30 stand line and keeps its 2 bench clamps), the 6061 stock, the turned "
+    "tilt mandrel + 6001-2RS, two 0.01 mm dial indicators with bases and a flat bar, the optical lever + turnbuckle + Dyneema, a 5 kg / 1 g kitchen "
+    "scale and the rig fasteners; in 1b the second bar, 8 steel discs + 4 carrier plates (replacing the 1 kg / 2 kg weights, −$12), 4 rubber "
+    "buffers, 1.39 m² of 3 mm polycarbonate and the magnetic safety switch. The category-0 catch ($25) moves from 1b to Step 2. W17a's net was "
+    "+$302 (+$347 landed); **merged with W17c's coupon tools it is +$292 (+$336 landed):** the laser + mirror were in both the C14 tool line and "
+    "the rig's optical lever (the C14 line keeps only its 0.002 mm indicator, now the third indicator on the housing rim: −$10), and the C14 "
+    "dummy output is cut from the rig's 10 mm plate (ordered 300 × 210: the offcut line keeps the S-hook + bucket at $5, the plate goes $35 → $38; "
+    "net $0). The weights left the 1a lever-stock line, so 1a carries their −$12. W17b: + $1.50 of v4 logic on the board line (U28 SN74LVC1G74, "
+    "U29 74LVC1G17, BAT54, 47 nF C0G, two 1 % resistors); the RH-50 0.56 Ω with its freewheel Schottky is the accepted NH-50 alternate; the G-SB "
+    "review is an optional service line (route A hired EE $400–1,200 ESTIMATE, route B community review $0), outside every total.",
     "**Fable review #2 (2026-11-28): Step 1 split into 1a and 1b.** 1a (buy now) is what protocol discovery on a bare, unloaded GIM at a 1 A limit "
     "needs (motors, CAN, the 10 A supply, stand, lever stock, thermistors, inserts, screws, filament) plus the coupon tools for C12–C14; 1b (the "
     "SE-1000-24, the safety board, the catch, the test kit and instruments, the pinion and the rig parts) waits for the four-item gate. "
@@ -588,8 +653,9 @@ CHECKS = [
     "Drive stub (D26 v5): set belt_stage.STUB / MOTOR['out_pcd'] from C9 / C14 (output bolt circle, pilot, thread depth, bearing position and "
     "tilt) before quoting the pinions from the STEP; no keyed pulley or keyway any more (the 20T is hobbed on the shaft).",
     "Crush sleeves (W8c, D26): measure each printed stack; pitch / yaw sleeves turned 42CrMo4+QT (R_p0.2 ≥ 750 MPa on the certificate) to print − 0.05 mm; clevis / rear sleeves cut from the E235+C tube sticks and faced in the jig to print − 0.05 ± 0.02 (micrometer).",
-    "Vishay NH-50 (not RH-50) for the three clamp resistors: the part number starts NH050 (0.56 Ω 1 %: NH050R5600FE02; confirm the code with the "
-    "distributor, D29 #7); the pre-charge and dummy-load resistors stay RH-50.",
+    "Vishay NH-50 for the three clamp resistors: the part number starts NH050 (0.56 Ω 1 %: NH050R5600FE02; confirm the code with the "
+    "distributor, D29 #7). **Accepted alternate (W17b):** the RH-50 0.56 Ω (RH050R5600FE05 class), only with the freewheel Schottky fitted across "
+    "each resistor. The pre-charge and dummy-load resistors stay RH-50.",
     "GIM6010-8 at $70 (D29 #2): Robotics Center is backordered: confirm the SDC104 24 V version in writing (seller question 6) and the ship date "
     "before paying; fall back to the $90 aifitlab listing if it would hold Step 2 up.",
     "Heat-set inserts: the short M4 (5.7 mm) the flange calls for; the long 8.1 mm ones don't fit the 6 mm flange.",
@@ -612,7 +678,10 @@ def totals():
     a_yes, a_no = line_sum(HOLD_A["yes"]), line_sum(HOLD_A["no"])
     b_yes, b_no = line_sum(HOLD_B["yes"]), line_sum(HOLD_B["no"])
     plan2 = s2 + a_no + b_yes                     # today's plan: GIM6010 at pitch + elbow, inline roll
+    rig = lambda rows: line_sum([r for r in rows if r[0].startswith("Step-1 rig")])
     return dict(s1a=s1a, s1a_c=s1a * c, s1a_tools=s1a_tools, s1a_tools_c=s1a_tools * c,
+                rig_1a=rig(step1a()), rig_1b=rig(step1b()),
+                gsb_lo=sum(r[2] for r in SERVICES), gsb_hi=sum(r[3] for r in SERVICES),
                 s1b=s1b, s1b_c=s1b * c, s1b_parts=s1bp, s1b_parts_c=s1bp * c, s1b_instr=s1i, s1b_instr_c=s1i * c,
                 s1=s1, s1_c=s1 * c, s1_parts=s1p, s1_parts_c=s1p * c, s1_test=s1t, s1_test_c=s1t * c,
                 s1_instr=s1i + s1a_tools, s1_instr_c=(s1i + s1a_tools) * c,
@@ -653,10 +722,12 @@ def main():
     S1 = S1A + S1B + S1T
     L = ["# Milestone M1: one-arm bench kit, Step 1a / 1b / Step 2 (generated by `python -m rnd.m1_kit`)", "",
          f"**Step 1a, buy now (protocol discovery on a bare GIM at 1 A, no safety board): ${t['s1a']:,.0f} + {c:.0%} = ${t['s1a_c']:,.0f}** "
-         f"(coupon tools ${t['s1a_tools_c']:,.0f} of it: skip what the owner has). "
+         f"(measuring tools ${t['s1a_tools_c']:,.0f} of it: skip what the owner has; the rig's stand, stock, tilt mandrel, indicators and scale "
+         f"${t['rig_1a']:,.0f} of lines). "
          f"**Step 1b, after the gate (supply, safety board, test kit, rig, pinion): ${t['s1b']:,.0f} + {c:.0%} = ${t['s1b_c']:,.0f}** "
-         f"(test instruments ${t['s1b_instr_c']:,.0f} of it: skip any the owner owns → ${t['s1b_c'] - t['s1b_instr_c']:,.0f}; the rig parts are a "
-         "$0 placeholder until the rig track reports them). "
+         f"(test instruments ${t['s1b_instr_c']:,.0f} of it: skip any the owner owns → ${t['s1b_c'] - t['s1b_instr_c']:,.0f}; the rig's loaded parts "
+         f"${t['rig_1b']:,.0f} of lines, W17a). **Optional service, outside every total:** the G-SB board review, route A a hired EE "
+         f"${t['gsb_lo']:,.0f}–{t['gsb_hi']:,.0f} (ESTIMATE), route B community review $0. "
          f"**Step 2 (the rest of the arm, today's plan): ${t['s2_plan']:,.0f} + {c:.0%} = ${t['s2_plan_c']:,.0f}.** "
          f"Whole kit ${t['plan_c']:,.0f} with contingency (Fable #2 quoted ≈ $720 / ≈ $2,115 for 1a / 1b on the W16b list). "
          f"Option, not in any total: the R17 roll latch {sd(t['opt'])} per arm ({sd(t['opt_c'])} with contingency).", "",
@@ -665,14 +736,14 @@ def main():
          f"| Hold A yes (D20, with its drive parts) + inline roll | ${t['s1a_c']:,.0f} | ${t['s1b_c']:,.0f} | ${t['s2_d20_c']:,.0f} | ${t['d20_c']:,.0f} |",
          f"| Fallback: belt roll (hold B no), GIM6010 at pitch + elbow | ${t['s1a_c']:,.0f} | ${t['s1b_c']:,.0f} | ${t['s2_belt_c']:,.0f} | ${t['belt_c']:,.0f} |", "",
          f"Hold A (D20) costs **{sd(t['d_a'])}** against the GIM6010 lines (up to {sd(t['d_a_hi'])} at the dearest motor listing); the inline roll "
-         f"{sd(t['d_b'])} against the belt roll (up to {sd(t['d_b_hi'])}). Step 1: {len(S1) - est(S1)} of {len(S1)} lines priced from retailer snapshots "
-         f"or a placeholder, {est(S1)} ESTIMATE. Everything except the supplies, the stand, the lever, the catch, the coupon tools and the test kit is "
-         "reused in the arm and the robot.", "",
+         f"{sd(t['d_b'])} against the belt roll (up to {sd(t['d_b_hi'])}). Step 1: {len(S1) - est(S1)} of {len(S1)} lines priced from retailer snapshots, "
+         f"{est(S1)} ESTIMATE. Everything except the supplies, the rig (stand, levers, discs, stops, guard), the catch, the "
+         "measuring and coupon tools and the test kit is reused in the arm and the robot.", "",
          "**Why 1a / 1b (Fable review #2, 2026-11-28, verdict):** discovery runs on one unloaded motor at a 1 A limit (`sw/gim_discover.py`) and "
          "needs none of the supply, board or instruments. If the SDC104 has no impedance mode, no CAN timeout or no flash limit, the repo's own "
          "answer is \"stop and redesign the safety argument\", and the board's timing budget and the bench plan are part of that argument; the board "
-         "is still a netlist with an open logic race (M2), and the lever rig has no stops, guard or software description (C1). So 1b waits for the "
-         "facts that decide it. Why two steps at all (Fable #1): no GIM can be commanded until its protocol is known, and the arm mixes three "
+         "was a netlist with an open logic race (M2; fixed on paper in netlist v4, W17b; not yet drawn or reviewed), and the lever rig had no stops, "
+         "guard or software description (C1; designed in W17a: docs/M1_RIG.md). So 1b waits for the facts that decide it. Why two steps at all (Fable #1): no GIM can be commanded until its protocol is known, and the arm mixes three "
          "SteadyWin drivers (docs/sw/gim_protocol_notes.md). **No extra GIM6010s in Step 1.**", "",
          "## Step 0: free, before any money", ""]
     L += [f"{i}. {x}" for i, x in enumerate(STEP0, 1)]
@@ -681,7 +752,11 @@ def main():
           "impedance frame, disables itself on the **CAN timeout**, and keeps a **torque limit in flash** over a power cycle (`python -m sw.gim_discover`, "
           "then the vendor tool / manual registers); the DM-J4310 answers on the same bus; the CAN HAT against the two adapters; coupons C9 (bolt "
           "circles), C12 (insert pull-out), C13 (4-ear flange) and C14 (drive stub: the output's tilt stiffness, bearing layout, PCD and pilot, "
-          "and the 8 × M3 joint to 1.5 × the peak on a dummy output; Fable #2 M3) ([COUPONS.md](COUPONS.md)). **No lever weight on the motor in 1a.**", ""]
+          "and the 8 × M3 joint to 1.5 × the peak on a dummy output; Fable #2 M3) ([COUPONS.md](COUPONS.md)). The procedure is docs/M1_RIG.md §3 "
+          "(`python -m sw.rig_1a`: limits in flash, impedance, the drive's CAN timeout, stall against the luggage scale, encoder zero; 1a-11 the GIM "
+          "output's tilt stiffness on the tilt mandrel). **Step 1a exit criterion:** `sw.rig_1a` all phases pass on the GIM and the DM; GIM tilt "
+          "stiffness measured and decided (k_t ≤ 8 kN·m/rad keeps the D26 6001 support, ≥ 75 overhung, in between the lead re-runs the split). "
+          "**No lever weight on the motor in 1a.**", ""]
     _table(L, S1A)
     L += [""]
     _sub(L, t["s1a"], "Step 1a")
@@ -689,7 +764,8 @@ def main():
     L += [f"{i}. {x}" for i, x in enumerate(STEP1B_GATE, 1)]
     L += ["", "## Step 1b: the loaded rig and the safety chain (after the gate)", "",
           "**What 1b proves:** the safety board (pre-charge, one-shot discharge, clamp, contactor, watchdog at 25 ms, e-stop → no torque ≤ 50 ms) "
-          "with a real drive; torque constant and friction on the lever on the designed rig (hard stops, guard); the collision trip on one joint; "
+          "with a real drive; torque constant (from the weighed lever) and friction on the W17a lever rig (`--rig step1`; rubber stops at −15° / +100°; "
+          "guard interlocked); the collision trip on one joint; "
           "the motor case temperature rise at rated torque; the C14 joint at the drive's peak on the real output; the soak.", ""]
     _table(L, S1B)
     L += [f"| | **Step 1b parts subtotal** | | | **{t['s1b_parts']:,.0f}** | | |", "",
@@ -699,13 +775,18 @@ def main():
     _table(L, S1T)
     L += [f"| | **Test kit subtotal** (instruments {t['s1b_instr']:,.0f}) | | | **{t['s1_test']:,.0f}** | | |", ""]
     _sub(L, t["s1b"], "Step 1b")
+    L += ["### Step 1b service (optional, **outside every parts total**)", "",
+          "| Group | Service | Low $ | High $ | Why | Price source |", "|---|---|---|---|---|---|"]
+    L += [f"| {g} | {n} | {lo:,.0f} | {hi:,.0f} | {w} | {s} |" for g, n, lo, hi, w, s in SERVICES]
+    L += ["", f"Route A adds ${t['gsb_lo']:,.0f}–{t['gsb_hi']:,.0f} (ESTIMATE, no contingency) to the cash the owner spends before 1b; route B costs $0 "
+          "and 1–2 more weeks. Neither is a part, so neither is in Step 1b, the kit or the robot total.", ""]
     L += [f"**Step 1 (1a + 1b): ${t['s1']:,.0f} + {c:.0%} = ${t['s1_c']:,.0f}.**", "",
-          '**Step-1b exit criterion (software track: determinism, the Asimov sim2real lessons): soak test.** `python -m sw.soak --joints yaw,wpitch --hours 2` '
-          "on the designed rig. A sysid fit at the start (bring-up step `sysid`, sw/sysid.py: Coulomb + viscous friction, effective torque constant, "
-          "backlash, command → response latency → sw/config/actuators_<serial>.yaml), then 2 h of 0.25 Hz cyclic motion at ≈ 50 % rated torque: "
-          "**0.85 kg at the 0.3 m lever end on the bare GIM6010 (2.5 N·m of its 5 N·m rated; Fable #2 C1: the 2 kg in sw/soak.py is the yaw-stage "
-          "figure, 118 % of rated on the bare motor; the rig's `step1` entry carries the right one)**, 0.5 kg at the wrist; then the sysid fit again with "
-          "the drives hot. **Pass:** Coulomb drift ≤ 20 %, viscous ≤ 25 %, torque constant ≤ 5 %, backlash growth ≤ 0.1°, latency mean ≤ +0.5 ms and "
+          '**Step-1b exit criterion (software track: determinism, the Asimov sim2real lessons): soak test.** `python -m sw.soak --rig step1 --load soak '
+          '--joints yaw,wpitch --hours 2` on the W17a rig (docs/M1_RIG.md §4, 1b-4). A sysid fit at the start (bring-up step `sysid`, sw/sysid.py: '
+          "Coulomb + viscous friction, effective torque constant against the weighed lever, backlash, command → response latency → "
+          "sw/config/rig_step1/actuators_<serial>.yaml), then 2 h of 0.25 Hz ±15° cyclic motion: "
+          "**soak discs 4 / 2 at 0.27 m (GIM / DM; 1.04 / 0.60 kg on the bolt), RMS 45–65 % of rated** (sized 55 / 57 %; Fable #2 C1: the old 2 kg "
+          "at 0.3 m was 118 % of the bare motor's rated); then the sysid fit again with the drives hot. **Pass:** Coulomb drift ≤ 20 %, viscous ≤ 25 %, torque constant ≤ 5 %, backlash growth ≤ 0.1°, latency mean ≤ +0.5 ms and "
           "p95 ≤ +2 ms; no supervisor stop, no CAN bus-off, no new Pi throttle / under-voltage flag (`vcgencmd get_throttled`), zero implausible CAN "
           "frames, loop jitter p99 < 1 ms, CPU < 80 °C (docs/sw/sim2real_bench.md).", "",
           "**What Step 2 proves:** the whole arm: belts and the D26 direct stages, the bolted cartridges, the balancer (A9), the inline roll, hand "
