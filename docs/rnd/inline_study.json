@@ -115,7 +115,7 @@
    "shoulder_roll": {
     "act": "GIM8108-36",
     "T": 70.63520283027766,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 22.733281994684553,
     "max": 16.832362612113464
    },
@@ -136,7 +136,7 @@
    "wrist_pitch": {
     "act": "DM-J4310-2EC_V1.1",
     "T": 92.65244428598456,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 1.9735342939254479,
     "max": 1.858646771063933
    }
@@ -166,6 +166,12 @@
    "x_straight": 0.06293443686156787
   },
   "push_tip_n": 53.35037055901921,
+  "basket": {
+   "worst": 0.6546412037603643,
+   "all_ik": true,
+   "tip_wheel": 0.06224642101719892,
+   "rise_max": 22.913314826255345
+  },
   "backdrive": {
    "shoulder_pitch": {
     "act": "GIM6010-8",
@@ -242,13 +248,13 @@
    "arm straight out (pitch \u221290\u00b0)": {
     "links only": {
      "worst": 1.8292724327143195,
-     "x": Infinity,
+     "x": null,
      "y": 1.8292724327143195,
      "z": 1.1325634198957433
     },
     "with reflected rotor inertia": {
      "worst": 1.9756569480129234,
-     "x": Infinity,
+     "x": null,
      "y": 1.9756569480129234,
      "z": 1.1651445813439039
     }
@@ -674,14 +680,14 @@
    "shoulder_pitch": {
     "act": "GIM8108-8",
     "T": 85.23605292663913,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 13.892909232481877,
     "max": 12.213616369498208
    },
    "shoulder_roll": {
     "act": "GIM8108-36",
     "T": 70.98424385124781,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 22.733281994684553,
     "max": 16.914596863278508
    },
@@ -695,31 +701,31 @@
    "elbow": {
     "act": "GIM8108-8",
     "T": 51.24997808796629,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 13.892909232481877,
     "max": 6.946449932825583
    },
    "wrist_pitch": {
     "act": "DM-J4310-2EC_V1.1",
     "T": 92.65244428598446,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 1.9735342939254479,
     "max": 1.8586467710639312
    }
   },
   "tip": {
-   "worst": 0.031860693488352194,
+   "worst": 0.0347466082293096,
    "n_ok": 16,
    "n": 16,
    "basket_extra": [
     {
      "name": "R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s\u00b2, no person within reach",
-     "reserve": 0.04369180756855869,
+     "reserve": 0.0436918832624214,
      "ok": true
     },
     {
      "name": "R2d basket 9.07 kg, person within reach: held at x \u2264 0.35 m, z \u2264 0.60 m, braking 0.1 m/s\u00b2 + 30 N push",
-     "reserve": 0.003906508291784299,
+     "reserve": 0.006430448498585529,
      "ok": false
     }
    ]
@@ -732,6 +738,12 @@
    "x_straight": 0.06339749016992312
   },
   "push_tip_n": 53.51686535341287,
+  "basket": {
+   "worst": 1.4670747041136538,
+   "all_ik": true,
+   "tip_wheel": 0.0623189246138448,
+   "rise_max": 10.224428216191201
+  },
   "backdrive": {
    "shoulder_pitch": {
     "act": "GIM8108-8",
@@ -808,13 +820,13 @@
    "arm straight out (pitch \u221290\u00b0)": {
     "links only": {
      "worst": 1.8331826397327482,
-     "x": Infinity,
+     "x": null,
      "y": 1.8331826397327482,
      "z": 1.1325651968990162
     },
     "with reflected rotor inertia": {
      "worst": 1.9795671546358404,
-     "x": Infinity,
+     "x": null,
      "y": 1.9795671546358404,
      "z": 1.1653445639642013
     }
@@ -1240,52 +1252,52 @@
    "shoulder_pitch": {
     "act": "GIM8108-36",
     "T": 58.67170430918132,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 22.733281994684553,
     "max": 13.718929505330806
    },
    "shoulder_roll": {
     "act": "GIM8108-36",
     "T": 77.75115102441873,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 22.733281994684553,
     "max": 18.436537746479907
    },
    "upper_yaw": {
     "act": "GIM6010-48",
     "T": 43.29145106383677,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 19.44636603894547,
     "max": 6.945396579531064
    },
    "elbow": {
     "act": "GIM8108-36",
     "T": 41.06896870445264,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 22.733281994684553,
     "max": 6.946449932825583
    },
    "wrist_pitch": {
     "act": "DM-J4310-2EC_V1.1",
     "T": 92.65244428598446,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 1.9735342939254479,
     "max": 1.8586467710639312
    }
   },
   "tip": {
-   "worst": 0.025928334874183383,
+   "worst": 0.02826027413488529,
    "n_ok": 14,
    "n": 16,
    "basket_extra": [
     {
      "name": "R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s\u00b2, no person within reach",
-     "reserve": 0.03720464018232452,
+     "reserve": 0.037204582860839934,
      "ok": true
     },
     {
      "name": "R2d basket 9.07 kg, person within reach: held at x \u2264 0.35 m, z \u2264 0.60 m, braking 0.1 m/s\u00b2 + 30 N push",
-     "reserve": -0.00039389089646903354,
+     "reserve": 0.0009726644030427382,
      "ok": false
     }
    ]
@@ -1298,6 +1310,12 @@
    "x_straight": 0.0733329722711568
   },
   "push_tip_n": 54.38765654052986,
+  "basket": {
+   "worst": 2.3941986872414454,
+   "all_ik": true,
+   "tip_wheel": 0.06282190237943032,
+   "rise_max": 4.0767260591702685
+  },
   "backdrive": {
    "shoulder_pitch": {
     "act": "GIM8108-36",
@@ -1374,13 +1392,13 @@
    "arm straight out (pitch \u221290\u00b0)": {
     "links only": {
      "worst": 1.9234218984786666,
-     "x": Infinity,
+     "x": null,
      "y": 1.9234218984786666,
      "z": 1.132654267302787
     },
     "with reflected rotor inertia": {
      "worst": 2.069806414131199,
-     "x": Infinity,
+     "x": null,
      "y": 2.069806414131199,
      "z": 1.1656643494849122
     }
@@ -1794,14 +1812,14 @@
    "shoulder_pitch": {
     "act": "GIM8108-36",
     "T": 56.590325103041444,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 22.733281994684553,
     "max": 13.101923272929234
    },
    "shoulder_roll": {
     "act": "GIM8108-36",
     "T": 74.90702633788666,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 22.733281994684553,
     "max": 17.81271603926905
    },
@@ -1815,31 +1833,31 @@
    "elbow": {
     "act": "GIM8108-36",
     "T": 41.06896870445264,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 22.733281994684553,
     "max": 6.9464499328255815
    },
    "wrist_pitch": {
     "act": "DM-J4310-2EC_V1.1",
     "T": 92.65244428598467,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 1.9735342939254479,
     "max": 1.8586467710639347
    }
   },
   "tip": {
-   "worst": 0.02962343083459625,
+   "worst": 0.029625772403828386,
    "n_ok": 15,
    "n": 16,
    "basket_extra": [
     {
      "name": "R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s\u00b2, no person within reach",
-     "reserve": 0.03844757416581917,
+     "reserve": 0.03395675218918857,
      "ok": true
     },
     {
      "name": "R2d basket 9.07 kg, person within reach: held at x \u2264 0.35 m, z \u2264 0.60 m, braking 0.1 m/s\u00b2 + 30 N push",
-     "reserve": 0.0020705802382271392,
+     "reserve": 0.00207252431963938,
      "ok": false
     }
    ]
@@ -1852,6 +1870,12 @@
    "x_straight": 0.06965826120156308
   },
   "push_tip_n": 53.30348386487458,
+  "basket": {
+   "worst": 2.429644265863519,
+   "all_ik": true,
+   "tip_wheel": 0.060999456644329444,
+   "rise_max": 3.958644690823664
+  },
   "backdrive": {
    "shoulder_pitch": {
     "act": "GIM8108-36",
@@ -1928,13 +1952,13 @@
    "arm straight out (pitch \u221290\u00b0)": {
     "links only": {
      "worst": 1.9058394121083457,
-     "x": Infinity,
+     "x": null,
      "y": 1.9058394121083457,
      "z": 1.132653023161367
     },
     "with reflected rotor inertia": {
      "worst": 2.0522239288195987,
-     "x": Infinity,
+     "x": null,
      "y": 2.0522239288195987,
      "z": 1.1656445601269723
     }
@@ -2341,14 +2365,14 @@
    "shoulder_pitch": {
     "act": "GIM8108-36",
     "T": 55.54031625873988,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 22.733281994684553,
     "max": 12.779357626636706
    },
    "shoulder_roll": {
     "act": "GIM8108-36",
     "T": 73.45910737015672,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 22.733281994684553,
     "max": 17.486587320318264
    },
@@ -2362,31 +2386,31 @@
    "elbow": {
     "act": "DM-J8009-2EC",
     "T": 53.753131439780844,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 12.93250602391713,
     "max": 6.946449932825583
    },
    "wrist_pitch": {
     "act": "DM-J4310-2EC_V1.1",
     "T": 92.65244428598456,
-    "t_limit": Infinity,
+    "t_limit": null,
     "cont": 1.9735342939254479,
     "max": 1.858646771063933
    }
   },
   "tip": {
-   "worst": 0.03116177439151405,
+   "worst": 0.030712200016190867,
    "n_ok": 16,
    "n": 16,
    "basket_extra": [
     {
      "name": "R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s\u00b2, no person within reach",
-     "reserve": 0.0393752790895012,
+     "reserve": 0.035086757137424374,
      "ok": true
     },
     {
      "name": "R2d basket 9.07 kg, person within reach: held at x \u2264 0.35 m, z \u2264 0.60 m, braking 0.1 m/s\u00b2 + 30 N push",
-     "reserve": 0.003161974153464343,
+     "reserve": 0.0027856495702393486,
      "ok": false
     }
    ]
@@ -2399,6 +2423,12 @@
    "x_straight": 0.0675995626860177
   },
   "push_tip_n": 53.013650696630066,
+  "basket": {
+   "worst": 1.5563276339801162,
+   "all_ik": true,
+   "tip_wheel": 0.06110051124824821,
+   "rise_max": 4.49027896763909
+  },
   "backdrive": {
    "shoulder_pitch": {
     "act": "GIM8108-36",
@@ -2475,13 +2505,13 @@
    "arm straight out (pitch \u221290\u00b0)": {
     "links only": {
      "worst": 1.8872222430588905,
-     "x": Infinity,
+     "x": null,
      "y": 1.8872222430588905,
      "z": 1.1326380458420384
     },
     "with reflected rotor inertia": {
      "worst": 2.033606761031899,
-     "x": Infinity,
+     "x": null,
      "y": 2.033606761031899,
      "z": 1.165245271447582
     }

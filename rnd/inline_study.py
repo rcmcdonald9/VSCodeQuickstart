@@ -130,7 +130,7 @@ def drive_lines(d):
     for j in BIG:
         n, r = d.arm.joints[j]
         out.append((j, f"actuator {n}", 1, P[n][0], P[n][1]))
-        dual = "dual" in SPECS[n].get("encoder", "")
+        dual = bool(SPECS[n].get("output_encoder"))
         if r != 1.0:                                                  # D26 direct belt stage v4 (cartridge_m.parts_list_direct)
             big = d20 and j in ("shoulder_pitch", "elbow")
             out += [(j, "turned C45 drive stub (Ø12 h6 shaft, 8 × M3 flange)", 1, 12.0, "ESTIMATE: JLCCNC-class turning ≥ $5 + bar (m1_kit SLEEVE basis)"),
@@ -261,7 +261,7 @@ def accuracy_rows(d, joint_encoders):
     for j, lev in A.LEVER.items():
         n, r = d.arm.joints[j]
         s = SPECS[n]
-        dual = "dual" in s.get("encoder", "") and "output" in s.get("encoder", "")
+        dual = bool(s.get("output_encoder"))
         if r != 1.0 or j == "wrist_pitch":
             e = base[j][0]
         elif joint_encoders or dual:
@@ -386,7 +386,7 @@ def simplicity(d, key):
         J = INLINE_YAW if j == "upper_yaw" else INLINE_JOINT
         parts += len(J["parts"]); fast += J["fasteners"]
         minutes += BUILD["inline_yaw" if j == "upper_yaw" else "inline_heavy"]
-        if "dual" not in SPECS[d.arm.joints[j][0]].get("encoder", ""):
+        if not SPECS[d.arm.joints[j][0]].get("output_encoder"):
             parts += len(OFFAXIS_ENC["parts"]); fast += OFFAXIS_ENC["fasteners"]; minutes += BUILD["offaxis_enc"]
     b0 = 2 * (BUILD["belt_cart"] + BUILD["belt_stage"] + BUILD["encoder"]) + BUILD["idler"] + BUILD["belt_cart"] + BUILD["belt_stage"] + BUILD["encoder"] + BUILD["cassette"]
     pr = print_rows()
@@ -406,6 +406,12 @@ def simplicity(d, key):
 
 
 # ------------------------------------------------------------------------------------------------------------- the checks
+def _fresh_ik():
+    from .twin import Reacher
+    a = Reacher.solve.__defaults__
+    Reacher.solve.__defaults__ = a[:-1] + (np.random.default_rng(1),)
+
+
 def checks(d, quick=False):
     from . import basket, payload_study, spring, thermal, tip
     from .arm_sizing import point_masses
@@ -437,7 +443,9 @@ def checks(d, quick=False):
         th[j] = dict(act=v_act, T=thermal.AMBIENT + thermal.COVER_DT + dts, t_limit=thermal.hold_time(dts),
                      cont=v["rated"] * math.sqrt((thermal.T_LIMIT - thermal.AMBIENT - thermal.COVER_DT) / thermal.dt_rated(k["K"])), max=v["max"])
     r["thermal"] = th
-    # tip (A10 cases, requested rules) + COM
+    # tip (A10 cases, requested rules) + COM. twin.Reacher.solve keeps one RNG as a default argument, so its IK depends on
+    # every solve before it in the process: reset it here and before the basket, as a fresh `python -m rnd.tip` / `rnd.basket` starts
+    _fresh_ik()
     rules = tip.sw_rules()
     body = tip.Body(d)
     P = tip.poses(d, rules.box)
@@ -453,6 +461,7 @@ def checks(d, quick=False):
     # basket (R2d) unless quick
     if not quick:
         dd = dataclasses.replace(d, arm=dataclasses.replace(d.arm, payload=basket.PER_HAND))
+        _fresh_ik()
         brows, _ = basket.run(dd)
         ok = [x for x in brows if x["x"] <= 0.45 and "washer" not in x["pose"] and "0.80" not in x["pose"]]
         r["basket"] = dict(worst=min((x["worst"] for x in ok if x["t"] is not None), default=0.0),
@@ -500,6 +509,11 @@ def _fmt_t(t):
     return "unlimited" if math.isinf(t) else f"{t / 60:.0f} min"
 
 
+def _sd(x):
+    """Signed dollars: +$57 / −$12."""
+    return f"{'+' if x >= 0 else '−'}${abs(x):,.0f}"
+
+
 def report(res, keys):
     from .bom import CONTINGENCY
     b0 = res["B0"]
@@ -510,14 +524,14 @@ def report(res, keys):
     row = lambda lab, f: L.append(f"| {lab} | " + " | ".join(f(res[k], k) for k in keys) + " |")
     row("Pitch / roll / yaw / elbow (actuator × belt)", lambda r, k: ", ".join(f"{n.replace('-2EC', '').replace('_V1.1', '')}{'' if x == 1 else f' ×{x:g}'}" for n, x in r["joints"].values()))
     row("**Arm drives per arm** (4 big joints: actuators + drive parts + joint encoders + thermal caps, $)", lambda r, k: f"**{r['cost']['arm']:,.0f}** ({r['cost']['actuators']:,.0f} + {r['cost']['drive_parts']:,.0f}); dearest listing {r['cost']['arm_hi']:,.0f}")
-    row("**Robot, both arms, landed (+15 %)**, Δ vs B0", lambda r, k: f"**{r['cost']['robot_landed']:,.0f}** ({r['cost']['robot_landed'] - b0['cost']['robot_landed']:+,.0f})")
+    row("**Robot, both arms, landed (+15 %)**, Δ vs B0", lambda r, k: f"**{r['cost']['robot_landed']:,.0f}** ({_sd(r['cost']['robot_landed'] - b0['cost']['robot_landed'])})")
     row(f"Robot BOM landed if applied to today's ${bom_total:,.0f} (bom.json, pre-W12)", lambda r, k: f"{bom_total + r['cost']['robot_landed'] - b0['cost']['robot_landed']:,.0f}")
     row("One arm, detachable piece (kg)", lambda r, k: f"{r['arm_kg']:.2f}")
     row("Elbow actuator (kg) / mass outboard of the elbow axis (kg)", lambda r, k: f"{r['elbow_node_kg']:.2f} / {r['outboard_elbow_kg']:.2f}")
     row("Arm gravity moment straight out, no balancer (N·m)", lambda r, k: f"{r['arm_moment_nm']:.1f}")
     row("Torso side per arm: pitch module + pitch actuator (kg)", lambda r, k: f"{r['pitch_side_kg']:.2f}")
     row("Robot mass (kg) / COM height parked, arms straight (m)", lambda r, k: f"{r['com']['M']:.1f} / {r['com']['h_parked']:.3f}, {r['com']['h_straight']:.3f}")
-    row("**Tip A10** (16 cases, requested rules): worst reserve, cases ≥ 30 mm", lambda r, k: f"**{r['tip']['worst'] * 1000:.0f} mm, {r['tip']['n_ok']}/16** {'✅' if r['tip']['n_ok'] == 16 else '❌'}")
+    row("**Tip A10** (16 cases, requested rules): worst reserve, cases ≥ 30 mm", lambda r, k: f"**{r['tip']['worst'] * 1000:.1f} mm, {r['tip']['n_ok']}/16** {'✅' if r['tip']['n_ok'] == 16 else '❌'}")
     row("Push that tips it, arms parked, 1 m up (N)", lambda r, k: f"{r['push_tip_n']:.0f}")
     row("**20 lb hug** (B, load 0.2 m out): rated × pitch / elbow", lambda r, k: f"**{r['hug']['pitch']:.2f} / {r['hug']['elbow']:.2f}** {'✅' if r['hug']['worst'] >= 1.5 else '❌'}")
     row("**Laundry basket** R2d: worst duty margin (≥ 1 passes) / max 2-min rise", lambda r, k: (f"**{r['basket']['worst']:.2f}** {'✅' if r['basket']['worst'] >= 1 else '❌'} / {r['basket']['rise_max']:.1f} K" if "basket" in r else "not run (--quick)"))
@@ -640,14 +654,14 @@ def recommendation(res, keys):
           f"{i2a['backdrive']['elbow']['J']:.3f} → {i2b['backdrive']['elbow']['J']:.3f} kg·m², back-drive {i2a['backdrive']['elbow']['F']:.1f} → "
           f"{i2b['backdrive']['elbow']['F']:.1f} N at the hand, an output encoder built in, {i2a['elbow_node_kg'] - i2b['elbow_node_kg']:.2f} kg lighter; "
           f"the hug elbow margin {i2a['hug']['elbow']:.2f} → {i2b['hug']['elbow']:.2f}× rated (still ≥ 1.5) for "
-          f"{d(i2b, i2a):+,.0f} landed on the robot.",
+          f"{_sd(d(i2b, i2a))} landed on the robot.",
           f"- **All-inline works on every load check** that today's default fails: the 20 lb hug {b0['hug']['worst']:.2f}× → "
           f"{i1['hug']['worst']:.2f} / {i2a['hug']['worst']:.2f} / {i2b['hug']['worst']:.2f}× (B1/D20 {b1['hug']['worst']:.2f}×)"
           + (f", the basket {b0['basket']['worst']:.2f} → {i1['basket']['worst']:.2f} / {i2a['basket']['worst']:.2f} / {i2b['basket']['worst']:.2f}" if "basket" in b0 else "")
-          + f"; tip A10 {b0['tip']['n_ok']}/16 (worst {b0['tip']['worst'] * 1000:.0f} mm) → {i1['tip']['n_ok']}/16 ({i1['tip']['worst'] * 1000:.0f}), "
-          f"{i2a['tip']['n_ok']}/16 ({i2a['tip']['worst'] * 1000:.0f}), {i2b['tip']['n_ok']}/16 ({i2b['tip']['worst'] * 1000:.0f}).",
-          f"- **Cost:** robot landed, both arms' big-joint drives: B0 ${b0['cost']['robot_landed']:,.0f}, B1 {d(b1, b0):+,.0f}, I1 {d(i1, b0):+,.0f}, "
-          f"I2a {d(i2a, b0):+,.0f}, I2b {d(i2b, b0):+,.0f}. Against the D20 path the owner already needs for R2c/R2d: I1 {d(i1, b1):+,.0f}, I2b {d(i2b, b1):+,.0f}.",
+          + f"; tip A10 {b0['tip']['n_ok']}/16 (worst {b0['tip']['worst'] * 1000:.1f} mm) → {i1['tip']['n_ok']}/16 ({i1['tip']['worst'] * 1000:.1f}), "
+          f"{i2a['tip']['n_ok']}/16 ({i2a['tip']['worst'] * 1000:.1f}), {i2b['tip']['n_ok']}/16 ({i2b['tip']['worst'] * 1000:.1f}).",
+          f"- **Cost:** robot landed, both arms' big-joint drives: B0 ${b0['cost']['robot_landed']:,.0f}, B1 {_sd(d(b1, b0))}, I1 {_sd(d(i1, b0))}, "
+          f"I2a {_sd(d(i2a, b0))}, I2b {_sd(d(i2b, b0))}. Against the D20 path the owner already needs for R2c/R2d: I1 {_sd(d(i1, b1))}, I2b {_sd(d(i2b, b1))}.",
           f"- **Mass:** arm piece {b0['arm_kg']:.2f} (B0) / {b1['arm_kg']:.2f} (B1) → {i1['arm_kg']:.2f} / {i2a['arm_kg']:.2f} / {i2b['arm_kg']:.2f} kg; "
           f"the elbow actuator {b0['elbow_node_kg']:.2f} → {i1['elbow_node_kg']:.2f} / {i2b['elbow_node_kg']:.2f} kg sits on the elbow axis instead of 70 mm above it.",
           f"- **Hand-feel and impact:** back-drive at the hand stays a few newtons everywhere (it is gravity you feel when you push an unpowered arm); "
@@ -658,16 +672,24 @@ def recommendation(res, keys):
           f"- **Accuracy:** without extra encoders {b0['acc']['rss']:.1f} mm (B0) → {i1['acc']['rss']:.1f} (I1) / {i2b['acc']['rss']:.1f} (I2b); with joint-side "
           f"encoders {b0['acc_enc']['rss']:.1f} → {i1['acc_enc']['rss']:.1f} / {i2b['acc_enc']['rss']:.1f} mm. The dual-encoder Damiao joints get there with no extra parts.",
           f"- **Simplicity:** drive pieces per arm {b0['simple']['parts']} → {i1['simple']['parts']} / {i2b['simple']['parts']}; fasteners "
-          f"{b0['simple']['fasteners']} → {i1['simple']['fasteners']} / {i2b['simple']['fasteners']} (inline joints bolt with more, larger screws); arm build "
+          f"{b0['simple']['fasteners']} → {i1['simple']['fasteners']} / {i2b['simple']['fasteners']} (fewer, larger screws: 8 × M4 motor + 3 × M4 and dowels at the boss + 8 × M5 into the link per heavy joint); arm build "
           f"{b0['simple']['arm_hours']:.1f} → {i1['simple']['arm_hours']:.1f} / {i2b['simple']['arm_hours']:.1f} h; no belt to tension or measure (D26's 0–165 N "
           "fixed-centre preload spread goes away).",
           "",
           f"**Recommendation: go all-inline as I2b** (GIM8108-36 at pitch and roll, dual-encoder DM-J4340-2EC at yaw, dual-encoder DM-J8009-2EC at the elbow), "
-          "as the R2c/R2d motor path instead of D20, **gated on the bench** (below). It passes the hug and the basket with margin, keeps the tip gate, "
-          "removes every belt stage on the arm, slims the yaw block and gives output-side encoders at yaw and elbow for free. "
-          "If the J8009's $470 or its lead time is a problem, I2a (GIM8108-36 elbow) is the cheaper fallback with a stiffer elbow by hand. "
+          "as the R2c/R2d motor path instead of D20, **gated on the bench** (below), **if the owner accepts the cost: it does not save money** "
+          f"({_sd(d(i2b, b1))} landed against D20, {_sd(d(i2b, b0))} against today; the belt-stage parts it removes are ≈ $60–70 a joint, the 36:1 and "
+          "dual-encoder actuators cost $150–380 more than a GIM6010-8). It passes the hug and the basket with margin, keeps the tip gate "
+          f"(by {(i2b['tip']['worst'] - 0.030) * 1000:.0f} mm: the 1 kg pitch / elbow actuators move the COM forward, and I1 / I2a miss one or two "
+          "cases), removes every belt stage on the arm (no tensioning, no fixed-centre preload spread), slims the yaw block and gives output-side "
+          "encoders at yaw and elbow without extra parts. "
+          f"If the J8009's $470 or its lead time is a problem, I2a (GIM8108-36 elbow, {_sd(d(i2a, b1))} against D20) is the cheaper fallback, with a "
+          "stiffer elbow by hand and a tip case to recover (≈ 0.5 mm short: ballast or a planner rule). "
           "I1's GIM6010-48 yaw is the weakest choice: 48:1 two-stage (most reflected inertia at the hand of any yaw option), 20 rpm rated, no output encoder, "
           "conflicting torque listings. Keep B1 (D20) buildable as the fallback if the bench back-drive or backlash numbers come in bad.",
+          "- **Cheaper inline motors?** Not found: the GIM6010-36 (18 N·m rated, ≈ 0.57 kg) lists at $180–217 (2026-11-28 snippets), within $60 of the "
+          "GIM8108-36, so the inline cost is the price of 36:1 actuators, not of the frame size. Its listing offers a 'secondary encoder' option: a "
+          "dual-encoder GIM8108-36 would give I1/I2 pitch the output encoder too (seller question).",
           "", "**Not covered (no inline CAD):** the inline pitch motor inside the torso next to the balancer (cord, die spring, crank: must be "
           "re-routed, the biggest packaging risk), the elbow fold clearance with a Ø105 knee, the stiffness / FEA of the new load paths (the owner "
           "is not holding us to the rigidity adders, but the hand-deflection gate R2b still applies), the R17 pinch sweep, and the 24 V speed of the "
@@ -713,13 +735,13 @@ def brief(res, keys):
          row("Arm piece (kg)", lambda r: f"{r['arm_kg']:.2f}"),
          row("20 lb hug, rated × (≥ 1.5)", lambda r: f"{r['hug']['worst']:.2f}"),
          row("Basket duty margin (≥ 1)", lambda r: f"{r['basket']['worst']:.2f}" if "basket" in r else "—"),
-         row("Tip worst reserve / cases ≥ 30 mm", lambda r: f"{r['tip']['worst'] * 1000:.0f} mm, {r['tip']['n_ok']}/16"),
+         row("Tip worst reserve / cases ≥ 30 mm", lambda r: f"{r['tip']['worst'] * 1000:.1f} mm, {r['tip']['n_ok']}/16"),
          row("Back-drive at the hand, N (pitch/roll/yaw/elbow; ESTIMATE)", lambda r: "/".join(f"{r['backdrive'][j]['F']:.1f}" for j in BIG)),
          row("Hand effective mass, reach pose (kg)", lambda r: f"{r['meff'][pk]['with reflected rotor inertia']['worst']:.2f}"),
          row("Hand error, no extra encoders / with (mm)", lambda r: f"{r['acc']['rss']:.1f} / {r['acc_enc']['rss']:.1f}"),
          row("Drive pieces / fasteners per arm", lambda r: f"{r['simple']['parts']} / {r['simple']['fasteners']}"), "",
          f"**Our reading.** All-inline passes every load check today's default fails and removes all belt stages; it costs "
-         f"{i2b['cost']['robot_landed'] - b1['cost']['robot_landed']:+,.0f} landed against the D20 plan (I2b) and adds rotor inertia at the hand "
+         f"{_sd(i2b['cost']['robot_landed'] - b1['cost']['robot_landed'])} landed against the D20 plan (I2b) and adds rotor inertia at the hand "
          f"({b0['meff'][pk]['with reflected rotor inertia']['worst']:.2f} → {i2b['meff'][pk]['with reflected rotor inertia']['worst']:.2f} kg). "
          "We propose I2b, gated on bench back-drive / backlash / rotor-inertia measurements. Back-drive and inertia figures are first-order "
          "ESTIMATES (J_rotor·N², η_b = 2 − 1/η_f, guessed drag); the inline pitch, yaw and elbow have no CAD yet.", "",

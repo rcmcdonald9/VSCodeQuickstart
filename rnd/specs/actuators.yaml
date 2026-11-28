@@ -17,6 +17,7 @@ GIM6010-8:
   stages: 1                  # single-stage planetary (8:1)
   backlash_arcmin: 12        # = rnd/accuracy.py GIM_BACKLASH 0.20° at the output (ESTIMATE)
   encoder: "single, motor side (14-bit)"
+  output_encoder: false     # output-side (after the reducer) absolute encoder in the actuator (rnd/inline_study.py)
   rotor_inertia_kgm2: 2.4e-5 # ESTIMATE: 60-class rotor, the AK80-9's 579 g·cm² scaled by (33/44)³ (rotor radius, ring mass ∝ r²)
   price_usd: [90, 94]      # loop 14 verified with driver: aifitlab $90 (GDS68), SteadyWin store $93.88; bare motor $70.35
   notes: >
@@ -41,6 +42,7 @@ GIM8108-8:
   stages: 1
   backlash_arcmin: 12        # ESTIMATE (as the GIM6010-8)
   encoder: "single, motor side (14-bit)"
+  output_encoder: false     # output-side (after the reducer) absolute encoder in the actuator (rnd/inline_study.py)
   rotor_inertia_kgm2: 6.0e-5 # ESTIMATE (as the GIM8108-36: same motor)
   price_usd: [85, 110]       # $85 without driver (backordered at one seller); driver version ESTIMATE
   notes: "Reseller data only, no official datasheet found (2026-11-27). Voltage ranges conflict between listings."
@@ -69,7 +71,8 @@ GIM8108-36:
   # inline-arm study (2026-11-28, rnd/inline_study.py): fields for the back-drive, collision and accuracy rows
   stages: 2                  # two-stage planetary (36:1)
   backlash_arcmin: 15        # reseller spec tables (openelab / rcdrone, 2026-11-27 snapshots; rnd/accuracy.py); ESTIMATE until benched
-  encoder: "single, motor side (14-bit); output angle = motor angle / 36, so the reducer backlash is outside the loop"
+  encoder: "single, motor side (14-bit); output angle = motor angle / 36, so the reducer backlash is outside the loop. A GIM6010-36 listing (aifitlab, 2026-11-28 snippet) prices a version 'without driver and secondary encoder': ask the seller for a dual-encoder (output-side) GIM8108-36"
+  output_encoder: false     # output-side (after the reducer) absolute encoder in the actuator (rnd/inline_study.py)
   rotor_inertia_kgm2: 6.0e-5 # ESTIMATE: 80-class outrunner rotor, scaled from the CubeMars AK80-9 listing (579 g·cm², aifitlab spec table via search snippet 2026-11-28)
   sources:
     - https://aifitlab.com/products/steadywin-gim8108-36-planetary-reducer-servo-motor
@@ -92,6 +95,7 @@ DM-J4310-2EC_V1.1:
   current_a: {nominal: 2.5, peak: 7.5}
   stages: 1
   backlash_arcmin: 12        # ESTIMATE
+  output_encoder: true       # dual encoder, output-absolute (interface line above)
   rotor_inertia_kgm2: 6.0e-6 # ESTIMATE (43-class rotor, shorter stack than the J4340)
   price_usd: [125, 179]
   notes: "V1.2 torque figures conflict between sellers (3.5/12.5 N·m likely = J4310P). Use V1.1 numbers."
@@ -118,6 +122,7 @@ GIM6010-48:
   length_mm: 67.5            # 56.5 without the driver (Robotics Center)
   backlash_arcmin: 15        # rcdrone listing ("15 arcmin")
   encoder: "single, motor side (14-bit; one variant column lists 16-bit); no output encoder listed"
+  output_encoder: false     # output-side (after the reducer) absolute encoder in the actuator (rnd/inline_study.py)
   rotor_inertia_kgm2: 2.4e-5 # ESTIMATE: as the GIM6010-8 (same motor)
   price_usd: [135, 156]      # aifitlab $135 (backordered), $156 regular (sold out) (2026-11-28 search snippets; pages not reachable from this session)
   notes: "Reseller data only; driver pairing (SDC104 / SDC215 / GDS68) and speed conflict between listings. Mounting pattern not found."
@@ -142,6 +147,7 @@ DM-J4340-2EC:
   current_a: {peak: 8}
   backlash_arcmin: 15        # ESTIMATE: not published; two-stage planetaries of this class are 10–20 arcmin (rnd/accuracy.py note)
   encoder: "dual 14-bit single-turn magnetic: motor side + output side (absolute output position)"
+  output_encoder: true     # output-side (after the reducer) absolute encoder in the actuator (rnd/inline_study.py)
   rotor_inertia_kgm2: 8.0e-6 # ESTIMATE: 43-class rotor (AK80-9 579 g·cm² × (21/44)³ ≈ 6.3e-6, + a longer stack)
   price_usd: [155, 215]      # rcdrone $154.99 (sold out), aifitlab $155 (backordered), Robotics Center $215 (24 V) (2026-11-28 search snippets)
   sources:
@@ -164,6 +170,7 @@ DM-J8009-2EC:
   dimensions_mm: {width: 98, depth: 98, height: 61.7}   # Damiao manual (aifitlab wiki)
   backlash_arcmin: 10        # ESTIMATE: single stage, not published
   encoder: "dual: motor side + output side (2EC)"
+  output_encoder: true     # output-side (after the reducer) absolute encoder in the actuator (rnd/inline_study.py)
   rotor_inertia_kgm2: 6.5e-5 # ESTIMATE: 80-class rotor as the GIM8108
   price_usd: [385, 480]      # aifitlab $470 (backordered); P variant $394.99 (rcdrone, sold out) – $480 (2026-11-28 search snippets)
   sources:
