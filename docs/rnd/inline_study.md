@@ -9,6 +9,8 @@ unchanged):
 - **I1 all-inline SteadyWin** (`inline`): GIM8108-36 at pitch, roll, elbow; GIM6010-48 at yaw.
 - **I2a all-inline mixed** (`inline_dm`): GIM8108-36 at pitch, roll, elbow; dual-encoder DM-J4340-2EC at yaw.
 - **I2b all-inline mixed** (`inline_dm8009`): as I2a with a dual-encoder DM-J8009-2EC (9:1 single stage) at the elbow.
+- **B1y D20 + inline yaw** (`d20_yaw`, Astra review #3's recommended next study): B1 with only the upper-arm yaw changed to a
+  coaxial dual-encoder DM-J4340-2EC (the yaw belt stage, stub, pulley, 6001, belt, cap and AS5048A removed).
 
 Method. The torque, tip, basket, hug, thermal and accuracy rows re-run the existing models (rnd/spring.py, payload_study.py,
 basket.py, tip.py, thermal.py network, accuracy.py constants) on each variant's params. There is **no inline CAD** for
@@ -20,54 +22,81 @@ the collision numbers use a first-order model with cited scaling (reflected iner
 efficiency of a planetary η_b ≈ 2 − 1/η_f) and ESTIMATE rotor inertias / drag torques: **they are what the bench must
 measure first**.
 
+**Revision after Astra review #3 (2026-11-28, Part A).** (a) The 20 lb hug is judged at the R2c spec point, 0.25 m from the
+elbow (0.20 / 0.30 m shown as brackets; the first version promoted 0.20 m to the summary). (b) Actuator masses sit on the
+bodies that carry them, with their own COMs and cylinder inertias (study_xml: a belt-driven elbow motor on the upper arm
+at its belt centre above the elbow axis; an inline actuator's housing, stator and rotor on the upstream body and its
+output carrier on the downstream body; the belt yaw cartridge on the roll output 81 mm behind the yaw axis): the twin-based
+rows (tip, basket, workspace torques, effective mass, gravity moment) run on that model. (c) Back-drive is compared as
+whole-joint ratio N and reflected rotor inertia J_r·N²; the efficiency-based drag is not a breakaway-friction law and
+carries an explicit 4× band. (d) Collision: directional effective mass m(n) = 1 / (nᵀ J M⁻¹ Jᵀ n) over contact normals,
+poses, the hand and the elbow, empty hand and 1 kg, against the R17 bound m_max = (F_max / v)² / k = 1.05 kg (140 N,
+0.5 m/s, 75 N/mm), and the hand speed v = F_max / √(k·m) that meets it.
+
 ## Summary
 
-| | B0 today (GIM6010 belts + inline roll) | B1 today + D20 (GIM8108-8 belts at pitch + elbow) | I1 all-inline SteadyWin (8108-36 ×3, 6010-48 yaw) | I2a all-inline mixed (DM-J4340 yaw, 8108-36 elbow) | I2b all-inline mixed (DM-J4340 yaw, DM-J8009 elbow) |
-|---|---|---|---|---|---|
-| Pitch / roll / yaw / elbow (actuator × belt) | GIM6010-8 ×3, GIM8108-36, GIM6010-8 ×2, GIM6010-8 ×2 | GIM8108-8 ×3, GIM8108-36, GIM6010-8 ×2, GIM8108-8 ×3 | GIM8108-36, GIM8108-36, GIM6010-48, GIM8108-36 | GIM8108-36, GIM8108-36, DM-J4340, GIM8108-36 | GIM8108-36, GIM8108-36, DM-J4340, DM-J8009 |
-| **Arm drives per arm** (4 big joints: actuators + drive parts + joint encoders + thermal caps, $) | **805** (510 + 295); dearest listing 884 | **885** (560 + 325); dearest listing 1,154 | **1,121** (855 + 266); dearest listing 1,343 | **1,121** (875 + 246); dearest listing 1,382 | **1,331** (1,105 + 226); dearest listing 1,535 |
-| **Robot, both arms, landed (+15 %)**, Δ vs B0 | **1,852** (+$0) | **2,036** (+$184) | **2,578** (+$727) | **2,578** (+$727) | **3,061** (+$1,210) |
-| Robot BOM landed if applied to today's $7,505 (bom.json, pre-W12) | 7,505 | 7,689 | 8,231 | 8,231 | 8,714 |
-| One arm, detachable piece (kg) | 4.80 | 4.83 | 5.19 | 4.75 | 4.64 |
-| Elbow actuator (kg) / mass outboard of the elbow axis (kg) | 0.39 / 1.41 | 0.40 / 1.42 | 1.00 / 2.02 | 1.00 / 2.02 | 0.90 / 1.92 |
-| Arm gravity moment straight out, no balancer (N·m) | 9.4 | 9.5 | 10.9 | 10.6 | 10.3 |
-| Torso side per arm: pitch module + pitch actuator (kg) | 1.32 | 1.35 | 1.80 | 1.80 | 1.80 |
-| Robot mass (kg) / COM height parked, arms straight (m) | 31.5 / 0.389, 0.423 | 31.6 / 0.390, 0.424 | 32.4 / 0.388, 0.431 | 31.5 / 0.383, 0.423 | 31.3 / 0.383, 0.421 |
-| **Tip A10** (16 cases, requested rules): worst reserve, cases ≥ 30 mm | **34.8 mm, 16/16** ✅ | **34.7 mm, 16/16** ✅ | **28.3 mm, 14/16** ❌ | **29.6 mm, 15/16** ❌ | **30.7 mm, 16/16** ✅ |
-| Push that tips it, arms parked, 1 m up (N) | 53 | 54 | 54 | 53 | 53 |
-| **20 lb hug** (B, load 0.2 m out): rated × pitch / elbow | **1.22 / 0.82** ❌ | **1.84 / 1.84** ✅ | **3.02 / 3.02** ✅ | **3.02 / 3.02** ✅ | **3.02 / 1.72** ✅ |
-| **Laundry basket** R2d: worst duty margin (≥ 1 passes) / max 2-min rise | **0.65** ❌ / 22.9 K | **1.47** ✅ / 10.2 K | **2.39** ✅ / 4.1 K | **2.43** ✅ / 4.0 K | **1.56** ✅ / 4.5 K |
-| Workspace margin rated / p95 (pitch, roll, yaw, elbow, wrist) | 1.62, 2.68, 1.82, 1.55, 1.70 | 2.42, 2.67, 1.82, 3.49, 1.70 | 3.55, 2.43, 5.73, 5.74, 1.70 | 3.71, 2.53, 1.72, 5.74, 1.70 | 3.81, 2.58, 1.72, 3.27, 1.70 |
-| Joint speed at rated (rpm): pitch / roll / yaw / elbow | 40 / 48 / 60 / 60 | 20 / 48 / 60 / 20 | 48 / 48 / 20 / 48 | 48 / 48 / 36 / 48 | 48 / 48 / 36 / 100 |
-| **Back-drive force at the hand** (N, mid ESTIMATE; ×0.5–2): pitch / roll / yaw / elbow | **1.1 / 1.6 / 1.0 / 1.0** | **1.3 / 1.6 / 1.0 / 1.8** | **1.6 / 1.6 / 2.0 / 2.2** | **1.6 / 1.6 / 1.4 / 2.2** | **1.6 / 1.6 / 1.4 / 0.6** |
-| Reflected rotor inertia (kg·m²): pitch / roll / yaw / elbow | 0.014 / 0.078 / 0.006 / 0.006 | 0.035 / 0.078 / 0.006 / 0.035 | 0.078 / 0.078 / 0.055 / 0.078 | 0.078 / 0.078 / 0.013 / 0.078 | 0.078 / 0.078 / 0.013 / 0.005 |
-| **Hand effective mass**, worst direction, reach (pitch −60°, elbow −60°) (kg): links only → with rotors | 2.25 → **2.40** | 2.26 → **2.61** | 2.47 → **2.96** | 2.43 → **2.92** | 2.39 → **2.76** |
-| Impact at 0.5 m/s on the chest (k 25 N/mm): peak force (N), rise time (ms) | 122 N, 15 ms | 128 N, 16 ms | 136 N, 17 ms | 135 N, 17 ms | 131 N, 16 ms |
-| **Hand accuracy** (joint RSS, mm): no extra encoders / with joint-side encoders | **4.3 / 0.9** | **4.1 / 0.9** | **4.6 / 0.9** | **4.2 / 0.9** | **3.7 / 0.9** |
-| Elbow envelope (mm) | 98 × 108 × 168 (fore-aft × along axis × height; arm.HOUSING, FROM CAD): motor 70 mm above the axis | 109 × 108 × 196 (arm.HOUSING D20, FROM CAD) | Ø105 × 108 (Ø96 × 57 GIM8108-36 + 4.6 mm wall; along-axis span set by the forearm link plane), ≈ 125 tall with the neck socket | Ø105 × 108, ≈ 125 tall (as I1) | Ø107 × 108 (Ø98 × 61.7 DM-J8009, Damiao manual), ≈ 128 tall |
-| Yaw envelope (mm) | 175 × 92 plan (yaw axis → the off-axis GIM6010 cartridge at x −81 + can r 43; roll.py FROM CAD), drop 99 mm | as B0 | Ø92 plan (Ø80 GIM6010-48 + wall + cover), 67.5 mm tall coaxial under the roll motor: drop 99 → 124 mm | Ø92 plan (the plates ±46 stay; Ø57 DM-J4340), ≈ 56 mm tall: drop 99 → 114 mm | as I2a |
-| R5 door stow W(45° ± 2°), today's pose with the hull swap (mm; ≤ 570) | 567 (today's CAD) | 567 (today's CAD) | 567 | 567 | 567 |
-| Drive part count per arm (pitch, yaw, elbow: pieces / fasteners) | 50 / 108 | 50 / 108 | 20 / 67 | 17 / 65 | 14 / 63 |
-| Build per arm (h, build_guide model) / print saved per arm (g, P2S h) | 6.1 / 0 g, 0.0 h | 6.1 / 0 g, 0.0 h | 5.8 / 658 g, 16.5 h | 5.7 / 658 g, 16.5 h | 5.5 / 658 g, 16.5 h |
+| | B0 today (GIM6010 belts + inline roll) | B1 today + D20 (GIM8108-8 belts at pitch + elbow) | B1y D20 + inline DM-J4340-2EC yaw | I1 all-inline SteadyWin (8108-36 ×3, 6010-48 yaw) | I2a all-inline mixed (DM-J4340 yaw, 8108-36 elbow) | I2b all-inline mixed (DM-J4340 yaw, DM-J8009 elbow) |
+|---|---|---|---|---|---|---|
+| Pitch / roll / yaw / elbow (actuator × belt) | GIM6010-8 ×3, GIM8108-36, GIM6010-8 ×2, GIM6010-8 ×2 | GIM8108-8 ×3, GIM8108-36, GIM6010-8 ×2, GIM8108-8 ×3 | GIM8108-8 ×3, GIM8108-36, DM-J4340, GIM8108-8 ×3 | GIM8108-36, GIM8108-36, GIM6010-48, GIM8108-36 | GIM8108-36, GIM8108-36, DM-J4340, GIM8108-36 | GIM8108-36, GIM8108-36, DM-J4340, DM-J8009 |
+| **Arm drives per arm** (4 big joints: actuators + drive parts + joint encoders + thermal caps / rings, $) | **805** (510 + 295); dearest listing 884 | **885** (560 + 325); dearest listing 1,154 | **928** (625 + 304); dearest listing 1,253 | **1,140** (855 + 285); dearest listing 1,362 | **1,140** (875 + 265); dearest listing 1,401 | **1,350** (1,105 + 245); dearest listing 1,554 |
+| **Robot, both arms, landed (+15 %)**: Δ vs B0 / Δ vs B1 | **1,852** (+$0 / −$184) | **2,036** (+$184 / +$0) | **2,136** (+$284 / +$100) | **2,621** (+$769 / +$585) | **2,621** (+$769 / +$585) | **3,104** (+$1,252 / +$1,068) |
+| Increment applied to the scorecard's $5,845 (illustration, as Astra #3) | 5,845 | 6,029 | 6,129 | 6,614 | 6,614 | 7,097 |
+| One arm, detachable piece (kg) | 4.80 | 4.84 | 4.52 | 5.19 | 4.75 | 4.64 |
+| Elbow actuator (kg): on the upper arm / on the forearm (where) | 0.39: 0.39 / 0.00 (71 mm up the upper arm) | 0.40: 0.40 / 0.00 (84 mm up the upper arm) | 0.40: 0.40 / 0.00 (84 mm up the upper arm) | 1.00: 0.80 / 0.20 (on the elbow axis) | 1.00: 0.80 / 0.20 (on the elbow axis) | 0.90: 0.72 / 0.18 (on the elbow axis) |
+| Mass outboard of the elbow axis (forearm side, kg) | 1.02 | 1.02 | 1.02 | 1.22 | 1.22 | 1.20 |
+| Arm gravity moment straight out, no balancer (N·m): study twin (point-mass first version) | 9.1 (9.4) | 9.1 (9.5) | 9.2 (9.3) | 11.1 (10.9) | 10.6 (10.6) | 10.2 (10.3) |
+| Torso side per arm: pitch module + pitch actuator (kg) | 1.32 | 1.35 | 1.35 | 1.80 | 1.80 | 1.80 |
+| Robot mass (kg) / COM height parked, arms straight (m) | 31.5 / 0.393, 0.420 | 31.6 / 0.394, 0.421 | 30.9 / 0.387, 0.417 | 32.3 / 0.389, 0.429 | 31.5 / 0.384, 0.422 | 31.3 / 0.384, 0.420 |
+| **Tip A10** (16 cases, requested rules): worst reserve, cases ≥ 30 mm | **37.7 mm, 16/16** ✅ | **37.8 mm, 16/16** ✅ | **35.9 mm, 16/16** ✅ | **29.3 mm, 15/16** ❌ | **30.0 mm, 15/16** ❌ | **31.1 mm, 16/16** ✅ |
+| Push that tips it, arms parked, 1 m up (N) | 54 | 55 | 53 | 55 | 54 | 53 |
+| **20 lb hug at the R2c spec 0.25 m**: rated × pitch / elbow (≥ 1.5) | **1.03 / 0.69** ❌ | **1.54 / 1.54** ✅ | **1.54 / 1.54** ✅ | **2.53 / 2.53** ✅ | **2.53 / 2.53** ✅ | **2.53 / 1.44** ❌ |
+| Hug brackets: worst rated × at 0.20 / 0.30 m | 0.82 / 0.59 | 1.84 / 1.33 | 1.84 / 1.33 | 3.02 / 2.18 | 3.02 / 2.18 | 1.72 / 1.24 |
+| **Laundry basket** R2d, equal shares: worst duty margin (≥ 1) / max 2-min rise | **0.71** ❌ / 21.3 K | **1.57** ✅ / 9.5 K | **1.54** ✅ / 9.8 K | **2.43** ✅ / 4.0 K | **2.46** ✅ / 3.9 K | **1.56** ✅ / 4.5 K |
+| Basket, heavier hand 60 % / 70 % (seating × 1.3 on the pick): worst margin, failing joints | 0.51 ❌ (pitch, elbow) / 0.39 ❌ (pitch, elbow) | 1.15 ✅ / 0.87 ❌ (pitch) | 1.12 ✅ / 0.85 ❌ (pitch) | 2.08 ✅ / 1.83 ✅ | 2.11 ✅ / 1.84 ✅ | 1.33 ✅ / 1.16 ✅ |
+| Workspace margin rated / p95 (pitch, roll, yaw, elbow, wrist) | 1.69, 2.79, 1.82, 1.55, 1.70 | 2.53, 2.78, 1.82, 3.49, 1.70 | 2.52, 2.77, 1.72, 3.49, 1.70 | 3.60, 2.47, 5.73, 5.74, 1.70 | 3.74, 2.54, 1.72, 5.74, 1.70 | 3.83, 2.59, 1.72, 3.27, 1.70 |
+| Joint speed at rated (rpm): pitch / roll / yaw / elbow | 40 / 48 / 60 / 60 | 20 / 48 / 60 / 20 | 20 / 48 / 36 / 20 | 48 / 48 / 20 / 48 | 48 / 48 / 36 / 48 | 48 / 48 / 36 / 100 |
+| **Whole-joint ratio N** (actuator × belt): pitch / roll / yaw / elbow | **24 / 36 / 16 / 16** | **24 / 36 / 16 / 24** | **24 / 36 / 40 / 24** | **36 / 36 / 48 / 36** | **36 / 36 / 40 / 36** | **36 / 36 / 40 / 9** |
+| **Reflected rotor inertia J_r·N²** (kg·m²; J_r ESTIMATE): pitch / roll / yaw / elbow | **0.014 / 0.078 / 0.006 / 0.006** | **0.035 / 0.078 / 0.006 / 0.035** | **0.035 / 0.078 / 0.013 / 0.035** | **0.078 / 0.078 / 0.055 / 0.078** | **0.078 / 0.078 / 0.013 / 0.078** | **0.078 / 0.078 / 0.013 / 0.005** |
+| Back-drive drag at the joint, efficiency model (N·m, mid; band ×0.5–2 = 4× wide, unverified): pitch / roll / yaw / elbow | 0.64 / 0.94 / 0.44 / 0.44 | 0.78 / 0.94 / 0.44 / 0.78 | 0.78 / 0.94 / 0.58 / 0.78 | 0.94 / 0.94 / 0.87 / 0.94 | 0.94 / 0.94 / 0.58 / 0.94 | 0.94 / 0.94 / 0.58 / 0.25 |
+| **Hand effective mass**, reach (pitch −60°, elbow −60°), wrist held, worst direction (kg): empty hand / 1 kg (R17 bound 1.05 kg) | **2.56 / 3.56** ❌ | **3.67 / 4.67** ❌ | **3.68 / 4.68** ❌ | **6.49 / 7.49** ❌ | **6.38 / 7.39** ❌ | **4.18 / 5.18** ❌ |
+| Hand speed that keeps 140 N on 75 N/mm, same pose (m/s): empty / 1 kg | 0.32 / 0.27 | 0.27 / 0.24 | 0.27 / 0.24 | 0.20 / 0.19 | 0.20 / 0.19 | 0.25 / 0.22 |
+| Share of contact normals within 1.05 kg, same pose, empty hand | 80 % | 74 % | 73 % | 56 % | 66 % | 76 % |
+| **Hand accuracy** (joint RSS, mm): no extra encoders, 2EC as reference only / 2EC closing an outer loop / joint-side encoders everywhere | **4.3 / 4.3 / 0.9** | **4.1 / 4.1 / 0.9** | **4.1 / 3.7 / 0.9** | **4.6 / 4.6 / 0.9** | **4.6 / 4.2 / 0.9** | **4.4 / 3.7 / 0.9** |
+| Worst 1 kg hold in the BOM mount, yaw: winding nominal (band hi), time to 100 °C | 65 °C (86), unlimited ✅ | 65 °C (86), unlimited ✅ | 119 °C (184), 15 min ❌; with the ring 67 °C (87) | 43 °C (53), unlimited ✅; with the ring 38 °C (45) | 119 °C (184), 15 min ❌; with the ring 67 °C (87) | 119 °C (184), 15 min ❌; with the ring 67 °C (87) |
+| Same, elbow | 65 °C (86), unlimited ✅ | 41 °C (50), unlimited ✅ | 41 °C (50), unlimited ✅ | 41 °C (50), unlimited ✅; with the ring 37 °C (43) | 41 °C (50), unlimited ✅; with the ring 37 °C (43) | 53 °C (70), unlimited ✅; with the ring 42 °C (51) |
+| Elbow envelope (mm) | 98 × 108 × 168 (fore-aft × along axis × height; arm.HOUSING, FROM CAD): motor 70 mm above the axis | 109 × 108 × 196 (arm.HOUSING D20, FROM CAD) | as B1 | Ø105 × 108 (Ø96 × 57 GIM8108-36 + 4.6 mm wall; along-axis span set by the forearm link plane), ≈ 125 tall with the neck socket | Ø105 × 108, ≈ 125 tall (as I1) | Ø107 × 108 (Ø98 × 61.7 DM-J8009, Damiao manual), ≈ 128 tall |
+| Yaw envelope (mm) | 175 × 92 plan (yaw axis → the off-axis GIM6010 cartridge at x −81 + can r 43; roll.py FROM CAD), drop 99 mm | as B0 | Ø92 plan (the plates ±46 stay; Ø57 × 56 DM-J4340 + wall + cover) coaxial under the roll motor: drop 99 → 114 mm (+15; Astra: +15–25 mm); the 175 mm fore-aft cartridge bay behind the yaw axis goes | Ø92 plan (Ø80 GIM6010-48 + wall + cover), 67.5 mm tall coaxial under the roll motor: drop 99 → 124 mm | Ø92 plan (the plates ±46 stay; Ø57 DM-J4340), ≈ 56 mm tall: drop 99 → 114 mm | as I2a |
+| R5 door stow W(45° ± 2°), today's pose with the hull swap (mm; ≤ 570) | 567 (today's CAD) | 567 (today's CAD) | 567 | 567 | 567 | 567 |
+| Drive part count per arm (pitch, yaw, elbow: pieces / fasteners) | 47 / 108 | 47 / 108 | 38 / 96 | 21 / 70 | 18 / 68 | 15 / 66 |
+| Build per arm (h, build_guide model) / print saved per arm (g ESTIMATE, P2S h) | 6.1 / 0 g, 0.0 h | 6.1 / 0 g, 0.0 h | 5.9 / 173 g, 4.0 h | 5.8 / 639 g, 16.0 h | 5.7 / 639 g, 16.0 h | 5.5 / 639 g, 16.0 h |
 
 ## Recommendation
 
-- **Elbow for I2: DM-J8009-2EC.** The DM-J8009 is 9:1 single-stage: elbow reflected inertia 0.078 → 0.005 kg·m², back-drive 2.2 → 0.6 N at the hand, an output encoder built in, 0.10 kg lighter; the hug elbow margin 3.02 → 1.72× rated (still ≥ 1.5) for +$483 landed on the robot.
-- **All-inline works on every load check** that today's default fails: the 20 lb hug 0.82× → 3.02 / 3.02 / 1.72× (B1/D20 1.84×), the basket 0.65 → 2.39 / 2.43 / 1.56; tip A10 16/16 (worst 34.8 mm) → 14/16 (28.3), 15/16 (29.6), 16/16 (30.7).
-- **Cost:** robot landed, both arms' big-joint drives: B0 $1,852, B1 +$184, I1 +$727, I2a +$727, I2b +$1,210. Against the D20 path the owner already needs for R2c/R2d: I1 +$543, I2b +$1,026.
-- **Mass:** arm piece 4.80 (B0) / 4.83 (B1) → 5.19 / 4.75 / 4.64 kg; the elbow actuator 0.39 → 1.00 / 0.90 kg sits on the elbow axis instead of 70 mm above it.
-- **Hand-feel and impact:** back-drive at the hand stays a few newtons everywhere (it is gravity you feel when you push an unpowered arm); the hand effective mass in the reach pose goes 2.40 → 2.96 (I1) / 2.76 kg (I2b): 36:1 and 48:1 two-stage reducers put more rotor inertia in the hand than the 16:1–24:1 belt joints. The 9:1 J8009 elbow and the light 43-class J4340 yaw rotor take most of that back.
-- **Accuracy:** without extra encoders 4.3 mm (B0) → 4.6 (I1) / 3.7 (I2b); with joint-side encoders 0.9 → 0.9 / 0.9 mm. The dual-encoder Damiao joints get there with no extra parts.
-- **Simplicity:** drive pieces per arm 50 → 20 / 14; fasteners 108 → 67 / 63 (fewer, larger screws: 8 × M4 motor + 3 × M4 and dowels at the boss + 8 × M5 into the link per heavy joint); arm build 6.1 → 5.8 / 5.5 h; no belt to tension or measure (D26's 0–165 N fixed-centre preload spread goes away).
+- **The 20 lb hug at the spec 0.25 m:** B0 0.69×, B1 1.54×, B1y 1.54×, I1 2.53×, I2a 2.53×, **I2b 1.44×** (its 20 N·m J8009 elbow: below the 1.5× rule; the first version's 1.72× was at 0.20 m). B1 and B1y share the hug (the forearm is the same) and pass it only just, with equal shares and before thermal derating.
+- **All-inline is not recommended** (Astra #3 Part A, and this rerun): I1 / I2a miss A10 (15/16, 15/16), I2b fails the hug at 0.25 m, and every all-inline variant costs +$585–+$1,068 landed over B1 for more reflected rotor inertia at the hand (reach pose, empty, wrist held: B1 3.67 kg → I1 6.49, I2b 4.18 kg). Keep the inline roll; D20 belts at pitch and elbow.
+- **B1y against B1.** Cost **+$100 landed** (+$57 before the thermal ring: Astra's ≈ +$57 holds). Arm piece 4.84 → 4.52 kg; tip 37.8 → 35.9 mm (16/16); basket equal 1.57 → 1.54, 70/30 0.87 → 0.85 (pitch limits both); hand effective mass 3.67 → 3.68 kg (v for 140 N 0.27 → 0.27 m/s); yaw J_r·N² 0.0061 → 0.0128 kg·m² (40:1 two-stage against 16:1); accuracy 4.1 → 4.1 mm with the 2EC as reference only, → 3.7 mm if it can close an outer loop (B1 needs the AS5048A it already has for 0.9); R1 coverage change +0 points at worst (kinematics identical, FK diff 0.000 mm); yaw block 175 × 92 → Ø92 plan with +15 mm drop; drive pieces 47 → 38, one belt stage and its tension check fewer (D26's 0–156 N yaw spread gone). **Thermal is the catch:** the bare J4340 under the cover holds the worst 1 kg yaw pose at 119 °C nominal (184 band hi; continuous 6.1–4.7 N·m against 6.9) and reaches 100 °C in 15 min, where B1's capped GIM6010 sits at 65 °C; with an aluminium finned ring through the cover 67 °C (87 band hi), which is why the ring is costed.
+- **Recommendation: B1 is the build path; B1y is the preferred refinement, adopted only on a returnable J4340 sample** that shows (1) delivered price with the 24 V driver, (2) output-bearing support for the yaw's moment, (3) dual-encoder operation (output angle over power cycles; whether an outer loop can close on it), (4) the yaw thermal in a mock cover with the ring (winding rise at rated ≤ the thermal.md section 3 'bench must show' figure), and (5) the +15 mm drop against the torso / harness in CAD. B1y earns its place on packaging (the 175 mm cartridge bay and the yaw belt's fixed-centre tension spread go) and an absolute yaw output angle, not on load, tip or impact, where it is equal or marginally worse. If the sample fails any of these, B1 stays as is: no decision on the yaw blocks the D20 Step-1 test. If the D20 24 V test fails, reopen payload / gearing / budget; do not revert to B0 and keep a 20 lb rating.
 
-**Recommendation: go all-inline as I2b** (GIM8108-36 at pitch and roll, dual-encoder DM-J4340-2EC at yaw, dual-encoder DM-J8009-2EC at the elbow), as the R2c/R2d motor path instead of D20, **gated on the bench** (below), **if the owner accepts the cost: it does not save money** (+$1,026 landed against D20, +$1,210 against today; the belt-stage parts it removes are ≈ $60–70 a joint, the 36:1 and dual-encoder actuators cost $150–380 more than a GIM6010-8). It passes the hug and the basket with margin, keeps the tip gate (by 1 mm: the 1 kg pitch / elbow actuators move the COM forward, and I1 / I2a miss one or two cases), removes every belt stage on the arm (no tensioning, no fixed-centre preload spread), slims the yaw block and gives output-side encoders at yaw and elbow without extra parts. If the J8009's $470 or its lead time is a problem, I2a (GIM8108-36 elbow, +$543 against D20) is the cheaper fallback, with a stiffer elbow by hand and a tip case to recover (≈ 0.5 mm short: ballast or a planner rule). I1's GIM6010-48 yaw is the weakest choice: 48:1 two-stage (most reflected inertia at the hand of any yaw option), 20 rpm rated, no output encoder, conflicting torque listings. Keep B1 (D20) buildable as the fallback if the bench back-drive or backlash numbers come in bad.
-- **Cheaper inline motors?** Not found: the GIM6010-36 (18 N·m rated, ≈ 0.57 kg) lists at $180–217 (2026-11-28 snippets), within $60 of the GIM8108-36, so the inline cost is the price of 36:1 actuators, not of the frame size. Its listing offers a 'secondary encoder' option: a dual-encoder GIM8108-36 would give I1/I2 pitch the output encoder too (seller question).
+**Not covered (no inline CAD):** the inline yaw's seat, output support and harness / clock-spring routing under the roll motor; the inline pitch motor next to the balancer (all-inline only: the biggest packaging risk); the elbow fold with a Ø105 knee; the stiffness / FEA of new load paths; the R17 pinch sweep; the 24 V speed of the Damiao parts under load.
 
-**Not covered (no inline CAD):** the inline pitch motor inside the torso next to the balancer (cord, die spring, crank: must be re-routed, the biggest packaging risk), the elbow fold clearance with a Ø105 knee, the stiffness / FEA of the new load paths (the owner is not holding us to the rigidity adders, but the hand-deflection gate R2b still applies), the R17 pinch sweep, and the 24 V speed of the Damiao parts under load.
+## 20 lb hug (R2c): the spec point is 0.25 m
+
+rnd/payload_study.py pose B (upper arm hanging, forearm horizontal, 4.54 kg per forearm at the distance shown from the elbow axis): the upper arm hangs, so only the forearm, hand and load make the pitch and elbow moments, and the result does not depend on which body carries the elbow actuator (both sit on the elbow axis or up the hanging upper arm). Equal shares; unequal shares are the basket section. Astra #3 checked I2b by hand: 20 / 1.72 = 11.63 N·m at 0.20 m, + 4.54 × 9.81 × 0.05 = 2.23 N·m → 1.44×; this run agrees.
+
+| Variant | Elbow demand at 0.25 m (N·m) | 0.20 m: pitch / elbow | **0.25 m: pitch / elbow** | 0.30 m: pitch / elbow |
+|---|---|---|---|---|
+| B0 | 13.87 | 1.22 / 0.82 | **1.03 / 0.69** ❌ | 0.89 / 0.59 |
+| B1 | 13.87 | 1.84 / 1.84 | **1.54 / 1.54** ✅ | 1.33 / 1.33 |
+| B1y | 13.87 | 1.84 / 1.84 | **1.54 / 1.54** ✅ | 1.33 / 1.33 |
+| I1 | 13.87 | 3.02 / 3.02 | **2.53 / 2.53** ✅ | 2.18 / 2.18 |
+| I2a | 13.87 | 3.02 / 3.02 | **2.53 / 2.53** ✅ | 2.18 / 2.18 |
+| I2b | 13.87 | 3.02 / 1.72 | **2.53 / 1.44** ❌ | 2.18 / 1.24 |
 
 ## Cost detail (per arm, the four big joints)
 
-Unit prices: rnd/m1_kit.py constants where they exist (GIM6010-8 $90, GIM8108-8 $115 ESTIMATE, GIM8108-36 $240 with the SDC303), the new actuators at the lowest US-seller listing found (actuators.yaml), belt-stage parts from m1_kit / bom lines or ESTIMATE as marked. Robot landed = 2 arms × (1 + 15 % contingency, rnd/bom.py).
+Unit prices: rnd/m1_kit.py constants where they exist (GIM6010-8 $90, GIM8108-8 $115 ESTIMATE, GIM8108-36 $240 with the SDC303), the new actuators at the lowest US-seller listing found (actuators.yaml), belt-stage parts from m1_kit / bom lines or ESTIMATE as marked. Robot landed = 2 arms × (1 + 15 % contingency, rnd/bom.py). A 15 % allowance is not a delivered quote (Astra #3): compare in-stock motors with the specified drivers, adapters, tax and freight on the same date.
+
+**B1y vs B1 at the yaw, per arm:** B1's GIM6010-8 + 2:1 belt stage (stub, pulley, 6001, belt, flange screws, Al cap + NTC, AS5048A) $155.20 → B1y's DM-J4340-2EC + Ø60 adapter $180.00 (+ the thermal ring $18.60) = $198.60. Robot landed: **+$57 without the ring (Astra's ≈ +$57), +$100 with it**; at the dearest J4340 listing ($215) +$847 against B1 at its lowest.
 
 **B0 today (GIM6010 belts + inline roll): $805 per arm** (dearest listings $884)
 
@@ -141,7 +170,37 @@ Unit prices: rnd/m1_kit.py constants where they exist (GIM6010-8 $90, GIM8108-8 
 | elbow | aluminium finned rear cap (closed-sleeve thermal fix) + NTC | 1 | 18.60 | m1_kit AL_CAP / HOLD_A |
 | elbow | AS5048A joint encoder + magnet on the shaft end | 1 | 12.00 | rnd/bom.py sensor pack v2 line |
 
-**I1 all-inline SteadyWin (8108-36 ×3, 6010-48 yaw): $1,121 per arm** (dearest listings $1,343)
+**B1y D20 + inline DM-J4340-2EC yaw: $928 per arm** (dearest listings $1,253)
+
+| Joint | Item | Qty | $ | Basis |
+|---|---|---|---|---|
+| shoulder_pitch | actuator GIM8108-8 | 1 | 115.00 | ESTIMATE: aifitlab $85 bare (no driver, backordered) + ≈ $25 driver (the GIM6010 gap $70 → $90); openelab.com $113.99–213.99 by variant |
+| shoulder_pitch | turned C45 drive stub (Ø12 h6 shaft, 8 × M3 flange) | 1 | 12.00 | ESTIMATE: JLCCNC-class turning ≥ $5 + bar (m1_kit SLEEVE basis) |
+| shoulder_pitch | 8 × DIN 7984 M3 × 6 stub screws + key | 1 | 1.80 | ESTIMATE (m1_kit M3X6_PACK / KEYS shares) |
+| shoulder_pitch | keyed 20T HTD 5M pulley steel C45 | 1 | 18.00 | m1_kit HOLD_A / KEYED_PULLEY |
+| shoulder_pitch | 6001-2RS + bushing adhesive share | 1 | 1.50 | ESTIMATE |
+| shoulder_pitch | HTD 5M 15 mm belt PU steel-cord | 1 | 15.00 | m1_kit HOLD_A / BELT |
+| shoulder_pitch | 4 flange-ear M4 screws + nuts + washers | 1 | 1.30 | ESTIMATE (bom flange-ear line ÷ 28) |
+| shoulder_pitch | aluminium finned rear cap (closed-sleeve thermal fix) + NTC | 1 | 18.60 | m1_kit AL_CAP / HOLD_A |
+| shoulder_pitch | slotted idler: 2 × 625-2RS, M5 axle + nut + spacers, M4 jack screw | 1 | 2.50 | ESTIMATE (bom 625ZZ $0.25) |
+| shoulder_pitch | AS5048A joint encoder + magnet on the shaft end | 1 | 12.00 | rnd/bom.py sensor pack v2 line |
+| shoulder_roll | actuator GIM8108-36 | 1 | 240.00 | SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots) |
+| shoulder_roll | inline roll hardware (adapter, 61806, clamp ring, dowels, W8c rear mount; same in every variant) | 1 | 77.00 | m1_kit HOLD_B (per arm, robot-wide consumables excluded) |
+| shoulder_roll | off-axis joint encoder (ring magnet round the motor) | 1 | 20.00 | ESTIMATE (the motor fills the axis; same in every variant) |
+| upper_yaw | actuator DM-J4340-2EC | 1 | 155.00 | aifitlab / rcdrone $155 (backordered / sold out); Robotics Center $215 (24 V), 2026-11-28 |
+| upper_yaw | 7075 output adapter Ø60 (CNC) + dowels + screws | 1 | 25.00 | ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B) |
+| upper_yaw | aluminium finned ring on the rear face through the cover + NTC (thermal: thermal.md section 3, the bare J4340 under the cover does not hold the worst 1 kg pose) | 1 | 18.60 | m1_kit AL_CAP + ESTIMATE $3 for the ring adapter |
+| elbow | actuator GIM8108-8 | 1 | 115.00 | ESTIMATE: aifitlab $85 bare (no driver, backordered) + ≈ $25 driver (the GIM6010 gap $70 → $90); openelab.com $113.99–213.99 by variant |
+| elbow | turned C45 drive stub (Ø12 h6 shaft, 8 × M3 flange) | 1 | 12.00 | ESTIMATE: JLCCNC-class turning ≥ $5 + bar (m1_kit SLEEVE basis) |
+| elbow | 8 × DIN 7984 M3 × 6 stub screws + key | 1 | 1.80 | ESTIMATE (m1_kit M3X6_PACK / KEYS shares) |
+| elbow | keyed 20T HTD 5M pulley steel C45 | 1 | 18.00 | m1_kit HOLD_A / KEYED_PULLEY |
+| elbow | 6001-2RS + bushing adhesive share | 1 | 1.50 | ESTIMATE |
+| elbow | HTD 5M 15 mm belt PU steel-cord | 1 | 15.00 | m1_kit HOLD_A / BELT |
+| elbow | 4 flange-ear M4 screws + nuts + washers | 1 | 1.30 | ESTIMATE (bom flange-ear line ÷ 28) |
+| elbow | aluminium finned rear cap (closed-sleeve thermal fix) + NTC | 1 | 18.60 | m1_kit AL_CAP / HOLD_A |
+| elbow | AS5048A joint encoder + magnet on the shaft end | 1 | 12.00 | rnd/bom.py sensor pack v2 line |
+
+**I1 all-inline SteadyWin (8108-36 ×3, 6010-48 yaw): $1,140 per arm** (dearest listings $1,362)
 
 | Joint | Item | Qty | $ | Basis |
 |---|---|---|---|---|
@@ -155,12 +214,13 @@ Unit prices: rnd/m1_kit.py constants where they exist (GIM6010-8 $90, GIM8108-8 
 | upper_yaw | actuator GIM6010-48 | 1 | 135.00 | aifitlab $135 (backordered; $156 regular elsewhere, sold out), 2026-11-28 search snippets |
 | upper_yaw | 7075 output adapter Ø60 (CNC) + dowels + screws | 1 | 25.00 | ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B) |
 | upper_yaw | off-axis joint encoder (ring magnet round the motor; the on-axis AS5048A has no axis to sit on) | 1 | 20.00 | ESTIMATE |
+| upper_yaw | aluminium finned ring on the rear face through the cover + NTC (thermal: thermal.md section 3, the bare J4340 under the cover does not hold the worst 1 kg pose) | 1 | 18.60 | m1_kit AL_CAP + ESTIMATE $3 for the ring adapter |
 | elbow | actuator GIM8108-36 | 1 | 240.00 | SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots) |
 | elbow | 7075 output adapter Ø76 (CNC) + dowels + screws | 1 | 39.00 | ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B) |
 | elbow | far-side support bearing | 1 | 3.00 | ESTIMATE (61806 class, as the roll) |
 | elbow | off-axis joint encoder (ring magnet round the motor; the on-axis AS5048A has no axis to sit on) | 1 | 20.00 | ESTIMATE |
 
-**I2a all-inline mixed (DM-J4340 yaw, 8108-36 elbow): $1,121 per arm** (dearest listings $1,382)
+**I2a all-inline mixed (DM-J4340 yaw, 8108-36 elbow): $1,140 per arm** (dearest listings $1,401)
 
 | Joint | Item | Qty | $ | Basis |
 |---|---|---|---|---|
@@ -173,12 +233,13 @@ Unit prices: rnd/m1_kit.py constants where they exist (GIM6010-8 $90, GIM8108-8 
 | shoulder_roll | off-axis joint encoder (ring magnet round the motor) | 1 | 20.00 | ESTIMATE (the motor fills the axis; same in every variant) |
 | upper_yaw | actuator DM-J4340-2EC | 1 | 155.00 | aifitlab / rcdrone $155 (backordered / sold out); Robotics Center $215 (24 V), 2026-11-28 |
 | upper_yaw | 7075 output adapter Ø60 (CNC) + dowels + screws | 1 | 25.00 | ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B) |
+| upper_yaw | aluminium finned ring on the rear face through the cover + NTC (thermal: thermal.md section 3, the bare J4340 under the cover does not hold the worst 1 kg pose) | 1 | 18.60 | m1_kit AL_CAP + ESTIMATE $3 for the ring adapter |
 | elbow | actuator GIM8108-36 | 1 | 240.00 | SteadyWin store $239.80 with the GDM810 (SDC303, 24 V) driver; aifitlab $240 with GDK810 ($190 bare, backordered); openelab.com $303.99+ with a driver (2026-11-27 search snapshots) |
 | elbow | 7075 output adapter Ø76 (CNC) + dowels + screws | 1 | 39.00 | ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B) |
 | elbow | far-side support bearing | 1 | 3.00 | ESTIMATE (61806 class, as the roll) |
 | elbow | off-axis joint encoder (ring magnet round the motor; the on-axis AS5048A has no axis to sit on) | 1 | 20.00 | ESTIMATE |
 
-**I2b all-inline mixed (DM-J4340 yaw, DM-J8009 elbow): $1,331 per arm** (dearest listings $1,535)
+**I2b all-inline mixed (DM-J4340 yaw, DM-J8009 elbow): $1,350 per arm** (dearest listings $1,554)
 
 | Joint | Item | Qty | $ | Basis |
 |---|---|---|---|---|
@@ -191,11 +252,25 @@ Unit prices: rnd/m1_kit.py constants where they exist (GIM6010-8 $90, GIM8108-8 
 | shoulder_roll | off-axis joint encoder (ring magnet round the motor) | 1 | 20.00 | ESTIMATE (the motor fills the axis; same in every variant) |
 | upper_yaw | actuator DM-J4340-2EC | 1 | 155.00 | aifitlab / rcdrone $155 (backordered / sold out); Robotics Center $215 (24 V), 2026-11-28 |
 | upper_yaw | 7075 output adapter Ø60 (CNC) + dowels + screws | 1 | 25.00 | ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B) |
+| upper_yaw | aluminium finned ring on the rear face through the cover + NTC (thermal: thermal.md section 3, the bare J4340 under the cover does not hold the worst 1 kg pose) | 1 | 18.60 | m1_kit AL_CAP + ESTIMATE $3 for the ring adapter |
 | elbow | actuator DM-J8009-2EC | 1 | 470.00 | aifitlab $470 (backordered); J8009P $395–480, 2026-11-28 |
 | elbow | 7075 output adapter Ø76 (CNC) + dowels + screws | 1 | 39.00 | ESTIMATE (as the roll's adapter + clamp-ring lines, m1_kit HOLD_B) |
 | elbow | far-side support bearing | 1 | 3.00 | ESTIMATE (61806 class, as the roll) |
 
-## Masses (inline variants: deltas from B0's CAD roll-ups)
+## Masses (all-inline variants: deltas from B0's CAD roll-ups; B1y: deltas from B1)
+
+**B1y D20 + inline DM-J4340-2EC yaw**
+
+| Param | Item | Δ kg | Basis |
+|---|---|---|---|
+| bone_mass_upper | neck 15 mm shorter (yaw drop + 15 mm) | -0.010 | params ROLL_DRIVES neck g/mm |
+| **bone_mass_upper** | **sum** | **-0.010** | |
+| yaw_stage_mass | yaw D26 direct stage + bolted can flange / nose / cap | -0.198 | FROM CAD |
+| yaw_stage_mass | 40T half of the yaw shaft | -0.032 | ESTIMATE (½ of 0.063 FROM CAD) |
+| yaw_stage_mass | yaw belt | -0.010 | ESTIMATE |
+| yaw_stage_mass | yaw block: the off-axis cartridge bay goes, Ø57 seat instead (≈ 45 % of 0.231) | -0.100 | ESTIMATE |
+| yaw_stage_mass | Ø46 7075 output adapter + motor seat ring + 6 × M3 | +0.050 | ESTIMATE |
+| **yaw_stage_mass** | **sum** | **-0.290** | |
 
 **I1 all-inline SteadyWin (8108-36 ×3, 6010-48 yaw)**
 
@@ -284,115 +359,160 @@ Unit prices: rnd/m1_kit.py constants where they exist (GIM6010-8 $90, GIM8108-8 
 
 Arm piece by item (kg):
 
-| Item | B0 | B1 | I1 | I2a | I2b |
-|---|---|---|---|---|---|
-| arm shoulder_roll | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
-| arm upper_yaw | 0.388 | 0.388 | 0.777 | 0.362 | 0.362 |
-| arm elbow | 0.388 | 0.396 | 1.000 | 1.000 | 0.896 |
-| arm wrist_pitch | 0.300 | 0.300 | 0.300 | 0.300 | 0.300 |
-| arm wrist_roll | 0.055 | 0.055 | 0.055 | 0.055 | 0.055 |
-| arm gripper | 0.055 | 0.055 | 0.055 | 0.055 | 0.055 |
-| arm bones+shells | 1.180 | 1.210 | 0.830 | 0.840 | 0.830 |
-| gripper mechanism | 0.280 | 0.280 | 0.280 | 0.280 | 0.280 |
-| wrist camera | 0.050 | 0.050 | 0.050 | 0.050 | 0.050 |
-| upper-arm yaw belt stage | 0.690 | 0.690 | 0.430 | 0.400 | 0.400 |
-| roll stage | 0.410 | 0.410 | 0.410 | 0.410 | 0.410 |
+| Item | B0 | B1 | B1y | I1 | I2a | I2b |
+|---|---|---|---|---|---|---|
+| arm shoulder_roll | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+| arm upper_yaw | 0.388 | 0.388 | 0.362 | 0.777 | 0.362 | 0.362 |
+| arm elbow | 0.388 | 0.396 | 0.396 | 1.000 | 1.000 | 0.896 |
+| arm wrist_pitch | 0.300 | 0.300 | 0.300 | 0.300 | 0.300 | 0.300 |
+| arm wrist_roll | 0.055 | 0.055 | 0.055 | 0.055 | 0.055 | 0.055 |
+| arm gripper | 0.055 | 0.055 | 0.055 | 0.055 | 0.055 | 0.055 |
+| arm bones+shells | 1.180 | 1.220 | 1.210 | 0.830 | 0.840 | 0.830 |
+| gripper mechanism | 0.280 | 0.280 | 0.280 | 0.280 | 0.280 | 0.280 |
+| wrist camera | 0.050 | 0.050 | 0.050 | 0.050 | 0.050 | 0.050 |
+| upper-arm yaw belt stage | 0.690 | 0.690 | 0.400 | 0.430 | 0.400 | 0.400 |
+| roll stage | 0.410 | 0.410 | 0.410 | 0.410 | 0.410 | 0.410 |
 
-## Hand back-drive and collision
+**Body assignment (Astra #3 Part A b).** The twin (rnd/twin.py) puts every actuator as a sphere on its joint's child body at the axis. This study's twin (study_xml) moves each to the body that carries it: the belt elbow motor onto the upper arm (B0 71 mm, B1/B1y 84 mm above the elbow axis, the belt centre); an inline elbow's housing, stator and rotor (80%, ESTIMATE) onto the upper arm and its output (20%) onto the forearm, both on the axis; the belt yaw cartridge onto the roll output 81 mm behind the yaw axis; an inline yaw's housing onto the roll output coaxially above the yaw interface; the inline roll's housing onto the pitch body; the wrist pitch's onto the forearm. Each is a cylinder of the motor's frame (own COM and inertia); rotor spin is the joint armature J_r·N². The tip, basket, workspace-torque, gravity-moment and effective-mass rows use this model; the gravity moment rises against the first version's point-mass figure mainly because the twin places the yaw stage and bones farther out than the point list did. The detachable-arm mass alone is the wrong number to minimise (Astra): an inline elbow adds little moment about the elbow but its full mass to the shoulder.
 
-Pushing the arm by hand: back-drive torque at the joint T = N_gear·τ_drag,motor / η_b + τ_gear (× belt ratio / η_belt + belt-stage drag for the belt joints); η_b = 2 − 1/η_f with η_f = 0.93^stages (the usual estimate for back-driving a planetary that is itself back-drivable); motor drag 0.01–0.015 N·m and gearbox breakaway 0.1 / 0.3 N·m (1 / 2 stages) are ESTIMATES. Force at the hand = T / lever (pitch and roll 0.60 m, yaw and elbow 0.43 m). Reflected inertia = J_rotor·N² (rotor inertia ESTIMATE from an 80-class actuator's published 579 g·cm², scaled by size; actuators.yaml). The 'trip' columns: an unmodelled friction band of ±50 % of T (friction of a 2-stage reducer moves with temperature and load) has to be added to the sw/collision.py threshold to keep 0 false trips; the hand force that trips the joint is then (THR + 0.5 T) / lever.
+## Back-drive: whole-joint ratio and reflected rotor inertia
 
-| Variant | Joint | Actuator | N total | η_b | J refl (kg·m²) | at the hand (kg) | T back-drive (N·m) | **Hand force (N)** (range) | Trip force (N) |
+The useful comparison is the whole joint's ratio N (actuator × belt) and its reflected rotor inertia J_r·N², not 'motor' against 'belt' (Astra #3). For the same rotor, inertia scales with N²: 36:1 against B1's 24:1 at pitch / elbow is 2.25× the reflected inertia, which is **not** 2.25× the static hand force. The drag column is the efficiency model (motor drag × N / η_b with η_b = 2 − 1/η_f, + gearbox breakaway, × belt ratio / η_belt + belt drag): **back-driving efficiency is not a breakaway-friction law** (grease, seals, gear load, belt tension, temperature, brake / phase state and the drive's zero-current behaviour all matter), so the table carries an explicit **band of ×0.5–×2.0 (4× wide)**, and no measurement of these exact assemblies supports even that band. The hand force uses a fixed lever (pitch / roll 0.60 m, yaw / elbow 0.43 m), which is not the hand lever in every pose. A comfortable gravity-compensated jog is not evidence of low unpowered drag: the bench measures residual gravity and friction separately.
+
+| Variant | Joint | Actuator | N total | J_r (kg·m², ESTIMATE) | **J_r·N² (kg·m²)** | ×B1's same joint | T drag mid (N·m) | **band ×0.5–2 (N·m)** | hand force at the fixed lever (N, band) |
 |---|---|---|---|---|---|---|---|---|---|
-| B0 | shoulder_pitch | GIM6010-8 | 24 | 0.92 | 0.0138 | 0.04 | 0.64 | **1.1** (0.5–2.1) | 5.9 |
-| B0 | shoulder_roll | GIM8108-36 | 36 | 0.84 | 0.0778 | 0.22 | 0.94 | **1.6** (0.8–3.1) | 4.8 |
-| B0 | upper_yaw | GIM6010-8 | 16 | 0.92 | 0.0061 | 0.03 | 0.44 | **1.0** (0.5–2.1) | 4.2 |
-| B0 | elbow | GIM6010-8 | 16 | 0.92 | 0.0061 | 0.03 | 0.44 | **1.0** (0.5–2.1) | 6.1 |
-| B1 | shoulder_pitch | GIM8108-8 | 24 | 0.92 | 0.0346 | 0.10 | 0.78 | **1.3** (0.6–2.6) | 6.0 |
-| B1 | shoulder_roll | GIM8108-36 | 36 | 0.84 | 0.0778 | 0.22 | 0.94 | **1.6** (0.8–3.1) | 4.8 |
-| B1 | upper_yaw | GIM6010-8 | 16 | 0.92 | 0.0061 | 0.03 | 0.44 | **1.0** (0.5–2.1) | 4.2 |
-| B1 | elbow | GIM8108-8 | 24 | 0.92 | 0.0346 | 0.19 | 0.78 | **1.8** (0.9–3.6) | 6.5 |
-| I1 | shoulder_pitch | GIM8108-36 | 36 | 0.84 | 0.0778 | 0.22 | 0.94 | **1.6** (0.8–3.1) | 6.1 |
-| I1 | shoulder_roll | GIM8108-36 | 36 | 0.84 | 0.0778 | 0.22 | 0.94 | **1.6** (0.8–3.1) | 4.8 |
-| I1 | upper_yaw | GIM6010-48 | 48 | 0.84 | 0.0553 | 0.30 | 0.87 | **2.0** (1.0–4.0) | 4.7 |
-| I1 | elbow | GIM8108-36 | 36 | 0.84 | 0.0778 | 0.42 | 0.94 | **2.2** (1.1–4.4) | 6.7 |
-| I2a | shoulder_pitch | GIM8108-36 | 36 | 0.84 | 0.0778 | 0.22 | 0.94 | **1.6** (0.8–3.1) | 6.1 |
-| I2a | shoulder_roll | GIM8108-36 | 36 | 0.84 | 0.0778 | 0.22 | 0.94 | **1.6** (0.8–3.1) | 4.8 |
-| I2a | upper_yaw | DM-J4340-2EC | 40 | 0.84 | 0.0128 | 0.07 | 0.58 | **1.4** (0.7–2.7) | 4.4 |
-| I2a | elbow | GIM8108-36 | 36 | 0.84 | 0.0778 | 0.42 | 0.94 | **2.2** (1.1–4.4) | 6.7 |
-| I2b | shoulder_pitch | GIM8108-36 | 36 | 0.84 | 0.0778 | 0.22 | 0.94 | **1.6** (0.8–3.1) | 6.1 |
-| I2b | shoulder_roll | GIM8108-36 | 36 | 0.84 | 0.0778 | 0.22 | 0.94 | **1.6** (0.8–3.1) | 4.8 |
-| I2b | upper_yaw | DM-J4340-2EC | 40 | 0.84 | 0.0128 | 0.07 | 0.58 | **1.4** (0.7–2.7) | 4.4 |
-| I2b | elbow | DM-J8009-2EC | 9 | 0.92 | 0.0053 | 0.03 | 0.25 | **0.6** (0.3–1.1) | 5.9 |
+| B0 | shoulder_pitch | GIM6010-8 | 24 | 2.4e-05 | **0.0138** | 0.40 | 0.64 | **0.32–1.28** | 1.1 (0.5–2.1) |
+| B0 | shoulder_roll | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 1.00 | 0.94 | **0.47–1.88** | 1.6 (0.8–3.1) |
+| B0 | upper_yaw | GIM6010-8 | 16 | 2.4e-05 | **0.0061** | 1.00 | 0.44 | **0.22–0.89** | 1.0 (0.5–2.1) |
+| B0 | elbow | GIM6010-8 | 16 | 2.4e-05 | **0.0061** | 0.18 | 0.44 | **0.22–0.89** | 1.0 (0.5–2.1) |
+| B1 | shoulder_pitch | GIM8108-8 | 24 | 6.0e-05 | **0.0346** | 1.00 | 0.78 | **0.39–1.55** | 1.3 (0.6–2.6) |
+| B1 | shoulder_roll | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 1.00 | 0.94 | **0.47–1.88** | 1.6 (0.8–3.1) |
+| B1 | upper_yaw | GIM6010-8 | 16 | 2.4e-05 | **0.0061** | 1.00 | 0.44 | **0.22–0.89** | 1.0 (0.5–2.1) |
+| B1 | elbow | GIM8108-8 | 24 | 6.0e-05 | **0.0346** | 1.00 | 0.78 | **0.39–1.55** | 1.8 (0.9–3.6) |
+| B1y | shoulder_pitch | GIM8108-8 | 24 | 6.0e-05 | **0.0346** | 1.00 | 0.78 | **0.39–1.55** | 1.3 (0.6–2.6) |
+| B1y | shoulder_roll | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 1.00 | 0.94 | **0.47–1.88** | 1.6 (0.8–3.1) |
+| B1y | upper_yaw | DM-J4340-2EC | 40 | 8.0e-06 | **0.0128** | 2.08 | 0.58 | **0.29–1.17** | 1.4 (0.7–2.7) |
+| B1y | elbow | GIM8108-8 | 24 | 6.0e-05 | **0.0346** | 1.00 | 0.78 | **0.39–1.55** | 1.8 (0.9–3.6) |
+| I1 | shoulder_pitch | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 2.25 | 0.94 | **0.47–1.88** | 1.6 (0.8–3.1) |
+| I1 | shoulder_roll | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 1.00 | 0.94 | **0.47–1.88** | 1.6 (0.8–3.1) |
+| I1 | upper_yaw | GIM6010-48 | 48 | 2.4e-05 | **0.0553** | 9.00 | 0.87 | **0.43–1.74** | 2.0 (1.0–4.0) |
+| I1 | elbow | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 2.25 | 0.94 | **0.47–1.88** | 2.2 (1.1–4.4) |
+| I2a | shoulder_pitch | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 2.25 | 0.94 | **0.47–1.88** | 1.6 (0.8–3.1) |
+| I2a | shoulder_roll | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 1.00 | 0.94 | **0.47–1.88** | 1.6 (0.8–3.1) |
+| I2a | upper_yaw | DM-J4340-2EC | 40 | 8.0e-06 | **0.0128** | 2.08 | 0.58 | **0.29–1.17** | 1.4 (0.7–2.7) |
+| I2a | elbow | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 2.25 | 0.94 | **0.47–1.88** | 2.2 (1.1–4.4) |
+| I2b | shoulder_pitch | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 2.25 | 0.94 | **0.47–1.88** | 1.6 (0.8–3.1) |
+| I2b | shoulder_roll | GIM8108-36 | 36 | 6.0e-05 | **0.0778** | 1.00 | 0.94 | **0.47–1.88** | 1.6 (0.8–3.1) |
+| I2b | upper_yaw | DM-J4340-2EC | 40 | 8.0e-06 | **0.0128** | 2.08 | 0.58 | **0.29–1.17** | 1.4 (0.7–2.7) |
+| I2b | elbow | DM-J8009-2EC | 9 | 6.5e-05 | **0.0053** | 0.15 | 0.25 | **0.12–0.49** | 0.6 (0.3–1.1) |
 
-Hand effective mass Λ = (J M⁻¹ Jᵀ)⁻¹ on the twin (right arm, lift and base held; the payload body is the twin's 1 kg), and the transient contact at 0.5 m/s: F = v·√(k·m), rise time t = (π/2)·√(m/k). ISO/TS 15066 transient limit ≈ 280 N for chest / hand (ESTIMATE).
+## Collision: directional effective mass against the R17 bound
 
-| Variant | Pose | m links only: worst / x / y / z (kg) | m with rotors: worst / x / y / z (kg) | chest k 25 N/mm: F, rise | hand k 75 N/mm: F, rise |
-|---|---|---|---|---|---|
-| B0 | reach (pitch −60°, elbow −60°) | 2.25 / 2.25 / 1.44 / 1.36 | 2.40 / 2.40 / 1.50 / 1.42 | 122 N, 15 ms | 212 N, 9 ms |
-| B0 | arm straight out (pitch −90°) | 1.83 / inf / 1.83 / 1.13 | 1.98 / inf / 1.98 / 1.17 | 111 N, 14 ms | 192 N, 8 ms |
-| B1 | reach (pitch −60°, elbow −60°) | 2.26 / 2.26 / 1.44 / 1.36 | 2.61 / 2.61 / 1.50 / 1.45 | 128 N, 16 ms | 221 N, 9 ms |
-| B1 | arm straight out (pitch −90°) | 1.83 / inf / 1.83 / 1.13 | 1.98 / inf / 1.98 / 1.17 | 111 N, 14 ms | 193 N, 8 ms |
-| I1 | reach (pitch −60°, elbow −60°) | 2.47 / 2.47 / 1.44 / 1.39 | 2.96 / 2.96 / 1.77 / 1.48 | 136 N, 17 ms | 236 N, 10 ms |
-| I1 | arm straight out (pitch −90°) | 1.92 / inf / 1.92 / 1.13 | 2.07 / inf / 2.07 / 1.17 | 114 N, 14 ms | 197 N, 8 ms |
-| I2a | reach (pitch −60°, elbow −60°) | 2.43 / 2.43 / 1.44 / 1.38 | 2.92 / 2.92 / 1.55 / 1.48 | 135 N, 17 ms | 234 N, 10 ms |
-| I2a | arm straight out (pitch −90°) | 1.91 / inf / 1.91 / 1.13 | 2.05 / inf / 2.05 / 1.17 | 113 N, 14 ms | 196 N, 8 ms |
-| I2b | reach (pitch −60°, elbow −60°) | 2.39 / 2.39 / 1.44 / 1.38 | 2.76 / 2.76 / 1.54 / 1.45 | 131 N, 16 ms | 227 N, 10 ms |
-| I2b | arm straight out (pitch −90°) | 1.89 / inf / 1.89 / 1.13 | 2.03 / inf / 2.03 / 1.17 | 113 N, 14 ms | 195 N, 8 ms |
+Fixed-target spring model (Astra #3): a free effective mass m at speed v on a contact stiffness k peaks at F = v·√(k·m), so the R17 limit (**140 N transient at the hands**, RND_PLAN R17; not the 280 N the first version used) at v = 0.5 m/s on k = 75 N/mm gives **m_max = (F/v)²/k = 1.05 kg**, and a mass m meets it at v = F/√(k·m). m(n) = 1 / (nᵀ J M⁻¹ Jᵀ n) is swept over 400 contact normals at the grasp point (all joints free, and with the wrist held by its position loop: the conservative case) and at the elbow, in five poses, empty hand and 1 kg, with the reflected rotor inertias. 'Worst' = the largest principal effective mass below 25 kg; a principal mass above that is a **constrained direction of the rigid model** (arm straight along its axis, the elbow pushed along the upper arm), shown as ∞: not a benign finite worst case, it is a direction the rigid model cannot bound and the structure, the skin compliance and the base motion set. A 1 kg payload alone is above the bound, so carrying anything at 0.5 m/s near people cannot meet 140 N on a hand-stiffness contact: speed and passive compliance do more for the first peak than the reducer choice. The peak comes 9–10 ms after contact, before the 14–18 ms detector trip, so the detector does not shape it. Not covered: base motion, structural / skin compliance, active impedance, pressure and sustained trapping; an instrumented surrogate, not a person, is the test (a calculation or a current trip is not a safety certification).
 
-**Reading.** The chest-contact force peaks 15–17 ms after contact, about when sw/collision.py trips (14–18 ms): the first impact is set by the effective mass and the speed, not by the detector, so the reflected rotor inertia is part of the impact directly (the compliant hold only shapes what happens after). After the trip the person pushes the arm away against the back-drive force (a few N in every variant) plus whatever the compliant hold's gravity feed-forward gets wrong.
+| Variant | Pose | Hand, wrist held: principal m (kg), empty | 1 kg | **v for 140 N, empty / 1 kg (m/s)** | normals ≤ 1.05 kg (empty) | Hand, all joints free: worst empty / 1 kg | Elbow: principal m (kg) | v for 140 N at the elbow (m/s) |
+|---|---|---|---|---|---|---|---|---|
+| B0 | reach (pitch −60°, elbow −60°) | 0.48 / 0.49 / 2.56 | 1.48 / 1.50 / 3.56 | **0.32 / 0.27** | 80 % | 2.56 / 3.56 | 1.92 / 1.99 / ∞ (constrained) | 0.36 |
+| B0 | arm straight out (pitch −90°) | 0.47 / 0.90 / ∞ (constrained) | 1.48 / 1.90 / ∞ (constrained) | **0.54 / 0.37** | 59 % | 0.90 / 1.90 | 1.37 / 5.43 / ∞ (constrained) | 0.22 |
+| B0 | hand at chest height, elbow 90° (pitch −45°, elbow −90°) | 0.47 / 0.48 / 2.07 | 1.48 / 1.48 / 3.07 | **0.36 / 0.29** | 84 % | 2.06 / 3.06 | 1.85 / 2.06 / ∞ (constrained) | 0.36 |
+| B0 | low reach (pitch −30°, elbow −30°) | 0.48 / 0.59 / 6.28 | 1.48 / 1.60 / 7.29 | **0.20 / 0.19** | 74 % | 6.24 / 7.24 | 1.56 / 2.59 / ∞ (constrained) | 0.32 |
+| B0 | across the body (pitch −60°, roll 15°, yaw 45°, elbow −90°) | 0.47 / 0.48 / 2.35 | 1.48 / 1.48 / 3.35 | **0.33 / 0.28** | 82 % | 2.34 / 3.34 | 1.45 / 2.50 / ∞ (constrained) | 0.32 |
+| B1 | reach (pitch −60°, elbow −60°) | 0.49 / 0.60 / 3.67 | 1.50 / 1.60 / 4.67 | **0.27 / 0.24** | 74 % | 3.38 / 4.39 | 1.99 / 2.52 / ∞ (constrained) | 0.32 |
+| B1 | arm straight out (pitch −90°) | 0.60 / 0.90 / ∞ (constrained) | 1.60 / 1.90 / ∞ (constrained) | **0.54 / 0.37** | 54 % | 0.90 / 1.90 | 2.27 / 5.43 / ∞ (constrained) | 0.22 |
+| B1 | hand at chest height, elbow 90° (pitch −45°, elbow −90°) | 0.47 / 0.60 / 2.65 | 1.48 / 1.60 / 3.65 | **0.31 / 0.27** | 78 % | 2.45 / 3.45 | 1.85 / 2.45 / ∞ (constrained) | 0.33 |
+| B1 | low reach (pitch −30°, elbow −30°) | 0.59 / 0.60 / 10.46 | 1.60 / 1.60 / 11.47 | **0.16 / 0.15** | 66 % | 9.58 / 10.63 | 2.37 / 2.60 / ∞ (constrained) | 0.32 |
+| B1 | across the body (pitch −60°, roll 15°, yaw 45°, elbow −90°) | 0.47 / 0.60 / 2.86 | 1.48 / 1.60 / 3.86 | **0.30 / 0.26** | 76 % | 2.66 / 3.66 | 1.64 / 2.71 / ∞ (constrained) | 0.31 |
+| B1y | reach (pitch −60°, elbow −60°) | 0.54 / 0.60 / 3.68 | 1.55 / 1.60 / 4.68 | **0.27 / 0.24** | 73 % | 3.39 / 4.40 | 2.18 / 2.53 / ∞ (constrained) | 0.32 |
+| B1y | arm straight out (pitch −90°) | 0.60 / 0.91 / ∞ (constrained) | 1.60 / 1.91 / ∞ (constrained) | **0.54 / 0.37** | 54 % | 0.91 / 1.91 | 2.27 / 5.46 / ∞ (constrained) | 0.22 |
+| B1y | hand at chest height, elbow 90° (pitch −45°, elbow −90°) | 0.51 / 0.60 / 2.66 | 1.52 / 1.60 / 3.66 | **0.31 / 0.27** | 76 % | 2.46 / 3.46 | 1.94 / 2.45 / ∞ (constrained) | 0.33 |
+| B1y | low reach (pitch −30°, elbow −30°) | 0.60 / 0.67 / 10.49 | 1.60 / 1.68 / 11.50 | **0.16 / 0.15** | 64 % | 9.60 / 10.66 | 2.37 / 3.07 / ∞ (constrained) | 0.29 |
+| B1y | across the body (pitch −60°, roll 15°, yaw 45°, elbow −90°) | 0.52 / 0.60 / 2.88 | 1.52 / 1.60 / 3.88 | **0.30 / 0.26** | 76 % | 2.68 / 3.68 | 1.73 / 2.73 / ∞ (constrained) | 0.31 |
+| I1 | reach (pitch −60°, elbow −60°) | 0.74 / 0.78 / 6.49 | 1.74 / 1.78 / 7.49 | **0.20 / 0.19** | 56 % | 5.27 / 6.29 | 3.44 / 3.93 / ∞ (constrained) | 0.26 |
+| I1 | arm straight out (pitch −90°) | 0.72 / 1.02 / ∞ (constrained) | 1.73 / 2.02 / ∞ (constrained) | **0.51 / 0.36** | 41 % | 1.02 / 2.02 | 3.85 / 6.14 / ∞ (constrained) | 0.21 |
+| I1 | hand at chest height, elbow 90° (pitch −45°, elbow −90°) | 0.74 / 0.76 / 4.39 | 1.74 / 1.76 / 5.39 | **0.24 / 0.22** | 59 % | 3.73 / 4.74 | 2.84 / 3.72 / ∞ (constrained) | 0.27 |
+| I1 | low reach (pitch −30°, elbow −30°) | 0.73 / 0.91 / 20.17 | 1.73 / 1.91 / 21.18 | **0.11 / 0.11** | 48 % | 15.78 / 16.91 | 3.89 / 4.81 / ∞ (constrained) | 0.23 |
+| I1 | across the body (pitch −60°, roll 15°, yaw 45°, elbow −90°) | 0.73 / 0.76 / 4.40 | 1.73 / 1.77 / 5.40 | **0.24 / 0.22** | 59 % | 3.74 / 4.75 | 3.01 / 3.75 / ∞ (constrained) | 0.26 |
+| I2a | reach (pitch −60°, elbow −60°) | 0.55 / 0.74 / 6.38 | 1.55 / 1.74 / 7.39 | **0.20 / 0.19** | 66 % | 5.16 / 6.19 | 2.79 / 3.84 / ∞ (constrained) | 0.26 |
+| I2a | arm straight out (pitch −90°) | 0.72 / 1.01 / ∞ (constrained) | 1.72 / 2.01 / ∞ (constrained) | **0.51 / 0.36** | 42 % | 1.01 / 2.01 | 3.78 / 6.07 / ∞ (constrained) | 0.21 |
+| I2a | hand at chest height, elbow 90° (pitch −45°, elbow −90°) | 0.52 / 0.76 / 4.30 | 1.52 / 1.76 / 5.30 | **0.25 / 0.22** | 68 % | 3.65 / 4.66 | 2.55 / 3.64 / ∞ (constrained) | 0.27 |
+| I2a | low reach (pitch −30°, elbow −30°) | 0.69 / 0.73 / 19.86 | 1.69 / 1.73 / 20.87 | **0.11 / 0.11** | 58 % | 15.48 / 16.60 | 3.68 / 3.83 / ∞ (constrained) | 0.26 |
+| I2a | across the body (pitch −60°, roll 15°, yaw 45°, elbow −90°) | 0.52 / 0.76 / 4.31 | 1.52 / 1.76 / 5.31 | **0.25 / 0.22** | 69 % | 3.66 / 4.66 | 2.63 / 3.65 / ∞ (constrained) | 0.27 |
+| I2b | reach (pitch −60°, elbow −60°) | 0.48 / 0.55 / 4.18 | 1.48 / 1.55 / 5.18 | **0.25 / 0.22** | 76 % | 4.17 / 5.17 | 2.68 / 3.13 / ∞ (constrained) | 0.29 |
+| I2b | arm straight out (pitch −90°) | 0.47 / 0.99 / ∞ (constrained) | 1.47 / 1.99 / ∞ (constrained) | **0.51 / 0.36** | 56 % | 0.99 / 1.99 | 2.56 / 5.96 / ∞ (constrained) | 0.21 |
+| I2b | hand at chest height, elbow 90° (pitch −45°, elbow −90°) | 0.48 / 0.52 / 3.29 | 1.48 / 1.52 / 4.29 | **0.28 / 0.25** | 79 % | 3.28 / 4.28 | 2.44 / 3.28 / ∞ (constrained) | 0.28 |
+| I2b | low reach (pitch −30°, elbow −30°) | 0.47 / 0.68 / 11.09 | 1.48 / 1.69 / 12.10 | **0.15 / 0.15** | 69 % | 11.03 / 12.03 | 2.75 / 3.58 / ∞ (constrained) | 0.27 |
+| I2b | across the body (pitch −60°, roll 15°, yaw 45°, elbow −90°) | 0.48 / 0.52 / 3.29 | 1.48 / 1.52 / 4.29 | **0.28 / 0.25** | 79 % | 3.29 / 4.29 | 2.52 / 3.29 / ∞ (constrained) | 0.28 |
+
+**Reading.** In the reference pose with an empty hand (wrist held) the worst direction is B0 2.56 kg, B1 3.67 kg, B1y 3.68 kg, I1 6.49 kg, I2a 6.38 kg, I2b 4.18 kg: every variant is over the 1.05 kg bound, and the speed that meets 140 N is B0 0.32, B1 0.27, B1y 0.27, I1 0.20, I2a 0.20, I2b 0.25 m/s, before any uncertainty allowance. The variant spread is the reflected rotor inertia at pitch and elbow; B1y adds the J4340's 0.0128 kg·m² at yaw against B1's 0.0061.
 
 ## Accuracy (hand error, joint RSS at 0.6 m)
 
-Belt joints: rnd/accuracy.py (GIM backlash ÷ belt ratio + belt play + stretch). Inline joints: reducer backlash (actuators.yaml: GIM8108-36 / GIM6010-48 15 arcmin from listings, DM-J4340 15 and DM-J8009 10 ESTIMATE) with the motor encoder ÷ N, unless the actuator has an output-side encoder (Damiao 2EC) or a joint-side encoder is fitted (0.05° after calibration). The roll is inline in every variant.
+Belt joints: rnd/accuracy.py (GIM backlash ÷ belt ratio + belt play + stretch). Inline joints: reducer backlash (actuators.yaml: GIM8108-36 / GIM6010-48 15 arcmin from listings, DM-J4340 15 and DM-J8009 10 ESTIMATE) with the motor encoder ÷ N. Three columns (Astra #3): the Damiao 2EC output encoder as an **absolute reference only** (the loop closes on the motor encoder, so the reducer backlash stays in the hand error); the 2EC **closing a conservatively tuned outer position loop** around the fast inner loop, *if* its bandwidth, latency and data path are demonstrated (MIT mode does not close on it just because it is present); and joint-side encoders everywhere (0.05° after calibration). These are calibrated joint-sensing RSS estimates, not accuracy at a loaded fingertip: an output encoder observes lost motion, it cannot make a reversal transmit torque before the teeth take up, nor see deflection downstream of itself. 15 arcmin at 0.60 m is 2.62 mm. Test reversals through zero gravity torque for hunting and repeatability.
 
-| Variant | shoulder_pitch (no enc / enc) | shoulder_roll (no enc / enc) | upper_yaw (no enc / enc) | elbow (no enc / enc) | wrist_pitch (no enc / enc) | RSS no enc / enc |
+| Variant | shoulder_pitch (ref / loop / enc) | shoulder_roll (ref / loop / enc) | upper_yaw (ref / loop / enc) | elbow (ref / loop / enc) | wrist_pitch (ref / loop / enc) | RSS ref / loop / enc |
 |---|---|---|---|---|---|---|
-| B0 | 2.1 / 0.5 | 2.6 / 0.5 | 1.9 / 0.4 | 1.9 / 0.4 | 0.1 / 0.1 | **4.3 / 0.9** |
-| B1 | 2.1 / 0.5 | 2.6 / 0.5 | 1.9 / 0.4 | 1.5 / 0.4 | 0.1 / 0.1 | **4.1 / 0.9** |
-| I1 | 2.6 / 0.5 | 2.6 / 0.5 | 2.0 / 0.4 | 1.9 / 0.4 | 0.1 / 0.1 | **4.6 / 0.9** |
-| I2a | 2.6 / 0.5 | 2.6 / 0.5 | 0.4 / 0.4 | 1.9 / 0.4 | 0.1 / 0.1 | **4.2 / 0.9** |
-| I2b | 2.6 / 0.5 | 2.6 / 0.5 | 0.4 / 0.4 | 0.4 / 0.4 | 0.1 / 0.1 | **3.7 / 0.9** |
+| B0 | 2.0 / 2.0 / 0.5 | 2.6 / 2.6 / 0.5 | 1.9 / 1.9 / 0.4 | 1.9 / 1.9 / 0.4 | 0.1 / 0.1 / 0.1 | **4.3 / 4.3 / 0.9** |
+| B1 | 2.0 / 2.0 / 0.5 | 2.6 / 2.6 / 0.5 | 1.9 / 1.9 / 0.4 | 1.5 / 1.5 / 0.4 | 0.1 / 0.1 / 0.1 | **4.1 / 4.1 / 0.9** |
+| B1y | 2.0 / 2.0 / 0.5 | 2.6 / 2.6 / 0.5 | 2.0 / 0.4 / 0.4 | 1.5 / 1.5 / 0.4 | 0.1 / 0.1 / 0.1 | **4.1 / 3.7 / 0.9** |
+| I1 | 2.6 / 2.6 / 0.5 | 2.6 / 2.6 / 0.5 | 2.0 / 2.0 / 0.4 | 1.9 / 1.9 / 0.4 | 0.1 / 0.1 / 0.1 | **4.6 / 4.6 / 0.9** |
+| I2a | 2.6 / 2.6 / 0.5 | 2.6 / 2.6 / 0.5 | 2.0 / 0.4 / 0.4 | 1.9 / 1.9 / 0.4 | 0.1 / 0.1 / 0.1 | **4.6 / 4.2 / 0.9** |
+| I2b | 2.6 / 2.6 / 0.5 | 2.6 / 2.6 / 0.5 | 2.0 / 0.4 / 0.4 | 1.3 / 0.4 / 0.4 | 0.1 / 0.1 / 0.1 | **4.4 / 3.7 / 0.9** |
 
-With an output-side encoder on a joint that has backlash, the position loop closes around the backlash: expect a small limit cycle or a dead band where the gravity torque crosses zero (arm-down poses), as accuracy.md says for the roll. The Damiao 2EC actuators read the output in the actuator; a SteadyWin inline joint needs an off-axis (ring-magnet) encoder because the motor fills the axis the AS5048A uses today.
+## Thermal: worst 1 kg static hold in the mount the BOM pays for (rnd/thermal.py network + its sensitivity band)
 
-## Thermal (worst static hold, 1 kg, closed-sleeve network of rnd/thermal.py: conservative for an inline motor under a cover)
+Belt joints: closed sleeve + aluminium finned rear cap; inline joints bare under the R17 cover (thermal.mount_of). Band = every corner of h_o 8–16 W/m²K, h_i 3–8, cap contact 0.25–2 K/W, F_WC 20–40 %, local air +3…10 K (thermal.BAND), 30 °C room. The inline yaw / elbow also show the option of an aluminium finned ring on the rear face through the cover (costed in the inline yaw rows). The hug and basket duties, D20 / B1y, are in thermal.md section 3.
 
-| Variant | shoulder_pitch: worst / continuous N·m, time to 100 °C | shoulder_roll: worst / continuous N·m, time to 100 °C | upper_yaw: worst / continuous N·m, time to 100 °C | elbow: worst / continuous N·m, time to 100 °C |
+| Variant | shoulder_pitch: worst / continuous nominal–band (N·m), winding nominal (band hi), to 100 °C | shoulder_roll: worst / continuous nominal–band (N·m), winding nominal (band hi), to 100 °C | upper_yaw: worst / continuous nominal–band (N·m), winding nominal (band hi), to 100 °C | elbow: worst / continuous nominal–band (N·m), winding nominal (band hi), to 100 °C |
 |---|---|---|---|---|
-| B0 | 12.1 / 9.3, 9 min | 16.8 / 22.7, unlimited | 6.9 / 6.2, 16 min | 6.9 / 6.2, 16 min |
-| B1 | 12.2 / 13.9, unlimited | 16.9 / 22.7, unlimited | 6.9 / 6.2, 16 min | 6.9 / 13.9, unlimited |
-| I1 | 13.7 / 22.7, unlimited | 18.4 / 22.7, unlimited | 6.9 / 19.4, unlimited | 6.9 / 22.7, unlimited |
-| I2a | 13.1 / 22.7, unlimited | 17.8 / 22.7, unlimited | 6.9 / 5.9, 13 min | 6.9 / 22.7, unlimited |
-| I2b | 12.8 / 22.7, unlimited | 17.5 / 22.7, unlimited | 6.9 / 5.9, 13 min | 6.9 / 12.9, unlimited |
+| B0 | 11.6 / 15.4–12.4, 72 °C (97), unlimited (sleeve + Al cap) | 16.3 / 23.4–17.9, 66 °C (93), unlimited (cover) | 6.9 / 10.2–8.3, 65 °C (86), unlimited (sleeve + Al cap) | 6.9 / 10.2–8.3, 65 °C (86), unlimited (sleeve + Al cap) |
+| B1 | 11.6 / 22.8–18.2, 52 °C (67), unlimited (sleeve + Al cap) | 16.3 / 23.4–17.9, 67 °C (94), unlimited (cover) | 6.9 / 10.2–8.3, 65 °C (86), unlimited (sleeve + Al cap) | 6.9 / 22.8–18.2, 41 °C (50), unlimited (sleeve + Al cap) |
+| B1y | 11.7 / 22.8–18.2, 52 °C (67), unlimited (sleeve + Al cap) | 16.4 / 23.4–17.9, 67 °C (94), unlimited (cover) | 6.9 / 6.1–4.7, 119 °C (184), 15 min (cover); ring: 9.9–8.1, 67 °C (87) | 6.9 / 22.8–18.2, 41 °C (50), unlimited (sleeve + Al cap) |
+| I1 | 13.5 / 23.4–17.9, 57 °C (77), unlimited (cover); ring: 38.5–30.4, 43 °C (53) | 18.2 / 23.4–17.9, 75 °C (107), unlimited (cover) | 6.9 / 20.0–15.4, 43 °C (53), unlimited (cover); ring: 32.2–25.7, 38 °C (45) | 6.9 / 23.4–17.9, 41 °C (50), unlimited (cover); ring: 38.5–30.4, 37 °C (43) |
+| I2a | 13.0 / 23.4–17.9, 55 °C (74), unlimited (cover); ring: 38.5–30.4, 42 °C (52) | 17.7 / 23.4–17.9, 72 °C (104), unlimited (cover) | 6.9 / 6.1–4.7, 119 °C (184), 15 min (cover); ring: 9.9–8.1, 67 °C (87) | 6.9 / 23.4–17.9, 41 °C (50), unlimited (cover); ring: 38.5–30.4, 37 °C (43) |
+| I2b | 12.7 / 23.4–17.9, 54 °C (73), unlimited (cover); ring: 38.5–30.4, 42 °C (51) | 17.4 / 23.4–17.9, 71 °C (101), unlimited (cover) | 6.9 / 6.1–4.7, 119 °C (184), 15 min (cover); ring: 9.9–8.1, 67 °C (87) | 6.9 / 13.3–10.2, 53 °C (70), unlimited (cover); ring: 21.7–17.1, 42 °C (51) |
 
-## Envelope and door stow
+## Envelope, reach and door stow
 
-| Joint | B0 | B1 | I1 | I2a | I2b |
-|---|---|---|---|---|---|
-| elbow | 98 × 108 × 168 (fore-aft × along axis × height; arm.HOUSING, FROM CAD): motor 70 mm above the axis | 109 × 108 × 196 (arm.HOUSING D20, FROM CAD) | Ø105 × 108 (Ø96 × 57 GIM8108-36 + 4.6 mm wall; along-axis span set by the forearm link plane), ≈ 125 tall with the neck socket | Ø105 × 108, ≈ 125 tall (as I1) | Ø107 × 108 (Ø98 × 61.7 DM-J8009, Damiao manual), ≈ 128 tall |
-| yaw | 175 × 92 plan (yaw axis → the off-axis GIM6010 cartridge at x −81 + can r 43; roll.py FROM CAD), drop 99 mm | as B0 | Ø92 plan (Ø80 GIM6010-48 + wall + cover), 67.5 mm tall coaxial under the roll motor: drop 99 → 124 mm | Ø92 plan (the plates ±46 stay; Ø57 DM-J4340), ≈ 56 mm tall: drop 99 → 114 mm | as I2a |
-| pitch | GIM6010 cartridge 70 mm off the pitch axis inside the torso, belt to the 60T (inside the 390 mm torso) | GIM8108-8 cartridge off-axis (inside the torso) | Ø96 × 57 GIM8108-36 coaxial inboard of the pitch bearings (inside the torso; the balancer cord and spring must re-route) | as I1 | as I1 |
+| Joint | B0 | B1 | B1y | I1 | I2a | I2b |
+|---|---|---|---|---|---|---|
+| elbow | 98 × 108 × 168 (fore-aft × along axis × height; arm.HOUSING, FROM CAD): motor 70 mm above the axis | 109 × 108 × 196 (arm.HOUSING D20, FROM CAD) | as B1 | Ø105 × 108 (Ø96 × 57 GIM8108-36 + 4.6 mm wall; along-axis span set by the forearm link plane), ≈ 125 tall with the neck socket | Ø105 × 108, ≈ 125 tall (as I1) | Ø107 × 108 (Ø98 × 61.7 DM-J8009, Damiao manual), ≈ 128 tall |
+| yaw | 175 × 92 plan (yaw axis → the off-axis GIM6010 cartridge at x −81 + can r 43; roll.py FROM CAD), drop 99 mm | as B0 | Ø92 plan (the plates ±46 stay; Ø57 × 56 DM-J4340 + wall + cover) coaxial under the roll motor: drop 99 → 114 mm (+15; Astra: +15–25 mm); the 175 mm fore-aft cartridge bay behind the yaw axis goes | Ø92 plan (Ø80 GIM6010-48 + wall + cover), 67.5 mm tall coaxial under the roll motor: drop 99 → 124 mm | Ø92 plan (the plates ±46 stay; Ø57 DM-J4340), ≈ 56 mm tall: drop 99 → 114 mm | as I2a |
+| pitch | GIM6010 cartridge 70 mm off the pitch axis inside the torso, belt to the 60T (inside the 390 mm torso) | GIM8108-8 cartridge off-axis (inside the torso) | as B1 | Ø96 × 57 GIM8108-36 coaxial inboard of the pitch bearings (inside the torso; the balancer cord and spring must re-route) | as I1 | as I1 |
 
-Door stow (rnd/stow.py pose for 45°, today 567 mm, set by robot:cylinder2 and roll_xarm_r): the inline variants take out the off-axis yaw cartridge and the elbow cartridge hulls and add the motor cylinders (elbow on its axis, yaw above the yaw interface) with wall + cover allowance; the pose is not re-optimised and the other hulls are today's (the 168 mm elbow housing stays, so this is an upper bound).
+Door stow (rnd/stow.py pose for 45°, today 567 mm, set by robot:cylinder2 and roll_xarm_r): the inline variants take out the off-axis yaw cartridge (and, all-inline, the elbow cartridge) hulls and add the motor cylinders with wall + cover allowance; the pose is not re-optimised and the other hulls are today's. A hull substitution in one old pose with 3 mm to the limit, not a swept, wired, guarded assembly (Astra #3).
+
+**B1y yaw drop (+15 mm) against reach and dexterity.** The yaw axis lies along the upper arm and l_upper is kept (the neck shortens), so the joint-to-hand kinematics are identical: the grasp site of 200 random joint vectors differs by 0.000 mm between B1 and B1y, and the dexterity map (rnd/dexterity.py, kinematic, sw/bench_env) cannot change. What can change is collision: R1 coverage on the study twin (twin.ik_study, CAD hulls; B1y without the off-axis yaw cartridge hull, with a Ø92 × 56 coaxial motor cylinder, upper-arm hulls kept on the elbow):
+
+| R1 target | B1 | B1y |
+|---|---|---|
+| counter, angled 45° grasp (z 0.95) | 100 % | 100 % |
+| floor pickup (z 0.03, gripper down) | 100 % | 100 % |
+| dishwasher low rack (z 0.20, down) | 97 % | 97 % |
+| table top (z 0.78, down) | 98 % | 98 % |
+| shelf (z 1.20, horizontal) | 100 % | 100 % |
+| high shelf (z 1.40, horizontal) | 100 % | 100 % |
+
+The coaxial motor sits 15 mm lower on the arm than the yaw block's old bottom; its envelope against the torso at full adduction and the yaw harness / clock spring routing need the CAD (no inline-yaw CAD yet). The extra drop is inside the +15–25 mm Astra named; at +25 mm the kinematics are still unchanged and only the hull clearance moves.
 
 ## Simplicity
 
-| Variant | Belt joints | Inline joints | Drive pieces | Drive fasteners | Drive build min | Arm build h | Print saved (g / P2S h) |
+| Variant | Belt joints | Inline joints | Drive pieces | Drive fasteners | Drive build min | Arm build h | Print saved (g ESTIMATE / P2S h) |
 |---|---|---|---|---|---|---|---|
-| B0 | shoulder_pitch, upper_yaw, elbow | roll only | 50 | 108 | 113 | 6.1 | 0 / 0.0 |
-| B1 | shoulder_pitch, upper_yaw, elbow | roll only | 50 | 108 | 113 | 6.1 | 0 / 0.0 |
-| I1 | — | shoulder_pitch, upper_yaw, elbow | 20 | 67 | 95 | 5.8 | 658 / 16.5 |
-| I2a | — | shoulder_pitch, upper_yaw, elbow | 17 | 65 | 85 | 5.7 | 658 / 16.5 |
-| I2b | — | shoulder_pitch, upper_yaw, elbow | 14 | 63 | 75 | 5.5 | 658 / 16.5 |
+| B0 | shoulder_pitch, upper_yaw, elbow | roll only | 47 | 108 | 113 | 6.1 | 0 / 0.0 |
+| B1 | shoulder_pitch, upper_yaw, elbow | roll only | 47 | 108 | 113 | 6.1 | 0 / 0.0 |
+| B1y | shoulder_pitch, elbow | upper_yaw | 38 | 96 | 97 | 5.9 | 173 / 4.0 |
+| I1 | — | shoulder_pitch, upper_yaw, elbow | 21 | 70 | 95 | 5.8 | 639 / 16.0 |
+| I2a | — | shoulder_pitch, upper_yaw, elbow | 18 | 68 | 85 | 5.7 | 639 / 16.0 |
+| I2b | — | shoulder_pitch, upper_yaw, elbow | 15 | 66 | 75 | 5.5 | 639 / 16.0 |
 
-Counts: a D26 belt joint is the cartridge (can, rear cap, Al cap, NTC), the stub + key + pulley + 6001 + bushing, two eccentric bushings, the belt and the shaft-end encoder (+ the pitch idler, + the elbow cassette and seat caps); an inline joint is the actuator, a metal output adapter, a printed seat and a far-side bearing (+ an off-axis encoder for a SteadyWin). Build minutes use rnd/build_guide.py's 9 min cartridge and 15 min stage; inline heavy joint 25 min (as the roll's 35 min without the crush sleeves and stop bushes), yaw 15, encoder 7 / off-axis 10 (ESTIMATE).
+Counts: a D26 belt joint is the cartridge (can, rear cap, Al cap, NTC), the stub + key + pulley + 6001 + bushing, the belt and the shaft-end encoder (+ the pitch idler, + the elbow cassette and seat caps); D26's fixed centres removed the eccentric bushings (belts.md), so they are no longer counted (Astra #3). An inline joint is the actuator, a metal output adapter, a printed seat and a far-side bearing (+ an off-axis encoder for a SteadyWin, + the thermal ring at the yaw). Build minutes use rnd/build_guide.py's 9 min cartridge and 15 min stage; inline heavy joint 25 min, yaw 15, encoder 7 / off-axis 10 (ESTIMATE). The print saving is print_plan.md rows per piece, an ESTIMATE until a printed-only mass ledger of the replacement parts exists.
 
 ## What the bench must measure to confirm it
 
-1. **Back-drive torque** of a GIM8108-36, a DM-J4340-2EC and a DM-J8009-2EC, unpowered and in the drive's zero-torque mode: a lever + luggage scale (the Step-1 rig), breakaway and running torque, both directions, at 20 °C and after a 20-min warm-up. The model above is the mid of a 4× range; this decides the hand-feel and the collision threshold rise.
-2. **Backlash** at the output of each, dial gauge on a 0.3 m lever, ± 1 N·m reversal (the 15 arcmin listing and the 10–15 arcmin ESTIMATEs): decides the no-encoder hand error and whether the encoder loop limit-cycles.
-3. **Rotor inertia** (or the drive's reported inertia from a sysid chirp, sw/sysid.py) → the reflected inertia and the impact rows.
-4. **Output-encoder behaviour** of the Damiao 2EC: absolute output angle over a power cycle, its noise, and whether the MIT-mode loop can use it (dual-loop) or only reports it.
-5. **Torque at 24 V** and speed under load for the DM-J4340 / DM-J8009 (catalogue is 24 V rated; confirm the 36 / 100 rpm), and the GIM8108-36 output bearing's radial / tilting rating for pitch and elbow duty (≥ 612 N radial is the roll's open seller question).
-6. **Collision trip** on the bench twin with the measured friction (sw/test_s1.py collision case with the new N, J and friction): trip time and the hand force at trip.
+1. **Back-drive torque of the whole joint, not the bare motor:** B1's GIM8108-8 + 3:1 stage first, then the roll sample and a returnable DM-J4340-2EC (Astra #3: borrow before buying mixed drives). Horizontal-axis or gravity-balanced fixture, calibrated lever / load cell, independent output angle: breakaway and slow running torque both ways, torque–angle hysteresis at several loads, cold and hot, phases open / drive disabled / zero-torque mode. This replaces the efficiency model and its 4× band.
+2. **Output inertia** from torque / acceleration with two known added inertias (fixture inertia and friction subtracted) → J_r·N² and the effective-mass rows.
+3. **Backlash and reversal:** motor angle, output angle and actual link motion through reversal at ± 1 N·m and through zero gravity torque; encoder zero over power cycles; whether a 2EC outer loop hunts.
+4. **Thermal in the final mount** (thermal.md section 3 bench list): winding rise at rated torque in the closed sleeve + cap and, for B1y, the J4340 bare and with the ring under a mock cover; cap contact resistance; h_o with vents open / blocked; τ.
+5. **Torque at 24 V** and speed under load, at full and depleted pack voltage including harness drop.
+6. **Impact on an instrumented compliant target** at progressively increasing speed: peak force, rise time, post-trip force: the m_max = (F/v)²/k bound (1.05 kg at 0.5 m/s) is a model, the surrogate is the test.
+7. **Basket share:** tethered basket with load cells under each handle: pick / carry / set-down with 50/50, 60/40, 70/30 and one hook released, to calibrate the joint-torque share estimate (basket.md rule) and the seating factor.

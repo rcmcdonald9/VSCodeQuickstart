@@ -4,7 +4,8 @@ Basket: ≈ 60 × 45 × 28 cm, 9.07 kg, a hand-hold slot in each short end just 
 the end slots with the hands pointing down (the load hangs from a rigid fingertip hook, D21), so each hand carries
 4.54 kg directly under its wrist; the hands are ≈ 0.60 m apart (shoulders 0.40 m), so the arms splay outward.
 
-Full 3D statics on the twin (rnd/twin.py: lift + 6-joint right arm, CAD masses; the left arm mirrors it): for each pose
+Full 3D statics on the twin (rnd/twin.py: lift + 6-joint right arm, CAD masses, with the actuator masses on the bodies that
+carry them, rnd/inline_study.study_xml, Astra #3 Part A; the left arm mirrors it): for each pose
 the bounded IK finds the collision-free solutions with the hand pointing down, and the planner keeps the one with the
 lowest worst joint load. Joint loads are gravity torques with 4.54 kg in the hand (the shoulder-pitch balancer
 included), against the D20 actuators (GIM8108-8 at shoulder pitch and elbow, 3:1). Rules: a basket carry is a duty
@@ -203,7 +204,12 @@ def rule_text(lims):
 
 
 def main():
-    from .params import BASELINE, with_arm_motors
+    from .inline_study import corrected_bodies
+    with corrected_bodies():                 # actuator masses on the bodies that carry them (Astra #3 Part A b; rnd/inline_study.study_xml)
+        _main()
+
+
+def _main():
     res, studies, caps = {}, {}, {}
     for k, s in VARIANTS.items():
         d = design(s)

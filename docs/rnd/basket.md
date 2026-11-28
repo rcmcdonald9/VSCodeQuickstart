@@ -4,7 +4,8 @@ Basket: ≈ 60 × 45 × 28 cm, 9.07 kg, a hand-hold slot in each short end just 
 the end slots with the hands pointing down (the load hangs from a rigid fingertip hook, D21), so each hand carries
 4.54 kg directly under its wrist; the hands are ≈ 0.60 m apart (shoulders 0.40 m), so the arms splay outward.
 
-Full 3D statics on the twin (rnd/twin.py: lift + 6-joint right arm, CAD masses; the left arm mirrors it): for each pose
+Full 3D statics on the twin (rnd/twin.py: lift + 6-joint right arm, CAD masses, with the actuator masses on the bodies that
+carry them, rnd/inline_study.study_xml, Astra #3 Part A; the left arm mirrors it): for each pose
 the bounded IK finds the collision-free solutions with the hand pointing down, and the planner keeps the one with the
 lowest worst joint load. Joint loads are gravity torques with 4.54 kg in the hand (the shoulder-pitch balancer
 included), against the D20 actuators (GIM8108-8 at shoulder pitch and elbow, 3:1). Rules: a basket carry is a duty
@@ -30,18 +31,18 @@ twin's IK arm); the tip check carries both hands' loads. Run for D20 (B1) and B1
 
 | Pose | Basket centre x (m) | Handles z (m) | Rule | Shoulder pitch N·m (peak×, 2-min rise) | Roll | Yaw | Elbow | Wrist pitch | Tip, load toward a wheel |
 |---|---|---|---|---|---|---|---|---|---|
-| floor pick | 0.40 | 0.25 | peak ≥ 1.5× | 17.8 (3.5×, 8 K) | 2.0 (50.7×, 0 K) | 0.8 (26.7×, 0 K) | 7.9 (8.0×, 1 K) | 0.1 (126.7×, 0 K) | 72 mm ✅ |
-| floor pick | 0.45 | 0.25 | peak ≥ 1.5× | 20.4 (3.1×, 10 K) | 2.0 (52.6×, 0 K) | 1.1 (19.6×, 0 K) | 8.9 (7.0×, 2 K) | 0.1 (76.5×, 0 K) | 62 mm ✅ |
-| floor pick | 0.50 | 0.25 | peak ≥ 1.5× | 23.0 (2.7×, 13 K) | 1.8 (56.2×, 0 K) | 1.4 (14.9×, 0 K) | 10.0 (6.3×, 2 K) | 0.1 (47.6×, 0 K) | 53 mm ✅ |
-| carry | 0.35 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 15.4 (4.1×, 6 K) | 1.7 (61.1×, 0 K) | 0.0 (999.0×, 0 K) | 13.7 (4.6×, 4 K) | 0.0 (999.0×, 0 K) | 84 mm ✅ |
-| carry | 0.40 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 18.0 (3.5×, 8 K) | 1.7 (61.1×, 0 K) | 0.0 (999.0×, 0 K) | 13.3 (4.7×, 4 K) | 0.0 (999.0×, 0 K) | 74 mm ✅ |
-| carry | 0.45 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 20.7 (3.0×, 10 K) | 1.6 (63.0×, 0 K) | 0.0 (999.0×, 0 K) | 14.2 (4.4×, 5 K) | 0.0 (999.0×, 0 K) | 64 mm ✅ |
+| floor pick | 0.40 | 0.25 | peak ≥ 1.5× | 17.0 (3.7×, 7 K) | 2.0 (52.1×, 0 K) | 0.8 (26.7×, 0 K) | 7.9 (8.0×, 1 K) | 0.1 (126.7×, 0 K) | 74 mm ✅ |
+| floor pick | 0.45 | 0.25 | peak ≥ 1.5× | 19.6 (3.2×, 9 K) | 1.9 (54.2×, 0 K) | 1.1 (19.6×, 0 K) | 8.9 (7.0×, 2 K) | 0.1 (76.5×, 0 K) | 65 mm ✅ |
+| floor pick | 0.50 | 0.25 | peak ≥ 1.5× | 22.1 (2.8×, 12 K) | 1.8 (58.0×, 0 K) | 1.4 (14.9×, 0 K) | 10.0 (6.3×, 2 K) | 0.1 (47.6×, 0 K) | 55 mm ✅ |
+| carry | 0.35 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 14.7 (4.3×, 5 K) | 1.7 (61.0×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 86 mm ✅ |
+| carry | 0.40 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 17.3 (3.6×, 7 K) | 1.7 (61.9×, 0 K) | 0.0 (999.0×, 0 K) | 12.9 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 76 mm ✅ |
+| carry | 0.45 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 19.9 (3.2×, 9 K) | 1.6 (65.9×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 66 mm ✅ |
 | carry, handles at 0.80 | 0.35 | 0.80 | carry | no collision-free IK | | | | | |
-| carry, handles at 0.80 | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 18.0 (3.5×, 8 K) | 1.7 (61.3×, 0 K) | 0.0 (999.0×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 73 mm ✅ |
-| carry, handles at 0.80 | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.7 (3.0×, 10 K) | 1.6 (65.1×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 63 mm ✅ |
-| set on a bed (0.55 m) | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 18.0 (3.5×, 8 K) | 1.7 (61.3×, 0 K) | 0.0 (999.0×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 73 mm ✅ |
-| set on a bed (0.55 m) | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.7 (3.0×, 10 K) | 1.6 (65.1×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 63 mm ✅ |
-| set on a bed (0.55 m) | 0.50 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 23.3 (2.7×, 13 K) | 1.4 (73.2×, 0 K) | 0.0 (999.0×, 0 K) | 13.0 (4.8×, 4 K) | 0.0 (999.0×, 0 K) | 54 mm ✅ |
+| carry, handles at 0.80 | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 17.3 (3.6×, 7 K) | 1.7 (62.0×, 0 K) | 0.0 (999.0×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 76 mm ✅ |
+| carry, handles at 0.80 | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 19.9 (3.1×, 9 K) | 1.6 (66.0×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 66 mm ✅ |
+| set on a bed (0.55 m) | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 17.3 (3.6×, 7 K) | 1.7 (62.0×, 0 K) | 0.0 (999.0×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 76 mm ✅ |
+| set on a bed (0.55 m) | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 19.9 (3.1×, 9 K) | 1.6 (66.0×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 66 mm ✅ |
+| set on a bed (0.55 m) | 0.50 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 22.5 (2.8×, 12 K) | 1.4 (75.1×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 56 mm ✅ |
 | set on a washer / counter (0.90 m) | 0.40 | 1.15 | carry | no collision-free IK | | | | | |
 | set on a washer / counter (0.90 m) | 0.45 | 1.15 | carry | no collision-free IK | | | | | |
 | set on a washer / counter (0.90 m) | 0.50 | 1.15 | carry | no collision-free IK | | | | | |
@@ -50,18 +51,18 @@ twin's IK arm); the tip check carries both hands' loads. Run for D20 (B1) and B1
 
 | Pose | Basket centre x (m) | Handles z (m) | Rule | Shoulder pitch N·m (peak×, 2-min rise) | Roll | Yaw | Elbow | Wrist pitch | Tip, load toward a wheel |
 |---|---|---|---|---|---|---|---|---|---|
-| floor pick | 0.40 | 0.25 | peak ≥ 1.5× | 17.9 (3.5×, 8 K) | 1.6 (65.7×, 0 K) | 0.0 (999.0×, 0 K) | 9.5 (6.6×, 2 K) | 0.0 (999.0×, 0 K) | 72 mm ✅ |
-| floor pick | 0.45 | 0.25 | peak ≥ 1.5× | 20.3 (3.1×, 10 K) | 0.8 (127.0×, 0 K) | 1.2 (21.8×, 0 K) | 8.3 (7.5×, 2 K) | 0.1 (74.7×, 0 K) | 63 mm ✅ |
-| floor pick | 0.50 | 0.25 | peak ≥ 1.5× | 22.9 (2.7×, 12 K) | 1.8 (56.6×, 0 K) | 1.4 (19.2×, 0 K) | 10.0 (6.3×, 2 K) | 0.1 (47.6×, 0 K) | 52 mm ✅ |
-| carry | 0.35 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 15.3 (4.1×, 6 K) | 1.7 (60.7×, 0 K) | 0.0 (999.0×, 0 K) | 12.9 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 84 mm ✅ |
-| carry | 0.40 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 18.0 (3.5×, 8 K) | 1.7 (61.4×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 73 mm ✅ |
-| carry | 0.45 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 20.6 (3.0×, 10 K) | 1.6 (65.2×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 63 mm ✅ |
+| floor pick | 0.40 | 0.25 | peak ≥ 1.5× | 17.5 (3.6×, 7 K) | 1.5 (66.4×, 0 K) | 0.0 (999.0×, 0 K) | 9.5 (6.6×, 2 K) | 0.0 (999.0×, 0 K) | 73 mm ✅ |
+| floor pick | 0.45 | 0.25 | peak ≥ 1.5× | 19.8 (3.2×, 9 K) | 0.8 (125.8×, 0 K) | 1.2 (21.8×, 0 K) | 8.3 (7.5×, 2 K) | 0.1 (74.7×, 0 K) | 64 mm ✅ |
+| floor pick | 0.50 | 0.25 | peak ≥ 1.5× | 22.4 (2.8×, 12 K) | 1.8 (57.8×, 0 K) | 1.4 (19.2×, 0 K) | 10.0 (6.3×, 2 K) | 0.1 (47.6×, 0 K) | 54 mm ✅ |
+| carry | 0.35 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 15.0 (4.2×, 5 K) | 1.7 (61.0×, 0 K) | 0.0 (999.0×, 0 K) | 12.9 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 84 mm ✅ |
+| carry | 0.40 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 17.6 (3.6×, 7 K) | 1.7 (61.8×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 74 mm ✅ |
+| carry | 0.45 | 0.70 | peak ≥ 2×, rise ≤ 15 K | 20.2 (3.1×, 10 K) | 1.6 (65.8×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 64 mm ✅ |
 | carry, handles at 0.80 | 0.35 | 0.80 | carry | no collision-free IK | | | | | |
-| carry, handles at 0.80 | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 18.0 (3.5×, 8 K) | 1.7 (61.5×, 0 K) | 0.0 (999.0×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 73 mm ✅ |
-| carry, handles at 0.80 | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.7 (3.0×, 10 K) | 1.6 (65.3×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 63 mm ✅ |
-| set on a bed (0.55 m) | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 18.0 (3.5×, 8 K) | 1.7 (61.5×, 0 K) | 0.0 (999.0×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 73 mm ✅ |
-| set on a bed (0.55 m) | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.7 (3.0×, 10 K) | 1.6 (65.3×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 63 mm ✅ |
-| set on a bed (0.55 m) | 0.50 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 23.2 (2.7×, 13 K) | 1.4 (74.2×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 53 mm ✅ |
+| carry, handles at 0.80 | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 17.6 (3.6×, 7 K) | 1.7 (61.9×, 0 K) | 0.0 (999.0×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 74 mm ✅ |
+| carry, handles at 0.80 | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.3 (3.1×, 10 K) | 1.6 (65.9×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 64 mm ✅ |
+| set on a bed (0.55 m) | 0.40 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 17.6 (3.6×, 7 K) | 1.7 (61.9×, 0 K) | 0.0 (999.0×, 0 K) | 12.6 (5.0×, 4 K) | 1.2 (6.1×, 2 K) | 74 mm ✅ |
+| set on a bed (0.55 m) | 0.45 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 20.3 (3.1×, 10 K) | 1.6 (65.9×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.6 (11.5×, 0 K) | 64 mm ✅ |
+| set on a bed (0.55 m) | 0.50 | 0.80 | peak ≥ 2×, rise ≤ 15 K | 22.8 (2.8×, 12 K) | 1.4 (75.0×, 0 K) | 0.0 (999.0×, 0 K) | 12.8 (4.9×, 4 K) | 0.0 (999.0×, 0 K) | 54 mm ✅ |
 | set on a washer / counter (0.90 m) | 0.40 | 1.15 | carry | no collision-free IK | | | | | |
 | set on a washer / counter (0.90 m) | 0.45 | 1.15 | carry | no collision-free IK | | | | | |
 | set on a washer / counter (0.90 m) | 0.50 | 1.15 | carry | no collision-free IK | | | | | |
@@ -72,26 +73,26 @@ Heavier hand at the share of 9.07 kg shown, the other hand the rest; floor pick 
 
 | Variant | Heavier hand | Load (kg) | Shoulder pitch | Roll | Yaw | Elbow | Wrist pitch | Worst | Tip (mm) | Joints that fail |
 |---|---|---|---|---|---|---|---|---|---|---|
-| B1 | 50 % | 4.54 / 4.54 | 1.47 ✅ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 9.00 ✅ (floor pick x 0.40) | 2.22 ✅ (carry x 0.45) | 3.03 ✅ (set on a bed (0.55 m) x 0.40) | **1.47** | 63 | none |
-| B1 | 60 % | 5.44 / 3.63 | 1.07 ✅ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 7.35 ✅ (floor pick x 0.45) | 1.90 ✅ (carry x 0.45) | 2.55 ✅ (set on a bed (0.55 m) x 0.40) | **1.07** | 48 | none |
-| B1 | 70 % | 6.35 / 2.72 | 0.82 ❌ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 6.32 ✅ (floor pick x 0.45) | 1.66 ✅ (carry x 0.45) | 2.19 ✅ (set on a bed (0.55 m) x 0.40) | **0.82** | 33 | pitch |
-| B1 | 100 % | 9.07 / 0.00 | 0.43 ❌ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 4.46 ✅ (floor pick x 0.45) | 0.93 ❌ (carry x 0.45) | 1.55 ✅ (set on a bed (0.55 m) x 0.40) | **0.43** | -15 | pitch, elbow |
-| B1y | 50 % | 4.54 / 4.54 | 1.48 ✅ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 9.00 ✅ (floor pick x 0.40) | 2.44 ✅ (carry x 0.45) | 3.03 ✅ (set on a bed (0.55 m) x 0.40) | **1.48** | 63 | none |
-| B1y | 60 % | 5.44 / 3.63 | 1.08 ✅ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 9.00 ✅ (floor pick x 0.40) | 2.09 ✅ (carry x 0.45) | 2.55 ✅ (set on a bed (0.55 m) x 0.40) | **1.08** | 47 | none |
-| B1y | 70 % | 6.35 / 2.72 | 0.82 ❌ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 8.17 ✅ (floor pick x 0.45) | 1.83 ✅ (carry x 0.45) | 2.19 ✅ (set on a bed (0.55 m) x 0.40) | **0.82** | 32 | pitch |
-| B1y | 100 % | 9.07 / 0.00 | 0.43 ❌ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 5.76 ✅ (floor pick x 0.45) | 1.13 ✅ (carry x 0.45) | 1.55 ✅ (set on a bed (0.55 m) x 0.40) | **0.43** | -18 | pitch |
+| B1 | 50 % | 4.54 / 4.54 | 1.57 ✅ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 9.00 ✅ (floor pick x 0.40) | 2.44 ✅ (carry x 0.40) | 3.03 ✅ (set on a bed (0.55 m) x 0.40) | **1.57** | 66 | none |
+| B1 | 60 % | 5.44 / 3.63 | 1.15 ✅ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 7.35 ✅ (floor pick x 0.45) | 2.09 ✅ (carry x 0.40) | 2.55 ✅ (set on a bed (0.55 m) x 0.40) | **1.15** | 50 | none |
+| B1 | 70 % | 6.35 / 2.72 | 0.87 ❌ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 6.32 ✅ (floor pick x 0.45) | 1.82 ✅ (carry x 0.40) | 2.19 ✅ (set on a bed (0.55 m) x 0.40) | **0.87** | 36 | pitch |
+| B1 | 100 % | 9.07 / 0.00 | 0.45 ❌ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 4.46 ✅ (floor pick x 0.45) | 1.12 ✅ (carry x 0.40) | 1.55 ✅ (set on a bed (0.55 m) x 0.40) | **0.45** | -13 | pitch |
+| B1y | 50 % | 4.54 / 4.54 | 1.54 ✅ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 9.00 ✅ (floor pick x 0.40) | 2.44 ✅ (carry x 0.45) | 3.03 ✅ (set on a bed (0.55 m) x 0.40) | **1.54** | 64 | none |
+| B1y | 60 % | 5.44 / 3.63 | 1.12 ✅ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 9.00 ✅ (floor pick x 0.40) | 2.09 ✅ (carry x 0.45) | 2.55 ✅ (set on a bed (0.55 m) x 0.40) | **1.12** | 48 | none |
+| B1y | 70 % | 6.35 / 2.72 | 0.85 ❌ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 8.17 ✅ (floor pick x 0.45) | 1.83 ✅ (carry x 0.45) | 2.19 ✅ (set on a bed (0.55 m) x 0.40) | **0.85** | 33 | pitch |
+| B1y | 100 % | 9.07 / 0.00 | 0.44 ❌ (set on a bed (0.55 m) x 0.45) | 9.00 ✅ (floor pick x 0.40) | 5.76 ✅ (floor pick x 0.45) | 1.13 ✅ (carry x 0.45) | 1.55 ✅ (set on a bed (0.55 m) x 0.40) | **0.44** | -16 | pitch |
 
-Largest heavier-hand share with every joint passing (interpolated on the 50, 55, 60, 65, 70, 100 % grid): **B1 63 %**; **B1y 63 %**. The limiting rule is the shoulder pitch's 2-minute rise on the carry (rnd/thermal.md's open-air 60 K model; the D20 pitch carries ≈ its rated torque at 0.45 m with equal shares) and then its peak margin on the pick with the seating factor; the elbow and the B1y yaw keep margin. A rule on the 2-min rise is a thermal rule: thermal.md section 3 has the same carry in the capped mount.
+Largest heavier-hand share with every joint passing (interpolated on the 50, 55, 60, 65, 70, 100 % grid): **B1 65 %**; **B1y 64 %**. The limiting rule is the shoulder pitch's 2-minute rise on the carry (rnd/thermal.md's open-air 60 K model; the D20 pitch carries ≈ its rated torque at 0.45 m with equal shares) and then its peak margin on the pick with the seating factor; the elbow and the B1y yaw keep margin. A rule on the 2-min rise is a thermal rule: thermal.md section 3 has the same carry in the capped mount.
 
 ## Proposed planner / supervisor rule: measure the share before the basket leaves the floor (for the software owner)
 
-The joints set the limit: the heavier hand may carry at most **63 %** of the basket on D20 / B1y before a joint leaves its rule (table above). A hand-load estimate from joint currents is uncertain by about ±7 percentage points of share (ESTIMATE: ±10 % torque constant, ±0.5 N·m friction at pitch / elbow against ≈ 45 N per hand), so the rule refuses above **56 %** measured. Until the bench calibrates the estimate, that leaves a usable window.
+The joints set the limit: the heavier hand may carry at most **64 %** of the basket on D20 / B1y before a joint leaves its rule (table above). A hand-load estimate from joint currents is uncertain by about ±7 percentage points of share (ESTIMATE: ±10 % torque constant, ±0.5 N·m friction at pitch / elbow against ≈ 45 N per hand), so the rule refuses above **57 %** measured. Until the bench calibrates the estimate, that leaves a usable window.
 
 1. **Capture check (before any lift).** Both grippers closed on their handles, the D21 hooks seated: gripper position at the hook stop, and a 1–2 mm downward hand nudge that loads both hooks (joint-current rise on both arms). One hook not confirmed → abort, re-grasp. No lift on a single confirmed hook.
 2. **Tare lift.** Raise the lift slowly (≤ 20 mm/s) until the summed hand load is ≥ 90 % of the expected basket weight or the lift has risen 25 mm, then hold 0.5 s: the basket is just clear of the floor, so an abort drops it ≤ 25 mm. Before this lift, record each arm's gravity-model residual (τ_measured − τ_model(q) with an empty hand) as the zero.
 3. **Measure each hand's load** from that arm's joint torques: F_hand = (Jᵀ)⁺ (τ_measured − τ_model(q) − τ_zero), using pitch, roll, elbow and wrist pitch (the 3:1 belt joints are the best-sensed); vertical components F_r, F_l, total W = F_r + F_l.
-4. **Refuse** (set back down along the pick path, open the hooks) when: the heavier share max(F_r, F_l) / W > **56 %**; either hand < 25 % (a hook not really carrying); W > 1.1 × 9.07 kg (overweight for R2d); or the two arms' estimates disagree with the lift motor's load change by more than 15 %.
-5. **Monitor through the carry and the set-down** at the control rate: the same share and total tests with hysteresis (abort at 61 %), plus a slip test (one hand's load falling > 30 % in 0.2 s). On abort: lower the lift and set the basket down along a pre-planned unload trajectory; never open the grippers or drop torque under load, and never let a thermal or current cut-out be the first response (thermal.md section 3: derate before the limit).
+4. **Refuse** (set back down along the pick path, open the hooks) when: the heavier share max(F_r, F_l) / W > **57 %**; either hand < 25 % (a hook not really carrying); W > 1.1 × 9.07 kg (overweight for R2d); or the two arms' estimates disagree with the lift motor's load change by more than 15 %.
+5. **Monitor through the carry and the set-down** at the control rate: the same share and total tests with hysteresis (abort at 62 %), plus a slip test (one hand's load falling > 30 % in 0.2 s). On abort: lower the lift and set the basket down along a pre-planned unload trajectory; never open the grippers or drop torque under load, and never let a thermal or current cut-out be the first response (thermal.md section 3: derate before the limit).
 6. **Log** F_r, F_l, W and the refusal reason for every basket lift: the field data that replaces the ESTIMATE seating factor (1.3) and the sensing uncertainty.
 
 The 100 % row is the case the rule must catch in the air (one hook released or slipped): every heavy joint is far past its rule, so the supervisor's response is a controlled set-down, not 'hold on'. The wrist bearing, the hook and the gripper's own capture load with one hand carrying 70–100 % are outside these joint checks (Astra #3 major 10: test them tethered).

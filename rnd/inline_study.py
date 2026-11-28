@@ -441,7 +441,7 @@ def accuracy_rows(d, joint_encoders, dual_closes=True):
         dual = bool(s.get("output_encoder"))
         if r != 1.0 or j == "wrist_pitch":
             e = base[j][0]
-        elif joint_encoders or (dual and dual_closes):
+        elif (joint_encoders and not (dual and not dual_closes)) or (dual and dual_closes):
             e = A.JOINT_ENC                     # a 2EC output encoder closing an outer loop (Astra #3: only if its bandwidth / latency are shown)
         else:
             e = math.hypot(s.get("backlash_arcmin", 15) / 60, A.MOTOR_ENC / s["gear_ratio"])
@@ -696,6 +696,8 @@ def _checks(d, quick=False):
         r["acc_enc" if enc else "acc"] = dict(rss=rss, joints={j: dict(deg=e, mm=mm) for j, (e, mm) in jr.items()})
     jr, rss = accuracy_rows(d, False, dual_closes=False)            # 2EC output encoder as absolute reference only
     r["acc_ref"] = dict(rss=rss, joints={j: dict(deg=e, mm=mm) for j, (e, mm) in jr.items()})
+    jr, rss = accuracy_rows(d, True, dual_closes=False)             # the encoders the BOM buys (AS5048A / off-axis), 2EC as reference only
+    r["acc_bom"] = dict(rss=rss, joints={j: dict(deg=e, mm=mm) for j, (e, mm) in jr.items()})
     return r
 
 
@@ -818,6 +820,8 @@ def report(res, keys):
     row(f"Share of contact normals within {M_BOUND:.2f} kg, same pose, empty hand", lambda r, k: f"{_me(r)['within'] * 100:.0f} %")
     row("**Hand accuracy** (joint RSS, mm): no extra encoders, 2EC as reference only / 2EC closing an outer loop / joint-side encoders everywhere",
         lambda r, k: f"**{r['acc_ref']['rss']:.1f} / {r['acc']['rss']:.1f} / {r['acc_enc']['rss']:.1f}**")
+    row("**Hand accuracy with the encoders the BOM buys** (AS5048A on belt joints, off-axis on SteadyWin inline joints; 2EC as reference only / closing a loop, mm)",
+        lambda r, k: f"**{r['acc_bom']['rss']:.1f} / {r['acc_enc']['rss']:.1f}**")
     row("Worst 1 kg hold in the BOM mount, yaw: winding nominal (band hi), time to 100 °C", lambda r, k: _th(r, "upper_yaw"))
     row("Same, elbow", lambda r, k: _th(r, "elbow"))
     row("Elbow envelope (mm)", lambda r, k: ENV["elbow"][k])
@@ -1039,8 +1043,9 @@ def recommendation(res, keys):
           f"70/30 {b1['basket']['shares']['0.70']['worst']:.2f} → {by['basket']['shares']['0.70']['worst']:.2f} (pitch limits both); hand effective mass "
           f"{_me(b1)['worst_free']:.2f} → {_me(by)['worst_free']:.2f} kg (v for 140 N {v_allow(_me(b1)['worst_free']):.2f} → {v_allow(_me(by)['worst_free']):.2f} m/s); "
           f"yaw J_r·N² {b1['backdrive']['upper_yaw']['J']:.4f} → {by['backdrive']['upper_yaw']['J']:.4f} kg·m² (40:1 two-stage against 16:1); "
-          f"accuracy {b1['acc_ref']['rss']:.1f} → {by['acc_ref']['rss']:.1f} mm with the 2EC as reference only, → {by['acc']['rss']:.1f} mm if it can close an "
-          f"outer loop (B1 needs the AS5048A it already has for {b1['acc_enc']['rss']:.1f}); R1 coverage change {r1:+.0f} points at worst "
+          f"accuracy with the encoders each BOM buys: B1 {b1['acc_bom']['rss']:.1f} mm (AS5048A on the yaw shaft) → B1y {by['acc_bom']['rss']:.1f} mm with the 2EC as "
+          f"an absolute reference only (the J4340's ≈ 15 arcmin backlash stays in the loop), {by['acc_enc']['rss']:.1f} mm only if an outer loop can be closed on the 2EC "
+          "(not yet demonstrated: a regression until it is); R1 coverage change {r1:+.0f} points at worst "
           f"(kinematics identical, FK diff {rc.get('fk_max_diff_mm', float('nan')):.3f} mm); yaw block 175 × 92 → Ø92 plan with +15 mm drop; "
           f"drive pieces {b1['simple']['parts']} → {by['simple']['parts']}, one belt stage and its tension check fewer (D26's 0–156 N yaw spread gone). "
           f"**Thermal is the catch:** the bare J4340 under the cover holds the worst 1 kg yaw pose at {th_y['T']:.0f} °C nominal ({th_y['T_hi']:.0f} band hi; "
