@@ -11,6 +11,8 @@ unchanged):
 - **I1 all-inline SteadyWin** (`inline`): GIM8108-36 at pitch, roll, elbow; GIM6010-48 at yaw.
 - **I2a all-inline mixed** (`inline_dm`): GIM8108-36 at pitch, roll, elbow; dual-encoder DM-J4340-2EC at yaw.
 - **I2b all-inline mixed** (`inline_dm8009`): as I2a with a dual-encoder DM-J8009-2EC (9:1 single stage) at the elbow.
+- **B1y D20 + inline yaw** (`d20_yaw`, Astra review #3's recommended next study): B1 with only the upper-arm yaw changed to a
+  coaxial dual-encoder DM-J4340-2EC (the yaw belt stage, stub, pulley, 6001, belt, cap and AS5048A removed).
 
 Method. The torque, tip, basket, hug, thermal and accuracy rows re-run the existing models (rnd/spring.py, payload_study.py,
 basket.py, tip.py, thermal.py network, accuracy.py constants) on each variant's params. There is **no inline CAD** for
@@ -21,6 +23,17 @@ with the removed belt-stage hulls taken out and the motor cylinders added (pose 
 the collision numbers use a first-order model with cited scaling (reflected inertia J_rotor·N², back-driving
 efficiency of a planetary η_b ≈ 2 − 1/η_f) and ESTIMATE rotor inertias / drag torques: **they are what the bench must
 measure first**.
+
+**Revision after Astra review #3 (2026-11-28, Part A).** (a) The 20 lb hug is judged at the R2c spec point, 0.25 m from the
+elbow (0.20 / 0.30 m shown as brackets; the first version promoted 0.20 m to the summary). (b) Actuator masses sit on the
+bodies that carry them, with their own COMs and cylinder inertias (study_xml: a belt-driven elbow motor on the upper arm
+at its belt centre above the elbow axis; an inline actuator's housing, stator and rotor on the upstream body and its
+output carrier on the downstream body; the belt yaw cartridge on the roll output 81 mm behind the yaw axis): the twin-based
+rows (tip, basket, workspace torques, effective mass, gravity moment) run on that model. (c) Back-drive is compared as
+whole-joint ratio N and reflected rotor inertia J_r·N²; the efficiency-based drag is not a breakaway-friction law and
+carries an explicit 4× band. (d) Collision: directional effective mass m(n) = 1 / (nᵀ J M⁻¹ Jᵀ n) over contact normals,
+poses, the hand and the elbow, empty hand and 1 kg, against the R17 bound m_max = (F_max / v)² / k = 1.05 kg (140 N,
+0.5 m/s, 75 N/mm), and the hand speed v = F_max / √(k·m) that meets it.
 """
 from __future__ import annotations
 
@@ -35,11 +48,11 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent
 DOCS = ROOT.parent / "docs" / "rnd"
 REVIEW = ROOT.parent / "docs" / "review"
-KEYS = ["B0", "B1", "I1", "I2a", "I2b"]
-SET = {"B0": None, "B1": "d20", "I1": "inline", "I2a": "inline_dm", "I2b": "inline_dm8009"}
+KEYS = ["B0", "B1", "B1y", "I1", "I2a", "I2b"]
+SET = {"B0": None, "B1": "d20", "B1y": "d20_yaw", "I1": "inline", "I2a": "inline_dm", "I2b": "inline_dm8009"}
 NAME = {"B0": "B0 today (GIM6010 belts + inline roll)", "B1": "B1 today + D20 (GIM8108-8 belts at pitch + elbow)",
         "I1": "I1 all-inline SteadyWin (8108-36 ×3, 6010-48 yaw)", "I2a": "I2a all-inline mixed (DM-J4340 yaw, 8108-36 elbow)",
-        "I2b": "I2b all-inline mixed (DM-J4340 yaw, DM-J8009 elbow)"}
+        "I2b": "I2b all-inline mixed (DM-J4340 yaw, DM-J8009 elbow)", "B1y": "B1y D20 + inline DM-J4340-2EC yaw"}
 BIG = ("shoulder_pitch", "shoulder_roll", "upper_yaw", "elbow")
 LEVER = {"shoulder_pitch": 0.60, "shoulder_roll": 0.60, "upper_yaw": 0.43, "elbow": 0.43}   # m, hand moment arm (rnd/accuracy.py LEVER; yaw: forearm + hand with the elbow at 90°)
 
@@ -80,10 +93,14 @@ ENC_LINE = ("AS5048A elbow bracket / board / magnet (the DM-J8009-2EC reads its 
 
 
 def mass_lines(key):
-    """{param: [(item, kg, basis)]} of the deltas from B0, for an inline variant."""
+    """{param: [(item, kg, basis)]} of the deltas from B0 for an all-inline variant, from B1 for B1y (inline yaw only)."""
     from .params import ARM_MOTOR_SETS
     s = ARM_MOTOR_SETS[SET[key]]
     yaw = s["upper_yaw"][0]
+    if key == "B1y":
+        return {"bone_mass_upper": [(f"neck {s['yaw_drop_dm'] * 1000:.0f} mm shorter (yaw drop + {s['yaw_drop_dm'] * 1000:.0f} mm)",
+                                     -NECK_G_PER_MM * s["yaw_drop_dm"] * 1000, "params ROLL_DRIVES neck g/mm")],
+                "yaw_stage_mass": list(YAW_LINES[yaw])}
     el = list(ELBOW_LINES) + [(f"neck {s['yaw_drop_dm'] * 1000:.0f} mm shorter (yaw drop + {s['yaw_drop_dm'] * 1000:.0f} mm)",
                                -NECK_G_PER_MM * s["yaw_drop_dm"] * 1000, "params ROLL_DRIVES neck g/mm")]
     if s["elbow"][0].startswith("DM-"):
@@ -102,6 +119,12 @@ def variants():
             want = getattr(B.arm, p) + sum(m for _, m, _ in L)
             have = getattr(out[k].arm, p)
             assert abs(want - have) <= 0.0055, f"params ARM_MOTOR_SETS[{SET[k]!r}] {p} = {have:.3f}, MASS_LINES give {want:.3f}"
+    for p, L in mass_lines("B1y").items():                            # B1y: deltas from B1
+        want = getattr(out["B1"].arm, p) + sum(m for _, m, _ in L)
+        have = getattr(out["B1y"].arm, p)
+        assert abs(want - have) <= 0.0055, f"params ARM_MOTOR_SETS['d20_yaw'] {p} = {have:.3f}, MASS_LINES give {want:.3f}"
+    # Astra #3 major 15: the programmatic default set must equal the default design (env-selected) arm
+    assert dataclasses.replace(with_arm_motors(B, "gim6010").arm) == B.arm, "with_arm_motors(BASELINE, 'gim6010') != BASELINE.arm"
     return out
 
 
@@ -126,7 +149,7 @@ def drive_lines(d):
     from .params import SPECS
     P = prices()
     out = []
-    d20 = d.arm.arm_motors == "d20"
+    d20 = d.arm.arm_motors in ("d20", "d20_yaw")
     for j in BIG:
         n, r = d.arm.joints[j]
         out.append((j, f"actuator {n}", 1, P[n][0], P[n][1]))
@@ -156,6 +179,9 @@ def drive_lines(d):
                 out.append((j, "far-side support bearing", 1, 3.0, "ESTIMATE (61806 class, as the roll)"))
             if not dual:
                 out.append((j, "off-axis joint encoder (ring magnet round the motor; the on-axis AS5048A has no axis to sit on)", 1, 20.0, "ESTIMATE"))
+            if n == "DM-J4340-2EC":
+                out.append((j, "aluminium finned ring on the rear face through the cover + NTC (thermal: thermal.md section 3, the bare J4340 "
+                               "under the cover does not hold the worst 1 kg pose)", 1, K.AL_CAP[0] + 0.6 + 3.0, "m1_kit AL_CAP + ESTIMATE $3 for the ring adapter"))
     return out
 
 
@@ -166,10 +192,15 @@ DRAG_MOTOR = {"GIM6010-8": 0.010, "GIM6010-48": 0.010, "GIM8108-8": 0.015, "GIM8
               "DM-J8009-2EC": 0.015, "DM-J4310-2EC_V1.1": 0.005}   # N·m motor-side drag (bearings, cogging, seal), ESTIMATE
 DRAG_GEAR = {1: 0.10, 2: 0.30}  # N·m output-side gearbox breakaway by stage count (ESTIMATE)
 DRAG_BELT = 0.05            # N·m at the joint: belt hysteresis + the stage's extra 6001 / 61808 (ESTIMATE)
-SPREAD = (0.5, 2.0)         # back-drive torque range for the table (× the mid ESTIMATE): unknown until benched
+SPREAD = (0.5, 2.0)         # back-drive torque band (× the mid ESTIMATE, a 4× wide band): unknown until benched. Astra #3: no verified
+                            # measurement of these assemblies supports even this band; it is an illustration of the uncertainty, not a bound
 V_HAND = 0.5                # m/s hand speed for the impact rows (ESTIMATE: brisk reach; supervisor joint v_max 1.5 rad/s)
 K_BODY = {"chest": 25e3, "hand": 75e3}   # N/m effective body-region stiffness (ISO/TS 15066 Annex A; ESTIMATE from memory of the table)
-F_TRANSIENT = 280.0         # N: ISO/TS 15066 chest / hand quasi-static 140 N × 2 for transient contact (ESTIMATE from memory)
+F_TRANSIENT = 280.0         # N: ISO/TS 15066 chest / hand quasi-static 140 N × 2 for transient contact (ESTIMATE from memory; not Pip's limit)
+F_R17 = 140.0               # N: Pip's own R17 limit, "≤ 140 N transient at the hands" (docs/RND_PLAN.md R17). Astra #3: use this, not 280 N
+M_BOUND = (F_R17 / V_HAND) ** 2 / K_BODY["hand"]   # kg: fixed-target spring bound m_max = (F/v)²/k = 1.05 kg at 0.5 m/s, 75 N/mm
+M_CONSTRAINED = 25.0        # kg: a direction with m(n) above this is a constrained direction of the rigid model (arm straight
+                            # along its own axis), reported as such, not as a benign finite worst case
 T_DETECT = (0.014, 0.018)   # s: sw/collision.py momentum-observer trip on contact (W6 bench runs, RND_LOG 2026-11-27)
 THR = {"shoulder_pitch": 3.2, "shoulder_roll": 2.4, "upper_yaw": 1.6, "elbow": 2.4}   # N·m, sw/test_s1.py collision thresholds
 
@@ -188,66 +219,210 @@ def joint_drive(d, j):
 
 
 def backdrive(d):
+    """Per big joint: whole-joint ratio N (actuator × belt), rotor J_r and reflected J_r·N², the efficiency-model drag T with
+    its 4× band, and the hand force at the fixed LEVER (a fixed lever is not the hand lever in every pose: Astra #3)."""
+    from .params import SPECS
     rows = {}
     for j in BIG:
         g = joint_drive(d, j)
         lv = LEVER[j]
-        rows[j] = dict(g, F=g["T"] / lv, F_lo=SPREAD[0] * g["T"] / lv, F_hi=SPREAD[1] * g["T"] / lv, m_hand=g["J"] / lv ** 2,
+        rows[j] = dict(g, Jr=SPECS[g["act"]].get("rotor_inertia_kgm2", 3e-5), F=g["T"] / lv, F_lo=SPREAD[0] * g["T"] / lv, F_hi=SPREAD[1] * g["T"] / lv,
+                       T_lo=SPREAD[0] * g["T"], T_hi=SPREAD[1] * g["T"], m_hand=g["J"] / lv ** 2,
                        trip_rise=0.5 * g["T"], F_trip=(THR[j] + 0.5 * g["T"]) / lv)
     return rows
 
 
+# ------------------------------------------------------------------------- actuator masses on the right bodies (Astra #3)
+F_HOUSING = 0.80            # ESTIMATE: share of a geared actuator's mass that is housing + stator + ring gear + driver + rotor (rides
+                            # the upstream body); the output carrier, output flange and bearing inner (0.20) ride the downstream body
+DIMS = {"GIM6010-8": (0.080, 0.040), "GIM8108-8": (0.096, 0.045), "GIM8108-36": (0.096, 0.057), "GIM6010-48": (0.080, 0.0675),
+        "DM-J4340-2EC": (0.057, 0.056), "DM-J8009-2EC": (0.098, 0.0617), "DM-J4310-2EC_V1.1": (0.056, 0.046)}   # Ø, length (m): actuators.yaml / thermal.ENVELOPE
+YAW_BELT_POS = (-0.08118, 0.0, -0.020)   # m in the roll body: the belt yaw cartridge (rnd/parts/roll.py YAW_C 81.18 behind the yaw axis; can
+                                         # from the top plate (z −54) up, centre ≈ −20 mm: ESTIMATE from roll.py P1 / ZC)
+ROLL_HOUSING_X = -0.030     # m: the inline roll GIM8108-36 housing centre behind the roll output face along the roll axis (ESTIMATE)
+YAW_INLINE_COVER = (0.046, 0.056)   # m: collision cylinder of the coaxial J4340 + wall + cover (radius, length), as CYL
+
+
+def study_xml(d, geometry=None, build=None):
+    """twin.build_xml(d) with the actuator masses on the bodies that carry them (Astra #3 Part A): the twin puts every
+    actuator as a sphere on its joint's child body at the axis. Here: elbow belt motor (ratio ≠ 1) on the upper arm at
+    elbow_belt_c above the elbow axis; inline elbow: housing on the upper arm, output on the forearm; belt yaw cartridge on
+    the roll output at YAW_BELT_POS; inline yaw: housing on the roll output coaxial above the yaw interface, output on
+    the upper arm; inline roll: housing on the pitch body; wrist pitch: housing on the forearm. Cylinders, so MuJoCo
+    gives each its own COM and inertia; the rotor's spin inertia enters as armature J_r·N² where effective mass is
+    computed. Inline-yaw sets also get the collision swap: the off-axis yaw cartridge hull goes, a Ø92 coaxial motor
+    cylinder comes in, and the upper-arm hulls stay fixed relative to the elbow (the neck shortens)."""
+    import xml.etree.ElementTree as ET
+    from . import twin
+    from .params import act
+    a = d.arm
+    root = ET.fromstring((build or twin.build_xml)(d, geometry))
+    bodies = {b.get("name"): b for b in root.iter("body")}
+
+    def cyl(parent, m, D, L, pos, axis, coll=False):
+        eul = {"x": "0 90 0", "y": "90 0 0", "z": "0 0 0"}[axis]
+        g = ET.SubElement(parent, "geom", type="cylinder", size=f"{D / 2:.4f} {L / 2:.4f}", pos=" ".join(f"{v:.5f}" for v in pos),
+                          euler=eul, mass=f"{max(m, 1e-6):.5f}", rgba=".1 .1 .1 1")
+        if not coll:
+            g.set("contype", "0"); g.set("conaffinity", "0"); g.set("group", "3")
+        return g
+
+    def first_sphere(b):
+        return next(g for g in b.findall("geom") if g.get("type") == "sphere")
+    for side in "rl":
+        sg = -1 if side == "r" else 1
+        sh, roll, up, fore, wr = (bodies[f"{n}_{side}"] for n in ("sh", "roll", "upper", "fore", "wrist"))
+        z_el = -(a.l_upper - a.yaw_drop)
+        # elbow
+        n, r = a.joints["elbow"]
+        me = act(n)["mass"]; D, L = DIMS.get(n, (0.08, 0.05))
+        g = first_sphere(fore)
+        if a.elbow_motor_at is None:
+            if r != 1.0:
+                g.set("mass", "1e-6")
+                cyl(up, me, D, L, (0, 0, z_el + a.elbow_belt_c), "y")
+            else:
+                g.set("mass", f"{(1 - F_HOUSING) * me:.5f}")
+                cyl(up, F_HOUSING * me, D, L, (0, 0, z_el), "y")
+        # yaw
+        n, r = a.joints["upper_yaw"]
+        my = act(n)["mass"]; D, L = DIMS.get(n, (0.08, 0.05))
+        g = first_sphere(up)
+        if r != 1.0:
+            g.set("mass", f"{a.yaw_stage_mass:.5f}")
+            cyl(roll, my, D, L, YAW_BELT_POS, "z")
+        else:
+            g.set("mass", f"{a.yaw_stage_mass + (1 - F_HOUSING) * my:.5f}")
+            cyl(roll, F_HOUSING * my, D, L, (0, 0, -a.yaw_drop + L / 2), "z")
+            # collision swap (CAD hulls are exported for today's off-axis yaw at the default drop)
+            from .params import BASELINE
+            dz = a.yaw_drop - BASELINE.arm.yaw_drop
+            for gg in list(roll.findall("geom")):
+                if (gg.get("mesh") or "").startswith("roll_yawcart"):
+                    roll.remove(gg)
+            for gg in up.findall("geom"):
+                if (gg.get("mesh") or "").startswith("upper_"):
+                    gg.set("pos", f"0 0 {dz:.5f}")
+            rc, lc = YAW_INLINE_COVER
+            c = ET.SubElement(roll, "geom", type="cylinder", size=f"{rc:.4f} {lc / 2:.4f}", pos=f"0 0 {-a.yaw_drop + lc / 2:.5f}", mass="0.000001",
+                              rgba=".9 .9 .92 1")
+        # inline roll: housing on the pitch body
+        n, r = a.joints["shoulder_roll"]
+        if r == 1.0:
+            mr = act(n)["mass"]; D, L = DIMS.get(n, (0.096, 0.057))
+            g = first_sphere(roll)
+            g.set("mass", f"{a.roll_stage_mass + (1 - F_HOUSING) * mr:.5f}")
+            cyl(sh, F_HOUSING * mr, D, L, (ROLL_HOUSING_X, sg * a.roll_offset_y, 0), "x")
+        # wrist pitch: housing on the forearm
+        n, _ = a.joints["wrist_pitch"]
+        mw = act(n)["mass"]; D, L = DIMS.get(n, (0.056, 0.046))
+        g = first_sphere(wr)
+        g.set("mass", f"{(1 - F_HOUSING) * mw:.5f}")
+        cyl(fore, F_HOUSING * mw, D, L, (0, 0, -a.l_fore), "y")
+    return ET.tostring(root, encoding="unicode")
+
+
+class corrected_bodies:
+    """Context: every twin model built inside (tip.Body, twin.Reacher, spring, the effective mass) uses study_xml."""
+
+    def __enter__(self):
+        from . import spring, twin
+        self.orig = twin.build_xml
+        f = lambda dd, geometry=None, _o=self.orig: study_xml(dd, geometry, _o)
+        twin.build_xml = spring.build_xml = f
+        return self
+
+    def __exit__(self, *exc):
+        from . import spring, twin
+        twin.build_xml = spring.build_xml = self.orig
+        return False
+
+
 POSES = {"reach (pitch −60°, elbow −60°)": dict(pitch=-60, roll=8, yaw=0, elbow=-60, wpitch=0),
-         "arm straight out (pitch −90°)": dict(pitch=-90, roll=8, yaw=0, elbow=0, wpitch=0)}
+         "arm straight out (pitch −90°)": dict(pitch=-90, roll=8, yaw=0, elbow=0, wpitch=0),
+         "hand at chest height, elbow 90° (pitch −45°, elbow −90°)": dict(pitch=-45, roll=8, yaw=0, elbow=-90, wpitch=0),
+         "low reach (pitch −30°, elbow −30°)": dict(pitch=-30, roll=8, yaw=0, elbow=-30, wpitch=0),
+         "across the body (pitch −60°, roll 15°, yaw 45°, elbow −90°)": dict(pitch=-60, roll=15, yaw=45, elbow=-90, wpitch=0)}
+N_NORMALS = 400
+
+
+def _normals(n=N_NORMALS):
+    """Fibonacci sphere of unit contact normals (a normal and its opposite give the same mass; kept for simplicity)."""
+    i = np.arange(n) + 0.5
+    ph = np.arccos(1 - 2 * i / n)
+    th = math.pi * (1 + 5 ** 0.5) * i
+    return np.stack([np.cos(th) * np.sin(ph), np.sin(th) * np.sin(ph), np.cos(ph)], axis=1)
+
+
+def v_allow(m, F=F_R17, k=K_BODY["hand"]):
+    """Speed (m/s) at which a free effective mass m on a body spring k peaks at F (fixed-target spring model)."""
+    return F / math.sqrt(k * max(m, 1e-9))
 
 
 def effective_mass(d):
-    """Hand effective mass (kg) along x / y / z and the worst of those that are not singular, from the twin's M(q) with and without the
-    reflected rotor inertias as joint armature (right arm; lift and base held). Λ⁻¹ = J M⁻¹ Jᵀ (translation)."""
+    """Directional effective mass (kg) m(n) = 1 / (nᵀ Λ⁻¹ n), Λ⁻¹ = J M⁻¹ Jᵀ (translation), at the hand (grasp site) and at
+    the elbow (the forearm origin), over N_NORMALS contact normals, for each pose, with the hand empty and with 1 kg, links
+    only and with the reflected rotor inertias as joint armature (right arm; lift and base held; study_xml bodies)."""
     import mujoco
-    from .twin import build_xml
-    m = mujoco.MjModel.from_xml_string(build_xml(d))
-    dat = mujoco.MjData(m)
-    jn = {"pitch": "shoulder_pitch", "roll": "shoulder_roll", "yaw": "upper_yaw", "elbow": "elbow", "wpitch": "wrist_pitch"}
-    dof = {k: m.jnt_dofadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, f"{k}_r")] for k in list(jn) + ["wroll"]}
     from .params import SPECS
+    jn = {"pitch": "shoulder_pitch", "roll": "shoulder_roll", "yaw": "upper_yaw", "elbow": "elbow", "wpitch": "wrist_pitch"}
     arm = {}
     for k, full in jn.items():
         n, r = d.arm.joints[full]
         arm[k] = SPECS[n].get("rotor_inertia_kgm2", 3e-5) * (SPECS[n]["gear_ratio"] * r) ** 2
-    site = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_SITE, "grasp_r")
-    idx = [dof[k] for k in ("pitch", "roll", "yaw", "elbow", "wpitch", "wroll")]
+    nrm = _normals()
     out = {}
-    for pn, pose in POSES.items():
-        res = {}
-        for lab, use in (("links only", False), ("with reflected rotor inertia", True)):
-            m.dof_armature[:] = 0.0
-            if use:
-                for k, v in arm.items():
-                    m.dof_armature[dof[k]] = v
-            dat.qpos[:] = 0
-            for k, v in pose.items():
-                dat.qpos[m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, f"{k}_r")]] = math.radians(v)
-            mujoco.mj_forward(m, dat)
-            M = np.zeros((m.nv, m.nv))
-            if hasattr(dat, "qM"):                     # MuJoCo ≤ 3.x / 4.x signatures (as sw/collision.py)
-                mujoco.mj_fullM(m, M, dat.qM)
-            else:
-                mujoco.mj_fullM(m, dat, M)
-            Jp = np.zeros((3, m.nv))
-            mujoco.mj_jacSite(m, dat, Jp, None, site)
-            Ma = M[np.ix_(idx, idx)]
-            Ja = Jp[:, idx]
-            Li = Ja @ np.linalg.solve(Ma, Ja.T)
-            ax = {c: (float(1 / Li[i, i]) if Li[i, i] > 0.02 else float("inf")) for i, c in enumerate("xyz")}   # Λ⁻¹ ≈ 0: singular along it (arm straight)
-            res[lab] = dict(worst=max(v for v in ax.values() if math.isfinite(v)), **ax)
-        out[pn] = res
+    for pay in (0.0, 1.0):
+        dd = dataclasses.replace(d, arm=dataclasses.replace(d.arm, payload=max(pay, 1e-4)))
+        m = mujoco.MjModel.from_xml_string(study_xml(dd))
+        dat = mujoco.MjData(m)
+        dof = {k: m.jnt_dofadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, f"{k}_r")] for k in list(jn) + ["wroll"]}
+        idx = [dof[k] for k in ("pitch", "roll", "yaw", "elbow", "wpitch", "wroll")]
+        site = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_SITE, "grasp_r")
+        fore = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "fore_r")
+        for pn, pose in POSES.items():
+            res = {}
+            for lab, use in (("links only", False), ("with reflected rotor inertia", True)):
+                m.dof_armature[:] = 0.0
+                if use:
+                    for k, v in arm.items():
+                        m.dof_armature[dof[k]] = v
+                dat.qpos[:] = 0
+                for k, v in pose.items():
+                    dat.qpos[m.jnt_qposadr[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, f"{k}_r")]] = math.radians(v)
+                mujoco.mj_forward(m, dat)
+                M = np.zeros((m.nv, m.nv))
+                if hasattr(dat, "qM"):                     # MuJoCo ≤ 3.x / 4.x signatures (as sw/collision.py)
+                    mujoco.mj_fullM(m, M, dat.qM)
+                else:
+                    mujoco.mj_fullM(m, dat, M)
+                Jp = np.zeros((3, m.nv)); mujoco.mj_jacSite(m, dat, Jp, None, site)
+                Je = np.zeros((3, m.nv)); mujoco.mj_jac(m, dat, Je, None, dat.xpos[fore], fore)
+                rr = {}
+                # "hand": every arm joint free over the first peak (no controller stiffness); "hand, wrist held": the wrist's
+                # position loop holds the hand to the forearm (the conservative case: the light hand cannot swing away)
+                for where, J_, ix in (("hand", Jp, idx), ("hand, wrist held", Jp, idx[:4]), ("elbow", Je, idx)):
+                    Ma = M[np.ix_(ix, ix)]
+                    Ja = J_[:, ix]
+                    Li = Ja @ np.linalg.solve(Ma, Ja.T)
+                    mn = 1.0 / np.maximum(np.einsum("ij,jk,ik->i", nrm, Li, nrm), 1e-12)
+                    fin = mn[mn <= M_CONSTRAINED]
+                    ax = {c: float(1 / Li[i, i]) if Li[i, i] > 1 / M_CONSTRAINED else float("inf") for i, c in enumerate("xyz")}
+                    ev = np.sort(1.0 / np.maximum(np.linalg.eigvalsh(0.5 * (Li + Li.T)), 1e-12))   # principal effective masses
+                    pr = [float(v) if v <= M_CONSTRAINED else float("inf") for v in ev]
+                    fin_pr = [v for v in pr if math.isfinite(v)]
+                    rr[where] = dict(principal=pr, worst_free=max(fin_pr) if fin_pr else float("inf"), n_constrained=sum(not math.isfinite(v) for v in pr),
+                                     worst=float(fin.max()) if fin.size else float("inf"), median=float(np.median(mn)),
+                                     least=float(mn.min()), constrained=float((mn > M_CONSTRAINED).mean()),
+                                     within=float((mn <= M_BOUND).mean()), **ax)
+                res[lab] = rr
+            out.setdefault(pn, {})[f"{pay:g} kg"] = res
     return out
 
 
-def impact(m_eff, k):
-    """Peak transient contact force (N) and its rise time (s) for a free effective mass at V_HAND on a body spring k."""
-    return V_HAND * math.sqrt(k * m_eff), 0.5 * math.pi * math.sqrt(m_eff / k)
+def impact(m_eff, k, v=V_HAND):
+    """Peak transient contact force (N) and its rise time (s) for a free effective mass at speed v on a body spring k."""
+    return v * math.sqrt(k * m_eff), 0.5 * math.pi * math.sqrt(m_eff / k)
 
 
 # ------------------------------------------------------------------------------------------------------------- accuracy
@@ -276,24 +451,27 @@ def accuracy_rows(d, joint_encoders):
 # ------------------------------------------------------------------------------------------------------------- envelope
 ENV = {   # mm (ESTIMATE unless noted): the joint body with walls + cover allowance; today's from the CAD constants
     "elbow": {"B0": "98 × 108 × 168 (fore-aft × along axis × height; arm.HOUSING, FROM CAD): motor 70 mm above the axis",
-              "B1": "109 × 108 × 196 (arm.HOUSING D20, FROM CAD)",
+              "B1": "109 × 108 × 196 (arm.HOUSING D20, FROM CAD)", "B1y": "as B1",
               "I1": "Ø105 × 108 (Ø96 × 57 GIM8108-36 + 4.6 mm wall; along-axis span set by the forearm link plane), ≈ 125 tall with the neck socket",
               "I2a": "Ø105 × 108, ≈ 125 tall (as I1)",
               "I2b": "Ø107 × 108 (Ø98 × 61.7 DM-J8009, Damiao manual), ≈ 128 tall"},
     "yaw": {"B0": "175 × 92 plan (yaw axis → the off-axis GIM6010 cartridge at x −81 + can r 43; roll.py FROM CAD), drop 99 mm",
             "B1": "as B0",
+            "B1y": "Ø92 plan (the plates ±46 stay; Ø57 × 56 DM-J4340 + wall + cover) coaxial under the roll motor: drop 99 → 114 mm (+15; "
+                   "Astra: +15–25 mm); the 175 mm fore-aft cartridge bay behind the yaw axis goes",
             "I1": "Ø92 plan (Ø80 GIM6010-48 + wall + cover), 67.5 mm tall coaxial under the roll motor: drop 99 → 124 mm",
             "I2a": "Ø92 plan (the plates ±46 stay; Ø57 DM-J4340), ≈ 56 mm tall: drop 99 → 114 mm",
             "I2b": "as I2a"},
     "pitch": {"B0": "GIM6010 cartridge 70 mm off the pitch axis inside the torso, belt to the 60T (inside the 390 mm torso)",
-              "B1": "GIM8108-8 cartridge off-axis (inside the torso)",
+              "B1": "GIM8108-8 cartridge off-axis (inside the torso)", "B1y": "as B1",
               "I1": "Ø96 × 57 GIM8108-36 coaxial inboard of the pitch bearings (inside the torso; the balancer cord and spring must re-route)",
               "I2a": "as I1", "I2b": "as I1"},
 }
 # Collision hulls (rnd/out/collision_inline) the inline variants remove, and the motor cylinders they add (stow overlay)
-REMOVED_HULLS = {"I1": ("roll_yawcart", "upper_elbow_cart"), "I2a": ("roll_yawcart", "upper_elbow_cart"), "I2b": ("roll_yawcart", "upper_elbow_cart")}
+REMOVED_HULLS = {"I1": ("roll_yawcart", "upper_elbow_cart"), "I2a": ("roll_yawcart", "upper_elbow_cart"), "I2b": ("roll_yawcart", "upper_elbow_cart"),
+                 "B1y": ("roll_yawcart",)}
 CYL = {"I1": dict(elbow=(0.0525, 0.070), yaw=(0.046, 0.0675)), "I2a": dict(elbow=(0.0525, 0.070), yaw=(0.046, 0.056)),
-       "I2b": dict(elbow=(0.0535, 0.074), yaw=(0.046, 0.056))}   # (radius incl. wall + cover, length) m
+       "I2b": dict(elbow=(0.0535, 0.074), yaw=(0.046, 0.056)), "B1y": dict(yaw=YAW_INLINE_COVER)}   # (radius incl. wall + cover, length) m
 
 
 def stow_overlay(keys):
@@ -320,10 +498,11 @@ def stow_overlay(keys):
             pts.append(P); pads.append(p)
         a = np.linspace(0, 2 * math.pi, 48, endpoint=False)
         for s in "rl":
-            r, L = CYL[k]["elbow"]                       # axis along the upper body's y, at the elbow axis
-            b = bid(f"fore_{s}")
-            loc = np.array([[r * math.cos(t), y, r * math.sin(t)] for t in a for y in (-L / 2, L / 2)])
-            pts.append(dd.xpos[b] + loc @ dd.xmat[b].reshape(3, 3).T); pads.append(0.0)
+            if "elbow" in CYL[k]:
+                r, L = CYL[k]["elbow"]                   # axis along the upper body's y, at the elbow axis
+                b = bid(f"fore_{s}")
+                loc = np.array([[r * math.cos(t), y, r * math.sin(t)] for t in a for y in (-L / 2, L / 2)])
+                pts.append(dd.xpos[b] + loc @ dd.xmat[b].reshape(3, 3).T); pads.append(0.0)
             r, L = CYL[k]["yaw"]                         # axis along the upper body's z, above the yaw interface
             b = bid(f"upper_{s}")
             loc = np.array([[r * math.cos(t), r * math.sin(t), z] for t in a for z in (0.0, L)])
@@ -340,19 +519,25 @@ def stow_overlay(keys):
 # Per joint drive, counted per arm. "parts" = distinct pieces to handle (bought + printed); "fasteners" = screws, nuts,
 # washers, dowels, keys, set screws. From cartridge_m.parts_list_direct (D26), roll.py / m1_kit HOLD_B (inline), ESTIMATE.
 BELT_JOINT = dict(parts=["actuator", "can sleeve (print)", "rear cap (print)", "drive stub", "small pulley", "6001", "wall-B bushing (print)",
-                         "2 eccentric bushings (print)", "belt", "Al rear cap", "NTC", "encoder board", "magnet", "encoder bracket (print)"],
+                         "belt", "Al rear cap", "NTC", "encoder board", "magnet", "encoder bracket (print)"],   # D26 fixed centres: no eccentric bushings (Astra #3)
                   fasteners=8 + 1 + 1 + 4 * 3 + 5 + 3 + 2)        # stub 8, key, set screw, 4 ears × (screw, nut, washer), rear cap 5, Al cap 3, encoder 2
 PITCH_IDLER = dict(parts=["2 × 625-2RS", "idler roller (print)", "2 spacers"], fasteners=4)   # M5 axle + nut, M4 jack + nut
 ELBOW_CASSETTE = dict(parts=["cassette plate A (print)", "cassette plate B (print)", "2 cassette spacers (print)", "2 seat caps (print)", "6061 core tube"],
                       fasteners=2 * 2 + 4)                        # 2 × M5 + nyloc, seat-cap screws
 INLINE_JOINT = dict(parts=["actuator", "7075 output adapter", "motor seat / rear cover (print)", "far-side bearing"],
                     fasteners=8 + 3 + 3 + 8)                      # 8 × M4 motor (PCD 84), 3 × M4 + 3 dowels at the boss, 8 × M5 adapter → link
-INLINE_YAW = dict(parts=["actuator", "7075 output adapter", "motor seat (print)"], fasteners=6 + 3 + 2 + 6)
+INLINE_YAW = dict(parts=["actuator", "7075 output adapter", "motor seat (print)", "Al finned ring + NTC"], fasteners=6 + 3 + 2 + 6 + 3)
 OFFAXIS_ENC = dict(parts=["ring magnet", "encoder board", "bracket (print)"], fasteners=2)
 # printed parts removed per arm (print_plan.md rows, per piece), and the shrink of the parts that stay (ESTIMATE)
-PRINT_REMOVED = {"cartridge M can (bolted, D24)": 3, "cartridge M rear cap (D24)": 3, "eccentric bushing": 6, "elbow cassette plate A": 1,
-                 "elbow cassette plate": 1, "elbow cassette spacer": 2, "elbow seat cap A (+Y)": 1, "elbow seat cap B (−Y)": 1}
-PRINT_SHRINK = {"elbow pulley hub": 0.5, "pitch shaft (integral 60T)": 0.5, "yaw shaft": 0.5, "upper bone": 0.15, "clevis + yaw block": 0.30}
+# per joint made inline: printed pieces removed (print_plan.md rows; the eccentric bushings are not counted: D26 fixed centres
+# removed them, belts.md, though print_plan.md still lists the row) and the shrink of the parts that stay (ESTIMATE). Astra #3:
+# the gram figure is an ESTIMATE on print_plan rows, not a printed-only mass ledger of the replacement parts.
+PRINT_REMOVED_J = {"shoulder_pitch": {"cartridge M can (bolted, D24)": 1, "cartridge M rear cap (D24)": 1},
+                   "upper_yaw": {"cartridge M can (bolted, D24)": 1, "cartridge M rear cap (D24)": 1},
+                   "elbow": {"cartridge M can (bolted, D24)": 1, "cartridge M rear cap (D24)": 1, "elbow cassette plate A": 1, "elbow cassette plate": 1,
+                             "elbow cassette spacer": 2, "elbow seat cap A (+Y)": 1, "elbow seat cap B (−Y)": 1}}
+PRINT_SHRINK_J = {"shoulder_pitch": {"pitch shaft (integral 60T)": 0.5}, "upper_yaw": {"yaw shaft": 0.5, "clevis + yaw block": 0.30},
+                  "elbow": {"elbow pulley hub": 0.5, "upper bone": 0.15}}
 PRINT_ADDED = (3, 45.0, 3.5)       # 3 motor seats, g each, generic h each (ESTIMATE)
 # build minutes per arm (rnd/build_guide.py STEPS minutes where they exist)
 BUILD = dict(belt_cart=9, belt_stage=15, encoder=7, idler=5, cassette=15, inline_heavy=25, inline_yaw=15, offaxis_enc=10)
@@ -388,19 +573,19 @@ def simplicity(d, key):
         minutes += BUILD["inline_yaw" if j == "upper_yaw" else "inline_heavy"]
         if not SPECS[d.arm.joints[j][0]].get("output_encoder"):
             parts += len(OFFAXIS_ENC["parts"]); fast += OFFAXIS_ENC["fasteners"]; minutes += BUILD["offaxis_enc"]
-    b0 = 2 * (BUILD["belt_cart"] + BUILD["belt_stage"] + BUILD["encoder"]) + BUILD["idler"] + BUILD["belt_cart"] + BUILD["belt_stage"] + BUILD["encoder"] + BUILD["cassette"]
+    b0 = 3 * (BUILD["belt_cart"] + BUILD["belt_stage"] + BUILD["encoder"]) + BUILD["idler"] + BUILD["cassette"]
     pr = print_rows()
     g = h = 0.0
-    if len(inl) == 3:                                   # every inline variant here has pitch, yaw and elbow inline
-        for n, k in PRINT_REMOVED.items():
+    for j in inl:
+        for n, k in PRINT_REMOVED_J[j].items():
             if n in pr:
                 q, gg, hh = pr[n]
                 g += gg / q * k; h += hh / q * k
-        for n, f in PRINT_SHRINK.items():
+        for n, f in PRINT_SHRINK_J[j].items():
             if n in pr:
                 q, gg, hh = pr[n]
                 g += gg / q * f; h += hh / q * f
-        g -= PRINT_ADDED[0] * PRINT_ADDED[1]; h -= PRINT_ADDED[0] * PRINT_ADDED[2]
+        g -= PRINT_ADDED[1]; h -= PRINT_ADDED[2]
     return dict(parts=parts, fasteners=fast, drive_minutes=minutes, arm_hours=arm_hours() + (minutes - b0) / 60,
                 print_g_saved=g, print_h_saved_p2s=h * P2S_FACTOR, belt_joints=belt, inline_joints=inl)
 
