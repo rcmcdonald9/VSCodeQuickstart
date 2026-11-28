@@ -21,6 +21,7 @@ Every price is a retailer snapshot (source named) or ESTIMATE.
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 DOCS = Path(__file__).resolve().parent.parent / "docs"
@@ -123,6 +124,31 @@ DETACH_CLAMPS = {"dixon": (25.0, '3" quick-release squeeze tri-clamp, 304 SS (Di
                              "Howdybrewer 3\" 304 tri-clamp $10.40 (2026-11-28 search); Craft Kettle 3\" single-hinge heavy-duty $7.28, Steel & O'Brien 13MHHM-3-304 $17.69 (Zoro); "
                              "no generic quick-release squeeze clamp was found below the Dixon (Steel & O'Brien 13MHHMQ-3-304 $46.39, Zoro)")}
 DETACH_CLAMP_P = DETACH_CLAMPS[DETACH_CLAMP]
+# W15b base channel (docs/rnd/electrical.md *Base channel*, netlist Q9 / U20–U27 / Q10 / R7 / R8; safety_board_sim.md §6):
+# robot-only parts (the M1 bench has no base); ESTIMATE, DigiKey-class unit prices unless a source is named.
+Q9_SWITCH = (9.0, "ESTIMATE (DigiKey-class): TI LM5069-1 hot-swap controller (latch-off) ≈ $4.5 + IRFB7530 ≈ $3 + 1 mΩ 2512 sense ≈ $0.5 + "
+                  "soft-start / timer passives ≈ $1")
+BASE_CLAMP_REST = 30.0  # the base clamp leg less its NH-50: IRFB7530, VS-40CPQ060-N3, TLV3202, 2 × LVC1G123, UCC27517, passives (ESTIMATE)
+BASE_LOGIC = (8.0, "ESTIMATE (DigiKey-class): U22 SN74LVC1G123 ≈ $1 + C0G/RC, U26 comparator + 50 ms RC ≈ $1.5, U27 AQV252G-class photoMOS ≈ $4, "
+                   "R8 1 kΩ 3 W ≈ $1")
+NC_BLOCK = (6.0, "ESTIMATE: snap-on NC contact block for the 22 mm mushrooms (IDEC / Schneider ZB5-class generic ≈ $4–8)")
+SB1_2POLE = (3.0, "ESTIMATE: SB1 ARM / reset pushbutton NO → 2-pole NO (SB1b resets U20), the price difference")
+# The 2.0 s OFF-delay timer U20 (owner decision pending, electrical.md 'Cost (BOM owner)'): params-style switch PIP_BASE_TIMER,
+# read here because only the BOM and the M1 docs use it (no CAD or analysis does). Default "board" PROVISIONALLY.
+BASE_TIMERS = {
+    "board": (8.0, "two independent board-level OFF-delay timers (an SN74LVC1G123 RC timer + an independent crystal-timed counter; "
+                   "either one drops Q9's enable), cross-checked at every power-up, set 2.25 s, ± 20 %, **not a certified safety part**",
+              "ESTIMATE ≈ $8 for both (electrical.md: board-level dual timer); cross-check = the supervisor compares both edges at ARM (T17)"),
+    "g9sa": (501.38, "Omron G9SA-321-T075 AC/DC24 time-delay safety relay (dual-channel input, OFF-delay safety contacts 0.5–7.5 s, set 2.0 s), "
+                     "a certified part, 13-week lead",
+             "DigiKey $501.38 (13-week lead); RS UK £344.61 ex VAT (2026-11-28 search)"),
+}
+BASE_TIMER = os.environ.get("PIP_BASE_TIMER", "board")
+assert BASE_TIMER in BASE_TIMERS, f"PIP_BASE_TIMER must be one of {list(BASE_TIMERS)}"
+# Step-1 test kit (W15b, safety_board_tests.md T12): the 30 A step = the 20 A supply + the 22 mF bank at 32.5 V through 0.33 Ω
+# and a second VS-40CPQ060-N3
+VS40 = (2.0, "RS £37 / 25 (the clamp line's VS-40CPQ060-N3 snapshot)")
+R033_50W = (6.0, "ESTIMATE: 0.33 Ω 50 W aluminium-housed resistor (RH-50 class is fine here: a ms bank dump, not the clamp)")
 # D29 #6 joint encoders (params PIP_JOINT_ENCODER)
 ENCODER_P = {"as5048a": (12.0, "ESTIMATE: AS5048A board"), "mt6701": (4.0, "MT6701 boards: OnBuy 10-pack £22.33 (≈ $2.9 each), eBay $2.80, Walmart $7.10 (2026-11-28 search)")}[JOINT_ENCODER]
 # Waves 12–13 (Astra review #3, 2026-11-28): the parts the merged design added or changed.
@@ -146,8 +172,8 @@ ROLL_LATCH = (14.0, "ESTIMATE (docs/rnd/power_off.md O2): 24 V pull solenoid $6�
 # Step-1 gate: motorless test equipment (docs/rnd/safety_board_tests.md, Equipment); instruments are tools the owner may own
 SCOPE = (499.0, "Siglent SDS1104X-E (100 MHz, 4 ch, 1 GSa/s) $499 list at siglentna.com / Transcat (2026-11-28 search)")
 DIFF_PROBE = (175.0, "Micsig DP10013 (100 MHz, ±1300 V): Woot $139.99 (sold out), Telonic £174.16 inc VAT (out of stock) (2026-11-28 search); ESTIMATE $175")
-CLAMP_100A = (220.0, "Micsig CP2100A (DC–800 kHz, 10 / 100 A): Digitalzakka $219.99, SainSmart $259.99 (2026-11-28 search); note 800 kHz < the "
-                     "test spec's ≥ 1 MHz: the CP2100B (2.5 MHz) is €699 net at Batronix")
+CLAMP_100A = (220.0, "Micsig CP2100A (DC–800 kHz, 10 / 100 A): Digitalzakka $219.99, SainSmart $259.99 (2026-11-28 search); meets the test "
+                     "sheet's ≥ 500 kHz (W15b, safety_board_tests.md *Current-clamp bandwidth*)")
 CLAMP_LOW = (70.0, "ESTIMATE: Hantek CC-65-class DC/AC clamp (K1 coil ≈ 0.4 A, supply lead ≤ 30 A)")
 CC_20A = (216.99, "Newegg 0–32 V / 0–20 A switching bench supply $216.99 (2026-11-28 search; confirm CC/CV on the datasheet); Extech 382276 $529 at TestEquity")
 
@@ -222,11 +248,13 @@ def step1_test():
          "after the real 1.5 m arm lead and F3", 1, 8.0, "pre-charge, watchdog, release, forced-discharge and end-to-end stop tests at the drive end (TP2)", E),
         ("Test kit (T3–T12)", "Load resistors: 5.6 Ω and 2.2 Ω, 50 W aluminium-housed (the 10 Ω RH-50 pre-charge fault load is on the board line), on the "
          "clamp's heatsink plate", 2, 6.0, "the 2.2 Ω stands in for a drive in T8 / T16", E),
-        ("Test kit (T11–T12)", "Regen-source diode: one spare VS-40CPQ060-N3 (2 × 20 A Schottky), in series with the CC supply into the dummy bank", 1, 2.0,
-         "**safety_board_tests.md names a 1N5822-class diode: that is a 3 A part, too small for the 10 / 20 / 30 A regen steps of T12** (flagged for the "
-         "board-sim owner)", "RS £37 / 25 (the clamp line's VS-40CPQ060-N3 snapshot)"),
+        ("Test kit (T11–T12)", "Regen-source diodes: 2 × VS-40CPQ060-N3 (2 × 20 A Schottky each, legs paralleled, on a small heatsink): one in series with "
+         "the CC supply into the dummy bank, one switching the energy bank in for T12's 30 A step", 2, *VS40[:1],
+         "safety_board_tests.md *Equipment* (W15b: 40 A Schottky, ≈ 15 W for 200 ms at 30 A; the 1N5822 is a 3 A part)", VS40[1]),
+        ("Test kit (T12)", "0.33 Ω 50 W resistor: the energy bank's series resistor for T12's 30 A step (bank at 32.5 V + the 20 A supply)", 1, *R033_50W[:1],
+         "W15b: the 20 A supply cannot make the 30 A step alone; the extra 10–15 A comes from the bank over ≈ 2.9 ms", R033_50W[1]),
         ("Test kit (T12)", "Energy bank 22 mF 50 V (2 × 10,000 µF + 2 × 1,000 µF 50 V, screw terminals) + a 10 A charge switch", 1, 18.0,
-         "9.9 J at 30 V dumped into TP2 10× in 1 s (the pulse duty of the clamp resistors)", E),
+         "9.9 J at 30 V dumped into TP2 10× in 1 s (the pulse duty of the clamp resistors); charged to 32.5 V for the 30 A step", E),
         ("Test instruments (tools)", "4-channel oscilloscope ≥ 100 MHz, 1 GS/s", 1, *SCOPE[:1], "TP1–TP11: every pass / fail number is read on the scope, not in software", SCOPE[1]),
         ("Test instruments (tools)", "High-voltage differential probe ≥ 100 V, ≥ 50 MHz", 1, *DIFF_PROBE[:1], "TP3 Q1 drain and TP7 Q4 drain (≤ 48 V / ≤ 80 % of V_DS)", DIFF_PROBE[1]),
         ("Test instruments (tools)", "DC current clamp 100 A", 1, *CLAMP_100A[:1], "clamp leg 1 (49 A pulses), inrush ≤ 8.4 A", CLAMP_100A[1]),
@@ -413,6 +441,10 @@ def items():
 
 
 CHANGES = [
+    "**W15b electrical (2026-11-28):** the Step-1 test kit gets a second VS-40CPQ060-N3 and a 0.33 Ω 50 W resistor for T12's 30 A step (the 20 A supply "
+    "plus the 22 mF bank at 32.5 V): +$8 of lines, Step 1 $2,835 → $2,844 landed. The CP2100A stays (W15b accepted 800 kHz: the requirement is now "
+    "≥ 500 kHz). The W15b base channel (Q9 base switch, base clamp leg, U20 OFF-delay timer, WD_B / DISC_B, the extra NC blocks) is robot-only: "
+    "rnd/bom.py, not this kit (the M1 bench has no base).",
     "**D29 cost route (2026-11-28, cost_down.md):** GIM6010-8 at Robotics Center's $70 (backordered) in Step 2 and the holds, with aifitlab's "
     "$90 as the fallback; Step 1's one unit stays at the $90 fallback because Step 1 is bought now. NH-50 clamp resistors $30 → $18 ESTIMATE "
     "(NH050R5600FE02; no 0.56 Ω listing found, NH-50 single-unit listings $12–20). The arm-detach clamp follows PIP_DETACH_CLAMP. Not adopted: "
@@ -473,8 +505,8 @@ CHECKS = [
     "Integral pinion shafts (v5): quote from the STEP after the GIM output PCD is measured; check the hobbed 20T against a stock HTD 5M belt (pitch diameter "
     "31.83 mm, root Ø26.6), the Ø12 k5 seat and the C45+QT certificate (R_e ≥ 490 MPa).",
     "C1 clamp rings: C45+QT on the certificate (R_e ≥ 490 MPa), not plain C45 or S235; the yaw flange 7075-T6 (T651 plate), not 6061.",
-    "Test instruments: the CP2100A is DC–800 kHz, under the test sheet's ≥ 1 MHz for the clamp leg: accept it for T3 / T12 currents (≈ ms events) or use a "
-    "CP2100B (2.5 MHz); the differential probe ≥ 100 V and ≥ 50 MHz for TP3 / TP7.",
+    "Test instruments: the 100 A clamp ≥ 500 kHz (the CP2100A's 800 kHz is enough: W15b, safety_board_tests.md *Current-clamp bandwidth*); the "
+    "differential probe ≥ 100 V and ≥ 50 MHz for TP3 / TP7.",
 ]
 
 

@@ -19,7 +19,8 @@ TENSION_RING_SITES = ("elbow", "yaw")   # = rnd/parts/belt_stage.TENSION_RING_SI
 DOCS = Path(__file__).resolve().parent.parent / "docs" / "rnd"
 
 
-def items(d=BASELINE):
+def items(d=BASELINE, timer=None):
+    """BOM lines [(category, item, qty, unit $, source)]; timer = the U20 base OFF-delay timer option (PIP_BASE_TIMER by default)."""
     names = [n for n, _ in d.arm.joints.values()] * 2 + [d.base.wheel_motor] * 4 + ["STS3215-C018"] * 2 + [d.upper.lift_motor]
     counts = {n: names.count(n) for n in sorted(set(names))}
     belts = [(j, round(stage(j, r, z, c, w)["length"] / 5) * 5) for j, r, z, c, w in STAGES]
@@ -56,6 +57,21 @@ def items(d=BASELINE):
     A("Drive & structure", f"Thermal (Fable M7; thermal.md §3 'the mount the BOM pays for'): {cap_w} on the {ns} arm belt-joint GIM6010 cartridges "
       "(the inline roll runs bare under its cover) + 10 k NTC per GIM; capless, the task-day winding is 102 °C (limit 100), with the cap 68 °C", 1, ns * K.AL_CAP[0] + 6.0,
       "m1_kit AL_CAP: " + K.AL_CAP[1] + "; NTC 10-pack ESTIMATE $6")
+    # W15b base channel (electrical.md *Base channel*, netlist Q9 / U20–U27 / Q10 / R7 / R8; docs/sw/base_stop.md items 1–6): the base moves off K1
+    # for the category-1 base stop; robot only (the M1 bench has no base)
+    tm = timer or K.BASE_TIMER
+    A("Wheels & power", "Base channel (W15b) Q9 base switch: TI LM5069-1 hot-swap controller (latch-off; its soft-start is the base pre-charge, 35 A breaker) "
+      "+ IRFB7530 + 1 mΩ sense, VIN → VBUS_B, not on K1", 1, *K.Q9_SWITCH)
+    A("Wheels & power", "Base channel (W15b) clamp leg Q10 / R7 / D7: 1 × Vishay **NH-50** 0.56 Ω ∥ VS-40CPQ060-N3, IRFB7530, U23 TLV3202 (on 26.0 / off 25.7 V) "
+      "+ 2 µs filter, U24 50 µs min-on and the FORCE_B 100 ms one-shot (2 × LVC1G123), U22b UCC27517, passives: holds VBUS_B ≤ 26.3 V while the ramp regenerates",
+      1, K.NH50[0] + K.BASE_CLAMP_REST, f"NH-50 NH050R5600FE02 at ${K.NH50[0]:.0f} ESTIMATE (D29 #7, as the arm clamp line); the rest ESTIMATE (DigiKey-class)")
+    A("Wheels & power", "Base channel (W15b) logic: U22 base watchdog WD_B (SN74LVC1G123, 25 ms, GPIO23), U26 DISC_B comparator + 50 ms RC (shorted Q9 → BMS "
+      "discharge-off request), U27 photoMOS (AQV252G class: LATCH into U20 channel 1), R8 1 kΩ 3 W base bleeder", 1, *K.BASE_LOGIC)
+    A("Wheels & power", "Base channel (W15b) S1c/d, S2c/d: 2 more NC contact blocks per mushroom (U20's two channels start from the button itself)", 4, *K.NC_BLOCK)
+    A("Wheels & power", "Base channel (W15b) SB1 ARM / reset pushbutton becomes 2-pole (SB1b resets U20): the difference", 1, *K.SB1_2POLE)
+    tn, tsrc = K.BASE_TIMERS[tm][1:]
+    A("Wheels & power", f"Base channel (W15b) U20 base OFF-delay timer, **pending owner decision** (PIP_BASE_TIMER={tm}, provisional default board; the other "
+      f"option's total is in cost_down.md / bom.json): {tn}", 1, K.BASE_TIMERS[tm][0], tsrc)
     A("Wheels & power", "DC-DC 24→12 V 10 A (head servos), 24→5 V 5 A", 1, 30.0)
     A("Wheels & power", "D14 elbow-node power: 24→12 V 6 A buck (two stalled STS3215 draw 5.4 A, Astra #16) + half-duplex TTL transceiver (one per arm)", 2, 10.0)
     A("Wheels & power", "Connectors (Neon #2 F10): XT90 (pack), 5 × XT60 (2 arm detach, 3 base ↔ upper), 2 × 10-pin + 1 × 12-pin pogo blocks (USB on the arm plugs), JST-GH/VH, wire", 1, 62.0)
@@ -175,10 +191,16 @@ def items(d=BASELINE):
     A("Drive & structure", "Lift lock (A15): bolted steel rack (module 1, 10 × 10, 500 mm) + hardened steel pawl + 12 V solenoid + springs; printed belt guards", 1, 35.0, "ESTIMATE")
     A("Drive & structure", "Balancers (A9): ISO 10243 green die spring Ø25/Ø12.5 × 115, 18.7 N/mm (Berger Tools V25-115 / Accu TJL25-115) + 2 mm UHMWPE cord", 2, 12.0, "ESTIMATE")
     A("Drive & structure", "Fasteners (other), heat-set inserts (base, torso, head), epoxy, grease", 1, 60.0)
+    A("Drive & structure", f"W14b R17 roll front collars (covers.roll_front_collar, one per arm): {W14B['screws']} × ISO 4762 M4 × 25 (4 per collar); the "
+      "collars' PETG is in the PETG line", W14B["screws"], *W14B["screw_p"])
     cov = pp.get("covers_kg", 0.0)                              # W10: the print plan now slices the D23 / R17 covers itself
-    kg = pp["kg"] + (0.0 if cov else COVERS_KG)
+    w14b = abs(cov - W14B["pp_covers_before"]) < 1e-3           # the print plan predates W14b: add its net PETG until it is re-sliced
+    kg = pp["kg"] + (0.0 if cov else COVERS_KG) + (W14B["kg"] if w14b else 0.0)
     n10 = math.ceil(kg * 1.2 / 10)                              # loop 47: 10 kg bundles instead of $20/kg single spools
     what = f"PETG {pp['kg']:.1f} kg (print_plan.md, the {cov:.1f} kg of D23 / R17 covers included)" if cov else f"PETG {pp['kg']:.1f} kg (print_plan.md) + {COVERS_KG} kg D23 covers"
+    if w14b:
+        what += (f" + {W14B['kg']:.2f} kg W14b pinch parts (roll front collars +{W14B['cm3'][0]} cm³, shoulder shrouds +{W14B['cm3'][1]}, roll links "
+                 f"−{-W14B['cm3'][2]}; print-plan basis, the plan predates them)")
     A("Printed parts", f"{what} + 20 % spare = {kg * 1.2:.1f} kg: {n10} × Elegoo PETG Pro 10 kg bundle", n10, 109.99,
       "us.elegoo.com PETG Pro 10 kg $109.99 (2026-11; list $140)")
     A("Printed parts", "ASA 2 kg (A6: motor cans, KX hubs/collars and D13 hubs near motors)", 1, 40.0)
@@ -192,7 +214,13 @@ BEST_PRICE = {"GIM6010-8": (K.GIM6010[0], "D29 #2: " + K.GIM6010[1] + f" (+${K.G
                                     "(aifitlab, backordered), so the yaml mid $171 had no driver (2026-11-27 search snapshots)"),
               "DM-J4310-2EC_V1.1": (125.0, "AIFit Lab $125 (24 V V1.1/V3, US seller; backordered 2026-11-27): the full-robot buy "
                                            "comes after M1; M1 keeps Robotics Center $150 in stock")}
-COVERS_KG = 1.4         # D23 rigid PETG covers, both arms: 1,126 cm³ (rnd/parts/covers.py printed(), arm pieces ×2) × 1.27 g/cm³
+COVERS_KG = 1.56        # D23 rigid PETG covers, both arms: 1,126 cm³ (rnd/parts/covers.py printed(), arm pieces ×2) × 1.27 g/cm³ = 1.4 kg, + the W14b
+                        # roll front collars 128 cm³ (both arms) × 1.27 = 0.16 kg (solid basis; the PETG line reads the print plan's sliced mass)
+# W14b R17 pinch parts (rnd/parts/covers.py roll_front_collar + the pitch port shroud, rnd/parts/roll.py link frame), robot (both arms):
+# cm³ (collar, shroud, roll link); net printed mass on the print-plan basis (≈ +80 g collars, net ≈ +70 g); print_plan.json's covers_kg
+# before W14b (the PETG line adds kg only while the plan still shows that value, so a re-sliced plan is not counted twice)
+W14B = dict(cm3=(128, 20, -38), kg=0.070, pp_covers_before=1.9822, screws=8,
+            screw_p=(0.30, "ESTIMATE: ISO 4762 M4 × 25 A2 / 8.8, ≈ $0.30 each in a 25–50 pack"))
 
 CONTINGENCY = 0.15      # A16 (review finding 18): price drift, shipping, tax
 WAVE1_BEFORE = 4898.0   # landed total after the loop-47 cost pass (bom.json before wave 1)
@@ -348,9 +376,10 @@ def _split(n, q, u, d=BASELINE):
         return [(SUBSYS[1], v * (q - 1) / q if q > 1 else v * 6 / 7), (SUBSYS[3], v / q if q > 1 else v / 7)]
     lo = n.lower()
     rules = [
-        (SUBSYS[6], ("usb-can", "usb-ttl", "active cooler", "usb3 hub", "rgb-d", "wrist camera", "encoder", "sensor nodes", "tactile", "tof", "lidar", "imu",
+        (SUBSYS[6], ("usb-can", "usb-ttl", "active cooler", "usb3 hub", "rgb-d", "wrist camera", "encoder", "sensor nodes", "tactile", "tof", "lidar", "imu (",
                      "raspberry pi")),
-        (SUBSYS[5], ("li-ion pack", "bms", "battery box", "fuses", "e-stop", "regen clamp", "safety-board", "branch current", "dc-dc", "connectors", "elbow-node power")),
+        (SUBSYS[5], ("li-ion pack", "bms", "battery box", "fuses", "e-stop", "regen clamp", "safety-board", "branch current", "dc-dc", "connectors", "elbow-node power",
+                     "base channel")),
         (SUBSYS[2], ("omni wheel", "wheel hubs", "torque hangers", "chassis ring", "d18b", "ballast")),
         (SUBSYS[3], ("lift", "61901", "mast", "open belt")),
         (SUBSYS[4], ("6805", "g25 balls", "dowel pins: 50", "d15 preload", "torque pins", "face screen", "mic array")),
@@ -444,6 +473,48 @@ def savings(I):
 
 # --- D29 (owner 2026-11-28: no belt roll; the lead's route for the rest): what each row became -----------------------------------
 D29_BEFORE, D29_BEFORE_D20 = 6713.0, 6888.0     # bom.json before D29 (W14c)
+W15_BEFORE, W15_BEFORE_D20 = 6366.16, 6632.96    # bom.json after D29 (W15a), before the W15b base-channel and W14b pinch lines
+
+
+def landed(I):
+    """Landed total of a line list without the contingency row: lines + the rounded 15 % (as report() adds it)."""
+    sub = sum(q * u for _, _, q, u, _ in I)
+    return sub + round(sub * CONTINGENCY, 0)
+
+
+def timer_totals(d=BASELINE):
+    """{PIP_BASE_TIMER option: dict(total, with_d20, unit)}: the robot total with each U20 OFF-delay timer (owner decision pending)."""
+    if not HOLDS:
+        HOLDS.update(holds())
+    if id(d) not in _TT:                                    # items() takes ≈ 3 s (the accuracy score): once per design
+        _TT[id(d)] = {k: landed(items(d, timer=k)) for k in K.BASE_TIMERS}
+    return {k: dict(total=_TT[id(d)][k], with_d20=_TT[id(d)][k] + HOLDS["d20"], unit=v[0]) for k, v in K.BASE_TIMERS.items()}
+
+
+_TT = {}
+
+
+def w15_block(I, tot, d=BASELINE):
+    """Report lines for the W15b base channel + W14b pinch parts and the pending base-timer decision."""
+    c = 1 + CONTINGENCY
+    TT = timer_totals(d)
+    new = [(n, q, u, src) for _, n, q, u, src in I if n.startswith(("Base channel (W15b)", "W14b "))]
+    w15 = sum(q * u for n, q, u, _ in new if n.startswith("Base channel"))
+    w14 = sum(q * u for n, q, u, _ in new if n.startswith("W14b"))
+    L = [f"**W15b base channel + W14b pinch parts (2026-11-28): ${W15_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - W15_BEFORE)}); with D20 "
+         f"${W15_BEFORE_D20:,.0f} → ${tot + HOLDS['d20']:,.0f}.** The base moved off K1 for the category-1 base stop (electrical.md *Base channel*, "
+         f"docs/sw/base_stop.md): {_sd(w15)} of lines ({_sd(w15 * c)} landed) with the `{K.BASE_TIMER}` timer; the W14b roll front collars' 8 × M4 × 25 "
+         f"{_sd(w14)} of lines, their PETG (net ≈ +{W14B['kg'] * 1000:.0f} g) inside the PETG bundles already bought (no extra bundle). Robot only: the M1 kit "
+         "changes only in its Step-1 test kit (M1_BENCH_ARM.md).", "",
+         f"**Owner decision pending: the U20 2.0 s OFF-delay timer** (`PIP_BASE_TIMER`; the BOM uses `{K.BASE_TIMER}`, provisionally):", "",
+         "| PIP_BASE_TIMER | U20 | Unit $ | Robot (landed) | With D20 | |", "|---|---|---|---|---|---|"]
+    for k, v in TT.items():
+        L.append(f"| `{k}`{' (provisional default)' if k == 'board' else ''} | {K.BASE_TIMERS[k][1]} | {v['unit']:,.2f} | **${v['total']:,.0f}** | "
+                 f"${v['with_d20']:,.0f} | {'in the total' if k == K.BASE_TIMER else _sd(v['total'] - TT[K.BASE_TIMER]['total']) + ' landed'} |")
+    L += ["", "| New line | Qty | Unit $ | Line $ | Source |", "|---|---|---|---|---|"]
+    L += [f"| {n} | {q} | {u:,.2f} | {q * u:,.2f} | {src} |" for n, q, u, src in new]
+    L += [""]
+    return L
 HAND_TORQUE = (0.3, 1.0)        # N·m: a hand-tight wing nut, a light to a firm hand (ESTIMATE)
 WING_BOLT_D, NUT_K = 0.0079, 0.20   # 5/16" T-bolt of a 3" single-hinge clamp; nut factor (ESTIMATE)
 MU_CLAMP = (0.15, 0.30)         # clamp ↔ ferrule flank and band friction (ESTIMATE)
@@ -552,21 +623,25 @@ def cost_down_report(I, tot):
     reuse = sum(q * u for _, n, q, u, _, _ in m1 if not any(b in n for b in bench)) * c
     L = ["# Cost-down list (generated by `python -m rnd.bom`; prices are list / ESTIMATE, nothing bought)", "",
          f"**Robot BOM ${tot:,.0f} landed** (${lines:,.0f} of lines + {CONTINGENCY:.0%} contingency), **${tot + d20:,.0f} with D20** (GIM8108-8 at pitch + elbow, "
-         f"{_sd(d20)}). Limit $5,500, aim $4,000 (R8); owner decision D26: cost-down redesign first. Gap: {_sd(tot - 5500)} ({_sd(tot + d20 - 5500)} with D20) to the "
+         f"{_sd(d20)}), with the W15b base timer U20 = `{K.BASE_TIMER}` (owner decision pending; "
+         + "; ".join(f"`{k}`: ${v['total']:,.0f} / ${v['with_d20']:,.0f} with D20" for k, v in timer_totals().items()) + f"). Limit $5,500, aim $4,000 (R8); owner decision D26: cost-down redesign first. Gap: {_sd(tot - 5500)} ({_sd(tot + d20 - 5500)} with D20) to the "
          f"limit, {_sd(tot - 4000)} to the aim. Line detail: [BOM_v4.md](BOM_v4.md).", ""]
     D, dr = d29_rows(I)
     s29 = sum(r[4] for r in D) * c
+    TT = timer_totals()
+    tt_alt = "; ".join(f"`{k}` ${v['total']:,.0f} / ${v['with_d20']:,.0f} with D20" for k, v in TT.items() if k != K.BASE_TIMER)
     kt0 = K.totals()
     L += ["## D29 outcome (2026-11-28)", "",
           f"Owner: \"I don't love more belts. You can decide the best route for the other stuff\"; the lead's route: sourcing-only rows now, the rest only where "
-          f"its re-check passes (each behind a params switch). **${D29_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - D29_BEFORE)}); with D20 ${D29_BEFORE_D20:,.0f} → "
-          f"${tot + d20:,.0f}** (D20's delta grows {_sd(d20 - (D29_BEFORE_D20 - D29_BEFORE))} because the GIM6010s it replaces got cheaper). "
-          f"Rows counted: −${s29:,.0f} landed. {_sd(tot - 5500)} against the $5,500 limit ({_sd(tot + d20 - 5500)} with D20). "
+          f"its re-check passes (each behind a params switch). **${D29_BEFORE:,.0f} → ${W15_BEFORE:,.0f} landed ({_sd(W15_BEFORE - D29_BEFORE)}); with D20 ${D29_BEFORE_D20:,.0f} → "
+          f"${W15_BEFORE_D20:,.0f}** (D20's delta grows {_sd(d20 - (D29_BEFORE_D20 - D29_BEFORE))} because the GIM6010s it replaces got cheaper). "
+          f"Rows counted: −${s29:,.0f} landed. Since then the W15b base channel and the W14b pinch parts: **${tot:,.0f}** ({_sd(tot - W15_BEFORE)}, "
+          f"U20 `{K.BASE_TIMER}` timer, owner decision pending; {tt_alt}), {_sd(tot - 5500)} against the $5,500 limit ({_sd(tot + d20 - 5500)} with D20). "
           f"M1: Step 1 ${kt0['s1_c']:,.0f}, Step 2 ${kt0['s2_plan_c']:,.0f} (kit ${kt0['plan_c']:,.0f}).", "",
           "| # | Row | D29 | Re-check / sourcing result | Counted (landed) |", "|---|---|---|---|---|"]
     L += [f"| {i} | {t} | {st} | {ck} | {f'−${s * c:,.0f}' if s else '—'} |" for i, t, st, ck, s in D]
     L += ["", "Switches (rnd/params.py; a default changes only when its row passes): `PIP_REAR_CAP` machined | stock, `PIP_JOINT_ENCODER` as5048a | mt6701, "
-          "`PIP_CASTER_RELEASE` four | cable, `PIP_DETACH_CLAMP` dixon | wingnut. Arm split / join steps (ESTIMATE, s per arm): "
+          "`PIP_CASTER_RELEASE` four | cable, `PIP_DETACH_CLAMP` dixon | wingnut; W15b (read in rnd/m1_kit.py, BOM only, owner decision pending): `PIP_BASE_TIMER` board | g9sa. Arm split / join steps (ESTIMATE, s per arm): "
           + "; ".join(f"{k}: split " + " + ".join(f"{n} {t:g}" for n, t in v["split"]) + ", join " + " + ".join(f"{n} {t:g}" for n, t in v["join"])
                       for k, v in SPLIT_STEPS.items()) + ".", ""]
     L += ["## Where the money goes", "",
@@ -626,8 +701,9 @@ def report(d=BASELINE):
         cats[c] = cats.get(c, 0) + q * u
     L = ["# Bill of materials v4 (auto-generated by `python -m rnd.bom`)", "",
          f"**Total ≈ ${tot:,.0f} landed** (${sub:,.0f} + {CONTINGENCY:.0%} contingency; target ≤ $4,000 since D9 (owner: sensors over savings); limit $5,500 (owner, 2026-11-27; was $5,000); excludes the owner's Pi 5 and tools). Single-unit online prices; hardware lines are ESTIMATEs.", "",
-         f"**Waves 12–13 refresh (2026-11-28, the merged design after Astra review #3): ${W12_TOTAL:,.0f} → ${tot:,.0f} landed ({_sd(tot - W12_TOTAL)}); "
-         f"with D20 ${tot + HOLDS['d20']:,.0f}.** Where the money goes, the top-10 savings and the **D29 outcome** (${D29_BEFORE:,.0f} → ${tot:,.0f}): "
+         ] + w15_block(I, tot, d) + [
+         f"**Waves 12–13 refresh (2026-11-28, the merged design after Astra review #3): ${W12_TOTAL:,.0f} → ${W15_BEFORE:,.0f} landed ({_sd(W15_BEFORE - W12_TOTAL)}, "
+         f"D29 included); with D20 ${W15_BEFORE_D20:,.0f}.** Where the money goes, the top-10 savings and the **D29 outcome** (${D29_BEFORE:,.0f} → ${W15_BEFORE:,.0f}): "
          "[cost_down.md](cost_down.md). Line changes (before → after, $ of lines, no contingency):", "",
          "| Line | Before $ | After $ | Source / check |", "|---|---|---|---|"] + [
          f"| {w} | {b:,.0f} | {a:,.0f} | {src} |" for w, b, a, src in REFRESH_ROWS] + [
@@ -691,7 +767,7 @@ def report(d=BASELINE):
          "ESTIMATE, 2 × 61806, steel clamp ring + screws + dowels: +$88). A printed adapter is not an option (3 × M4 into PETG ≈ 85 N·m < 103 N·m stall).",
          "- Sensor nodes 3 → 5 (sw/config/can_map.yaml has a shoulder and an elbow node per arm): +$20.",
          "- Savings: DM-J4310 $150 → **$125** (AIFit Lab, 24 V, US seller, backordered: the full-robot buy comes after M1): −$50; D23 covers $60 → $30 "
-         f"(the rigid covers, {COVERS_KG} kg of PETG, fit in the 10 kg bundles: 18.2 kg needed with spare of 20 kg bought; TPU 95A + fasteners stay): −$30.",
+         f"(the rigid covers, 1.4 kg of PETG, fit in the 10 kg bundles: 18.2 kg needed with spare of 20 kg bought; TPU 95A + fasteners stay): −$30.",
          "- Not taken: Foxtech DM-J4310 $116–120 (ships from China: tariff/duty exposure eats the gap); pultruded CF (higher axial E, but the forearm's "
          "double-D pinch clamp and 1 mm wall split a unidirectional tube; roll-wrapped listings are already $63–70); DIY 6S2P from cells (≈ −$50, but a "
          "home-welded pack without a spot welder or cell matching is a safety risk in a home robot); generic D40 Oldham (no sourced price under $12; Ruland/GMT $36–67); cheaper "
@@ -700,6 +776,9 @@ def report(d=BASELINE):
          f"- **{_sd(tot - 5500)} against the $5,500 limit** (owner raised it from $5,000 on 2026-11-27 to keep the inline roll and the review fixes). The belt roll (fallback `PIP_ROLL_DRIVE=belt`) is "
          f"{_sd(-HOLDS['inline'])} landed; the owner chose the inline roll for its hand-feel and slimmer shoulder.", "",
          "**Pending decisions (not in the total; the M1 kit's holds, robot-wide, with contingency):**",
+         f"- **U20 base OFF-delay timer (W15b, owner):** `PIP_BASE_TIMER={K.BASE_TIMER}` is in the total provisionally; "
+         + "; ".join(f"`{k}` ${v['total']:,.0f} (${v['with_d20']:,.0f} with D20)" for k, v in timer_totals(d).items())
+         + " (the G9SA is a certified relay with a 13-week lead; the board pair is ± 20 % and not rated).",
          f"- **D20 GIM8108-8 at shoulder pitch + elbow** (waits on the seller's 24 V answer): 4 × GIM6010-8 → 4 × GIM8108-8: "
          f"**{_sd(HOLDS['d20'])}** (up to {_sd(HOLDS['d20_hi'])} at the dearest listing) → ${tot + HOLDS['d20']:,.0f}.",
          f"- **D24 inline GIM8108-36 at shoulder roll: in the total** (owner OK 2026-11-27). Against the belt roll it costs "
@@ -718,6 +797,9 @@ if __name__ == "__main__":
     (DOCS / "cost_down.md").write_text(cost_down_report(I, tot))
     sv = sorted(savings(I), key=lambda r: -r["s"])
     (DOCS / "bom.json").write_text(json.dumps({"total": tot, "with_d20": tot + HOLDS["d20"], "with_d20_inline": tot + HOLDS["d20"],
+                                               "base_timer": {"selected": K.BASE_TIMER, "status": "pending owner decision (W15b U20; default board provisionally)",
+                                                              "totals": timer_totals()},
+                                               "w15b_w14b": {"before": W15_BEFORE, "before_d20": W15_BEFORE_D20},
                                                "options": {n[:60]: q * u * (1 + CONTINGENCY) for n, q, u, _, _ in options()},
                                                "subsystems": {k: round(v * (1 + CONTINGENCY), 2) for k, v in subsystems(I).items()},
                                                "d29": {"before": D29_BEFORE, "before_d20": D29_BEFORE_D20,
