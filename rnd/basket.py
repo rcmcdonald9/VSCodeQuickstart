@@ -255,6 +255,7 @@ def main():
     (DOCS / "basket.md").write_text("\n".join(L) + "\n")
     js = {"ok": ok, "ok_b1y": oky, "rows": rows, "variants": res,
           "shares": {k: {f"{s:.2f}": dict(per=v["per"], where=v["where"], worst=v["worst"], tip=v["tip"], fails=v["fails"]) for s, v in st.items()} for k, st in studies.items()},
+          "share_rows": {k: {f"{s:.2f}": st[s]["rows"] for s in REPORT_SHARES} for k, st in studies.items()},
           "max_share": lims, "dyn_seat": DYN_SEAT, "torque_sense": TORQUE_SENSE}
     (DOCS / "basket.json").write_text(json.dumps(js, default=float))
     print("\n".join(L[4:]))

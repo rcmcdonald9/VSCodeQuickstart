@@ -186,7 +186,7 @@ def r_contact_max(name, x2, mount="sleeve", ambient=AMBIENT, **kw):
     return lo
 
 
-def design_duties(d, label, basket_rows=None, options=True):
+def design_duties(d, label, basket_rows=None, options=True, basket70=None):
     """Task day (MuJoCo fetch cycle, Monte Carlo worst corner), worst 1 kg hold, the R2c hug at 0.25 m and the R2d basket
     carry for design d, per big joint, in the BOM's mount (and, options=True, an inline joint with an aluminium finned
     ring / cap through its cover as the mitigation row). Returns rows (dict)."""
@@ -216,12 +216,15 @@ def design_duties(d, label, basket_rows=None, options=True):
             cases.append(("worst 1 kg workspace hold", (wm[j]["max"] / wm[j]["rated"]) ** 2, None, None, wm[j]["max"], wm[j]["rated"]))
             if j in hug_t:
                 cases.append(("R2c hug 0.25 m, held", (hug_t[j] / rated) ** 2, None, None, hug_t[j], rated))
-            if basket_rows:
-                br = [b for b in basket_rows if b.get("t") and b["rule"] == "carry" and b["x"] <= 0.45 and "washer" not in b["pose"] and "0.80" not in b["pose"]]
+            for lab_b, rows_b in (("R2d basket carry 2 min, from the task-day temperature", basket_rows),
+                                  ("R2d basket carry 2 min at a 70/30 share, heavier hand, from the task-day temperature", basket70)):
+                if not rows_b:
+                    continue
+                br = [b for b in rows_b if b.get("t") and b["rule"] == "carry" and b["x"] <= 0.45 and "washer" not in b["pose"] and "0.80" not in b["pose"]]
                 key = {"shoulder_pitch": "pitch", "shoulder_roll": "roll", "upper_yaw": "yaw", "elbow": "elbow"}[j]
                 if br:
                     tb = max(b["t"][key] for b in br)
-                    cases.append(("R2d basket carry 2 min, from the task-day temperature", (tb / rated) ** 2, 120.0, task_T, tb, rated))
+                    cases.append((lab_b, (tb / rated) ** 2, 120.0, task_T, tb, rated))
             for name, x2, dur, ts, tq, rt in cases:
                 b = band(n, x2, mount, cap, dur, ts)
                 ml = mount + (" + Al cap" if cap else "") + ("" if (mount, cap) == (mount0, cap0) else " (option)")
@@ -270,8 +273,9 @@ def designs():
     from .params import BASELINE, with_arm_motors
     bj = json.loads((DOCS / "basket.json").read_text()) if (DOCS / "basket.json").exists() else {}
     var = bj.get("variants", {})
-    return [("B0", BASELINE, None), ("B1 (D20)", with_arm_motors(BASELINE, "d20"), var.get("B1") or bj.get("rows")),
-            ("B1y", with_arm_motors(BASELINE, "d20_yaw"), var.get("B1y"))]
+    sr = bj.get("share_rows", {})
+    return [("B0", BASELINE, None, None), ("B1 (D20)", with_arm_motors(BASELINE, "d20"), var.get("B1") or bj.get("rows"), sr.get("B1", {}).get("0.70")),
+            ("B1y", with_arm_motors(BASELINE, "d20_yaw"), var.get("B1y"), sr.get("B1y", {}).get("0.70"))]
 
 
 def design_text(rows):
@@ -381,8 +385,8 @@ def main():
                 "derate long holds at full reach (the driver's thermal model already does this). Normal reaching is far below the worst pose.")]
     # 3. heavy-carry designs in the BOM's mount, with the sensitivity band (Astra #3 major 11)
     drows = []
-    for lab, dd, brows in designs():
-        drows += design_duties(dd, lab, brows)
+    for lab, dd, brows, b70 in designs():
+        drows += design_duties(dd, lab, brows, basket70=b70)
     Lr += ["", "## 3. D20 and B1y in the mount the BOM pays for, with a sensitivity band (Astra review #3 major 11)", "",
            "Belt joints: closed sleeve + aluminium finned rear cap (bom.py / m1_kit AL_CAP). Inline joints (the roll in every design, "
            "the B1y DM-J4340 yaw): bare under the R17 cover (cover Ø+20 mm, +40 mm, 2.5 mm ASA, ESTIMATE), no cap, no metal path. "
