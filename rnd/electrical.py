@@ -533,6 +533,19 @@ def sim_lines():
          f"stop may return at most ≈ {R['regen_limit']['M1']['P_max']:.0f} W on the M1 bench arm ({R['regen_limit']['robot']['P_max']:.0f} W on the robot, both arms + lift): "
          "drive limits at rated (bring-up's default) meet it; a peak-limit strength test runs one joint at a time (already the bench rule); the planner's "
          "deceleration limit must keep the sum of τ·ω of the braking joints under it. Board test T12 scopes the bus **at the drive**.", ""]
+    ip = ROOT / "docs" / "sw" / "integrated_stop.json"
+    if ip.exists():
+        I = json.loads(ip.read_text())
+        f = {r["fault"]: r for r in I["faults"]}
+        bs = f.get("bus silent", {})
+        L += [f"**Integrated stop on the virtual bench** (sw/test_s2.py `test_integrated_stop`, docs/sw/integrated_stop.json; board model at monostable +20 % and a "
+              f"{I['board']['release_ms']:.0f} ms release): a contact latches the collision fault only and the compliant hold keeps the heartbeat and K1; every hard fault "
+              "then overrides it (ms to heartbeat drop / contactor open / no torque: " +
+              "; ".join(f"{k} {r['hb_drop_ms']:.0f} / {r['contactor_open_ms']:.0f} / {r['torque_off_ms']:.0f}" for k, r in f.items()) +
+              f"). **A silent bus or bus-off is the slow case:** the supervisor needs fb_max_age (20 ms) to call it, then the watchdog runs, so the contactor opens at "
+              f"{bs.get('contactor_open_ms', float('nan')):.0f} ms and the hardware path alone ends at ≈ {bs.get('hw_no_torque_ms', float('nan')):.0f} ms, over the 50 ms budget; "
+              f"torque is gone at {bs.get('torque_off_ms', float('nan')):.0f} ms only because the drive's own CAN timeout (30 ms) fires. That timeout is unverified on the GIM "
+              "(Step 1, sw.gim_discover): without it the hardware path must lose ≈ 11 ms: fb_max_age ≤ 9 ms on the real adapter (it is 20 ms for the 0–9 ms pil9 bus), or watchdog_s ≤ 15 ms (sized at 25 ms on loop jitter).", ""]
     return L
 
 
