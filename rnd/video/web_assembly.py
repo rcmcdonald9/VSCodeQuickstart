@@ -13,8 +13,11 @@ rnd/video/web_steps.json; this script resolves them against the CAD:
   "wrist" the vector is in that arm frame (robot.py: mirror y for the right arm, then the joint rotations of the
   exported pose, all about y), so cartridge moves run along the real joint axes;
   "{s}" in a pattern means both arms; the right arm's copy has y mirrored;
-* a part is hidden until its first move starts, so nested moves (motor into its can, then the cartridge into the
-  arm) read as a sequence;
+* each step is a list of sub-steps ("subs": a one- or two-sentence caption, its fasteners, a duration and its moves,
+  with "t" local to the sub-step); the page plays one sub-step per Next. A part is hidden until its first move starts,
+  so nested moves (motor into its can in one sub-step, the cartridge into the arm in a later one) read as a sequence;
+* short moves are stretched to about one part-length (MIN_TRAVEL, MAX_STRETCH) along the same direction, and every
+  sub-step gets a framing box (the moving parts at their start and end poses) for the page's camera;
 * "ghost" lists earlier parts the page draws see-through during the step (the torso over the shoulder modules);
 * parts listed under "split" are cut by a plane into two pieces (the printed torso halves are one solid in the CAD).
 
@@ -39,6 +42,7 @@ from trimesh import graph as tgraph
 from trimesh import intersections as tint
 
 ROOT = Path(__file__).resolve().parents[2]
+MIN_TRAVEL, MAX_STRETCH = 60.0, 250.0   # mm: every move travels at least ~one part-length (≤ 250) and ≥ 60 mm
 CREASE = math.radians(32)          # the smoothing angle (rnd/render_robot.py uses 35°)
 PAGE = Path(__file__).with_name("web_assembly_page.html")
 
@@ -121,40 +125,71 @@ def resolve(steps_def, parts, poses):
         mine = [n for n in names if step_of[n] == si]
         moved = set()
         moves = []
-        for mv in st["moves"]:
-            sides = ("l", "r") if any("{s}" in p for p in mv["parts"]) else (None,)
-            for side in sides:
-                pats = [p.replace("{s}", side) if side else p for p in mv["parts"]]
-                sel = [n for n in mine if any(fnmatch.fnmatchcase(n, p) for p in pats)]
-                if not sel:
-                    raise SystemExit(f"step {si + 1}: move {mv['parts']} ({side}) matches nothing in the step")
-                t0, t1 = mv["t"]
-                if side == "r":
-                    t0, t1 = t0 + mv.get("rdelay", 0.0), t1 + mv.get("rdelay", 0.0)
-                groups = {}
-                if "per" in mv:                                   # one vector per regex group (e.g. per wheel module)
-                    for n in sel:
-                        k = re.match(mv["per"], n)
-                        groups.setdefault(k.group(1) if k else n, []).append(n)
-                else:
-                    groups[None] = sel
-                frame = mv.get("frame")
-                for gi, g in enumerate(groups.values()):
-                    f = mv["from"]
-                    if f in ("radial", "-radial"):
-                        c = np.vstack([by_name[n]["mesh"].bounds for n in g]).mean(axis=0)
-                        v = unit([c[0], c[1], 0.0]) * (1 if f == "radial" else -1)
+        subs = []
+        for ki, sub in enumerate(st["subs"]):
+            focus = []                                            # the parts this sub-step moves (camera framing)
+            for mv in sub["moves"]:
+                sides = ("l", "r") if any("{s}" in p for p in mv["parts"]) else (None,)
+                for side in sides:
+                    pats = [p.replace("{s}", side) if side else p for p in mv["parts"]]
+                    sel = [n for n in mine if any(fnmatch.fnmatchcase(n, p) for p in pats)]
+                    if not sel:
+                        raise SystemExit(f"step {si + 1}.{ki + 1}: move {mv['parts']} ({side}) matches nothing in the step")
+                    t0, t1 = mv.get("t", (0.0, 1.0))
+                    if side == "r":
+                        t0, t1 = t0 + mv.get("rdelay", 0.0), t1 + mv.get("rdelay", 0.0)
+                    groups = {}
+                    if "per" in mv:                               # one vector per regex group (e.g. per wheel module)
+                        for n in sel:
+                            k = re.match(mv["per"], n)
+                            groups.setdefault(k.group(1) if k else n, []).append(n)
                     else:
-                        v = unit(to_world(f, side, frame, poses))
-                    dt = mv.get("stagger", 0.0) * gi
-                    moves.append(dict(p=[names.index(n) for n in g], v=[round(float(x), 2) for x in v * mv["dist"]],
-                                      t=[round(t0 + dt, 3), round(t1 + dt, 3)]))
-                    moved.update(g)
+                        groups[None] = sel
+                    frame = mv.get("frame")
+                    for gi, g in enumerate(groups.values()):
+                        f = mv["from"]
+                        bb = np.vstack([by_name[n]["mesh"].bounds for n in g])
+                        lo, hi = bb.min(axis=0), bb.max(axis=0)
+                        if f in ("radial", "-radial"):
+                            c = (lo + hi) / 2
+                            v = unit([c[0], c[1], 0.0]) * (1 if f == "radial" else -1)
+                        else:
+                            v = unit(to_world(f, side, frame, poses))
+                        dist = mv["dist"]
+                        if dist > 0:                              # travel at least about one part-length (capped), so it reads on a phone
+                            corners = np.array([[x, y, z] for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])])
+                            ext = float(np.ptp(corners @ v))
+                            dist = max(dist, min(ext, MAX_STRETCH), MIN_TRAVEL)
+                        dt = mv.get("stagger", 0.0) * gi
+                        moves.append(dict(p=[names.index(n) for n in g], v=[round(float(x), 2) for x in v * dist], s=ki,
+                                          t=[round(t0 + dt, 3), round(min(1.0, t1 + dt), 3)]))
+                        moved.update(g)
+                        focus += g
+            subs.append(dict({k: v for k, v in sub.items() if k != "moves"}, dur=sub.get("dur", 2.0), focus=focus))
         still = [n for n in mine if n not in moved]
         if still:
             raise SystemExit(f"step {si + 1} ({st['title']}): parts with no move: {still}")
+        # framing box per sub-step: the moving parts (left arm only when both arms move) at their start and end poses
+        for ki, sub in enumerate(subs):
+            foc = sub.pop("focus")
+            if any(n.startswith("l_") for n in foc):
+                foc = [n for n in foc if not n.startswith("r_")]
+            boxes = []
+            for n in foc:
+                i = names.index(n)
+                lo, hi = by_name[n]["mesh"].bounds
+                for first in (ki, ki + 1):                        # offset at the start (moves from this sub on) and the end
+                    off = np.zeros(3)
+                    for m in moves:
+                        if i in m["p"] and m["s"] >= first:
+                            off += m["v"]
+                    boxes += [lo + off, hi + off]
+            if not boxes:                                         # the finished robot: the whole thing
+                boxes = [b for p in parts for b in p["mesh"].bounds]
+            bx = np.array(boxes)
+            sub["box"] = [[round(float(x), 1) for x in bx.min(axis=0)], [round(float(x), 1) for x in bx.max(axis=0)]]
         ghost = [names.index(n) for n in names if step_of[n] < si and any(fnmatch.fnmatchcase(n, p) for p in st.get("ghost", []))]
-        steps.append(dict(parts=[names.index(n) for n in mine], moves=moves, ghost=ghost))
+        steps.append(dict(parts=[names.index(n) for n in mine], moves=moves, ghost=ghost, subs=subs))
     return step_of, steps
 
 
@@ -233,7 +268,7 @@ def main(argv):
         meta=dict(sd.get("meta", {}), source=lst, parts=len(parts), triangles=int(tris),
                   bounds=[[round(float(x), 1) for x in lo], [round(float(x), 1) for x in hi]]),
         colours=sd["colours"], files=files, parts=manifest,
-        steps=[dict({k: v for k, v in st.items() if k not in ("parts", "moves")}, **r) for st, r in zip(sd["steps"], steps)])
+        steps=[dict({k: v for k, v in st.items() if k not in ("parts", "subs")}, **r) for st, r in zip(sd["steps"], steps)])
     (out / "steps.json").write_text(json.dumps(doc, separators=(",", ":")))
     (out / "index.html").write_text(PAGE.read_text())                  # page content only: the host adds the skeleton
     print(f"{len(parts)} parts, {tris} triangles, {len(steps)} steps -> {out}")
