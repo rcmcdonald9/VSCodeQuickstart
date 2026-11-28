@@ -47,32 +47,32 @@
 | lift cover | 89 × 109 × 118 | 95 | ✅ |
 | pulley 72T | 16 × 113 × 113 | 155 | ✅ |
 | cover collar_bot | 2 × 110 × 110 | 15 | ✅ |
-| cover yaw hood (inline roll) | 71 × 99 × 109 | 68 | ✅ |
+| cover yaw hood (inline roll) | 71 × 102 × 109 | 70 | ✅ |
 | forearm (ends) [1] | 53 × 80 × 108 | 44 | ✅ |
-| cover elbow_bay | 45 × 104 × 104 | 53 | ✅ |
 | KX74 collar | 20 × 98 × 103 | 38 | ✅ |
 | upper bone cap [1] | 10 × 97 × 102 | 12 | ✅ |
+| cover elbow_bay | 98 × 98 × 101 | 34 | ✅ |
 | mast coupling | 40 × 100 × 100 | 253 | ✅ |
 | cover collar_door [1] | 3 × 27 × 98 | 7 | ✅ |
 | cartridge M can (bolted, D24) | 71 × 94 × 95 | 64 | ✅ |
 | pitch shaft (integral 60T) | 50 × 94 × 94 | 93 | ✅ |
 | pulley 60T | 16 × 94 × 94 | 107 | ✅ |
 | upper bone cap [2] | 5 × 83 × 93 | 2 | ✅ |
-| cover roll front collar (inline roll) | 22 × 92 × 92 | 64 | ✅ |
+| cover roll front collar (inline roll) | 19 × 92 × 92 | 35 | ✅ |
 | gripper grip_base | 12 × 91 × 91 | 43 | ✅ |
 | pitch hub (balancer disc + ferrule) | 34 × 91 × 91 | 79 | ✅ |
 | ferrule (arm side) | 18 × 91 × 91 | 67 | ✅ |
 | KX74 hub | 13 × 90 × 90 | 67 | ✅ |
 | small-pulley hub | 46 × 90 × 90 | 82 | ✅ |
 | lift bracket (D13 stage walls) | 40 × 82 × 89 | 64 | ✅ |
+| cover wrist_r | 44 × 67 × 88 | 30 | ✅ |
+| cover wrist_f | 44 × 67 × 88 | 30 | ✅ |
 | roll arm rear | 18 × 71 × 88 | 32 | ✅ |
 | cartridge M can | 44 × 87 × 87 | 50 | ✅ |
 | KX56 collar | 19 × 78 × 85 | 28 | ✅ |
 | KX74 male | 8 × 80 × 80 | 29 | ✅ |
 | cartridge M adapter | 12 × 80 × 80 | 45 | ✅ |
 | cartridge M rear cap (D24) | 4 × 80 × 80 | 18 | ✅ |
-| cover wrist_f | 40 × 68 × 80 | 22 | ✅ |
-| cover wrist_r | 40 × 68 × 80 | 22 | ✅ |
 | cartridge D can | 54 × 80 × 80 | 37 | ✅ |
 | cover elbow_cap | 6 × 80 × 80 | 12 | ✅ |
 | forearm (ends) [2] | 64 × 78 × 80 | 80 | ✅ |
@@ -113,8 +113,8 @@
 
 | Piece | kg |
 |---|---|
-| base | 7.78 |
+| base | 7.70 |
 | upper core | 8.88 |
 | arm (each) | 4.90 |
 | battery | 1.10 |
-| total robot | 27.55 |
+| total robot | 27.47 |

@@ -42,7 +42,7 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | yaw | 10 | 6/10 (4 only by ball-end) ❌ | flange ear screw +50° (M4, site yaw) (rolyaw_can); flange ear screw -50° (M4, site yaw) (rolyaw_can); flange ear screw +145° (M4, site yaw) (rolyaw_can); flange ear screw -145° (M4, site yaw) (rolyaw_can) |
 | lift | 4 | 0/4 (4 only by ball-end) ❌ | flange ear screw +40° (M4, site lift4) (lift_can); flange ear screw -40° (M4, site lift4) (lift_can); flange ear screw +140° (M4, site lift4) (lift_can); flange ear screw -140° (M4, site lift4) (lift_can) |
 | wrist | 12 | 12/12 ✅ | — |
-| roll (inline) | 16 | 14/16 ❌ | motor M4 × 25 66° (yaw block + rear arm off) (rolrolgim_housing); motor M4 × 25 201° (yaw block + rear arm off) (rolrolgim_housing) |
+| roll (inline) | 16 | 16/16 ✅ | — |
 
 <details><summary>Every fastener</summary>
 
@@ -103,10 +103,10 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | wrist | can flange M3 270° (hand off) | swap | ✅ straight Ø12 × 50 | — |
 | wrist | can flange M3 330° (hand off) | swap | ✅ straight Ø12 × 50 | — |
 | roll (inline) | motor M4 × 25 21° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
-| roll (inline) | motor M4 × 25 66° (yaw block + rear arm off) | service | ❌ blocked | l_roll_roll_gim_housing |
+| roll (inline) | motor M4 × 25 66° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
 | roll (inline) | motor M4 × 25 111° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
 | roll (inline) | motor M4 × 25 156° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
-| roll (inline) | motor M4 × 25 201° (yaw block + rear arm off) | service | ❌ blocked | l_roll_roll_gim_housing |
+| roll (inline) | motor M4 × 25 201° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
 | roll (inline) | motor M4 × 25 246° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
 | roll (inline) | motor M4 × 25 291° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |
 | roll (inline) | motor M4 × 25 336° (yaw block + rear arm off) | service | ✅ straight Ø12 × 50 | — |

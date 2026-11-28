@@ -86,7 +86,7 @@
    "case": "basket \u00d7 1.5",
    "N": 102.0,
    "M": 32.64,
-   "T": 2.1,
+   "T": 2.37,
    "pose": "floor pick, x 0.50",
    "margin": 1.62,
    "verdict": true,
@@ -142,7 +142,7 @@
   {
    "item": "M1 rear mount: 8 \u00d7 M4 into the 3.5 mm housing threads",
    "before": "8 \u00d7 M4 \u00d7 18 + washer + picked shim through 13.9 mm of PETG at 0.5 kN (4 \u00b5m of bolt stretch; friction 38 N\u00b7m at \u00d7 0.75 creep)",
-   "after": "metal clamp: M4 \u00d7 25 ISO 10642 10.9 (6) / ISO 4762 12.9 in the stop bushes (2) through a 3 mm 7075 rear plate and \u00d86/4.4 steel sleeves onto the motor at 1.6 kN \u2192 1.12 kN after embedding (no print in the stack); friction 56 N\u00b7m = 1.60\u00d7 the drive limit; engagement 3.0 \u00b1 0.49 (never bottoms in 3.5)",
+   "after": "metal clamp: M4 \u00d7 25 ISO 10642 10.9 (8) through a 3 mm 7075 rear plate and \u00d86/4.4 steel sleeves onto the motor at 1.6 kN \u2192 1.12 kN after embedding (no print in the stack); friction 56 N\u00b7m = 1.60\u00d7 the drive limit; engagement 3.0 \u00b1 0.49 (never bottoms in 3.5)",
    "ok": true,
    "margin": 1.6032004439014795,
    "basis": "stack per screw: bolt 13 + sleeve 7 + plate 1 \u00b5m/kN, 5 metal interfaces \u00d7 2 \u00b5m embedding (VDI 2230, ESTIMATE) \u2192 70 % left, no creep term (the printed floor + cup ring are sandwiched between the plate and the motor face, sleeves -0.05 mm vs the print: located, not clamped). Friction \u03bc 0.15 steel/Al (ESTIMATE). Engagement 25 \u2212 22 = 3.0 mm, worst \u00b1 0.49 (screw length js15 \u00b1 0.42, ISO 4759-1; plate \u00b1 0.05, sleeve \u00b1 0.02): 2.51\u20133.49 in 3.5 mm, so no shim picking; strip at the shortest (2.16 mm effective) 3.2 kN vs the worst bolt 1.82 kN (1.8\u00d7; motor bearing 2330 N \u00d7 40 mm \u2192 94 N\u00b7m on the bolt circle, under the 310 N\u00b7m that opens it, load factor 0.39). Stall reaction through the sleeves into the print: 2.7 MPa bearing (\u00d86 \u00d7 19 mm, 8 sleeves). Sleeve yield (D26 stock tube): rear 6 \u00d7 0.8 seamless E235+C precision tube 139 MPa at the worst bolt vs 235 (1.69\u00d7); clevis M5 8 \u00d7 1.2 seamless E235+C precision tube (press fit in the print: the bearing path) 100 MPa at 1.5 kN + the 137 N\u00b7m worst output moment on PCD 64 vs 235 (2.34\u00d7)"
@@ -157,18 +157,18 @@
   },
   {
    "item": "M1 roll hard stops (both ends)",
-   "before": "\u00d810 pins at r 43 'pressed 18.5 mm into the floor + cup ring': the cup ring is r 38\u201348, so the seat had 0 mm of wall to the driver bore and 0 mm outside (and the pins were not in the CAD); 30 MPa at stall in that seat (1.35\u00d7 of 40)",
-   "after": "steel stop bushes (\u00d810 \u00d7 8 proud) on two of the 8 rear M4, clamped to the motor housing through the rear plate: at stall print 13.7 MPa, bush 415 MPa, plate 115 MPa, pad 15 MPa \u2192 1.81\u00d7 (worst of the six)",
+   "before": "W13: steel stop bushes (\u00d810 \u00d7 8 proud) on two of the 8 rear M4, against stainless strips in roll_arm_rear's edges: 1.81\u00d7 at stall, but they stood 8 mm proud of the rear plate, the one non-round static feature in front of the yaw hood (rnd/pinch.py R17: cover_yaw \u00d7 roll_gim_housing 0.1 \u2026 8.0 mm)",
+   "after": "two 7075-T6 dogs on the output adapter (r 31\u201336.5, 25\u00b0) against two blocks on a 3 mm ring under the front collar (34.5\u00b0), 180\u00b0 apart (a couple: no radial load on the motor bearing): at stall, one dog taking it all, dog 111 MPa, block 38 MPa, contact 53 MPa, ring screws 16 MPa \u2192 3.91\u00d7 (worst of four)",
    "ok": true,
-   "margin": 1.805539408377857,
-   "basis": "F = \u03c4 / r: 836 N at 35.1 N\u00b7m, 2450 N at stall, contact 4 mm off the plate. The bushes sit on the screw circle (r 42) at -68.75\u00b0 / 156.25\u00b0 (REAR_ANG0 21.25\u00b0, rear arm half-width 28.21: contact at -16.5\u00b0 / 104\u00b0). Load path: bush \u2192 plate (\u00d810 \u00d7 3 fitted, 3.44 kN, 115 MPa vs 7075-T6 \u03c3_y 435) \u2192 the 6 csk screws (cone seats) \u2192 the motor housing: the stall torque closes housing \u2194 output in metal; the print sees only the bush's \u00d87 \u00d7 19 mm tail as a foundation (rigid bush on the plate pivot, linear pressure: 13.7 MPa at stall, 4.7 at the limit). Bush 42CrMo4+QT (R_p0.2 \u2265 750, EN 10083-3): 415 MPa in the \u00d87/4.3 tail at the plate, 137 MPa in the \u00d810/7.2 head. Edge distances: plate ring r 35\u201348: 1 mm outside the \u00d810 hole, load along the ring (end distance \u2265 3 d to the next screw); print: 0.9 mm from the tail to the driver pilot (load tangential). Wear strip 20 \u00d7 8 \u00d7 1.5 stainless bonded in each roll_arm_rear edge: 5.2 / 15.3 MPa on the print"
+   "margin": 3.912041009116934,
+   "basis": "F = \u03c4 / r: 1040 N at 35.1 N\u00b7m, 3049 N at stall (r 33.75, both dogs; the check puts it all on one). Contact band x 29.0\u201339.5 (10.5 mm) \u00d7 5.5 mm radial. Dog: cantilever from the adapter's back face, 7.25 mm to the contact centre, root 5.5 \u00d7 14.7 mm; block: from the ring top, 6.25 mm, root 7.2 \u00d7 20.4 mm; 7075-T6 \u03c3_y 435 MPa (as the rear plate), contact against \u03c3_y. Stop angles: blocks at 27.75\u202662.25\u00b0, 207.75\u2026242.25\u00b0; contact at -16.5\u00b0 / 104\u00b0. Load path: dog \u2192 block \u2192 ring \u2192 M4 \u00d7 6 ISO 10642 10.9 (8) (friction 56.4 N\u00b7m at 70 % of 1.6 kN each, the rest in shear on the M4 stress area; the \u00d860.6 bore on the motor's \u00d860 step pilots it) \u2192 housing; the adapter \u2194 output-boss joint (row (a)) carried the stop torque before too. The printed clevis / yaw block / rear arm no longer carry the motor's stall torque into the stop. 7075 on 7075 at a rare hard-stop contact: hard-anodise both (ESTIMATE; wear coupon)"
   }
  ],
  "roll_bearings": {
   "basket \u00d7 1.5": {
    "R1": 530.0,
    "R2": 617.0,
-   "F": 118.5,
+   "F": 118.6,
    "Mm": 36.6,
    "T": 3.1,
    "note": "set on a bed (0.55 m), x 0.50"
