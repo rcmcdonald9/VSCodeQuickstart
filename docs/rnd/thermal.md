@@ -31,26 +31,26 @@ Ambient 30 °C, limit 100 °C, ΔT at rated (open, still air) 60 K, τ 600 s; h_
 
 | Actuator | RMS torque/force | Rated (derated ×0.75) | Winding, old model (open + 10 K) | **Winding, closed sleeve** | Winding, sleeve + Al cap | Sleeve wall (ASA ≤ 75 °C) |
 |---|---|---|---|---|---|---|
-| pitch (GIM6010-8) | 6.92 | 10.69 | 65 °C | **99 °C** ✅ | 58 °C ✅ | 49 °C ✅ |
-| roll (GIM8108-36) | 1.21 | 26.33 | 40 °C | **35 °C** ✅ | 35 °C ✅ | 35 °C ✅ |
+| pitch (GIM6010-8) | 7.07 | 10.69 | 66 °C | **102 °C** ❌ | 59 °C ✅ | 50 °C ✅ |
+| roll (GIM8108-36) | 1.24 | 26.33 | 40 °C | **35 °C** ✅ | 35 °C ✅ | 35 °C ✅ |
 | yaw (GIM6010-8) | 0.18 | 7.12 | 40 °C | **35 °C** ✅ | 35 °C ✅ | 35 °C ✅ |
-| elbow (GIM6010-8) | 3.34 | 7.12 | 53 °C | **68 °C** ✅ | 47 °C ✅ | 42 °C ✅ |
+| elbow (GIM6010-8) | 3.35 | 7.12 | 53 °C | **69 °C** ✅ | 47 °C ✅ | 42 °C ✅ |
 | wpitch (DM-J4310-2EC_V1.1) | 0.39 | 2.25 | 42 °C | **40 °C** ✅ | 37 °C ✅ | 36 °C ✅ |
 | wroll | 0.01 | 0.73 | 40 °C | **40 °C** ✅ | 40 °C ✅ | not in a sleeve (old model) |
-| lift | 151.23 | 235.85 | 65 °C | **65 °C** ✅ | 65 °C ✅ | not in a sleeve (old model) |
-| base_x | 7.22 | 98.43 | 40 °C | **40 °C** ✅ | 40 °C ✅ | not in a sleeve (old model) |
+| lift | 162.10 | 235.85 | 68 °C | **68 °C** ✅ | 68 °C ✅ | not in a sleeve (old model) |
+| base_x | 8.65 | 98.43 | 40 °C | **40 °C** ✅ | 40 °C ✅ | not in a sleeve (old model) |
 | base_y | 0.19 | 98.43 | 40 °C | **40 °C** ✅ | 40 °C ✅ | not in a sleeve (old model) |
 
-**Hottest winding on a non-stop task day: 99 °C in the closed sleeve** (the old open + 10 K model said 65 °C; with an aluminium rear cap 65 °C; limit 100 °C). The sleeve wall runs cooler than the old model said (49 °C: the trapped air inside holds the heat back), so **the limit is the winding, not the ASA**. **Day-1 actions (Fable M7):** a 10 k NTC on every GIM sleeve plus the drive's own temperature in the bring-up log; an aluminium rear cap on the first cartridge (Step 1 of the M1 kit) to measure the difference; vents in the R17 covers over each cap.
+**Hottest winding on a non-stop task day: 102 °C in the closed sleeve** (the old open + 10 K model said 68 °C; with an aluminium rear cap 68 °C; limit 100 °C). The sleeve wall runs cooler than the old model said (50 °C: the trapped air inside holds the heat back), so **the limit is the winding, not the ASA**. **Day-1 actions (Fable M7):** a 10 k NTC on every GIM sleeve plus the drive's own temperature in the bring-up log; an aluminium rear cap on the first cartridge (Step 1 of the M1 kit) to measure the difference; vents in the R17 covers over each cap.
 
 ## 2. Worst static hold (worst workspace pose, 1 kg payload, nominal motors)
 
 | Joint | Worst static torque (N·m) | Rated (N·m) | Steady winding, sleeve | Time to the limit | With Al cap | Time to the limit | Continuous torque in the sleeve (N·m) |
 |---|---|---|---|---|---|---|---|
-| shoulder_pitch | 11.8 | 14.2 | 140 °C | 10 min | 74 °C | unlimited ✅ | 9.3 |
-| shoulder_roll | 16.5 | 35.1 | 69 °C | unlimited ✅ | 48 °C | unlimited ✅ | 22.7 |
+| shoulder_pitch | 12.1 | 14.2 | 145 °C | 9 min | 76 °C | unlimited ✅ | 9.3 |
+| shoulder_roll | 16.8 | 35.1 | 71 °C | unlimited ✅ | 49 °C | unlimited ✅ | 22.7 |
 | upper_yaw | 6.9 | 9.5 | 116 °C | 16 min | 65 °C | unlimited ✅ | 6.2 |
 | elbow | 6.9 | 9.5 | 116 °C | 16 min | 65 °C | unlimited ✅ | 6.2 |
 | wrist_pitch | 1.9 | 3.0 | 93 °C | unlimited ✅ | 58 °C | unlimited ✅ | 2.0 |
 
-**Some joints can't hold their worst pose forever in the closed sleeve (shortest 10 min).** The planner must derate long holds at full reach (the driver's thermal model already does this). Normal reaching is far below the worst pose.
+**Some joints can't hold their worst pose forever in the closed sleeve (shortest 9 min).** The planner must derate long holds at full reach (the driver's thermal model already does this). Normal reaching is far below the worst pose.

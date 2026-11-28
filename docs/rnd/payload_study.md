@@ -8,7 +8,11 @@ balancer K·sin θu), elbow and wrist pitch, against the current actuators × ra
 Scenarios (20 lb = 9.07 kg):
 - A: one hand, 9.07 kg at the grasp point, arm straight out
 - B: two arms, 4.54 kg each, hug carry: upper arm hanging, forearm horizontal, load centred 0.20–0.30 m from the elbow
-  axis on the forearms/palms (the wrist sees ≈ nothing)
+  axis on the forearms/palms (the wrist sees ≈ nothing). **The R2c spec point is 0.25 m** (owner, 2026-11-27: "held close, load
+  on the forearms ≤ 0.25 m from the elbows"); 0.20 and 0.30 m bracket it (Astra review #3 Part A: the study must not quote 0.20 m
+  as the pass). In this pose the upper arm hangs, so actuator masses on the upper arm or on the elbow axis add nothing to the
+  pitch or elbow moment: only the forearm, hand and load count, and the result does not depend on which body carries the
+  elbow actuator's housing.
 - C: two arms, 4.54 kg each at the grasp points, arm at 45° (lifting a bag off a counter)
 Rule: rated / static ≥ 1.5 for holds; peak / static ≥ 1.5 for brief lifts (< 10 s).
 
@@ -16,12 +20,13 @@ Capacity now (rated / peak at the joint): shoulder_pitch GIM6010-8 ×3.00: 14.2 
 
 | Case | Shoulder pitch N·m (rated× / peak×) | Elbow N·m (rated× / peak×) | Wrist pitch N·m (rated× / peak×) |
 |---|---|---|---|
-| Today's spec: 1 kg, one hand, arm straight out | 11.9 (1.20× / 2.64×) ⚠️ brief only | 7.0 (1.35× / 2.98×) ⚠️ brief only | 1.9 (1.62× / 3.78×) ✅ |
-| A: 20 lb in one hand, arm straight out | 70.2 (0.20× / 0.45×) ❌ | 41.5 (0.23× / 0.50×) ❌ | 14.2 (0.21× / 0.49×) ❌ |
+| Today's spec: 1 kg, one hand, arm straight out | 12.2 (1.17× / 2.58×) ⚠️ brief only | 7.0 (1.35× / 2.98×) ⚠️ brief only | 1.9 (1.62× / 3.78×) ✅ |
+| A: 20 lb in one hand, arm straight out | 70.4 (0.20× / 0.45×) ❌ | 41.5 (0.23× / 0.50×) ❌ | 14.2 (0.21× / 0.49×) ❌ |
 | A': 20 lb in one hand, elbow at 90° (hand 0.43 m out) | 41.5 (0.34× / 0.75×) ❌ | 41.5 (0.23× / 0.50×) ❌ | 14.2 (0.21× / 0.49×) ❌ |
 | B: 20 lb two-handed hug, 10 lb per arm, load 0.20 m out on the forearms | 11.6 (1.22× / 2.69×) ⚠️ brief only | 11.6 (0.82× / 1.80×) ⚠️ brief only | 0.3 (9.27× / 21.62×) ✅ |
+| B (R2c spec): same, load 0.25 m out | 13.9 (1.03× / 2.26×) ⚠️ brief only | 13.9 (0.69× / 1.51×) ⚠️ brief only | 0.3 (9.27× / 21.62×) ✅ |
 | B: same, load 0.30 m out | 16.1 (0.89× / 1.95×) ⚠️ brief only | 16.1 (0.59× / 1.30×) ❌ | 0.3 (9.27× / 21.62×) ✅ |
-| C: 20 lb two-handed bag, 10 lb per hand, arm at 45°, elbow straight | 26.5 (0.54× / 1.18×) ❌ | 15.7 (0.61× / 1.33×) ❌ | 5.1 (0.58× / 1.36×) ❌ |
+| C: 20 lb two-handed bag, 10 lb per hand, arm at 45°, elbow straight | 26.6 (0.53× / 1.18×) ❌ | 15.7 (0.61× / 1.33×) ❌ | 5.1 (0.58× / 1.36×) ❌ |
 
 ## D20 candidate: GIM8108-8 at shoulder pitch and elbow, both 3:1
 
@@ -29,22 +34,23 @@ Capacity: shoulder_pitch 21.4 / 62.7 N·m; elbow 21.4 / 62.7 N·m; wrist_pitch 3
 
 | Case | Shoulder pitch (rated× / peak×) | Elbow (rated× / peak×) |
 |---|---|---|
-| Today's spec: 1 kg, one hand, arm straight out | 1.78× / 5.22× | 3.05× / 8.93× |
+| Today's spec: 1 kg, one hand, arm straight out | 1.75× / 5.12× | 3.05× / 8.93× |
 | A: 20 lb in one hand, arm straight out | 0.30× / 0.89× | 0.51× / 1.51× |
 | A': 20 lb in one hand, elbow at 90° (hand 0.43 m out) | 0.51× / 1.51× | 0.51× / 1.51× |
 | B: 20 lb two-handed hug, 10 lb per arm, load 0.20 m out on the forearms | 1.84× / 5.39× | 1.84× / 5.39× |
+| B (R2c spec): same, load 0.25 m out | 1.54× / 4.52× | 1.54× / 4.52× |
 | B: same, load 0.30 m out | 1.33× / 3.90× | 1.33× / 3.90× |
-| C: 20 lb two-handed bag, 10 lb per hand, arm at 45°, elbow straight | 0.81× / 2.36× | 1.37× / 4.00× |
+| C: 20 lb two-handed bag, 10 lb per hand, arm at 45°, elbow straight | 0.80× / 2.35× | 1.37× / 4.00× |
 
-**R2c (owner, 2026-11-27): 20 lb carried two-handed, held close (load on the forearms ≤ 0.25 m from the elbows).** Met on rated torque with the D20 motors (≥ 1.5× at 0.2 m, 1.32× at 0.3 m, with ≈ 3.9× on peak). The GIM6010s only manage it as a brief lift.
+**R2c (owner, 2026-11-27): 20 lb carried two-handed, held close (load on the forearms ≤ 0.25 m from the elbows).** At the spec 0.25 m the D20 motors give **1.54× rated** (4.5× peak): just over the 1.5× rule, with equal sharing between the hands and before thermal derating (0.20 m: 1.84×, 0.30 m: 1.33×). The GIM6010s give 0.69× rated at 0.25 m: a brief lift only (1.51× peak). Unequal sharing between the hands: rnd/basket.py share study (docs/rnd/basket.md).
 
 ## The rest of the robot with 20 lb aboard (R2c ripple check, loop 45)
 
 | Check | Today (2 kg) | With 20 lb | Rule | |
 |---|---|---|---|---|
-| Lift GIM6010: rated / peak margin (20 lb moves at 0.3 m/s²; the pawl holds it at 0 W) | 1.88× / 4.1× | 1.38× / 3.0× | peak ≥ 1.5× for moves < 5 s | ✅ |
-| Base: 15 mm threshold, wheel peak margin | 2.15× | 1.69× | ≥ 1.5× | ✅ |
-| Static tip, hug load between wheels (45°): COM shift 85 mm vs 148 mm edge | — | 64 mm | ≥ 50 mm | ✅ |
-| Same + braking 0.3 m/s² | — | 41 mm | ≥ 30 mm | ✅ |
+| Lift GIM6010: rated / peak margin (20 lb moves at 0.3 m/s²; the pawl holds it at 0 W) | 1.78× / 3.9× | 1.33× / 2.9× | peak ≥ 1.5× for moves < 5 s | ✅ |
+| Base: 15 mm threshold, wheel peak margin | 1.65× | 1.37× | ≥ 1.5× | ❌ |
+| Static tip, hug load between wheels (45°): COM shift 69 mm vs 148 mm edge | — | 80 mm | ≥ 50 mm | ✅ |
+| Same + braking 0.3 m/s² | — | 57 mm | ≥ 30 mm | ✅ |
 
 Planner rules with a load over 1 kg (A10) still apply: carry it pointing at a wheel, brake ≤ 0.3 m/s², crawl near people.
