@@ -18,7 +18,7 @@ gap), on the move into the stow from the default park pose too; hands ≥ 50 mm 
 reserve (rnd/tip.py reserve(), asymmetric pose) for the threshold crossing (casters released, 1.0 m/s² braking) and
 with a person near (casters locked, 0.1 m/s² + 30 N push at 1 m); static (R12 ≥ 50 mm).
 
-**Result: a door stow exists.** Driving through at the D2b threshold heading (45° to the wheels) the stowed robot is **560 mm** wide over 45° ± 2° of heading (≤ 570 mm = 650 mm clear − 2 × 40 mm: 45 mm a side in a 650 mm opening, 70 mm in a literal 700 mm one), collision-free with every cross-body gap ≥ 28 mm after the cover allowance, arm parts ≥ 444 mm off the floor, inside the supervisor bounds in both modes, tip reserve ≥ 78 mm. Sideways (90°, doors without a threshold) the arms fold inside the base: **500 mm** (the Ø500 shell). **Facing the door (0°) no pose fits:** the shoulder roll motors alone span 644 mm whatever the joints do (twin.TUCK: 832 mm).
+**Result: a door stow exists.** Driving through at the D2b threshold heading (45° to the wheels) the stowed robot is **553 mm** wide over 45° ± 2° of heading (≤ 570 mm = 650 mm clear − 2 × 40 mm: 48 mm a side in a 650 mm opening, 73 mm in a literal 700 mm one), collision-free with every cross-body gap ≥ 28 mm after the cover allowance, arm parts ≥ 126 mm off the floor, inside the supervisor bounds in both modes, tip reserve ≥ 81 mm. Sideways (90°, doors without a threshold) the arms fold inside the base: **500 mm** (the Ø500 shell). **Facing the door (0°) no pose fits:** the shoulder roll motors alone span 634 mm whatever the joints do (twin.TUCK: 844 mm). The arm hulls are convex hulls of today's CAD with the drawn covers (D31 skirt included), so no cover allowance is added; with the old 5 mm on every arm hull the same stow measures 564 mm at 45° (smallest cross-body gap 23 mm) and the forward floor 644 mm.
 
 ## Door
 
@@ -38,72 +38,72 @@ Width across the travel direction, whole robot with the cover allowance.
 
 | Pose | W(0°) forward | W(45°) threshold | W(90°) sideways | narrowest (heading) | min cross-body gap |
 |---|---|---|---|---|---|
-| twin.TUCK | 832 | 791 | 651 | 651 (90°) | 30 |
-| twin.TUCKS[1] | 867 | 765 | 618 | 618 (90°) | 16 |
-| twin.TUCKS[2] | 849 | 801 | 659 | 659 (90°) | 16 |
-| twin.TUCKS[3] | 856 | 844 | 541 | 541 (90°) | 30 |
+| twin.TUCK | 844 | 788 | 672 | 672 (90°) | 34 |
+| twin.TUCKS[1] | 883 | 751 | 614 | 614 (90°) | 25 |
+| twin.TUCKS[2] | 861 | 809 | 646 | 646 (90°) | 25 |
+| twin.TUCKS[3] | 866 | 853 | 562 | 562 (90°) | 34 |
 
-Forward floor: the pitch body (the GIM8108-36 roll motor, Ø96 on the roll axis 69 mm outboard of the shoulder at y ±200; its spring ring and roll link) only turns about Y, so its |y| is fixed: 644 mm with the cover allowance. The tip-over track's 0.70–0.78 m is this, measured facing forward.
+Forward floor: the pitch body (the GIM8108-36 roll motor, Ø96 on the roll axis 69 mm outboard of the shoulder at y ±200; its spring ring and roll link) only turns about Y, so its |y| is fixed: 634 mm with the cover allowance. The tip-over track's 0.70–0.78 m is this, measured facing forward.
 
 ## The door stow (ψ = 45°, valid in both supervisor modes)
 
-Search: Powell from 7 seeds over the lift + 12 arm joints inside the supervisor target bounds (limits less 3°, roll ≥ +5° + 3°); cost = max W(45° ± 2°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a centred COM and a low lift). Seed kept: *both fwd folded in*.
+Search: Powell from 7 seeds over the lift + 12 arm joints inside the supervisor target bounds (limits less 3°, roll ≥ +5° + 3°); cost = max W(45° ± 2°) + penalties for gaps < 25 mm and arm parts < 50 mm off the floor (+ a small pull toward a centred COM and a low lift). Seed kept: *rolls-held stow*.
 
 | Joint | Right arm | Left arm (twin sign) |
 |---|---|---|
-| pitch | +57° | -100° |
-| roll | +29° | +16° |
-| yaw | -147° | +31° |
-| elbow | -39° | -72° |
-| wpitch | +117° | -0° |
-| wroll | -76° | +50° |
+| pitch | +57° | -55° |
+| roll | +8° | +8° |
+| yaw | -4° | +147° |
+| elbow | -80° | -56° |
+| wpitch | -3° | +0° |
+| wroll | +17° | +19° |
 | lift (shoulder height) | 0.70 m | |
 
-In words: the **right arm swings back** (pitch +57°, elbow -39°); the **left arm points forward** (pitch -100°, elbow -72°). Along the crossing diagonal the right shoulder leads and the left trails, so each arm goes to where the diagonal is short: ahead on the left, behind on the right.
+In words: the **right arm swings back** (pitch +57°, elbow -80°); the **left arm points forward** (pitch -55°, elbow -56°). Along the crossing diagonal the right shoulder leads and the left trails, so each arm goes to where the diagonal is short: ahead on the left, behind on the right.
 
-- W(ψ) round the crossing heading: 40° 589, 43° 560, 45° 556, 47° 553, 50° 546 mm.
-- Set by: robot:cylinder2 (+250 mm) and roll_xarm_r (-306 mm) along the normal to the travel direction.
-- Crossing at 135° instead: the mirror pose (left ↔ right), 556 mm.
-- Heading tolerance: 15 mm threshold at the stow's mass + LOAD_KG and COM height, SW-T4 speed (rnd/threshold.py roller model, hard floor + carpet): 40° crosses 1.04×, 43° crosses 1.02×, 44° crosses 1.00×, 45° crosses 1.79×, 46° crosses 1.00×, 47° crosses 1.04×, 50° crosses 1.04× peak margin. Every heading crosses, but the 1.5× SW-T4 margin holds only at 45° itself in this model, so the base must hold 45° closely whatever the arms do; the width is taken over ± 2°. (For the threshold owner: D2b's margin is a knife edge in heading.)
-- Smallest cross-body gaps (after the cover allowance): fore_wrist_r × hand_gripbase_r 28 mm; fore_wrist_l × hand_gripbase_l 28 mm; fore_link_r × hand_gripbase_r 34 mm.
-- Normal mode only (roll down to −12°): 563 mm (the people-near roll bound costs 0 mm here).
+- W(ψ) round the crossing heading: 40° 593, 43° 553, 45° 549, 47° 545, 50° 537 mm.
+- Set by: robot:cylinder2 (+250 mm) and sh_cap_r (-299 mm) along the normal to the travel direction.
+- Crossing at 135° instead: the mirror pose (left ↔ right), 549 mm.
+- Heading tolerance: 15 mm threshold at the stow's mass + LOAD_KG and COM height, SW-T4 speed (rnd/threshold.py roller model, hard floor + carpet): 40° crosses 1.10×, 43° crosses 1.24×, 44° crosses 1.11×, 45° crosses 1.70×, 46° crosses 1.11×, 47° crosses 1.24×, 50° crosses 1.10× peak margin. Every heading crosses, but the 1.5× SW-T4 margin holds only at 45° itself in this model, so the base must hold 45° closely whatever the arms do; the width is taken over ± 2°. (For the threshold owner: D2b's margin is a knife edge in heading.)
+- Smallest cross-body gaps (after the cover allowance): upper_elbow_cart_r × torso:box11 28 mm; fore_wrist_l × hand_gripbase_l 34 mm; fore_wrist_r × hand_gripbase_r 34 mm.
+- Normal mode only (roll down to −12°): 553 mm (the people-near roll bound costs 0 mm here).
 
 ## Sideways stow (ψ = 90°, doors without a threshold)
 
-500 mm (seed *hanging*), set by robot:cylinder2 / robot:cylinder2. Joints (right / left, twin sign): pitch +4° / +1°, roll +8° / +11°, yaw +8° / -0°, elbow -15° / -5°, wpitch +115° / +0°, wroll -47° / -48°, lift 0.78 m. Straight at a wheel, so only where there is no threshold (rnd/threshold.py: 0° fails at 15 mm).
+500 mm (seed *hanging*), set by robot:cylinder2 / robot:cylinder2. Joints (right / left, twin sign): pitch +0° / +0°, roll +10° / +10°, yaw +0° / -0°, elbow -5° / -5°, wpitch +0° / +0°, wroll +0° / -0°, lift 0.80 m. Straight at a wheel, so only where there is no threshold (rnd/threshold.py: 0° fails at 15 mm).
 
 ## Checks in the stow
 
 | Check | Value | Need | |
 |---|---|---|---|
-| tip (rnd/tip.py reserve): static, wheels only (R12: ≥ 50 mm) | 143 mm (worst heading 0°) | ≥ 50 mm | ✅ |
-| tip (rnd/tip.py reserve): threshold crossing (D2b), casters released, braking 1.0 m/s² | 100 mm (worst heading 316°) | ≥ 30 mm | ✅ |
-| tip (rnd/tip.py reserve): person near: casters locked, braking 0.1 m/s² + 30 N push at 1 m | 78 mm (worst heading 294°) | ≥ 30 mm | ✅ |
-| COM | x 1, y -7, h 429 mm (31.9 kg) | | |
+| tip (rnd/tip.py reserve): static, wheels only (R12: ≥ 50 mm) | 144 mm (worst heading 0°) | ≥ 50 mm | ✅ |
+| tip (rnd/tip.py reserve): threshold crossing (D2b), casters released, braking 1.0 m/s² | 105 mm (worst heading 44°) | ≥ 30 mm | ✅ |
+| tip (rnd/tip.py reserve): person near: casters locked, braking 0.1 m/s² + 30 N push at 1 m | 81 mm (worst heading 24°) | ≥ 30 mm | ✅ |
+| COM | x 4, y 2, h 388 mm (32.0 kg) | | |
 | cross-body gaps in the pose | ≥ 28 mm | ≥ 25 mm (R17) | ✅ |
-| arm parts above the floor | ≥ 444 mm | ≥ 50 mm | ✅ |
-| into the stow from twin.TUCK, all joints together | gap ≥ 28 mm, ≥ 325 mm off the floor | ≥ 25 / 50 mm | ✅ |
-| into the stow, one joint group at a time (better of two orders) | gap ≥ 15 mm, ≥ 27 mm | ≥ 25 / 50 mm | ❌ |
+| arm parts above the floor | ≥ 126 mm | ≥ 50 mm | ✅ |
+| into the stow from twin.TUCK, all joints together | gap ≥ 28 mm, ≥ 126 mm off the floor | ≥ 25 / 50 mm | ✅ |
+| into the stow, one joint group at a time (better of two orders) | gap ≥ 27 mm, ≥ 45 mm | ≥ 25 / 50 mm | ❌ |
 
-**Not gated here: the roll output × torso wedge** (roll_xarm_r × torso_pitchmod_r: 12 mm in the stow, 14 mm in twin.TUCK). It is a pitch + roll pair that rnd/pinch.py already sweeps (rows roll_cover_yaw / roll_yaw_band × torso_shell; 17 mm at +15° with people near), it sits in the 8–25 mm band in every arms-down pose, and only a cover change closes it (a torso-side skirt that keeps it ≤ 8 mm, or a hood that keeps ≥ 25 mm). The stow is no worse than the park pose.
+**Not gated here: the roll output × torso wedge** (roll_yawcart_r × torso:box11: 15 mm in the stow, 15 mm in twin.TUCK). It is a pitch + roll pair that rnd/pinch.py already sweeps (rows roll_cover_yaw / roll_yaw_band × torso_shell; 17 mm at +15° with people near), it sits in the 8–25 mm band in every arms-down pose, and only a cover change closes it (a torso-side skirt that keeps it ≤ 8 mm, or a hood that keeps ≥ 25 mm). The stow is no worse than the park pose.
 
 rnd/pinch.py single-joint rows (docs/rnd/pinch.json, tier 1) that fail within 15° of a stow angle. They fail over the sweep whichever pose is used; listed so the pose owner knows which ones it sits near:
 
 | Sweep | Joint | Moving × static | min gap | worst at | stow within |
 |---|---|---|---|---|---|
-| all | roll | roll_cover_yaw × roll_ferrule_m | 3.4 mm | 30° | 1° |
-| people-near | roll | roll_cover_yaw × roll_roll_link | 0.9 mm | 15° | 1° |
+| all | roll | roll_cover_yaw × roll_ferrule_m | 5.6 mm | 15° | 7° |
+| people-near | roll | roll_cover_yaw × roll_roll_link | 6.4 mm | 15° | 7° |
 
-The stow needs the rolls out at +29° / +16° (held at the +8° park value it is 570 mm), so the move in crosses the roll rows above (the yaw hood closes on the ferrule near +15°). Those rows fail for any roll move through that band (every reach does it); the fix is the shoulder cover's (rnd/parts/covers.py compliant() note), not the stow.
+The stow needs the rolls out at +8° / +8° (held at the +8° park value it is 553 mm), so the move in crosses the roll rows above (the yaw hood closes on the ferrule near +15°). Those rows fail for any roll move through that band (every reach does it); the fix is the shoulder cover's (rnd/parts/covers.py compliant() note), not the stow.
 
 ## Facing the door (0°): the floor and the geometry it would take
 
-W(0°) ≥ 644 mm in any pose. To fit 570 mm facing the door the roll motors' outboard faces must come in 37 mm a side: shoulder_y 0.200 → 0.163 m, or roll_offset_y 69 → 32 mm (the Ø96 GIM8108-36 sits on the roll axis, so that means a smaller roll motor or the belt roll back), or a mix. The torso-side pitch modules (135 mm deep in y, rnd/parts/collision.py) end at y ±60 mm against the 60 mm mast (±30 mm): the shoulders can come in ≈ 25 mm before the modules meet the mast, which is not enough on its own.
+W(0°) ≥ 634 mm in any pose. To fit 570 mm facing the door the roll motors' outboard faces must come in 32 mm a side: shoulder_y 0.200 → 0.168 m, or roll_offset_y 69 → 37 mm (the Ø96 GIM8108-36 sits on the roll axis, so that means a smaller roll motor or the belt roll back), or a mix. The torso-side pitch modules (135 mm deep in y, rnd/parts/collision.py) end at y ±60 mm against the 60 mm mast (±30 mm): the shoulders can come in ≈ 25 mm before the modules meet the mast, which is not enough on its own.
 
 | shoulder_y | W(0°) floor | W(45°) stow | R1 coverage, outer columns y −0.40 / −0.325 m (twin IK, 2 seeds) |
 |---|---|---|---|
-| 0.200 (today) | 644 | 560 | counter, angled 45° grasp 100%; floor pickup 100%; dishwasher low rack 100%; table top 100%; shelf 100%; high shelf 100% |
-| 0.175 (torso shell 390 → 340 mm) | 594 | 540 | counter, angled 45° grasp 100%; floor pickup 100%; dishwasher low rack 93%; table top 94%; shelf 100%; high shelf 100% |
+| 0.200 (today) | 634 | 553 | counter, angled 45° grasp 100%; floor pickup 100%; dishwasher low rack 100%; table top 100%; shelf 100%; high shelf 100% |
+| 0.175 (torso shell 390 → 340 mm) | 584 | 535 | counter, angled 45° grasp 100%; floor pickup 100%; dishwasher low rack 93%; table top 94%; shelf 100%; high shelf 100% |
 
 R16 (rnd/dexterity.py) is computed on the bench arm in its own frame (sw/bench_env.py has no shoulder_y), so it does not change. The narrower torso is hull-level only (pitch-module hulls shifted, torso box narrowed; ESTIMATE).
 
@@ -124,4 +124,4 @@ from . import stow
 rows += stow.scorecard_rows()   # [(label, value, target, pass)] from docs/rnd/stow.json
 ```
 
-Assumptions (ESTIMATE): the clear width; 40 mm a side; the 5.2 mm cover allowance on every arm hull (15 mm on the wrist-boot hull) and none on the torso box / base shell (they are the shells); gaps are hull distances (mj_geomDistance); the twin's joint spheres are left out (mass placeholders inside the hulls).
+Assumptions (ESTIMATE): the clear width; 40 mm a side; the arm hulls are convex hulls of today's CAD with the drawn covers (rnd/parts/collision.py HULLS, the D31 skirt in roll_yawcart), allowance 0 mm on them (the old 5.2 mm is the sensitivity in the result), none on the torso box / base shell (they are the shells); gaps are hull distances (mj_geomDistance); the twin's joint spheres are left out (mass placeholders inside the hulls).

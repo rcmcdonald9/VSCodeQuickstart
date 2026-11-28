@@ -1,0 +1,235 @@
+{
+ "pins": [
+  {
+   "kind": "face",
+   "x": -94.8,
+   "at": -40.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 9.304837454786622,
+   "nearest": "yaw_block",
+   "ok": true
+  },
+  {
+   "kind": "face",
+   "x": -82.8,
+   "at": -40.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 8.655645632563756,
+   "nearest": "yaw_can",
+   "ok": true
+  },
+  {
+   "kind": "face",
+   "x": -70.8,
+   "at": -40.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 9.243052426351834,
+   "nearest": "yaw_can",
+   "ok": true
+  },
+  {
+   "kind": "face",
+   "x": -58.8,
+   "at": -40.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 6.908700194922972,
+   "nearest": "yaw_can",
+   "ok": true
+  },
+  {
+   "kind": "face",
+   "x": -46.8,
+   "at": -40.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 5.324937452795323,
+   "nearest": "yaw_can",
+   "ok": true
+  },
+  {
+   "kind": "face",
+   "x": -96.8,
+   "at": 6.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 2.7197176084338865,
+   "nearest": "yaw_can",
+   "ok": true
+  },
+  {
+   "kind": "face",
+   "x": -96.8,
+   "at": -16.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 2.7197176084338865,
+   "nearest": "yaw_can",
+   "ok": true
+  },
+  {
+   "kind": "face",
+   "x": -58.8,
+   "at": 6.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 5.483505498887638,
+   "nearest": "yaw_can",
+   "ok": true
+  },
+  {
+   "kind": "face",
+   "x": -58.8,
+   "at": -16.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 5.483505498887638,
+   "nearest": "yaw_can",
+   "ok": true
+  },
+  {
+   "kind": "face",
+   "x": -46.8,
+   "at": -16.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 11.83030390592819,
+   "nearest": "yaw_can",
+   "ok": true
+  },
+  {
+   "kind": "edge",
+   "x": -52.8,
+   "at": 45.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 7.280162290798617,
+   "nearest": "yaw_can",
+   "ok": true
+  },
+  {
+   "kind": "edge",
+   "x": -46.8,
+   "at": 45.0,
+   "sheet": true,
+   "wall": true,
+   "hole": true,
+   "clear": 10.81165972512515,
+   "nearest": "yaw_can",
+   "ok": true
+  }
+ ],
+ "n": 12,
+ "ok": true,
+ "loads": {
+  "finger_shear": 8.0,
+  "finger_peel": 11.333333333333334,
+  "static_drag": 6.0,
+  "tug": 10.0
+ },
+ "worst": 11.333333333333334,
+ "sf": 1.7647058823529411,
+ "mass_g": 0.7218720183492089,
+ "rule": {
+  "stem": 3.0,
+  "hole": 3.2,
+  "head": 5.4,
+  "tip": 2.4,
+  "head_h": 2.5,
+  "into_sheet": 0.4,
+  "clear_min": 2.0,
+  "re": 8.0,
+  "hold_n": 20.0,
+  "push_n": 40.0,
+  "tug_n": 20.0,
+  "finger_w": 20.0,
+  "row_pitch": 12.0
+ },
+ "fins_under_finger": 4,
+ "print": {
+  "skirt": {
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "overhang_mm2": 4326.925138198299,
+   "bed_mm2": 943.7834427796083,
+   "area_mm2": 34479.53876598041,
+   "fins_off_bed": [
+    [
+     -31.0,
+     2.8165043754926504
+    ],
+    [
+     -37.0,
+     0.5400364299027149
+    ],
+    [
+     -43.0,
+     0.0
+    ],
+    [
+     -49.0,
+     1.7763568394002505e-15
+    ],
+    [
+     -55.0,
+     1.7763568394002505e-15
+    ],
+    [
+     -61.0,
+     1.7763568394002505e-15
+    ],
+    [
+     -67.0,
+     1.7763568394002505e-15
+    ],
+    [
+     -73.0,
+     1.7763568394002505e-15
+    ],
+    [
+     -79.0,
+     1.7763568394002505e-15
+    ],
+    [
+     -85.0,
+     1.7763568394002505e-15
+    ],
+    [
+     -91.0,
+     1.7763568394002505e-15
+    ],
+    [
+     -97.0,
+     1.7763568394002505e-15
+    ]
+   ]
+  },
+  "hood": {
+   "up": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "overhang_mm2": 1852.570293912565,
+   "bed_mm2": 7121.494206799628,
+   "area_mm2": 60404.933574746145
+  }
+ }
+}

@@ -48,12 +48,24 @@ DOOR_H = 1.97                    # DIN 18101 leaf 1985 → ≈ 1.97 m clear unde
 GAP_OPEN = 0.025                 # finger-crush gap (ISO 13854 finger 25 mm, commonly cited; R17)
 FLOOR_MIN = 0.050                # hands and arm parts ≥ 50 mm above the floor (15–20 mm thresholds, R4)
 
-# ---- cover allowance on the twin's hulls (they model the CAD bodies, not the D23 covers): rigid covers are WALL 2.2 mm
-# at ≈ 3 mm off their part (rnd/parts/covers.py, yaw hood convention) → 5.2 mm; the wrist boot stands 15 mm past the wrist
-# cartridge on its outboard side (soft_shell y span WRIST_Y1 − WRIST_Y0 + 22, centred +4) → 15 mm on that hull. The
-# inline roll's motor has no cover drawn yet (R17 note in covers.py): the 5.2 mm stands in for its dome (ESTIMATE).
-PAD = 0.0052
-PAD_GEOM = {"fore_wrist": 0.015}
+# ---- allowance on the twin's hulls. Until 2026-11-28 the hulls were drawn boxes of the bare CAD bodies and this was the
+# D23 cover allowance (rigid covers WALL 2.2 mm at ≈ 3 mm off their part → 5.2 mm; 15 mm on the wrist hull for the boot).
+# §4 item 9 (2026-11-28): the default hulls are now the convex hulls of today's CAD with every drawn cover in them (yaw
+# hood + D31 TPU skirt, roll front collar, elbow-bay dome, forearm fairings, wrist boot; rnd/parts/collision.py HULLS), so
+# a cover allowance on top would count the covers twice (a convex hull is already ≥ its parts): the allowance is 0 on
+# them, and the report gives the stow re-measured with the old 5.2 mm on every arm hull as a sensitivity. The 5.2 mm
+# (and 15 mm on the wrist boot) stays for the drawn-box sets (belt roll, D20: no hulls.json next to the STLs).
+PAD_DRAWN = 0.0052
+PAD_GEOM_DRAWN = {"fore_wrist": 0.015}
+
+
+def _cad_hulls():
+    from .twin import COLL
+    return (COLL / "hulls.json").exists()
+
+
+PAD = 0.0 if _cad_hulls() else PAD_DRAWN
+PAD_GEOM = {} if _cad_hulls() else PAD_GEOM_DRAWN
 
 ARM_J = ("pitch", "roll", "yaw", "elbow", "wpitch", "wroll")
 MIRROR = {"pitch": 1, "roll": 1, "yaw": -1, "elbow": 1, "wpitch": 1, "wroll": -1}   # left = mirror of right (rnd/tip.py)
@@ -94,7 +106,7 @@ class Twin:
     """The twin model with both arms posable independently. q (deg, m) = [lift, right arm 6, left arm 6], the left arm in
     the right arm's convention (equal values = mirror-symmetric pose)."""
 
-    def __init__(self, d=None):
+    def __init__(self, d=None, pad=None):
         import mujoco
         from .params import BASELINE
         self.mj = mujoco
@@ -147,7 +159,7 @@ class Twin:
             nm = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_MESH, m.geom_dataid[g]) if m.geom_type[g] == T.mjGEOM_MESH else None
             self.geoms.append(g)
             key = (nm or "")[:-2]
-            self.pad.append((PAD_GEOM.get(key, PAD)) if b in self.arm_side else 0.0)
+            self.pad.append((PAD_GEOM.get(key, PAD) if pad is None else pad) if b in self.arm_side else 0.0)
             self.gname[g] = nm or f"{mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, b)}:{['plane','hfield','sphere','capsule','ellipsoid','cylinder','box','mesh'][m.geom_type[g]]}{g}"
         self.pad = np.array(self.pad)
         self._local = [self._local_pts(g) for g in self.geoms]
@@ -280,10 +292,16 @@ def search(T, psi, both_modes=True, quick=False, seeds=None):
     best = None
     for name, s in (seeds or SEEDS).items():
         x0 = np.clip(np.array(s, float), lo, T.hi)
-        f = lambda x: cost(T, x, psi, both_modes)[0]
-        r = minimize(f, x0, method="Powell", bounds=list(zip(lo, T.hi)),
-                     options=dict(maxfev=600 if quick else 2500, xtol=0.2, ftol=1e-5))
-        x = np.clip(r.x, lo, T.hi)
+        seen = [cost(T, x0, psi, both_modes)[0], x0]
+
+        def f(x):
+            c = cost(T, x, psi, both_modes)[0]
+            if c < seen[0]:
+                seen[:] = [c, np.clip(np.array(x, float), lo, T.hi)]
+            return c
+        minimize(f, x0, method="Powell", bounds=list(zip(lo, T.hi)), options=dict(maxfev=600 if quick else 2500, xtol=0.2, ftol=1e-5))
+        x = seen[1]                     # the best point evaluated: scipy's bounded Powell can return a worse r.x than its start
+                                        # on this non-smooth cost (2026-11-28: 561 → 754 mm from the rolls-held stow)
         c, (w, g, zf) = cost(T, x, psi, both_modes)
         ok = g >= GAP_OPEN - 1e-4 and zf >= FLOOR_MIN - 1e-4
         if best is None or (ok, -w) > (best["ok"], -best["w"]):
@@ -410,10 +428,22 @@ def main(argv=None):
                               wmin=float(W.min()), at=float(psis[W.argmin()]), gap=T.min_gap()))
     floor0 = shoulder_floor(T)
 
-    # 2. the search: ψ = 45° (threshold-legal, governing), 90° (sideways, no threshold); 0° has the fixed floor above
+    # 2. the search: ψ = 45° (threshold-legal, governing), 90° (sideways, no threshold); 0° has the fixed floor above.
+    # Powell is local: the 45° search also starts from the last published stow and from the rolls-held optimum below (a
+    # restricted search can land in a better basin: 2026-11-28, new hulls, 604 mm from SEEDS alone vs 561 rolls held)
+    hi = T.hi.copy()
+    T.hi[2] = T.hi[8] = T.pn_lo[2] + 0.5                       # rolls held at the people-near floor (+8°, ≈ the park value)
+    bh = search(T, 45.0, True, True)
+    T.hi = hi
+    roll_held = dict(w=bh["w"], ok=bh["ok"], q=bh["q"].tolist())
+    seeds45 = dict(SEEDS, **{"rolls-held stow": bh["q"]})
+    try:
+        seeds45["last published stow"] = json.loads((DOCS / "stow.json").read_text())["stow"]["45.0"]["q"]
+    except Exception:
+        pass
     res = {}
     for psi in (45.0, 90.0):
-        b = search(T, psi, True, a.quick)
+        b = search(T, psi, True, a.quick, seeds45 if psi == 45.0 else None)
         T.set(b["q"])
         W = T.widths(psis)
         (hv, hn), (lv, ln) = T.extremes(psi)
@@ -421,12 +451,6 @@ def main(argv=None):
     # normal-mode only (roll down to −12°) at 45°, to show what the people-near bound costs (seeded with the both-mode stow)
     bn = search(T, 45.0, False, True, {"both-mode stow": res[45.0]["q"], **{k: SEEDS[k] for k in ("left fwd, right back", "tuck (twin.TUCK)")}})
     res["45n"] = dict(bn, q=bn["q"].tolist())
-    # rolls held at the people-near floor (+8°, ≈ the park value): what the roll abduction buys
-    hi = T.hi.copy()
-    T.hi[2] = T.hi[8] = T.pn_lo[2] + 0.5
-    bh = search(T, 45.0, True, True)
-    T.hi = hi
-    roll_held = dict(w=bh["w"], ok=bh["ok"], q=bh["q"].tolist())
 
     S = res[45.0]
     q = np.array(S["q"])
@@ -459,7 +483,13 @@ def main(argv=None):
         b2 = search(T2, 45.0, True, True)
         geo.append(dict(shoulder_y=sy, floor_w0=shoulder_floor(T2), w45=b2["w"], ok=b2["ok"], r1=r1_outer(dd)))
     ok45 = S["ok"] and S["w"] <= W_MAX
-    out = dict(clear=CLEAR, clear_literal=CLEAR_LITERAL, frame_clear=DOOR_FRAME_CLEAR, leaf=DOOR_LEAF, margin=MARGIN, w_max=W_MAX,
+    with_margin = None
+    if PAD == 0.0:                                              # sensitivity: the same stow with the old 5.2 mm on every arm hull
+        Tm = Twin(BASELINE, pad=PAD_DRAWN)
+        Tm.set(q)
+        with_margin = dict(pad=PAD_DRAWN, w45=float(Tm.widths([45.0 - PSI_TOL, 45.0, 45.0 + PSI_TOL]).max()),
+                           floor_w0=shoulder_floor(Tm), gap=Tm.min_gap())
+    out = dict(with_margin=with_margin, clear=CLEAR, clear_literal=CLEAR_LITERAL, frame_clear=DOOR_FRAME_CLEAR, leaf=DOOR_LEAF, margin=MARGIN, w_max=W_MAX,
                door_h=DOOR_H, pad=PAD, gap_open=GAP_OPEN, floor_min=FLOOR_MIN, shoulder_y=BASELINE.arm.shoulder_y,
                roll_offset_y=BASELINE.arm.roll_offset_y,
                baseline=base_rows, shoulder_floor_w0=floor0, need_dy_fwd=need_dy, geometry=geo,
@@ -506,7 +536,11 @@ def report(o):
          f"{mm(S['gap'])} mm after the cover allowance, arm parts ≥ {mm(S['zf'])} mm off the floor, inside the supervisor bounds in both "
          f"modes, tip reserve ≥ {mm(tip_min)} mm. Sideways (90°, doors without a threshold) the arms fold inside the base: "
          f"**{mm(S90['w'])} mm** (the Ø500 shell). **Facing the door (0°) no pose fits:** the shoulder roll motors alone span "
-         f"{mm(o['shoulder_floor_w0'])} mm whatever the joints do (twin.TUCK: {mm(o['baseline'][0]['w0'])} mm).", ""]
+         f"{mm(o['shoulder_floor_w0'])} mm whatever the joints do (twin.TUCK: {mm(o['baseline'][0]['w0'])} mm)."
+         + (" The arm hulls are convex hulls of today's CAD with the drawn covers (D31 skirt included), so no cover allowance is "
+            f"added; with the old {mm(o['with_margin']['pad'])} mm on every arm hull the same stow measures "
+            f"{mm(o['with_margin']['w45'])} mm at 45° (smallest cross-body gap {mm(o['with_margin']['gap'])} mm) and the forward floor "
+            f"{mm(o['with_margin']['floor_w0'])} mm." if o.get("with_margin") else ""), ""]
     L += ["## Door", "", "| | mm | source |", "|---|---|---|",
           "| R5 text | 700 | \"fits 70 cm doors with arms folded\" (RND_PLAN §2): no clear width, no source |",
           f"| door leaf (70 cm class) | {mm(o['leaf'])} | DIN 18101 nominal 750 (leaf 735 × 1985); UK 686, US 28\" 711 |",
@@ -616,9 +650,10 @@ def report(o):
           "set_people_near() never has to walk it out.", ""]
     L += ["## Scorecard row (for rnd/run_all.py)", "", "```python", "from . import stow",
           "rows += stow.scorecard_rows()   # [(label, value, target, pass)] from docs/rnd/stow.json", "```", "",
-          "Assumptions (ESTIMATE): the clear width; 40 mm a side; the 5.2 mm cover allowance on every arm hull (15 mm on the wrist-boot "
-          "hull) and none on the torso box / base shell (they are the shells); gaps are hull distances (mj_geomDistance); the twin's "
-          "joint spheres are left out (mass placeholders inside the hulls)."]
+          "Assumptions (ESTIMATE): the clear width; 40 mm a side; the arm hulls are convex hulls of today's CAD with the drawn covers "
+          f"(rnd/parts/collision.py HULLS, the D31 skirt in roll_yawcart), allowance {mm(o['pad'])} mm on them (the old 5.2 mm is "
+          "the sensitivity in the result), none on the torso box / base shell (they are the shells); gaps are hull distances (mj_geomDistance); the twin's joint spheres are "
+          "left out (mass placeholders inside the hulls)."]
     return "\n".join(L) + "\n"
 
 

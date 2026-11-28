@@ -96,9 +96,185 @@ def pieces():
     }
 
 
+# ---------------------------------------------------------------------------------------------- hulls from the CAD
+# §4 item 9 (2026-11-28): the hand-drawn boxes above lagged the CAD (roll x-arm, yaw block, sh_*, elbow cart 1–2 mm, and they
+# left out the ferrule, the roll link's frame above z 28, the yaw hood and its D31 TPU skirt, the elbow-bay dome, the
+# forearm fairings and the wrist boot). For the default build (inline roll, GIM6010 arm) each hull is now the convex hull
+# of the CAD parts it stands for, covers included (robot.build(covers=True) content, so the skirt is in roll_yawcart when
+# PIP_WEDGE_GUARD=skirt), in the twin body frame, at the reference pose (roll = yaw = elbow = wrist = 0). A part that is
+# far from convex is clipped into slabs (clip: {axis: (lo, hi)} in the body frame), one hull each. Body frames (twin.py):
+# sh = the pitch body = the roll-module frame; roll = roll-module frame less (0, ROLL_Y, 0); upper = arm.assembly frame
+# (yaw joint); fore = elbow axis; wristb = wrist-pitch axis; hand = wristb + 40 mm (the wrist-roll body); torso = robot
+# frame at the lift height. The belt roll and the D20 sets keep the drawn boxes (pieces()).
+HULLS = {
+    "sh": {
+        "rolllink": [("mod", "roll_link", dict(x=(None, 5.0)))],          # motor cup + ferrule boss + inboard frame
+        "rolllink2": [("mod", "roll_link", dict(x=(5.0, None)))],         # front frame + spring bar
+        "rollcart": [("mod", "roll_gim_housing", None), ("cov_pitch", "cover_roll_front", None)],
+        "cap": [("mod", "roll_spring_ring", None), ("mod", "roll_enc_pcb", None)],
+        "ferrule": [("mod", "ferrule_m", None), ("shoulder_sh", "pitch_hub", dict(y=(-5.0, None)))],   # the hub between the shell (y 195) and the detach plane
+    },
+    "roll": {
+        "yawblock": [("mod", n, dict(z=(None, -50.0)) if n == "yaw_block" else None)
+                     for n in ("yaw_block", "yaw_band", "yaw_plate_bot", "yaw_flange", "yaw_spring_ring", "yaw_stop_pin", "yaw_shaft", "yaw_enc_pcb")],
+        "yawcart": [("mod", "yaw_can", None), ("mod", "yaw_can_cap", None), ("mod", "yaw_tension_ring", None), ("mod", "roll_arm_rear", None),
+                    ("cov_roll", "cover_yaw", None), ("cov_roll", "cover_yaw_tpu_skirt", None)],
+        "xarm": [("mod", "yaw_block", dict(z=(-50.0, None), x=(40.0, None))), ("mod", "roll_outflange", None), ("mod", "roll_spring_hub", None)],
+    },
+    "upper": {
+        "neck": [("arm_up", "upper_bone", dict(z=(-60.0, -6.0))), ("arm_up", "cf_neck", None)],
+        "flange": [("arm_up", "upper_bone", dict(z=(-8.0, None)))],
+        "housing": [("arm_up", "upper_bone", dict(z=(None, -55.0))), ("arm_up", "bone_cap", None), ("arm_up", "e_cassette", None),
+                    ("arm_up", "e_seat_cap_m", None), ("arm_up", "e_seat_cap_p", None), ("arm_up", "e_belt", None),
+                    ("arm_up", "enc_bracket", None), ("arm_up", "enc_pcb", None), ("cov_arm", "cover_collar_door", None)],
+        "elbow_cart": [("arm_up", "e_can", None), ("arm_up", "e_can_cap", None), ("arm_up", "e_motor", None), ("cov_arm", "cover_elbow_bay", None)],
+    },
+    "fore": {
+        "hub": [("arm_fore", "forearm", dict(z=(-45.0, None))), ("cov_fore", "cover_elbow_cap", None)],
+        "shaft": [("arm_fore", "e_shaft40", None), ("arm_fore", "e_hub_core", None), ("arm_fore", "enc_magnet_holder", None)],
+        "link": [("arm_fore", "forearm", dict(z=(-245.0, -35.0))), ("arm_fore", "cf_fore", None),
+                 ("cov_fore", "cover_forearm_f", None), ("cov_fore", "cover_forearm_r", None)],
+        "wrist": [("arm_fore", "forearm", dict(z=(None, -235.0))), ("arm_fore", "wrist_can", None), ("arm_fore", "wrist_motor", None),
+                  ("arm_fore", "wrist_adapter", None), ("cov_fore", "cover_wrist_f", None), ("cov_fore", "cover_wrist_r", None)],
+    },
+    "wristb": {
+        "plate": [("arm_wrist", "hand_palm", dict(y=(None, -17.0)))],
+        "palm": [("arm_wrist", "hand_palm", dict(y=(-17.0, 17.0))), ("arm_wrist", "hand_wr_sleeve", None), ("arm_wrist", "hand_wr_cap", None),
+                 ("arm_wrist", "hand_wr_brg_U", None), ("arm_wrist", "hand_wr_brg_L", None)],
+        "wpcollar": [("arm_wrist", "hand_palm", dict(y=(17.0, None)))],
+    },
+    "hand": {
+        "gripbase": [("arm_hand", n, None) for n in ("hand_grip_base", "hand_grip_servo_sleeve", "hand_grip_servo", "hand_wr_dog",
+                                                      "hand_wr_spindle", "hand_wrist_cam", "hand_palm_tof")],
+        "jaws": [("arm_hand", n, None) for n in ("hand_jaw_moving", "hand_jaw_fixed", "hand_finray_fixed", "hand_pad_fixed", "hand_finger_hook")],
+    },
+    "torso": {   # the static pitch module up to the torso shell's side face (y 195); the rest of the torso is twin primitives
+        "pitchmod": [("shoulder", n, dict(y=(None, TORSO_HALF_W))) for n in ("bracket", "bracket_wall", "can", "can_cap", "motor",
+                                                                          "bracket_wall_spring_ring", "pulleyA", "enc_pcb")],
+    },
+}
+
+
+def _verts(p, tol=0.15):
+    """Vertices of a tessellation of p (per face where the whole-solid mesher gives up: the hull only needs points)."""
+    import numpy as np
+    try:
+        v, _ = p.tessellate(tol, 0.2)
+        return np.array([(q.X, q.Y, q.Z) for q in v])
+    except Exception:
+        out = []
+        for f in p.faces():
+            try:
+                v, _ = f.tessellate(tol, 0.2)
+                out += [(q.X, q.Y, q.Z) for q in v]
+            except Exception:
+                for e in f.edges():
+                    out += [tuple(e.position_at(t)) for t in np.linspace(0, 1, 32)]
+        return np.array(out)
+
+
+def _clip(V, F, clip):
+    """Vertices of the mesh (V, F) clipped to the box `clip` ({axis: (lo, hi)}, None = open), the cut polygons included."""
+    import numpy as np
+    import trimesh
+    if not clip:
+        return V
+    m = trimesh.Trimesh(V, F, process=False)
+    for k, (lo, hi) in clip.items():
+        a = "xyz".index(k)
+        n = np.eye(3)[a]
+        if lo is not None:
+            m = m.slice_plane(n * lo, n)
+        if hi is not None and len(m.vertices):
+            m = m.slice_plane(n * hi, -n)
+    return np.asarray(m.vertices)
+
+
+def _mesh(p, tol=0.15):
+    import numpy as np
+    try:
+        v, t = p.tessellate(tol, 0.2)
+        return np.array([(q.X, q.Y, q.Z) for q in v]), np.array(t)
+    except Exception:
+        V, T = [], []
+        for f in p.faces():
+            try:
+                v, t = f.tessellate(tol, 0.2)
+            except Exception:
+                continue
+            T += [[i + len(V) for i in tri] for tri in t]
+            V += [(q.X, q.Y, q.Z) for q in v]
+        return np.array(V), np.array(T)
+
+
+def sources():
+    """{family: {name: solid in its twin body frame}} for HULLS."""
+    from . import covers, shoulder
+    sx, sy = arm_sh_x(), arm_sh_y()
+    mod = {n: p for n, p, _ in roll.module()}
+    A = {n: p for n, p, _ in arm.assembly(elbow_deg=0.0, wrist_deg=0.0)}
+    sh = {n: p for n, p, _ in shoulder.module()}
+    zf, zw = arm.ELBOW_Z, arm.ELBOW_Z + arm.FORE_L
+    to_roll = Pos(0, -roll.ROLL_Y, 0)
+    return {
+        "mod": {n: (to_roll * p if n in roll.ROLL_OUT or n.startswith("yaw_") else p) for n, p in mod.items()},
+        "cov_roll": {n: to_roll * p for n, p, _ in covers.roll_frame()},
+        "cov_pitch": {n: p for n, p, _ in covers.pitch_frame()},
+        "arm_up": A, "arm_fore": {n: Pos(0, 0, zf) * p for n, p in A.items()},
+        "arm_wrist": {n: Pos(0, 0, zw) * p for n, p in A.items()}, "arm_hand": {n: Pos(0, 0, zw + 40.0) * p for n, p in A.items()},
+        "cov_arm": {n: p for n, p, _ in covers.arm_frame()}, "cov_fore": {n: p for n, p, _ in covers.forearm_frame()},
+        "shoulder": {n: Pos(sx, sy, 0) * Pos(0, -(shoulder.Y_FER + 18), 0) * p for n, p in sh.items()},
+        "shoulder_sh": {n: Pos(0, -(shoulder.Y_FER + 18), 0) * p for n, p in sh.items()},
+    }
+
+
+def cad_hulls():
+    """{(body, name): (hull points array, [source part names])}: the convex hull of each HULLS group (left arm)."""
+    import numpy as np
+    import trimesh
+    src = sources()
+    out = {}
+    for body, groups in HULLS.items():
+        for name, items in groups.items():
+            P, used = [], []
+            for fam, part, clip in items:
+                p = src[fam].get(part)
+                if p is None:                                   # e.g. the skirt with PIP_WEDGE_GUARD=none
+                    continue
+                if clip:
+                    V, F = _mesh(p)
+                    V = _clip(V, F, clip)
+                else:
+                    V = _verts(p)
+                if len(V):
+                    P.append(V)
+                    used.append(part + ("" if not clip else " " + ",".join(f"{k}{lo if lo is not None else ''}…{hi if hi is not None else ''}" for k, (lo, hi) in clip.items())))
+            hull = trimesh.convex.convex_hull(np.concatenate(P))
+            out[(body, name)] = (hull, used)
+    return out
+
+
 def export():
     OUT.mkdir(parents=True, exist_ok=True)
     files = {}
+    if roll.INLINE and not arm.D20:
+        import json
+        import numpy as np
+        import trimesh
+        for f in OUT.glob("*.stl"):                            # one set: hulls renamed or merged do not linger
+            f.unlink()
+        meta = {}
+        for (body, n), (hull, used) in cad_hulls().items():
+            for side in ("l", "r"):
+                h = hull if side == "l" else trimesh.convex.convex_hull(hull.vertices * np.array([1.0, -1.0, 1.0]))
+                f = OUT / f"{body}_{n}_{side}.stl"
+                h.export(str(f))
+                files[(body, n, side)] = f
+            b = hull.bounds
+            meta[f"{body}_{n}"] = dict(sources=used, volume_cm3=round(hull.volume / 1000, 1),
+                                       bounds_mm=[[round(float(v), 1) for v in b[0]], [round(float(v), 1) for v in b[1]]])
+        (OUT / "hulls.json").write_text(json.dumps(meta, indent=1))
+        return files
     for body, parts in pieces().items():
         for n, p in parts.items():
             for side, q in (("l", p), ("r", mirror(p, Plane.XZ))):
