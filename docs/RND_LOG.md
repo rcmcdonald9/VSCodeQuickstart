@@ -1369,3 +1369,7 @@ One long push instead of half-hour runs. In order:
 - ≈ −$105 per GIM6010 stage (arms ≈ −$617; ≈ −$795 with the lift + spares), −0.14 kg. Motor bearing 323 N vs an 800 N listing (2.5×, ESTIMATE); 6001 3.3×; stub torque joint 2.47× (Oldham disc was 1.35×); pitch teeth in mesh 7.0 → 7.8.
 - Worse: fixed-centre preload 0–165 N across tolerance (target 173 N; measure belts before printing plates), ear tipping at 30 % preload 10× → 3.0× (D20 1.8× < 2×), hand deflection 5.1 → 5.4 mm (≤ 6 ✅). Checks pass on both motor sets except the D20 pitch swap (needs the carriage edit). rnd.assembly_check ran out of memory (12 GB).
 - W12 launched: lift conversion + D20 carriage edit (upper.py), assembly_check memory, BOM to the new design.
+
+### 2026-11-28 — Owner: run the all-inline arm study and ask Astra's opinion
+- Study launched (rnd/inline_study.py): B0 today / B1 + D20 / I1 all-inline SteadyWin (GIM8108-36 pitch/roll/elbow, GIM6010-48 yaw) / I2 mixed (DM-J4340-2EC yaw, GIM8108-36 or DM-J8009 elbow): cost incl. removed belt parts, mass + tip + basket/hug, back-drive force and collision effective mass, accuracy with backlash, envelope, part count, build hours; reviewer brief docs/review/inline_study_question.md.
+- Astra (once/day, window open) runs after the study + the lift/BOM track land, with the study question in its packet.
