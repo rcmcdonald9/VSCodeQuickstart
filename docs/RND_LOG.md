@@ -1443,3 +1443,8 @@ One long push instead of half-hour runs. In order:
     - The direct pinion depends on the GIM bearing's tilt stiffness; measure it in 1a.
     - Step-1 exit criterion 6 has no coupons (insert pull-out, 4-ear flange, drive stub); KX and eccentric coupons are stale.
   - Plus 8 minor findings. Follow-up on review #1: 3 fixed, 1 as a plan, 6 partly, 1 open by design.
+
+### 2026-11-28 W17d merged (snag at the locked caster cap)
+- tip.py now reads the caps from sw/safety.py. The snag is re-run on the real basket carry poses (basket.py IK, both arms, IK lift height, COM 0.12 m below the handles, 62 % share, twin inertia). **The pivot moved to the support polygon:** W15b's caster line sits 65 mm behind a wheel that's still on the floor, so the base can't rotate about it.
+- **At 0.25 m/s, 2/23 states pass:** the basket uses 18–43 % of the tip energy at 599–699 N per foot against the 440 N rod limit, and every loaded or arms-out state is over the rod limit. Allowed speeds: basket 0.19 m/s, 2.5 kg 0.22, ≤ 1 kg 0.23.
+- **SW-T8 (queued for the software owner):** payload-dependent locked cap: ≤ 6 kg 0.20, 6–10 kg 0.15, no travel above 10 kg (all 23 states pass). New scorecard row "A10 snag at the locked cap", ❌ until SW-T8 lands. D28 holds (8.2 m needed vs 9.5 m). The SW-T6 margin is down to ≈ 4 cm (3.46 m vs 3.5 m). A bench snag test (spec in tip.md) could bring the ≤ 6 kg band back to 0.25.
