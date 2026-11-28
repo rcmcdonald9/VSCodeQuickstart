@@ -121,9 +121,9 @@
    "false_collision_trips": 0,
    "compliant_at_end": true,
    "host_ms": {
-    "p50": 0.685,
-    "p999": 1.464,
-    "max": 1.975
+    "p50": 0.463,
+    "p999": 1.357,
+    "max": 2.032
    }
   },
   "usb": {
@@ -134,9 +134,9 @@
    "false_collision_trips": 0,
    "compliant_at_end": true,
    "host_ms": {
-    "p50": 0.525,
-    "p999": 1.694,
-    "max": 6.237
+    "p50": 0.483,
+    "p999": 0.829,
+    "max": 1.732
    }
   },
   "pil9": {
@@ -147,9 +147,9 @@
    "false_collision_trips": 0,
    "compliant_at_end": true,
    "host_ms": {
-    "p50": 0.514,
-    "p999": 1.352,
-    "max": 2.018
+    "p50": 0.498,
+    "p999": 4.599,
+    "max": 4.636
    }
   },
   "lossy": {
@@ -160,9 +160,9 @@
    "false_collision_trips": 0,
    "compliant_at_end": true,
    "host_ms": {
-    "p50": 0.558,
-    "p999": 1.121,
-    "max": 1.7
+    "p50": 0.525,
+    "p999": 1.289,
+    "max": 1.321
    }
   },
   "corrupt": {
@@ -173,9 +173,9 @@
    "false_collision_trips": 0,
    "compliant_at_end": true,
    "host_ms": {
-    "p50": 0.606,
-    "p999": 2.821,
-    "max": 3.98
+    "p50": 0.56,
+    "p999": 0.911,
+    "max": 1.247
    }
   }
  },

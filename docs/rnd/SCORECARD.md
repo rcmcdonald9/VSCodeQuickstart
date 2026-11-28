@@ -5,7 +5,7 @@
 | Metric | Now | Target | |
 |---|---|---|---|
 | R17 pinch (HARD GATE; rnd/pinch.py): joint-nip fails / exposed drive parts (12 mm probe; every moving gap ≤ 8 mm or ≥ 25 mm over its range) | 16 / 20 | 0 / 0 | ❌ |
-| A10 tip-over (HARD GATE; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, with the rules sw/safety.py enforces | 16/16 (worst 35 mm); 16/16 (worst 35 mm) once SW-T1 person within reach, SW-T2 caster lock (D18b), SW-T4 threshold speed (D2b) are in the supervisor | 16/16 ≥ 30 mm | ✅ |
+| A10 tip-over (HARD GATE; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, with the rules sw/safety.py enforces | 16/16 (worst 35 mm); 16/16 (worst 35 mm) once SW-T1 person within reach, SW-T2 caster lock (D18b), SW-T4 threshold speed (D2b), SW-T6 person approaching (A10 real states), SW-T7 basket carry are in the supervisor | 16/16 ≥ 30 mm | ✅ |
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 101 mm | ≥ 50 mm | ✅ |
@@ -42,17 +42,17 @@
 | Twin v1: min dynamic tip margin (ZMP) | 75 mm | ≥ 30 mm | ✅ |
 | R4 sim: 15 mm threshold on hard floor + carpet (45°, ≤ 0.15 m/s), peak margin | crossed, 1.7× | cross, ≥ 1.5× | ✅ |
 | R4 sim: carpet cruise wheel torque (RMS / rated) | 2.2 / 5 N·m | ≤ 70 % | ✅ |
-| R4 15 mm threshold with the A10 v2 mass (rnd/threshold.py roller model re-run by rnd/tip.py, 45°): peak margin at 0.15 m/s (D2b) / 0.12 m/s (SW-T4) | 1.70× / 1.70× (33.6 kg) | ≥ 1.5× at the planner's crossing speed | ✅ |
+| R4 15 mm threshold with the A10 v2 mass (rnd/threshold.py roller model re-run by rnd/tip.py, 45°): peak margin at 0.15 m/s (D2b) / 0.12 m/s (SW-T4) | 1.71× / 1.71× (33.5 kg) | ≥ 1.5× at the planner's crossing speed | ✅ |
 | R5 door stow (rnd/stow.py): whole-robot width across a 45° threshold crossing (D2b), both arms stowed, collision-free, cross-body gaps ≥ 25 mm, valid with people near (roll ≥ +8°) | 567 mm (clear 650 − 2 × 40), tip ≥ 82 mm | ≤ 570 mm, tip ≥ 30 mm | ✅ |
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 66 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
 | FEA critical printed parts: min margin vs 12 MPa (across layers) | 2.5× (13 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
 | Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip) | 100/100 (95 % LB 96%), worst pad error 19 mm | LB ≥ 90 %, within ±25 mm | ✅ |
-| R15 spacing: pairs under the hard limit / under target (static 1, running 0.3, moving 2, belt 3 mm) | 4 / 14 | 0 under hard | ❌ |
+| R15 spacing: pairs under the hard limit / under target (static 1, running 0.3, moving 2, belt 3 mm) | 0 / 10 | 0 under hard | ✅ |
 | R14 assembly sequence: drive shafts whose bearings slide on and whose shaft can be inserted (rnd/assembly_seq.py) | 7/7 | all | ✅ |
 | Cable routing: joints the arm bundle can cross over their full range (rnd/harness.py) | 6/6 | all | ✅ |
 | Threshold/carpet Monte Carlo (5–15 mm, heading ±10°, 0.12–0.18 m/s, μ, mass, COM) | 55/55 (95 % LB 93%); 15–18 mm: 25/25 | LB ≥ 90 % | ✅ |
 | KX Monte Carlo (tolerances, μ, spring, 10-year PETG creep): slip below rated / below peak; twist p95 | 0.00% / 13%; 2.9 N·m | ≤ 0.1 % below rated; twist ≤ 3 N·m | ✅ |
-| Thermal: hottest motor, non-stop task day (MC worst corner) | 102 °C | ≤ 100 °C | ❌ |
+| Thermal: hottest motor, non-stop task day (MC worst corner), in the BOM mount (closed sleeve + Al cap) | 68 °C (without the cap 102 °C) | ≤ 100 °C | ✅ |
 | R16 dexterity: bench table grid reachable with top-down / 45° / side / side across the body (rnd/dexterity.py) | 35% / 78% / 78% / 71% | ≥ 30 / 63 / 62 / 54 % | ✅ |
 | R15 swept spacing over the roll and yaw ranges: pairs under the hard limit (rnd/swept.py) | 0 (min roll 0.3 / yaw 1.0 mm) | 0 | ✅ |
 | R2b hand deflection, full compliance chain (P2 FEA + bearing play + tubes), 1 kg straight out: raw / after gravity model | 5.4 / 1.1 mm | ≤ 6 / ≤ 2 mm | ✅ |
