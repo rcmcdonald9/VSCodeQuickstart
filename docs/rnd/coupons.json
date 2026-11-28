@@ -1,1 +1,37 @@
-{"hours_p2s": 7.75036111111111, "grams": 273.5}
+{
+ "hours_p2s": 9.153666666666666,
+ "grams": 314.78,
+ "step1": [
+  {
+   "id": "C12",
+   "name": "Heat-set insert pull-out (Fable C1 / #2 M4)",
+   "passes": [
+    "M3 (\u00d84.0 \u00d7 4.0 and \u00d7 6): mean \u2265 1.0 kN, lowest of 3 \u2265 0.8 kN (the 1.0 kN the repo assumed: rnd/joints.py, roll_inline.md). For scale: an M3 tightened to 0.5 N\u00b7m already pulls \u2248 833 N",
+    "M4 (\u00d85.6 \u00d7 5.7 and \u00d7 8): mean \u2265 1.5 kN, lowest \u2265 1.2 kN (2 \u00d7 the 750 N M4 preload the repo tightens to, cartridge_m.FLANGE_LOAD, so a seat cap or strap can take its working load on top)",
+    "torque-out: no insert spins below 2 \u00d7 its build torque (M3 1.0 N\u00b7m, M4 1.2 N\u00b7m)",
+    "M5 (\u00d86.4 \u00d7 10, belt-roll fallback only, roll.PINCH): \u2265 3.0 kN; print it only if `PIP_ROLL_DRIVE=belt` comes back"
+   ]
+  },
+  {
+   "id": "C13",
+   "name": "Bolted 4-ear cartridge flange (D24 v2, Neon #2 F2)",
+   "passes": [
+    "fresh, 4 \u00d7 ISO 4762 M4 \u00d7 12 at 0.6 N\u00b7m (\u2248 750 N each): no slip at **16.5 N\u00b7m** (1.5 \u00d7 the 11 N\u00b7m GIM6010 peak), 10 \u00d7 each way, 1 min each (a witness line across flange and plate moves \u2264 0.1 mm at r 48)",
+    "fresh breakaway torque recorded \u2192 \u03bc = T_slip / (4 \u00d7 0.75 kN \u00d7 r 48 mm); the model's 43 N\u00b7m is \u03bc 0.3 (the 50 kg luggage scale at r 100 reaches 49 N\u00b7m; if it does not slip, record > 49)",
+    "tipping: no 0.05 mm feeler enters at any ear under **16.1 N\u00b7m** bending (1.5 \u00d7 the 10.7 N\u00b7m direct-stage case, 3 g + the belt pull on the motor bearing; the model opens at 33 N\u00b7m with 30 % preload)",
+    "after 72 h at 50 \u00b0C on the P2S bed (preload only): no slip at **13 N\u00b7m** (the 30 %-retained friction the flange rows assume, 1.18 \u00d7 the peak); each ear screw's breakaway torque recorded",
+    "one spare ear torqued to 1.2 N\u00b7m (2 \u00d7 the preload): the nut does not pull into its pocket, the pocket floor does not crack"
+   ]
+  },
+  {
+   "id": "C14",
+   "name": "D26 drive stub on the GIM output (Fable #2 M3)",
+   "passes": [
+    "(a) tilt stiffness of the output (secant 0 \u2192 9.8 N\u00b7m, the housing's own tilt subtracted) **\u2264 18 kN\u00b7m/rad** (\u2248 5.4 N\u00b7m per arcmin), i.e. \u2265 1.8\u2032 of tilt at 9.8 N\u00b7m (3.2 mm of spot travel on the optical lever at 3 m; 11 \u00b5m on a dial at r 20): then the hinged design stands (fatigue 3.13\u00d7). Stiffer: the 0.15 mm swap offset drives the stub to 0.56\u00d7 (fully rigid), so quote the overhung pinion instead (belts.py STUB_SUPPORT_RULE). Hand model, ESTIMATE",
+    "(a) PCD, pilot \u00d8 and thread depth read to \u00b1 0.1 mm (C9 disc + calipers) into cartridge_m.MOTOR['out_pcd'] and belt_stage.STUB; the thread depth \u2265 4 mm for M3 \u00d7 6 under a 1.8 mm counterbore",
+    "(b) on the dummy output: no slip (witness \u2264 0.05 mm at r 17) at **16.5 N\u00b7m**, 10 \u00d7 each way, with a **360 N** radial pull at the flange (the motor bearing's share of the 1158 N shaft load at the peak, belts.md hinged); breakaway of each screw \u2265 its build torque after (the model holds 27.2 N\u00b7m: \u03bc 0.2 \u00d7 8 \u00d7 1.0 kN \u00d7 r 17, 2.47\u00d7)",
+    "(c) 1b, on the rig: the drive at its 11 N\u00b7m peak against the hard stop, 10 \u00d7: no slip (witness mark)"
+   ]
+  }
+ ]
+}
