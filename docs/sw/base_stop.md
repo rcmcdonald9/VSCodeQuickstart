@@ -1,0 +1,21 @@
+# Base stop, category 1: software half done, hardware / drive half needed (W14a)
+
+**Why.** From docs/rnd/tip.md (*E-stop / snag braking*), the base tips if it brakes harder than about 1.0 m/s² with the R2d basket, 2.1 m/s² with 2.5 kg in the load box, and 1.7 m/s² with ≤ 1 kg and the arms straight out. The wheels can brake far harder than that (μ·g ≈ 5 m/s², ESTIMATE). So a base stop has to be a **controlled deceleration followed by torque-off** (stop category 1). A hard stop is not acceptable. The arm stays category 0 (electrical.md *Stop category*).
+
+**Today's wiring defeats it.** In electrical.md the base branch (F 20 A → 4 wheel cartridges, CAN A) sits *downstream of K1*. An e-stop, a watchdog timeout or a supply trip removes base power at once, together with the arms. The clamp's 100 ms forced discharge then empties the bus. What happens next depends on the drive: it coasts if it floats its phases, or it brakes hard (tips) if it shorts them.
+
+## Software half (sw/safety.py item 17, tested in sw/test_s1.py `test_base_stop`)
+- Any latched fault starts a base ramp to 0 at `base_stop_decel()`. This is the smaller of the limit in force when the fault came (1.0 free, 0.5 with the casters not locked, 0.3 in load mode, 0.1 with a person near) and `BASE_STOP_DECEL`, tip.md's 30 mm-reserve column: 1.20 / 1.56 / 0.52 m/s² for ≤ 1 / ≤ 2.5 / ≤ 9.07 kg, and ∝ 1/payload past the table. Worst case today: 0.8 m/s transit at 0.5 m/s² takes 1.6 s and 0.64 m. A basket carry at 0.3 m/s takes 1.0 s and 0.15 m.
+- `base_torque_enabled()` / `base_heartbeat_ok()` stay True through the ramp. They go False once the command is at 0 and the measured speed (`limit_base(..., v_meas=)`, if odometry is passed) is under 0.01 m/s. In any case they go False BASE_STOP_GRACE (0.3 s) after the ramp's planned end ("base stop timeout").
+- `heartbeat_ok()` (the arm channel) still drops at once.
+- A collision hold alone ramps the base to 0 and keeps it powered.
+
+## What the hardware / drive side must provide (electrical / base-drive track; not done here)
+1. **A separate base power / enable channel.** It must not hang off the arm's K1. It needs its own watchdog line, toggled by `base_heartbeat_ok()`, and its own contactor or the drives' STO input.
+2. **A hardware-timed SS1 ceiling.** The e-stop mushroom and a lost base heartbeat must remove base power or STO after a fixed delay, whatever the software does. Use a rated time-delay safety relay or a delayed-release safety output, set to ≥ the longest ramp + grace (1.6 + 0.3 s → **2.0 s**). It must never be a capacitor hold-up: electrical.md dropped that for the same reason. During the delay the wheel drives ramp.
+3. **A drive-side ramp for when the software is gone** (process dead, Pi brown-out, CAN A silent). Each wheel cartridge needs its own quick-stop on CAN timeout and on its enable input, with a configured deceleration ≤ the planner's lowest loaded limit: **≤ 0.3 m/s² at the wheel rim**, or ≤ 0.5 m/s² if a payload-aware value can't be set. A drive whose only timeout behaviour is "disable" or "short the phases" fails this. Verify at bench bring-up, as for the GIM's CAN timeout (electrical.md: still unverified).
+4. **No phase-short braking on disable or power loss**, or braking limited so a 0.8 m/s base never exceeds about 0.5 m/s². Whatever the drive does when STO or power is removed at the end of the ramp has to be gentle, because the base may still be creeping (slip, slope). It should coast, then the caster locks (spring-applied, SW-T2) hold the base.
+5. **Regen on the base branch.** A ramp from 0.8 m/s with a 31 kg robot returns about 10 J. That is small, but the bus must still be up to absorb it, so the base branch needs the clamp (or its own) while K1 is open: the clamp's forced discharge on K1 opening must not empty the base side during the ramp.
+6. **Odometry into the supervisor.** Wheel speed (CAN A, 250 Hz) goes to `limit_base(v_meas=...)` so torque-off waits for an actual stop instead of the timeout.
+
+Open: the casters are forced locked the moment a fault latches, even mid-ramp (SW-T2, existing behaviour). Locking a released caster at 0.8 m/s needs a check against the caster lock's rating (base-drive track).
