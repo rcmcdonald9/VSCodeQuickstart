@@ -25,9 +25,14 @@
    (speed ≤ 0.12 m/s) or unloaded transit; refused / forced locked with a person near, a fault or too much payload;
    re-lock, every stop and every 0.3 m of locked travel give a 0.1 s re-seat pulse; accel ≤ 0.5 m/s² while not locked.
 8b. SW-T2 caster lock at speed (W15b): a fault, a person approaching or near, a payload past the transit limit or the
-   planner's lock at 0.8 m/s is deferred (casters released, `casters_locked()` False) until the base is ≤ 0.25 m/s (the
-   measured speed if odometry lags; a timeout if it never reports the slowdown); threshold mode locks at once; the
-   locked-travel cap is 0.25 m/s and passes the W15b snag model, 0.30 m/s does not.
+   planner's lock at 0.8 m/s is deferred (casters released, `casters_locked()` False) until the base is ≤ min(V_CASTER_LOCK
+   0.25, the SW-T8 cap) = 0.20 m/s unloaded (the measured speed if odometry lags; a timeout if it never reports the
+   slowdown); threshold mode locks at once; the unloaded locked-travel cap (0.20 m/s since SW-T8; 0.25 in W16a) passes the
+   W15b snag model, 0.30 m/s does not.
+8c. SW-T8 payload-dependent locked cap (W17d, docs/rnd/tip.md *Snag at the locked cap*): `caster_locked_v_for` at the band
+   edges (6.0 / 6.01 / 10.0 / 10.01 kg → 0.20 / 0.15 / 0.15 / 0 m/s), applied while locked, locking and pulsing and held with
+   0.8 m/s commanded; a payload step into a heavier band while moving brakes to the new cap at the limit in force; a
+   deferred lock engages at the lower speed of the heavier band; no travel above 10 kg; threshold mode stays at 0.12 m/s.
 12. Base stop category 1 (sw/safety.py 17., tip.md *E-stop / snag braking*): BASE_STOP_DECEL sits under tip.md's 30 mm
    column for each payload; an e-stop or a watchdog fault ramps the base to 0 at min(the limit in force, the table), never
    harder; the arm heartbeat drops at once while the base channel keeps its heartbeat until the ramp ends, then base
@@ -745,7 +750,8 @@ def test_person_reach():
         prev = vc
     assert over4 == 0 and t_br is not None and abs(t_br - (0.8 - PERSON_V) / a_tr) < 0.01, (over4, t_br)
     from sw.safety import V_CASTER_LOCK
-    assert v_lock is not None and V_CASTER_LOCK - a_tr * dt - 1e-9 <= v_lock <= V_CASTER_LOCK + 1e-9, v_lock
+    v_eng = min(V_CASTER_LOCK, Supervisor.caster_locked_v_for(sup.payload))   # SW-T8: 0.20 unloaded (was V_CASTER_LOCK 0.25)
+    assert v_lock is not None and v_eng - a_tr * dt - 1e-9 <= v_lock <= v_eng + 1e-9, v_lock
     return (f"SW-T1 person within reach (one people-near mode; `set_person_near` = `set_people_near`): robot-frame box "
             f"x {PERSON_WS[0][0]:.2f}–{PERSON_WS[1][0]:.2f} m, z {PERSON_WS[0][2]:.2f}–{PERSON_WS[1][2]:.2f} m (LOAD_WS ∩ x ≤ 0.35, z ≤ 0.60). "
             f"Random arm policy + random base commands with the mode on: {n1} cycles, **0 cycles with the hand outside the box, 0 over "
@@ -775,8 +781,8 @@ def test_casters():
 
     def wait(secs):
         t[0] += secs
-    # default: locked, solenoid off, 0.25 m/s, 1.0 m/s²; SW-T4 value
-    assert CASTER_LOCKED_V == 0.25 and s.casters_locked() and not s.caster_solenoid() and s.base_speed_limit() == CASTER_LOCKED_V and s.base_accel_limit() == 1.0
+    # default: locked, solenoid off, 0.20 m/s (SW-T8 ≤ 6 kg band; the flat 0.25 of W16a failed the W17d snag rows), 1.0 m/s²; SW-T4 value
+    assert CASTER_LOCKED_V == 0.20 and s.casters_locked() and not s.caster_solenoid() and s.base_speed_limit() == CASTER_LOCKED_V and s.base_accel_limit() == 1.0
     assert Supervisor.threshold_speed() == s.threshold_speed() == THRESHOLD_SPEED == 0.12
     # threshold release: free, speed ≤ 0.12, accel ≤ 0.5 (0.3 loaded)
     assert s.release_casters("threshold")
@@ -820,7 +826,7 @@ def test_casters():
     drive([0.5, 0.0], 1.5)
     s.press_estop()
     assert not s.casters_locked() and s.caster_solenoid() and s.base_speed_limit() == 0.0 and not s.release_casters("threshold")
-    vb = drive([0.5, 0.0], 2.0)                                              # deferred to ≤ 0.25 m/s (test_caster_lock_at_speed)
+    vb = drive([0.5, 0.0], 2.0)                                              # deferred to ≤ 0.20 m/s (test_caster_lock_at_speed)
     assert np.hypot(*vb) < 1e-9 and s.casters_locked() and not s.caster_solenoid()
     s.release_estop()
     assert s.reset(q, 0.002) and s.casters_locked()
@@ -853,12 +859,15 @@ def test_casters():
 
 def test_caster_lock_at_speed():
     """8b. SW-T2 change (W15b, docs/rnd/safety_board_sim.md *Caster lock at speed*): a lock waits for ≤ V_CASTER_LOCK;
-    threshold mode locks at once; the locked-travel cap is 0.25 m/s, checked against the W15b snag model."""
+    threshold mode locks at once; the unloaded locked-travel cap (0.20 m/s, SW-T8) checked against the W15b snag model.
+    SW-T8 changed the numbers, not the logic: the lock now engages at ≤ min(V_CASTER_LOCK, caster_locked_v_for(payload))
+    = 0.20 m/s for these ≤ 6 kg cases (was V_CASTER_LOCK = CASTER_LOCKED_V = 0.25), so the planned times are 1.20 s."""
     from rnd import safety_board_sim as sb
     from sw.safety import (BASE_STOP_GRACE, CASTER_LOCKED_V, CASTER_RELEASED_A, PERSON_V, THRESHOLD_SPEED, V_CASTER_LOCK,
                            Supervisor)
     dt = 0.002
-    assert V_CASTER_LOCK == CASTER_LOCKED_V == 0.25 and sb.V_CASTER_LOCK == V_CASTER_LOCK
+    assert V_CASTER_LOCK == 0.25 and CASTER_LOCKED_V == Supervisor.caster_locked_v_for(1.5) == 0.20 and sb.V_CASTER_LOCK == V_CASTER_LOCK
+    V_ENG = min(V_CASTER_LOCK, CASTER_LOCKED_V)                      # SW-T8: where a deferred lock engages (≤ 6 kg)
 
     def rig(release="transit", v=0.8):
         t = [0.0]
@@ -891,9 +900,9 @@ def test_caster_lock_at_speed():
         return hit, sol, amax, caps
 
     a_tr = CASTER_RELEASED_A                                         # transit, released: the limit in force
-    t_plan = (0.8 - V_CASTER_LOCK) / a_tr
+    t_plan = (0.8 - V_ENG) / a_tr
     out = []
-    # 1. e-stop at 0.8 m/s in transit: casters stay released, the base ramps at 0.5 m/s², the lock engages at ≤ 0.25 m/s
+    # 1. e-stop at 0.8 m/s in transit: casters stay released, the base ramps at 0.5 m/s², the lock engages at ≤ 0.20 m/s
     s, t = rig()
     s.press_estop()
     assert not s.casters_locked() and s.caster_solenoid() and s.caster_state()["state"] == "locking"
@@ -901,7 +910,7 @@ def test_caster_lock_at_speed():
     p0 = s.counts.get("caster re-seat pulse", 0)
     hit, sol, amax, caps = run(s, t)
     assert hit is not None and sol and amax <= a_tr + 1e-6 and caps == {0.0}, (hit, sol, amax, caps)
-    assert abs(hit[0] - t_plan) < 2 * dt and V_CASTER_LOCK - a_tr * dt - 1e-9 <= hit[1] <= V_CASTER_LOCK + 1e-9, hit
+    assert abs(hit[0] - t_plan) < 2 * dt and V_ENG - a_tr * dt - 1e-9 <= hit[1] <= V_ENG + 1e-9, hit
     assert s.counts.get("caster forced lock") == 1 and "caster lock timeout" not in s.counts and s.counts.get("caster re-seat pulse", 0) == p0
     assert np.hypot(*s._v_base) < 1e-12 and not s.base_torque_enabled()
     out.append(f"e-stop at 0.8 m/s: deferred, lock at {hit[0]:.2f} s / {hit[1]:.3f} m/s (ramp {amax:.2f} m/s²)")
@@ -910,7 +919,7 @@ def test_caster_lock_at_speed():
     s.press_estop()
     lag = 0.2
     hit, sol, _, _ = run(s, t, v_meas_fn=lambda tt: max(0.8 - a_tr * max(tt - lag, 0.0), 0.0))
-    assert sol and hit[2] <= V_CASTER_LOCK + 1e-9 and abs(hit[0] - (t_plan + lag)) < 2 * dt, hit
+    assert sol and hit[2] <= V_ENG + 1e-9 and abs(hit[0] - (t_plan + lag)) < 2 * dt, hit
     out.append(f"odometry 0.2 s late: lock at {hit[0]:.2f} s, measured {hit[2]:.3f} m/s")
     # 1c. odometry stuck at 0.8 m/s: locked at the planned braking time + BASE_STOP_GRACE, counted
     s, t = rig()
@@ -918,12 +927,12 @@ def test_caster_lock_at_speed():
     hit, sol, _, _ = run(s, t, v_meas_fn=lambda tt: 0.8)
     assert sol and abs(hit[0] - (t_plan + BASE_STOP_GRACE)) < 2 * dt and s.counts.get("caster lock timeout") == 1, hit
     out.append(f"odometry stuck at 0.8 m/s: lock at {hit[0]:.2f} s (timeout, counted)")
-    # 2. a person approaching at 0.8 m/s: deferred, braked at the transit's 0.5 m/s², lock ≤ 0.25 m/s, then on to PERSON_V
+    # 2. a person approaching at 0.8 m/s: deferred, braked at the transit's 0.5 m/s², lock ≤ 0.20 m/s, then on to PERSON_V
     s, t = rig()
     s.set_person_approach(True)
     assert not s.casters_locked() and s.caster_solenoid() and s.counts.get("caster lock deferred") == 1
     hit, sol, amax, caps = run(s, t)
-    assert sol and hit is not None and abs(hit[0] - t_plan) < 2 * dt and hit[1] <= V_CASTER_LOCK + 1e-9, hit
+    assert sol and hit is not None and abs(hit[0] - t_plan) < 2 * dt and hit[1] <= V_ENG + 1e-9, hit
     assert amax <= a_tr + 1e-6 and caps == {PERSON_V} and abs(np.hypot(*s._v_base) - PERSON_V) < 1e-9 and s.casters_locked()
     assert not s.release_casters("transit")
     out.append(f"person approaching at 0.8 m/s: lock at {hit[0]:.2f} s / {hit[1]:.3f} m/s, then {PERSON_V} m/s")
@@ -933,7 +942,7 @@ def test_caster_lock_at_speed():
         trig(s)
         assert not s.casters_locked() and s.counts.get("caster lock deferred") == 1, name
         hit, sol, amax, caps = run(s, t)
-        assert sol and hit[1] <= V_CASTER_LOCK + 1e-9 and abs(hit[0] - t_plan) < 2 * dt and amax <= a_tr + 1e-6, (name, hit)
+        assert sol and hit[1] <= V_ENG + 1e-9 and abs(hit[0] - t_plan) < 2 * dt and amax <= a_tr + 1e-6, (name, hit)
         assert max(caps) <= CASTER_LOCKED_V and s.counts.get("caster forced lock") == 1, (name, caps)
     # 2d. the planner's own lock_casters() at 0.8 m/s: deferred too, not counted as forced, no re-seat pulse
     s, t = rig()
@@ -941,7 +950,7 @@ def test_caster_lock_at_speed():
     s.lock_casters()
     assert s.caster_state()["state"] == "locking" and s.counts.get("caster lock deferred") == 1
     hit, sol, amax, caps = run(s, t, secs=1.5)
-    assert sol and hit[1] <= V_CASTER_LOCK + 1e-9 and caps == {CASTER_LOCKED_V} and "caster forced lock" not in s.counts, hit
+    assert sol and hit[1] <= V_ENG + 1e-9 and caps == {CASTER_LOCKED_V} and "caster forced lock" not in s.counts, hit
     assert s.counts.get("caster re-seat pulse", 0) == p0 and abs(np.hypot(*s._v_base) - CASTER_LOCKED_V) < 1e-9
     # 3. threshold mode (≤ 0.12 m/s): a fault, a person or the planner's lock acts at once, as before
     for name, trig in (("e-stop", lambda s: s.press_estop()), ("person approaching", lambda s: s.set_person_approach(True)),
@@ -954,7 +963,7 @@ def test_caster_lock_at_speed():
     s.lock_casters()
     assert s.caster_state()["state"] == "reseat" and "caster lock deferred" not in s.counts
     out.append(f"threshold mode at {THRESHOLD_SPEED} m/s: e-stop / person / payload lock at once")
-    # 4. the locked-travel cap: 0.25 m/s, held with 0.8 m/s commanded
+    # 4. the unloaded locked-travel cap: 0.20 m/s (SW-T8), held with 0.8 m/s commanded
     s, t = rig("threshold", THRESHOLD_SPEED)
     s.lock_casters()
     run(s, t, v=0.0, secs=0.2)                                       # the re-seat pulse ends, locked
@@ -964,8 +973,9 @@ def test_caster_lock_at_speed():
         s.tick()
         vmax = max(vmax, float(np.hypot(*s.limit_base([0.8, 0.3], dt)[:2])))
     assert s.base_speed_limit() == CASTER_LOCKED_V and vmax <= CASTER_LOCKED_V + 1e-9 and vmax > CASTER_LOCKED_V - 1e-6, vmax
-    #    against the W15b snag model (rnd/safety_board_sim.caster_snag): 0.25 m/s passes for unloaded transit and 2.5 kg,
-    #    0.30 m/s does not (rod force on the diagonal heading); the R2d basket is reported, not asserted (open point)
+    #    against the W15b snag model (rnd/safety_board_sim.caster_snag): the cap passes for unloaded transit and 2.5 kg,
+    #    0.30 m/s does not (rod force on the diagonal heading); the R2d basket at its own SW-T8 cap is reported, not asserted
+    #    (W15b's tuck-pose chord model; the real carry poses and the polygon pivot are rnd/tip.py's snag study, W17d)
     st = [sb.base_state(lift, kg) for lift in ("mid", "top") for kg in (0.0, 2.5)]
     sn = sb.caster_snag(st, speeds=(CASTER_LOCKED_V, 0.30))
     ok = lambda r: r["frac"] <= sn["frac_lim"] and r["F_max"] <= 0.5 * sn["F_rod"]   # noqa: E731
@@ -973,14 +983,141 @@ def test_caster_lock_at_speed():
     assert all(ok(r) for r in at[CASTER_LOCKED_V]) and not all(ok(r) for r in at[0.30]), [(r["state"], r["v"], r["F_max"]) for r in sn["rows"]]
     f25 = max(r["F_max"] for r in at[CASTER_LOCKED_V])
     f30 = max(r["F_max"] for r in at[0.30])
-    bk = sb.caster_snag([sb.base_state(lift, 9.07) for lift in ("mid", "top")], speeds=(CASTER_LOCKED_V,))
+    v_bk = Supervisor.caster_locked_v_for(9.07)
+    bk = sb.caster_snag([sb.base_state(lift, 9.07) for lift in ("mid", "top")], speeds=(v_bk,))
     bk_frac = max(r["frac"] for r in bk["rows"])
-    out.append(f"locked cap {CASTER_LOCKED_V} m/s (held at {vmax:.3f} with 0.8 commanded): snag force ≤ {f25:.0f} N per foot vs "
-               f"{0.5 * sn['F_rod']:.0f} N allowed (0.30 m/s: {f30:.0f} N ❌); open: the R2d basket (9.07 kg, tuck-pose load point) "
-               f"at 0.25 m/s uses {bk_frac:.0%} of the tip energy in this model (allowed {sn['frac_lim']:.0%})")
-    return ("SW-T2 caster lock at speed (W15b): a forced lock or a planner lock above V_CASTER_LOCK = "
-            f"{V_CASTER_LOCK} m/s is deferred (\"caster lock deferred\"; casters released, solenoids on, `casters_locked()` "
+    out.append(f"unloaded locked cap {CASTER_LOCKED_V} m/s (held at {vmax:.3f} with 0.8 commanded): snag force ≤ {f25:.0f} N per foot vs "
+               f"{0.5 * sn['F_rod']:.0f} N allowed (0.30 m/s: {f30:.0f} N ❌); the R2d basket (9.07 kg) at its SW-T8 cap {v_bk} m/s uses "
+               f"{bk_frac:.0%} of the tip energy in W15b's tuck-pose chord model (allowed {sn['frac_lim']:.0%}; superseded by tip.md's "
+               "W17 real-pose polygon-pivot rows, which pass at that cap)")
+    return ("SW-T2 caster lock at speed (W15b): a forced lock or a planner lock above min(V_CASTER_LOCK = "
+            f"{V_CASTER_LOCK}, the SW-T8 cap) = {V_ENG} m/s unloaded is deferred (\"caster lock deferred\"; casters released, solenoids on, `casters_locked()` "
             "False) while the base brakes, then engages with no re-seat pulse: " + "; ".join(out) + " ✅")
+
+
+def test_locked_cap():
+    """8c. SW-T8 (W17d, docs/rnd/tip.md *Snag at the locked cap*): the locked-travel cap follows the payload."""
+    from sw.safety import (A_LOAD, BASE_STOP_GRACE, CASTER_LOCKED_V_BY, CASTER_PULSE_S, CASTER_RELEASED_A, PERSON_MAX_KG,
+                           THRESHOLD_SPEED, V_CASTER_LOCK, Supervisor)
+    dt = 0.002
+    f = Supervisor.caster_locked_v_for
+    # 1. the bands and their edges (the tip.md table: ≤ 6 kg 0.20, 6–10 kg 0.15, above 10 kg 0)
+    assert CASTER_LOCKED_V_BY == ((6.0, 0.20), (10.0, 0.15))
+    edges = {0.0: 0.20, 2.5: 0.20, 6.0: 0.20, 6.01: 0.15, 9.07: 0.15, 10.0: 0.15, 10.01: 0.0, 20.0: 0.0}
+    assert all(f(kg) == v for kg, v in edges.items()), {kg: f(kg) for kg in edges}
+    assert all(THRESHOLD_SPEED <= v for _, v in CASTER_LOCKED_V_BY)                 # threshold mode is under every travel cap
+
+    def rig(payload=0.0, release=None, clear=True):
+        t = [0.0]
+        s = Supervisor(clock=lambda: t[0], power=False)
+        q = np.clip(np.zeros(s.n), s.lo, s.hi)
+        assert s.reset(q, 0.002)
+        s.set_payload(payload)
+        s.set_area_clear(clear)                      # SW-T7: > 2.5 kg moves only with the area clear
+        if release:
+            assert s.release_casters(release)
+        return s, t
+
+    def drive(s, t, v, secs, v_meas=None, trace=None):
+        out = None
+        for _ in range(int(round(secs / dt))):
+            t[0] += dt
+            s.tick()
+            out = s.limit_base([v, 0.0], dt, v_meas=v_meas)
+            if trace is not None:
+                trace.append((float(np.hypot(*out[:2])), s.casters_locked(), s.base_speed_limit()))
+        return float(np.hypot(*out[:2]))
+
+    out = []
+    # 2. the cap in force at each edge, locked, held with 0.8 m/s commanded (> 6 kg needs the area clear, SW-T7)
+    held = {}
+    for kg, v in edges.items():
+        s, t = rig(kg)
+        assert s.casters_locked() and s.base_speed_limit() == v, (kg, s.base_speed_limit())
+        held[kg] = drive(s, t, 0.8, 3.0)
+        assert abs(held[kg] - v) < 1e-9, (kg, held[kg])
+    #    pulsing (re-seat) and locking use the same cap
+    s, t = rig(2.0, "threshold")
+    s.lock_casters()
+    assert s.caster_state()["state"] == "reseat" and s.base_speed_limit() == 0.20
+    t[0] += CASTER_PULSE_S * 1.1
+    s.set_payload(0.0)
+    assert s.release_casters("transit")
+    drive(s, t, 0.8, 2.0)
+    s.set_payload(8.0)                                           # past the transit limit and into the 0.15 band
+    assert s.caster_state()["state"] == "locking" and s.base_speed_limit() == 0.15
+    out.append("cap at 6.0 / 6.01 / 10.0 / 10.01 kg: " + " / ".join(f"{held[kg]:.2f}" for kg in (6.0, 6.01, 10.0, 10.01)) + " m/s held")
+    # 3. threshold mode stays at 0.12 m/s at any payload it allows
+    for kg in (0.0, 2.5):
+        s, t = rig(kg, "threshold")
+        assert s.base_speed_limit() == THRESHOLD_SPEED and drive(s, t, 0.8, 2.0) <= THRESHOLD_SPEED + 1e-9, kg
+    # 4. a payload step into a heavier band while moving (locked): braked to the new cap at the limit in force, then held
+    for kg0, kg1, v0, v1 in ((4.0, 9.07, 0.20, 0.15), (0.0, 8.0, 0.20, 0.15), (9.07, 10.01, 0.15, 0.0), (0.0, 12.0, 0.20, 0.0)):
+        s, t = rig(kg0)
+        assert abs(drive(s, t, 0.8, 3.0) - v0) < 1e-9
+        a_force = s.base_accel_limit()
+        a_exp = min(a_force, Supervisor.base_stop_decel_for(kg1))
+        n0 = s.counts.get("locked cap lowered (payload)", 0)
+        s.set_payload(kg1)
+        assert s.counts.get("locked cap lowered (payload)", 0) == n0 + 1 and s.base_speed_limit() == v1
+        tr, prev, amax, t_at = [], v0, 0.0, None
+        drive(s, t, 0.8, 3.0, trace=tr)
+        for i, (sp, _, _) in enumerate(tr):
+            assert sp <= prev + 1e-12, (kg0, kg1, i)                 # never speeds up past the step
+            amax, prev = max(amax, (prev - sp) / dt), sp
+            if t_at is None and sp <= v1 + 1e-9:
+                t_at = (i + 1) * dt
+        assert abs(amax - a_exp) < 1e-6 and abs(t_at - (v0 - v1) / a_exp) < 2 * dt, (kg0, kg1, amax, a_exp, t_at)
+        assert all(abs(sp - v1) < 1e-9 for sp, _, _ in tr[int(t_at / dt) + 1:]), (kg0, kg1)
+        out.append(f"{kg0:g} → {kg1:g} kg at {v0:.2f} m/s: braked at {amax:.2f} m/s² to {v1:.2f} in {t_at:.2f} s")
+    #    a lighter band raises the cap without a brake count; the same band changes nothing
+    s, t = rig(9.07)
+    drive(s, t, 0.8, 2.0)
+    s.set_payload(4.0)
+    assert s.base_speed_limit() == 0.20 and "locked cap lowered (payload)" not in s.counts
+    s.set_payload(5.0)
+    assert "locked cap lowered (payload)" not in s.counts
+    # 5. a deferred forced lock engages at ≤ min(V_CASTER_LOCK, the new band's cap): 0.8 m/s transit, then 8 kg in the hands
+    s, t = rig(0.0, "transit")
+    drive(s, t, 0.8, 3.0)
+    s.set_payload(8.0)
+    a_br = min(max(A_LOAD, CASTER_RELEASED_A), Supervisor.base_stop_decel_for(8.0))   # braked as it was moving (0.5 released)
+    v_eng = min(V_CASTER_LOCK, f(8.0))
+    assert v_eng == 0.15 and s.caster_state()["state"] == "locking" and s.caster_solenoid()
+    tr = []
+    drive(s, t, 0.8, 3.0, trace=tr)
+    i_lock = next(i for i, (_, lk, _) in enumerate(tr) if lk)
+    assert all(not lk for _, lk, _ in tr[:i_lock]) and v_eng - a_br * dt - 1e-9 <= tr[i_lock][0] <= v_eng + 1e-9, tr[i_lock]
+    assert max(sp for sp, lk, _ in tr if lk) <= v_eng + 1e-9 and all(lk for _, lk, _ in tr[i_lock:i_lock + 40])
+    t_lock = (i_lock + 1) * dt
+    assert abs(t_lock - (0.8 - v_eng) / a_br) < 2 * dt and s.counts.get("caster forced lock") == 1, t_lock
+    assert all(sp > V_CASTER_LOCK for sp, _, _ in tr[:int(round((0.8 - V_CASTER_LOCK) / a_br / dt)) - 2])   # not at the old 0.25
+    out.append(f"deferred lock with 8 kg: engaged at {tr[i_lock][0]:.3f} m/s, {t_lock:.2f} s after the step (W16a: 0.25 m/s)")
+    #    with odometry stuck at 0.8 m/s: the timeout is planned for the lower speed too
+    s, t = rig(0.0, "transit")
+    drive(s, t, 0.8, 3.0)
+    s.set_payload(8.0)
+    tr = []
+    drive(s, t, 0.8, 3.0, v_meas=[0.8, 0.0], trace=tr)
+    t_to = (next(i for i, (_, lk, _) in enumerate(tr) if lk) + 1) * dt
+    assert abs(t_to - ((0.8 - v_eng) / a_br + BASE_STOP_GRACE)) < 2 * dt and s.counts.get("caster lock timeout") == 1, t_to
+    #    an unloaded deferral (a person approaching) engages at the ≤ 6 kg cap, 0.20 m/s
+    s, t = rig(0.0, "transit")
+    drive(s, t, 0.8, 3.0)
+    s.set_person_approach(True)
+    tr = []
+    drive(s, t, 0.8, 3.0, trace=tr)
+    i_lock = next(i for i, (_, lk, _) in enumerate(tr) if lk)
+    assert 0.20 - CASTER_RELEASED_A * dt - 1e-9 <= tr[i_lock][0] <= 0.20 + 1e-9, tr[i_lock]
+    # 6. no travel with the casters locked above 10 kg: held at 0 from rest, no release, D28 / SW-T7 aside
+    for kg in (10.01, 13.0):
+        s, t = rig(kg)
+        assert kg > PERSON_MAX_KG and s.area_clear and s.base_speed_limit() == 0.0
+        assert drive(s, t, 0.5, 2.0) == 0.0 and s.casters_locked()
+        assert not s.release_casters("transit") and not s.release_casters("threshold")
+    out.append("> 10 kg: base held at 0 m/s (area clear), releases refused")
+    return ("SW-T8 payload-dependent locked cap (`caster_locked_v_for`: ≤ 6 kg 0.20, ≤ 10 kg 0.15, above 0 m/s; threshold mode "
+            f"{THRESHOLD_SPEED} m/s): " + "; ".join(out) + " ✅")
 
 
 def test_hand_speed():
@@ -1055,7 +1192,7 @@ def test_person_approach():
         vb = s.limit_base([0.8, 0.0], dt)
     a_tr = s.base_accel_limit()
     s.set_person_approach(True)
-    assert s.approaching() and not s.people_near and not s.casters_locked()       # SW-T2: the lock waits for ≤ 0.25 m/s
+    assert s.approaching() and not s.people_near and not s.casters_locked()       # SW-T2: the lock waits for ≤ 0.20 m/s (SW-T8, unloaded)
     assert np.allclose(s.ws_hi, PERSON_WS[1]) and s.base_accel_limit() == min(PERSON_A, CASTER_RELEASED_A) and s.base_speed_limit() == PERSON_V
     k = s.names.index("roll")
     assert s.target_bounds()[0][k] == s.lo[k]                        # no D25 roll bound at the approach radius
@@ -1095,7 +1232,7 @@ def test_person_approach():
     trg.update([PN_PREP_RELEASE + 0.5])
     tc[0] += 0.1
     assert not trg.update([PN_PREP_RELEASE + 0.5])
-    return (f"SW-T6 person approaching (≤ {PN_PREP_RADIUS} m, off beyond {PN_PREP_RELEASE} m): PERSON_WS box, casters locked (at ≤ 0.25 m/s), base braked "
+    return (f"SW-T6 person approaching (≤ {PN_PREP_RADIUS} m, off beyond {PN_PREP_RELEASE} m): PERSON_WS box, casters locked (at ≤ 0.20 m/s, SW-T8), base braked "
             f"from 0.8 m/s at the transit's {a_tr} m/s² to {PERSON_V} m/s in {t_br:.2f} s, releases refused, no D25 roll bound; "
             f"people-near on top and off again keeps it. SW-T7: > {PERSON_MAX_KG} kg moves only with `set_area_clear(True)` and nobody "
             f"approaching (default: held at 0 m/s) ✅")
@@ -1214,8 +1351,9 @@ def test_base_stop():
 
     out = []
     # 1. e-stop at each payload's top speed: ramp at min(limit in force, table), heartbeat split, torque off at the end
+    # (locked rows at the SW-T8 cap for the payload: 0.20 m/s ≤ 6 kg, 0.15 m/s for the basket; was the flat 0.25 for all)
     for payload, release, clear, v in ((0.0, "transit", False, 0.8), (0.0, None, False, VL), (2.5, None, False, VL),
-                                       (9.07, None, True, VL)):
+                                       (9.07, None, True, Supervisor.caster_locked_v_for(9.07))):
         s, t, q = rig(payload, release, clear)
         assert cruise(s, t, v, 3.0) > v - 1e-6, payload
         a_force = s.base_accel_limit()
@@ -1291,7 +1429,7 @@ def test_twin_ik_determinism():
             f"then B, then A again and on a fresh solver: {len(first)} identical solutions each time ({time.time() - t0:.1f} s) ✅")
 
 def main():
-    out = [test_mit(), test_driver(), test_supervisor(), test_people_near(), test_collision(), test_power(), test_person_reach(), test_casters(), test_caster_lock_at_speed(),
+    out = [test_mit(), test_driver(), test_supervisor(), test_people_near(), test_collision(), test_power(), test_person_reach(), test_casters(), test_caster_lock_at_speed(), test_locked_cap(),
            test_hand_speed(), test_person_approach(), test_roll_latch(), test_base_stop(),
            test_twin_ik_determinism()]
     from pathlib import Path

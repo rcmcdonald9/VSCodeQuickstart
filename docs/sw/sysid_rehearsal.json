@@ -222,7 +222,7 @@
     ],
     "backlash_pose_deg": -0.0
    },
-   "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-a7933894e18ed80b8/sw/out/rehearse_step1/actuators/actuators_7804993.yaml"
+   "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-a25f6352b085381a9/sw/out/rehearse_step1/actuators/actuators_7804993.yaml"
   },
   "wpitch": {
    "joint": "wpitch",
@@ -372,7 +372,7 @@
     ],
     "backlash_pose_deg": -0.0
    },
-   "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-a7933894e18ed80b8/sw/out/rehearse_step1/actuators/actuators_6095693.yaml"
+   "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-a25f6352b085381a9/sw/out/rehearse_step1/actuators/actuators_6095693.yaml"
   }
  },
  "calibration": {

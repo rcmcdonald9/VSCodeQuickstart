@@ -55,22 +55,23 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    power loss locks them). `release_casters("threshold")` (D2b crossing, ≤ 2.5 kg, speed ≤ threshold_speed()) or
    `release_casters("transit")` (no load, arms parked: the planner's call, speed ≤ BASE_V_MAX) is refused with a person
    approaching or near or a latched fault, and is ended if either appears or the payload rises past the mode's limit.
-   **A lock waits for ≤ V_CASTER_LOCK (0.25 m/s; W15b, docs/rnd/safety_board_sim.md *Caster lock at speed*):** engaging
+   **A lock waits for ≤ min(V_CASTER_LOCK, the SW-T8 locked cap) (0.25 m/s, W15b, docs/rnd/safety_board_sim.md *Caster
+   lock at speed*; with SW-T8 (18.) 0.20 m/s up to 6 kg, 0.15 m/s up to 10 kg):** engaging
    is harmless, but a caster locked at 0.8 m/s turns a floor step into a snag (80–116 % of the tip energy, ≈ 3.6 kN on a
    foot). So a forced lock (fault, person, payload) or a planner `lock_casters()` above that speed goes to state
    "locking" (counted "caster lock deferred"): the solenoids stay energised, the casters stay released (`casters_locked()`
    False, accel ≤ CASTER_RELEASED_A), the speed cap drops to the locked one (0 on a fault) and the base brakes at the
    limit it was moving under or on the fault ramp (17.), never past BASE_STOP_DECEL(payload). The lock engages, with no
    re-seat pulse, once the larger of the commanded and the measured speed (`limit_base(v_meas=)`; the command alone
-   without odometry) is ≤ V_CASTER_LOCK. If odometry still reports more at the planned braking time + BASE_STOP_GRACE, or
+   without odometry) is ≤ that speed. If odometry still reports more at the planned braking time + BASE_STOP_GRACE, or
    base torque goes off (17.), it engages anyway ("caster lock timeout"). A threshold release (≤ 0.12 m/s) and anything
    already slow lock at once. **The hardware locks without software:** the solenoids hang on VBUS_B (electrical.md *Base
    channel*), so they drop when U20 opens the base switch (2.0 s ± 10 % after any e-stop or board STOP) and at any power
    loss, whatever `caster_solenoid()` says; their gates have pull-downs, so a dead Pi cannot hold them released past U20.
-   `lock_casters()` at ≤ V_CASTER_LOCK re-locks with a re-seat pulse (CASTER_PULSE_S released, then locked); a pulse also
+   `lock_casters()` at ≤ that speed re-locks with a re-seat pulse (CASTER_PULSE_S released, then locked); a pulse also
    follows every stop and every CASTER_RESEAT_M of locked travel (`limit_base()` keeps the count), so a lock never
-   ratchets down into a dip. Locked: speed ≤ CASTER_LOCKED_V (0.25 m/s; was 0.3, just over the rod-force limit on the
-   diagonal heading); released, locking or pulsing: accel ≤ CASTER_RELEASED_A (wheels-only diamond). `caster_state()`
+   ratchets down into a dip. Locked: speed ≤ `caster_locked_v_for(payload)` (18.; the flat CASTER_LOCKED_V was 0.3, then
+   0.25 in W16a); released, locking or pulsing: accel ≤ CASTER_RELEASED_A (wheels-only diamond). `caster_state()`
    and `caster_solenoid()` are what the planner and the lock output read.
 12. **SW-T4 threshold speed:** `threshold_speed()` = 0.12 m/s (was 0.15; ballast mass, rnd/tip.py R4 table): a planner
    limit for D2b crossings, applied as the base speed cap while the casters are released for a threshold. The supervisor
@@ -109,6 +110,14 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    separate output from `heartbeat_ok()`: `base_heartbeat_ok()` keeps toggling the base channel's watchdog line during
    the ramp (the arm heartbeat drops at once), so the base branch must not hang off the arm's K1 (hardware note:
    docs/sw/base_stop.md). A collision latch alone is a hold, not a stop: the base is ramped to 0 and stays powered.
+18. **SW-T8 payload-dependent locked cap (W17d, docs/rnd/tip.md *Snag at the locked cap*):** travelling locked, a D18b foot
+   that meets a step edge stops dead and the robot pitches about the support polygon; at the flat 0.25 m/s only 2 of the 23
+   travel states passed (every loaded or arms-out state over the 440 N rod limit, the basket at up to 43 % of the tip
+   energy). `caster_locked_v_for(payload)` (a staticmethod, as `base_stop_decel_for`): ≤ 6 kg 0.20 m/s, ≤ 10 kg 0.15 m/s,
+   above 10 kg 0 (no travel with the casters locked) is the cap `base_speed_limit()` applies whenever the casters are
+   locked, locking or pulsing. `set_payload()` into a heavier band while the base moves faster than the new cap brakes it to
+   the new cap first, at the limit it was moving under (never past BASE_STOP_DECEL(payload)). A deferred lock (11.)
+   engages at ≤ min(V_CASTER_LOCK, that cap). Threshold mode keeps THRESHOLD_SPEED (0.12 m/s, ≤ every cap that allows travel).
 Every override is counted so a session log shows how often the policy was overruled.
 """
 from __future__ import annotations
@@ -141,8 +150,13 @@ PERSON_V, PERSON_A = 0.1, 0.1     # SW-T1: base speed / accel cap with a person 
 PERSON_X, PERSON_Z = 0.35, 0.60   # SW-T1: hand box x max / z max (m, base frame) with a person within reach
 PERSON_WS = (LOAD_WS[0], (PERSON_X, LOAD_WS[1][1], PERSON_Z))
 PERSON_MAX_KG = 2.5               # SW-T1: heavier loads (R2d basket) are not carried with a person within reach: base stops
-CASTER_LOCKED_V = 0.25            # SW-T2: base speed cap with the casters locked (was 0.3: over ½ the rod yield on the diagonal heading, W15b)
-V_CASTER_LOCK = 0.25              # SW-T2: a lock engages only at ≤ this speed (W15b snag model allows 0.28 m/s; rnd/safety_board_sim.py)
+# SW-T8 (W17d, docs/rnd/tip.md *Snag at the locked cap*): the locked-travel cap by payload, (payload kg up to, m/s); above the
+# last band 0 (no travel with the casters locked). The lowest allowed snag speed of any pose the supervisor allows in the band
+# (polygon pivot: energy ≤ 25 % of the tip energy, ≤ 440 N per foot), rounded down to 0.05 m/s: ≤ 6 kg 0.202 → 0.20, 6–10 kg
+# (the R2d basket) 0.168 → 0.15. Replaces the flat 0.25 m/s of W16a (2/23 snag states passed at it).
+CASTER_LOCKED_V_BY = ((6.0, 0.20), (10.0, 0.15))
+CASTER_LOCKED_V = CASTER_LOCKED_V_BY[0][1]   # the highest locked cap (≤ 6 kg; was the flat 0.25 for any load, 0.3 before W16a)
+V_CASTER_LOCK = 0.25              # SW-T2: a lock engages only at ≤ min(this, the SW-T8 cap) (W15b snag model allows 0.28 m/s; rnd/safety_board_sim.py)
 CASTER_RELEASED_A = 0.5           # SW-T2: accel cap while released / pulsing (wheels only; tip.py: transit passes at 1.0, 99 mm; ESTIMATE margin)
 CASTER_PULSE_S, CASTER_RESEAT_M = 0.10, 0.30   # SW-T2: re-seat pulse length; locked travel between pulses
 CASTER_TRANSIT_KG = 0.1           # SW-T2: "unloaded" for a transit release
@@ -163,7 +177,7 @@ ROLL_PARK_DEG = 8.0               # deg: the roll park angle (idle / planned pow
 LATCH_T_MAX = 16.0                # N·m: roll torque cap while the pin may be in (0.39 kN at r 41.5: the printed guide, ≈ 12 MPa; power_off.md)
 # 17. base stop category 1 (rnd/tip.py estop_rows → docs/rnd/tip.md "E-stop / snag braking": decel at which the tip reserve
 # falls to 30 mm, no push; tips at 1.67 / 2.05 / 1.01 m/s²). (payload kg up to, m/s²); past the table: ∝ 1/payload.
-BASE_STOP_DECEL = ((1.0, 1.18), (2.5, 1.53), (9.07, 0.52))   # W15a tip.md regeneration (was 1.20 / 1.56)
+BASE_STOP_DECEL = ((1.0, 1.18), (2.5, 1.50), (9.07, 0.52))   # W17d tip.md regeneration (2.5 kg 1.53 → 1.50; W15a was 1.20 / 1.56)
 BASE_STOP_GRACE = 0.3             # s after the ramp's planned end: torque off even if the wheels are not reported stopped
 DESC = Path(__file__).resolve().parent / "description" / "joints.json"
 
@@ -239,7 +253,7 @@ class Supervisor:
         self._load_box = self._person_box = None
         # SW-T2 casters ("locked" | "released" | "locking" | "reseat") and the base command state (SW-T1/T2/T4)
         self._caster, self._caster_reason, self._pulse_t0, self._locked_travel = "locked", None, None, 0.0
-        self._lock_forced, self._lock_by = False, None   # "locking": a lock deferred until the base is ≤ V_CASTER_LOCK
+        self._lock_forced, self._lock_by = False, None   # "locking": a lock deferred until the base is ≤ _caster_lock_v()
         self._v_base = np.zeros(2)
         self._a_moving = A_FREE
         self._base_stop = None            # 17.: {"t0", "v0", "a", "t_end", "done"} while a latched fault ramps the base down
@@ -340,7 +354,12 @@ class Supervisor:
     # ---- load mode (R2d)
     def set_payload(self, kg, box=None):
         """box: (lo, hi) in the supervisor's FK frame; default LOAD_WS (full-robot base frame). Enter load mode only with
-        the hand inside the box (the planner moves there first); targets outside it are then rejected."""
+        the hand inside the box (the planner moves there first); targets outside it are then rejected.
+        SW-T8: a heavier locked-cap band while the base moves faster than the new cap brakes it to that cap first, at the
+        limit in force before the change (the one it was moving under, never past BASE_STOP_DECEL(new payload)): the next
+        limit_base() calls do it whatever the planner commands (counted "locked cap lowered (payload)")."""
+        v_cap0 = self.base_speed_limit() if hasattr(self, "_caster") else None
+        a_in_force = self.base_accel_limit()
         self.payload = float(kg)
         if self.collision is not None and hasattr(self.collision.twin, "set_payload"):
             self.collision.twin.set_payload(self.payload)          # the twin must know what the hand carries
@@ -348,6 +367,13 @@ class Supervisor:
         self._load_box = tuple(map(np.array, box or LOAD_WS)) if self.payload > LOAD_KG else None
         self._update_ws()
         self._caster_tick()                                         # a heavier load may end a caster release
+        v_now = float(np.hypot(*self._v_base))
+        v_cap = self.base_speed_limit()
+        if v_cap0 is not None and v_cap < v_cap0 - 1e-9 and v_now > v_cap + 1e-9:
+            self._a_moving = max(self._a_moving, a_in_force)        # brake as it was moving (limit_base caps it by the table)
+            self._count("locked cap lowered (payload)")
+        if self._caster == "locking":                              # a deferred lock now waits for a lower speed: re-plan its timeout
+            self._lock_by = max(self._lock_by, self._lock_deadline(self._caster_speed()))
 
     def _update_ws(self):
         """Workspace in force: the free box, intersected with the load box (load mode) and the SW-T1 box (people near)."""
@@ -494,16 +520,30 @@ class Supervisor:
         return a
 
     def base_speed_limit(self):
-        """Base speed cap (m/s): CASTER_LOCKED_V with the casters locked (or locking, or pulsing), threshold_speed() while
-        released for a threshold, BASE_V_MAX released for transit; ≤ 0.1 with a person near, 0 with a person near and
-        > PERSON_MAX_KG in the hands, 0 with any latched fault."""
+        """Base speed cap (m/s): caster_locked_v_for(payload) with the casters locked (or locking, or pulsing; SW-T8: 0.20
+        up to 6 kg, 0.15 up to 10 kg, 0 above), threshold_speed() while released for a threshold, BASE_V_MAX released for
+        transit; ≤ 0.1 with a person near, 0 with a person near and > PERSON_MAX_KG in the hands, 0 with any latched fault."""
         self._caster_tick()
         if self.latched or (self.payload > PERSON_MAX_KG and (self.approaching() or not self.area_clear)):
             return 0.0                                              # SW-T1 / SW-T7: no basket travel with anyone about
-        v = CASTER_LOCKED_V
+        v = self.caster_locked_v_for(self.payload)                  # SW-T8: the snag-limited locked cap for this load
         if self._caster == "released":
             v = THRESHOLD_SPEED if self._caster_reason == "threshold" else BASE_V_MAX
         return min(v, PERSON_V) if self.approaching() else v
+
+    @staticmethod
+    def caster_locked_v_for(payload):
+        """SW-T8: the base speed cap with the casters locked (or locking / pulsing) for a payload (kg): CASTER_LOCKED_V_BY
+        (≤ 6 kg 0.20 m/s, ≤ 10 kg 0.15 m/s), 0 above the last band (no travel with the casters locked)."""
+        for kg, v in CASTER_LOCKED_V_BY:
+            if payload <= kg + 1e-9:
+                return v
+        return 0.0
+
+    def _caster_lock_v(self):
+        """The speed a deferred lock engages at (m/s): min(V_CASTER_LOCK, caster_locked_v_for(payload)), never below
+        V_STOPPED (above 10 kg the cap is 0: the lock then waits for the base to stop)."""
+        return max(min(V_CASTER_LOCK, self.caster_locked_v_for(self.payload)), V_STOPPED)
 
     @staticmethod
     def threshold_speed():
@@ -622,17 +662,23 @@ class Supervisor:
             v = max(v, float(np.hypot(*self._v_base_meas)))
         return v
 
-    def _defer_lock(self, forced):
-        """Start a lock that waits for ≤ V_CASTER_LOCK: the casters stay released, the speed cap drops to the locked one."""
-        v = self._caster_speed()
+    def _lock_deadline(self, v):
+        """When a deferred lock from speed v (m/s) engages anyway: the planned braking time to _caster_lock_v() at
+        base_stop_decel() + BASE_STOP_GRACE ("caster lock timeout")."""
         a = max(self.base_stop_decel(), 1e-3)
+        return self.clock() + max(v - self._caster_lock_v(), 0.0) / a + BASE_STOP_GRACE
+
+    def _defer_lock(self, forced):
+        """Start a lock that waits for ≤ _caster_lock_v() (min(V_CASTER_LOCK, the SW-T8 cap)): the casters stay released,
+        the speed cap drops to the locked one."""
+        v = self._caster_speed()
         self._caster, self._caster_reason, self._locked_travel = "locking", None, 0.0
-        self._lock_forced, self._lock_by = forced, self.clock() + (v - V_CASTER_LOCK) / a + BASE_STOP_GRACE
+        self._lock_forced, self._lock_by = forced, self._lock_deadline(v)
         self._count("caster lock deferred")
 
     def _caster_tick(self):
         """Advance the caster state: end a finished re-seat pulse; lock on a fault, a person approaching or near, or a
-        payload past the release mode's limit: at once if the base is at ≤ V_CASTER_LOCK, otherwise deferred ("locking")
+        payload past the release mode's limit: at once if the base is at ≤ _caster_lock_v(), otherwise deferred ("locking")
         until it is (or until the planned braking time + BASE_STOP_GRACE, or base torque off: "caster lock timeout")."""
         if not hasattr(self, "_caster") or self._caster == "locked":
             return
@@ -645,7 +691,7 @@ class Supervisor:
             if self._caster == "reseat" and self.clock() - self._pulse_t0 >= CASTER_PULSE_S:
                 self._caster, self._locked_travel = "locked", 0.0
             return
-        slow = self._caster_speed() <= V_CASTER_LOCK + 1e-9
+        slow = self._caster_speed() <= self._caster_lock_v() + 1e-9
         st = self._base_stop
         power_off = st is not None and st["done"]                      # base torque off (17.): nothing left to wait for
         if slow or power_off or (self._caster == "locking" and self.clock() >= self._lock_by):
@@ -676,17 +722,18 @@ class Supervisor:
 
     def lock_casters(self):
         """Planner: end a release. The lock re-engages with a re-seat pulse (CASTER_PULSE_S), then holds; above
-        V_CASTER_LOCK it is deferred first ("locking": the base brakes to the locked cap, the lock engages at ≤ 0.25 m/s)."""
+        _caster_lock_v() it is deferred first ("locking": the base brakes to the locked cap, the lock engages at ≤ min(
+        V_CASTER_LOCK, caster_locked_v_for(payload)): 0.20 m/s up to 6 kg)."""
         self._caster_tick()
         if self._caster == "released":
-            if self._caster_speed() > V_CASTER_LOCK + 1e-9:
+            if self._caster_speed() > self._caster_lock_v() + 1e-9:
                 self._defer_lock(False)                                 # too fast to lock: brake to the locked cap first
             else:
                 self._caster_pulse()
 
     def casters_locked(self):
         """SW-T2 state: True when the casters are locked (the default); False while released, locking (a lock deferred
-        until ≤ V_CASTER_LOCK) or in a re-seat pulse."""
+        until ≤ _caster_lock_v()) or in a re-seat pulse."""
         self._caster_tick()
         return self._caster == "locked"
 
