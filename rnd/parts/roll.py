@@ -352,6 +352,77 @@ ARM_HW = round(STOP_R * math.sin(math.radians(_DSTOP)) - STOP_LUG_R, 2)         
 REAR_ANG0 = math.radians((STOP_AT[0] - _DSTOP - 90.0) % (360.0 / MOT36["rear_n"]))     # 21.25°: screws (y, z) = r(cos a, sin a), roll angle = a + 90°
 STOP_K = tuple(k for k in range(MOT36["rear_n"])
                if min(abs((math.degrees(2 * math.pi * k / MOT36["rear_n"] + REAR_ANG0) + 90 - c + 180) % 360 - 180) for c in (STOP_AT[0] - _DSTOP, STOP_AT[1] + _DSTOP)) < 0.01)
+# R17 safe power-off roll latch (Astra review #3 finding 1; rnd/power_off.py option O2; params.arm.roll_guard = "latch",
+# PIP_ROLL_GUARD=latch; default off). A spring-applied pin stops roll_arm_rear's inboard edge (the edge that meets the
+# −16.5° bush) at LATCH_AT whenever its 24 V pull solenoid is off; sw/safety.py energises it only while the supervisor is
+# healthy and nobody is near. Head Ø10 (ISO 8734-style hardened dowel turned to a Ø6 stem) guided by its hole in the
+# 7075 rear plate and a 42CrMo4 sleeve (Ø11.5 / Ø10.05) in the roll-link floor behind it (the cup ring's Ø75.2 driver pilot
+# leaves no room for the sleeve further in); engaged it stands LATCH["proud"] proud of the plate (5 of the arm's 8 mm),
+# retracted it sits 0.5 mm behind the plate face; the stem runs in the cup ring (r 38.5–44.5, inside the Ø75.2 driver pilot's 37.6 and the Ø96 body) to a
+# compression spring and a Ø1 steel pull cable (PTFE liner, through the side block) to the solenoid (JF-0730B class, 10 mm
+# stroke, ESTIMATE) in the side block. Placement: same edge as the −16.5° bush, at radius LATCH["r"]; the clearances are
+# latch_geometry(). Load path: the sleeve's far end bears on print, so it carries ≈ 0.4 kN (12 MPa) until a metal path to
+# the motor face is detailed (open); sw/safety.py caps the roll torque at LATCH_T_MAX while the pin may be in, and a PU tip
+# on the pin keeps a ≤ 2.5 kg unpowered fall onto it near that (power_off.md). Below LATCH_AT the arm's edge covers the pin
+# (it rests on the arm face until the arm next rises past LATCH_AT: power_off.md, the O2 residual).
+LATCH_AT = 5.0                          # deg: roll angle where the arm's edge meets the pin (= twin.JR_PEOPLE_NEAR roll lower bound)
+LATCH = dict(r=41.5, d=10.0, sleeve_od=11.5, sleeve_id=10.05, stem_d=6.0, proud=7.5, stroke=8.0, head_l=8.5, stem_l=10.0,
+             spring_n=(4.0, 8.0), mass=0.045, solenoid="24 V pull solenoid, 10 mm stroke (JF-0730B class, ESTIMATE)")
+GUARD = getattr(_D.arm, "roll_guard", "none") if INLINE else "none"
+
+
+def latch_angle():
+    """Pin-centre angle (deg, roll convention): the arm edge (±ARM_HW) touches a Ø d pin at radius r when sin Δ = (ARM_HW + d/2)/r."""
+    return LATCH_AT - math.degrees(math.asin((ARM_HW + LATCH["d"] / 2) / LATCH["r"]))
+
+
+def latch_geometry():
+    """Clearances of the latch sleeve / stem to the neighbouring rear screws and stop bushes, the plate ring, the driver
+    pilot and the motor body (mm), and the roll range over which the arm covers the pin (deg)."""
+    a = latch_angle()
+    py, pz = _ang(a, LATCH["r"])
+    gaps = {}
+    for k in range(MOT36["rear_n"]):
+        t = 2 * math.pi * k / MOT36["rear_n"] + REAR_ANG0
+        y, z = ROLL_Y + STOP_R * math.cos(t), STOP_R * math.sin(t)
+        d = math.hypot(y - py, z - pz)
+        r_n = (STOP_BUSH["d"] if k in STOP_K else REAR_SCREW["sleeve_od"]) / 2      # in the plate: the bush head Ø10 / the screw sleeve Ø6
+        gaps[k] = d - LATCH["sleeve_od"] / 2 - r_n
+    so = LATCH["sleeve_od"] / 2
+    cover = []
+    for th in range(int(STOP_AT[0]), int(STOP_AT[1]) + 1):
+        dd = LATCH["r"] * math.sin(math.radians(abs(a - th)))
+        if abs(a - th) < 90 and dd < ARM_HW + LATCH["d"] / 2 - 1e-6:
+            cover.append(th)
+    ph = LATCH["d"] / 2 + 0.05
+    return dict(angle=a, y=py, z=pz, nearest=min(gaps.values()), to_plate_in=LATCH["r"] - ph - PLATE_R[0], to_plate_out=PLATE_R[1] - LATCH["r"] - ph,
+                to_floor_edge=R_MOT - LATCH["r"] - so,
+                to_pilot=LATCH["r"] - LATCH["stem_d"] / 2 - CUP_R, to_body=R_MOT - LATCH["r"] - LATCH["stem_d"] / 2,
+                covered=(min(cover), max(cover)) if cover else None, engage=LATCH["proud"] - (X_PLATE[0] - X_ARM_R[1]),
+                head_in_floor=X_FLOOR[1] - (X_PLATE[0] + LATCH["stroke"] - LATCH["proud"] + LATCH["head_l"]))
+
+
+def latch_parts(engaged=False):
+    """(name, part, colour): the pin (retracted by default: the powered, nobody-near state) and its guide sleeve."""
+    a = latch_angle()
+    y, z = _ang(a, LATCH["r"])
+    x0 = X_PLATE[0] - LATCH["proud"] + (0.0 if engaged else LATCH["stroke"])
+    at = lambda x, r, L: Pos(x, y, z) * Rot(0, 90, 0) * Cylinder(r, L, align=MIN)
+    pin = at(x0, LATCH["d"] / 2, LATCH["head_l"]) + at(x0 + LATCH["head_l"], LATCH["stem_d"] / 2, LATCH["stem_l"])
+    sl = at(X_PLATE[1], LATCH["sleeve_od"] / 2, X_FLOOR[1] - X_PLATE[1]) - at(X_PLATE[1], LATCH["sleeve_id"] / 2, X_FLOOR[1] - X_PLATE[1])
+    return [("roll_latch_pin", pin, "steel"), ("roll_latch_sleeve", sl, "steel")]
+
+
+def latch_cut(plate=False):
+    """The latch's seat: in the rear plate the pin's Ø10.1 guide hole; in the roll link the sleeve bore through the floor and
+    the stem / spring bore in the cup ring."""
+    a = latch_angle()
+    y, z = _ang(a, LATCH["r"])
+    at = lambda x, r, L: Pos(x, y, z) * Rot(0, 90, 0) * Cylinder(r, L, align=MIN)
+    if plate:
+        return at(X_PLATE[0] - 0.1, LATCH["d"] / 2 + 0.05, X_PLATE[1] - X_PLATE[0] + 0.2)
+    return at(X_PLATE[1], LATCH["sleeve_od"] / 2 + 0.05, X_FLOOR[1] - X_PLATE[1]) + at(X_FLOOR[1], LATCH["stem_d"] / 2 + 1.0, CUP_H - 1.0)
+
 # Neon review finding 6c (hyperstatic pair): the 61806 inner race slides on the printed stub (± float mm between the
 # shoulder and a DIN 471 Ø30 ring: no axial preload into the motor's bearing, which locates the output axially); the
 # outer race sits in a seat SEAT_GAP oversize in roll_arm_rear and is bonded there (Loctite 660) with the motor mounted
@@ -413,6 +484,8 @@ def roll_link_inline() -> Part:
     x0, x1 = ROLL_SPR_X
     r1 = ROLL_SPR[1]
     p += Pos((x0 + 1 + x1 + 1.6) / 2, (12 + ROLL_Y - r1) / 2, 0) * Box(x1 + 1.6 - x0 - 1, ROLL_Y - r1 - 12 + 1, 14)   # spring bar
+    if GUARD == "latch":                                                                                       # R17 roll latch seat
+        p -= latch_cut()
     return p - Pos(xf0 - 1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(PLATE_R[1] + 0.5, X_PLATE[1] - xf0 + 1, align=MIN) - Cylinder(PLATE_R[0] - 0.2, 20, align=MIN))   # Neon 6b: rear plate seat
 
 
@@ -492,6 +565,8 @@ def rear_metal() -> Part:
         else:
             pl -= at(x0, 2.2, x1 - x0)
             pl += at(x1, rs["sleeve_od"] / 2, X_CUP[1] - x1 + rs["sleeve_fit"]) - at(x1, rs["sleeve_id"] / 2, 100)
+    if GUARD == "latch":                                                       # R17 roll latch: the pin's guide hole
+        pl -= latch_cut(plate=True)
     return pl
 
 
@@ -551,6 +626,8 @@ def module_inline():
            ("yaw_plate_bot", yaw_plate_bot(), "white"), ("yaw_spring_ring", yaw_spring_ring(), "dark"), ("yaw_band", yaw_band(), "white")]
     out += [(f"yaw_{n}", p, c) for n, p, c in _stage(YAW_T, 20)]
     out.append(("yaw_stop_pin", yaw_stop_pin(), "steel"))
+    if GUARD == "latch":                                                          # R17 power-off roll latch (rnd/power_off.py O2)
+        out += latch_parts()
     return out + _enc_static()                                                    # M3: AS5048A boards (rnd/parts/encoder.py)
 
 
@@ -926,6 +1003,8 @@ def masses(density=1.27, split=False):
                 "Neon 6b/6d: 7075 rear plate + 6 steel sleeves + 2 × 42CrMo4 stop bushes (CAD)": _rear_metal_mass(),
                 "61806 + 12 × M4 + 2 × M5 + DIN 471 ring (ESTIMATE)": 0.045,
                 "male ferrule (printed) + dowels + screws + ribbon (ESTIMATE)": pr(67213, 0.7) + 0.04}
+        if GUARD == "latch":
+            roll["R17 roll latch: pin + sleeve + spring + cable + solenoid (ESTIMATE; not in params.ROLL_DRIVES)"] = LATCH["mass"]
     else:
         roll = {"roll link + seat caps + spring ring/bar (printed)": pr(roll_link().volume + roll_seat_cap(W1).volume + roll_seat_cap(W2).volume, 0.6) + pr(roll_spring_ring().volume, 0.8),
                 "roll shaft + 80T (one piece, D19) + spring hub": pr(roll_shaft().volume, 0.7) + pr(roll_spring_hub().volume, 0.8),

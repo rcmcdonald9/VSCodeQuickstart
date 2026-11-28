@@ -37,6 +37,10 @@ def act(name: str) -> dict:
 # `PIP_ROLL_DRIVE=belt python -m rnd.roll_inline dome`. The numbers are the CAD's: roll.py warns if roll_offset_y /
 # yaw_drop drift from the geometry it derives.
 ROLL_DRIVE = os.environ.get("PIP_ROLL_DRIVE", "inline")   # owner approved the inline roll (2026-11-27); PIP_ROLL_DRIVE=belt keeps the belt variant
+# R17 safe power-off (Astra review #3 finding 1; rnd/power_off.py options O0–O5): "none" (today: D25 soft limit only) or
+# "latch" (O2: spring-applied, solenoid-retracted roll stop at +5°; CAD in rnd/parts/roll.py, supervisor in sw/safety.py).
+# Default off: the owner chooses (power_off.md).
+ROLL_GUARD = os.environ.get("PIP_ROLL_GUARD", "none")
 ROLL_DRIVES = {
     # 2026-11-27 (wave 2, roll track): both roll-side stages on D24 bolted cartridges (roll 0.72 → 0.68: −65 g KX74 sockets/forks,
     # +20 g M5 clevis clamps and solid shaft ends; yaw 0.57 → 0.56); yaw_drop 116.0 → 113.4: the upper-arm flange sits in a
@@ -118,6 +122,7 @@ class Arm:
     shoulder_y: float = 0.20       # |y| of shoulder pitch axis from robot centre line
     shoulder_x: float = 0.06       # x of shoulder axis relative to spine
     roll_drive: str = ROLL_DRIVE   # "belt" | "inline" (ROLL_DRIVES above; D24)
+    roll_guard: str = ROLL_GUARD   # "none" | "latch" (R17 power-off roll latch, rnd/power_off.py O2; inline roll only)
     arm_motors: str = ARM_MOTORS   # "gim6010" | "d20" | "d20_yaw" | inline study sets (ARM_MOTOR_SETS above; D20)
     elbow_teeth: int = _AM["elbow_teeth"]        # elbow big pulley (20T small): 40 → 2:1, 60 → 3:1
     elbow_belt_c: float = _AM["elbow_belt_c"]    # elbow belt centre distance (m), = arm.BELT_C

@@ -63,12 +63,36 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    limit for D2b crossings, applied as the base speed cap while the casters are released for a threshold. The supervisor
    does not detect thresholds. `limit_base(v, dt)` clamps a planar base velocity command to the speed and accel limits in
    force (a speed above a newly lowered limit is braked at the accel limit it was moving under); any latched fault → 0 m/s.
+13. **People-near hand speed (R17 140 N first impact; rnd/hand_speed.py, Astra review #3 Part A):** in people-near mode the
+   per-joint slew drops to PN_JOINT_V (0.75 rad/s) and the hand's speed relative to the base to `hand_speed_cap()` =
+   V_HAND_PN(payload) − |base speed|: the closing speed at which the arm's directional effective mass (reflected rotor
+   inertias included, worst contact normal, worst people-near pose, today's arm and D20) gives ≤ 140 N on a 75 N/mm body
+   region. With an fk the hand displacement is measured (every point fk returns); without one it is bounded by
+   Σ|Δq_i|·HAND_LEVER_i. A step over the cap is scaled down whole (direction kept), counted as "hand speed cap".
+14. **SW-T6 person approaching (A10 from the real states; rnd/tip.py, Astra review #3 finding 2):** a push can arrive before
+   the SW-T1 transition is done (person detected at 1.5 m, walking 1.6 m/s: ≈ 0.3 s; the transition takes up to ≈ 1.5 s),
+   and from the states the robot is actually in then, 8 of the 16 A10 cases fail. `set_person_approach(True)` (a second
+   PeopleNearTrigger at PN_PREP_RADIUS, 3.5 m) applies the SW-T1 part early: the PERSON_WS hand box (walk-in), base ≤
+   PERSON_V / PERSON_A after braking at the limit it was moving under, casters locked, the base stopped above PERSON_MAX_KG.
+   People-near mode implies it. The D25 roll bound, the roll latch and the hand-speed cap (13.) stay at 1.5 m.
+15. **SW-T7 basket carry (R2d, > PERSON_MAX_KG):** the base moves with more than PERSON_MAX_KG in the hands only while
+   `set_area_clear(True)` says perception sees nobody within BASKET_CLEAR_R (9 m: the basket has to be set down before a
+   walking person can reach the robot; rnd/tip.py). Default False (fail-safe): no clear-area input, no basket travel.
+16. **Roll latch (R17 safe power-off, rnd/power_off.py option O2; on with PIP_ROLL_GUARD=latch or roll_latch=True):** a
+   spring-applied pin stops the shoulder roll at +5° whenever its solenoid is off. `roll_latch_solenoid()` (the output,
+   True = energised = pin retracted) is on only while the supervisor is healthy and nobody is near; until the pin-retracted
+   switch confirms (`set_latch_switch`), or LATCH_RETRACT_S has passed without a switch, the roll target bound stays at
+   the people-near limit (never above the arm: it only stops the arm being driven into the pin). A person near or any
+   latched fault drops the pin at once (the contactor feeds the solenoid, so K1 opening drops it in hardware too).
+   While the pin may be in, the roll torque bound is LATCH_T_MAX (16 N·m: its guide's printed load path). ROLL_PARK_DEG:
+   where the planner parks the roll when idle or before a planned power-down.
 Every override is counted so a session log shows how often the policy was overruled.
 """
 from __future__ import annotations
 
 import json
 import math
+import os
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -101,6 +125,18 @@ CASTER_TRANSIT_KG = 0.1           # SW-T2: "unloaded" for a transit release
 THRESHOLD_SPEED = 0.12            # SW-T4: D2b threshold crossing speed (was 0.15)
 THRESHOLD_MAX_KG = 2.5            # SW-T2: heaviest load a threshold release is analysed for (tip.py: 2.5 kg in the load box)
 V_STOPPED = 0.01                  # m/s: below this the base counts as stopped (re-seat pulse on stopping)
+# 13. people-near hand speed (rnd/hand_speed.py: 140 N on 75 N/mm, worst people-near pose, today's arm and D20, rotors included)
+PN_JOINT_V = 0.75                 # rad/s per-joint slew in people-near mode (at the 1.5 rad/s default a folded-elbow pose reaches 140 N at 0.07 m/s, D20)
+V_HAND_PN = ((0.0, 0.345), (1.0, 0.210), (2.5, 0.160), (4.535, 0.140))   # (payload kg up to, closing-speed cap m/s); rnd/hand_speed.py caps() (sampled worst × 0.9)
+HAND_LEVER = {"pitch": 0.74, "roll": 0.74, "yaw": 0.44, "elbow": 0.44, "wpitch": 0.16, "wroll": 0.03}   # m: max hand distance from each axis (params l_upper 0.30 + l_fore 0.28 + l_hand 0.156)
+# 14./15. SW-T6 person approaching, SW-T7 basket carry (rnd/tip.py: R = R_reach 0.7 + 1.6 m/s × (0.2 s perception + transition))
+PN_PREP_RADIUS, PN_PREP_RELEASE = 3.5, 4.0     # m: transition ≤ 1.5 s (arms into PERSON_WS at the 1.5 rad/s slew, base braked)
+BASKET_CLEAR_R = 9.5                            # m: ≥ 0.7 + 1.6 × (0.2 + 5 s to stop + set the basket down, ESTIMATE) = 9.0
+# 16. roll latch (rnd/power_off.py O2)
+ROLL_GUARD = os.environ.get("PIP_ROLL_GUARD", "none")   # "none" | "latch" (CAD: rnd/parts/roll.py; default off, owner's call)
+LATCH_RETRACT_S = 0.05            # s: solenoid pull-in + pin travel before the roll may go below +5° without a switch (ESTIMATE)
+ROLL_PARK_DEG = 8.0               # deg: the roll park angle (idle / planned power-down) above the latch
+LATCH_T_MAX = 16.0                # N·m: roll torque cap while the pin may be in (0.39 kN at r 41.5: the printed guide, ≈ 12 MPa; power_off.md)
 DESC = Path(__file__).resolve().parent / "description" / "joints.json"
 
 
@@ -140,7 +176,7 @@ def _trim(lim, tf, kp_, kd_, e, vm):
 
 class Supervisor:
     def __init__(self, v_max=1.5, margin_deg=3.0, ws_lo=(0.10, -0.45, 0.76), ws_hi=(0.80, 0.45, 1.35), clock=time.monotonic, fk=None,
-                 collision=None, joints=None, limits=None, torque=None, fb_max_age=FB_MAX_AGE, power=True, rest_a=REST_A):
+                 collision=None, joints=None, limits=None, torque=None, fb_max_age=FB_MAX_AGE, power=True, rest_a=REST_A, roll_latch=None):
         """joints: subset of joint names (default: all of joints.json, in order), e.g. the joints online during bring-up.
         limits: {name: (lower, upper)} overriding joints.json (rad, before the margin), e.g. the travel bounds used while a
         joint is not yet calibrated. torque: {name: N·m} overriding the rated/peak bound (e.g. the low calibration torque).
@@ -182,6 +218,17 @@ class Supervisor:
         self.pn_hi = np.array([p[1] - m if p else np.inf for p in pn])
         self.people_near = False
         self._pn_lo, self._pn_hi = None, None
+        self._approach, self._approach_box, self._near_box = False, None, None     # SW-T6 (14.)
+        self.area_clear = False                                                    # SW-T7 (15.): fail-safe
+        self._lever = np.array([HAND_LEVER.get(n, 0.8) for n in self.names])
+        # 16. roll latch: "engaged" (solenoid off, the default) | "retracting" | "retracted"
+        self.roll_latch = (ROLL_GUARD == "latch" if roll_latch is None else bool(roll_latch)) and "roll" in self.names
+        self._rl_state, self._latch_t0, self._latch_switch = "engaged", None, None
+        self._latch_floor = np.full(self.n, -np.inf)
+        k = self.names.index("roll") if "roll" in self.names else None
+        self._latch_lo = np.full(self.n, -np.inf)
+        if k is not None and np.isfinite(self.pn_lo[k]):
+            self._latch_lo[k] = self.pn_lo[k]
         self.fb_max_age = float(fb_max_age)      # bring-up passes bringup.yaml fb_max_age_s (sized on the bus-realism runs)
         # W8a battery-current budget (sw/power.py)
         self.current = CurrentModel(J, self.rated)
@@ -270,7 +317,7 @@ class Supervisor:
     def _update_ws(self):
         """Workspace in force: the free box, intersected with the load box (load mode) and the SW-T1 box (people near)."""
         lo, hi = self._ws_free[0].copy(), self._ws_free[1].copy()
-        for b in (self._load_box, self._person_box if self.people_near else None):
+        for b in (self._load_box, self._person_box if self.approaching() else None):
             if b is not None:
                 lo, hi = np.maximum(lo, b[0]), np.minimum(hi, b[1])
         self.ws_lo, self.ws_hi = lo, hi
@@ -282,7 +329,8 @@ class Supervisor:
         the SW-T1 box (box: (lo, hi) in the supervisor's FK frame; default PERSON_WS, intersected with the load box in load
         mode); base ≤ PERSON_V / PERSON_A, casters locked. Leaving restores the full range and the free limits at once."""
         on = bool(on)
-        self._person_box = tuple(map(np.array, box or PERSON_WS)) if on else None
+        self._near_box = tuple(map(np.array, box or PERSON_WS)) if on else None
+        self._person_box = self._near_box or self._approach_box
         if on and not self.people_near:
             q = self.last_q if self.last_q is not None else np.clip(np.zeros(self.n), self.lo, self.hi)
             self._pn_lo = np.minimum(np.maximum(self.lo, self.pn_lo), q)        # start at the arm, never above it
@@ -296,11 +344,102 @@ class Supervisor:
 
     set_person_near = set_people_near                               # SW-T1 name (rnd/tip.py); the same single mode
 
+    def set_person_approach(self, on, box=None):
+        """SW-T6 (14.): a person within PN_PREP_RADIUS. The SW-T1 hand box, base caps, caster lock and basket stop, without
+        the D25 roll bound, the roll latch or the hand-speed cap (those come with set_people_near at 1.5 m)."""
+        self._approach = bool(on)
+        self._approach_box = tuple(map(np.array, box or PERSON_WS)) if self._approach else None
+        self._person_box = self._near_box or self._approach_box
+        if self._approach:
+            self._count("person approaching")
+        self._update_ws()
+        self._caster_tick()
+
+    def approaching(self):
+        """SW-T1 limits in force: a person approaching (SW-T6) or near (people-near mode implies it)."""
+        return bool(getattr(self, "people_near", False) or getattr(self, "_approach", False))
+
+    def set_area_clear(self, on):
+        """SW-T7 (15.): perception sees nobody within BASKET_CLEAR_R. Needed for the base to move with > PERSON_MAX_KG."""
+        self.area_clear = bool(on)
+
+    # ---- people-near hand speed (13.)
+    def hand_speed_cap(self):
+        """Hand speed cap relative to the base (m/s) in people-near mode: V_HAND_PN for the payload minus the base speed."""
+        p = self.payload
+        v = next((v for kg, v in V_HAND_PN if p <= kg + 1e-9), None)
+        if v is None:                                               # past the table: F ∝ √(m + p) ≥ √p
+            v = V_HAND_PN[-1][1] * math.sqrt(V_HAND_PN[-1][0] / p)
+        return max(v - float(np.hypot(*self._v_base)), 0.0)
+
+    def _hand_speed(self, dq, dt):
+        if self.fk is not None:
+            a = np.atleast_2d(self.fk(self.last_q))
+            b = np.atleast_2d(self.fk(self.last_q + dq))
+            return float(np.max(np.linalg.norm(b - a, axis=1))) / dt
+        return float(np.sum(np.abs(dq) * self._lever)) / dt
+
+    def _hand_cap(self, q2, dt):
+        dq = q2 - self.last_q
+        if not np.any(dq):
+            return q2
+        cap, s, it = self.hand_speed_cap(), self._hand_speed(dq, dt), 0
+        while s > cap + 1e-12 and it < 8:
+            dq = dq * (0.999 * cap / s) if s > 0 else dq * 0
+            s, it = self._hand_speed(dq, dt), it + 1
+        if it:
+            self._count("hand speed cap")
+        return self.last_q + dq
+
+    # ---- roll latch (16.)
+    def set_latch_switch(self, retracted):
+        """Pin-retracted switch reading: True / False, or None when the latch has no switch (time-based)."""
+        self._latch_switch = None if retracted is None else bool(retracted)
+
+    def _latch_tick(self):
+        if not self.roll_latch:
+            return
+        want = not self.people_near and not self.latched
+        if not want:
+            if self._rl_state != "engaged":
+                self._count("roll latch dropped")
+            self._rl_state, self._latch_t0 = "engaged", None
+        elif self._rl_state == "engaged":
+            self._rl_state, self._latch_t0 = "retracting", self.clock()
+        elif self._rl_state == "retracting":
+            if self._latch_switch or (self._latch_switch is None and self.clock() - self._latch_t0 >= LATCH_RETRACT_S):
+                self._rl_state = "retracted"
+        elif self._rl_state == "retracted" and self._latch_switch is False:          # the switch disagrees: treat as not retracted
+            self._rl_state, self._latch_t0 = "retracting", self.clock()
+            self._count("roll latch switch disagrees")
+
+    def _latch_lim(self, lim):
+        """16.: while the pin may be in, the roll torque stays ≤ LATCH_T_MAX (its printed guide's load path, roll.py LATCH)."""
+        if not self.roll_latch or self._rl_state == "retracted":
+            return lim
+        lim = lim.copy()
+        k = self.names.index("roll")
+        lim[k] = min(lim[k], LATCH_T_MAX)
+        return lim
+
+    def roll_latch_solenoid(self):
+        """The latch output: True = solenoid energised (pin retracted or retracting). False (the spring-applied pin in) on a
+        person near or any latched fault; always False with the latch option off."""
+        self._latch_tick()
+        return self.roll_latch and self._rl_state != "engaged"
+
+    def latch_state(self):
+        self._latch_tick()
+        return self._rl_state if self.roll_latch else None
+
     def target_bounds(self):
         """The target bounds in force this cycle (rad): the joint limits, narrowed by the people-near bound when on."""
-        if self._pn_lo is None:
-            return self.lo, self.hi
-        return np.maximum(self.lo, self._pn_lo), np.minimum(self.hi, self._pn_hi)
+        lo, hi = self.lo, self.hi
+        if self._pn_lo is not None:
+            lo, hi = np.maximum(lo, self._pn_lo), np.minimum(hi, self._pn_hi)
+        if self.roll_latch and self._rl_state != "retracted":
+            lo = np.maximum(lo, self._latch_floor)
+        return lo, hi
 
     def people_near_exiting(self):
         """True while people-near mode is on and some joint is still being walked out of its restricted zone."""
@@ -313,7 +452,7 @@ class Supervisor:
         """Base accel / decel cap (m/s²): 1.0, 0.3 in load mode, ≤ 0.1 with a person near, ≤ 0.5 with the casters not
         locked. Also callable on a bare namespace with only `payload` (rnd/tip.py reads it that way)."""
         a = A_LOAD if self.payload > LOAD_KG else A_FREE
-        if getattr(self, "people_near", False):
+        if Supervisor.approaching(self):
             a = min(a, PERSON_A)
         if getattr(self, "_caster", "locked") != "locked":
             a = min(a, CASTER_RELEASED_A)
@@ -324,12 +463,12 @@ class Supervisor:
         BASE_V_MAX released for transit; ≤ 0.1 with a person near, 0 with a person near and > PERSON_MAX_KG in the hands,
         0 with any latched fault."""
         self._caster_tick()
-        if self.latched or (self.people_near and self.payload > PERSON_MAX_KG):
-            return 0.0
+        if self.latched or (self.payload > PERSON_MAX_KG and (self.approaching() or not self.area_clear)):
+            return 0.0                                              # SW-T1 / SW-T7: no basket travel with anyone about
         v = CASTER_LOCKED_V
         if self._caster == "released":
             v = THRESHOLD_SPEED if self._caster_reason == "threshold" else BASE_V_MAX
-        return min(v, PERSON_V) if self.people_near else v
+        return min(v, PERSON_V) if self.approaching() else v
 
     @staticmethod
     def threshold_speed():
@@ -374,7 +513,7 @@ class Supervisor:
         if self._caster != "locked":
             r = self._caster_reason
             heavy = self.payload > (CASTER_TRANSIT_KG if r == "transit" else THRESHOLD_MAX_KG)
-            if self.latched or self.people_near or (self._caster == "released" and heavy):
+            if self.latched or self.approaching() or (self._caster == "released" and heavy):
                 self._caster, self._caster_reason, self._locked_travel = "locked", None, 0.0
                 self._count("caster forced lock")
             elif self._caster == "reseat" and self.clock() - self._pulse_t0 >= CASTER_PULSE_S:
@@ -389,7 +528,7 @@ class Supervisor:
         Refused (False) with a person near, a latched fault or too much payload; then the casters stay locked."""
         self._caster_tick()
         lim = {"threshold": THRESHOLD_MAX_KG, "transit": CASTER_TRANSIT_KG}.get(mode)
-        if lim is None or self.latched or self.people_near or self.payload > lim:
+        if lim is None or self.latched or self.approaching() or self.payload > lim:
             self._count("caster release refused")
             return False
         if self._caster != "released" or self._caster_reason != mode:
@@ -504,7 +643,7 @@ class Supervisor:
             self._latch("BMS over-current or under-voltage")
         if self.latched == ["collision"]:                               # compliant hold, not a stop: the arm must not drop
             qm = np.asarray(q_meas, float)
-            lim = self.peak if allow_peak else self.rated
+            lim = self._latch_lim(self.peak if allow_peak else self.rated)
             if self._anchor is None:
                 self._anchor = qm.copy()
             self._anchor += (qm - self._anchor) * min(dt / T_ANCHOR, 1.0)
@@ -525,7 +664,14 @@ class Supervisor:
                 self._power_record(now, dt, self.current.at(v_bus).idle, bms)
             return Verdict(True, reasons=list(self.latched))
         qm, vm = np.asarray(q_meas, float), np.asarray(v_meas, float)
-        # 3. limits (people-near bound when on), slew, workspace
+        # 3. limits (people-near bound when on, roll latch floor), slew, hand speed, workspace
+        self._latch_tick()
+        if self.roll_latch:                                            # 16.: not retracted → no target below the pin (never above the arm)
+            if self._rl_state == "retracted":
+                self._latch_floor[:] = -np.inf
+            else:
+                ql = self.last_q if self.last_q is not None else qm
+                self._latch_floor = np.maximum(self._latch_floor, np.minimum(self._latch_lo, ql))
         if self._pn_lo is not None:                                    # D25: the bound walks to the people-near range
             ql = self.last_q if self.last_q is not None else qm         # never more than one step ahead of the arm (a held
             self._pn_lo = np.minimum(np.maximum(self.lo, self.pn_lo), np.minimum(self._pn_lo, ql) + PN_EXIT_SPEED * dt)   # target, e.g.
@@ -539,10 +685,12 @@ class Supervisor:
                 self._count("people-near clamp")
         if self.last_q is None:
             self.last_q = qm.copy()
-        step = self.v_max * dt
+        step = (np.minimum(self.v_max, PN_JOINT_V) if self.people_near else self.v_max) * dt
         q2 = self.last_q + np.clip(q - self.last_q, -step, step)
         if np.any(np.abs(q2 - q) > 1e-12):
             self._count("velocity clamp")
+        if self.people_near:                                           # 13.: hand speed relative to the base
+            q2 = self._hand_cap(q2, dt)
         tf = np.zeros(self.n) if t_ff is None else np.nan_to_num(np.asarray(t_ff, float))
         if self.fk is not None:
             p = self.fk(q2)
@@ -554,7 +702,7 @@ class Supervisor:
                     self._count("workspace reject")
                     q2, tf = self.last_q.copy(), np.zeros(self.n)
         # 2. total torque bound
-        lim = self.peak if allow_peak else self.rated
+        lim = self._latch_lim(self.peak if allow_peak else self.rated)
         kp_ = np.clip(np.nan_to_num(np.asarray(kp, float)), 0, KP_MAX)
         kd_ = np.clip(np.nan_to_num(np.asarray(kd, float)), 0, KD_MAX)
         if np.any(kp_ != kp) or np.any(kd_ != kd):

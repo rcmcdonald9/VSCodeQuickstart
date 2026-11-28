@@ -140,8 +140,10 @@ def poses(d, box):
     with both hands on the far face of the load box (x = box x max), found by the twin's bounded IK."""
     from .twin import TUCK, Reacher
     R = Reacher(d)
-    lift_mid = Body(d).lift_mid
+    B = Body(d)
+    lift_mid, lift_top = B.lift_mid, float(B.m.jnt_range[B.mj.mj_name2id(B.m, B.mj.mjtObj.mjOBJ_JOINT, "lift")][1])
     out = {"straight": [np.array([lift_mid, math.radians(-90), 0, 0, 0, 0, 0])],
+           "straight_high": [np.array([lift_top, math.radians(-90), 0, 0, 0, 0, 0])],   # A10 real states: the same pose at the lift top
            "tuck": [np.array([lift_mid] + [TUCK[j] for j in ARM_J])], "box": [], "box_person": []}
     lo, hi = box
     for key, x, ztop in (("box", hi[0], hi[2]), ("box_person", min(hi[0], PERSON_X), min(hi[2], PERSON_Z))):
@@ -253,6 +255,101 @@ def extras(d, body, P, rules, cas):
     return out
 
 
+# ------------------------------------------------------------------------------- A10 from the real states (Astra #3, F2)
+V_WALK = 1.6              # m/s: walking approach speed (ISO 13855's K = 1600 mm/s, commonly cited; ESTIMATE)
+R_REACH = 0.7             # m: a person this close (mast axis → their body) can put a hand on the shoulder (ESTIMATE)
+T_PERCEPT = 0.2           # s: person detection + fusion latency (ESTIMATE; PeopleNearTrigger counts > 0.5 s stale as near)
+V_LIFT = 0.20             # m/s: lift speed at rated rpm (lift.md)
+W_SLEW = 1.5              # rad/s: the supervisor's default per-joint slew (Supervisor v_max)
+T_SETDOWN = 5.0           # s: stop (0.3 m/s at 0.3 m/s²) + lower a 9 kg basket 0.8 m on the lift + release (ESTIMATE)
+V_BASE = {"locked": 0.3, "transit": 0.8, "threshold": 0.12}   # m/s before the person appears (sw/safety.py caps)
+
+
+def sw_more():
+    from sw import safety as s
+    return SimpleNamespace(approach=hasattr(s.Supervisor, "set_person_approach"), prep=getattr(s, "PN_PREP_RADIUS", None),
+                           near=s.PN_RADIUS, basket_r=getattr(s, "BASKET_CLEAR_R", None), released_a=s.CASTER_RELEASED_A,
+                           basket_clear=hasattr(s.Supervisor, "set_area_clear"))
+
+
+def real_rows(d, body, P, cas, rules):
+    """The 16 A10 cases from the state the robot is in when the person appears: today's pose for the load (arms straight
+    out at shoulder height with ≤ LOAD_KG, at lift mid *or top*; the load box above), braking at the then-current limit,
+    casters locked (the push arrives before any transition has finished: see transition())."""
+    rows = []
+    for load in LOADS:
+        for az in AZS:
+            for brake, push in DIST:
+                pose, a = today(rules, load, push)
+                cand = [case(d, body, P, cas, load, az, brake, push, pz, a) for pz in ((pose, "straight_high") if pose == "straight" else (pose,))]
+                rows.append(min(cand, key=lambda r: r["reserve"]))
+    return rows
+
+
+def transition(d, body, P, rules):
+    """Time from detection to the SW-T1 state per carry mode, and the detection radius that finishes it before a walking
+    person is within reach: R = R_REACH + V_WALK·(T_PERCEPT + t)."""
+    def t_arms(qs):
+        out = 0.0
+        for qa in qs:
+            out = max(out, min(max(float(np.max(np.abs(qb[1:] - qa[1:]))) / W_SLEW, abs(float(qb[0] - qa[0])) / V_LIFT) for qb in P["box_person"]))
+        return out
+    m = sw_more()
+    rows = []
+    for name, qs, v0, a in (("≤ 1 kg, arms straight out (lift mid / top)", P["straight"] + P["straight_high"], V_BASE["locked"], rules.accel(1.0)),
+                            ("2.5 kg in the load box", P["box"], V_BASE["locked"], rules.accel(2.5)),
+                            ("unloaded transit, casters released", P["tuck"], V_BASE["transit"], m.released_a),
+                            ("2.5 kg threshold crossing, casters released", P["box"], V_BASE["threshold"], min(rules.accel(2.5), m.released_a))):
+        tb = max(v0 - A_PERSON, 0.0) / a
+        ta = t_arms(qs)
+        t = max(tb, ta)
+        rows.append(dict(name=name, t_brake=tb, t_arms=ta, t=t, R=R_REACH + V_WALK * (T_PERCEPT + t)))
+    rows.append(dict(name="R2d basket 9.07 kg: stop and set it down", t_brake=V_BASE["locked"] / rules.accel(9.07), t_arms=T_SETDOWN, t=T_SETDOWN,
+                     R=R_REACH + V_WALK * (T_PERCEPT + T_SETDOWN)))
+    t_avail = {r: max((r - R_REACH) / V_WALK - T_PERCEPT, 0.0) for r in (m.near, m.prep or m.near)}
+    return rows, t_avail
+
+
+def real_extras(d, body, P, rules, cas):
+    """Modes outside the 16 cases, from the state the robot is in when the person appears, with the push."""
+    m = sw_more()
+    out = []
+
+    def one(name, qs, load, a, cs):
+        M, c, p, _ = worst_pose(body, qs, load, a / G + tilt(d, cs))
+        D = c[2] * a / G + F_PUSH * H_PUSH / (M * G)
+        r, at = reserve(d, cs, c[:2], c[2], D)
+        out.append(dict(name=name, M=M, reserve=float(r), at=float(at), ok=bool(r >= NEED)))
+    one("Unloaded transit, arms parked, casters still released, braking at 0.5 m/s² + push", P["tuck"], 0.0, m.released_a, None)
+    one("2.5 kg threshold crossing (casters released), braking 0.3 m/s² + push", P["box"], 2.5, min(rules.accel(2.5), m.released_a), None)
+    one("R2d basket 9.07 kg at the load box face, casters locked, braking 0.3 m/s² + push", P["box"], 9.07, rules.accel(9.07), cas)
+    one("R2d basket 9.07 kg at the load box face, base stopped + push", P["box"], 9.07, 0.0, cas)
+    one("R2d basket 9.07 kg pulled into PERSON_WS, base stopped + push", P["box_person"], 9.07, 0.0, cas)
+    return out
+
+
+def tip_decel(d, body, qs, load, cs, need=0.0):
+    """Base deceleration (m/s²) at which the reserve falls to `need` (no push), e.g. an e-stop that brakes harder than the planner."""
+    lo, hi = 0.0, 12.0
+    for _ in range(30):
+        a = 0.5 * (lo + hi)
+        M, c, p, _ = worst_pose(body, qs, load, a / G + tilt(d, cs))
+        r, _ = reserve(d, cs, c[:2], c[2], c[2] * a / G)
+        lo, hi = (a, hi) if r > need else (lo, a)
+    return lo
+
+
+def estop_rows(d, body, P, rules, cas):
+    rows = []
+    for name, qs, load, cs in (("≤ 1 kg, arms straight out, lift top, casters locked", P["straight_high"], 1.0, cas),
+                               ("2.5 kg in the load box, casters locked", P["box"], 2.5, cas),
+                               ("R2d basket 9.07 kg at the load box face, casters locked", P["box"], 9.07, cas),
+                               ("unloaded, arms parked, casters released (transit)", P["tuck"], 0.0, None),
+                               ("2.5 kg in PERSON_WS, casters locked (SW-T1 state)", P["box_person"], 2.5, cas)):
+        rows.append(dict(name=name, a0=tip_decel(d, body, qs, load, cs), a30=tip_decel(d, body, qs, load, cs, NEED)))
+    return rows
+
+
 SW_CHANGES = [
     ("SW-T1 person within reach", "`Supervisor.set_person_near(bool)`: when perception reports a person within reach (≈ 1 m), the supervisor caps the base at ≤ 0.1 m/s and ≤ 0.1 m/s² "
      f"(`base_accel_limit()` → A_PERSON) and rejects hand targets outside LOAD_WS whatever the payload, with x ≤ {PERSON_X:.2f} m and z ≤ {PERSON_Z:.2f} m (the arms come in and the lift goes down first). "
@@ -265,6 +362,12 @@ SW_CHANGES = [
      "rnd/tip.py counts SW-T1/T2 as enforced (scorecard gate) once `set_person_near` and `casters_locked` exist in sw/safety.py."),
     ("SW-T4 threshold speed (D2b)", f"Cross thresholds at ≤ {CROSS_SLOW:.2f} m/s (was 0.15): with the ballast the roller model's 15 mm peak rises to the "
      "1.45× margin at 0.15 m/s; 0.12 m/s restores ≥ 1.5× (table above). A planner value, not in sw/safety.py; threshold_mc should be re-run over 0.10–0.14 m/s."),
+    ("SW-T6 person approaching (A10 real states)", f"`Supervisor.set_person_approach(bool)`, a second PeopleNearTrigger at PN_PREP_RADIUS: "
+     "the SW-T1 box, base caps, caster lock and basket stop from there, so the transition (≤ 1.5 s) is done before a walking person is within reach "
+     "(table above). Implemented in sw/safety.py; rnd/tip.py credits the push cases with the SW-T1 state only while it exists and its radius ≥ the "
+     "radius the transition needs."),
+    ("SW-T7 basket carry", "`Supervisor.set_area_clear(bool)`: the base moves with more than PERSON_MAX_KG only while perception sees nobody within "
+     "BASKET_CLEAR_R (set-down before a walking person can arrive). Implemented; fail-safe default False."),
     ("SW-T3 keep", "Keep LOAD_KG 1.0 kg, LOAD_WS x ≤ 0.45 m / z ≤ 0.80 m and the 0.3 m/s² load-mode cap: the cases below rely on them (they are enforced today). "
      "`load_heading_ok()` (±20° of a wheel) is not called anywhere and is not needed with D18b (the 45° cases pass)."),
 ]
@@ -295,12 +398,22 @@ def main():
             rr = run_cases(dd, bb, P, cs, requested, rules)
             sens.append((bal, tu, min(r["reserve"] for r in rr), sum(r["reserve"] >= NEED for r in rr)))
     ex = extras(d1, b1, P, rules, c18b)
+    real = real_rows(d1, b1, P, c18b, rules)
+    trans, t_avail = transition(d1, b1, P, rules)
+    rex = real_extras(d1, b1, P, rules, c18b)
+    est = estop_rows(d1, b1, P, rules, c18b)
+    more = sw_more()
+    r_need = max(t["R"] for t in trans if "basket" not in t["name"])
+    r_basket = next(t["R"] for t in trans if "basket" in t["name"])
+    approach_ok = bool(more.approach and more.prep and more.prep >= r_need - 1e-9)
+    basket_ok = bool(more.basket_clear and more.basket_r and more.basket_r >= r_basket - 1e-9)
     th0, th1, th2 = threshold_check(d0, b0, P), threshold_check(d1, b1, P), threshold_check(d1, b1, P, CROSS_SLOW)
     f0, f1 = tip_force(d0, b0, P, None), tip_force(d1, b1, P, c18b)
 
     def summ(rows):
         return min(r["reserve"] for r in rows), sum(r["reserve"] >= NEED - 1e-9 for r in rows)
-    s40, sb, st, sa, snb = map(summ, (loop40, before, after_today, after, no_ballast))
+    s40, sb, st, sa, snb, sr = map(summ, (loop40, before, after_today, after, no_ballast, real))
+    sra = sa if approach_ok else sr
     mb = __import__("rnd.budget", fromlist=["mass_budget"]).mass_budget(d1)
     base_kg = sum(m for _, m in mb["base"])
     from .parts import base as base_cad
@@ -313,6 +426,15 @@ def main():
          f"(SW-T1/T2 below); {st[1]}/16 (worst {st[0] * 1000:.0f} mm) with the rules sw/safety.py enforces today.** "
          f"Before: loop 40's reading {s40[0] * 1000:.0f} mm ({s40[1]}/16; the review quoted the older −102 mm); "
          f"the same hardware read honestly (D18 take-up, all headings, today's rules) {sb[0] * 1000:.0f} mm ({sb[1]}/16).", "",
+         f"**A10 from the real states (Astra review #3, finding 2): conditional.** The 16/16 above credits the push cases with the SW-T1 state "
+         f"(arms in, lift down, {A_PERSON} m/s²). A person needn't wait for it: detected at {more.near} m and walking at {V_WALK} m/s they can push "
+         f"{t_avail[more.near]:.2f} s later, the transition takes up to {max(t['t'] for t in trans if 'basket' not in t['name']):.1f} s. From the states the "
+         f"robot is actually in then (arms out, lift mid or top, casters locked, braking at the then-current limit): **{sr[1]}/16, worst "
+         f"{sr[0] * 1000:.0f} mm**. With SW-T6 (person approaching at {more.prep} m ≥ the {r_need:.1f} m the transition needs"
+         f"{', in sw/safety.py' if approach_ok else ', NOT in sw/safety.py'}) the push meets the SW-T1 state: **{sra[1]}/16, worst {sra[0] * 1000:.0f} mm**. "
+         f"The basket needs nobody within {r_basket:.1f} m (SW-T7, BASKET_CLEAR_R {more.basket_r} m{'' if basket_ok else ': NOT enforced'}). "
+         "Still open: the lock take-up and pad sinkage (sensitivity below), an e-stop that brakes harder than the planner (table below), "
+         "one failed caster lock, and the ballast interlock (A10 counts the blocks as fitted).", "",
          "## What changed (A10 v2)", "",
          f"1. **Mass low in the base.** The battery already sat on the belly (z ≈ 33–98 mm). The A5 v2 power stage (contactor, pre-charge, "
          f"clamp plate, bulk cap: {d1.base.power_board_mass:.2f} kg, ESTIMATE) was in no budget; it now sits on the belly in the front-right sector "
@@ -360,6 +482,32 @@ def main():
         L.append(f"| {bal_kg:.2f} kg | " + " | ".join(f"{w * 1000:.0f} mm, {n}/16" for b_, t_, w, n in sens if b_ == bal_kg) + " |")
     L += ["", "## Other modes (A10 v2, requested rules)", "", "| Mode | Mass kg | Reserve | |", "|---|---|---|---|"]
     L += [f"| {e['name']} | {e['M']:.1f} | {e['reserve'] * 1000:.0f} mm at {e['at']:.0f}° | {'✅' if e['ok'] else '❌ (rule: not allowed)'} |" for e in ex]
+    L += ["", "## A10 from the states the robot is in when a person appears", "",
+          f"Timeline: the person is detected at {more.near} m (PeopleNearTrigger) and can push once within {R_REACH} m (a hand on the shoulder, "
+          f"ESTIMATE), walking {V_WALK} m/s (ISO 13855's 1.6 m/s, commonly cited) after {T_PERCEPT} s of perception latency: "
+          f"**{t_avail[more.near]:.2f} s** (0 s if they step out from behind furniture). The transition (arms into PERSON_WS at the "
+          f"{W_SLEW} rad/s slew / lift {V_LIFT} m/s, base braked to {A_PERSON} m/s at the limit it was moving under) takes:", "",
+          "| Mode when the person appears | Braking (s) | Arms / lift (s) | Transition (s) | Detection radius it needs (m) |", "|---|---|---|---|---|"]
+    L += [f"| {t['name']} | {t['t_brake']:.2f} | {t['t_arms']:.2f} | {t['t']:.2f} | {t['R']:.1f} |" for t in trans]
+    L += ["", "So the push meets the state the robot was in. The 16 cases from that state (the pose and braking today's rules allow, lift mid "
+          "or top, whichever is worse; casters locked):", "",
+          "| Load | Load COM | Braking | Push | Pose | Decel m/s² | **From the real state** | Credited (SW-T1 state) | worst heading |", "|---|---|---|---|---|---|---|---|---|"]
+    for rr, ra in zip(real, after):
+        L.append(f"| {rr['load']:.1f} kg | {rr['az']:.0f}° | {'yes' if rr['brake'] else ''} | {'yes' if rr['push'] else ''} | {rr['pose']} | {rr['a']:.1f} | "
+                 f"**{fmt(rr, 'reserve')}** | {fmt(ra, 'reserve')} | {rr['at']:.0f}° |")
+    L += ["", "| Other mode, from the real state, + 30 N push | Mass kg | Reserve | |", "|---|---|---|---|"]
+    L += [f"| {e['name']} | {e['M']:.1f} | {e['reserve'] * 1000:.0f} mm at {e['at']:.0f}° | {'✅' if e['ok'] else '❌'} |" for e in rex]
+    L += ["", "**E-stop / snag braking.** A stop need not respect the planner's limit. Base deceleration at which the reserve falls to 30 mm / "
+          "tips (no push):", "", "| State | 30 mm at (m/s²) | Tips at (m/s²) |", "|---|---|---|"]
+    L += [f"| {e['name']} | {e['a30']:.2f} | {e['a0']:.2f} |" for e in est]
+    L += ["", "Rule changes (sw/safety.py, tested in sw/test_s1.py): **SW-T6** person approaching at PN_PREP_RADIUS "
+          f"({more.prep} m ≥ {r_need:.1f} m): the SW-T1 part (PERSON_WS, base caps, casters locked, basket stop) starts there, the D25 roll "
+          f"bound / roll latch / hand-speed cap stay at {more.near} m; **SW-T7** the base moves with > 2.5 kg only with perception reporting "
+          f"nobody within BASKET_CLEAR_R ({more.basket_r} m ≥ {r_basket:.1f} m; fail-safe default: not clear); **slower while loaded**: the "
+          "people-near hand-speed cap falls with payload (rnd/hand_speed.py). Not in software: the base e-stop has to be a controlled stop "
+          f"(stop category 1: ramp at ≤ the limit in force, then remove power) with the wheel drives not shorted, since a 2.5 kg load-box "
+          f"carry tips at ≈ {est[1]['a0']:.1f} m/s² and the wheels can brake harder on a dry floor (μ·g ≈ 5 m/s², ESTIMATE): electrical / "
+          "base-drive track."]
     L += ["", "## R4 cost of the mass (rnd/threshold.py's roller model re-run at each mass and COM height, 15 mm, 45°, hard floor + carpet)", "",
           "| Design | Speed | Mass (+ 2 kg) | COM h | Crossed | Peak wheel torque | Margin to GIM peak (≥ 1.5×) |", "|---|---|---|---|---|---|---|"]
     for n, t in (("before", th0), ("A10 v2", th1), ("A10 v2, SW-T4", th2)):
@@ -377,7 +525,10 @@ def main():
     js = dict(worst=sa[0], n_ok=sa[1], n=16, n_fail=16 - sa[1], worst_sw_today=st[0], n_ok_sw_today=st[1], worst_before=sb[0], n_ok_before=sb[1],
               worst_loop40=s40[0], n_ok_loop40=s40[1], worst_no_ballast=snb[0], n_ok_no_ballast=snb[1],
               threshold=dict(before=th0, after=th1, after_slow=th2), push_tip_n=dict(before=f0, after=f1),
-              extras=ex, sw_changes=[k for k, _ in SW_CHANGES if "keep" not in k], rows=after)
+              extras=ex, sw_changes=[k for k, _ in SW_CHANGES if "keep" not in k], rows=after,
+              real=dict(worst=sr[0], n_ok=sr[1], worst_with_rules=sra[0], n_ok_with_rules=sra[1], approach_enforced=approach_ok,
+                        basket_clear_enforced=basket_ok, r_need=r_need, r_basket=r_basket, t_avail=t_avail, transition=trans, rows=real,
+                        extras=rex, estop=est))
     (DOCS / "tip.json").write_text(json.dumps(js, indent=1, default=float))
     print("\n".join(L[4:]))
 
