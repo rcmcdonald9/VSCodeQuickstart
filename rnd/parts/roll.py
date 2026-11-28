@@ -462,7 +462,9 @@ def roll_link_inline() -> Part:
     p = Pos(0, 8, 0) * Rot(-90, 0, 0) * Cylinder(45, 4, align=MIN)
     p &= Pos(0, 10, (zlo + 60) / 2) * Box(100, 10, 60 - zlo)
     sx1 = ROLL_SPR_X[1] + 1.6
-    p += _plate_x(xf0, sx1, 8, 18, zlo, zhi, 6) - Pos(0, 13, 0) * Rot(-90, 0, 0) * Cylinder(32.3, 12)            # frame around the spigot
+    xa = FRONT_FRAME["x"]                                                                                       # R17: frame front part raised (FRONT_FRAME)
+    p += _plate_x(xf0, xa + 6, 8, 18, zlo, zhi, 6) + _plate_x(xa, sx1, 8, 18, FRONT_FRAME["z_lo"], zhi, 6)
+    p -= Pos(0, 13, 0) * Rot(-90, 0, 0) * Cylinder(32.3, 12)                                                  # frame around the spigot
     p += Pos(xf0, ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(R_MOT, xf1 - xf0, align=MIN)                            # floor
     p += Pos(xf1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(R_MOT, CUP_H, align=MIN) - Cylinder(CUP_R, CUP_H, align=MIN))   # cup around the driver (its pilot)
     p += _plate_x(xf0, xf1, 8, ROLL_Y, zlo, zhi, 4)                                                             # floor ↔ frame web
@@ -483,10 +485,29 @@ def roll_link_inline() -> Part:
     p += Pos(W1[1] + 0.3, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(17, xf0 - W1[1] - 0.3, align=MIN) - Cylinder(9, 20, align=MIN))   # inner-race shoulder
     x0, x1 = ROLL_SPR_X
     r1 = ROLL_SPR[1]
-    p += Pos((x0 + 1 + x1 + 1.6) / 2, (12 + ROLL_Y - r1) / 2, 0) * Box(x1 + 1.6 - x0 - 1, ROLL_Y - r1 - 12 + 1, 14)   # spring bar
+    p += inline_spring_bar()                                                                                   # spring bar (R17: turned up, FRONT_FRAME)
     if GUARD == "latch":                                                                                       # R17 roll latch seat
         p -= latch_cut()
     return p - Pos(xf0 - 1, ROLL_Y, 0) * Rot(0, 90, 0) * (Cylinder(PLATE_R[1] + 0.5, X_PLATE[1] - xf0 + 1, align=MIN) - Cylinder(PLATE_R[0] - 0.2, 20, align=MIN))   # Neon 6b: rear plate seat
+
+
+# R17 roll-stage nips (2026-11-28, rnd/pinch.py): the +X clevis arm (x 48.5…62.5, its plate ±26 down to the yaw block)
+# swings to within 9.5–14 mm of the roll link's frame (y 8…18, z −28…40) at roll −15…+8° (yaw_block × roll_link), and
+# the yaw band's +X end to 13 mm of its lower corner. The frame only carries the clock-spring bar out there (the R2b load
+# path is the side block, x ≤ 25), so in front of FRONT_FRAME["x"] it starts at z_lo instead of −28: the arm's −Y edge
+# then stays ≥ 26 mm from it over −16.5…104° (worst at the hard stop: edge segment vs the corner at (y 18, z_lo)). The
+# spring bar leaves the ring at SPR_BAR_ANG (was −90°, level with the roll axis) and meets the raised frame; it stays
+# ≥ 60° (≥ 45 mm) clear of the arm's sweep, 2.5 mm in front of the arm's +X face like the spring ring itself.
+FRONT_FRAME = dict(x=30.0, z_lo=14.0)
+SPR_BAR_ANG = -115.0                    # deg, roll convention (0 = −Z, + toward +Y): the bar points up and inboard
+
+
+def inline_spring_bar(grow=0.0) -> Part:
+    """Inline roll: the roll link's bar from the frame to the spring ring (the ring is cut by it), turned to SPR_BAR_ANG."""
+    x0, x1 = ROLL_SPR_X
+    r_in, r_out = ROLL_SPR[1] - 0.5, (ROLL_Y - 13.0) / -math.sin(math.radians(SPR_BAR_ANG))   # ring wall → into the frame (y 13)
+    b = Pos((x0 + 1 + x1 + 1.6) / 2, 0, -(r_in + r_out) / 2) * Box(x1 + 1.6 - x0 - 1 + 2 * grow, 14 + 2 * grow, r_out - r_in + 2 * grow)
+    return Pos(0, ROLL_Y, 0) * Rot(SPR_BAR_ANG, 0, 0) * b
 
 
 # R2b (2026-11-27, rnd/stiffness.py): the 1 kg straight-out moment (16.1 N·m static about the pitch axis) reaches the
@@ -595,6 +616,8 @@ def roll_spring_ring() -> Part:
     if INLINE:                                                                              # M3: bridge for the roll AS5048A board
         from .encoder import roll_bridge
         ring += roll_bridge()
+    if INLINE:
+        return ring - inline_spring_bar(0.01)
     return ring - Pos((x0 + 1 + x1 + 1.6) / 2, (12 + ROLL_Y - r1) / 2, 0) * Box(x1 + 1.6 - x0 - 1 + 0.01, ROLL_Y - r1 - 12 + 1 + 0.01, 14.01)
 
 
