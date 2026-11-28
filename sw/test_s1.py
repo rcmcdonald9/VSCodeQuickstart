@@ -215,7 +215,10 @@ def test_people_near():
         assert steps < 5000, "people-near exit did not finish"
     t_exit = steps * dt
     t_expect = (sup.pn_lo[k] - math.radians(-10.0)) / PN_EXIT_SPEED
-    assert max_rate <= PN_EXIT_SPEED + 1e-6 and abs(t_exit - t_expect) < 0.05, (max_rate, t_exit, t_expect)
+    # the noisy policy re-commands the 2 mrad measurement jitter on the other joints: the people-near hand-speed cap (13.)
+    # scales those steps, roll included, so the exit can take longer than the bare PN_EXIT_SPEED time, never shorter
+    assert max_rate <= PN_EXIT_SPEED + 1e-6 and t_expect - 0.05 < t_exit < 1.5 * t_expect, (max_rate, t_exit, t_expect)
+    assert abs(t_exit - t_expect) < 0.05 or sup.counts.get("hand speed cap", 0) > 0, (t_exit, t_expect)
     # 2. random policy with the mode on: 0 cycles with the roll target or the arm below the limit
     below, n = 0, 3000
     for _ in range(n):
