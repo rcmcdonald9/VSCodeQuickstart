@@ -312,13 +312,34 @@ def crank() -> Part:
     return d - pitch_magnet_pocket()
 
 
+# R17 port shroud (2026-11-28): the torso's shoulder port (upper.torso: a Ø100 cut through the side wall at world y
+# 175…215, centred on the pitch axis) sits on the shell's rounded front corner (corner centre x = the pitch axis), and
+# inside it only the ferrule's spigot (r 32, module y 2…12) and back taper (y 12…17) turn: an 18 mm annulus between
+# the spigot and the port edge (r 50). The Ø12 probe went in there and reached everything in the torso: both pitch cans
+# and motors, the 20T, the D26 idler roller and axle, pulley A (pinch.py: 14 of the 20 exposed drive parts). The spring
+# ring now carries a static shroud about the pitch axis on its lip: a 2 mm tube r 43.1…45.1 from the lip to y 10 and a
+# 2 mm end face r 34…45.1 (2 mm off the spigot, 2 mm short of the taper's inboard face at y 12). Port gap 4.9 mm
+# (closed, R17 ≤ 8), and both sides are surfaces of revolution about the pitch axis, so pitching never changes a gap.
+# Limits: r_out ≤ 45.1 keeps 1 mm to the shell's front corner (inner surface at x 46.1 just inboard of the cut), so the
+# torso half-shell still slides off outboard over it; y ≤ 10 keeps it out of the V-band clamp's flank on the taper
+# (the clamp is not drawn). Outboard-serviced fasteners: the 4 hub tie nuts (r 15.5) are inside r 34; the idler axle
+# head (r 66.8), outer-wall M4 (r ≥ 136) and ear driver holes (r ≥ 103) are outside r 45.1. The pitch hub goes in
+# through its bore before the arm (ferrule rim r 45.5 outboard of y 17). Pre-existing, not changed: the ring's own r 46.5
+# reaches 0.4 mm into the shell's front corner just inboard of the port (0.5 mm³).
+PORT_SHROUD = dict(r_in=43.1, r_out=45.1, face_r_in=34.0, t=2.0, y1=10.0)   # module frame (world y − 180 on the left arm)
+
+
 def spring_ring() -> Part:
     """Pitch clock spring, static side (printed, screwed to the outer wall's outboard face): ring r 45–46.5 over the cavity
-    SPR_Y and a lip r 30–46.5 on its outboard end; the rotating hub is the pitch hub's r 25 sleeve."""
+    SPR_Y, a lip r 30–46.5 on its outboard end, and on the lip the R17 port shroud (PORT_SHROUD: tube + end face round
+    the ferrule spigot); the rotating hub is the pitch hub's r 25 sleeve."""
     r_in, r_out = PITCH_SPR
     y0, y1 = SPR_Y
     p = Pos(0, y0, 0) * _rot_y(Cylinder(r_out + 1.5, y1 - y0, align=MIN) - Cylinder(r_out, y1 - y0, align=MIN))
     p += Pos(0, y1, 0) * _rot_y(Cylinder(r_out + 1.5, 1.0, align=MIN) - Cylinder(30.0, 1.0, align=MIN))
+    ps, ya = PORT_SHROUD, y1 + 1.0
+    p += Pos(0, ya, 0) * _rot_y(Cylinder(ps["r_out"], ps["y1"] - ya, align=MIN) - Cylinder(ps["r_in"], ps["y1"] - ya, align=MIN))
+    p += Pos(0, ps["y1"] - ps["t"], 0) * _rot_y(Cylinder(ps["r_out"], ps["t"], align=MIN) - Cylinder(ps["face_r_in"], ps["t"], align=MIN))
     return p
 
 
