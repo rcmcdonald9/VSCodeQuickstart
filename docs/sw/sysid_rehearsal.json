@@ -173,7 +173,7 @@
     ],
     "backlash_pose_deg": 0.0
    },
-   "file": "/home/user/VSCodeQuickstart/sw/out/rehearse_step1/actuators/actuators_7804993.yaml"
+   "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-a3b0a6a96f93660f2/sw/out/rehearse_step1/actuators/actuators_7804993.yaml"
   },
   "wpitch": {
    "joint": "wpitch",
@@ -280,7 +280,7 @@
     ],
     "backlash_pose_deg": 0.0
    },
-   "file": "/home/user/VSCodeQuickstart/sw/out/rehearse_step1/actuators/actuators_6095693.yaml"
+   "file": "/home/user/VSCodeQuickstart/.claude/worktrees/agent-a3b0a6a96f93660f2/sw/out/rehearse_step1/actuators/actuators_6095693.yaml"
   }
  },
  "bus_stats": {
