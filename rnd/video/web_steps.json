@@ -19,7 +19,7 @@
       "title": "Wheel modules",
       "body": [
         "Pip drives on four 6-inch omni wheels in a plus layout, one pointing forward.",
-        "Each module: a wheel on a 40 mm shaft that runs in two bearings inside a two-plate pod, so wheel loads never reach the motor's bearing.",
+        "Each module holds a wheel on a 40 mm shaft that runs in two bearings inside a two-plate pod, so wheel loads never reach the motor's bearing.",
         "Each motor goes into its printed can, which points inward and drives the wheel hub."
       ],
       "fasteners": ["Motor into its can: 3 screws", "Torque pin, then the hub adapter: 4 screws"],
@@ -124,7 +124,7 @@
       "title": "Shoulder pitch modules",
       "body": [
         "Each shoulder is a printed bracket with a one-piece pitch shaft and its big pulley. It goes into the torso's side window.",
-        "Outer wall on, then the pitch hub and the spring balancer (die spring, cord and pulley) that offsets the arm's weight.",
+        "Fit the outer wall, then the pitch hub and the spring balancer (die spring, cord and pulley) that offsets the arm's weight.",
         "The motor cartridge comes up through a slot in the bracket wall and slides into place along its axis; the belt goes on its small pulley and is tensioned with the idler."
       ],
       "fasteners": ["Outer wall: 3 × M4", "Motor ears: 2 × M4 × 12 and 2 × M4 × 16 (from the pulley side), washers and nuts", "Belt idler: M4 jack screw, then lock the M5 axle", "Strap across the exit slot: 4 × M4"],
@@ -208,9 +208,9 @@
     {
       "title": "Elbow motor cartridge",
       "body": [
-        "Motor into its printed can from the rear, then the rear cap.",
-        "Steel drive stub on the motor output, then the key, the 20-tooth pulley and the end bearing.",
-        "The cartridge slides straight in along its axis, stub first, and bolts on through its 4 ears. To swap a motor later, undo those 4 screws: the belt stays on (about 3 minutes)."
+        "Fit the motor into its printed can from the rear, then close it with the rear cap.",
+        "Fit the steel drive stub to the motor output, then add the key, the 20-tooth pulley and the end bearing.",
+        "The cartridge slides straight in along its axis, stub first, and bolts on through its 4 ears. To swap a motor later, undo those 4 screws; the belt stays on, and the swap takes about 3 minutes."
       ],
       "fasteners": ["Rear cap: 3 × M3 × 8 into the motor, 2 × M3 × 10 into the can's inserts", "Drive stub: 8 × M3 × 6 with threadlocker", "Ears: 4 × M4 × 12 with washers into captive nuts"],
       "src": ["docs/BUILD_v4.md, intro and steps 4a and 5", "docs/rnd/assembly_seq.md (elbow swap: straight out along its axis)"],
@@ -298,7 +298,7 @@
     {
       "title": "Finished robot",
       "body": [
-        "That is the whole robot: two arms with six joints and a gripper each, a head on a lifting torso, and a four-wheel omni base. 21 actuators in all.",
+        "The finished robot has two arms with six joints and a gripper each, a head on a lifting torso and a four-wheel omni base, driven by 21 actuators in all.",
         "Estimated first build: about 24 hours of hands-on work plus about 354 hours of unattended printing (14.8 kg of PETG and ASA). One arm, the first milestone, is about 6 hours hands-on.",
         "Next come wiring, sensors and bring-up. Test the lift pawl, the e-stop and the watchdog before any powered arm motion."
       ],
