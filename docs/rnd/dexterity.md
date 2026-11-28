@@ -32,7 +32,7 @@ the body: 78 / 78 / 71 against 78 / 77 / 68 %). The history columns are from the
 | 45° angled | 78% | ≥ 63% | 69% | 57% | ✅ |
 | side (horizontal) | 78% | ≥ 62% | 68% | 40% | ✅ |
 | side, across the body | 71% | ≥ 54% | 60% | 2% | ✅ |
-| top-down, people near (roll 5…100°; D25) | 17% (-17 points) | (not a target) | | | ℹ️ |
-| 45° angled, people near (roll 5…100°; D25) | 57% (-21 points) | (not a target) | | | ℹ️ |
+| top-down, people near (roll 5…100°; D25) | 18% (-17 points) | (not a target) | | | ℹ️ |
+| 45° angled, people near (roll 5…100°; D25) | 58% (-20 points) | (not a target) | | | ℹ️ |
 | side (horizontal), people near (roll 5…100°; D25) | 67% (-11 points) | (not a target) | | | ℹ️ |
 | side, across the body, people near (roll 5…100°; D25) | 49% (-23 points) | (not a target) | | | ℹ️ |

@@ -9,7 +9,7 @@ Virtual bench, bus profile **usb** (sw/bus_sim.py), seed 0: GIM6010-8 yaw stage 
 | yaw | kt [—] | 0.955 | 0.9448 | -1.1 % | ±2 % |
 | yaw | backlash [°] | 0.3 | 0.2841 | -5.3 % | ±20 % |
 | yaw | latency [ms (round trip)] | 2.024 | 2.067 | +2.1 % | ±15 % |
-| wpitch | coulomb [N·m] | 0.055 | 0.05418 | -1.5 % | ±10 % |
+| wpitch | coulomb [N·m] | 0.055 | 0.05419 | -1.5 % | ±10 % |
 | wpitch | viscous [N·m·s/rad] | 0.42 | 0.4201 | +0.0 % | ±15 % |
 | wpitch | kt [—] | 1.035 | 1.034 | -0.1 % | ±2 % |
 | wpitch | backlash [°] | 0.25 | 0.2623 | +4.9 % | ±20 % |
