@@ -4,7 +4,7 @@
 
 | Metric | Now | Target | |
 |---|---|---|---|
-| R17 pinch (HARD GATE; rnd/pinch.py): joint-nip fails / exposed drive parts (12 mm probe; every moving gap ≤ 8 mm or ≥ 25 mm over its range) | 4 / 0 | 0 / 0 | ❌ |
+| R17 pinch (HARD GATE; rnd/pinch.py): joint-nip fails / exposed drive parts (12 mm probe; every moving gap ≤ 8 mm or ≥ 25 mm over its range) | 5 / 0 | 0 / 0 | ❌ |
 | A10 tip-over (HARD GATE; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, with the rules sw/safety.py enforces | 16/16 (worst 36 mm); 16/16 (worst 36 mm) once SW-T1 person within reach, SW-T2 caster lock (D18b), SW-T4 threshold speed (D2b), SW-T6 person approaching (A10 real states), SW-T7 basket carry are in the supervisor | 16/16 ≥ 30 mm | ✅ |
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
@@ -46,7 +46,7 @@
 | A10 snag at the locked cap (rnd/tip.py W17: a locked caster meets a step edge; every carry state incl. the R2d basket in its real poses; energy ≤ 25 % of the tip energy, force ≤ ½ rod yield) | 23/23 at each payload's SW-T8 cap (basket at 0.15 m/s: 16 % / 252 N, allowed 0.19 m/s); SW-T8 locked cap by payload (≤ 6 kg 0.20; 6–10 kg 0.15 m/s) in sw/safety.py pass | every state at the cap sw/safety.py enforces | ✅ |
 | R5 door stow (rnd/stow.py): whole-robot width across a 45° threshold crossing (D2b), both arms stowed, collision-free, cross-body gaps ≥ 25 mm, valid with people near (roll ≥ +8°) | 553 mm (clear 650 − 2 × 40), tip ≥ 81 mm | ≤ 570 mm, tip ≥ 30 mm | ✅ |
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 66 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
-| FEA critical printed parts: min margin vs 12 MPa (across layers) | 2.5× (13 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
+| FEA critical printed parts: min margin vs 12 MPa (across layers) | 1.5× (21 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ❌ |
 | Self-docking Monte Carlo (±0.3 m / ±20° start, pose-estimate error, wheel slip) | 100/100 (95 % LB 96%), worst pad error 19 mm | LB ≥ 90 %, within ±25 mm | ✅ |
 | R15 spacing: pairs under the hard limit / under target (static 1, running 0.3, moving 2, belt 3 mm) | 0 / 10 | 0 under hard | ✅ |
 | R14 assembly sequence: drive shafts whose bearings slide on and whose shaft can be inserted (rnd/assembly_seq.py) | 7/7 | all | ✅ |
@@ -56,7 +56,7 @@
 | Thermal: hottest motor, non-stop task day (MC worst corner), in the BOM mount (closed sleeve + Al cap) | 70 °C (without the cap 103 °C) | ≤ 100 °C | ✅ |
 | R16 dexterity: bench table grid reachable with top-down / 45° / side / side across the body (rnd/dexterity.py) | 35% / 78% / 78% / 71% | ≥ 30 / 63 / 62 / 54 % | ✅ |
 | R15 swept spacing over the roll and yaw ranges: pairs under the hard limit (rnd/swept.py) | 0 (min roll 0.3 / yaw 1.0 mm) | 0 | ✅ |
-| R2b hand deflection, full compliance chain (P2 FEA + bearing play + tubes), 1 kg straight out: raw / after gravity model | 5.6 / 1.1 mm | ≤ 6 / ≤ 2 mm | ✅ |
+| R2b hand deflection, full compliance chain (P2 FEA + bearing play + tubes), 1 kg straight out: raw / after gravity model | 5.7 / 1.1 mm | ≤ 6 / ≤ 2 mm | ✅ |
 | A6 printed can wall, non-stop task day (enclosed +10 K): ASA limit 75 °C | 50 °C | ≤ 75 °C (ASA) | ✅ |
 | SW6 synthetic demos: expert success / rate (sw/gen_demos.py, LeRobot format) | 98% / 887 per h | ≥ 95 % / ≥ 500 per h | ✅ |
 | S0.4a pipeline dry run: BC policy from scratch, closed-loop success in the twin (info) | 10% (200 demos, CPU) | runs end to end | — |
