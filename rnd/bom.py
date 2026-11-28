@@ -46,9 +46,11 @@ def items(d=BASELINE, timer=None):
       "LEV100A5ANG $92 (Master Electronics); rest ESTIMATE")
     A("Wheels & power", "Regen clamp / bus discharge (A5 v2, Neon #2 F1): 3 × Vishay **NH-50** 0.56 Ω (non-inductive) + 3 × VS-40CPQ060-N3 freewheel Schottky + 3 × IRFB7530 + "
       "TLV3202 / TL431B, gate driver + gate resistors, film caps, 85 °C thermal switch (robot peak regen 2.8 kW; electrical.md)", 1, 3 * K.NH50[0] + K.CLAMP_PARTS,
-      "D29 #7: NH-50 NH050R5600FE02 " + K.NH50[1] + "; VS-40CPQ060-N3 RS £37 / 25; rest ESTIMATE")
-    A("Wheels & power", "Safety-board logic (netlist v3, electrical.md): discharge one-shot (LVC1G123 on Ā), LVC1G74 latch + power-on reset, LVC1G11 / LVC1G32 / LVC1G04 (K1 hold on AUX), UCC27524, "
-      "1 kΩ 3 W bleeder, 12 V buck + 3.3 V LDO, 2 × PC817, 2-layer PCB (the M1 bench board moves to the robot; its ideal diode stays on the bench)", 1, 40.0, "ESTIMATE")
+      "D29 #7: NH-50 NH050R5600FE02 " + K.NH50[1] + "; VS-40CPQ060-N3 RS £37 / 25; rest ESTIMATE. Accepted alternate: " + K.NH50_ALT)
+    A("Wheels & power", "Safety-board logic (netlist v4, electrical.md): discharge one-shot (LVC1G123 on Ā), LVC1G74 latch + power-on reset, LVC1G11 / LVC1G32 / LVC1G04 (K1 hold on AUX), UCC27524, "
+      "1 kΩ 3 W bleeder, 12 V buck + 3.3 V LDO, 2 × PC817, 2-layer PCB (the M1 bench board moves to the robot; its ideal diode stays on the bench); "
+      "**v4 (W17b): U28 SN74LVC1G74 RUN latch, U29 74LVC1G17 AUX debounce + BAT54 + 47 nF C0G + 2 × 1 % resistors**", 1, 40.0 + K.BOARD_V4[0],
+      "ESTIMATE $40; v4 parts " + K.BOARD_V4[1])
     A("Wheels & power", "Safety-board netlist v3 additions (Astra #3 critical 3, safety_board_sim.md): Q4 100 V logic-level coil driver (was a 30 V part seeing ≈ 52 V), "
       "U16 50 µs minimum-on one-shot, U17 AUX / K1 discrepancy monitor, U18 12 V UVLO; the branch current trip (ACS724-30A + RC + comparator) is the next line",
       1, K.BOARD_V3[0] - K.ACS724[0] + 1.0, K.BOARD_V3[1])
@@ -64,7 +66,8 @@ def items(d=BASELINE, timer=None):
       "+ IRFB7530 + 1 mΩ sense, VIN → VBUS_B, not on K1", 1, *K.Q9_SWITCH)
     A("Wheels & power", "Base channel (W15b) clamp leg Q10 / R7 / D7: 1 × Vishay **NH-50** 0.56 Ω ∥ VS-40CPQ060-N3, IRFB7530, U23 TLV3202 (on 26.0 / off 25.7 V) "
       "+ 2 µs filter, U24 50 µs min-on and the FORCE_B 100 ms one-shot (2 × LVC1G123), U22b UCC27517, passives: holds VBUS_B ≤ 26.3 V while the ramp regenerates",
-      1, K.NH50[0] + K.BASE_CLAMP_REST, f"NH-50 NH050R5600FE02 at ${K.NH50[0]:.0f} ESTIMATE (D29 #7, as the arm clamp line); the rest ESTIMATE (DigiKey-class)")
+      1, K.NH50[0] + K.BASE_CLAMP_REST, f"NH-50 NH050R5600FE02 at ${K.NH50[0]:.0f} ESTIMATE (D29 #7, as the arm clamp line; the RH-50 0.56 Ω with its "
+      "freewheel Schottky is the accepted alternate, W17b); the rest ESTIMATE (DigiKey-class)")
     A("Wheels & power", "Base channel (W15b) logic: U22 base watchdog WD_B (SN74LVC1G123, 25 ms, GPIO23), U26 DISC_B comparator + 50 ms RC (shorted Q9 → BMS "
       "discharge-off request), U27 photoMOS (AQV252G class: LATCH into U20 channel 1), R8 1 kΩ 3 W base bleeder", 1, *K.BASE_LOGIC)
     A("Wheels & power", "Base channel (W15b) S1c/d, S2c/d: 2 more NC contact blocks per mushroom (U20's two channels start from the button itself)", 4, *K.NC_BLOCK)
@@ -478,6 +481,7 @@ def savings(I):
 D29_BEFORE, D29_BEFORE_D20 = 6713.0, 6888.0     # bom.json before D29 (W14c)
 W15_BEFORE, W15_BEFORE_D20 = 6366.16, 6632.96    # bom.json after D29 (W15a), before the W15b base-channel and W14b pinch lines
 W16C_BEFORE, W16C_BEFORE_D20 = 6484.56, 6751.36   # bom.json after W15b + W14b, before the W16c R17 roll-stop lines
+W17B_BEFORE, W17B_BEFORE_D20 = 6541.16, 6807.96   # bom.json after W16c (W17c merged), before the W17b safety-board v4 parts
 # W16c line changes (before → after, $ of lines, no contingency): (item, before, after)
 W16C_ROWS = [
     ("Stepped stop bushes, 42CrMo4+QT, 2 per arm (out)", 4 * K.STOP_BUSH_P[0], 0.0),
@@ -516,8 +520,13 @@ def w15_block(I, tot, d=BASELINE):
     w15 = sum(q * u for n, q, u, _ in new if n.startswith("Base channel"))
     w14 = sum(q * u for n, q, u, _ in new if n.startswith("W14b"))
     b, a = sum(r[1] for r in W16C_ROWS), sum(r[2] for r in W16C_ROWS)
-    L = [f"**W16c R17 roll stop (2026-11-28): ${W16C_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - W16C_BEFORE)}); with D20 ${W16C_BEFORE_D20:,.0f} → "
-         f"${tot + HOLDS['d20']:,.0f}.** The roll hard stop moved under the front collar (rnd/parts/roll.py FRONT_STOP: two 7075 dogs on the output "
+    L = [f"**W17b safety board netlist v4 (2026-11-28): ${W17B_BEFORE:,.0f} → ${tot:,.0f} landed ({_sd(tot - W17B_BEFORE)}); with D20 "
+         f"${W17B_BEFORE_D20:,.0f} → ${tot + HOLDS['d20']:,.0f}.** The board's logic line gets the race fix (Fable #2 M2): U28 SN74LVC1G74 RUN latch, "
+         f"U29 74LVC1G17 AUX debounce, BAT54, 47 nF C0G, two 1 % resistors, +${K.BOARD_V4[0]:.2f} of lines (ESTIMATE). The three arm-clamp NH-50s and the "
+         "base clamp leg's NH-50 name the RH-50 0.56 Ω with its freewheel Schottky as the accepted alternate (W17b; no price change). The G-SB board "
+         "review (a hired EE ≈ $400–1,200 or community review $0) is a service on the M1 kit's Step 1b, outside this total.", ""]
+    L += [f"**W16c R17 roll stop (2026-11-28): ${W16C_BEFORE:,.0f} → ${W17B_BEFORE:,.0f} landed ({_sd(W17B_BEFORE - W16C_BEFORE)}); with D20 ${W16C_BEFORE_D20:,.0f} → "
+         f"${W17B_BEFORE_D20:,.0f}.** The roll hard stop moved under the front collar (rnd/parts/roll.py FRONT_STOP: two 7075 dogs on the output "
          f"adapter against two blocks on a 7075 ring, 3.91× at stall, joints.md): {_sd(a - b)} of lines ({_sd((a - b) * c)} landed). The M1 kit's Step 2 "
          "(hold B yes) carries one arm of it.", "",
          "| W16c line | Before $ | After $ |", "|---|---|---|"] + [f"| {n} | {x:,.2f} | {y:,.2f} |" for n, x, y in W16C_ROWS] + [
@@ -638,10 +647,10 @@ def cost_down_report(I, tot):
         ((n, sum(x for k, x in _split(n, q, u) if k == subname)) for c_, n, q, u, _ in I if not c_.startswith(("Contingency", "Docking"))),
         key=lambda kv: -kv[1])[:3] if v > 0)
     kt = K.totals()
-    bench = ("Mean Well", "bench supply", "Bench stand", "Test lever", "Lever stock", "Optical lever", "C14 dummy output", "PLACEHOLDER", "Category-0 catch", "sw/bringup.py", "CAN FD HAT", "PETG 3 kg",
-             "Epoxy (CF bonds)", "Stainless screw kit")
+    bench = ("Mean Well", "bench supply", "Bench stand", "Test lever", "Lever stock", "Optical lever", "dial test indicator", "C14 dummy output", "Category-0 catch",
+             "sw/bringup.py", "CAN FD HAT", "PETG 3 kg", "Epoxy (CF bonds)", "Stainless screw kit")
     m1 = K.step1() + K.step2_common() + K.HOLD_A["no"] + K.HOLD_B["yes"]
-    reuse = sum(q * u for _, n, q, u, _, _ in m1 if not any(b in n for b in bench)) * c
+    reuse = sum(q * u for g, n, q, u, _, _ in m1 if not (g.startswith("Step-1 rig") or any(b in n for b in bench))) * c   # W17a rig lines are bench-only
     L = ["# Cost-down list (generated by `python -m rnd.bom`; prices are list / ESTIMATE, nothing bought)", "",
          f"**Robot BOM ${tot:,.0f} landed** (${lines:,.0f} of lines + {CONTINGENCY:.0%} contingency), **${tot + d20:,.0f} with D20** (GIM8108-8 at pitch + elbow, "
          f"{_sd(d20)}), with the W15b base timer U20 = `{K.BASE_TIMER}` (owner decision pending; "
@@ -656,7 +665,7 @@ def cost_down_report(I, tot):
           f"Owner: \"I don't love more belts. You can decide the best route for the other stuff\"; the lead's route: sourcing-only rows now, the rest only where "
           f"its re-check passes (each behind a params switch). **${D29_BEFORE:,.0f} → ${W15_BEFORE:,.0f} landed ({_sd(W15_BEFORE - D29_BEFORE)}); with D20 ${D29_BEFORE_D20:,.0f} → "
           f"${W15_BEFORE_D20:,.0f}** (D20's delta grows {_sd(d20 - (D29_BEFORE_D20 - D29_BEFORE))} because the GIM6010s it replaces got cheaper). "
-          f"Rows counted: −${s29:,.0f} landed. Since then the W15b base channel, the W14b pinch parts and the W16c roll stop: **${tot:,.0f}** ({_sd(tot - W15_BEFORE)}, "
+          f"Rows counted: −${s29:,.0f} landed. Since then the W15b base channel, the W14b pinch parts, the W16c roll stop and the W17b board v4 parts: **${tot:,.0f}** ({_sd(tot - W15_BEFORE)}, "
           f"U20 `{K.BASE_TIMER}` timer, owner decision pending; {tt_alt}), {_sd(tot - 5500)} against the $5,500 limit ({_sd(tot + d20 - 5500)} with D20). "
           f"M1: Step 1a ${kt0['s1a_c']:,.0f}, Step 1b ${kt0['s1b_c']:,.0f}, Step 2 ${kt0['s2_plan_c']:,.0f} (kit ${kt0['plan_c']:,.0f}).", "",
           "| # | Row | D29 | Re-check / sourcing result | Counted (landed) |", "|---|---|---|---|---|"]
@@ -703,7 +712,7 @@ def cost_down_report(I, tot):
           "## Cash view: the M1 kit is not extra", "",
           "The M1 bench kit's arm and safety-board parts are the robot's (the bench board moves to the robot; the motors, bearings, pinions and hardware "
           "of one arm are one of the robot's two). The program's spend is the M1 kit plus the robot BOM less what M1 already bought; only the bench "
-          "supplies, the stand, the lever, the catch, the coupons and the Step-1 test kit stay on the bench ([M1_BENCH_ARM.md](../M1_BENCH_ARM.md)).", "",
+          "supplies, the Step-1 rig (stand, levers, discs, stops, guard, indicators), the catch, the coupons and the Step-1 test kit stay on the bench ([M1_BENCH_ARM.md](../M1_BENCH_ARM.md)).", "",
           f"- M1 kit, today's plan, with contingency: ${kt['plan_c']:,.0f} (Step 1a ${kt['s1a_c']:,.0f}, Step 1b ${kt['s1b_c']:,.0f} incl. the test kit ${kt['s1_test_c']:,.0f}, Step 2 ${kt['s2_plan_c']:,.0f}).",
           f"- Of it, robot parts (ESTIMATE: every line except the bench-only ones and the test kit): ≈ ${reuse:,.0f} → the robot after M1 needs ≈ ${tot - reuse:,.0f} more, "
           f"and the program total is ≈ ${kt['plan_c'] + tot - reuse:,.0f} (≈ ${kt['plan_c'] - kt['s1_instr_c'] + tot - reuse:,.0f} if the owner already has the test instruments).", ""]
@@ -822,6 +831,7 @@ if __name__ == "__main__":
                                                               "totals": timer_totals()},
                                                "w15b_w14b": {"before": W15_BEFORE, "before_d20": W15_BEFORE_D20},
                                                "w16c": {"before": W16C_BEFORE, "before_d20": W16C_BEFORE_D20},
+                                               "w17b": {"before": W17B_BEFORE, "before_d20": W17B_BEFORE_D20},
                                                "options": {n[:60]: q * u * (1 + CONTINGENCY) for n, q, u, _, _ in options()},
                                                "subsystems": {k: round(v * (1 + CONTINGENCY), 2) for k, v in subsystems(I).items()},
                                                "d29": {"before": D29_BEFORE, "before_d20": D29_BEFORE_D20,

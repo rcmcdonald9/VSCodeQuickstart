@@ -1,19 +1,19 @@
 {
- "total": 6541.16,
- "with_d20": 6807.96,
- "with_d20_inline": 6807.96,
+ "total": 6542.66,
+ "with_d20": 6809.46,
+ "with_d20_inline": 6809.46,
  "base_timer": {
   "selected": "board",
   "status": "pending owner decision (W15b U20; default board provisionally)",
   "totals": {
    "board": {
-    "total": 6541.16,
-    "with_d20": 6807.96,
+    "total": 6542.66,
+    "with_d20": 6809.46,
     "unit": 8.0
    },
    "g9sa": {
-    "total": 7108.54,
-    "with_d20": 7375.34,
+    "total": 7110.04,
+    "with_d20": 7376.84,
     "unit": 501.38
    }
   }
@@ -26,6 +26,10 @@
   "before": 6484.56,
   "before_d20": 6751.36
  },
+ "w17b": {
+  "before": 6541.16,
+  "before_d20": 6807.96
+ },
  "options": {
   "**Roll latch** (PIP_ROLL_GUARD=latch, default off; power_off": 32.199999999999996
  },
@@ -35,7 +39,7 @@
   "Base: wheels, tip, ballast": 663.26,
   "Lift + mast": 253.94,
   "Head + face": 170.53,
-  "Power + safety electronics": 990.29,
+  "Power + safety electronics": 992.01,
   "Compute, sensing, comms": 992.45,
   "Printing + covers + misc. fasteners": 402.48,
   "Dock": 83.95
