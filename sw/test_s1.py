@@ -836,8 +836,181 @@ def test_casters():
             f"{CASTER_PULSE_S * 1000:.0f} ms re-seat pulse ✅ (overrides: { {a: b for a, b in s.counts.items() if 'caster' in a or 'base' in a} })")
 
 
+def test_hand_speed():
+    """13. People-near hand-speed cap (R17 140 N first impact, rnd/hand_speed.py) and joint slew."""
+    from sw.safety import HAND_LEVER, PN_JOINT_V, PERSON_V, V_HAND_PN, Supervisor
+    dt = 0.002
+    sup, fk, t, q0 = _bench_sup()
+    k = sup.names.index("roll")
+    q0[k] = max(q0[k], sup.pn_lo[k] + 0.05)
+    assert sup.reset(q0, 0.002)
+    rng = np.random.default_rng(13)
+    sup.set_people_near(True, box=(sup.ws_lo, sup.ws_hi))
+    worst, worst_j, n = 0.0, 0.0, 0
+    for payload in (0.0, 1.0, 2.5, 4.54):
+        sup.set_payload(payload, box=(sup.ws_lo, sup.ws_hi))
+        cap = sup.hand_speed_cap()
+        assert payload > V_HAND_PN[-1][0] or abs(cap - next(v for kg, v in V_HAND_PN if payload <= kg + 1e-9) + np.hypot(*sup._v_base)) < 1e-12
+        qm = sup.last_q.copy()
+        for _ in range(1500):
+            t[0] += dt; sup.tick()
+            p_last, q_last = fk(sup.last_q), sup.last_q.copy()
+            v = sup.check(q0 + rng.normal(0, 2.0, 6), 30 * np.ones(6), np.ones(6), None, qm, np.zeros(6), dt)
+            assert not v.stop, v.reasons
+            sp = np.linalg.norm(fk(v.q) - p_last) / dt
+            worst = max(worst, sp / cap)
+            worst_j = max(worst_j, float(np.max(np.abs(v.q - q_last))) / dt)
+            n += 1
+            qm = v.q.copy()
+    assert worst <= 1.0 + 1e-6 and worst_j <= PN_JOINT_V + 1e-9, (worst, worst_j)
+    assert sup.counts.get("hand speed cap", 0) > 0
+    # the base speed comes off the arm's share: at PERSON_V the empty-hand cap drops by 0.1 m/s
+    sup.set_payload(0.0)
+    sup._v_base = np.array([PERSON_V, 0.0])
+    assert abs(sup.hand_speed_cap() - (V_HAND_PN[0][1] - PERSON_V)) < 1e-12
+    sup._v_base = np.zeros(2)
+    # off with nobody near: the full joint slew again
+    sup.set_people_near(False)
+    t[0] += dt; sup.tick()
+    q_last = sup.last_q.copy()
+    v = sup.check(q_last + 1.0, 30 * np.ones(6), np.ones(6), None, q_last, np.zeros(6), dt)
+    assert np.max(np.abs(v.q - q_last)) / dt > PN_JOINT_V + 0.1
+    # no fk: the joint-space bound Σ|Δq|·lever ≤ cap
+    r = Supervisor(power=False, clock=lambda: t[0])
+    qr = np.clip(np.zeros(6), r.lo, r.hi)
+    qr[k] = r.pn_lo[k] + 0.1
+    assert r.reset(qr, 0.002)
+    r.set_people_near(True)
+    lever = np.array([HAND_LEVER[nm] for nm in r.names])
+    over = 0
+    for _ in range(1000):
+        t[0] += dt; r.tick()
+        ql = r.last_q.copy()
+        v = r.check(qr + rng.normal(0, 1.0, 6), 30 * np.ones(6), np.ones(6), None, ql, np.zeros(6), dt)
+        over += float(np.sum(np.abs(v.q - ql) * lever)) / dt > r.hand_speed_cap() + 1e-9
+    assert over == 0, over
+    return (f"People-near hand-speed cap (R17 140 N, rnd/hand_speed.py): V_HAND_PN {V_HAND_PN} (payload kg, m/s) minus the base speed, "
+            f"joint slew ≤ {PN_JOINT_V} rad/s. Random policy on the bench twin with 0 / 1 / 2.5 / 4.54 kg: {n} cycles, **worst hand speed "
+            f"{worst:.3f} × the cap, worst joint rate {worst_j:.2f} rad/s**; at {PERSON_V} m/s of base speed the cap drops by {PERSON_V}; without "
+            f"an fk the bound Σ|Δq|·lever holds over 1000 cycles; off with nobody near ✅")
+
+
+def test_person_approach():
+    """14./15. SW-T6 person approaching (A10 from the real states) and SW-T7 basket carry only with the area clear."""
+    from sw.safety import (A_FREE, PERSON_A, PERSON_MAX_KG, PERSON_V, PERSON_WS, PN_PREP_RADIUS, PN_PREP_RELEASE, PeopleNearTrigger,
+                           Supervisor)
+    dt = 0.002
+    t = [0.0]
+    s = Supervisor(ws_lo=(0.0, -0.6, 0.0), ws_hi=(0.9, 0.6, 1.4), power=False, clock=lambda: t[0])
+    assert s.release_casters("transit")
+    for _ in range(2000):                                             # transit at 0.8 m/s
+        t[0] += dt
+        vb = s.limit_base([0.8, 0.0], dt)
+    a_tr = s.base_accel_limit()
+    s.set_person_approach(True)
+    assert s.approaching() and not s.people_near and s.casters_locked()
+    assert np.allclose(s.ws_hi, PERSON_WS[1]) and s.base_accel_limit() == PERSON_A and s.base_speed_limit() == PERSON_V
+    k = s.names.index("roll")
+    assert s.target_bounds()[0][k] == s.lo[k]                        # no D25 roll bound at the approach radius
+    t_br = None
+    for i in range(3000):
+        t[0] += dt
+        vc = s.limit_base([0.8, 0.0], dt)
+        if t_br is None and np.hypot(*vc) <= PERSON_V + 1e-9:
+            t_br = (i + 1) * dt
+    assert t_br is not None and abs(t_br - (0.8 - PERSON_V) / a_tr) < 0.01, t_br
+    assert not s.release_casters("threshold")
+    s.set_people_near(True)                                           # closer: people-near on top
+    s.set_people_near(False)                                          # back out to the approach zone: SW-T1 limits stay
+    assert s.approaching() and s.base_speed_limit() == PERSON_V
+    s.set_person_approach(False)
+    assert not s.approaching() and s.base_accel_limit() == A_FREE and np.allclose(s.ws_hi, (0.9, 0.6, 1.4))
+    # SW-T7: the basket (> PERSON_MAX_KG) moves only with the area clear and nobody approaching; default: not clear
+    s.set_payload(PERSON_MAX_KG + 2.0)
+    assert s.base_speed_limit() == 0.0
+    s.set_area_clear(True)
+    assert s.base_speed_limit() > 0.0
+    s.set_person_approach(True)
+    assert s.base_speed_limit() == 0.0
+    s.set_person_approach(False)
+    s.set_area_clear(False)
+    assert s.base_speed_limit() == 0.0
+    s.set_payload(PERSON_MAX_KG)                                      # 2.5 kg: travels without the clear-area input
+    assert s.base_speed_limit() > 0.0
+    # the approach trigger: a PeopleNearTrigger at the prep radius
+    tc = [0.0]
+    trg = PeopleNearTrigger(clock=lambda: tc[0], radius=PN_PREP_RADIUS, release=PN_PREP_RELEASE)
+    assert trg.update(None) and trg.update([PN_PREP_RADIUS - 0.1])
+    tc[0] += 0.1
+    assert trg.update([PN_PREP_RELEASE + 0.5])
+    tc[0] += 2.5
+    trg.update([PN_PREP_RELEASE + 0.5])
+    tc[0] += 0.1
+    assert not trg.update([PN_PREP_RELEASE + 0.5])
+    return (f"SW-T6 person approaching (≤ {PN_PREP_RADIUS} m, off beyond {PN_PREP_RELEASE} m): PERSON_WS box, casters locked, base braked "
+            f"from 0.8 m/s at the transit's {a_tr} m/s² to {PERSON_V} m/s in {t_br:.2f} s, releases refused, no D25 roll bound; "
+            f"people-near on top and off again keeps it. SW-T7: > {PERSON_MAX_KG} kg moves only with `set_area_clear(True)` and nobody "
+            f"approaching (default: held at 0 m/s) ✅")
+
+
+def test_roll_latch():
+    """16. Roll latch (R17 safe power-off, rnd/power_off.py O2): off by default; solenoid only healthy + nobody near."""
+    from sw.safety import LATCH_RETRACT_S, ROLL_GUARD, Supervisor
+    dt = 0.002
+    t = [0.0]
+    off = Supervisor(power=False, clock=lambda: t[0])
+    assert (ROLL_GUARD != "latch") == (not off.roll_latch) and (off.roll_latch or (not off.roll_latch_solenoid() and off.latch_state() is None))
+    s = Supervisor(power=False, clock=lambda: t[0], roll_latch=True)
+    k = s.names.index("roll")
+    pin = s.pn_lo[k]                                                   # +5° + the 3° margin
+    q = np.clip(np.zeros(6), s.lo, s.hi)
+    q[k] = pin + 0.2
+    assert s.reset(q, 0.002)
+    assert not s.roll_latch_solenoid() or s.latch_state() == "retracting"
+
+    def run(n, want_roll, qm, switch=None):
+        lowest = 9.0
+        for _ in range(n):
+            t[0] += dt; s.tick()
+            s.set_latch_switch(switch)
+            w = qm.copy(); w[k] = want_roll
+            v = s.check(w, 20 * np.ones(6), np.ones(6), None, qm, np.zeros(6), dt)
+            assert not v.stop, v.reasons
+            lowest = min(lowest, v.q[k])
+            qm = v.q.copy()
+        return qm, lowest
+    # 1. no switch: retracting for LATCH_RETRACT_S, the roll held ≥ the pin bound meanwhile, then free
+    qm, low = run(int(0.8 * LATCH_RETRACT_S / dt), s.lo[k], q)
+    assert s.latch_state() == "retracting" and s.roll_latch_solenoid() and low >= pin - 1e-12, (s.latch_state(), low, pin)
+    qm, low = run(int(1.0 / dt), s.lo[k], qm)
+    assert s.latch_state() == "retracted" and low < pin - 0.1
+    # 2. a person near: pin dropped at once; the bound never goes above the arm (it only stops it going lower)
+    s.set_people_near(True)
+    assert not s.roll_latch_solenoid() and s.latch_state() == "engaged"
+    r0 = qm[k]
+    qm, low = run(50, s.lo[k], qm)
+    assert low >= r0 - 1e-12
+    s.set_people_near(False)
+    # 3. with a switch: retracted only when it confirms; a switch that disagrees later puts the bound back
+    qm, _ = run(int(2.0 / dt), pin + 0.3, qm, switch=False)
+    assert s.latch_state() == "retracting" and qm[k] >= pin - 1e-12
+    qm, low = run(int(0.5 / dt), s.lo[k], qm, switch=True)
+    assert s.latch_state() == "retracted" and low < pin - 0.1
+    qm, _ = run(5, pin + 0.3, qm, switch=False)
+    assert s.latch_state() == "retracting"
+    # 4. any latched fault drops the pin (and the supervisor stops)
+    qm, _ = run(int(0.5 / dt), pin + 0.3, qm, switch=True)
+    assert s.roll_latch_solenoid()
+    s.press_estop()
+    assert not s.roll_latch_solenoid()
+    return (f"Roll latch (O2, PIP_ROLL_GUARD={ROLL_GUARD!r}: off by default): solenoid on only healthy + nobody near; without a switch the "
+            f"roll stays ≥ the +5° bound (+3° margin) for {LATCH_RETRACT_S * 1000:.0f} ms, with one until it confirms; a person near or an "
+            f"e-stop drops the pin at once; the bound never pulls the arm up ✅")
+
+
 def main():
-    out = [test_mit(), test_driver(), test_supervisor(), test_people_near(), test_collision(), test_power(), test_person_reach(), test_casters()]
+    out = [test_mit(), test_driver(), test_supervisor(), test_people_near(), test_collision(), test_power(), test_person_reach(), test_casters(),
+           test_hand_speed(), test_person_approach(), test_roll_latch()]
     from pathlib import Path
     Path("docs/sw").mkdir(parents=True, exist_ok=True)
     Path("docs/sw/s1_tests.md").write_text("# S1 software tests (generated by `python -m sw.test_s1`)\n\n" + __doc__.split("\n\n", 1)[1].strip()
