@@ -10,10 +10,14 @@ things for every drive shaft:
 2. **Shaft insertion.** A one-piece shaft carrying an element wider than the bearing seats of the walls it passes
    through (an integral pulley, flange or ferrule between or beyond two walls of a one-piece link) can't be put in.
    The shaft must be split (bolted pulley / flange), or the link must be split.
-3. **Tool access (R14 (c), Fable review C3).** Every drive-train fastener (cartridge flange ears, rear caps, seat caps,
-   pinch clamps, pitch hub, yaw flange, the inline roll's motor and clevis bolts) must be reachable on the assembled robot
-   with a real driver: Ø6 straight for 80 mm, or a ball-end at ≤ 25°.
-4. **Cartridge swap (R14 (d)).** Each bolted cartridge must come out with the belt on and the shaft in place.
+3. **Tool access (R14 (c), Fable review C3; probe = the requirement since Astra #3 major 13).** Every drive-train fastener
+   (cartridge flange ears, rear caps, seat caps, pinch clamps, pitch hub, yaw flange, the inline roll's motor and clevis
+   bolts) must have R14 (c)'s Ø12 clear along its axis for ≥ 50 mm on the assembled robot (a 7 mm socket on a 1/4" bit
+   holder, or a hex driver's shank, both ≤ Ø12; inside a counterbore the hex key itself, Ø3.5 across corners for M4, to
+   the mouth). A ball-end at ≤ 25° is reported but is not a pass: R14 (c) asks for access along the axis.
+4. **Cartridge swap (R14 (d)).** Each bolted cartridge must come out with the shaft in place and its BELT IN THE CHECK: a
+   closed belt loop encircles the stub, so the stub must leave the loop along its axis (its lowest point above the belt's
+   top edge) before any sideways move; the pinion may slide through the belt only during that axial move.
 """
 from __future__ import annotations
 
@@ -100,9 +104,10 @@ def cases():
 # R14 (c) tool access and (d) cartridge swap (Fable review C3, 2026-11-27). Both run on the whole robot (robot.build) at a
 # service pose, left arm, covers off (they are not built), plus the parts listed in REMOVED for the step.
 #
-# (c) A fastener passes when a real driver reaches it: a Ø6 shank straight along the screw axis for ≥ 80 mm from the head
-#     (inside a counterbore the probe is the hex key, Ø2.5, until the counterbore mouth), or a ball-end hex key tilted
-#     ≤ 25° (Ø6 shank, 8 azimuths at 15° and 25°). Blocked = the probe overlaps another part by > 0.5 mm³.
+# (c) Astra #3 major 13 (2026-11-28): the probe is R14 (c) itself, Ø12 straight along the screw axis for 50 mm from the
+#     head (inside a counterbore the hex key, Ø3.5, to the counterbore mouth); it was a Ø6 × 80 shank with a ball-end
+#     fallback. Ball-end (Ø6, 8 azimuths at 15° / 25°) is still tried and reported, as a deviation, not a pass. Blocked =
+#     the probe overlaps another part by > 0.5 mm³.
 # (d) A cartridge swap passes when, with its flange screws out (they pass (c)), the cartridge (sleeve + cap + motor +
 #     motor-side Oldham adapter + disc) slides out along its axis, sampled every 2.5 mm, without touching anything that
 #     stays (belt, pulley, shaft, bearings, shaft-side Oldham hub, walls): first until it is disengaged (spigot lip and
@@ -111,7 +116,15 @@ def cases():
 SERVICE_POSE = dict(lift=0.75, pitch=0.0, elbow=-90.0, wrist=0.0)   # arm down, forearm level (hand clear of the base)
 REMOVED_ALWAYS = ("cover", "boot", "duct")         # D23 covers / boots / ducts come off first for any drive service
 REMOVED_AT = {"pitch": ("torso_shell", "bracket_slot")}   # the pitch cartridges sit inside the torso: its half-shell comes off; D26: + the exit-slot key and strap
-DRIVER = dict(r=3.0, L=80.0, key_r=1.25, tilts=(15.0, 25.0), az=8, tol=0.5)
+DRIVER = dict(r=6.0, L=50.0, key_r=1.75, tilts=(15.0, 25.0), az=8, tol=0.5, ball_r=3.0, ball_L=80.0)   # R14 (c): Ø12 × 50
+# R14 (d) with the belt (Astra #3 m13): the closed loops (pitch, elbow, yaw) are built here in each stage frame and stay put.
+# Where the stub cannot leave the loop along its axis (the pitch: 12.6 mm behind the rear cap, the stub needs ≈ 34 mm), the
+# swap sequence takes the loop off first: arm detached, pitch hub (4 tie nuts) and the outer wall (3 × M4; it carries the
+# 6001 bushing) off, the belt off the flangeless 60T and the pinion's free end, then the cartridge goes 8.5 mm up and out
+# through wall A's U-slot. The outer wall must then go back to ≤ 0.05 mm (2 dowels, belts.STUB_MISALIGN bond) or the
+# bushing re-bonded.
+BELT_LOOPS = ("pitch", "elbow", "yaw")
+SWAP_BELT_OFF = {"pitch": ("bracket_wall", "pitch_hub", "l_roll_", "l_arm_")}
 
 
 def _frames(pose=SERVICE_POSE):
@@ -173,7 +186,8 @@ def _driver(T, pt, ax, cb=0.0, tilt=0.0, az=0.0):
     if cb > 0.3:
         pr = Plane(origin=tuple(p0), z_dir=tuple(u)).location * Cylinder(DRIVER["key_r"], cb, align=MINZ)
     p1 = p0 + max(cb, 0.0) * u
-    sh = Plane(origin=tuple(p1), z_dir=tuple(u)).location * Cylinder(DRIVER["r"], DRIVER["L"] - max(cb, 0.0), align=MINZ)
+    r, L = (DRIVER["ball_r"], DRIVER["ball_L"]) if tilt else (DRIVER["r"], DRIVER["L"])
+    sh = Plane(origin=tuple(p1), z_dir=tuple(u)).location * Cylinder(r, max(L - max(cb, 0.0), 1.0), align=MINZ)
     return T * (sh if pr is None else pr + sh)
 
 
@@ -262,7 +276,7 @@ def fasteners(fr=None):
         for k in range(m36["rear_n"]):
             a = 2 * _m.pi * k / m36["rear_n"] + roll.REAR_ANG0
             y, z = roll.ROLL_Y + m36["rear_pcd"] / 2 * _m.cos(a), m36["rear_pcd"] / 2 * _m.sin(a)
-            out.append(("roll (inline)", f"motor M4 × 18 {_m.degrees(a):.0f}° (yaw block + rear arm off)", fr["roll"], (roll.X_FLOOR[0], y, z), (-1, 0, 0), 0.0,
+            out.append(("roll (inline)", f"motor {roll.REAR_SCREW['size'].split(' ISO')[0]} {_m.degrees(a):.0f}° (yaw block + rear arm off)", fr["roll"], (roll.X_FLOOR[0], y, z), (-1, 0, 0), 0.0,
                         ("l_roll_yaw_", "l_roll_roll_arm_rear", "l_arm_"), "service"))      # M1: head flush in its counterbore
         for k in range(roll.ADAPT["n"]):
             a = 2 * _m.pi * k / roll.ADAPT["n"] + _m.pi / roll.ADAPT["n"]
@@ -282,7 +296,7 @@ def tool_access(parts=None, fr=None):
         P = [q for q in parts if not any(k in q[0] for k in removed) and (not only or any(q[0].startswith(k) for k in only))]
         hit = _hits(_driver(T, pt, ax, cb), P)
         if not hit:
-            rows.append((j, lab, kind, True, "straight Ø6 × 80", []))
+            rows.append((j, lab, kind, True, f"straight Ø{2 * DRIVER['r']:.0f} × {DRIVER['L']:.0f}", []))
             continue
         how = None
         for tilt in DRIVER["tilts"]:
@@ -292,7 +306,7 @@ def tool_access(parts=None, fr=None):
                     break
             if how:
                 break
-        rows.append((j, lab, kind, how is not None, how or "blocked", sorted(set(hit))))
+        rows.append((j, lab, kind, False, (how + " only (not R14 (c))") if how else "blocked", sorted(set(hit))))
     return rows
 
 
@@ -300,6 +314,22 @@ def _shift(T, d, x=0.0, y=0.0):
     """Location that moves stage-frame parts d along stage +Z (and x, y sideways), expressed in the robot frame."""
     from build123d import Pos
     return T * Pos(x, y, d) * T.inverse()
+
+
+def stage_belts(fr=None):
+    """The closed belt loops in each stage frame, mapped to the robot (the module CAD draws only the elbow's): joint → solid."""
+    from build123d import Pos
+    from .parts import arm, roll, shoulder
+    from .parts import belt_stage as bs
+    from . import belts as _b
+    fr = fr or _frames()
+    T = {j: t for j, t, _, _ in ear_sites(fr)}
+    z0 = bs.V3["belt_c"] - 7.5
+    g = shoulder.idler()
+    out = {"pitch": T["pitch"] * bs.belt_band(g["circles"], z0),
+           "elbow": T["elbow"] * Pos(0, 0, z0) * bs.belt_loop(_b.pd(20), _b.pd(arm.E_TEETH), arm.BELT_C, exact=True),
+           "yaw": T["yaw"] * Pos(0, 0, z0) * bs.belt_loop(_b.pd(20), _b.pd(40), roll.YAW_C, exact=True)}
+    return out
 
 
 def cartridge_swap(parts=None, fr=None, step=2.5):
@@ -316,20 +346,33 @@ def cartridge_swap(parts=None, fr=None, step=2.5):
     from .parts import belt_stage as bs
     wr = fr["forearm"] * Pos(0, 0, -arm.FORE_L) * Pos(0, hand.WRIST_HUB_Y + hand.KX56.gap + hand.cartridge_d_stack(), 0) * Rot(90, 0, 0)
     rows = []
+    belts_ = stage_belts(fr)
+    belt_note = {}
     for j, pre, T, m, site in jobs + [("wrist (hand off)", "l_arm_wrist_", wr, None, None)]:
         gone = REMOVED_ALWAYS + REMOVED_AT.get(j, ())
+        loop = []
         if j.startswith("wrist"):                       # can local +Z → −Y: it comes out toward the hand side
             names = [pre + k for k in ("can", "motor", "adapter")]
             stay = [q for q in parts if q[0] not in names and not q[0].startswith("l_arm_hand_")]
             length, dis, exit_a, wall_exit = hand.cartridge_d_stack() + 10.0, 3.0, None, None
-        elif drv.get(j) == "direct":                     # D26: stub, pulley and 6001 come out with it; the belt (released by the
-            # idler or, at a fixed centre, simply in mesh) slides off the single-flange pulley's teeth toward wall B and stays
+        elif drv.get(j) == "direct":                     # D26: stub, pinion and 6001 come out with it; Astra #3 m13: the
+            # closed belt stays and is IN the check (the pinion slides through it only along the axis, belts.BELT_LOOPS)
             names = [pre + k for k in ("can", "can_cap", "motor", "kx_hub_v2", "shaft_12", "al_pulley", "brg_B_6001")]
             stay = [q for q in parts if q[0] not in names and not (q[0].startswith(pre) and "belt" in q[0])]
             length = cm.stack_height_bolted(m) - bs.V4["end"] + 1.5
             exit_a = None
             wall_exit = cm.WALL_EXIT.get(site)
             dis = cm.DIRECT_LIFT if wall_exit is not None else -bs.V4["end"] + 0.5
+            if j in BELT_LOOPS:
+                need = bs.V3["belt_c"] + 7.5 - bs.V4["end"] + 0.5           # stub's lowest point above the loop's top edge
+                if wall_exit is not None and dis < need:                    # cannot leave the loop: the swap takes the loop off
+                    gone = gone + SWAP_BELT_OFF.get(j, ())
+                    belt_note[j] = (f"the stub needs {need:.1f} mm along its axis to leave the belt loop and has {dis:.1f}: "
+                                    f"sequence with {', '.join(x.strip('_').replace('l_', '') for x in SWAP_BELT_OFF.get(j, ()))} + the belt off first")
+                else:
+                    bl = belts_[j]
+                    loop = [(pre + "belt (stays)", bl, bl.bounding_box())]
+                    belt_note[j] = f"belt loop on, stub leaves it after {need:.1f} mm along its axis"
         else:
             names = [pre + k for k in ("can", "can_cap", "motor", "kx_hub_v2")]
             stay = [q for q in parts if q[0] not in names]
@@ -344,15 +387,20 @@ def cartridge_swap(parts=None, fr=None, step=2.5):
         body = mov[0]
         for p in mov[1:]:
             body = body + p
+        nonpin = [p for n, p, _ in parts if n in names and not n.endswith("al_pulley")]
+        body_np = nonpin[0]
+        for p in nonpin[1:]:
+            body_np = body_np + p
         free, block, d = 0.0, [], 0.5
         while d <= length + 5.0:
-            hit = _hits(_shift(T, d) * body, stay)
+            hit = _hits(_shift(T, d) * body, stay) + _hits(_shift(T, d) * body_np, loop)
             if hit:
                 block = hit
                 break
             free, d = d, d + step
+        note = f" [{belt_note[j]}]" if j in belt_note else ""
         if free >= length:
-            rows.append((j, True, f"straight out {length:.0f} mm along its axis", []))
+            rows.append((j, True, f"straight out {length:.0f} mm along its axis{note}", []))
             continue
         if free < dis:
             rows.append((j, False, f"stuck after {free:.1f} mm (needs {dis:.1f} to disengage)", sorted(set(block))))
@@ -365,14 +413,14 @@ def cartridge_swap(parts=None, fr=None, step=2.5):
         for dx, dy, lab in dirs:
             hit = []
             for s in range(10, 151, 10):
-                hit = _hits(_shift(T, dis, dx * s, dy * s) * body, stay)
+                hit = _hits(_shift(T, dis, dx * s, dy * s) * body, stay + loop)
                 if hit:
                     break
             if not hit:
-                how = f"{dis:.1f} mm along its axis, then 150 mm sideways through {lab}"
+                how = f"{dis:.1f} mm along its axis, then 150 mm sideways through {lab}{note}"
                 break
             side_block += hit
-        rows.append((j, how is not None, how or f"blocked after {free:.1f} mm along its axis, no sideways exit",
+        rows.append((j, how is not None, how or f"blocked after {free:.1f} mm along its axis, no sideways exit{note}",
                      [] if how else sorted(set(block + side_block))))
     return rows
 
@@ -402,15 +450,15 @@ def main():
     joints = list(dict.fromkeys(r[0] for r in tc))
     L += ["", "## R14 (c) tool access", "",
           f"Whole robot (rnd/parts/robot.py), left arm, service pose {pose}; covers, boots and ducts off"
-          + "".join(f"; at {j}: {', '.join(v)} off" for j, v in REMOVED_AT.items()) + ". A fastener passes with a Ø6 driver straight along "
-          f"its axis for {DRIVER['L']:.0f} mm from the head (the Ø2.5 key inside a counterbore), or a Ø6 ball-end tilted "
-          f"{' / '.join(f'{t:.0f}' for t in DRIVER['tilts'])}° at {DRIVER['az']} azimuths. 'swap' = undone for a cartridge swap.", "",
+          + "".join(f"; at {j}: {', '.join(v)} off" for j, v in REMOVED_AT.items()) + f". A fastener passes with R14 (c)'s Ø{2 * DRIVER['r']:.0f} clear straight along "
+          f"its axis for {DRIVER['L']:.0f} mm from the head (the Ø{2 * DRIVER['key_r']:.1f} hex key inside a counterbore; was Ø6 × 80, Astra #3 m13). A Ø6 ball-end tilted "
+          f"{' / '.join(f'{t:.0f}' for t in DRIVER['tilts'])}° at {DRIVER['az']} azimuths is tried where the straight probe is blocked and reported as a deviation (not a pass). 'swap' = undone for a cartridge swap.", "",
           "| Joint | Fasteners | Pass | Failures (blocked by) |", "|---|---|---|---|"]
     for j in joints:
         rs = [r for r in tc if r[0] == j]
         bad = [f"{r[1]} ({', '.join(x.replace('l_', '') for x in r[5][:3])})" for r in rs if not r[3]]
-        ball = sum(1 for r in rs if r[3] and r[4].startswith("ball"))
-        L.append(f"| {j} | {len(rs)} | {sum(r[3] for r in rs)}/{len(rs)}{f' ({ball} by ball-end)' if ball else ''} {'✅' if not bad else '❌'} | {'; '.join(bad) or '—'} |")
+        ball = sum(1 for r in rs if r[4].startswith("ball"))
+        L.append(f"| {j} | {len(rs)} | {sum(r[3] for r in rs)}/{len(rs)}{f' ({ball} only by ball-end)' if ball else ''} {'✅' if not bad else '❌'} | {'; '.join(bad) or '—'} |")
     L += ["", "<details><summary>Every fastener</summary>", "", "| Joint | Fastener | Kind | Result | Blocked by (straight) |", "|---|---|---|---|---|"]
     L += [f"| {j} | {lab} | {k} | {'✅' if ok else '❌'} {how} | {', '.join(b) or '—'} |" for j, lab, k, ok, how, b in tc]
     from .parts import cartridge_m as cm
@@ -423,7 +471,7 @@ def main():
           for j, s, ang, g, ok in er]
     L += ["", "## R14 (d) cartridge swap (belt on, shaft in place)", "",
           "Flange screws out (rows above), then the cartridge moves along its axis in 2.5 mm steps: straight out its own length, or, once "
-          "disengaged, 150 mm sideways. **D26 direct stages (pitch, elbow, yaw):** the cartridge takes its stub, pulley and 6001 with it "
+          "disengaged, 150 mm sideways. **D26 direct stages (pitch, elbow, yaw):** the cartridge takes its integral pinion shaft and 6001 with it; Astra #3 m13: the closed belt loop is in the check (built per stage, rnd/assembly_seq.py stage_belts) and the stub must leave it along its axis before any sideways move — where it cannot (the pitch), the sequence removes the loop first (SWAP_BELT_OFF). Before: "
           "(its length grows by the 42 mm stub); the belt, released by the pitch idler "
           "or in mesh at the fixed centres, slides off the single-flange pulley toward wall B and stays (the belt part is left out of this "
           "step); disengaged = the stub end clear of wall A, or, at the pitch, 8.5 mm (the 6001 out of wall B) and then down through wall "
