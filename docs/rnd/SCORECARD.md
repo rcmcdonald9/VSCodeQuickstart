@@ -5,7 +5,7 @@
 | Metric | Now | Target | |
 |---|---|---|---|
 | R17 pinch (HARD GATE; rnd/pinch.py): joint-nip fails / exposed drive parts (12 mm probe; every moving gap ≤ 8 mm or ≥ 25 mm over its range) | 13 / 0 | 0 / 0 | ❌ |
-| A10 tip-over (HARD GATE; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, with the rules sw/safety.py enforces | 16/16 (worst 36 mm); 16/16 (worst 36 mm) once SW-T1 person within reach, SW-T2 caster lock (D18b), SW-T4 threshold speed (D2b), SW-T6 person approaching (A10 real states), SW-T7 basket carry, SW-T8 payload-dependent locked speed are in the supervisor | 16/16 ≥ 30 mm | ✅ |
+| A10 tip-over (HARD GATE; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, with the rules sw/safety.py enforces | 16/16 (worst 36 mm); 16/16 (worst 36 mm) once SW-T1 person within reach, SW-T2 caster lock (D18b), SW-T4 threshold speed (D2b), SW-T6 person approaching (A10 real states), SW-T7 basket carry are in the supervisor | 16/16 ≥ 30 mm | ✅ |
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 101 mm | ≥ 50 mm | ✅ |
@@ -33,7 +33,7 @@
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
 | R4 15 mm threshold: peak torque margin (transient < 1 s) | 1.6× (6.8 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md): tracked, no hard target (owner 2026-11-26); lower is a priority | 24 h | minimise | — |
-| R8 cost from the itemised BOM (BOM_v4.md) | $6,541 | ≤ $5,500 limit (owner 2026-11-27; aim $4,000) | ❌ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $6,543 | ≤ $5,500 limit (owner 2026-11-27; aim $4,000) | ❌ |
 | R13 printed pieces that fit the P2S (256 mm) | 98/98 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
@@ -43,7 +43,7 @@
 | R4 sim: 15 mm threshold on hard floor + carpet (45°, ≤ 0.15 m/s), peak margin | crossed, 1.7× | cross, ≥ 1.5× | ✅ |
 | R4 sim: carpet cruise wheel torque (RMS / rated) | 2.2 / 5 N·m | ≤ 70 % | ✅ |
 | R4 15 mm threshold with the A10 v2 mass (rnd/threshold.py roller model re-run by rnd/tip.py, 45°): peak margin at 0.15 m/s (D2b) / 0.12 m/s (SW-T4) | 1.70× / 1.70× (33.9 kg) | ≥ 1.5× at the planner's crossing speed | ✅ |
-| A10 snag at the locked cap (rnd/tip.py W17: a locked caster meets a step edge; every carry state incl. the R2d basket in its real poses; energy ≤ 25 % of the tip energy, force ≤ ½ rod yield) | 2/23 at 0.25 m/s (basket 43 % / 699 N, allowed 0.19 m/s); SW-T8 locked cap by payload (≤ 6 kg 0.20; 6–10 kg 0.15 m/s) NOT in sw/safety.py; with it pass | every state at the cap sw/safety.py enforces | ❌ |
+| A10 snag at the locked cap (rnd/tip.py W17: a locked caster meets a step edge; every carry state incl. the R2d basket in its real poses; energy ≤ 25 % of the tip energy, force ≤ ½ rod yield) | 23/23 at 0.2 m/s (basket 16 % / 252 N, allowed 0.19 m/s); SW-T8 locked cap by payload (≤ 6 kg 0.20; 6–10 kg 0.15 m/s) in sw/safety.py pass | every state at the cap sw/safety.py enforces | ✅ |
 | R5 door stow (rnd/stow.py): whole-robot width across a 45° threshold crossing (D2b), both arms stowed, collision-free, cross-body gaps ≥ 25 mm, valid with people near (roll ≥ +8°) | 567 mm (clear 650 − 2 × 40), tip ≥ 82 mm | ≤ 570 mm, tip ≥ 30 mm | ✅ |
 | Monte Carlo fetch task (derate, mass, friction, μ, calib, can, offset) | 100/100 (95 % LB 96%), tip ≥ 66 mm | LB ≥ 90 %, tip ≥ 30 mm | ✅ |
 | FEA critical printed parts: min margin vs 12 MPa (across layers) | 2.5× (13 cases, max disp 0.40 mm) | ≥ 1.5×, disp < 2 mm | ✅ |
