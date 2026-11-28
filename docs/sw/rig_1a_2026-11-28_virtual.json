@@ -1,0 +1,41 @@
+{
+ "limits": {
+  "ok": true,
+  "limit_nm": 1.0,
+  "written": 1.0,
+  "readback": 1.0,
+  "timeout_counts": 600,
+  "timeout_readback": 600
+ },
+ "verify": {
+  "ok": true,
+  "answered_after_power_cycle": true,
+  "readback": 1.0,
+  "timeout_readback": 600,
+  "expected": [
+   1.0,
+   600
+  ]
+ },
+ "impedance": {
+  "ok": true,
+  "frames": 2000,
+  "hold_error_rad": 0.0145,
+  "law_error_nm": 0.0651,
+  "fault_status": [],
+  "span_rad": 0.1411
+ },
+ "timeout": {
+  "ok": true,
+  "status_after_silence": 13,
+  "silence_ms": 90.0
+ },
+ "stall": {
+  "ok": true,
+  "limit_nm": 1.0,
+  "demanded_peak_nm": 2.0,
+  "reported_plateau_nm": 0.9902,
+  "scale_nm": 0.9722,
+  "kt_check": 0.9817
+ }
+}

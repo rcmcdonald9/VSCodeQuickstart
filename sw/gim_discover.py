@@ -140,7 +140,8 @@ def main(argv=None):
         tag = "_virtual"
     else:
         bus = CanBus(a.bus)
-        print("Step-1 GIM alone on the bus, PSU current-limited, e-stop in reach (docs/rnd/electrical.md safety board).")
+        print("Step 1a: the GIM alone on the bus on its rig plate, hub + index disc only, supply 24.0 V / 1.0 A, its OFF button "
+              "in reach (docs/M1_RIG.md).")
         rep = discover(bus, a.id, a.enable, confirm=lambda t: input(t + " [type yes] ").strip() == "yes")
         bus.close()
         tag = ""

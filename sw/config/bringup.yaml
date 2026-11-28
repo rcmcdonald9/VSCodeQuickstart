@@ -45,3 +45,6 @@ gravity:
     - {pitch: -80, roll: 30, yaw: -30, elbow: -45,  wpitch: 45,  wroll: 0}
     - {pitch: 15,  roll: 40, yaw: 60,  elbow: -100, wpitch: 0,   wroll: 0}
     - {pitch: -45, roll: 5,  yaw: 0,   elbow: -20,  wpitch: 80,  wroll: 0}
+# Soak test (sw/soak.py) on the ARM (Step 2): the soak weight at the grasp point. The Step-1 rig's soak (discs on each lever,
+# ≈ 55 % of rated RMS) is in sw/config/rig_step1.yaml and used with --rig step1.
+soak: {mass_kg: 0.5}

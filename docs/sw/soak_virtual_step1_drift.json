@@ -1,0 +1,558 @@
+{
+ "definition": {
+  "hours": 2.0,
+  "load_frac": 0.5,
+  "freq_hz": 0.25,
+  "sample_s": 10.0,
+  "mass_kg": 0.0,
+  "load_band": [
+   0.45,
+   0.65
+  ],
+  "limits": {
+   "coulomb_pct": 20.0,
+   "viscous_pct": 25.0,
+   "kt_pct": 5.0,
+   "backlash_deg": 0.1,
+   "latency_mean_ms": 0.5,
+   "latency_p95_ms": 2.0
+  },
+  "rationale": "Coulomb \u00b120 % / viscous \u00b125 %: grease warm-up alone moves friction \u2248 10\u201320 %; K \u00b15 %: NdFeB magnets lose \u2248 0.1 %/K, a 40 K winding rise \u2248 4\u20135 %; backlash +0.1\u00b0: wear or a loosening stage, not warm-up; latency mean +0.5 ms, p95 +2 ms: the bus and the host must not get slower as the CPU heats (the Asimov throttling finding)."
+ },
+ "pre": {
+  "enumerate": "PASS",
+  "limits": "PASS",
+  "safety": "PASS",
+  "calibrate": "PASS"
+ },
+ "virtual": true,
+ "rig": "step1",
+ "load_kg": {
+  "yaw": 0.87,
+  "wpitch": 0.435
+ },
+ "status": "FAIL",
+ "fails": [
+  "yaw coulomb_pct +118.14 (limit 20.0)",
+  "wpitch coulomb_pct +30.26 (limit 20.0)"
+ ],
+ "motion": {
+  "seconds": 45.0,
+  "rms_torque_frac": {
+   "yaw": 0.522,
+   "wpitch": 0.512
+  },
+  "supervisor_stops": [],
+  "rejected_frames": 0
+ },
+ "drift": {
+  "yaw": {
+   "drift": {
+    "coulomb_pct": 118.143,
+    "viscous_pct": -6.713,
+    "kt_pct": 0.036,
+    "backlash_deg": 0.044,
+    "latency_mean_ms": -0.167,
+    "latency_p95_ms": -0.9
+   },
+   "ok": {
+    "coulomb_pct": false,
+    "viscous_pct": true,
+    "kt_pct": true,
+    "backlash_deg": true,
+    "latency_mean_ms": true,
+    "latency_p95_ms": true
+   }
+  },
+  "wpitch": {
+   "drift": {
+    "coulomb_pct": 30.261,
+    "viscous_pct": -0.815,
+    "kt_pct": 0.015,
+    "backlash_deg": -0.022,
+    "latency_mean_ms": -0.333,
+    "latency_p95_ms": -2.0
+   },
+   "ok": {
+    "coulomb_pct": false,
+    "viscous_pct": true,
+    "kt_pct": true,
+    "backlash_deg": true,
+    "latency_mean_ms": true,
+    "latency_p95_ms": true
+   }
+  }
+ },
+ "fits": {
+  "start": {
+   "yaw": {
+    "coulomb_nm": 0.16326,
+    "viscous_nms": 0.20869,
+    "kt_scale": 0.97545,
+    "backlash_rad": 0.003815,
+    "latency_ms": {
+     "mean": 2.167,
+     "p95": 2.9
+    }
+   },
+   "wpitch": {
+    "coulomb_nm": 0.05294,
+    "viscous_nms": 0.45253,
+    "kt_scale": 1.01863,
+    "backlash_rad": 0.004196,
+    "latency_ms": {
+     "mean": 2.333,
+     "p95": 4.0
+    }
+   }
+  },
+  "end": {
+   "yaw": {
+    "coulomb_nm": 0.35614,
+    "viscous_nms": 0.19468,
+    "kt_scale": 0.9758,
+    "backlash_rad": 0.004578,
+    "latency_ms": {
+     "mean": 2.0,
+     "p95": 2.0
+    }
+   },
+   "wpitch": {
+    "coulomb_nm": 0.06896,
+    "viscous_nms": 0.44884,
+    "kt_scale": 1.01878,
+    "backlash_rad": 0.003815,
+    "latency_ms": {
+     "mean": 2.0,
+     "p95": 2.0
+    }
+   }
+  }
+ },
+ "temps": {
+  "start": {
+   "yaw": null,
+   "wpitch": null
+  }
+ },
+ "determinism": {
+  "verdict": [
+   [
+    "kernel real-time (PREEMPT_RT)",
+    "\u2139\ufe0f",
+    "6.18.44-fc-v880 (PREEMPT_DYNAMIC (not RT)); policy SCHED_OTHER prio 0; isolated CPUs \u2014; governor None \u2014 not the Pi: informational"
+   ],
+   [
+    "CPU throttling / under-voltage (vcgencmd get_throttled)",
+    "\u2139\ufe0f",
+    "not available on this machine (skipped)"
+   ],
+   [
+    "CPU temperature",
+    "\u2139\ufe0f",
+    "no sensor readable (skipped)"
+   ],
+   [
+    "loop period (SW1: p99 |period \u2212 2 ms| < 1 ms)",
+    "\u2139\ufe0f",
+    "p50 0.55, p99.9 2.29, max 12.79 ms; jitter p99 1.62 ms; > 8 ms: 3 \u2014 virtual run: compute time per cycle, not a real-time measurement"
+   ],
+   [
+    "CAN B2 controller health",
+    "\u26a0\ufe0f",
+    "state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +3, RX dropped +2"
+   ],
+   [
+    "CAN B1 controller health",
+    "\u26a0\ufe0f",
+    "state ERROR-ACTIVE, TEC/REC 0/0, during the run: bus-off +0, restarts +0, bus errors +3, RX dropped +0"
+   ]
+  ],
+  "loop": {
+   "n": 61181,
+   "period_ms": 2.0,
+   "bins_ms": [
+    "0\u20131",
+    "1\u20131.5",
+    "1.5\u20131.9",
+    "1.9\u20132.1",
+    "2.1\u20132.5",
+    "2.5\u20133",
+    "3\u20134",
+    "4\u20136",
+    "6\u20138",
+    "8\u201312",
+    "12\u201325",
+    "> 25"
+   ],
+   "counts": [
+    57597,
+    3403,
+    74,
+    31,
+    24,
+    16,
+    13,
+    19,
+    1,
+    2,
+    1,
+    0
+   ],
+   "interval_ms": {
+    "p50": 0.545,
+    "p99": 1.191,
+    "p999": 2.293,
+    "p9999": 5.099,
+    "max": 12.795
+   },
+   "jitter_ms": {
+    "p99": 1.617,
+    "p999": 1.649,
+    "max": 10.795
+   },
+   "over_ms": {
+    "3": 36,
+    "4": 23,
+    "6": 4,
+    "8": 3,
+    "10": 2,
+    "15": 0,
+    "20": 0,
+    "25": 0
+   }
+  },
+  "samples": [
+   {
+    "machine": "x86_64",
+    "raspberry_pi": false,
+    "cpu_temp_c": null,
+    "throttled_raw": null,
+    "throttled_flags": [],
+    "cpu_freq": {
+     "cur_mhz": null,
+     "max_mhz": null,
+     "governor": null,
+     "vc_arm_hz": null
+    },
+    "rt": {
+     "kernel": "6.18.44-fc-v880",
+     "version": "#1 SMP PREEMPT_DYNAMIC @0",
+     "preempt_rt": false,
+     "preempt_model": "PREEMPT_DYNAMIC (not RT)",
+     "isolated_cpus": null,
+     "isolcpus_cmdline": false,
+     "sched_policy": "SCHED_OTHER",
+     "sched_priority": 0
+    },
+    "can": {
+     "B1": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 2,
+      "rx_dropped": 0,
+      "tx_dropped": 0
+     },
+     "B2": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 1,
+      "rx_dropped": 0,
+      "tx_dropped": 1
+     }
+    },
+    "cpus": 4,
+    "loadavg": [
+     4.26806640625,
+     4.73095703125,
+     3.92333984375
+    ],
+    "drive_temp_c": {
+     "yaw": 38,
+     "wpitch": 35
+    },
+    "t_s": 10.0
+   },
+   {
+    "machine": "x86_64",
+    "raspberry_pi": false,
+    "cpu_temp_c": null,
+    "throttled_raw": null,
+    "throttled_flags": [],
+    "cpu_freq": {
+     "cur_mhz": null,
+     "max_mhz": null,
+     "governor": null,
+     "vc_arm_hz": null
+    },
+    "rt": {
+     "kernel": "6.18.44-fc-v880",
+     "version": "#1 SMP PREEMPT_DYNAMIC @0",
+     "preempt_rt": false,
+     "preempt_model": "PREEMPT_DYNAMIC (not RT)",
+     "isolated_cpus": null,
+     "isolcpus_cmdline": false,
+     "sched_policy": "SCHED_OTHER",
+     "sched_priority": 0
+    },
+    "can": {
+     "B1": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 2,
+      "rx_dropped": 0,
+      "tx_dropped": 0
+     },
+     "B2": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 1,
+      "rx_dropped": 0,
+      "tx_dropped": 1
+     }
+    },
+    "cpus": 4,
+    "loadavg": [
+     4.16650390625,
+     4.7021484375,
+     3.91796875
+    ],
+    "drive_temp_c": {
+     "yaw": 39,
+     "wpitch": 35
+    },
+    "t_s": 20.0
+   },
+   {
+    "machine": "x86_64",
+    "raspberry_pi": false,
+    "cpu_temp_c": null,
+    "throttled_raw": null,
+    "throttled_flags": [],
+    "cpu_freq": {
+     "cur_mhz": null,
+     "max_mhz": null,
+     "governor": null,
+     "vc_arm_hz": null
+    },
+    "rt": {
+     "kernel": "6.18.44-fc-v880",
+     "version": "#1 SMP PREEMPT_DYNAMIC @0",
+     "preempt_rt": false,
+     "preempt_model": "PREEMPT_DYNAMIC (not RT)",
+     "isolated_cpus": null,
+     "isolcpus_cmdline": false,
+     "sched_policy": "SCHED_OTHER",
+     "sched_priority": 0
+    },
+    "can": {
+     "B1": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 2,
+      "rx_dropped": 0,
+      "tx_dropped": 0
+     },
+     "B2": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 1,
+      "rx_dropped": 0,
+      "tx_dropped": 1
+     }
+    },
+    "cpus": 4,
+    "loadavg": [
+     4.16650390625,
+     4.7021484375,
+     3.91796875
+    ],
+    "drive_temp_c": {
+     "yaw": 39,
+     "wpitch": 36
+    },
+    "t_s": 30.0
+   },
+   {
+    "machine": "x86_64",
+    "raspberry_pi": false,
+    "cpu_temp_c": null,
+    "throttled_raw": null,
+    "throttled_flags": [],
+    "cpu_freq": {
+     "cur_mhz": null,
+     "max_mhz": null,
+     "governor": null,
+     "vc_arm_hz": null
+    },
+    "rt": {
+     "kernel": "6.18.44-fc-v880",
+     "version": "#1 SMP PREEMPT_DYNAMIC @0",
+     "preempt_rt": false,
+     "preempt_model": "PREEMPT_DYNAMIC (not RT)",
+     "isolated_cpus": null,
+     "isolcpus_cmdline": false,
+     "sched_policy": "SCHED_OTHER",
+     "sched_priority": 0
+    },
+    "can": {
+     "B1": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 3,
+      "rx_dropped": 0,
+      "tx_dropped": 0
+     },
+     "B2": {
+      "state": "ERROR-ACTIVE",
+      "berr_tx": 0,
+      "berr_rx": 0,
+      "bus_off": 0,
+      "restarts": 0,
+      "bus_errors": 1,
+      "rx_dropped": 0,
+      "tx_dropped": 1
+     }
+    },
+    "cpus": 4,
+    "loadavg": [
+     4.2333984375,
+     4.70751953125,
+     3.923828125
+    ],
+    "drive_temp_c": {
+     "yaw": 40,
+     "wpitch": 36
+    },
+    "t_s": 40.0
+   }
+  ],
+  "start": {
+   "machine": "x86_64",
+   "raspberry_pi": false,
+   "cpu_temp_c": null,
+   "throttled_raw": null,
+   "throttled_flags": [],
+   "cpu_freq": {
+    "cur_mhz": null,
+    "max_mhz": null,
+    "governor": null,
+    "vc_arm_hz": null
+   },
+   "rt": {
+    "kernel": "6.18.44-fc-v880",
+    "version": "#1 SMP PREEMPT_DYNAMIC @0",
+    "preempt_rt": false,
+    "preempt_model": "PREEMPT_DYNAMIC (not RT)",
+    "isolated_cpus": null,
+    "isolcpus_cmdline": false,
+    "sched_policy": "SCHED_OTHER",
+    "sched_priority": 0
+   },
+   "can": {
+    "B1": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    },
+    "B2": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 0,
+     "rx_dropped": 0,
+     "tx_dropped": 1
+    }
+   },
+   "cpus": 4,
+   "loadavg": [
+    3.81298828125,
+    4.70458984375,
+    3.89306640625
+   ]
+  },
+  "end": {
+   "machine": "x86_64",
+   "raspberry_pi": false,
+   "cpu_temp_c": null,
+   "throttled_raw": null,
+   "throttled_flags": [],
+   "cpu_freq": {
+    "cur_mhz": null,
+    "max_mhz": null,
+    "governor": null,
+    "vc_arm_hz": null
+   },
+   "rt": {
+    "kernel": "6.18.44-fc-v880",
+    "version": "#1 SMP PREEMPT_DYNAMIC @0",
+    "preempt_rt": false,
+    "preempt_model": "PREEMPT_DYNAMIC (not RT)",
+    "isolated_cpus": null,
+    "isolcpus_cmdline": false,
+    "sched_policy": "SCHED_OTHER",
+    "sched_priority": 0
+   },
+   "can": {
+    "B1": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 3,
+     "rx_dropped": 0,
+     "tx_dropped": 0
+    },
+    "B2": {
+     "state": "ERROR-ACTIVE",
+     "berr_tx": 0,
+     "berr_rx": 0,
+     "bus_off": 0,
+     "restarts": 0,
+     "bus_errors": 3,
+     "rx_dropped": 2,
+     "tx_dropped": 1
+    }
+   },
+   "cpus": 4,
+   "loadavg": [
+    4.16064453125,
+    4.6630859375,
+    3.9306640625
+   ]
+  }
+ },
+ "drive_temp_end": {
+  "yaw": 40,
+  "wpitch": 36
+ }
+}

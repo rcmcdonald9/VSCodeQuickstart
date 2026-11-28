@@ -1,17 +1,22 @@
 """Soak test: hour 20 must behave like hour 1 (Asimov sim2real lesson 1; Step-1 exit criterion, docs/M1_BENCH_ARM.md).
-python -m sw.soak --bus socketcan:can0,can1 --estop gpiod:gpiochip0:17:27 --joints yaw,wpitch   (Step-1 rig, 2 h)
-python -m sw.soak --bus virtual [--seconds 60] [--fault drift]                                 (rehearsal)
+python -m sw.soak --rig step1 --bus socketcan:can0,can1 --estop gpiod:gpiochip0:17:27 --joints yaw,wpitch   (Step-1 rig, 2 h)
+python -m sw.soak --rig step1 --bus virtual [--seconds 60] [--fault drift]                                 (rehearsal)
 
 Definition (SOAK below):
 1. bring-up enumerate → calibrate (the zero; limits and the safety chain re-checked);
 2. **sysid fit at the start** (sw/sysid.py: friction, torque constant, backlash, latency) with the drives cold;
-3. **2 h cyclic motion at ≈ 50 % rated torque**: a 0.25 Hz sine (± the jog amplitude) on every joint around the angle where
-   gravity loads it most, with the soak weight on the lever (`--mass`, Step-1 rig: 2 kg at the 0.3 m lever end ≈ 59 % of
-   the GIM6010-8 yaw stage's rated torque); the supervisor in every cycle; every 60 s a determinism sample (CPU
+3. **2 h cyclic motion at ≈ 50–60 % rated torque**: a 0.25 Hz sine (± the jog amplitude) on every joint around the angle
+   where gravity loads it most, with the soak weight on. **Step-1 rig** (`--rig step1`, docs/M1_RIG.md): discs bolted
+   through each lever at 0.27 m, the GIM6010-8 lever 4 discs (1.04 kg with the carrier: 3.0 N·m horizontal, ≈ 55 % of its
+   5 N·m RMS over the sine), the DM-J4310 lever 2 discs (0.60 kg: 1.86 N·m, ≈ 57 % of 3 N·m RMS); the run FAILS if a
+   joint's measured RMS torque leaves the profile's `load_band` (45–65 %). (The old "2 kg at 0.3 m ≈ 59 %" assumed the
+   arm's 2:1 yaw stage: on the bare motor it was 118 % of rated, Fable review 2026-11-28.) The arm (Step 2): the
+   bringup.yaml soak weight at the grasp. The supervisor in every cycle; every 60 s a determinism sample (CPU
    temperature, throttle flags, CAN error counters, drive temperatures);
 4. **sysid fit at the end**, drives hot;
 5. PASS if every drift is inside LIMITS and the run was clean: no supervisor stop, no bus-off, no new throttle flag,
-   no implausible (corrupted) feedback frame, loop jitter p99 < 1 ms (on the Pi), CPU < 80 °C.
+   no implausible (corrupted) feedback frame, loop jitter p99 < 1 ms (on the Pi), CPU < 80 °C, and (when the profile
+   gives one) every joint's RMS torque inside the load band.
 Limits are what the simulator absorbs without randomising (sw/sysid.py NOT_RANDOMIZED): beyond them the dependence
 (e.g. on temperature) goes into the actuator model, or the hardware is fixed; the range is not widened.
 """
@@ -26,7 +31,7 @@ from pathlib import Path
 import numpy as np
 
 OUT = Path(__file__).resolve().parent.parent / "docs" / "sw"
-SOAK = dict(hours=2.0, load_frac=0.5, freq_hz=0.25, sample_s=60.0, mass_kg=2.0)
+SOAK = dict(hours=2.0, load_frac=0.5, freq_hz=0.25, sample_s=60.0, mass_kg=0.0, load_band=None)   # mass: the profile's (bringup.yaml / rig)
 LIMITS = dict(coulomb_pct=20.0, viscous_pct=25.0, kt_pct=5.0, backlash_deg=0.10, latency_mean_ms=0.5, latency_p95_ms=2.0)
 RATIONALE = ("Coulomb ±20 % / viscous ±25 %: grease warm-up alone moves friction ≈ 10–20 %; K ±5 %: NdFeB magnets lose ≈ 0.1 %/K, "
              "a 40 K winding rise ≈ 4–5 %; backlash +0.1°: wear or a loosening stage, not warm-up; latency mean +0.5 ms, p95 +2 ms: "
@@ -61,16 +66,13 @@ def drift(a, b):
 
 
 def _twin_mass(bu, kg):
-    """Put (kg > 0) or take off the soak weight in the twin's model at the grasp site (the gravity feed-forward)."""
-    from sw.collision import add_point_mass
+    """Put (kg) or take off (0) the soak weight in the twin's model (the gravity feed-forward): at the grasp site (arm) or
+    on the rig's levers ({joint: kg})."""
+    from sw.rig import capture, set_mass
     tw = bu.twin
-    hand = tw.mj.mj_name2id(tw.m, tw.mj.mjtObj.mjOBJ_BODY, "hand")
-    site = tw.mj.mj_name2id(tw.m, tw.mj.mjtObj.mjOBJ_SITE, "grasp")
-    if not hasattr(tw, "_hand0"):
-        tw._hand0 = (float(tw.m.body_mass[hand]), tw.m.body_ipos[hand].copy(), tw.m.body_inertia[hand].copy())
-    tw.m.body_mass[hand], tw.m.body_ipos[hand], tw.m.body_inertia[hand] = tw._hand0[0], tw._hand0[1].copy(), tw._hand0[2].copy()
-    if kg > 0:
-        add_point_mass(tw.m, hand, kg, tw.m.site_pos[site].copy())
+    if not hasattr(tw, "_mass0"):
+        tw._mass0 = capture(tw.m)
+    set_mass(tw.m, kg, tw._mass0)
 
 
 def _motion(bu, sup, seconds, cfg, log, samples):
@@ -84,8 +86,8 @@ def _motion(bu, sup, seconds, cfg, log, samples):
     bu._move(sup, centre, speed=bu.cfg["cal_speed"], settle=0.3)
     if cfg.get("mass_kg"):                                   # the soak weight, hung at the centre and known to the feed-forward
         from sw.sysid import _operator_mass
-        _operator_mass(bu, sup, float(cfg["mass_kg"]))
-        _twin_mass(bu, float(cfg["mass_kg"]))
+        _operator_mass(bu, sup, cfg["mass_kg"])
+        _twin_mass(bu, cfg["mass_kg"])
     w = 2 * math.pi * cfg["freq_hz"]
     n = int(seconds / bu.dt)
     rated = np.array([bu.J[j]["rated_nm"] for j in bu.names])
@@ -128,7 +130,8 @@ def run(bu, seconds=None, cfg=None, log=print):
     seconds = seconds if seconds is not None else cfg["hours"] * 3600
     bu.run_all(until="calibrate")
     pre = {s: bu.steps[s].status for s in ("enumerate", "limits", "safety", "calibrate")}
-    res = dict(definition=dict(cfg, limits=LIMITS, rationale=RATIONALE), pre=pre, virtual=bu.plant is not None)
+    res = dict(definition=dict(cfg, limits=LIMITS, rationale=RATIONALE), pre=pre, virtual=bu.plant is not None,
+               rig=bu.cfg.get("rig"), load_kg=bu.cfg.get("load_kg"))
     if any(v != "PASS" for v in pre.values()):
         res.update(status="FAIL", why=f"bring-up did not pass: {pre}")
         return res
@@ -164,6 +167,11 @@ def run(bu, seconds=None, cfg=None, log=print):
         fails.append(f"supervisor stop during the soak: {mot['supervisor_stops']}")
     if mot["rejected_frames"]:
         fails.append(f"{mot['rejected_frames']} implausible (corrupted) feedback frames during the soak")
+    band = cfg.get("load_band")
+    if band:                                                   # the soak ran at the intended load (Fable C1: it was 118 %)
+        for j, f in mot["rms_torque_frac"].items():
+            if not band[0] <= f <= band[1]:
+                fails.append(f"{j}: RMS torque {f:.0%} of rated outside the soak load band {band[0]:.0%}–{band[1]:.0%} (wrong weights or lever?)")
     fails += [f"{w}: {dd}" for w, lvl, dd in ver if lvl == "❌"]
     res.update(status="FAIL" if fails else "PASS", fails=fails, motion=mot, drift=D,
                fits=dict(start={j: _short(f) for j, f in s0.data["fits"].items()}, end={j: _short(f) for j, f in s1.data.get("fits", {}).items()}),
@@ -183,8 +191,10 @@ def write(res, name):
     (OUT / f"{name}.json").write_text(json.dumps(res, indent=1, default=str))
     d = res["definition"]
     L = [f"# Soak test {'(VIRTUAL rehearsal) ' if res['virtual'] else ''}— {res['status']} (generated by `python -m sw.soak`)", "",
-         f"Definition: {d['hours']} h at ≈ {d['load_frac']:.0%} rated (0.25 Hz sine, soak weight {d['mass_kg']} kg), sysid at the start and the end; "
-         f"limits {LIMITS}. {RATIONALE}", ""]
+         f"Machine: {'the ' + res['rig'] + ' lever rig (sw/config/rig_' + res['rig'] + '.yaml, docs/M1_RIG.md), session load ' + str(res.get('load_kg')) + ' kg of discs per lever' if res.get('rig') else 'the arm'}. "
+         f"Definition: {d['hours']} h at ≈ {d['load_frac']:.0%} rated (0.25 Hz sine, soak weight hung for the motion {d['mass_kg']} kg"
+         + (f", RMS torque band {d['load_band'][0]:.0%}–{d['load_band'][1]:.0%} of rated" if d.get("load_band") else "")
+         + f"), sysid at the start and the end; limits {LIMITS}. {RATIONALE}", ""]
     if res.get("why"):
         L.append(f"**{res['why']}**")
     if res.get("motion"):
@@ -206,8 +216,11 @@ def write(res, name):
     return L
 
 
+RIG_WEIGH_ERR_KG = 0.002     # virtual rig: mass on each weight bolt the twin does not know (the ±1 g kitchen-scale weighing, ×2)
+
+
 def main(argv=None):
-    from sw.bringup import ConsoleOperator, GpiodSafetyIO, build_virtual, load_cfg
+    from sw.bringup import RIG_CHOICES, ConsoleOperator, GpiodSafetyIO, build_virtual, load_cfg, rig_arg
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--bus", default="virtual")
     ap.add_argument("--estop", default=None)
@@ -217,23 +230,32 @@ def main(argv=None):
     ap.add_argument("--mass", type=float, default=None)
     ap.add_argument("--fault", action="append", default=[])
     ap.add_argument("--profile", default="usb", help="virtual bus profile (sw/bus_sim.py)")
+    ap.add_argument("--rig", default=None, choices=RIG_CHOICES, help="'step1' = the M1 Step-1 lever rig (docs/M1_RIG.md), 'arm' = "
+                    "the arm. REQUIRED on real hardware; virtual default: arm")
+    ap.add_argument("--load", default="soak", help="rig only: the session load (rig_<name>.yaml loads; the soak's discs by default)")
     a = ap.parse_args(argv)
+    rig = rig_arg(ap, a)
     joints = a.joints.split(",") if a.joints else None
     extra = {} if a.mass is None else dict(mass_kg=a.mass)
+    cfg = load_cfg()
+    if rig:
+        from sw.rig import apply
+        cfg = apply(cfg, rig, a.load)
     if a.bus == "virtual":
-        cfg = load_cfg()
+        from sw.virtual_arm import SIM_GIM
         cfg["cal_speed"] = 0.5
-        cfg["soak"] = dict(mass_kg=0.5, sample_s=10.0)          # the virtual DM path is the 3 N·m wrist: 0.5 kg, not the lever's 2 kg
+        cfg["soak"] = dict(cfg.get("soak") or {}, sample_s=10.0)
         bu, arm = build_virtual(cfg=cfg, faults=a.fault, bus=a.profile, joints=joints, log=print, act={},
-                                actuator_dir=Path(__file__).resolve().parent / "out" / "soak")
+                                actuator_dir=Path(__file__).resolve().parent / "out" / "soak",
+                                **(dict(gim_table=SIM_GIM, hand_extra_kg=RIG_WEIGH_ERR_KG) if rig else {}))
         secs = a.seconds if a.seconds is not None else (a.hours * 3600 if a.hours else 60.0)
         res = run(bu, secs, extra)
-        name = "soak_virtual" + ("_" + "_".join(f.replace(":", "-") for f in a.fault) if a.fault else "")
+        name = "soak_virtual" + (f"_{rig}" if rig else "") + ("_" + "_".join(f.replace(":", "-") for f in a.fault) if a.fault else "")
     else:
         from sw.can_map import load
         from sw.drivers.canbus import CanBus
         from sw.bringup import BringUp
-        cm = load()
+        cm = load(rig)
         kind, _, chans = a.bus.partition(":")
         chans = chans.split(",")
         buses, opened = {}, {}
@@ -245,11 +267,11 @@ def main(argv=None):
         if a.estop and a.estop.startswith("gpiod:"):
             _, chip, hb, aux = a.estop.split(":")
             io = GpiodSafetyIO(chip, hb, aux)
-        bu = BringUp(buses, cm, io=io, operator=ConsoleOperator(), joints=joints, actuator_dir=Path(__file__).resolve().parent / "out" / "soak")
+        bu = BringUp(buses, cm, cfg, io=io, operator=ConsoleOperator(), joints=joints, actuator_dir=Path(__file__).resolve().parent / "out" / "soak")
         if a.hours:
             extra["hours"] = a.hours
         res = run(bu, a.seconds, extra)
-        name = f"soak_{time.strftime('%Y-%m-%d')}"
+        name = f"soak_{time.strftime('%Y-%m-%d')}" + (f"_{rig}" if rig else "")
     print("\n".join(write(res, name)))
     raise SystemExit(0 if res["status"] == "PASS" else 1)
 
