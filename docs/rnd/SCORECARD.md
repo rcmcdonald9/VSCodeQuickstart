@@ -4,8 +4,8 @@
 
 | Metric | Now | Target | |
 |---|---|---|---|
-| R17 pinch (HARD GATE; rnd/pinch.py): joint-nip fails / exposed drive parts (12 mm probe; every moving gap ≤ 8 mm or ≥ 25 mm over its range) | 16 / 20 | 0 / 0 | ❌ |
-| A10 tip-over (HARD GATE; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, with the rules sw/safety.py enforces | 16/16 (worst 35 mm); 16/16 (worst 35 mm) once SW-T1 person within reach, SW-T2 caster lock (D18b), SW-T4 threshold speed (D2b), SW-T6 person approaching (A10 real states), SW-T7 basket carry are in the supervisor | 16/16 ≥ 30 mm | ✅ |
+| R17 pinch (HARD GATE; rnd/pinch.py): joint-nip fails / exposed drive parts (12 mm probe; every moving gap ≤ 8 mm or ≥ 25 mm over its range) | 13 / 0 | 0 / 0 | ❌ |
+| A10 tip-over (HARD GATE; rnd/tip.py): 16 cases (1 / 2.5 kg, load at a wheel / between, braking, 30 N push at 1 m), ZMP reserve over every heading, with the rules sw/safety.py enforces | 16/16 (worst 36 mm); 16/16 (worst 36 mm) once SW-T1 person within reach, SW-T2 caster lock (D18b), SW-T4 threshold speed (D2b), SW-T6 person approaching (A10 real states), SW-T7 basket carry, SW-T8 payload-dependent locked speed are in the supervisor | 16/16 ≥ 30 mm | ✅ |
 | R1 reach coverage, collision-free (6 target sets; counter = top-down or 45°) | 99% | ≥ 95 % | ✅ |
 | R2 two-handed tasks feasible | 4/4 | all | ✅ |
 | R12 min tip-over margin, 1 kg at reach | 101 mm | ≥ 50 mm | ✅ |
@@ -14,7 +14,7 @@
 | R2d 20 lb laundry basket, floor → carry → bed (rnd/basket.py: peak ≥ 1.5× pick / ≥ 2× and ≤ 15 K over a 2-min carry, tip ≥ 30 mm) | gim6010: FAIL (worst 0.65 of the rule); D20 (on hold, basket.json): pass → pass with D20 only | pass, default config | ❌ |
 | R3 upper core (arms detached) | 8.9 kg | ≤ 10 kg | ✅ |
 | R3 each arm (detaches at the shoulder KX) | 4.9 kg | ≤ 10 kg | ✅ |
-| R3 assembled upper (core + arms, for reference) | 18.7 kg | info | — |
+| R3 assembled upper (core + arms, for reference) | 18.8 kg | info | — |
 | R3 base module mass | 7.7 kg | ≤ 8 kg (piece limit 10) | ✅ |
 | R3 battery mass | 1.1 kg | ≤ 3 kg | ✅ |
 | R3 ballast blocks (A10 v2, removable, each its own carry piece) | 2 × 2.45 kg | ≤ 10 kg each | ✅ |
@@ -29,12 +29,12 @@
 | R12 socket bearing static safety (min) | 3.9 | ≥ 2 | ✅ |
 | R2 hand positioning error, joint chain RSS at 0.6 m (with joint-side encoders; without) | 0.9 mm (4.3) | ≤ 2 mm | ✅ |
 | R2 torso sway from mast bending (worst static) | 1.6 mm | ≤ 2 mm | ✅ |
-| R5 lift: torque margin / full-travel time | 1.73× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
+| R5 lift: torque margin / full-travel time | 1.72× / 3.5 s | ≥ 1.5× / ≤ 6 s | ✅ |
 | R6 base speed at rated motor rpm | 0.96 m/s | ≥ 0.8 m/s | ✅ |
-| R4 15 mm threshold: peak torque margin (transient < 1 s) | 1.6× (6.7 of 11 N·m peak) | ≥ 1.5× | ✅ |
+| R4 15 mm threshold: peak torque margin (transient < 1 s) | 1.6× (6.8 of 11 N·m peak) | ≥ 1.5× | ✅ |
 | R10 first-build hands-on time (estimate, BUILD_v4.md): tracked, no hard target (owner 2026-11-26); lower is a priority | 24 h | minimise | — |
-| R8 cost from the itemised BOM (BOM_v4.md) | $6,366 | ≤ $5,500 limit (owner 2026-11-27; aim $4,000) | ❌ |
-| R13 printed pieces that fit the P2S (256 mm) | 97/97 | all | ✅ |
+| R8 cost from the itemised BOM (BOM_v4.md) | $6,485 | ≤ $5,500 limit (owner 2026-11-27; aim $4,000) | ❌ |
+| R13 printed pieces that fit the P2S (256 mm) | 98/98 | all | ✅ |
 | R13 cross-module clashes > 1 cm³ (3 lift heights) | 0 | 0 | ✅ |
 | Twin v1: drive + pick from floor + place on table (dynamic, real actuator limits) | success | success | ✅ |
 | Twin v1: robustness (±15 mm perception error, 0.2–0.6 kg) | 8/8 | all | ✅ |
