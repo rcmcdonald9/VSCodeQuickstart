@@ -20,12 +20,13 @@ rnd/video/web_steps.json; this script resolves them against the CAD:
 
 Meshes are not decimated: the CAD's facets are kept, vertices are split at creases sharper than CREASE so curved
 faces shade smoothly and edges stay crisp, positions are quantised to int16 inside each part's bounding box
-(≤ 0.02 mm), normals to int8, indices uint16. One file per step: models/sNN.bin. The page (web_assembly_page.html,
+(≤ 0.02 mm), normals to int8, indices uint16. One file per step: models/sNN.txt (base64 of the binary layout). The page (web_assembly_page.html,
 copied to OUT_DIR/index.html) decodes them; three.js 0.147.0 from jsDelivr.
 """
 from __future__ import annotations
 
 import fnmatch
+import base64
 import json
 import math
 import re
@@ -203,7 +204,7 @@ def main(argv):
     parts = split_parts(load_parts(src, lst), sd.get("split", []))
     step_of, steps = resolve(sd["steps"], parts, sd["poses"])
     (out / "models").mkdir(parents=True, exist_ok=True)
-    for old in (out / "models").glob("s*.bin"):
+    for old in list((out / "models").glob("s*.bin")) + list((out / "models").glob("s*.txt")):
         old.unlink()
     manifest = []
     blobs = {si: bytearray() for si in range(len(steps))}
@@ -222,9 +223,10 @@ def main(argv):
         if not b:                                         # a step that adds no parts (the finished robot)
             files.append(dict(path=None, bytes=0))
             continue
-        fn = f"models/s{si + 1:02d}.bin"
-        (out / fn).write_bytes(bytes(b))
-        files.append(dict(path=fn, bytes=len(b)))
+        fn = f"models/s{si + 1:02d}.txt"                  # base64 text: artifacts don't serve raw .bin
+        txt = base64.b64encode(bytes(b)).decode("ascii")
+        (out / fn).write_text(txt)
+        files.append(dict(path=fn, bytes=len(txt)))
     lo = np.min([p["mesh"].bounds[0] for p in parts], axis=0)
     hi = np.max([p["mesh"].bounds[1] for p in parts], axis=0)
     doc = dict(

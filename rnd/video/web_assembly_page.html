@@ -376,7 +376,11 @@ button { font: inherit; color: inherit; }
     if (!f.path) { buildFile(fi, null); return; }
     const res = await fetch(f.path);
     if (!res.ok) throw new Error(f.path + ": HTTP " + res.status);
-    const buf = await res.arrayBuffer();
+    const b64 = await res.text();             // model data is served as base64 text
+    const raw = atob(b64.trim());
+    const bytes = new Uint8Array(raw.length);
+    for (let j = 0; j < raw.length; j++) bytes[j] = raw.charCodeAt(j);
+    const buf = bytes.buffer;
     bytesDone += f.bytes;
     loadProgress();
     buildFile(fi, buf);
