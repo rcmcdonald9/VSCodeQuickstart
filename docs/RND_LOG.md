@@ -1448,3 +1448,17 @@ One long push instead of half-hour runs. In order:
 - tip.py now reads the caps from sw/safety.py. The snag is re-run on the real basket carry poses (basket.py IK, both arms, IK lift height, COM 0.12 m below the handles, 62 % share, twin inertia). **The pivot moved to the support polygon:** W15b's caster line sits 65 mm behind a wheel that's still on the floor, so the base can't rotate about it.
 - **At 0.25 m/s, 2/23 states pass:** the basket uses 18–43 % of the tip energy at 599–699 N per foot against the 440 N rod limit, and every loaded or arms-out state is over the rod limit. Allowed speeds: basket 0.19 m/s, 2.5 kg 0.22, ≤ 1 kg 0.23.
 - **SW-T8 (queued for the software owner):** payload-dependent locked cap: ≤ 6 kg 0.20, 6–10 kg 0.15, no travel above 10 kg (all 23 states pass). New scorecard row "A10 snag at the locked cap", ❌ until SW-T8 lands. D28 holds (8.2 m needed vs 9.5 m). The SW-T6 margin is down to ≈ 4 cm (3.46 m vs 3.5 m). A bench snag test (spec in tip.md) could bring the ≤ 6 kg band back to 0.25.
+
+### 2026-11-28 W17c merged (Step-1 split, coupons, W16c BOM)
+- **Step 1 split** per Fable #2:
+  - **Step 0 (free):** read the GIM6010-8 manual; send the six seller questions (Q1 now quotes the real 26.0 / 25.7 V clamp window; Q6 also asks for the output bearing type, rating, PCD, pilot and thread depth).
+  - **1a, $768 landed:** bare GIM at 1 A plus the C14 tilt tools; no lever weight on the motor.
+  - **Gate to buy 1b (all four):** discovery done, board drawn and reviewed with the logic race fixed, rig designed, C14 measured.
+  - **1b, $1,925:** supply at 24.0 V, board, test kit (no differential probe), pinion only after C14, rig placeholder.
+  - Step 2 $1,537; kit $4,230.
+- **Coupons:**
+  - C12 insert pull-out: M3 ≥ 1.0 kN, M4 ≥ 1.5 kN.
+  - C13 4-ear flange: 16.5 N·m fresh, 13 N·m after 72 h at 50 °C, tipping at 16.1 N·m.
+  - C14 drive stub: output tilt ≤ 18 kN·m/rad (ESTIMATE) keeps the hinged stub; 8 × M3 holds 16.5 N·m + 360 N.
+  - C1/C2/C5 retired (KX, eccentric); joints.md coupons queued.
+- **W16c BOM:** stop bushes out; 19.5 mm adapter blank, 7075 front stop rings and countersunk screws in. Robot **$6,485 → $6,541** ($6,808 with D20, $7,109 with the G9SA). Build guide step 7b updated.
