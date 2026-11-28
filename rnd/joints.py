@@ -812,46 +812,50 @@ def roll_rows(loads=None):
                             f"it does not bind or blind the collision observer. **Deleting the 61806** (the review's option) needs the motor's output bearing to carry "
                             f"{Fs:.0f} N radial + {Ms:.1f} N·m tilting in service and {Ff:.0f} N + {Mf:.0f} N·m at a fault (about its own centre): only a crossed-roller "
                             f"or a preloaded pair with M0 ≥ {Mf:.0f} N·m qualifies. Seller question still open (output bearing type, C0, M0) — until then the 61806 stays")))
-    # (d) hard stops: steel stop bushes on two of the rear screws, through the rear plate into the motor housing
-    sp = roll.STOP_BUSH
-    rR = roll.STOP_R
-    F35, Fst = limit / (rR / 1000), stall / (rR / 1000)
-    t = rs["plate_t"]
-    a = sp["a"] + t / 2                                               # contact → plate mid-plane (the pivot)
-    L = t / 2 + rs["grip"] - t                                        # pivot → motor face
-    p_max = lambda F: 3 * F * a / (sp["d_thru"] * L ** 2)             # rigid bush, linear print pressure to the motor face (R2 at the screw ignored)
-    R_pl = lambda F: F + p_max(F) * sp["d_thru"] * L / 2
-    M_step = lambda F: F * (a + t / 2) - R_pl(F) * t / 2
-    Z = lambda D, d: math.pi * (D ** 4 - d ** 4) / (32 * D)
-    s_thru = M_step(Fst) / Z(sp["d_thru"], sp["bore_lo"])
-    s_top = Fst * sp["a"] / Z(sp["d"], sp["bore"])
-    b_pl = R_pl(Fst) / (sp["d"] * t)
-    pad = lambda F: F / (sp["strip"][0] * sp["strip"][1])
-    cand = [("print", SIGMA_FAULT / p_max(Fst)), ("bush", sp["Rp"] / s_thru), ("plate", sp["plate_Rp"] / b_pl), ("pad", SIGMA_FAULT / pad(Fst)),
-            ("print at the limit", SIGMA_SERVICE / p_max(F35)), ("pad at the limit", SIGMA_SERVICE / pad(F35))]
+    # (d) hard stops (R17, 2026-11-28): two 7075 dogs on the output adapter against two 7075 blocks on the front stop ring
+    # (roll.FRONT_STOP), inside the static front collar. W13's steel bushes on the rear plate are gone (rnd/pinch.py).
+    f = roll.FRONT_STOP
+    ang = roll.front_stop_angles()
+    xb0 = roll.X_MOT[0] + M["body_h"] + f["base_t"]                    # ring top (blocks' root)
+    x_lo, xt = xb0 + f["dog_lo"], roll.X_ADAPT[0] - f["top_gap"]       # dog tip, block top: the contact band
+    rc = (f["dog"][0] + f["dog"][1]) / 2                                # contact radius (mm)
+    F35, Fst = limit / (rc / 1000), stall / (rc / 1000)                 # total, both dogs
+    share = 1.0                                                         # the more-loaded dog takes it all (one dog touches first; ESTIMATE, 0.5 nominal)
+    b_d, h_d = f["dog"][1] - f["dog"][0], rc * math.radians(f["dog_ang"])
+    a_d = roll.X_ADAPT[0] - (x_lo + xt) / 2                             # dog root (adapter back face) → contact centre
+    rb = (f["blk"][0] + f["blk"][1]) / 2
+    b_b, h_b = f["blk"][1] - f["blk"][0], rb * math.radians(ang["W"])
+    a_b = (x_lo + xt) / 2 - xb0                                         # block root (ring top) → contact centre
+    s_dog = lambda F: share * F * a_d / (b_d * h_d ** 2 / 6)
+    s_blk = lambda F: share * F * a_b / (b_b * h_b ** 2 / 6)
+    p_c = lambda F: share * F / (b_d * (xt - x_lo))
+    rs8 = 8.78                                                          # M4 stress area, mm²
+    T_fr = 8 * rs["preload"] * 0.7 * rs["mu"] * STOP_SCREW_R / 1000      # ring friction at 70 % of the rear-plate preload (embedding, ESTIMATE)
+    tau_scr = lambda T: max(0.0, T - T_fr) * 1000 / (8 * STOP_SCREW_R) / rs8
+    cand = [("dog", f["Rp"] / s_dog(Fst)), ("block", f["Rp"] / s_blk(Fst)), ("contact", f["Rp"] / p_c(Fst)), ("ring screws", 0.6 * 940.0 / max(tau_scr(stall), 1e-6))]
     mg = min(v for _, v in cand)
-    wall = rR - sp["d_thru"] / 2 - roll.CUP_R
-    old_wall = 43.0 - 5.0 - (roll.MOT36["drv_d"] / 2 + 0.5)
     rows.append(dict(item="M1 roll hard stops (both ends)",
-                     before=(f"Ø10 pins at r 43 'pressed 18.5 mm into the floor + cup ring': the cup ring is r 38–48, so the seat had {old_wall:.0f} mm of wall to the "
-                             f"driver bore and {48 - 48:.0f} mm outside (and the pins were not in the CAD); 30 MPa at stall in that seat (1.35× of 40)"),
-                     after=(f"steel stop bushes (Ø{sp['d']:.0f} × {sp['proud']:.0f} proud) on two of the 8 rear M4, clamped to the motor housing through the rear plate: "
-                            f"at stall print {p_max(Fst):.1f} MPa, bush {s_thru:.0f} MPa, plate {b_pl:.0f} MPa, pad {pad(Fst):.0f} MPa → {mg:.2f}× (worst of the six)"),
+                     before=("W13: steel stop bushes (Ø10 × 8 proud) on two of the 8 rear M4, against stainless strips in roll_arm_rear's edges: "
+                             "1.81× at stall, but they stood 8 mm proud of the rear plate, the one non-round static feature in front of the yaw hood "
+                             "(rnd/pinch.py R17: cover_yaw × roll_gim_housing 0.1 … 8.0 mm)"),
+                     after=(f"two {f['mat']} dogs on the output adapter (r {f['dog'][0]:.0f}–{f['dog'][1]:.1f}, {f['dog_ang']:.0f}°) against two blocks on a 3 mm ring "
+                            f"under the front collar ({ang['W']:.1f}°), 180° apart (a couple: no radial load on the motor bearing): at stall, one dog taking it all, "
+                            f"dog {s_dog(Fst):.0f} MPa, block {s_blk(Fst):.0f} MPa, contact {p_c(Fst):.0f} MPa, ring screws {tau_scr(stall):.0f} MPa → {mg:.2f}× (worst of four)"),
                      ok=mg >= 1.5, margin=mg,
-                     basis=(f"F = τ / r: {F35:.0f} N at {limit:.1f} N·m, {Fst:.0f} N at stall, contact {sp['a']:.0f} mm off the plate. The bushes sit on the screw circle "
-                            f"(r {rR:.0f}) at {roll.STOP_LUG_ANG[0]:.2f}° / {roll.STOP_LUG_ANG[1]:.2f}° (REAR_ANG0 {math.degrees(roll.REAR_ANG0):.2f}°, rear arm half-width "
-                            f"{roll.ARM_HW:.2f}: contact at {roll.STOP_AT[0]}° / {roll.STOP_AT[1]}°). Load path: bush → plate (Ø{sp['d']:.0f} × {t:.0f} fitted, "
-                            f"{R_pl(Fst) / 1e3:.2f} kN, {b_pl:.0f} MPa vs 7075-T6 σ_y {sp['plate_Rp']:.0f}) → the 6 csk screws (cone seats) → the motor housing: the stall "
-                            f"torque closes housing ↔ output in metal; the print sees only the bush's Ø{sp['d_thru']:.0f} × {L - t / 2:.0f} mm tail as a foundation "
-                            f"(rigid bush on the plate pivot, linear pressure: {p_max(Fst):.1f} MPa at stall, {p_max(F35):.1f} at the limit). Bush {sp['mat']} "
-                            f"(R_p0.2 ≥ {sp['Rp']:.0f}, EN 10083-3): {s_thru:.0f} MPa in the Ø{sp['d_thru']:.0f}/{sp['bore_lo']} tail at the plate, {s_top:.0f} MPa in the "
-                            f"Ø{sp['d']:.0f}/{sp['bore']} head. Edge distances: plate ring r {roll.PLATE_R[0]:.0f}–{roll.PLATE_R[1]:.0f}: {roll.PLATE_R[1] - rR - sp['d'] / 2:.0f} mm "
-                            f"outside the Ø{sp['d']:.0f} hole, load along the ring (end distance ≥ 3 d to the next screw); print: {wall:.1f} mm from the tail to the driver pilot "
-                            f"(load tangential). Wear strip 20 × 8 × 1.5 stainless bonded in each roll_arm_rear edge: {pad(F35):.1f} / {pad(Fst):.1f} MPa on the print")))
+                     basis=(f"F = τ / r: {F35:.0f} N at {limit:.1f} N·m, {Fst:.0f} N at stall (r {rc:.2f}, both dogs; the check puts it all on one). Contact band "
+                            f"x {x_lo:.1f}–{xt:.1f} ({xt - x_lo:.1f} mm) × {b_d:.1f} mm radial. Dog: cantilever from the adapter's back face, {a_d:.2f} mm to the "
+                            f"contact centre, root {b_d:.1f} × {h_d:.1f} mm; block: from the ring top, {a_b:.2f} mm, root {b_b:.1f} × {h_b:.1f} mm; 7075-T6 σ_y "
+                            f"{f['Rp']:.0f} MPa (as the rear plate), contact against σ_y. Stop angles: blocks at "
+                            + ", ".join(f"{a0:.2f}…{a1:.2f}°" for a0, a1 in ang["block"]) + f"; contact at {roll.STOP_AT[0]}° / {roll.STOP_AT[1]}°. Load path: "
+                            f"dog → block → ring → {f['csk']} (friction {T_fr:.1f} N·m at 70 % of 1.6 kN each, the rest in shear on the M4 stress area; the "
+                            f"Ø60.6 bore on the motor's Ø60 step pilots it) → housing; the adapter ↔ output-boss joint (row (a)) carried the stop torque before too. "
+                            f"The printed clevis / yaw block / rear arm no longer carry the motor's stall torque into the stop. 7075 on 7075 at a rare hard-stop "
+                            f"contact: hard-anodise both (ESTIMATE; wear coupon)")))
     return rows
 
 
 BRG_BORE_M = 0.030
+STOP_SCREW_R = 42.0                         # mm: the front stop ring's M4 circle (motor PCD 84)
 
 
 def report(loads=None):
@@ -901,8 +905,8 @@ def report(loads=None):
               "| Case | 61806 | Motor bearing (with the 61806) | Motor alone: radial | Motor alone: tilting | Roll torque | Pose |", "|---|---|---|---|---|---|---|"]
         L += [f"| {c} | {v['R1']:.0f} | {v['R2']:.0f} | {v['F']:.0f} | {v['Mm']:.1f} | {v['T']:.1f} | {v['note']} |" for c, v in lb.items()]
     L += ["", "Coupons to add (docs/COUPONS.md): a printed tube clamped as wave 3 (no sleeves) at 8.8 MPa, 1000 h at 40 °C with a load washer (measures φ, "
-          "the ESTIMATE behind the 'before' rows), the sleeved joint's moment to gap, the 7075 threads of the yaw flange, the stop bush in its print "
-          "foundation at 2.4 kN, the output dowels' slip torque on a seller motor."]
+          "the ESTIMATE behind the 'before' rows), the sleeved joint's moment to gap, the 7075 threads of the yaw flange, the front stop's dog "
+          "on its block at 3 kN (anodised 7075 pair, 100 hits: wear and dent), the output dowels' slip torque on a seller motor."]
     ok = all(r["verdict"] for r in jr) and all(r["ok"] for r in rr) and all(r["after"]["ok"] for r in face_rows(loads) if "after" in r)
     return "\n".join(L), ok, jr, rr, lb
 
