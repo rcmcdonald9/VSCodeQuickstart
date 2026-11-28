@@ -222,17 +222,22 @@ class SimMotor:
 
 class SimSafetyIO:
     """A5 v2 stop circuit: mushroom NC contacts + watchdog monostable in series with the contactor coil; aux contact read
-    back. `arm()` is the operator's reset/arm button (monitored manual reset: never closes on its own)."""
+    back. `arm()` is the operator's reset/arm button (monitored manual reset: never closes on its own).
+    t_release: contactor release time after the coil is switched off (default 0: opens at once); set WD_S to the
+    monostable's worst tolerance (× 1.2) and t_release to the datasheet's 10 ms for timing tests (sw/test_s2.py). Once the
+    coil is off the board's LATCH is cleared, so the contactor opens even if the heartbeat comes back in the meantime."""
     WD_S = 0.025                    # default; VirtualArm passes bringup.yaml watchdog_s (electrical.md: sized on sw/loop_jitter.py)
 
-    def __init__(self, clock, stuck=False, wd_dead=False, wd_s=None):
+    def __init__(self, clock, stuck=False, wd_dead=False, wd_s=None, t_release=0.0):
         self.clock, self.stuck, self.wd_dead = clock, stuck, wd_dead
         if wd_s is not None:
             self.WD_S = float(wd_s)
+        self.t_release = float(t_release)
         self.button = False
         self.closed = False
         self.last_hb = None
         self.t_open = None
+        self.t_coil_off = None          # when the coil lost its drive (watchdog / button), before the contacts open
         self.listeners = []
 
     def heartbeat(self):
@@ -243,15 +248,27 @@ class SimSafetyIO:
         if not self.closed:
             return
         hb_lost = (not self.wd_dead) and (self.last_hb is None or now - self.last_hb > self.WD_S)
-        if (self.button and not self.stuck) or hb_lost:
+        if self.t_coil_off is None and ((self.button and not self.stuck) or hb_lost):
+            self.t_coil_off = now
+        if self.t_coil_off is not None and now - self.t_coil_off >= self.t_release - 1e-12:
             self.closed = False
             self.t_open = now
+            self.t_coil_off = None
+            for f in self.listeners:
+                f(False)
+
+    def drop(self):
+        """The contactor opens without a command: supply trip, coil wire broken (the LATCH clears with it)."""
+        if self.closed:
+            self.closed = False
+            self.t_open = self.clock()
+            self.t_coil_off = None
             for f in self.listeners:
                 f(False)
 
     def arm(self):
         now = self.clock()
-        if self.button or self.last_hb is None or now - self.last_hb > self.WD_S:
+        if self.button or self.last_hb is None or now - self.last_hb > self.WD_S or self.t_coil_off is not None:
             return False
         if not self.closed:
             self.closed = True

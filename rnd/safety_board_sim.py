@@ -122,7 +122,7 @@ def regen_profiles(which, envelope=True, scale=1.0):
             out[j] = [(0.0, 0.0), (1e-3, P), (T, P), (T + 1e-3, 0.0)]
         else:
             ts = r["t"]
-            tw = r["I"] * r["w"] / ts * r["w"]            # τ·ω at the start
+            tw = r["I"] * r["w"] / ts * r["w"] if "I" in r else r["P"]    # τ·ω at the start (lift: a linear ramp, no copper term)
             cu = tw - r["P"]                              # copper loss (constant at peak torque)
             pts = [(0.0, 0.0)] + [(1e-3 + ts * k / 20, max(tw * (1 - k / 20) - cu, 0.0) * scale) for k in range(21)]
             out[j] = pts
