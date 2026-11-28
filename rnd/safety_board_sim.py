@@ -270,12 +270,13 @@ def clamp_dump(which="robot", envelope=True, scale=1.0, corner="high", v_in=el.V
     edges = int(np.sum(np.diff((d["v(drv)"] > 6).astype(int)) == 1))
     drive = {n: float(d[f"v({n})"][on].max()) for n in nodes}
     worst = max(drive, key=drive.get)
-    e_in = sum(float(np.trapezoid([p for _, p in pr], [t_ for t_, _ in pr])) for pr in prof.values())
+    per_node = [prof[nodes[n]["joint"]] for n in nodes if nodes[n]["joint"] in prof]
+    e_in = sum(float(np.trapezoid([p for _, p in pr], [t_ for t_, _ in pr])) for pr in per_node)
     t_run = float(d.get("aborted_at", t[-1]))
     return dict(which=which, envelope=envelope, scale=scale, corner=corner, variant=variant, method=method, t_end=t_end, t_run=t_run,
                 aborted=d.get("aborted_at") is not None, why=d.get("why", ""), rise_fall=corners(variant)[corner],
                 v_drive_min=float(min(d[f"v({n})"][t > 3e-3].min() for n in nodes)) if (t > 3e-3).any() else None,
-                regen_P=sum(max(p for _, p in pr) for pr in prof.values()), regen_E=e_in,
+                regen_P=sum(max(p for _, p in pr) for pr in per_node), regen_E=e_in,
                 v_board_max=float(d["v(vbus)"][on].max()), v_board_min=float(d["v(vbus)"][t > 3e-3].min()) if (t > 3e-3).any() else None,
                 v_drive_max=drive[worst], worst_node=nodes[worst] | {"id": worst}, drives={n: round(v, 3) for n, v in drive.items()},
                 v_drain_max=float(d["v(d1)"].max()), i_leg_max=float(np.max(np.abs(d["i(VIR1)"]))),
@@ -533,7 +534,7 @@ def fuse_coordination():
     for name, rating, wname, bench in cases:
         w = WIRES[wname]
         rows = []
-        for I in (1.1 * rating, 1.35 * rating, 25.0, 30.0, 40.0, 43.0, 52.0, 80.0, 150.0):
+        for I in sorted({round(1.1 * rating, 1), round(1.35 * rating, 1), 25.0, 30.0, 40.0, 43.0, 52.0, 80.0, 150.0}):
             if bench and I >= psu_lo:
                 t_open, who = 0.01, f"supply latch ({psu_lo:.1f}–{psu_hi:.1f} A)"
             else:
@@ -629,7 +630,7 @@ class Board:
     def _step(self):
         self.t += self.DT
         t = self.t
-        stop = self.s_pressed or not self.wd_ok or not self.th1 or not self.logic_on
+        stop = self.s_pressed or not self.wd_ok or not self.th1 or not self.logic_on or (self.fix and "no_12v" in self.faults)   # fix 4: 12 V UVLO
         if self.latch and (stop or self.pre_timeout or t < self.por_until or self.force):
             self.latch = False
             self.events.append((t, "LATCH cleared"))
@@ -660,10 +661,16 @@ class Board:
         if self.aux_prev and not aux and not k2_drive:         # U6: Ā falling edge, CLR̄ = ¬K2_DRIVE
             self.force_until = t + el.T_FORCE
             self.events.append((t, "FORCE"))
-        if self.fix and self.k1_cmd_off_t is not None and not self.k1_coil and aux and t - self.k1_cmd_off_t >= 0.020 and self.force_until < t:
-            self.force_until = t + el.T_FORCE                   # K1 commanded open 20 ms ago and the aux still says closed
-            self.events.append((t, "FORCE (K1 failed to open)"))
-            self.k1_cmd_off_t = None
+        if self.fix:                                          # fix 3: K1 discrepancy monitor, coil command ≠ AUX for > 30 ms
+            if self.k1_coil != aux:
+                self.disc_t = t if getattr(self, "disc_t", None) is None else self.disc_t
+                if t - self.disc_t > 0.030 and self.force_until < t:
+                    self.force_until = t + el.T_FORCE
+                    self.latch = False
+                    self.events.append((t, "FORCE (K1 discrepancy)"))
+                    self.disc_t = None
+            else:
+                self.disc_t = None
         self.aux_prev = aux
         if self.latch and self.pre_t0 is not None and not aux and t - self.pre_t0 > el.T_PRE_TIMEOUT:
             self.pre_timeout = True
@@ -746,16 +753,18 @@ def logic_scenarios():
         f = [t for t, e in b.events if e.startswith("FORCE") and t > t0]
         k1o = next((t for t, e in b.events if e == "K1 open" and t > t0), None)
         res.append(dict(case="AUX wire breaks while running", variant=tag, ok=not b.k1,
-                        detail=f"FORCE at +{1e3 * (f[0] - t0):.1f} ms while K1 still closed: the clamp loads the supply "
-                               f"{el.V_FULL / (el.CLAMP['r_each'] / 3):.0f} A until K1 opens at +{1e3 * (k1o - t0):.1f} ms (LATCH cleared by FORCE); stop, fail-safe"
-                        if f and k1o else f"FORCE {bool(f)}, K1 {'closed' if b.k1 else 'open'}"))
+                        detail=f"discrepancy → FORCE at +{1e3 * (f[0] - t0):.0f} ms and LATCH cleared, K1 open at +{1e3 * (k1o - t0):.0f} ms (the clamp "
+                               f"loads the supply for the release time: the bench supply may latch); stop, fail-safe"
+                        if f and k1o else "no FORCE (U6 is held cleared: K2_DRIVE = LATCH ∧ ¬AUX goes high and K2 re-closes), K1 stays closed on PRE_OK: "
+                                          "a latent fault; the next stop gets **no forced discharge** (≈ 300 ms of bus on the drives' idle draw). "
+                                          "Only the Pi sees it (AUX_OK low → supervisor e-stop latch)"))
         # 6. AUX stuck closed (welded aux, shorted opto) before an ARM
         b = Board(fix=fix, faults=("aux_stuck",))
         _run_hb(b, 0.15)
         b.press_arm()
         _run_hb(b, 0.1)
         k1_no_pre = b.k1 and max(v for *_, v in b.log[:int(0.15 / b.DT) + 300] or [(0, 0, 0, 0, 0, 0)]) < 1.0
-        vb_at_close = next((lg[5] for lg in b.log if lg[2]), None)
+        vb_at_close = next((b.log[i - 1][5] for i, lg in enumerate(b.log) if lg[2] and i), None)
         res.append(dict(case="AUX stuck closed, then ARM", variant=tag, ok=not b.latch,
                         detail=("K1 closes on an empty bus (pre-charge bypassed: Q4 holds on AUX, K2_DRIVE = ¬AUX is off), "
                                 f"bus {0.0 if vb_at_close is None else vb_at_close:.1f} V at closing → inrush limited only by ESR / wiring; "
@@ -773,9 +782,10 @@ def logic_scenarios():
                                "no aux edge → no FORCE; the bus stays powered from the supply; only the Pi (DISABLE frames) and the drives' CAN timeout remain"))
         # 8. 12 V clamp supply lost (U2 dead) while running and regenerating
         b = arm_and_run(Board(fix=fix, faults=("no_12v",)))
-        res.append(dict(case="12 V gate-driver supply lost (U2 / F2) while running", variant=tag, ok=False,
-                        detail="the comparator still switches but UCC27524 has no supply: no clamp, no FORCE. Regen then charges the bus "
-                               "without limit (M1 1.3 kW into 7 mF: 25 → 28 V in ≈ 2 ms) — needs a 12 V UVLO into the coil chain (see fixes)"))
+        res.append(dict(case="12 V gate-driver supply lost (U2 / F2) while running", variant=tag, ok=not b.k1,
+                        detail=("12 V UVLO → STOP: K1 opens, LATCH cleared (the bus then has no clamp: the 1 kΩ bleeder and the SMDJ33A only)" if fix else
+                                "the comparator still switches but UCC27524 has no supply: no clamp, no FORCE, and K1 stays closed. Regen then charges the bus "
+                                f"without limit (M1 1.3 kW into 7 mF: 25 → 28 V in ≈ {1e3 * 7.05e-3 * (28 ** 2 - 25.2 ** 2) / 2 / 1328:.0f} ms)")))
     return res
 
 
@@ -837,7 +847,7 @@ def report_md(R):
          "|---|---|---|---|---|---|---|---|---|---|---|"]
     vname = {"v3": "v3 as drawn", "v3+ton": "v3 thresholds + filter + on-time", "fix": "proposed"}
     for d in R["dumps"]:
-        ok = (not d["aborted"]) and d["v_drive_max"] <= el.V_DRIVE_MAX - 0.5 and d["v_drain_max"] <= 48 and (d["v_drive_min"] or 0) > el.V_FULL
+        ok = (not d["aborted"]) and d["v_drive_max"] <= el.V_DRIVE_MAX - 0.5 and d["v_drain_max"] <= 48 and d["rise_fall"][1] > el.V_FULL + 0.2
         wn = d["worst_node"]
         case = f"{vname[d['variant']]}, {'envelope' if d['envelope'] else 'decel profile'}{' ×%.2f' % d['scale'] if d['scale'] != 1 else ''}, {d['corner']} corner"
         if d["aborted"]:
@@ -850,7 +860,7 @@ def report_md(R):
                  f"{d['e_res_each']:.0f} J | {d['f_sw_mean'] / 1e3:.1f} kHz | {'✅' if ok else '❌'} |")
     L += ["", "Nodes: T = shoulder pitch drive (end of the bench lead / lift umbilical), R = roll (after the pitch spiral and the detach plug), Y = yaw, "
           "E = elbow drive + node, W = DM-J4310. Limits: drive ≤ 28 V − 0.5 V = 27.5 V (GIM6010 12–28 V); MOSFET drain ≤ 48 V (80 % of 60 V); the lowest drive "
-          "voltage while chopping > 25.2 V (the clamp does not pull the bus under a full pack); NH-50 ≤ "
+          "voltage is shown for the ESR dips; the off threshold at the low corner must clear a full pack (> 25.4 V); NH-50 ≤ "
           f"{el.NH50['overload'] * el.NH50['p_rated'] * el.NH50['t_overload'] * el.CLAMP['adiabatic']:.0f} J per pulse (25 % of the 5 s overload rating).", "",
           "**What it shows.** (1) **As drawn, the clamp rings at MHz:** the clamp's turn-on pulls the board node down by ≈ 146 A × C1's ESR plus the film "
           "capacitor's sag (≈ 2 V), more than the 1.2 V hysteresis window, so the 55 ns TLV3202 switches straight off, the node jumps back, and it "
@@ -879,10 +889,11 @@ def report_md(R):
           f"15 drivers at the {el.I_IDLE_DRIVER * 1e3:.0f} mA ESTIMATE draw {15 * el.I_IDLE_DRIVER:.2f} A, plus the 12 V DC-DC and the nodes downstream of the "
           "contactor. **Board test T3 measures the real idle draw; the robot needs R3 ≤ 2.2 Ω (with a relay rated for the 11.5 A inrush) if it is over 0.6 A.**", "",
           "## 3. Watchdog loss → contactor drop → forced discharge", "",
-          "| Coil suppression | Hold current | Coil current to drop-out (15 %) | Q4 drain peak | Q4 (IRLB8721) V_DS rating | |", "|---|---|---|---|---|---|"]
+          "| Coil suppression | Q4 | Hold current | Coil current to drop-out (15 %) | Q4 drain peak | |", "|---|---|---|---|---|---|"]
     for c in R["coil"]:
-        L.append(f"| {c['suppression']} | {c['i_hold'] * 1e3:.0f} mA | {_f(c['t_dropout'] and c['t_dropout'] * 1e3, 1, ' ms')} | **{c['v_drain_max']:.1f} V** | 30 V | "
-                 f"{'❌ avalanche every stop' if c['v_drain_max'] > 30 else '✅'} |")
+        vds = 30.0 if "30 V" in c.get("q4", "") else 100.0
+        L.append(f"| {c['suppression']} | {c.get('q4', '')} | {c['i_hold'] * 1e3:.0f} mA | {_f(c['t_dropout'] and c['t_dropout'] * 1e3, 1, ' ms')} | **{c['v_drain_max']:.1f} V** | "
+                 f"{'❌ avalanches at every stop (the Zener path never conducts; V_DS 30 V)' if c['v_drain_max'] > 0.8 * vds else '✅ ≤ 80 % of V_DS'} |")
     L += ["", "| Bus | K1 open → board < UVLO | → far drive < UVLO (node) | Peak discharge current | |", "|---|---|---|---|---|"]
     for d in R["discharge"]:
         L.append(f"| {d['which']} | {_f(d['t_uvlo_board'] and d['t_uvlo_board'] * 1e3, 1, ' ms')} | {_f(d['t_uvlo_far'] and d['t_uvlo_far'] * 1e3, 1, ' ms')} "
@@ -913,22 +924,28 @@ def report_md(R):
 
 
 DESIGN_CHANGES = [
+    "0. **Clamp comparator: 2 µs RC on the divider + a 50 µs minimum on-time** (one more SN74LVC1G123 on OV ↑, ORed with OV and FORCE before the "
+    "UCC27524). As drawn the clamp's own turn-on step at the board node is larger than its hysteresis and it rings at MHz (section 1). "
+    "**Thresholds: on at 26.0 V, off at 25.7 V** (was 27.0 / 25.8 V as the corners were computed): ± 1 % still clears a full pack and every drive gains ≈ 1 V.",
     "1. **Q4 (K1 coil driver) → 100 V logic-level MOSFET** (e.g. an IRL540N-class part, V_GS(th) ≤ 2 V, R_DS(on) specified at 4–5 V; drive it from "
     "the UCC27524's spare channel at 12 V if no 100 V part is specified at 3.3 V). With D1 + Z1 across the coil the drain sees supply + V_Z + V_F ≈ 50 V at "
     "every turn-off; the IRLB8721 is a 30 V part. Q5 (K2) likewise ≥ 60 V.",
     "2. **ARM needs AUX open:** U10's D input becomes S1b ∧ S2b ∧ WD_OK ∧ TH1 ∧ ¬AUX. A stuck-closed AUX (welded aux, shorted opto) otherwise lets K1 "
     "close straight onto an empty bus (Q4 holds on AUX, K2_DRIVE = ¬AUX never pre-charges) and removes the opening edge that fires FORCE.",
-    "3. **K1-failed-to-open detector (bench):** a third one-shot fires FORCE when Q4 has been off for 20 ms and AUX still reads closed. On the bench the "
-    "clamp then loads the supply at ≈ 135 A, which latches it off: the welded-contactor case removes power instead of relying on software. On the robot "
-    "the pack keeps the bus up: the robot needs a second break (BMS discharge MOSFET off over CAN / its enable input) on the same stop.",
+    "3. **K1 discrepancy monitor:** coil command (Q4 gate) ≠ AUX for > 30 ms (longer than the 25 ms operate time) fires FORCE and clears LATCH (an XOR, "
+    "an RC and a comparator into U6's trigger and U10's CLR̄). It catches a welded K1 (coil off, AUX closed: the clamp loads the bench supply at ≈ 135 A, "
+    "which latches it off, so power is removed without software), a broken AUX wire (coil on, AUX open: as drawn K2 re-closes, U6 is held cleared and "
+    "the next stop has no forced discharge) and a K1 that fails to close. On the robot the pack keeps a welded bus up: the robot also needs a second "
+    "break (BMS discharge MOSFET off over CAN / its enable input) on the same stop.",
     "4. **12 V supervision:** a 10.5 V UVLO comparator on the gate-driver supply in series with WD_OK (or U2's power-good into U8): without the 12 V the "
     "clamp and FORCE are dead while the contactor can still close.",
     "5. **Regen at the drive, not just at the board:** the board clamps its own node; each drive sits behind its harness resistance, so regen current "
     "lifts it above the board. The branch limits above are a requirement on the drive torque limits and the planner (≤ that regen power per branch "
     "during a controlled stop), and the bench scopes the bus **at the drive** (T8). If a joint needs more, it needs a thicker branch or a local clamp.",
-    "6. **Branch fuse vs the in-arm 16 AWG:** a 20 A slow-blow leaves the clock-spring 16 AWG unprotected between ≈ 1.1× and ≈ 1.5× its rating "
-    "(minutes at 22–30 A). Bench: F3 → 15 A for Step 2 (Step 1 draws ≤ 13.8 A peak; its own lead is 14 AWG); robot: per-branch current sense "
-    "(the BMS's pack current is not per branch) with a software trip, or 15 A and the sustained case re-checked.",
+    "6. **Branch fuse vs the in-arm 16 AWG:** a 20 A slow-blow leaves the clock-spring 16 AWG unprotected from ≈ 18 A to ≈ 35 A (it may take minutes "
+    "at 22–30 A; section 4), and 15 A still leaves ≈ 20 A for up to 600 s. The fuse handles shorts; overloads need a **branch current monitor**: a Hall "
+    "sensor per arm branch on the board (ACS724-30A class) → 5 s RC → comparator at 16 A → STOP (into U10's CLR̄, latched), with F3 → 15 A. "
+    "Step 1 (≤ 13.8 A peak on a 14 AWG lead) is protected by the 20 A fuse and the supply latch as it is.",
 ]
 
 
