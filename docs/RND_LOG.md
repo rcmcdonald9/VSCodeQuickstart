@@ -1492,3 +1492,10 @@ One long push instead of half-hour runs. In order:
 ### 2026-11-28 W19a merged (consistency cleanup)
 - tip.md's snag text now uses `caster_locked_v_for` per state (23/23). The board sim runs the basket e-stop at its own 0.15 m/s cap (stopped 0.84 → 0.50 s, 0.10 → 0.04 m). **One stop chain:** `electrical.stop_chain_rows()` is shared with the sim, so M1 is 45.5 ms and the robot 46.3 ms (≤ 50). Watchdog headroom 29 → 28 ms in readiness.
 - Lead: the scorecard snag row and basket.md now print the basket's SW-T8 cap (0.15 m/s), not the flat 0.20.
+
+### 2026-11-28 W20b merged (safety board in KiCad)
+- hardware/safety_board is generated from electrical.py netlist v4 by rnd/kicad_board.py: 6 sheets, 302 parts (141 from the netlist, 161 glue/decoupling/test points, each with an Origin field), 153 nets. KiCad's own ERC (eeschema headless; kicad-cli 7 has no erc/drc) is 0/0. Cross-check: 153/153 nets, 43/43 rows, 15/15 chains including the v4 race fix. PCB: 240 × 135 mm, 2 layers, 2 oz, placed and poured, **not routed** (0 rule errors, 499 unrouted).
+- **13 netlist issues for electrical.py**, each patched in the drawing:
+  - N1 duplicate R3; N2 +24V_L has no source; N3 no 5 V for the ACS724; N4 U7 needs 3 inputs; N5 Q5 is a 30 V part where ≥ 60 V is required, and K2 has no flyback.
+  - N6 unreferenced parts; N7 no film cap on the base clamp leg; N8 the caster GPIO isn't named; N9 no ARM debounce; N10 Q4 gate drive; N11 unallocated logic gates; N12 AUX_RAW needs a buffer; N13 NC block count.
+- Reviewer items: library pinouts drawn from memory; the LM5069 1 mΩ sense gives ≈ 55 A, not 35 A; ACS724 pin 6 variant; TL431 stability; LM5069 timing values; the brown-out supervisor. G-SB needs routing plus the N-fixes in electrical.py (W21a).
