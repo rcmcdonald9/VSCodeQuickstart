@@ -25,6 +25,9 @@ def main():
     wm = workspace_margins(BASELINE)
     t = totals()
     th, st, ri, ss, bom = J("thermal.json"), J("stiffness.json"), J("roll_inline.json"), J("slim_study.json"), J("bom.json")
+    bt = bom.get("base_timer", {}).get("totals", {})
+    bsel = bom.get("base_timer", {}).get("selected", "board")
+    balt = next((k for k in bt if k != bsel), "g9sa")
     jit = JS("loop_jitter.json")
     mr = min(v["m_rated"] for v in wm.values())
     worst = min(wm.items(), key=lambda kv: kv[1]["rated"] / kv[1]["max"])
@@ -67,11 +70,11 @@ def main():
          C + "; bought-part dimensions and the pinion price " + E, "high (80 %)",
          "Drill the lever to the measured output pattern; measure the GIM output PCD, pilot and output-bearing position before quoting the stubs "
          "(the motor's output bearing now carries its share of the belt pull: belt_stage.support_split)."),
-        ("1", "Step-1 gate test kit (motorless tests T0–T16)", f"dummy drive bank, load resistors, regen diode, energy bank ${t['s1_test'] - t['s1_instr']:,.0f}; "
+        ("1", "Step-1 gate test kit (motorless tests T0–T16)", f"dummy drive bank, load resistors, 2 regen / bank Schottkys, the 0.33 Ω bank resistor, energy bank ${t['s1_test'] - t['s1_instr']:,.0f}; "
          f"instruments ${t['s1_instr']:,.0f} (scope, differential probe, two current clamps, 20 A CC supply, DMM; skip what the owner has)",
          "prices: list snapshots 2026-11-28 / " + E, "high (80 %)",
-         "safety_board_tests.md names a 1N5822-class regen diode (3 A) for 10–30 A steps: the kit uses a 40 A Schottky; the CP2100A clamp is 800 kHz vs the "
-         "sheet's ≥ 1 MHz (fine for ms events; a CP2100B if the clamp-leg edges matter)"),
+         "W15b: two 40 A Schottkys (VS-40CPQ060-N3: the regen source and the bank switch) and a 0.33 Ω 50 W bank resistor make T12's 30 A step "
+         "(the 20 A supply + the 22 mF bank at 32.5 V); the CP2100A clamp's 800 kHz meets the sheet's ≥ 500 kHz"),
         ("2", "Arm structure (C1 / C3 / M5 CAD fixes)", "C1 tie-rods with steel crush sleeves at the pitch hub and yaw flange (W8c: life preload 88 / 87 %), "
          "C45+QT clamp rings and a 7075-T6 yaw flange (Astra #3 m9: contact faces 1.34–2.93×), 4-ear cartridge flanges (W8b: tipping ≥ 10× at 30 % preload), "
          "D26 tension rings at elbow + yaw (Astra #3 m6: preload 134–220 N, set by span frequency) (rnd/joints.py, belts.md)", C + "; creep data " + E, "medium (60 %)",
@@ -160,7 +163,9 @@ def main():
           "board tests before any motor | Step 1 exit |",
           "| Motors run hot in the closed sleeves | derating to ≈ 0.65 × rated | aluminium finned caps (Step 2, after seller question 6), cover vents, the drive's thermal limit | no |",
           "| GIM8108-8 is 48 V-only or slow at 24 V; D20 drive needs a redesign | D20 fails; 20 lb hug not met | hold A; GIM6010-8 fallback | hold A |",
-          f"| Robot BOM over budget: ${bom.get('total', 0):,.0f} landed (limit $5,500, owner 2026-11-27), ${bom.get('with_d20', 0):,.0f} with D20 | the full robot needs a "
+          f"| Robot BOM over budget: ${bom.get('total', 0):,.0f} landed (limit $5,500, owner 2026-11-27), ${bom.get('with_d20', 0):,.0f} with D20, "
+          f"base OFF-delay timer `PIP_BASE_TIMER={bsel}` (pending owner decision); with `{balt}` instead "
+          f"${bt.get(balt, {}).get('total', 0):,.0f} / ${bt.get(balt, {}).get('with_d20', 0):,.0f} | the full robot needs a "
           "cost decision | the M1 parts are reused; ranked savings in docs/rnd/cost_down.md (the gate-neutral ones do not reach $5,500 alone); the decision is the owner's | no |",
           "| Category-0 drop on the bench | a falling arm | catch cradle ≤ 50 mm under the arm, tether, remote mushroom (Step 1) | no |",
           "", "## Day-1 plan (Step 1)", "",
