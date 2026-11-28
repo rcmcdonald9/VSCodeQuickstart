@@ -33,8 +33,9 @@
    edges (6.0 / 6.01 / 10.0 / 10.01 kg → 0.20 / 0.15 / 0.15 / 0 m/s), applied while locked, locking and pulsing and held with
    0.8 m/s commanded; a payload step into a heavier band while moving brakes to the new cap at the limit in force; a
    deferred lock engages at the lower speed of the heavier band; no travel above 10 kg; threshold mode stays at 0.12 m/s.
-12. Base stop category 1 (sw/safety.py 17., tip.md *E-stop / snag braking*): BASE_STOP_DECEL sits under tip.md's 30 mm
-   column for each payload; an e-stop or a watchdog fault ramps the base to 0 at min(the limit in force, the table), never
+12. Base stop category 1 (sw/safety.py 17., tip.md *E-stop / snag braking*): BASE_STOP_DECEL is read from tip.json's 30 mm
+   column (floored to 0.01 m/s², with a lower fallback for a missing or malformed file) and sits under tip.md's column
+   for each payload; an e-stop or a watchdog fault ramps the base to 0 at min(the limit in force, the table), never
    harder; the arm heartbeat drops at once while the base channel keeps its heartbeat until the ramp ends, then base
    torque goes off; wheels still turning hold it on until stopped, but never past the ramp + BASE_STOP_GRACE; a
    collision hold ramps the base and keeps it powered; a stationary base loses torque at once; reset re-enables it.
@@ -1303,15 +1304,34 @@ def test_base_stop():
     """12. Base stop category 1: payload-dependent ramp, then torque off (sw/safety.py 17.)."""
     import re
     from pathlib import Path
-    from sw.safety import BASE_STOP_DECEL, BASE_STOP_GRACE, CASTER_LOCKED_V as VL, V_STOPPED, Supervisor
+    import json
+    import tempfile
+    from sw.safety import (BASE_STOP_DECEL, BASE_STOP_DECEL_FALLBACK, BASE_STOP_DECEL_SRC, BASE_STOP_GRACE, BASE_STOP_ROWS,
+                           CASTER_LOCKED_V as VL, TIP_JSON, V_STOPPED, Supervisor, load_base_stop_decel)
+    # BASE_STOP_DECEL is read from tip.json (not hand-copied: it drifted past the column twice, W16a and W17d)
+    assert BASE_STOP_DECEL_SRC == str(TIP_JSON) and [kg for kg, _ in BASE_STOP_DECEL] == [kg for kg, _ in BASE_STOP_ROWS], BASE_STOP_DECEL_SRC
+    est = json.loads(TIP_JSON.read_text())["real"]["estop"]
+    col = {kg: next(r for r in est if r["name"].startswith(p)) for kg, p in BASE_STOP_ROWS}
     # the table under tip.md's "E-stop / snag braking" rows (30 mm reserve column; tips at the last column)
     md = Path("docs/rnd/tip.md").read_text().split("E-stop / snag braking", 1)[1]
     rows = {m.group(1).strip(): (float(m.group(2)), float(m.group(3)))
             for m in re.finditer(r"^\| ([^|]+?) \| ([0-9.]+) \| ([0-9.]+) \|$", md, re.M)}
-    key = {1.0: "≤ 1 kg", 2.5: "2.5 kg in the load box", 9.07: "R2d basket"}
+    key = dict(BASE_STOP_ROWS)
     for kg, a in BASE_STOP_DECEL:
         r30, tip = next(v for k, v in rows.items() if k.startswith(key[kg]))
-        assert a <= r30 + 1e-9 and a < tip, (kg, a, r30, tip)
+        assert a <= r30 + 1e-9 and a < tip, (kg, a, r30, tip)                        # ≤ tip.md's rounded column
+        assert col[kg]["a30"] - 0.01 < a <= col[kg]["a30"] + 1e-12 and a < col[kg]["a0"], (kg, a, col[kg])   # the json column, floored
+    #    the fallback (no docs/ on the robot, or a malformed file) is under the column too, and is what a bad file gives
+    for kg, a in BASE_STOP_DECEL_FALLBACK:
+        assert a <= col[kg]["a30"], (kg, a, col[kg]["a30"])
+    with tempfile.TemporaryDirectory() as td:
+        bad = Path(td) / "tip.json"
+        assert load_base_stop_decel(bad) == (BASE_STOP_DECEL_FALLBACK, "fallback: FileNotFoundError")
+        for txt in ("{not json", json.dumps({"real": {"estop": [r for r in est if not r["name"].startswith("R2d")]}}),
+                    json.dumps({"real": {"estop": [dict(r, a30=50.0) for r in est]}})):
+            bad.write_text(txt)
+            tab, src = load_base_stop_decel(bad)
+            assert tab == BASE_STOP_DECEL_FALLBACK and src.startswith("fallback"), (txt[:40], src)
     assert Supervisor.base_stop_decel_for(12.0) < BASE_STOP_DECEL[-1][1]
     dt = 0.002
 
@@ -1402,8 +1422,8 @@ def test_base_stop():
     s.release_estop()
     assert s.reset(q, 0.002) and s.base_torque_enabled() and s.base_stop_state() is None
     tips = " / ".join(f"{next(v for k, v in rows.items() if k.startswith(key[kg]))[1]:.2f}" for kg, _ in BASE_STOP_DECEL)
-    return ("Base stop category 1: BASE_STOP_DECEL ≤ tip.md's 30 mm column (≤ 1 kg {:.2f}, 2.5 kg {:.2f}, basket {:.2f} m/s²; tips at ".format(
-                *(a for _, a in BASE_STOP_DECEL)) + tips + "); an e-stop or watchdog fault ramps at min(limit in force, table): " + "; ".join(out)
+    return ("Base stop category 1: BASE_STOP_DECEL read from docs/rnd/tip.json's 30 mm column, floored to 0.01 (fallback {} when the file is missing or malformed, also under the column) and ≤ tip.md's column (≤ 1 kg {:.2f}, 2.5 kg {:.2f}, basket {:.2f} m/s²; tips at ".format(
+                " / ".join(f"{a:.2f}" for _, a in BASE_STOP_DECEL_FALLBACK), *(a for _, a in BASE_STOP_DECEL)) + tips + "); an e-stop or watchdog fault ramps at min(limit in force, table): " + "; ".join(out)
             + f"; the arm heartbeat drops at once, the base channel's stays up for the ramp, then base torque off (wheels "
             f"still turning hold it until < {V_STOPPED} m/s, at most ramp + {BASE_STOP_GRACE} s); a collision hold keeps the "
             "base powered at 0; a stationary base loses torque at once ✅")

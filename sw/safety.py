@@ -104,7 +104,8 @@ it also accepted NaN or stale feedback and released most faults on the next cycl
    off at once), but a base that stops hard tips: the R2d basket at ≈ 1.0 m/s², 2.5 kg in the load box at ≈ 2.1 m/s², and
    the wheels can brake harder (μ·g ≈ 5 m/s²). So any latched fault (e-stop, watchdog, feedback, …) starts a **base
    ramp**: `limit_base()` brakes the command to 0 at `base_stop_decel()` = min(the decel limit in force when the stop began,
-   BASE_STOP_DECEL(payload): tip.md's 30 mm-reserve deceleration), and only then is base torque removed:
+   BASE_STOP_DECEL(payload): tip.md's 30 mm-reserve deceleration, read from docs/rnd/tip.json at import with a lower
+   hard-coded fallback), and only then is base torque removed:
    `base_torque_enabled()` goes False once the ramp is at 0 and the measured speed (if given) is under V_STOPPED, or
    BASE_STOP_GRACE after the ramp's planned end whatever the wheels report (counted "base stop timeout"). It is a
    separate output from `heartbeat_ok()`: `base_heartbeat_ok()` keeps toggling the base channel's watchdog line during
@@ -175,9 +176,34 @@ ROLL_GUARD = os.environ.get("PIP_ROLL_GUARD", "none")   # "none" | "latch" (CAD:
 LATCH_RETRACT_S = 0.05            # s: solenoid pull-in + pin travel before the roll may go below +5° without a switch (ESTIMATE)
 ROLL_PARK_DEG = 8.0               # deg: the roll park angle (idle / planned power-down) above the latch
 LATCH_T_MAX = 16.0                # N·m: roll torque cap while the pin may be in (0.39 kN at r 41.5: the printed guide, ≈ 12 MPa; power_off.md)
-# 17. base stop category 1 (rnd/tip.py estop_rows → docs/rnd/tip.md "E-stop / snag braking": decel at which the tip reserve
-# falls to 30 mm, no push; tips at 1.67 / 2.05 / 1.01 m/s²). (payload kg up to, m/s²); past the table: ∝ 1/payload.
-BASE_STOP_DECEL = ((1.0, 1.18), (2.5, 1.50), (9.07, 0.52))   # W17d tip.md regeneration (2.5 kg 1.53 → 1.50; W15a was 1.20 / 1.56)
+# 17. base stop category 1 (rnd/tip.py estop_rows → docs/rnd/tip.json real.estop, shown in docs/rnd/tip.md "E-stop / snag
+# braking": the decel at which the tip reserve falls to 30 mm, no push). (payload kg up to, m/s²); past the table: ∝ 1/payload.
+# Read from tip.json at import, each value rounded DOWN to 0.01 m/s² (so never above the column, nor above tip.md's rounded
+# figure): the hand-copied tuple drifted past the column twice (W16a; W17d moved 2.5 kg 1.53 → 1.50). Without the file (a
+# deployed robot without docs/) or with a malformed one: BASE_STOP_DECEL_FALLBACK, ≈ 10–15 % under the W17d column
+# (1.18 / 1.50 / 0.53), so a stale fallback still brakes gentler than any column seen so far (W15a–W17d).
+TIP_JSON = Path(__file__).resolve().parent.parent / "docs" / "rnd" / "tip.json"
+BASE_STOP_ROWS = ((1.0, "≤ 1 kg"), (2.5, "2.5 kg in the load box"), (9.07, "R2d basket"))   # tip.json row name prefixes
+BASE_STOP_DECEL_FALLBACK = ((1.0, 1.00), (2.5, 1.30), (9.07, 0.45))
+
+
+def load_base_stop_decel(path=TIP_JSON):
+    """(table, source): BASE_STOP_DECEL from tip.json's 30 mm-reserve column (real.estop[*].a30, floored to 0.01 m/s²), or
+    (BASE_STOP_DECEL_FALLBACK, "fallback: <why>") if the file is missing, unreadable or a row is absent / implausible."""
+    try:
+        rows = json.loads(Path(path).read_text())["real"]["estop"]
+        out = []
+        for kg, prefix in BASE_STOP_ROWS:
+            a30 = float(next(r["a30"] for r in rows if r["name"].startswith(prefix)))
+            if not (0.05 <= a30 <= 5.0):                     # μ·g ≈ 5 m/s² is the most the wheels can brake (ESTIMATE)
+                raise ValueError(f"{prefix}: a30 {a30}")
+            out.append((kg, math.floor(a30 * 100 + 1e-9) / 100))
+        return tuple(out), str(path)
+    except (OSError, ValueError, KeyError, TypeError, StopIteration) as e:
+        return BASE_STOP_DECEL_FALLBACK, f"fallback: {type(e).__name__}"
+
+
+BASE_STOP_DECEL, BASE_STOP_DECEL_SRC = load_base_stop_decel()   # W17d tip.json: 1.17 / 1.50 / 0.52 (column 1.176 / 1.502 / 0.526)
 BASE_STOP_GRACE = 0.3             # s after the ramp's planned end: torque off even if the wheels are not reported stopped
 DESC = Path(__file__).resolve().parent / "description" / "joints.json"
 
