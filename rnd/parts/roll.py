@@ -913,9 +913,9 @@ def masses(density=1.27, split=False):
     pulley, 6801 at 60 % of solid steel). split=True → (roll-body mass, yaw-stage mass) for params.
     D24 (2026-11-27): each stage is small_stage_v3 + the bolted cartridge; as in shoulder.masses the sleeve counts only by
     what it adds over the loop-10 can (nose, flange, rear cap), the Oldham drive replaces the KX74 hub + collar + coupling."""
-    from .belt_stage import small_stage_v4
+    from .belt_stage import small_stage_v4, stub_metal_mass
     st = dict((n, p) for n, p, _ in small_stage_v4(20))
-    d13 = ((st["shaft_12"].volume + st["kx_hub_v2"].volume) * 7.85e-3 + st["al_pulley"].volume * 2.7e-3
+    d13 = (stub_metal_mass(st)                                     # Astra #3 m7: C45+QT integral pinion shaft (steel teeth)
            + st["brg_B_6001"].volume * 7.85e-3 * 0.6 + st["brg_B_bushing"].volume * density * 0.8e-3) / 1e3   # D26 direct stage, one, kg
     sock = ((cm.can_bolted().volume + cm.can_cap_bolted().volume - cm.can().volume) * density * 0.8e-3) / 1e3 + 0.006   # + ear screws, inserts (no Oldham, D26)
     pr = lambda v, f: v * f / 1e6 * density

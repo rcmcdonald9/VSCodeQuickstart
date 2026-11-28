@@ -275,6 +275,220 @@ def d26_report(d: Design = BASELINE):
     return L
 
 
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Astra review #3, major 7 (2026-11-28): D26 stub fatigue. The stub turns under a belt load fixed in space → fully
+# reversed ROTATING BENDING every motor revolution; the torque is steady over a revolution but reverses with the motion.
+# Method (hand calc, Shigley / FKM-style; every factor below is ESTIMATE-grade unless its source is named):
+#   - fatigue strength of the material σ_W = 0.45 R_m (FKM guideline, steel, f_W,σ = 0.45, push-pull, 97.5 % survival:
+#     conservative for rotating bending ≈ 0.5 R_m); geometric size / support factor n ≥ 1 omitted (conservative);
+#   - roughness K_R = 1 − 0.22 · lg(Rz) · lg(2 R_m / 400) (FKM, steel, a_R 0.22, R_m,N,min 400), Rz 6.3 µm (fine turned);
+#   - notches: K_f = 1 + q (K_t − 1), Peterson q = 1 / (1 + a / r), a = 0.0254 (2068 / R_m)^1.8 mm; stepped-shaft K_t
+#     in bending from the Pilkey / Roark fit (Young & Budynas, Roark's Formulas 7th ed., Table 17.1 case 17b), torsion
+#     K_ts = 1 + 0.55 (K_t − 1) (ratio read off Peterson's charts, ESTIMATE); keyseat K_t 2.14 / K_ts 3.0 at r/d 0.02
+#     (Shigley Table 7-1, end-milled); DIN 509 relief at the 6001 seat K_t 2.5 (ESTIMATE, also covers press-fit fretting
+#     K_f ≈ 2, Peterson); tooth root (axial grooves, no key) K_t 1.5 (ESTIMATE, spline-root class);
+#   - DE-Goodman on von Mises equivalents: 1/n = σ'_a / σ_WK + σ'_m / R_m, the torque taken as steady (σ'_m = √3 K_fs τ) or
+#     as fully reversed with the bending (σ'_a = √(σ_a² + 3 τ_a²)), whichever is worse; Goodman is harsher than FKM's
+#     mean-stress sensitivity (M_σ = 0.35e-3 R_m − 0.1 ≈ 0.13 vs Goodman's σ_W / R_m ≈ 0.4);
+#   - first-cycle yield at the fault (stall) load: R_e / √((K_f σ)² + 3 (K_fs τ)²).
+# Materials (minimum values, EN 10083-2:2006 / -3:2006 by bar size; the stub is turned from Ø42 bar → 16 < d ≤ 40 class):
+STUB_MATERIALS = {
+    "C45+N": dict(Rm=580.0, Re=305.0, src="EN 10083-2 +N, 16 < d ≤ 100 mm: R_m ≥ 580, R_eH ≥ 305 MPa"),
+    "C45+QT": dict(Rm=650.0, Re=430.0, src="EN 10083-2 +QT, 16 < d ≤ 40 mm: R_m 650–800, R_e ≥ 430 MPa"),
+    "42CrMo4+QT": dict(Rm=1000.0, Re=750.0, src="EN 10083-3 +QT, 16 < d ≤ 40 mm: R_m 1000–1200, R_e ≥ 750 MPa"),
+}
+STUB_MATERIAL = {"v4": "C45+N", "v5": "C45+QT"}       # v4 drawing said "C45 / 1045" (no condition: +N assumed)
+FAT = dict(f_W=0.45, Rz=6.3, aR=0.22, n_target=1.5)
+# Duty (rnd/basket.py, rnd/payload_study.py R2c hug, rnd/spring.py teleop p95, joints.md × 1.5 dynamic), motor side
+# (joint torque / ratio / 0.95). Revolutions per year are ESTIMATE (motor revs = joint travel × ratio): basket 2 carries a
+# day × (pick + set down) × ≈ 0.75 rev; hug 5 a day × 0.75 rev; teleop 2 h a day at ≈ 0.1 rev/s of motor travel. Above
+# ≈ 1e6 revolutions (the steel knee) the life is infinite-life design, so the envelope check below is the criterion: every
+# revolution at the drive's torque limit (D20 flash limit 18 N·m; GIM6010 its 11 N·m peak, no lower limit set), with the
+# belt preload at the TOP of its tolerance band (1.3 × target, the band D26_TENSION must hold).
+STUB_DUTY = [("basket carry × 1.5 (D20 pitch 23.3 N·m / 3:1)", "GIM8108-8", 23.3 / 3 / 0.95 * 1.5, 1.1e3),
+             ("R2c hug × 1.5 (D20 elbow ≈ 14 N·m at 0.25 m / 3:1)", "GIM8108-8", 14.0 / 3 / 0.95 * 1.5, 2.7e3),
+             ("teleop 1 kg p95 (GIM6010 elbow / yaw, motor side)", "GIM6010-8", 5.0, 2.6e6)]
+PRELOAD_BAND_HI = 1.3
+
+
+def _kt_step(D, d, r):
+    """Stepped round shaft in bending, K_t (Pilkey / Roark Table 17.1 case 17b fit)."""
+    h = (D - d) / 2
+    x, t = h / r, 2 * h / D
+    if x < 2.0:
+        c = (0.947 + 1.206 * x ** .5 - 0.131 * x, 0.022 - 3.405 * x ** .5 + 0.915 * x, 0.869 + 1.777 * x ** .5 - 0.555 * x, -0.810 + 0.422 * x ** .5 - 0.260 * x)
+    else:
+        c = (1.225 + 0.831 * x ** .5 - 0.010 * x, -3.790 + 0.958 * x ** .5 - 0.257 * x, 7.374 - 4.834 * x ** .5 + 0.862 * x, -3.809 + 3.046 * x ** .5 - 0.595 * x)
+    return c[0] + c[1] * t + c[2] * t * t + c[3] * t ** 3
+
+
+def _q(r, Rm):
+    return 1.0 / (1.0 + 0.0254 * (2068.0 / Rm) ** 1.8 / r)
+
+
+def _beam(segs, zb, zc, zm, F, clamped=False, delta=0.0):
+    """Stub as a beam between the 6001 (z zb, pin) and the motor bearing (z zm, pin or clamp), load F at zc. Returns
+    (R_b, R_m, M_A at the motor bearing, M(z) function, k = lateral stiffness at the 6001 with the motor end clamped N/mm)."""
+    E = 210e3
+    zs = [zb + (zm - zb) * i / 2000 for i in range(2001)]
+    def EI(z):
+        for z0, z1, d, di in segs:
+            if z0 - 1e-9 <= z <= z1 + 1e-9:
+                return E * math.pi * (d ** 4 - di ** 4) / 64
+        return E * math.pi * 42.0 ** 4 / 64
+    def f(zi, zj):
+        s, n = 0.0, len(zs)
+        for k in range(n - 1):
+            z = (zs[k] + zs[k + 1]) / 2
+            if z > max(zi, zj):
+                s += (z - zi) * (z - zj) / EI(z) * (zs[k + 1] - zs[k])
+        return s
+    fbb, fbc = f(zb, zb), f(zb, zc)
+    if clamped:
+        Rb = (F * fbc + delta) / fbb
+    else:
+        Rb = F * (zm - zc) / (zm - zb)
+    Rm = F - Rb
+    M = lambda z: Rb * (z - zb) - F * max(0.0, z - zc)
+    return Rb, Rm, -M(zm), M, 1.0 / fbb
+
+
+def stub_check(motor=None, version="v5", T=11.0, T0=None, clamped=False, delta=0.0, material=None):
+    """Fatigue + yield of the drive stub at motor torque T (N·m): rows per section and the support reactions."""
+    from .parts import belt_stage as bs, cartridge_m as cm
+    m = motor or cm.MOTOR
+    peak = 22.0 if m is cm.MOTOR_8108 else 11.0
+    r_p = pd(20) / 2
+    T0 = PRELOAD_BAND_HI * 0.25 * peak * 1000 / r_p if T0 is None else T0
+    F = T * 1000 / r_p + 2 * T0
+    mat = STUB_MATERIALS[material or STUB_MATERIAL[version]]
+    Rm_, Re = mat["Rm"], mat["Re"]
+    KR = 1 - FAT["aR"] * math.log10(FAT["Rz"]) * math.log10(2 * Rm_ / 400)
+    SW = FAT["f_W"] * Rm_ * KR
+    secs, segs = bs.stub_sections(m, version)
+    v = bs._v4_levels(m)
+    zb, zc, zm = sum(v["jB"]) / 2, v["belt_c"], v["motor_brg"]
+    rows = []
+    for sgn in ((1.0, -1.0) if delta else (1.0,)):
+        Rb, Rm, MA, M, k = _beam(segs, zb, zc, zm, F, clamped, sgn * delta)
+        for lab, z, d, di, kt, kts, torq, r, D in secs:
+            kt = kt if kt is not None else _kt_step(D, d, r)
+            kts = kts if kts is not None else 1 + 0.55 * (kt - 1)
+            q = _q(r, Rm_)
+            kf, kfs = 1 + q * (kt - 1), 1 + q * (kts - 1)
+            Z = math.pi * (d ** 4 - di ** 4) / (32 * d)
+            sb = abs(M(z)) / Z
+            tau = (T * 1000 / (2 * Z)) if torq else 0.0
+            sa, tm = kf * sb, kfs * tau
+            n_mean = 1 / (sa / SW + math.sqrt(3) * tm / Rm_)
+            n_rev = SW / math.sqrt(sa * sa + 3 * tm * tm)
+            rows.append(dict(label=lab, z=z, d=d, di=di, M=abs(M(z)) / 1000, sigma=sb, tau=tau, kt=kt, kf=kf, kfs=kfs, n=min(n_mean, n_rev),
+                             n_y=Re / math.sqrt(sa * sa + 3 * tm * tm), Rb=Rb, Rm=Rm, MA=MA / 1000, k=k, sgn=sgn))
+    worst = {}
+    for r in rows:                                          # worst sign per section
+        if r["label"] not in worst or r["n"] < worst[r["label"]]["n"]:
+            worst[r["label"]] = r
+    out = list(worst.values())
+    return dict(rows=out, F=F, T=T, T0=T0, SW=SW, KR=KR, mat=mat, name=material or STUB_MATERIAL[version],
+                Rb=max(abs(r["Rb"]) for r in rows), Rm=max(abs(r["Rm"]) for r in rows), MA=max(abs(r["MA"]) for r in rows), k=rows[0]["k"],
+                n=min(r["n"] for r in out), n_y=min(r["n_y"] for r in out))
+
+
+STUB_CASES = [("GIM6010-8", "envelope: every rev at the 11 N·m peak", 11.0), ("GIM8108-8", "envelope: every rev at the 18 N·m flash limit", 18.0),
+              ("GIM8108-8", "fault: 22 N·m stall", 22.0)]
+STUB_MISALIGN = dict(bond=0.05, swap=0.15)             # mm at the 6001 (belts.md D26 hyperstatic note, ESTIMATE)
+STUB_SUPPORT_RULE = ("single-row output bearing (tilts 2–10′): stub between it and the 6001 (this design); moment-rigid output "
+                     "(crossed roller / preloaded pair): delete the 6001, pinion overhung, M0 check")
+
+
+def STUB_SPAN():
+    """mm, motor bearing → 6001 centre."""
+    from .parts import belt_stage as bs
+    v = bs._v4_levels()
+    return v["motor_brg"] - sum(v["jB"]) / 2
+
+
+def stub_overhung(T=18.0):
+    """The moment-rigid alternative: no 6001, pinion overhung on the D20 output bearing. Bearing moment and the neck it needs
+    (n ≥ 1.5 on the same fatigue rule, solid C45+QT neck, K_f 1.8)."""
+    from .parts import belt_stage as bs
+    v = bs._v4_levels()
+    F = T * 1000 / (pd(20) / 2) + 2 * PRELOAD_BAND_HI * 0.25 * 22.0 * 1000 / (pd(20) / 2)
+    a = v["motor_brg"] - v["belt_c"]
+    M_neck = F * (a - (v["motor_brg"] - v["flange"][0]))
+    mat = STUB_MATERIALS["C45+QT"]
+    SW = FAT["f_W"] * mat["Rm"] * (1 - FAT["aR"] * math.log10(FAT["Rz"]) * math.log10(2 * mat["Rm"] / 400))
+    d = 12.0
+    while 1.8 * 32 * M_neck / (math.pi * d ** 3) > SW / 1.5 * 0.85:          # 0.85: room for the torque term
+        d += 1.0
+    return dict(M_brg=F * a / 1000, neck=d, F=F)
+
+
+def stub_fatigue():
+    """Rows (motor, case, version, check dict) for both motor sets, v4 (before) and v5 (now), simple supports (the motor
+    bearing tilts), plus the moment-rigid motor-bearing bound with the bond / swap misalignment."""
+    from .parts import cartridge_m as cm
+    mot = {"GIM6010-8": cm.MOTOR, "GIM8108-8": cm.MOTOR_8108}
+    out = []
+    for name, lab, T in STUB_CASES:
+        for ver in ("v4", "v5"):
+            out.append((name, lab, ver, "hinged", stub_check(mot[name], ver, T)))
+        for tag, dl in STUB_MISALIGN.items():
+            out.append((name, lab, "v5", f"clamped, {tag} δ {dl:.2f}", stub_check(mot[name], "v5", T, clamped=True, delta=dl)))
+    return out
+
+
+def stub_report():
+    from .parts import belt_stage as bs, cartridge_m as cm
+    L = ["", "## D26 drive stub: rotating-bending fatigue (Astra #3 major 7)", "",
+         "The belt load is fixed in space and the stub turns, so every motor revolution is one fully reversed bending cycle. "
+         f"Method (rnd/belts.py stub_check): σ_W = {FAT['f_W']} R_m (FKM, steel), FKM roughness K_R (Rz {FAT['Rz']} µm), Peterson notch "
+         "sensitivity, stepped-shaft K_t (Roark Table 17.1 fit), keyseat K_t 2.14 / K_ts 3.0 (Shigley Table 7-1), DE-Goodman with the "
+         "torque steady or fully reversed (worse of the two), first-cycle yield with K_f. Shaft load = T / r + 2 T0 with T0 at the top of "
+         f"the tension band ({PRELOAD_BAND_HI} × target). Supports: the motor's output bearing (6 mm behind its face, ESTIMATE) and the 6001; "
+         "'hinged' = the motor bearing tilts (single row), 'clamped' = moment-rigid with the 6001 bushing offset δ (bond / swap): the "
+         f"two bounds. Criterion: n ≥ {FAT['n_target']} on fatigue (envelope rows), n_y ≥ 1.5 at the fault.", "",
+         "| Motor | Case | Stub | Supports | Shaft load | Worst section | M | σ nominal | K_f | Fatigue n | Yield n_y | 6001 / motor bearing | |",
+         "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    for name, lab, ver, sup, c in stub_fatigue():
+        w = min(c["rows"], key=lambda r: r["n"])
+        fault = lab.startswith("fault")
+        ok = (c["n_y"] >= 1.5) if fault else (c["n"] >= FAT["n_target"] and c["n_y"] >= 1.5)
+        flag = ("✅" if ok else "❌") if not sup.startswith("clamped") else ("bound ✅" if ok else "bound ⚠️ (moment-rigid output only)")
+        mb = f"{c['Rb']:.0f} N / {c['Rm']:.0f} N" + (f" + {c['MA']:.1f} N·m" if sup.startswith("clamped") else "")
+        L.append(f"| {name} | {lab} | {ver} {c['name']} | {sup} | {c['F']:.0f} N | {w['label']} | {w['M']:.1f} N·m | {w['sigma']:.0f} MPa | "
+                 f"{w['kf']:.2f} | {c['n']:.2f}× | {c['n_y']:.2f}× | {mb} | {flag} |")
+    v5 = stub_check(cm.MOTOR_8108, "v5", 18.0)
+    L += ["", f"- Materials: " + "; ".join(f"{k} {v['src']}" for k, v in STUB_MATERIALS.items()) + ". v4 = 'C45 / 1045' with no condition on the "
+          "drawing, taken as +N; v5 = C45+QT (42CrMo4+QT is the fallback if a supplier only hobs alloy steel).",
+          f"- Per section, D20 at the 18 N·m limit (v5, hinged): " + "; ".join(f"{r['label']} {r['M']:.1f} N·m, σ {r['sigma']:.0f} MPa, K_t {r['kt']:.2f} → n {r['n']:.2f}" for r in v5["rows"]) + ".",
+          "- Duty cycle (motor side, ESTIMATE revolutions/year): " + "; ".join(f"{lab} {T:.1f} N·m, ≈ {n:.0e} rev/yr" for lab, _, T, n in STUB_DUTY)
+          + ". Only teleop passes the ≈ 1e6-cycle knee in a year, at about a quarter of the envelope torque; the basket and hug cycles are "
+          "a few thousand a year. The envelope (every revolution at the torque limit) therefore bounds the whole duty; with the v5 stub "
+          "even that is infinite-life.",
+          f"- Motor-bearing share (re-check): the supports did not move, so hinged it is still {bs.support_split()[0]:.0%} "
+          f"({stub_check(cm.MOTOR_8108, 'v5', 22.0)['Rm']:.0f} N at the D20 stall with the band-top preload, {stub_check(cm.MOTOR_8108, 'v5', 18.0)['Rm']:.0f} N "
+          f"at the 18 N·m limit; GIM6010 {stub_check(cm.MOTOR, 'v5', 11.0)['Rm']:.0f} N vs the 800 N listing → "
+          f"{GIM6010_OUT_BRG_N / stub_check(cm.MOTOR, 'v5', 11.0)['Rm']:.1f}×). The hinged model holds while the motor's output bearing is a single "
+          f"deep-groove row: the bond offset tilts the stub {STUB_MISALIGN['bond'] / STUB_SPAN() * 1e3 * 3.438:.1f}′ and a swap offset "
+          f"{STUB_MISALIGN['swap'] / STUB_SPAN() * 1e3 * 3.438:.1f}′, inside the 2–10′ a deep-groove ball bearing accepts (SKF, permissible "
+          "misalignment) without building a moment. The 'clamped' rows are the other bound: a crossed-roller or preloaded-pair output "
+          f"(moment-rigid) would see the stub's full stiffness ({stub_check(cm.MOTOR_8108, 'v5', 18.0, clamped=True)['k'] / 1000:.1f} kN/mm at the 6001; "
+          f"Ø12 v4 {stub_check(cm.MOTOR_8108, 'v4', 18.0, clamped=True)['k'] / 1000:.1f}) through any offset, and fails at a swap. Rule (STUB_SUPPORT_RULE): "
+          "a single-row output keeps the 6001 (this design); a moment-rigid output deletes the 6001 and its bushing and runs the pinion "
+          f"overhung, which needs M0 ≥ 1.5 × {stub_overhung()['M_brg']:.0f} N·m at the bearing (D20, 18 N·m) and a Ø{stub_overhung()['neck']:.0f} neck. "
+          "Seller question (output-bearing type, C0, M0) stays open; until it is answered the bench rig measures the stub-end runout and "
+          "the 6001 drag torque after the bond and after a swap (both ≤ 0.05 mm / no step in drag).",
+          f"- 6001 life (C {bs.BRG_B['C'] / 1000:.1f} kN): L10 = (C / P)³ = {(bs.BRG_B['C'] / stub_check(cm.MOTOR_8108, 'v5', 18.0)['Rb']) ** 3 * 1e6:.1e} rev at the "
+          f"D20 envelope load ({stub_check(cm.MOTOR_8108, 'v5', 18.0)['Rb']:.0f} N), {(bs.BRG_B['C'] / stub_check(cm.MOTOR, 'v5', 5.0)['Rb']) ** 3 * 1e6:.1e} rev at "
+          "the GIM6010 teleop load; static C0 vs the stall row " f"{bs.BRG_B['C0'] / stub_check(cm.MOTOR_8108, 'v5', 22.0)['Rb']:.2f}×.",
+          "- BOM: 'D26 drive stub C45 + keyed 20T + 4 × 4 key + set screw' → 'D26 integral pinion shaft, C45+QT, 20T HTD 5M hobbed, "
+          "Ø12 k5 6001 seat' (one part per stage; price ESTIMATE $35 each in 10s vs ≈ $25 for stub + pulley + key)."]
+    return L
+
+
 def sustained_motor_torque(joint, ratio, d: Design = BASELINE):
     """95th-percentile static joint torque over the workspace (1 kg, rnd/spring.py) → motor side."""
     from .spring import workspace_margins
@@ -330,6 +544,7 @@ def report(d: Design = BASELINE):
                  f"{s['pull_sus']:.0f} / {s['work']:.0f} N → {s['sf_sus']:.1f}× {f1} | {s['pull_peak']:.0f} N → {s['sf_ult']:.1f}× ultimate {f2} | {s['tim']:.1f} {g} | "
                  f"{s['centre']} / {s['length']:.0f} mm |")
     L += d26_report(d)
+    L += stub_report()
     L += ["", "## Shaft joints at the motor peak (Fable M5/M6)", "", "| Joint | Motor | Torque | Capacity | Margin |", "|---|---|---|---|---|"]
     for r in shaft_joints():
         f = "✅" if r[4] >= 1.25 else ("⚠️" if r[4] >= 1.0 else "❌")

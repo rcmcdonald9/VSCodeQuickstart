@@ -82,9 +82,9 @@ def cases():
     C.append(("elbow shaft (D19: 40T one piece; 2 × 61808 in capped U-seats + 2 × 6708; the cassette goes in from below)", eh,
               [(arm.CAS_A[0], arm.CAS_A[1], 40.0), (arm.CAS_B[0], arm.CAS_B[1], 40.0), (-54 - 3.5, -54 + 3.5, 40.0), (54 - 3.5, 54 + 3.5, 40.0)], None))
     st = dict((n, p) for n, p, _ in bs.small_stage_v4(20))
-    C.append(("D26 direct stage v4 (C45 stub = Ø42 flange on the motor output + Ø12 shaft, one piece; keyed pulley and the 6001 slide on from its free end) at pitch, yaw, elbow",
-              st["kx_hub_v2"] + st["shaft_12"],
-              [(bs.V4["jB"][0], bs.V4["jB"][1], bs.BRG_B["d"]), (bs.V4["pulley"][0], bs.V4["pulley"][1], bs.SHAFT_D)], None))
+    C.append(("D26 direct stage, stub v5 (Astra #3 m7: C45+QT integral pinion shaft = Ø42 flange on the motor output + neck + hobbed 20T + Ø12 seat, one piece; the 6001 slides on from its free end) at pitch, yaw, elbow",
+              st["kx_hub_v2"] + st["shaft_12"] + st["al_pulley"],
+              [(bs.V4["jB"][0], bs.V4["jB"][1], bs.BRG_B["d"])], None))
     from .parts import hand
     sp = dict((n, p) for n, p, _ in hand.wrist_roll_parts())["wr_spindle"]
     zf = hand.wrist_roll_face_z()

@@ -346,6 +346,19 @@ BUSH_B = dict(od=37.4, seat_d=38.2, t=8.0, adhesive="structural epoxy (EA 9466 /
 WALL_A_HOLE_R = AL_PULLEY["flange_od"] / 2 + 1.3      # 20.3: the pulley's flange passes wall A on a swap (was the Ø38.2 eccentric seat)
 WALL_SLOT_HW = 20 * PITCH / math.pi / 2 - PLD + 1.05   # 16.4: wall-A exit slot half-width (the 20T's toothed body + 1 mm)
 MOTOR_BRG_DEPTH = 6.0                                 # motor output bearing centre behind the output face (ESTIMATE: not on any drawing)
+# Astra review #3, major 7 (2026-11-28): stub v5 = an INTEGRAL PINION SHAFT. The v4 stub carried a keyed 20T on a plain
+# Ø12 between supports 47.6 / 21.5 mm from the belt plane: 30.7 N·m of rotating bending at the D20 stall in the keyway
+# (181 MPa nominal; Goodman < 1 with the key and the torque, rnd/belts.py stub_fatigue). Now one turned + hobbed C45+QT
+# part (EN 10083-2, blank Ø42, 16 < d ≤ 40 class): Ø42 × 4 flange on the motor output (8 × M3, as v4) → neck
+# (Ø PINION["neck"], Ø10 blind bore from the flange face into the teeth, for mass) → motor-side flange Ø38 × 1.5 → 20T HTD 5M teeth cut on
+# the shaft (root Ø26.6, no key, no set screw, no hub) → Ø15 collar (the 6001's inner-ring shoulder) → Ø12 k5 seat for
+# the 6001 behind a DIN 509 F 0.4 × 0.2 relief. The largest bending moment now sits in the Ø26.6 tooth root instead of a
+# keyed Ø12; the supports stay where v4 put them (no wall / cartridge change). Fillets r 1.5 flange → neck and neck →
+# pinion flange, r 1.0 teeth → collar. A pulley maker hobs the 5M profile on the turned blank (custom pinion shafts are
+# a catalogue service; price ESTIMATE in docs/rnd/belts.md).
+PINION = {"GIM6010-8": dict(neck=16.0, bore=10.0, collar=15.0, bore_to=-24.5), "GIM8108-8": dict(neck=18.0, bore=10.0, collar=15.0, bore_to=-24.5)}
+PINION_FILLET = dict(neck=1.5, teeth=1.0, relief=0.4)
+STEEL = 7.85e-3                                       # g/mm³
 
 
 def _v4_levels(motor: dict | None = None, brg: dict | None = None) -> dict:
@@ -442,25 +455,72 @@ def small_stage_v4(teeth: int = 20, motor: dict | None = None, idler: dict | Non
     brg = brg or BRG_B
     v = _v4_levels(m, brg)
     f0, f1 = v["flange"]
+    pn = pinion(m)
     fl = Pos(0, 0, f0) * Cylinder(STUB["flange_od"] / 2, f1 - f0, align=MINZ)
     for k in range(m["out_holes"]):                                     # all 8 output screws, low heads in counterbores on the −Z face
         a = 2 * math.pi * k / m["out_holes"] + math.pi / 8
         x, y = m["out_pcd"] / 2 * math.cos(a), m["out_pcd"] / 2 * math.sin(a)
         fl -= Pos(x, y, f0 - 1) * Cylinder(1.7, 10, align=MINZ)
         fl -= Pos(x, y, f0 - 1) * Cylinder(3.0, 1 + 2.2, align=MINZ)
-    shaft = Pos(0, 0, v["end"]) * Cylinder(SHAFT_D / 2, f0 - v["end"] + 0.01, align=MINZ)
-    j0, _ = v["jB"]
+    j0, j1 = v["jB"]
+    p0 = v["pulley"][1]
+    t1 = p0 - 1.5                                                       # teeth top = the motor-side flange
+    t0 = p0 - AL_PULLEY["body_l"]
+    # v5 integral pinion shaft (one turned part; "shaft_12" = seat + collar + neck, "al_pulley" = the hobbed teeth + flange)
+    shaft = Pos(0, 0, v["end"]) * Cylinder(SHAFT_D / 2, j1 - v["end"], align=MINZ)
+    shaft += Pos(0, 0, j1) * Cylinder(pn["collar"] / 2, t0 - j1, align=MINZ)
+    shaft += Pos(0, 0, p0) * Cylinder(pn["neck"] / 2, f0 - p0 + 0.01, align=MINZ)
+    shaft -= Pos(0, 0, p0 - 0.01) * Cylinder(pn["bore"] / 2, f0 - p0 + 0.03, align=MINZ)
+    fl -= Pos(0, 0, f0 - 0.01) * Cylinder(pn["bore"] / 2, f1 - f0 + 0.02, align=MINZ)
     bush = Pos(0, 0, j0) * (Cylinder(BUSH_B["od"] / 2, brg["B"], align=MINZ) - Cylinder(brg["D"] / 2 + 0.02, brg["B"], align=MINZ))
     brg = Pos(0, 0, j0) * (Cylinder(brg["D"] / 2, brg["B"], align=MINZ) - Cylinder(brg["d"] / 2, brg["B"], align=MINZ))
     pd_ = teeth * PITCH / math.pi
-    p0, p1 = v["pulley"][1], v["pulley"][0]
-    pul = Pos(0, 0, p0 - AL_PULLEY["body_l"]) * (Cylinder(pd_ / 2 - PLD, AL_PULLEY["body_l"], align=MINZ))
-    pul += Pos(0, 0, p0 - 1.5) * Cylinder(AL_PULLEY["flange_od"] / 2, 1.5, align=MINZ)   # motor-side flange only (belts.INSTALL_SLACK)
-    pul += Pos(0, 0, p1) * Cylinder(AL_PULLEY["hub_d"] / 2, AL_PULLEY["hub_l"], align=MINZ)
-    pul -= Pos(0, 0, -200) * Cylinder(SHAFT_D / 2, 400, align=MINZ)
+    pul = Pos(0, 0, t0) * Cylinder(pd_ / 2 - PLD, t1 - t0, align=MINZ)
+    pul += Pos(0, 0, t1) * Cylinder(AL_PULLEY["flange_od"] / 2, 1.5, align=MINZ)   # motor-side flange only (belts.INSTALL_SLACK)
+    pul -= Pos(0, 0, pn["bore_to"]) * Cylinder(pn["bore"] / 2, p0 - pn["bore_to"] + 0.01, align=MINZ)
     out = [("kx_hub_v2", fl, "steel"), ("shaft_12", shaft, "steel"), ("brg_B_6001", brg, "steel"), ("brg_B_bushing", bush, "white"),
            ("al_pulley", pul, "steel")]
     return out + (idler_parts(idler) if idler is not None else [])
+
+
+def pinion(motor: dict | None = None) -> dict:
+    """The v5 integral pinion shaft's proportions for motor m (PINION)."""
+    from . import cartridge_m as cm
+    return PINION["GIM8108-8" if (motor or cm.MOTOR) is cm.MOTOR_8108 else "GIM6010-8"]
+
+
+def stub_sections(motor: dict | None = None, version: str = "v5", brg: dict | None = None):
+    """Bending sections of the drive stub, bottom (6001) up: (label, z, d_out, d_in, Kt bending or None (stepped-shaft
+    fit), Kts torsion or None, carries torque, notch r mm, D of the step), and the beam segments [(z0, z1, d_out, d_in)]
+    from the 6001 centre to the motor bearing. v4: the D26 stub (plain Ø12, keyed 20T on it); v5: the integral pinion
+    shaft. The motor's output between its face and its bearing is taken as rigid (Ø42)."""
+    v = _v4_levels(motor, brg)
+    j0, j1 = v["jB"]
+    p0 = v["pulley"][1]
+    t0, f0 = p0 - AL_PULLEY["body_l"], v["flange"][0]
+    zb, zm = (j0 + j1) / 2, v["motor_brg"]
+    root = 20 * PITCH / math.pi - 2 * PLD - 2 * DEPTH                    # 26.6: the hobbed tooth root
+    if version == "v4":
+        segs = [(zb, f0, SHAFT_D, 0.0), (f0, zm, 42.0, 0.0)]
+        r_k = 0.02 * SHAFT_D                                              # end-milled keyseat, r/d 0.02 (Shigley Table 7-1)
+        secs = [("keyway under the 20T at the belt plane", v["belt_c"], SHAFT_D, 0.0, 2.14, 3.0, True, r_k, None),
+                ("flange → Ø12, r 0.5", f0, SHAFT_D, 0.0, None, None, True, 0.5, 42.0)]
+        return secs, segs
+    pn = pinion(motor)
+    rf = PINION_FILLET
+    segs = [(zb, j1, SHAFT_D, 0.0), (j1, t0, pn["collar"], 0.0), (t0, pn["bore_to"], root, 0.0), (pn["bore_to"], p0, root, pn["bore"]),
+            (p0, f0, pn["neck"], pn["bore"]), (f0, zm, 42.0, 0.0)]
+    secs = [("6001 seat Ø12 k5: DIN 509 relief at the inner-ring face", j1, SHAFT_D, 0.0, 2.5, None, False, rf["relief"], None),
+            (f"teeth → Ø{pn['collar']:.0f} collar, r {rf['teeth']}", t0, pn["collar"], 0.0, None, None, False, rf["teeth"], root),
+            ("tooth root Ø26.6 at the belt plane (hobbed, no key)", v["belt_c"], root, pn["bore"], 1.5, 1.5, True, 0.8, None),
+            (f"neck Ø{pn['neck']:.0f}/{pn['bore']:.0f} → pinion flange, r {rf['neck']}", p0, pn["neck"], pn["bore"], None, None, True, rf["neck"], 38.0),
+            (f"flange Ø42 → neck Ø{pn['neck']:.0f}/{pn['bore']:.0f}, r {rf['neck']}", f0, pn["neck"], pn["bore"], None, None, True, rf["neck"], 42.0)]
+    return secs, segs
+
+
+def stub_metal_mass(st: dict) -> float:
+    """g: the stub's turned steel (flange + shaft + integral teeth) from the CAD volumes (small_stage_v4 parts)."""
+    return (st["kx_hub_v2"].volume + st["shaft_12"].volume + st["al_pulley"].volume) * STEEL
 
 
 def wall_a_cuts_v4(motor: dict | None = None, site: str = "default") -> Part:

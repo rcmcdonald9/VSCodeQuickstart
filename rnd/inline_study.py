@@ -45,11 +45,11 @@ LEVER = {"shoulder_pitch": 0.60, "shoulder_roll": 0.60, "upper_yaw": 0.43, "elbo
 
 # ---------------------------------------------------------------------------------------------------------------- masses
 # (item, kg, basis). Removals are FROM CAD (2026-11-28 roll-ups: arm.masses(), shoulder.masses(), roll.masses()); additions
-# and shrinkage are ESTIMATE. Baselines: bone_mass_upper 0.90 (gim6010 0.89 + inline-roll neck 0.010), pitch module 0.93,
-# yaw stage 0.69 (params).
+# and shrinkage are ESTIMATE. Baselines: bone_mass_upper 0.95 (gim6010 0.94 + inline-roll neck 0.010), pitch module 1.07,
+# yaw stage 0.74 (params; Astra #3 m7 integral pinion shafts, 2026-11-28).
 NECK_G_PER_MM = 0.69e-3      # kg/mm, the upper-arm neck (params ROLL_DRIVES comment): a longer yaw drop shortens it
 ELBOW_LINES = [
-    ("elbow D26 direct stage: C45 stub, alu 20T, 6001 + bonded bushing", -0.159, "FROM CAD"),
+    ("elbow D26 direct stage: C45+QT integral pinion shaft, 6001 + bonded bushing", -0.213, "FROM CAD"),   # Astra #3 m7: was −0.159 (stub + alu 20T)
     ("elbow can nose / flange / rear cap", -0.033, "FROM CAD"),
     ("elbow shaft + integral 40T (the motor output carries a printed forearm hub instead)", -0.099, "FROM CAD"),
     ("elbow 6061 core tube (no elbow shaft left to stiffen; owner: rigidity adders not a constraint)", -0.051, "FROM CAD"),
@@ -60,18 +60,18 @@ ELBOW_LINES = [
     ("motor seat ring / rear cover + 8 × M4 (PCD 84)", +0.030, "ESTIMATE"),
 ]
 PITCH_LINES = [
-    ("D26 drive stub + idler + can nose / flange / cap", -0.107, "FROM CAD"),
+    ("D26 integral pinion shaft + idler + can nose / flange / cap", -0.249, "FROM CAD"),   # Astra #3 m7: was −0.107 (flange only counted)
     ("60T half of the integral pitch shaft (a plain Ø40 tube stays on the 2 × 61808)", -0.081, "ESTIMATE (½ of 0.162 FROM CAD)"),
     ("D26 exit-slot key + 6061 strap (belt-pull bracket stiffness)", -0.020, "FROM CAD"),
     ("pitch belt", -0.020, "ESTIMATE"),
     ("7075 output adapter + motor seat in the bracket (8 × M4)", +0.061 + 0.040, "ESTIMATE"),
 ]
 YAW_LINES = {   # by yaw actuator
-    "GIM6010-48": [("yaw D26 direct stage + bolted can flange / nose / cap", -0.198, "FROM CAD"),
+    "GIM6010-48": [("yaw D26 direct stage + bolted can flange / nose / cap", -0.252, "FROM CAD"),
                    ("40T half of the yaw shaft", -0.032, "ESTIMATE (½ of 0.063 FROM CAD)"), ("yaw belt", -0.010, "ESTIMATE"),
                    ("yaw block: the off-axis cartridge bay (x −81 … −129) goes, Ø80 seat instead (≈ 35 % of 0.231)", -0.080, "ESTIMATE"),
                    ("Ø60 7075 output adapter + motor seat ring + 6 × M4", +0.060, "ESTIMATE")],
-    "DM-J4340-2EC": [("yaw D26 direct stage + bolted can flange / nose / cap", -0.198, "FROM CAD"),
+    "DM-J4340-2EC": [("yaw D26 direct stage + bolted can flange / nose / cap", -0.252, "FROM CAD"),
                      ("40T half of the yaw shaft", -0.032, "ESTIMATE (½ of 0.063 FROM CAD)"), ("yaw belt", -0.010, "ESTIMATE"),
                      ("yaw block: the off-axis cartridge bay goes, Ø57 seat instead (≈ 45 % of 0.231)", -0.100, "ESTIMATE"),
                      ("Ø46 7075 output adapter + motor seat ring + 6 × M3", +0.050, "ESTIMATE")],

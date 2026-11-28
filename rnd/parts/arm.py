@@ -407,7 +407,7 @@ def masses(density=1.27):
     integral with the elbow shaft, the D13 v3 metal parts are counted by material, the elbow seat caps are added. The yaw
     KX74 socket stays here until roll.py moves the yaw stage to D24."""
     from . import cartridge_m as cm, hand as hd
-    from .belt_stage import small_stage_v4
+    from .belt_stage import small_stage_v4, stub_metal_mass
     from .kx import retainer
     st = dict((n, p) for n, p, _ in small_stage_v4(20, MOT))
     shells = {"upper bone shell + D19 bolted seat caps": upper_bone().volume + elbow_seat_cap("-").volume + elbow_seat_cap("+").volume,
@@ -419,8 +419,8 @@ def masses(density=1.27):
                "wrist D24 output flange + can flange ring": hd.adapter_d().volume + hd.can_d().volume - hd.can_d_loop10_volume()}
     out = {k: v / 1e6 * density for k, v in shells.items()}
     out.update({k: v / 1e6 * density * 0.7 for k, v in sockets.items()})
-    out["elbow D26 direct stage (C45 stub on the motor, alu pulley, 6001 + bonded bushing; no Oldham)"] = (
-        (st["shaft_12"].volume + st["kx_hub_v2"].volume) * 7.85e-3 + st["al_pulley"].volume * 2.7e-3 + st["brg_B_6001"].volume * 7.85e-3 * 0.6
+    out["elbow D26 direct stage (C45+QT integral pinion shaft on the motor, Astra #3 m7; 6001 + bonded bushing; no Oldham)"] = (
+        stub_metal_mass(st) + st["brg_B_6001"].volume * 7.85e-3 * 0.6
         + st["brg_B_bushing"].volume * density * 0.8e-3) / 1e3
     out["elbow shaft 6061 core tube Ø30 × 1.5 (Neon #2 finding 7)"] = elbow_core_tube().volume * 2.7e-6
     out["elbow can nose/flange/rear cap over the loop-10 can"] = (cm.can_bolted(MOT).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-6

@@ -393,11 +393,12 @@ def module(with_motor: bool = True):
 def masses(density=1.27):
     """D24/D19 roll-up (2026-11-27). The bolted cartridge's sleeve is counted here only by what it adds over the loop-10 can
     (nose, flange, rear cap); the motor is the actuator mass."""
-    from .belt_stage import small_stage_v4
+    from .belt_stage import small_stage_v4, stub_metal_mass
     st = dict((n, p) for n, p, _ in small_stage_v4(20, MOT, idler()))
     # D26: the turned C45 stub (flange + shaft) and the idler (2 × 625 + printed roller + M5 axle) replace the Oldham drive
-    # (the stage shaft was never counted here; the stub's shaft is 11.6 mm longer than the v3 shaft: + 10 g)
-    oldham = (st["kx_hub_v2"].volume * 7.85e-3 + 10.0 + st["idler_roller"].volume * 1.27e-3 * 0.7 + st["idler_axle"].volume * 7.85e-3
+    # Astra #3 m7 (2026-11-28): the whole C45+QT integral pinion shaft (flange + neck + teeth + seat) from its CAD volume; the
+    # v4 roll-up counted only the flange + 10 g (the keyed 20T and the Ø12 shaft were never in it)
+    oldham = (stub_metal_mass(st) + st["idler_roller"].volume * 1.27e-3 * 0.7 + st["idler_axle"].volume * 7.85e-3
               + 2 * 4.0)   # g (625-2RS ≈ 4 g each)
     can_extra = (cm.can_bolted(MOT, EAR_SITE).volume + cm.can_cap_bolted(MOT).volume - cm.can().volume) * density * 0.8e-3
     m = {"bracket body + bolted outer wall (walls, web, cage)": bracket().volume / 1e6 * density * 0.6,
@@ -405,7 +406,7 @@ def masses(density=1.27):
          "balancer crank (HUB_TIE crank_mat) + Ø6 pin B": crank().volume * HUB_TIE["crank_density"],
          "C1 hub tie: 4 × M4 10.9 studs + nuts + 8 crush sleeves (steel) + 6061 clamp ring": (4 * 8.78 * hub_tie_length() + 4 * 100.0) * 7.85e-6
          + hub_clamp_ring().volume * 2.7e-6 + HUB_TIE["n"] * math.pi / 4 * (HUB_TIE["sleeve"][0] ** 2 - HUB_TIE["sleeve"][1] ** 2) * (Y_TUBE_END - Y_TUBE_IN + hub_print_under_ring()) * 7.85e-6,
-         "D26 drive stub (C45) + idler + can nose/flange/cap": (oldham + can_extra) / 1e3,
+         "D26 integral pinion shaft (C45+QT) + idler + can nose/flange/cap": (oldham + can_extra) / 1e3,
          "D26 exit-slot key (printed) + 6061 strap + 4 × M4": slot_key().volume / 1e6 * density * 0.8 + slot_strap().volume * 2.7e-6 + 0.004,
          "bearings 2×61808 + 2×61804 (ESTIMATE)": 0.056,
          "spring + cable + 2 × (608-2Z + POM tyre) + Ø8 axles (ESTIMATE; M8: was U604, 0.09)": 0.11,
