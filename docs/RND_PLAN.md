@@ -142,26 +142,15 @@ Each scheduled run (and any interactive session) does one **loop**:
 | R15 swept spacing | roll and yaw sweeps; found and fixed a shoulder-cap clash at roll 55–95° (since loop 22) | [swept.md](rnd/swept.md) |
 | Software S0.2, S0.3, S0.4a, S1 | URDF/MJCF export; LeRobot-format synthetic demos; BC pipeline dry run; DM-J4310 MIT driver, safety supervisor + tests | [SOFTWARE_PLAN.md](SOFTWARE_PLAN.md) |
 
-**Open queue (ordered):**
-0000. **D24 slim arm (inline roll approved 2026-11-27):** bolted cartridge flange (replace KX74/KX56 sockets in CAD: belt_stage kx_hub_v2 → bolted flange hub, cartridge_m can flange), elbow housing narrower, inline GIM8108-36 roll stage (new roll link around the motor, ROLL_Y ≈ 70, yaw_drop ≈ 100), then re-run R14/R15/swept/dexterity/basket. Confirm the GIM8108-36 drawing (diameter, flange) with the seller.
-000. **Owner feedback 2026-11-27:** D22 7" face (head CAD + tilt pivot) and D23/R17 enclosed consumer-safe body: write rnd/pinch.py first (measure every pinch point and exposed belt/motor), then covers module by module (elbow + forearm, shoulder, wrist, lift mast cover, head).
-00a. **R2d / D21 laundry basket:** ~~fingertip hooks~~ *(loop 46: rigid PETG-CF hook on each fixed jaw, side rails around the wrist camera, foot 9 mm past the jaw face; hand module clean)*; wrist-pitch outboard support (forearm fork + 61804) or bolted wrist flange; re-run rnd/basket.py after the D20 CAD.
-00. **R2c / D20 (owner, 2026-11-27: "it needs to hold 20 lb", scenario B accepted).** M1 motors for shoulder pitch + elbow on hold until the GIM8108-8's 24 V operation is confirmed. Then: actuator swap in params, cartridge can + KX for Ø96, elbow 60T in a larger housing, lift and base re-check with +9 kg, gripper/forearm pads for the hug.
-0. **Astra review #2b criticals (verified, 2026-11-26)** — these come before anything else ([triage](review/triage_astra_2026-11-26.md)):
-    - D19 integral shaft-pulleys: ~~yaw~~ *(loop 44: one-piece tube + 40T + spring hub; the bottom plate is a separate bolted print, so no capped seats were needed there — the slot idea clashed with the +X clevis arm)*; roll, pitch, elbow still to do (capped seats or a separable wall)
-    - shaft → link drive: clevis pinch clamps, forearm clamp on the elbow shaft, yaw-flange bolt pattern, CF-tube bond lengths (≥ 1 × OD)
-    - ~~D15 male face~~ *loop 42: one relief channel per pin track; the rim now holds each ball past its equator over 58 % (KX44 53 %) of the circumference (was 0 %); modelled ball centres fixed; Ø4.1 insert holes for the retainer. Still to do: separate hub / collar / retainer print files*
-    - ~~D16 wrist skirt~~ *loop 43: seat open below + screwed end cap; spindle in from above with a shoulder on the upper bearing, gripper base bolted to its end through a spacer boss on the lower inner race: held both ways; dog clearance 0.4 → 0.1 mm a side. R14 adds the spindle (passes)*
-    - A5 v2: regen clamp sized by energy and pulse rating; pre-charge switched (not in parallel); category-0 drop protection (mechanical catch on the bench); watchdog timing budget
-    - ~~safety.py v2~~ *done loop 41-sw: total drive torque bounded (kp·e + kd·ė + τ_ff ≤ rated), finite + fresh feedback, latched faults, reset only with the button released; the drive-side current limit is a day-1 setting*
-    - balancer: check pin-B sign in shoulder.py against balancer.py; exact die-spring part; 41 % at the 65 mm slot end
-    - clock-spring capacity with ribbon thickness (Astra: yaw ≈ 306°, not 446°)
-1. **Hand stiffness, last mile:** the elbow housing is still the largest term (≈ 4 mm at the hand). Thicker variants failed to mesh (gmsh PLC error); fix the mesh, try a 5.5 mm +Y wall and a printed internal frame. Roll link web 4 → 8 mm.
-2. **Lift on the D13 stage:** its 20T pulley sits straight on the KX seat with the open belt's pull on it (the same failure class as the wrist roll). Move the lift onto small_stage_v2 with walls in the lift mount; steel rack CAD (A15).
-3. **GIM6010 CAN driver** from the SteadyWin manual (blocked here; day 1 of M1). **S0.4b** pretrained checkpoint + open-data slice: needs huggingface.co allowed in this environment (owner decision).
-4. **R10 build time** (no hard target, priority): the D15 sockets add ≈ 4 min each; harness kit, snap covers, one hex size.
-5. **Coupons C1–C9** when the P2S arrives (C1 now the D15 screwed socket; add C10: D16 dog coupling, C11: clock-spring ribbon cycle test 10k cycles).
-6. Twin v2 (belt compliance, two-handed box lift, battery day); Pi thermal; BOM cost pass (now $4.9k landed with contingency vs the $4,000 target); looks; research watch.
-7. **M1 bench arm** (owner buy decision): see [M1_READINESS.md](M1_READINESS.md).
+**Open queue (ordered; rewritten 2026-11-28 after waves 13–19):**
+1. **R17 pinch gate** (5 nips / 0 exposed; in progress W20a): hood × torso (turn the yaw rear-cap lugs off ±Y, else PIP_TORSO_RECESS), and the hood's upper inboard wedge (**owner call:** a soft TPU skirt + force limit, built behind PIP_WEDGE_GUARD, or ROLL_Y + 23–30 mm, which breaks R5 ≤ 600 mm); yaw_block / yaw_band × ferrule only at full range (the D25 soft limit closes them with people near).
+2. **Fable #2 Major 5, the arm's load chain still undrawn:** bone ↔ yaw flange, the detach clamp (wing-nut V-band, D29), the elbow core, the wrist bearing. Draw them and give each an FEA or hand-check row; the queued joints.md coupons, including the front-stop dog-on-block test.
+3. **Owner decisions pending:** base timer (`PIP_BASE_TIMER` board vs G9SA); safety-board reviewer for gate G-SB (route A hired EE / route B two community reviewers); R17 wedge (item 1).
+4. **M1 Step 0 / 1a (owner buy decision):** read the GIM6010-8 manual, send the six seller questions, then 1a ($970 landed). Gate to 1b: discovery done, board drawn in KiCad and reviewed (G-SB), rig built, C14 tilt stiffness measured. See [M1_READINESS.md](M1_READINESS.md), [M1_RIG.md](M1_RIG.md).
+5. **Safety board KiCad drawing** (netlist v4 → schematic + layout) so G-SB has something to review; ERC/DRC clean; sim re-run on drawn values.
+6. **Bench validations queued by analysis:** the caster snag test (could raise the ≤ 6 kg locked cap back to 0.25), the K1 bounce (T3), the JF-1264B current and duty, the caster cable pull force, the timed wing-nut arm join, and the drive quick-stop and no-phase-short settings on the GIM.
+7. **R8 cost:** robot $6,543 vs the $5,500 limit (D29: inline roll kept; remaining cost-down ideas welcome). D20 adds ≈ $266.
+8. **Software:** GIM6010 CAN driver from the manual (day 1 of 1a); S0.4b pretrained checkpoint (needs huggingface.co, owner decision); twin v2 (belt compliance, two-handed box lift, battery day).
+9. **Stale generated docs:** the collision hulls in rnd/out/collision_inline (roll x-arm, yaw block, sh_*, elbow cart) predate the current CAD; regenerate them with the stow check.
 
 **Earlier queue history** is in [RND_LOG.md](RND_LOG.md).
