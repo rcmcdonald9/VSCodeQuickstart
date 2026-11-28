@@ -349,24 +349,60 @@ def c_bus(which="robot"):
     return C_BULK + N_DRIVERS[which] * C_DRIVER
 
 
-def stop_timing(which="robot"):
-    """Hardware path with the Pi hung (worst case): heartbeat lost → monostable times out → coil MOSFET off → contactor opens →
-    aux contact opens → chopper forced on (bus discharge) → bus below driver UVLO → phase current gone."""
+T_AUX_LAG = 0.0005       # s: K1's aux contact opens this long after the main contacts (ESTIMATE; board test T4 measures it)
+T_PHASE_DECAY = 0.001    # s: phase current decays once a drive stops switching (ESTIMATE)
+
+
+def stop_chain_rows(release, discharge):
+    """Heartbeat lost → no drive torque, worst tolerances: the one list of steps both rnd/electrical.py `stop_timing` and
+    rnd/safety_board_sim.py `stop_chain` (netlist v4) sum, so the two cannot disagree on the chain, only on the inputs.
+    release / discharge: (label, s) for the contactor release and for aux lag → FORCE → far drive below UVLO."""
     w = WATCHDOG
+    return [(f"heartbeat lost just after an edge: one {1e3 / w['loop_hz']:.0f} ms cycle + {w['t_nom'] * 1e3:.0f} ms monostable at +{w['tol'] * 100:.0f} %",
+             1 / w["loop_hz"] + w["t_nom"] * (1 + w["tol"])),
+            release,
+            ("AUX debounce, opening → AUX_DB low at the slow corner (v4)", aux_debounce()["t_fall"][1]),
+            discharge,                       # index 3 (sw/test_s2.py reads rows[3] as the discharge tail)
+            ("phase current decays once the drive stops switching (ESTIMATE)", T_PHASE_DECAY)]
+
+
+def _f_ms(t):
+    return "—" if t is None else f"{t * 1e3:.1f}"
+
+
+def _sim_json():
+    import json
+    p = DOCS / "safety_board_sim.json"
+    try:
+        return json.loads(p.read_text()) if p.exists() else {}
+    except ValueError:
+        return {}
+
+
+def stop_timing(which="robot"):
+    """Hardware path with the Pi hung (worst case): heartbeat lost → monostable times out → coil MOSFET off → contactor opens
+    (datasheet release) → aux contact opens → FORCE (clamp gate on) → far drive below UVLO → phase current gone.
+    W18: the discharge step is the board simulation's (netlist v4, ngspice: the harness to the far drive and the aux lag,
+    docs/rnd/safety_board_sim.json `discharge`), so this total is the sim's `stop_chain[which].total_datasheet`, the
+    figure readiness uses. Without the sim JSON it falls back to an RC model at the board (labelled)."""
     C = c_bus(which)
     R = CLAMP["r_each"] / CLAMP["n_res"]
-    t_cycle = 1 / w["loop_hz"]
-    t_detect = t_cycle + w["t_nom"] * (1 + w["tol"])          # the fault can hit just after a heartbeat edge
-    t_dis = R * C * math.log(V_FULL / V_UVLO)
+    t_rc = R * C * math.log(V_FULL / V_UVLO)
     t_dis_passive = C * (V_FULL - V_UVLO) / (N_DRIVERS[which] * I_IDLE_DRIVER)   # idle draw only (no forced discharge)
-    rows = [(f"heartbeat lost → watchdog output low (one {t_cycle * 1e3:.0f} ms cycle + T_wd {w['t_nom'] * 1e3:.0f} ms +{w['tol']:.0%})", t_detect),
-            ("coil MOSFET off → contactor main contacts open (release time, datasheet)", CONTACTOR["t_release"]),
-            ("aux contact opens → AUX_DB low (debounce, slow corner) → discharge one-shot fires, clamp gate on", aux_debounce()["t_fall"][1] + 0.0002),
-            (f"bus {V_FULL:.1f} → {V_UVLO:.0f} V (driver UVLO, ESTIMATE) through the clamp resistors ({R:.2f} Ω × {C * 1e3:.1f} mF)", t_dis),
-            ("phase current decays once the drive stops switching (ESTIMATE)", 0.001)]
+    sim = _sim_json()
+    d = next((x for x in sim.get("discharge", []) if x.get("which") == which and x.get("t_uvlo_far")), None)
+    if d:
+        dis = (f"aux contact lags the mains ({T_AUX_LAG * 1e3:.1f} ms, ESTIMATE) → FORCE → far drive ({d.get('far', '?')}) below UVLO "
+               f"(board sim, netlist v4: {R:.2f} Ω × {C * 1e3:.1f} mF + harness)", d["t_uvlo_far"])
+    else:
+        dis = (f"aux lag {T_AUX_LAG * 1e3:.1f} ms + bus {V_FULL:.1f} → {V_UVLO:.0f} V through the clamp ({R:.2f} Ω × {C * 1e3:.1f} mF), "
+               "RC model at the board (no sim JSON: run `python -m rnd.safety_board_sim`)", T_AUX_LAG + t_rc)
+    rows = stop_chain_rows(("coil MOSFET off → contactor main contacts open (release time, datasheet maximum)", CONTACTOR["t_release"]), dis)
     total = sum(t for _, t in rows)
-    return dict(rows=rows, total=total, t_dis_passive=t_dis_passive, C=C,
-                t_button=CONTACTOR["t_release"] + aux_debounce()["t_fall"][1] + 0.0002 + t_dis + 0.001, t_sw=2 * t_cycle)
+    t_sim = sim.get("stop_chain", {}).get(which, {}).get("total_datasheet")
+    return dict(rows=rows, total=total, t_dis_passive=t_dis_passive, C=C, t_rc=t_rc, source="sim" if d else "rc", t_sim=t_sim,
+                sim_agrees=t_sim is None or abs(t_sim - total) < 1e-5,
+                t_button=total - rows[0][1], t_sw=2 / WATCHDOG["loop_hz"])
 
 
 def precharge(which="robot"):
@@ -654,7 +690,8 @@ def base_channel_lines():
         L += ["", f"**Caster lock (W14a open point):** engaging the D18b lock is harmless at any speed, but travelling locked at 0.8 m/s turns any floor step "
               f"into a floor-level snag: {max(r['frac'] for r in sn['rows'] if r['v'] == 0.8):.0%} of the tip energy with the lift up (it tips), ≈ "
               f"{max(r['F_max'] for r in sn['rows'] if r['v'] == 0.8) / 1e3:.1f} kN on a foot (rods ≈ {sn['F_rod']:.0f} N). SW-T2 (implemented in W16a, sw/safety.py): a forced lock "
-              f"is deferred until the base is ≤ {sn['v_lock']} m/s (model limit {sn['v_allow']:.2f} m/s) and locked travel is capped at {sn['v_locked_cap']} m/s; the hardware locks at "
+              f"is deferred until the base is ≤ {sn['v_lock']} m/s (model limit {sn['v_allow']:.2f} m/s) and locked travel is capped by payload (SW-T8 `caster_locked_v_for`: {sn['v_locked_cap']:.2f} m/s unloaded"
+              + (f", the basket {B['v_basket']:.2f} m/s" if B.get("v_basket") else "") + "); the hardware locks at "
               "U20's opening and at power loss anyway (safety_board_sim.md §6).", ""]
     return L
 
@@ -827,6 +864,12 @@ def a5v2_section(d=BASELINE):
     L += [f"| {n} | {t * 1e3:.1f} |" for n, t in st["rows"]]
     L += [f"| **Total: heartbeat lost → no drive torque** | **{st['total'] * 1e3:.1f}** (M1 bench {st1['total'] * 1e3:.1f}; SW2 budget {SW2_BUDGET * 1e3:.0f}) "
           f"{ok(st['total'] <= SW2_BUDGET and st1['total'] <= SW2_BUDGET)} |", "",
+          ("**One source (W18):** the steps are `stop_chain_rows()`, which rnd/safety_board_sim.py's `stop_chain` sums too, and the discharge step is the "
+           f"board simulation's (netlist v4, far drive through the harness, aux lag included; the RC model at the board alone gives {st['t_rc'] * 1e3:.1f} / "
+           f"{st1['t_rc'] * 1e3:.1f} ms). Board sim *total with the datasheet release* (safety_board_sim.md §3, what readiness uses): "
+           f"{_f_ms(st['t_sim'])} / {_f_ms(st1['t_sim'])} ms {ok(st['sim_agrees'] and st1['sim_agrees'])}"
+           + ("" if st["sim_agrees"] and st1["sim_agrees"] else ": **the sim JSON is stale, re-run `python -m rnd.safety_board_sim`**") + "."
+           if st["source"] == "sim" else "**No board simulation JSON:** the discharge step is the RC model at the board; run `python -m rnd.safety_board_sim`."), "",
           f"Mushroom pressed: {st['t_button'] * 1e3:.0f} ms. Without the forced discharge, the drivers' idle draw alone would take ≈ {st['t_dis_passive'] * 1e3:.0f} ms to bring the bus to UVLO: "
           "the old design could not meet 50 ms. The software path is faster when the Pi is alive: the supervisor latches, sends DISABLE to every drive the next cycle "
           f"(≤ {st['t_sw'] * 1e3:.0f} ms) and stops the heartbeat. Day-1 checks: the drives' UVLO and CAN-timeout behaviour, the ALEV100 release time with its coil suppression; "

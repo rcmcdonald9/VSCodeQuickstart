@@ -1056,12 +1056,12 @@
      0.0055860808000000005
     ],
     [
-     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
-     0.0020059688
-    ],
-    [
      "AUX debounce, opening \u2192 AUX_DB low at the slow corner (v4)",
      0.0004752329360165458
+    ],
+    [
+     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
+     0.0020059688
     ],
     [
      "phase current decays once the drive stops switching (ESTIMATE)",
@@ -1080,12 +1080,12 @@
      0.01
     ],
     [
-     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
-     0.0020059688
-    ],
-    [
      "AUX debounce, opening \u2192 AUX_DB low at the slow corner (v4)",
      0.0004752329360165458
+    ],
+    [
+     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
+     0.0020059688
     ],
     [
      "phase current decays once the drive stops switching (ESTIMATE)",
@@ -1106,12 +1106,12 @@
      0.0055860808000000005
     ],
     [
-     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
-     0.0028384468
-    ],
-    [
      "AUX debounce, opening \u2192 AUX_DB low at the slow corner (v4)",
      0.0004752329360165458
+    ],
+    [
+     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
+     0.0028384468
     ],
     [
      "phase current decays once the drive stops switching (ESTIMATE)",
@@ -1130,12 +1130,12 @@
      0.01
     ],
     [
-     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
-     0.0028384468
-    ],
-    [
      "AUX debounce, opening \u2192 AUX_DB low at the slow corner (v4)",
      0.0004752329360165458
+    ],
+    [
+     "aux contact lags the mains (ESTIMATE) \u2192 FORCE \u2192 far drive below UVLO (simulated)",
+     0.0028384468
     ],
     [
      "phase current decays once the drive stops switching (ESTIMATE)",
@@ -1877,7 +1877,7 @@
   "h_top": 0.5522596825715377,
   "a_transit": 0.5,
   "a_basket": 0.3,
-  "v_basket": 0.25,
+  "v_basket": 0.15,
   "seqs": [
    {
     "name": "mushroom, Pi alive: transit 0.8 m/s, casters released",
@@ -2034,8 +2034,8 @@
     "E_kin": 10.221440000000001
    },
    {
-    "name": "mushroom, R2d basket carry 9.07 kg at 0.25 m/s (CASTER_LOCKED_V)",
-    "v0": 0.25,
+    "name": "mushroom, R2d basket carry 9.07 kg at 0.15 m/s (caster_locked_v_for(9.07))",
+    "v0": 0.15,
     "a_sw": 0.3,
     "a_qs": null,
     "M": 41.012,
@@ -2047,13 +2047,13 @@
     "t_base_off": 2.000100000001001,
     "v_at_base_off": 0.0,
     "t_ramp_start": 0.0020999999999997687,
-    "t_stopped": 0.8353999999999081,
-    "x_stop": 0.10467916699999236,
+    "t_stopped": 0.5019999999999448,
+    "x_stop": 0.037807499999997364,
     "lock_sw": [
      0.0,
-     0.25
+     0.15
     ],
-    "E_kin": 1.281625
+    "E_kin": 0.461385
    },
    {
     "name": "pack / supply lost (BMS trip): everything off, base coasts",
@@ -2216,6 +2216,8 @@
    "rows": [
     {
      "state": "unloaded transit, arms parked, lift mid",
+     "load": 0.0,
+     "cap": 0.2,
      "az": 0,
      "v": 0.12,
      "n_snag": 2,
@@ -2233,6 +2235,27 @@
     },
     {
      "state": "unloaded transit, arms parked, lift mid",
+     "load": 0.0,
+     "cap": 0.2,
+     "az": 0,
+     "v": 0.2,
+     "n_snag": 2,
+     "x": 0.1323080472014566,
+     "h": 0.3947585868355164,
+     "M": 31.942,
+     "frac": 0.05034497953818957,
+     "theta_deg": 0.4764499033116985,
+     "J": 2.9836465909910572,
+     "F_each": 99.45488636636858,
+     "v_tip": 0.8913574759383625,
+     "v_frac": 0.4456787379691812,
+     "v_force": 0.4205870408878965,
+     "F_max": 225.75080527048547
+    },
+    {
+     "state": "unloaded transit, arms parked, lift mid",
+     "load": 0.0,
+     "cap": 0.2,
      "az": 0,
      "v": 0.25,
      "n_snag": 2,
@@ -2250,6 +2273,8 @@
     },
     {
      "state": "unloaded transit, arms parked, lift mid",
+     "load": 0.0,
+     "cap": 0.2,
      "az": 0,
      "v": 0.3,
      "n_snag": 2,
@@ -2267,6 +2292,8 @@
     },
     {
      "state": "unloaded transit, arms parked, lift mid",
+     "load": 0.0,
+     "cap": 0.2,
      "az": 0,
      "v": 0.5,
      "n_snag": 2,
@@ -2284,6 +2311,8 @@
     },
     {
      "state": "unloaded transit, arms parked, lift mid",
+     "load": 0.0,
+     "cap": 0.2,
      "az": 0,
      "v": 0.8,
      "n_snag": 2,
@@ -2301,6 +2330,8 @@
     },
     {
      "state": "unloaded transit, arms parked, lift top",
+     "load": 0.0,
+     "cap": 0.2,
      "az": 0,
      "v": 0.12,
      "n_snag": 2,
@@ -2318,6 +2349,27 @@
     },
     {
      "state": "unloaded transit, arms parked, lift top",
+     "load": 0.0,
+     "cap": 0.2,
+     "az": 0,
+     "v": 0.2,
+     "n_snag": 2,
+     "x": 0.1323080472014566,
+     "h": 0.5522596825715377,
+     "M": 31.942,
+     "frac": 0.0731136906473841,
+     "theta_deg": 0.5040646779930019,
+     "J": 2.8080353532845237,
+     "F_each": 93.60117844281746,
+     "v_tip": 0.7396574607481248,
+     "v_frac": 0.3698287303740624,
+     "v_force": 0.4335391198314303,
+     "F_max": 203.2457392413353
+    },
+    {
+     "state": "unloaded transit, arms parked, lift top",
+     "load": 0.0,
+     "cap": 0.2,
      "az": 0,
      "v": 0.25,
      "n_snag": 2,
@@ -2335,6 +2387,8 @@
     },
     {
      "state": "unloaded transit, arms parked, lift top",
+     "load": 0.0,
+     "cap": 0.2,
      "az": 0,
      "v": 0.3,
      "n_snag": 2,
@@ -2352,6 +2406,8 @@
     },
     {
      "state": "unloaded transit, arms parked, lift top",
+     "load": 0.0,
+     "cap": 0.2,
      "az": 0,
      "v": 0.5,
      "n_snag": 2,
@@ -2369,6 +2425,8 @@
     },
     {
      "state": "unloaded transit, arms parked, lift top",
+     "load": 0.0,
+     "cap": 0.2,
      "az": 0,
      "v": 0.8,
      "n_snag": 2,
@@ -2389,7 +2447,10 @@
    "delta": 0.003,
    "frac_lim": 0.25,
    "v_lock": 0.25,
-   "v_locked_cap": 0.25,
+   "v_locked_cap": 0.2,
+   "v_locked_caps": {
+    "0.0": 0.2
+   },
    "v_frac": 0.3698287303740624,
    "v_force": 0.27916071100418827,
    "v_allow": 0.27916071100418827,
@@ -2397,6 +2458,12 @@
    "lock_ok": true,
    "locked_cap_ok": true,
    "fast_ok": false
+  },
+  "snag_basket": {
+   "v": 0.15,
+   "frac": 0.4078527544586963,
+   "F": 155.1993844441452,
+   "ok": false
   },
   "phase_short": {
    "a": 2.7945462726727595,

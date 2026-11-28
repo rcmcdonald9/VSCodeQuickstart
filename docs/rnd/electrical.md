@@ -117,19 +117,21 @@ The control loop runs at 500 Hz and toggles the heartbeat line only after a comp
 |---|---|---|---|
 | Watchdog timeout (bringup.yaml `watchdog_s`) | 25 ms | ≥ 25 ms (measured rule) | ✅ |
 | Margin over the longest measured gap (loaded) | 2.5× at −20% tolerance | ≥ 2× | ✅ |
-| Heartbeat lost → no drive torque (robot / M1) | 45.7 / 44.9 ms | ≤ 50 ms | ✅ |
+| Heartbeat lost → no drive torque (robot / M1) | 46.3 / 45.5 ms | ≤ 50 ms | ✅ |
 | Drive CAN timeout (bringup.yaml `can_timeout_s`; also sees the USB-CAN latency) | 30 ms | ≥ the watchdog | ✅ |
 
 Not measured here: the Pi 5 (slower cores) and a real USB-CAN adapter. Re-run `python -m sw.loop_jitter` on the Pi before day 1; the bring-up report also logs the longest heartbeat gap of the real loop (`heartbeat_gap_max_ms`). If either passes half the timeout, raise `watchdog_s` (up to 28 ms the SW2 budget still holds on the robot bus) or run the loop SCHED_FIFO on an isolated core.
 
 | Step (robot, Pi hung) | Time (ms) |
 |---|---|
-| heartbeat lost → watchdog output low (one 2 ms cycle + T_wd 25 ms +20%) | 32.0 |
-| coil MOSFET off → contactor main contacts open (release time, datasheet) | 10.0 |
-| aux contact opens → AUX_DB low (debounce, slow corner) → discharge one-shot fires, clamp gate on | 0.7 |
-| bus 25.2 → 10 V (driver UVLO, ESTIMATE) through the clamp resistors (0.19 Ω × 11.8 mF) | 2.0 |
+| heartbeat lost just after an edge: one 2 ms cycle + 25 ms monostable at +20 % | 32.0 |
+| coil MOSFET off → contactor main contacts open (release time, datasheet maximum) | 10.0 |
+| AUX debounce, opening → AUX_DB low at the slow corner (v4) | 0.5 |
+| aux contact lags the mains (0.5 ms, ESTIMATE) → FORCE → far drive (n0W) below UVLO (board sim, netlist v4: 0.19 Ω × 11.8 mF + harness) | 2.8 |
 | phase current decays once the drive stops switching (ESTIMATE) | 1.0 |
-| **Total: heartbeat lost → no drive torque** | **45.7** (M1 bench 44.9; SW2 budget 50) ✅ |
+| **Total: heartbeat lost → no drive torque** | **46.3** (M1 bench 45.5; SW2 budget 50) ✅ |
+
+**One source (W18):** the steps are `stop_chain_rows()`, which rnd/safety_board_sim.py's `stop_chain` sums too, and the discharge step is the board simulation's (netlist v4, far drive through the harness, aux lag included; the RC model at the board alone gives 2.0 / 1.2 ms). Board sim *total with the datasheet release* (safety_board_sim.md §3, what readiness uses): 46.3 / 45.5 ms ✅.
 
 Mushroom pressed: 14 ms. Without the forced discharge, the drivers' idle draw alone would take ≈ 298 ms to bring the bus to UVLO: the old design could not meet 50 ms. The software path is faster when the Pi is alive: the supervisor latches, sends DISABLE to every drive the next cycle (≤ 4 ms) and stops the heartbeat. Day-1 checks: the drives' UVLO and CAN-timeout behaviour, the ALEV100 release time with its coil suppression; measure button → contacts → current → motion with a supported dummy load, including a hung Pi.
 
@@ -279,9 +281,9 @@ The base used to hang after K1, so every e-stop cut it at once (and a drive that
 | Pi hung (both heartbeats stop), drive quick-stop written to 0.5 m/s² | 42 ms | 1.63 s | 2.03 s | 0.00 m/s |
 | Pi hung, drive quick-stop at its default 0.3 m/s² | 42 ms | 3.39 s | 2.03 s | 0.20 m/s |
 | Pi hung, default quick-stop, U20 at −10 % | 42 ms | 3.60 s | 1.83 s | 0.26 m/s |
-| mushroom, R2d basket carry 9.07 kg at 0.25 m/s (CASTER_LOCKED_V) | 14 ms | 0.84 s | 2.00 s | 0.00 m/s |
+| mushroom, R2d basket carry 9.07 kg at 0.15 m/s (caster_locked_v_for(9.07)) | 14 ms | 0.50 s | 2.00 s | 0.00 m/s |
 
-**Caster lock (W14a open point):** engaging the D18b lock is harmless at any speed, but travelling locked at 0.8 m/s turns any floor step into a floor-level snag: 117% of the tip energy with the lift up (it tips), ≈ 3.6 kN on a foot (rods ≈ 880 N). SW-T2 (implemented in W16a, sw/safety.py): a forced lock is deferred until the base is ≤ 0.25 m/s (model limit 0.28 m/s) and locked travel is capped at 0.25 m/s; the hardware locks at U20's opening and at power loss anyway (safety_board_sim.md §6).
+**Caster lock (W14a open point):** engaging the D18b lock is harmless at any speed, but travelling locked at 0.8 m/s turns any floor step into a floor-level snag: 117% of the tip energy with the lift up (it tips), ≈ 3.6 kN on a foot (rods ≈ 880 N). SW-T2 (implemented in W16a, sw/safety.py): a forced lock is deferred until the base is ≤ 0.25 m/s (model limit 0.28 m/s) and locked travel is capped by payload (SW-T8 `caster_locked_v_for`: 0.20 m/s unloaded, the basket 0.15 m/s); the hardware locks at U20's opening and at power loss anyway (safety_board_sim.md §6).
 
 ### Safety board simulation (Astra review #3, critical 3)
 `python -m rnd.safety_board_sim` (ngspice; [safety_board_sim.md](safety_board_sim.md)): the clamp with the harness to every drive, pre-charge, the coil drop and the forced discharge as circuits; the logic as an event model of this netlist; fuses against the wires' heating. A model of an unbuilt board: it changed the netlist above and sets the bench numbers, it does not show that the built board works.
