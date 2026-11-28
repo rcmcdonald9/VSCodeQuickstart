@@ -1,0 +1,786 @@
+{
+  "meta": {
+    "title": "Pip v4 build guide",
+    "cad": "rnd/parts/robot.py build(covers=True), exported as rnd/out/asm_cmp_latestc_*.stl",
+    "note": "Every line of step text traces to the doc named in its src list; fasteners are only listed where a doc states them."
+  },
+  "poses": {"l": {"pitch": -15, "elbow": -70, "wrist": -20}, "r": {"pitch": -70, "elbow": -45, "wrist": -25}},
+  "colours": {
+    "white": "#F2F3F5",
+    "dark": "#2A2F38",
+    "black": "#1E2229",
+    "orange": "#F2913A",
+    "steel": "#A9AFB7",
+    "green": "#2F7A4D"
+  },
+  "split": [
+    {"part": "torso_shell", "normal": [0, 1, 0], "into": ["torso_shell_l", "torso_shell_r"]}
+  ],
+  "steps": [
+    {
+      "title": "Wheel modules",
+      "body": [
+        "Pip drives on four 6-inch omni wheels in a plus layout, one pointing forward.",
+        "Each module holds a wheel on a 40 mm shaft that runs in two bearings inside a two-plate pod, so wheel loads never reach the motor's bearing.",
+        "Each motor goes into its printed can, which points inward and drives the wheel hub."
+      ],
+      "fasteners": ["Motor into its can: 3 screws", "Torque pin, then the hub adapter: 4 screws"],
+      "src": ["docs/BUILD_v4.md, step 4c", "docs/RND_LOG.md, build-out step 4: base"],
+      "parts": ["w*_*"],
+      "subs": [
+        {
+          "caption": "Set out the four wheel modules in a plus shape, with one wheel pointing forward. Each wheel turns on a 40 mm shaft that runs in two bearings inside its two-plate pod.",
+          "moves": [
+            {"parts": ["w*_pod", "w*_shaft", "w*_hub", "w*_wheel"], "from": "radial", "dist": 220, "t": [0, 0.76], "per": "^(w\\d+)_", "stagger": 0.08}
+          ],
+          "dur": 2.4
+        },
+        {
+          "caption": "Set a printed motor can on each module. The can points inward, toward the middle of the base, and drives the wheel hub.",
+          "moves": [
+            {"parts": ["w*_can", "w*_torque_hanger"], "from": [0, 0, 1], "dist": 240, "t": [0, 0.82], "per": "^(w\\d+)_", "stagger": 0.06}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Slide each motor into its can and fix it with 3 screws, then fit the torque pin and bolt on the hub adapter with 4 screws.",
+          "fasteners": ["Motor into its can: 3 screws", "Hub adapter: 4 screws"],
+          "moves": [
+            {"parts": ["w*_motor"], "from": "-radial", "dist": 70, "t": [0, 0.4], "per": "^(w\\d+)_", "stagger": 0.2}
+          ],
+          "dur": 2.2
+        }
+      ],
+      "view": {"az": 35, "el": 30}
+    },
+    {
+      "title": "Belly, casters and deck",
+      "body": [
+        "The belly pan closes the bottom in four quarters. The base electronics sit in a diagonal bay and the power board on the belly.",
+        "Four lockable ball casters go into their guides, and the two ballast cradles go in at the back.",
+        "The ribbed deck and the skirt are each printed in four quarters, so every piece fits a 256 mm printer bed."
+      ],
+      "fasteners": [],
+      "src": [
+        "docs/BUILD_v4.md, step 9",
+        "docs/RND_LOG.md, build-out step 4 and loop notes on casters and ballast",
+        "docs/rnd/assembly.md (print fit)"
+      ],
+      "parts": [
+        "belly_*",
+        "base_electronics",
+        "power_board",
+        "caster*",
+        "ballast_cradle_*",
+        "deck*",
+        "rim",
+        "skirt*",
+        "liner_*"
+      ],
+      "subs": [
+        {
+          "caption": "Lay out the four belly pan quarters that close the bottom of the base.",
+          "moves": [
+            {"parts": ["belly_*"], "from": "radial", "dist": 200, "t": [0, 0.85], "per": "^(belly_\\d)", "stagger": 0.05}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Fit the base electronics in their diagonal bay and the power board on the belly.",
+          "moves": [
+            {"parts": ["base_electronics", "power_board"], "from": [0, 0, 1], "dist": 260, "t": [0, 1]}
+          ]
+        },
+        {
+          "caption": "Fit the four lockable ball casters, each in its own guide.",
+          "moves": [
+            {"parts": ["caster*"], "from": "radial", "dist": 200, "t": [0, 0.85], "per": "^(caster\\d+)_", "stagger": 0.05}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Set the two ballast cradles at the back of the base.",
+          "moves": [
+            {"parts": ["ballast_cradle_*"], "from": [0, 0, 1], "dist": 260, "t": [0, 1]}
+          ]
+        },
+        {
+          "caption": "Lay the four ribbed deck quarters on top of the wheel pods and fit the rim around them. Each quarter fits a 256 mm printer bed.",
+          "moves": [
+            {"parts": ["deck*", "rim"], "from": [0, 0, 1], "dist": 320, "t": [0, 0.8], "per": "^(deck\\d|rim)", "stagger": 0.05}
+          ],
+          "dur": 2.4
+        },
+        {
+          "caption": "Fit the four skirt quarters around the sides and the liners into the wheel wells.",
+          "moves": [
+            {"parts": ["skirt*", "liner_*"], "from": "radial", "dist": 200, "t": [0, 0.86], "per": "^(skirt\\d|liner_w\\d+)", "stagger": 0.02}
+          ],
+          "dur": 2.4
+        }
+      ],
+      "view": {"az": 35, "el": 34}
+    },
+    {
+      "title": "Battery, ballast and lidar",
+      "body": [
+        "The 6S battery slides into the centre bay from the back, between the four motor cans.",
+        "Two removable steel ballast stacks are bolted up and dropped into their cradles.",
+        "The lidar sits on the front edge of the deck; the bumper light ring goes round the skirt."
+      ],
+      "fasteners": [],
+      "tools": [],
+      "caution": "24 V lithium battery: use the specified BMS (30 A or more), fuse every branch, and charge on a non-flammable surface.",
+      "src": ["docs/BUILD_v4.md, step 9 and safety notes", "docs/RND_LOG.md, build-out step 4 and the ballast loop note"],
+      "ghost": ["deck*", "rim", "skirt*", "liner_*"],
+      "parts": ["battery", "ballast_l", "ballast_r", "ballast_lid_*", "lidar", "bumper_light"],
+      "subs": [
+        {
+          "caption": "Slide the 6S battery into the centre bay from the back, between the four motor cans.",
+          "moves": [
+            {"parts": ["battery"], "from": [-1, 0, 0], "dist": 420, "t": [0, 1]}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Bolt up the two removable steel ballast stacks and drop them into their cradles at the back.",
+          "moves": [
+            {"parts": ["ballast_l", "ballast_r"], "from": [0, 0, 1], "dist": 300, "t": [0, 0.7]},
+            {"parts": ["ballast_lid_*"], "from": [0, 0, 1], "dist": 160, "t": [0.6, 1]}
+          ],
+          "dur": 2.4
+        },
+        {
+          "caption": "Fit the lidar on the front edge of the deck and the bumper light ring around the skirt.",
+          "moves": [
+            {"parts": ["lidar"], "from": [0, 0, 1], "dist": 220, "t": [0, 0.6]},
+            {"parts": ["bumper_light"], "from": [0, 0, 1], "dist": 260, "t": [0.35, 1]}
+          ],
+          "dur": 2.4
+        }
+      ],
+      "view": {"az": 150, "el": 32}
+    },
+    {
+      "title": "Mast, lift drive and carriage",
+      "body": [
+        "The mast coupling goes on the deck. The upper body plugs into it blind (3 power plugs and a 12-pin pogo block) and a cam lever locks it.",
+        "The lift motor cartridge slides into its bracket behind the mast and drives a belt pulley.",
+        "The mast is a 60 × 60 mm aluminium tube with a ratchet strip on its back face. The carriage rides it on 8 small bearings; its spring pawl drops into the ratchet whenever power is off.",
+        "The top bracket carries the belt idler and the carry handle."
+      ],
+      "fasteners": ["Lift cartridge: 4 ear screws, M4 × 12 with washers"],
+      "src": [
+        "docs/BUILD_v4.md, steps 5 and 8",
+        "docs/rnd/lift.md",
+        "docs/rnd/electrical.md (connectors)",
+        "docs/RND_LOG.md, build-out step 3"
+      ],
+      "note": "The four lift ear screws can't yet be reached with a straight driver on the assembled robot.",
+      "parts": [
+        "coupling",
+        "plug",
+        "cam_lever",
+        "lift_can*",
+        "lift_motor",
+        "lift_kx*",
+        "lift_oldham*",
+        "lift_flange*",
+        "lift_shaft*",
+        "lift_brg*",
+        "lift_al*",
+        "lift_belt",
+        "lift_bracket",
+        "lift_pawl",
+        "mast",
+        "ratchet",
+        "carriage",
+        "head_bracket",
+        "handle",
+        "belt_idler"
+      ],
+      "subs": [
+        {
+          "caption": "Fit the mast coupling on the deck. Its blind-mate plug carries power (3 XT60 connectors) and signals (a 12-pin pogo block) up to the torso.",
+          "moves": [
+            {"parts": ["coupling", "plug"], "from": [0, 0, 1], "dist": 260, "t": [0, 1]}
+          ]
+        },
+        {
+          "caption": "Fit the lift drive bracket on the deck, behind the mast coupling.",
+          "moves": [
+            {"parts": ["lift_bracket", "lift_shaft_12", "lift_brg_*", "lift_al_pulley"], "from": [0, 0, 1], "dist": 240, "t": [0, 1]}
+          ]
+        },
+        {
+          "caption": "Slide the lift motor cartridge into its bracket and fix it through its 4 ears.",
+          "fasteners": ["Ears: 4 × M4 × 12 with washers"],
+          "moves": [
+            {"parts": ["lift_can", "lift_can_cap", "lift_motor", "lift_kx_hub_v2", "lift_oldham_disc", "lift_flange_coupling"], "from": [-1, 0, 0], "dist": 170, "t": [0, 1]}
+          ]
+        },
+        {
+          "caption": "Lower the mast into the coupling and lock it with the cam lever. The mast is a 60 × 60 mm aluminium tube with a ratchet strip on its back face, and the lift belt runs up beside it.",
+          "moves": [
+            {"parts": ["mast", "ratchet", "lift_belt"], "from": [0, 0, 1], "dist": 700, "t": [0, 0.75]},
+            {"parts": ["cam_lever"], "from": [0, 1, 0], "dist": 90, "t": [0.7, 1]}
+          ],
+          "dur": 2.6
+        },
+        {
+          "caption": "Slide the carriage down the mast. It runs on 8 small bearings, and its spring pawl drops into the ratchet whenever the power is off.",
+          "moves": [
+            {"parts": ["carriage", "lift_pawl"], "from": [0, 0, 1], "dist": 520, "t": [0, 1]}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Fit the top bracket, with the belt idler and the carry handle, on top of the mast.",
+          "moves": [
+            {"parts": ["head_bracket", "handle", "belt_idler"], "from": [0, 0, 1], "dist": 220, "t": [0, 1]}
+          ]
+        }
+      ],
+      "view": {"az": 145, "el": 12}
+    },
+    {
+      "title": "Torso",
+      "body": [
+        "The electronics tray (Raspberry Pi 5 and the DC-DC converter) and the AI bay sit inside the torso.",
+        "The two torso halves close around the carriage. Their side windows are where the shoulder modules go next.",
+        "The e-stop button sits on top and the chest light on the front."
+      ],
+      "fasteners": [],
+      "src": ["docs/BUILD_v4.md, step 8", "docs/RND_LOG.md, build-out step 3"],
+      "parts": ["e_tray", "e_pi5", "e_dcdc", "ai_bay", "torso_shell_*", "estop", "chest_light"],
+      "subs": [
+        {
+          "caption": "Fit the electronics tray, with the Raspberry Pi 5 and the DC-DC converter, and the AI bay above it.",
+          "moves": [
+            {"parts": ["e_tray", "e_pi5", "e_dcdc"], "from": [1, 0, 0], "dist": 280, "t": [0, 0.75]},
+            {"parts": ["ai_bay"], "from": [1, 0, 0], "dist": 280, "t": [0.25, 1]}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Close the two torso halves around the carriage. Their side windows are where the shoulders go.",
+          "moves": [
+            {"parts": ["torso_shell_l"], "from": [0, 1, 0], "dist": 300, "t": [0, 1]},
+            {"parts": ["torso_shell_r"], "from": [0, -1, 0], "dist": 300, "t": [0, 1]}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Fit the e-stop button on top of the torso and the chest light on the front.",
+          "moves": [
+            {"parts": ["estop"], "from": [0, 0, 1], "dist": 140, "t": [0, 0.7]},
+            {"parts": ["chest_light"], "from": [1, 0, 0], "dist": 140, "t": [0.3, 1]}
+          ]
+        }
+      ],
+      "view": {"az": 40, "el": 18}
+    },
+    {
+      "title": "Shoulder pitch modules",
+      "body": [
+        "Each shoulder is a printed bracket with a one-piece pitch shaft and its big pulley. It goes into the torso's side window.",
+        "Fit the outer wall, then the pitch hub and the spring balancer (die spring, cord and pulley) that offsets the arm's weight.",
+        "The motor cartridge comes up through a slot in the bracket wall and slides into place along its axis; the belt goes on its small pulley and is tensioned with the idler."
+      ],
+      "fasteners": [
+        "Outer wall: 3 × M4",
+        "Motor ears: 2 × M4 × 12 and 2 × M4 × 16 (from the pulley side), washers and nuts",
+        "Belt idler: M4 jack screw, then lock the M5 axle",
+        "Strap across the exit slot: 4 × M4"
+      ],
+      "src": [
+        "docs/BUILD_v4.md, steps 5 and 7",
+        "docs/rnd/assembly_seq.md (pitch cartridge route)",
+        "docs/RND_LOG.md, build-out step 3 (side windows)",
+        "docs/M1_BENCH_ARM.md (balancer)"
+      ],
+      "note": "Four of the pitch screws can't yet be reached with a straight driver on the assembled robot.",
+      "ghost": ["torso_shell_*"],
+      "parts": ["{s}_sh_*"],
+      "subs": [
+        {
+          "caption": "Slide each shoulder bracket into the side window of the torso.",
+          "moves": [
+            {"parts": ["{s}_sh_bracket"], "from": [0, 1, 0], "dist": 330, "t": [0, 0.94], "rdelay": 0.06}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Fit the one-piece pitch shaft, with its big pulley, into the bracket.",
+          "moves": [
+            {"parts": ["{s}_sh_shaft", "{s}_sh_pitch_hub_crank", "{s}_sh_enc_pcb"], "from": [0, 1, 0], "dist": 220, "t": [0, 0.94], "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Close the bracket with its outer wall and 3 M4 screws.",
+          "fasteners": ["Outer wall: 3 × M4"],
+          "moves": [
+            {"parts": ["{s}_sh_bracket_wall", "{s}_sh_bracket_wall_spring_ring"], "from": [0, 1, 0], "dist": 180, "t": [0, 0.94], "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Fit the pitch hub on the outer end of the shaft, and the spring balancer (a die spring, a cord and a pulley) that offsets the arm's weight.",
+          "moves": [
+            {"parts": ["{s}_sh_pitch_hub"], "from": [0, 1, 0], "dist": 180, "t": [0, 0.7], "rdelay": 0.06},
+            {"parts": ["{s}_sh_pulleyA"], "from": [0, 0, 1], "dist": 160, "t": [0.3, 0.94], "rdelay": 0.06}
+          ],
+          "dur": 2.4
+        },
+        {
+          "caption": "Bring the motor cartridge up through the slot in the bracket wall.",
+          "moves": [
+            {"parts": ["{s}_sh_can", "{s}_sh_can_cap", "{s}_sh_motor", "{s}_sh_kx_hub_v2", "{s}_sh_oldham_disc", "{s}_sh_flange_coupling", "{s}_sh_shaft_12", "{s}_sh_brg_*", "{s}_sh_al_pulley"], "from": [0, 0, -1], "dist": 200, "t": [0, 0.94], "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Push the cartridge along its axis into its seat and bolt it through its 4 ears. Then put the belt on its small pulley and tension it with the idler.",
+          "fasteners": [
+            "Ears: 2 × M4 × 12, and 2 × M4 × 16 from the pulley side, with washers and nuts",
+            "Idler: M4 jack screw, then lock the M5 axle",
+            "Strap across the exit slot: 4 × M4"
+          ],
+          "moves": [
+            {"parts": ["{s}_sh_can", "{s}_sh_can_cap", "{s}_sh_motor", "{s}_sh_kx_hub_v2", "{s}_sh_oldham_disc", "{s}_sh_flange_coupling", "{s}_sh_shaft_12", "{s}_sh_brg_*", "{s}_sh_al_pulley"], "from": [0, -1, 0], "dist": 20, "t": [0, 0.94], "rdelay": 0.06}
+          ]
+        }
+      ],
+      "view": {"az": 60, "el": 18}
+    },
+    {
+      "title": "Shoulder roll",
+      "body": [
+        "The roll link's ferrule slides onto the pitch hub. One V-band clamp holds the whole arm on, so an arm comes off in one move.",
+        "The roll motor fits inside the roll link, in line with the shoulder: a direct drive with no belt. A rear plate with crush sleeves and two steel stop bushes bolts it in.",
+        "The output adapter sits on 3 bonded dowels, and the clock spring carries the cables across the joint."
+      ],
+      "fasteners": [
+        "Motor: 6 × M4 × 25 countersunk + 2 × M4 × 25 cap screws",
+        "Output adapter: 3 dowels with retaining compound",
+        "Arm clamp: 3-inch quick-release V-band"
+      ],
+      "src": [
+        "docs/BUILD_v4.md, intro and step 7b",
+        "docs/M1_BENCH_ARM.md (arm detach clamp)",
+        "docs/rnd/assembly_seq.md (roll stage)"
+      ],
+      "note": "Two of the eight motor screws are blocked for a straight driver.",
+      "parts": [
+        "{s}_roll_ferrule_m",
+        "{s}_roll_roll_link",
+        "{s}_roll_roll_gim_housing",
+        "{s}_roll_roll_outflange",
+        "{s}_roll_roll_enc_pcb",
+        "{s}_roll_roll_spring_hub",
+        "{s}_roll_roll_spring_ring"
+      ],
+      "subs": [
+        {
+          "caption": "Slide the roll link's ferrule onto the pitch hub. One V-band clamp holds the whole arm on, so an arm comes off in one move.",
+          "fasteners": ["Arm clamp: 3-inch quick-release V-band"],
+          "moves": [
+            {"parts": ["{s}_roll_ferrule_m", "{s}_roll_roll_link"], "from": [0, 1, 0], "dist": 260, "t": [0, 0.94], "rdelay": 0.06}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Fit the roll motor inside the roll link, in line with the shoulder, so it drives the arm directly with no belt. Screw it in from the back through a rear plate with crush sleeves and two steel stop bushes.",
+          "fasteners": ["Motor: 6 × M4 × 25 countersunk and 2 × M4 × 25 cap screws"],
+          "moves": [
+            {"parts": ["{s}_roll_roll_gim_housing"], "from": [1, 0, 0], "dist": 200, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Fit the output adapter to the front of the motor on 3 dowels bonded with retaining compound.",
+          "fasteners": ["3 dowels with retaining compound"],
+          "moves": [
+            {"parts": ["{s}_roll_roll_outflange", "{s}_roll_roll_enc_pcb"], "from": [1, 0, 0], "dist": 160, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Fit the roll clock spring, a wound ribbon cassette that carries the cables across the joint.",
+          "moves": [
+            {"parts": ["{s}_roll_roll_spring_hub", "{s}_roll_roll_spring_ring"], "from": [1, 0, 0], "dist": 160, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ]
+        }
+      ],
+      "view": {"az": 70, "el": 14}
+    },
+    {
+      "title": "Upper-arm yaw stage",
+      "body": [
+        "The clevis and yaw block (one printed piece) bolt to the roll motor's output, and the clevis closes behind the motor.",
+        "The one-piece yaw shaft (40-tooth pulley and spring hub) goes up into the top plate; the bottom plate bolts on and the flange goes on last.",
+        "The yaw motor cartridge drops in along its axis. A steel pin stops the yaw at ±155°."
+      ],
+      "fasteners": [
+        "Clevis: M5 screws in 8 crush sleeves",
+        "Motor ears: 4 × M4 × 12 with washers, side-fed nuts",
+        "Belt: 315 mm closed belt, 20 : 40 teeth"
+      ],
+      "note": "Four of the yaw ear screws can only be reached with a ball-end driver at an angle so far.",
+      "src": [
+        "docs/BUILD_v4.md, steps 5 and 7b",
+        "docs/rnd/assembly_seq.md (yaw shaft, tool access)",
+        "docs/rnd/assembly.md (clevis + yaw block)",
+        "docs/M1_BENCH_ARM.md (yaw stops, belt)"
+      ],
+      "parts": ["{s}_roll_roll_arm_rear", "{s}_roll_yaw_block", "{s}_roll_yaw_brg_*", "{s}_roll_yaw_[!b]*"],
+      "subs": [
+        {
+          "caption": "Bolt the clevis and yaw block, which are one printed piece, to the roll motor's output, then close the clevis behind the motor. The clevis takes M5 screws in 8 crush sleeves.",
+          "fasteners": ["Clevis: M5 screws in 8 crush sleeves"],
+          "moves": [
+            {"parts": ["{s}_roll_yaw_block"], "from": [1, 0, 0], "dist": 200, "t": [0, 0.65], "frame": "pitch", "rdelay": 0.06},
+            {"parts": ["{s}_roll_roll_arm_rear"], "from": [-1, 0, 0], "dist": 140, "t": [0.45, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.6
+        },
+        {
+          "caption": "Push the one-piece yaw shaft, with its 40-tooth pulley and spring hub, up into the top plate.",
+          "moves": [
+            {"parts": ["{s}_roll_yaw_shaft", "{s}_roll_yaw_spring_ring", "{s}_roll_yaw_enc_pcb"], "from": [0, 0, -1], "dist": 180, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Bolt the bottom plate on underneath.",
+          "moves": [
+            {"parts": ["{s}_roll_yaw_plate_bot"], "from": [0, 0, -1], "dist": 160, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Fit the yaw flange last. A steel pin stops the yaw at plus or minus 155 degrees.",
+          "moves": [
+            {"parts": ["{s}_roll_yaw_flange", "{s}_roll_yaw_stop_pin"], "from": [0, 0, -1], "dist": 160, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Drop the yaw motor cartridge in along its axis and fix it through its 4 ears with side-fed nuts. Its belt is a 315 mm closed loop from a 20-tooth to a 40-tooth pulley.",
+          "fasteners": ["Ears: 4 × M4 × 12 with washers and side-fed nuts"],
+          "moves": [
+            {"parts": ["{s}_roll_yaw_can", "{s}_roll_yaw_can_cap", "{s}_roll_yaw_motor", "{s}_roll_yaw_kx_hub_v2", "{s}_roll_yaw_oldham_disc", "{s}_roll_yaw_flange_coupling", "{s}_roll_yaw_shaft_12", "{s}_roll_yaw_brg_*", "{s}_roll_yaw_al_pulley"], "from": [0, 0, 1], "dist": 200, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.2
+        }
+      ],
+      "view": {"az": 70, "el": 12}
+    },
+    {
+      "title": "Upper arm and elbow",
+      "body": [
+        "Bond the carbon-fibre tube into the upper bone with structural epoxy and let it cure overnight.",
+        "The upper bone rises onto the yaw flange and is tied with 6 screws in crush sleeves from the top of the tube.",
+        "The elbow belt cassette goes in from below, with its one-piece shaft and the aluminium core tube bonded inside. Seat caps hold the bearings."
+      ],
+      "fasteners": ["Yaw flange tie: 6 × M3 × 45 in crush sleeves", "Seat caps: 2 × M4 and 2 × M3", "Structural epoxy"],
+      "src": [
+        "docs/BUILD_v4.md, step 6",
+        "docs/rnd/assembly_seq.md (elbow shaft, seat caps)",
+        "docs/M1_BENCH_ARM.md (yaw flange screws)"
+      ],
+      "parts": [
+        "{s}_arm_upper_bone",
+        "{s}_arm_bone_cap",
+        "{s}_arm_cf_neck",
+        "{s}_arm_e_cassette",
+        "{s}_arm_e_belt",
+        "{s}_arm_e_seat_cap_*",
+        "{s}_arm_e_shaft40",
+        "{s}_arm_e_hub_core",
+        "{s}_arm_enc_*"
+      ],
+      "subs": [
+        {
+          "caption": "Bond the carbon-fibre tube into the upper bone with structural epoxy and let it cure overnight. Then raise the upper bone onto the yaw flange and tie it with 6 screws in crush sleeves from the top of the tube.",
+          "fasteners": ["Yaw flange tie: 6 × M3 × 45 in crush sleeves", "Structural epoxy"],
+          "moves": [
+            {"parts": ["{s}_arm_upper_bone", "{s}_arm_cf_neck"], "from": [0, 0, -1], "dist": 260, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.4
+        },
+        {
+          "caption": "Push the elbow belt cassette in from below. Its one-piece shaft has an aluminium core tube bonded inside.",
+          "moves": [
+            {"parts": ["{s}_arm_e_cassette", "{s}_arm_e_belt", "{s}_arm_e_shaft40", "{s}_arm_e_hub_core"], "from": [0, 0, -1], "dist": 220, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Screw on the seat caps that hold the elbow shaft's bearings.",
+          "fasteners": ["Seat caps: 2 × M4 and 2 × M3"],
+          "moves": [
+            {"parts": ["{s}_arm_e_seat_cap_*"], "from": [0, 0, -1], "dist": 120, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Close the bottom of the upper arm with the bone cap, and fit the elbow's joint encoder on the inner side.",
+          "moves": [
+            {"parts": ["{s}_arm_bone_cap"], "from": [0, 0, -1], "dist": 140, "t": [0, 0.7], "frame": "pitch", "rdelay": 0.06},
+            {"parts": ["{s}_arm_enc_*"], "from": [0, -1, 0], "dist": 90, "t": [0.35, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.2
+        }
+      ],
+      "view": {"az": 62, "el": 8}
+    },
+    {
+      "title": "Elbow motor cartridge",
+      "body": [
+        "Fit the motor into its printed can from the rear, then close it with the rear cap.",
+        "Fit the steel drive stub to the motor output, then add the key, the 20-tooth pulley and the end bearing.",
+        "The cartridge slides straight in along its axis, stub first, and bolts on through its 4 ears. To swap a motor later, undo those 4 screws; the belt stays on, and the swap takes about 3 minutes."
+      ],
+      "fasteners": [
+        "Rear cap: 3 × M3 × 8 into the motor, 2 × M3 × 10 into the can's inserts",
+        "Drive stub: 8 × M3 × 6 with threadlocker",
+        "Ears: 4 × M4 × 12 with washers into captive nuts"
+      ],
+      "src": [
+        "docs/BUILD_v4.md, intro and steps 4a and 5",
+        "docs/rnd/assembly_seq.md (elbow swap: straight out along its axis)"
+      ],
+      "note": "These four ear screws can't yet be reached with a straight driver on the assembled arm.",
+      "parts": [
+        "{s}_arm_e_can",
+        "{s}_arm_e_can_cap",
+        "{s}_arm_e_motor",
+        "{s}_arm_e_kx_hub_v2",
+        "{s}_arm_e_oldham_disc",
+        "{s}_arm_e_flange_coupling",
+        "{s}_arm_e_shaft_12",
+        "{s}_arm_e_brg_*",
+        "{s}_arm_e_al_pulley"
+      ],
+      "subs": [
+        {
+          "caption": "Slide the motor into its printed can from the rear.",
+          "moves": [
+            {"parts": ["{s}_arm_e_can"], "from": [0, -1, 0], "dist": 0, "t": [0, 0.01], "frame": "pitch"},
+            {"parts": ["{s}_arm_e_motor"], "from": [0, -1, 0], "dist": 110, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Close the can with the rear cap, using 3 M3 × 8 screws into the motor and 2 M3 × 10 screws into the can's inserts.",
+          "fasteners": ["Rear cap: 3 × M3 × 8 into the motor and 2 × M3 × 10 into the can's inserts"],
+          "moves": [
+            {"parts": ["{s}_arm_e_can_cap"], "from": [0, -1, 0], "dist": 120, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Bolt the steel drive stub to the motor output with 8 M3 × 6 screws and threadlocker.",
+          "fasteners": ["Drive stub: 8 × M3 × 6 with threadlocker"],
+          "moves": [
+            {"parts": ["{s}_arm_e_kx_hub_v2", "{s}_arm_e_oldham_disc", "{s}_arm_e_flange_coupling", "{s}_arm_e_shaft_12"], "from": [0, 1, 0], "dist": 90, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Fit the key and the 20-tooth pulley on the stub, then press the end bearing on.",
+          "moves": [
+            {"parts": ["{s}_arm_e_al_pulley"], "from": [0, 1, 0], "dist": 110, "t": [0, 0.6], "frame": "pitch", "rdelay": 0.06},
+            {"parts": ["{s}_arm_e_brg_*"], "from": [0, 1, 0], "dist": 120, "t": [0.4, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.4
+        },
+        {
+          "caption": "Slide the cartridge straight in along its axis, stub first, and bolt it through its 4 ears into captive nuts. To swap the motor later you undo only these 4 screws, and the belt stays on.",
+          "fasteners": ["Ears: 4 × M4 × 12 with washers into captive nuts"],
+          "moves": [
+            {"parts": ["{s}_arm_e_can", "{s}_arm_e_can_cap", "{s}_arm_e_motor", "{s}_arm_e_kx_hub_v2", "{s}_arm_e_oldham_disc", "{s}_arm_e_flange_coupling", "{s}_arm_e_shaft_12", "{s}_arm_e_brg_*", "{s}_arm_e_al_pulley"], "from": [0, -1, 0], "dist": 190, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.4
+        }
+      ],
+      "view": {"az": -20, "el": 6}
+    },
+    {
+      "title": "Forearm, wrist and hand",
+      "body": [
+        "The forearm (a carbon tube bonded between two printed ends) clamps onto the elbow shaft.",
+        "The wrist motor goes into its can, with bolted can and output flanges, and slides into the forearm end.",
+        "The hand goes on the wrist: palm, wrist-roll spindle and end cap, then the gripper with its servo, fin-ray finger, palm distance sensor and wrist camera."
+      ],
+      "fasteners": ["Forearm clamp: 2 × M5", "Wrist can flange and output flange: 6 × M3 each, into inserts", "Palm: 6 × M3"],
+      "src": [
+        "docs/BUILD_v4.md, steps 4b and 6",
+        "docs/rnd/assembly_seq.md (wrist and palm screws, wrist-roll spindle)",
+        "docs/M1_BENCH_ARM.md (gripper servo, fin-ray, sensors)"
+      ],
+      "parts": ["{s}_arm_forearm", "{s}_arm_cf_fore", "{s}_arm_wrist_*", "{s}_arm_hand_*"],
+      "subs": [
+        {
+          "caption": "Bond the carbon tube into the two printed forearm ends, then clamp the forearm onto the elbow shaft with 2 M5 screws.",
+          "fasteners": ["Forearm clamp: 2 × M5"],
+          "moves": [
+            {"parts": ["{s}_arm_forearm", "{s}_arm_cf_fore"], "from": [0, 1, 0], "dist": 200, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Fit the wrist motor into its can with its bolted can and output flanges, and slide it into the end of the forearm.",
+          "fasteners": ["Can flange and output flange: 6 × M3 each, into inserts"],
+          "moves": [
+            {"parts": ["{s}_arm_wrist_*"], "from": [0, 1, 0], "dist": 150, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ]
+        },
+        {
+          "caption": "Fit the hand to the wrist: the palm with 6 M3 screws, then the wrist-roll spindle, its bearings and the end cap.",
+          "fasteners": ["Palm: 6 × M3"],
+          "moves": [
+            {"parts": ["{s}_arm_hand_palm", "{s}_arm_hand_wr_*"], "from": [0, -1, 0], "dist": 170, "t": [0, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Fit the gripper with its servo and fin-ray finger, the palm distance sensor and the wrist camera.",
+          "moves": [
+            {"parts": ["{s}_arm_hand_grip_*", "{s}_arm_hand_jaw_*", "{s}_arm_hand_finray_fixed", "{s}_arm_hand_pad_fixed", "{s}_arm_hand_finger_hook", "{s}_arm_hand_palm_tof", "{s}_arm_hand_wrist_cam"], "from": [0, 0, -1], "dist": 110, "t": [0, 0.94], "frame": "wrist", "rdelay": 0.06}
+          ]
+        }
+      ],
+      "view": {"az": 50, "el": 18}
+    },
+    {
+      "title": "Head",
+      "body": [
+        "The pan motor sleeve sits on the top bracket, and the yoke goes on it.",
+        "The tilt motor sleeve goes on one side of the yoke and a bearing on the other.",
+        "The head shell goes on the yoke, then the 7-inch touch screen face, the dark visor, the eye lights and the depth camera."
+      ],
+      "fasteners": [],
+      "src": ["docs/BUILD_v4.md, step 8", "docs/RND_LOG.md, build-out step 3 (head)", "docs/RND_PLAN.md (7-inch face)"],
+      "parts": ["pan_sleeve", "yoke", "tilt_sleeve", "tilt_bearing", "head_*", "visor", "eye_*"],
+      "subs": [
+        {
+          "caption": "Fit the pan motor sleeve on the top bracket.",
+          "moves": [
+            {"parts": ["pan_sleeve"], "from": [0, 0, 1], "dist": 200, "t": [0, 1]}
+          ]
+        },
+        {
+          "caption": "Fit the yoke on the pan motor.",
+          "moves": [
+            {"parts": ["yoke"], "from": [0, 0, 1], "dist": 260, "t": [0, 1]}
+          ]
+        },
+        {
+          "caption": "Fit the tilt motor sleeve on one side of the yoke and the bearing on the other.",
+          "moves": [
+            {"parts": ["tilt_sleeve"], "from": [0, 1, 0], "dist": 140, "t": [0, 0.9]},
+            {"parts": ["tilt_bearing"], "from": [0, -1, 0], "dist": 140, "t": [0.1, 1]}
+          ]
+        },
+        {
+          "caption": "Lower the head shell onto the yoke.",
+          "moves": [
+            {"parts": ["head_shell", "head_pivot_stub", "head_drive_stub"], "from": [0, 0, 1], "dist": 300, "t": [0, 1]}
+          ],
+          "dur": 2.2
+        },
+        {
+          "caption": "Fit the 7-inch touch screen face, the dark visor, the eye lights and the depth camera.",
+          "moves": [
+            {"parts": ["head_screen", "visor", "eye_*", "head_cam"], "from": [1, 0, 0], "dist": 180, "t": [0, 1]}
+          ]
+        }
+      ],
+      "view": {"az": 30, "el": 12}
+    },
+    {
+      "title": "Covers",
+      "body": [
+        "The covers close the robot in: every belt, pulley, coupling and motor can is enclosed, with openings of 8 mm or less so fingers can't reach them.",
+        "On each arm: the yaw hood and band, the elbow bay, the elbow cap and door, and the forearm and wrist covers.",
+        "On the body: the lift drive cover, the belt duct up the mast, the spine pod, the torso collars and the mast cap."
+      ],
+      "fasteners": [],
+      "src": [
+        "docs/RND_PLAN.md (enclosed body)",
+        "docs/rnd/print_plan.md (cover list)",
+        "docs/rnd/assembly.md (cover pieces)"
+      ],
+      "parts": [
+        "lift_cover",
+        "belt_duct",
+        "spine_pod",
+        "back_plate",
+        "collar_*",
+        "mast_cap",
+        "{s}_roll_cover_yaw",
+        "{s}_roll_yaw_band",
+        "{s}_arm_cover_*"
+      ],
+      "subs": [
+        {
+          "caption": "Cover the lift drive and fit the belt duct up the back of the mast.",
+          "moves": [
+            {"parts": ["lift_cover"], "from": [-1, 0, 0], "dist": 200, "t": [0, 0.6]},
+            {"parts": ["belt_duct"], "from": [-1, 0, 0], "dist": 160, "t": [0.35, 1]}
+          ],
+          "dur": 2.4,
+          "view": {"az": 150, "el": 14}
+        },
+        {
+          "caption": "Fit the spine pod and the two torso collars. They ride up and down with the torso.",
+          "moves": [
+            {"parts": ["spine_pod", "back_plate"], "from": [-1, 0, 0], "dist": 180, "t": [0, 0.6]},
+            {"parts": ["collar_bot", "collar_top"], "from": [-1, 0, 0], "dist": 200, "t": [0.35, 1]}
+          ],
+          "dur": 2.4,
+          "view": {"az": 150, "el": 14}
+        },
+        {
+          "caption": "Fit the mast cap over the top bracket.",
+          "moves": [
+            {"parts": ["mast_cap"], "from": [-1, 0, 0], "dist": 200, "t": [0, 1]}
+          ]
+        },
+        {
+          "caption": "On each arm, fit the yaw hood over the yaw stage and the band around it.",
+          "moves": [
+            {"parts": ["{s}_roll_cover_yaw"], "from": [0, 0, 1], "dist": 140, "t": [0, 0.6], "frame": "pitch", "rdelay": 0.06},
+            {"parts": ["{s}_roll_yaw_band"], "from": [0, 0, -1], "dist": 140, "t": [0.35, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.4
+        },
+        {
+          "caption": "Close each elbow with the elbow bay cover, the elbow cap and its door.",
+          "moves": [
+            {"parts": ["{s}_arm_cover_elbow_bay"], "from": [0, -1, 0], "dist": 120, "t": [0, 0.55], "frame": "pitch", "rdelay": 0.06},
+            {"parts": ["{s}_arm_cover_elbow_cap"], "from": [0, 1, 0], "dist": 100, "t": [0.2, 0.75], "frame": "pitch", "rdelay": 0.06},
+            {"parts": ["{s}_arm_cover_collar_door"], "from": [1, 0, 0], "dist": 90, "t": [0.4, 0.94], "frame": "pitch", "rdelay": 0.06}
+          ],
+          "dur": 2.6
+        },
+        {
+          "caption": "Fit the forearm and wrist covers from both sides. With every cover on, the belts, pulleys and motors are fully enclosed, and no opening is wider than 8 mm.",
+          "moves": [
+            {"parts": ["{s}_arm_cover_forearm_f", "{s}_arm_cover_wrist_f"], "from": [1, 0, 0], "dist": 110, "t": [0, 0.65], "frame": "elbow", "rdelay": 0.06},
+            {"parts": ["{s}_arm_cover_forearm_r", "{s}_arm_cover_wrist_r"], "from": [-1, 0, 0], "dist": 110, "t": [0.3, 0.94], "frame": "elbow", "rdelay": 0.06}
+          ],
+          "dur": 2.6
+        }
+      ],
+      "view": {"az": 35, "el": 12}
+    },
+    {
+      "title": "Finished robot",
+      "body": [
+        "The finished robot has two arms with six joints and a gripper each, a head on a lifting torso and a four-wheel omni base, driven by 21 actuators in all.",
+        "Estimated first build: about 24 hours of hands-on work plus about 354 hours of unattended printing (14.8 kg of PETG and ASA). One arm, the first milestone, is about 6 hours hands-on.",
+        "Next come wiring, sensors and bring-up. Test the lift pawl, the e-stop and the watchdog before any powered arm motion."
+      ],
+      "fasteners": [],
+      "src": ["docs/BUILD_v4.md (intro, steps 5b, 10 and 11, safety notes)"],
+      "parts": [],
+      "subs": [
+        {"caption": "This is the finished robot as the design files describe it. Turn it around to look at it from every side.", "moves": []}
+      ],
+      "view": {"az": 35, "el": 12}
+    }
+  ]
+}
