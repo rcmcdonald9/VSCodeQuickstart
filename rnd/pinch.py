@@ -41,6 +41,16 @@ working while the arm CAD changes:
    applied by sw/safety.py's people-near mode) are evaluated a second time over the restricted range only (the same
    sweep, its poses inside the restricted range, the soft limit itself added as a pose) and reported as a separate
    column; a scan lists, for each lower limit swept, which of that joint's tier-1 rows still fail.
+7. **Soft guards** (PIP_WEDGE_GUARD=skirt; names with tpu_skirt): a TPU skirt that keeps a finger out of a nip whose gap
+   cannot be held closed or open. It is never a rigid pass: the gate (items 3 and 5) is computed with the guard taken out
+   of the probe model, exactly as without it. A second probe pass per step with the guard in lists the gate's fails that
+   the guard alone closes to the probe as **soft-guarded** (a separate count), with the R17 force limit as the second
+   barrier: the joint's collision trip must stay under F_PINCH at the guard's smallest radius from the joint axis. The
+   guard is judged first (covers.wedge_skirt_rule(): wall ≥ TPU_WALL_MIN, slots between fins ≤ 8 mm, and nowhere a static
+   part closer to the hood face than the skirt's folded stack at any angle, so the TPU itself is never crushed); a guard
+   that fails is taken out of both passes. Like the boots, it keeps its drawn shape in the rigid sweep (ESTIMATE): where a
+   static part runs into a fin the fin is in reality laid over sideways (it still blocks), where the static moves away the
+   probe sees the real opening at the fin tips.
 
 Not covered: the gripper's own jaws (a gripper is meant to pinch; force-limited in software), wheel–floor nip,
 two-joint combinations (each joint is swept with the others at the reference pose), hair/clothing entanglement.
@@ -79,7 +89,9 @@ EXPOSE = [(re.compile(r"belt|pulley|idler"), "belt / pulley (draw-in)", True),
           (re.compile(r"shaft|spindle"), "rotating shaft", False)]
 SKIP_GAP = re.compile(r"jaw|finray|pad_fixed|finger")        # gripper fingers vs each other: gripping, not pinching
 COVER = re.compile(r"duct|cover|liner|belly|shield|mast_cap|collar_(top|bot)|spine_pod|back_plate")   # our own covers
-SOFT = re.compile(r"bellows|boot|gaiter")      # TPU / fabric: blocks the probe, gives under a finger (not a pinch surface)
+SOFT = re.compile(r"bellows|boot|gaiter|tpu_skirt")      # TPU / fabric: blocks the probe, gives under a finger (not a pinch surface)
+GUARD = re.compile(r"tpu_skirt")  # soft guards (item 7): taken out for the gate, their closures reported as soft-guarded
+F_PINCH = 140.0                   # N: R17 contact-force limit (ISO/TS 15066-style), the soft guards' second barrier
 TPU_WALL_MIN = 1.2                # mm: thinnest TPU 95A wall that counts as a cover (≈ 3 perimeters of a 0.4 nozzle)
 TPU_STRAIN = 0.40                 # free spans of a compliant cover stay within ±40 % of the as-printed length over the stroke
 
@@ -121,6 +133,54 @@ def judge_compliant(ranges=None):
         rows.append(dict(name=c["name"], part=c.get("part"), joint=c["joint"], range=(lo, hi), wall=c["wall"], span=sname,
                          free=float(L0), min=lmin, max=lmax, comp=float(comp), ext=float(ext), ok=ok, note=c.get("note", "")))
     return rows
+
+
+def judge_soft_guard():
+    """Judge the soft guard (covers.wedge_skirt, PIP_WEDGE_GUARD=skirt) in the roll-module frame over the joint's range at
+    1° steps: (a) wall ≥ TPU_WALL_MIN; (b) the slots between fins ≤ CLOSED; (c) no TPU crushed: at every root point of the
+    skirt still carrying material, no static part comes closer to the hood face than the skirt's folded stack
+    (covers.skirt_stack). Listed, not judged: the largest opening left at the fin tips (the probe sweep tests it), the
+    deepest a static part runs into a fin (the fin is laid over), the fin's bending force there, and the second barrier:
+    the joint torque at which the contact force at the guard's smallest radius from the joint axis reaches F_PINCH."""
+    from . import swept
+    from .parts import covers
+    r = covers.wedge_skirt_rule()
+    mv, st, o, d, (lo, hi) = swept.joints()[r["joint"]]
+    sk = covers.wedge_skirt()
+    R, G, _ = covers._skirt_field(st, o, step=1.0)
+    roots = np.array([q[:3] for q in R])
+    nrm = np.array([q[3] for q in R], float)
+    kinds = [q[4] for q in R]
+    from build123d import Vector
+    Ps, _ = _sample(sk, 5)
+    sh = covers.WEDGE_SKIRT["sheet"]
+    live = np.array([sk.is_inside(Vector(*(p + 0.4 * n))) for p, n in zip(roots, nrm)])   # TPU just off the hood surface
+    fin = np.array([k == "fin" and sk.is_inside(Vector(*(p + (sh + 1.0) * n))) for p, n, k in zip(roots, nrm, kinds)])   # a fin stands there
+    gmin, gmax = G.min(1), G.max(1)
+    stack = np.where(fin, covers.skirt_stack("fin"), covers.skirt_stack("sheet"))
+    crushed = live & (gmin < stack - 1e-6)
+    reach = np.zeros(len(roots))                                   # fin height off the hood surface along its normal
+    for i in np.nonzero(fin)[0]:
+        v = Ps - roots[i]
+        s_ = v @ nrm[i]
+        m = (np.abs(v[:, 0]) <= r["wall"] / 2 + 0.3) & (np.linalg.norm(v - np.outer(s_, nrm[i]), axis=1) <= 1.5 + r["wall"]) & (s_ > 0)
+        reach[i] = s_[m].max() if m.any() else 0.0
+    tip_open = float(np.max(np.where(fin, gmax - reach, -np.inf))) if fin.any() else 0.0
+    intr = np.where(fin, np.clip(reach + sh - gmin, 0.0, None), 0.0)
+    i_w = int(np.argmax(intr))
+    L, dl = max(reach[i_w] - sh, 0.5), float(intr[i_w])
+    I10 = 10.0 * r["wall"] ** 3 / 12                               # per 10 mm of fin height
+    f10 = 3 * r["E_mpa"] * I10 * min(dl, L) / L ** 3               # N, small-deflection cantilever (an upper bound for a fold)
+    ax = np.asarray(d, float) / np.linalg.norm(d)
+    rel = roots[live] - np.asarray(o, float)
+    rad = np.linalg.norm(rel - np.outer(rel @ ax, ax), axis=1)
+    r_min = float(rad.min()) if len(rad) else 0.0
+    ok = bool(r["wall"] >= TPU_WALL_MIN and r["pitch"] - r["wall"] <= CLOSED + 1e-9 and not crushed.any() and live.any())
+    return dict(part=r["part"], joint=r["joint"], range=(lo, hi), wall=r["wall"], slot=r["pitch"] - r["wall"],
+                roots=int(len(roots)), live=int(live.sum()), trimmed=int((~live).sum()), crushed=int(crushed.sum()),
+                stack_margin=float((gmin - stack)[live].min()) if live.any() else 0.0, tip_open=tip_open,
+                intrusion=dl, fin_len=float(L), fin_force_10mm=float(f10), r_min=r_min, tau_budget=F_PINCH * r_min / 1000.0,
+                mass_g=float(sk.volume * 1.21e-3), ok=ok)
 
 
 # ---------------------------------------------------------------------------------------------- CAD memo (speed only)
@@ -227,8 +287,12 @@ class Robot:
         self.parts = robot.build(REF_LIFT, REF, covers=True)
         self.compliant = judge_compliant()
         bad = [r["part"] for r in self.compliant if r["part"] and not r["ok"]]
+        self.guards = [n for n, _, _ in self.parts if GUARD.search(n)]
+        self.guard_rule = judge_soft_guard() if self.guards else None
+        if self.guard_rule and not self.guard_rule["ok"]:
+            bad.append(self.guard_rule["part"])
         self.dropped = [n for n, _, _ in self.parts if any(_strip(n) == b for b in bad)]
-        judged = {r["part"] for r in self.compliant if r["part"]}
+        judged = {r["part"] for r in self.compliant if r["part"]} | ({self.guard_rule["part"]} if self.guard_rule else set())
         self.unjudged = sorted({_strip(n) for n, _, _ in self.parts if SOFT.search(n) and _strip(n) not in judged})
         self.names = [n for n, _, _ in self.parts]
         self.idx = {n: i for i, n in enumerate(self.names)}
@@ -237,11 +301,16 @@ class Robot:
             self.cen[n] = _centroid(p)
             self.sig[n] = _vsig(p)
         self.pts, self.nrm, self.pid = [], [], []
+        ng = 0
         for i, (n, p, _) in enumerate(self.parts):
-            P, N = _sample(p, i) if n not in self.dropped else (np.zeros((0, 3)), np.zeros((0, 3)))   # a boot that fails the
+            seed = 100000 + i if n in self.guards else i - ng          # guards don't shift the other parts' sampling seeds
+            ng += n in self.guards
+            P, N = _sample(p, seed) if n not in self.dropped else (np.zeros((0, 3)), np.zeros((0, 3)))   # a boot that fails the
             self.pts.append(P); self.nrm.append(N); self.pid.append(np.full(len(P), i))
         self.offs = np.cumsum([0] + [len(p) for p in self.pts])
         self.P = np.concatenate(self.pts); self.N = np.concatenate(self.nrm); self.I = np.concatenate(self.pid)
+        self.gmask = np.isin(self.I, [self.idx[n] for n in self.guards if n not in self.dropped])   # live soft-guard samples
+        self.filler = int(np.nonzero(~self.gmask)[0][0]) if self.gmask.any() else 0
         # rule closes nothing: it stays in the part list (same sampling seeds for the rest) with no surface samples
         self.log(f"reference build + {len(self.P):,} surface samples on {len(self.parts)} parts in {time.time() - t0:.0f} s"
                  + (f"; compliant covers taken out: {', '.join(self.dropped)}" if self.dropped else ""))
@@ -378,6 +447,18 @@ def accessible(P, N, test_idx, extra_bound=None):
     return ok
 
 
+def access2(rb, P, N, test_idx):
+    """(rigid, soft) accessibility of test_idx: rigid = the soft guards taken out (their samples moved onto a sample of
+    another part, so the voxel grid and every other sample are unchanged), soft = as modelled. Without a live guard both
+    are the same pass."""
+    if not rb.gmask.any():
+        a = accessible(P, N, test_idx)
+        return a, a
+    Pr = P.copy()
+    Pr[rb.gmask] = P[rb.filler]
+    return accessible(Pr, N, test_idx), accessible(P, N, test_idx)
+
+
 # ---------------------------------------------------------------------------------------------- sweep
 def _steps(lo, hi, step):
     s = list(np.arange(lo, hi, step)) + [hi]
@@ -444,20 +525,25 @@ def run_joint(rb, tr, joint, bodies, angles, quick):
         near = np.isfinite(d)
         sj = sidx[np.where(near, j, 0)]
         test = np.unique(np.concatenate([midx[near], sj[near], eidx]))
-        acc_all = accessible(P, N, test)
+        acc_all, acc_soft = access2(rb, P, N, test)
         acc = dict(zip(test.tolist(), acc_all.tolist()))
+        accs = dict(zip(test.tolist(), acc_soft.tolist()))
         tr.record_exposure(test, acc_all, joint, th)
         am = np.array([acc.get(i, False) for i in midx[near]])
         as_ = np.array([acc.get(i, False) for i in sj[near]])
+        ams = np.array([accs.get(i, False) for i in midx[near]])
+        ass = np.array([accs.get(i, False) for i in sj[near]])
         k = ckey[near]; spart = rb.I[sj[near]]; dd = d[near]
         order = np.lexsort((dd, k))                         # per cell: the nearest static surface, whichever part
-        k, spart, dd, am, as_ = k[order], spart[order], dd[order], am[order], as_[order]
+        k, spart, dd, am, as_, ams, ass = k[order], spart[order], dd[order], am[order], as_[order], ams[order], ass[order]
         brk = np.nonzero(np.r_[True, k[1:] != k[:-1]])[0]
         ra = np.logical_or.reduceat(am, brk) & np.logical_or.reduceat(as_, brk) if len(brk) else []
-        for b0, r in zip(brk, ra):
-            hist.setdefault(int(k[b0]), []).append((th, float(dd[b0]), int(spart[b0]), bool(r)))
+        rs = np.logical_or.reduceat(ams, brk) & np.logical_or.reduceat(ass, brk) if len(brk) else []
+        for b0, r, r2 in zip(brk, ra, rs):
+            hist.setdefault(int(k[b0]), []).append((th, float(dd[b0]), int(spart[b0]), bool(r), bool(r2)))
         hist.setdefault("_poses", []).append(th)
-        rb.log(f"    {joint} {th:7.1f}: {near.sum():,} moving samples within {BOUND:.0f} mm, {int(acc_all.sum()):,} accessible")
+        rb.log(f"    {joint} {th:7.1f}: {near.sum():,} moving samples within {BOUND:.0f} mm, {int(acc_all.sum()):,} accessible"
+               + (f" ({int(acc_soft.sum()):,} with the soft guards)" if rb.gmask.any() else ""))
 
 
 def lift_membership(rb, tr, lifts):
@@ -518,8 +604,15 @@ def run_lift(rb, tr, lifts, membership):
             recs.append((ai[near], bi[np.where(near, j, 0)][near], d[near]))
             tests += [ai[near], bi[np.where(near, j, 0)][near]]
         test = np.unique(np.concatenate(tests))
-        acc_all = accessible(P, N, test)
+        gm = np.isin(I, [rb.idx[n] for n in rb.guards if n not in rb.dropped])
+        if gm.any():                                         # as access2: the gate pass without the soft guards
+            Pr = P.copy()
+            Pr[gm] = P[int(np.nonzero(~gm)[0][0])]
+            acc_all, acc_soft = accessible(Pr, N, test), accessible(P, N, test)
+        else:
+            acc_all = acc_soft = accessible(P, N, test)
         acc = dict(zip(test.tolist(), acc_all.tolist()))
+        accs = dict(zip(test.tolist(), acc_soft.tolist()))
         ids = I[test[acc_all]]
         cnt = np.bincount(ids, minlength=len(rb.names))
         for i in np.nonzero(cnt)[0]:
@@ -533,15 +626,17 @@ def run_lift(rb, tr, lifts, membership):
             cell[np.isin(I[ai], [rb.idx[n] for n in deform])] = 0
             k = (I[ai].astype(np.int64) << 42) ^ ((cell[:, 0] & 0x3FFF) << 28) ^ ((cell[:, 1] & 0x3FFF) << 14) ^ (cell[:, 2] & 0x3FFF)
             am = np.array([acc.get(i, False) for i in ai]); as_ = np.array([acc.get(i, False) for i in bj])
+            ams = np.array([accs.get(i, False) for i in ai]); ass = np.array([accs.get(i, False) for i in bj])
             sp = I[bj]
             order = np.lexsort((d, k))
-            k, sp, d, am, as_ = k[order], sp[order], d[order], am[order], as_[order]
+            k, sp, d, am, as_, ams, ass = k[order], sp[order], d[order], am[order], as_[order], ams[order], ass[order]
             brk = np.nonzero(np.r_[True, k[1:] != k[:-1]])[0]
             if not len(brk):
                 continue
             ra = np.logical_or.reduceat(am, brk) & np.logical_or.reduceat(as_, brk)
-            for b0, r in zip(brk, ra):
-                hist.setdefault(int(k[b0]), []).append((L, float(d[b0]), int(sp[b0]), bool(r)))
+            rs = np.logical_or.reduceat(ams, brk) & np.logical_or.reduceat(ass, brk)
+            for b0, r, r2 in zip(brk, ra, rs):
+                hist.setdefault(int(k[b0]), []).append((L, float(d[b0]), int(sp[b0]), bool(r), bool(r2)))
         hist.setdefault("_poses", []).append(L)
         rb.log(f"    lift {L:.2f} m: {len(rigid)} parts ride the lift, deforming: {', '.join(deform) or 'none'}, {int(acc_all.sum()):,} accessible")
 
@@ -567,14 +662,14 @@ def _tree(rb, tr):
     return parent, child
 
 
-def evaluate(rb, tr, window=None, joints=None):
+def evaluate(rb, tr, window=None, joints=None, soft=False):
     """Rows per location (joint, moving part, static part). Tier 1 (counted, R17): the moving body against its parent
     link (the joint's own nips: elbow fold, shoulder–torso, wrist–forearm, head–neck), and for the lift the carriage
     body against the mast, base, head and bellows. Tier 2 (listed): everything else, e.g. a hand reaching the base
     at an extreme yaw or a hanging arm on the base rim at the lowest lift; those are clamping zones handled by the
     planner's keep-outs and force limiting (D23 (5)), not by cover geometry.
     window: {joint: (lo, hi)} evaluates those joints over the poses inside the window only (people-near ranges);
-    joints: evaluate only these joints."""
+    joints: evaluate only these joints; soft: probe reach with the soft guards in (item 7), not the gate's."""
     parent, child = _tree(rb, tr)
     rows = {}
     for joint, hist in tr.gaps.items():
@@ -590,10 +685,11 @@ def evaluate(rb, tr, window=None, joints=None):
             if not h:
                 continue
             mp = key >> 42
-            if not any(r for *_, r in h):
+            ri = 4 if soft else 3
+            if not any(e[ri] for e in h):
                 continue                                     # never reachable by the probe
             seen = {}
-            for p_, g_, s_, _ in h:                          # lift: movers and deformers are separate passes
+            for p_, g_, s_, *_ in h:                         # lift: movers and deformers are separate passes
                 if p_ not in seen or g_ < seen[p_][0]:
                     seen[p_] = (g_, s_)
             g = [seen.get(p_, (BOUND, -1))[0] for p_ in poses]
@@ -702,12 +798,30 @@ def report(rb, tr, joints_done, skipped, t_run, quick):
                    f"({sum(1 for r in t1 if r['joint'] in win and not r['ok'])} → {sum(1 for r in pf if r['joint'] in win)} on "
                    f"{', '.join(win)}; {len(pz)} reach-clamping zones; exposure is reported over the full range).")
         scan = people_near_scan(rb, tr, win)
+    sg_rows, sg_pn, sg_lines = [], [], []
+    g_live = bool(rb.gmask.any())
+    if rb.guards:
+        gs, _ = evaluate(rb, tr, soft=True)
+        smap = {_loc(r): r for r in gs}
+        sg_rows = [r for r in gf if smap.get(_loc(r), {"ok": True})["ok"]]        # rigid fail, open or passing with the guard in
+        if pn:
+            gps, _ = evaluate(rb, tr, win, soft=True)
+            spmap = {_loc(r): r for r in gps}
+            sg_pn = [r for r in pf if spmap.get(_loc(r), {"ok": True})["ok"]]
+        g = rb.guard_rule
+        sg_lines = [f"**Soft-guarded (PIP_WEDGE_GUARD=skirt, item 7; not rigid passes): {len(sg_rows)} of the {len(gf)} joint-nip fails"
+                    + (f" ({len(sg_pn)} of {len(pf)} with people near)" if pn else "")
+                    + f" are closed to the probe only by the TPU skirt; {len(gf) - len(sg_rows)} open with no guard"
+                    + (f" ({len(pf) - len(sg_pn)} with people near)" if pn else "") + ". "
+                    + (f"Second barrier: the {g['joint']} joint's collision trip (threshold + rel·|τ|, sw/collision.py) must stay "
+                       f"≤ {g['tau_budget']:.1f} N·m with people near ({F_PINCH:.0f} N at r {g['r_min']:.0f} mm, the skirt's closest root to the axis)."
+                       if g_live else "The skirt fails its rule and is taken out of the model (it guards nothing)."), ""]
     tiers = evaluate.__doc__[evaluate.__doc__.index("Tier 1"):evaluate.__doc__.index("window:")]
     L = ["# Pinch, shear and draw-in check (generated by `python -m rnd.pinch`)", "",
          __doc__.split("\n\n", 1)[1].strip(), "", "**Tiers.** " + " ".join(tiers.split()), "",
          f"**Result: {len(gf)} joint-nip gap fails, {len(ef)} exposed belt / pulley / motor parts. R17 needs 0 and 0.** "
          f"Also listed: {sum(1 for r in t2 if not r['ok'])} reach-clamping zones (tier 2) and "
-         f"{sum(1 for r in expo if not r['hard'])} exposed shafts (warnings).", ""] + ([pn_line, ""] if pn_line else []) + [
+         f"{sum(1 for r in expo if not r['hard'])} exposed shafts (warnings).", ""] + ([pn_line, ""] if pn_line else []) + sg_lines + [
          f"Swept: {', '.join(joints_done)}" + (f"; not swept: {', '.join(skipped)}" if skipped else "")
          + f". Reference pose {json.dumps(REF)} at lift {REF_LIFT} m. {'Quick (coarse) steps. ' if quick else ''}Run time {t_run / 60:.1f} min.", "",
          "## Exposed drive parts (accessible to the Ø12 probe at some step)", "",
@@ -728,6 +842,17 @@ def report(rb, tr, joints_done, skipped, t_run, quick):
         L.append("| none | | | | | | | | | |")
     if rb.unjudged:
         L += ["", f"Soft parts with no declared spans (kept as drawn, not judged): {', '.join(rb.unjudged)}."]
+    if rb.guard_rule:
+        g = rb.guard_rule
+        L += ["", "## Soft guards (item 7; TPU 95A, not counted as rigid passes)", "",
+              "| Guard | Joint (range) | Wall / slot (mm) | Root points: live / trimmed / crushed | Stack margin (mm) | Largest tip opening (mm) "
+              "| Deepest fin intrusion (mm, fin length) | Fin force per 10 mm (N, ESTIMATE) | Trip budget (N·m at r mm) | Mass (g) | |",
+              "|---|---|---|---|---|---|---|---|---|---|---|",
+              f"| {g['part']} | {g['joint']} ({g['range'][0]:g}…{g['range'][1]:g}°) | {g['wall']:.1f} / {g['slot']:.1f} | {g['live']} / {g['trimmed']} / {g['crushed']} "
+              f"| {g['stack_margin']:.1f} | {g['tip_open']:.1f} | {g['intrusion']:.1f} ({g['fin_len']:.1f}) | {g['fin_force_10mm']:.1f} "
+              f"| {g['tau_budget']:.1f} at {g['r_min']:.0f} | {g['mass_g']:.0f} | {'✅ judged' if g['ok'] else '❌ taken out'} |", "",
+              "Soft-guarded rows (fail with the guard taken out, unreachable by the probe with it in):", ""]
+        L += [f"- {r['joint']}: {r['moving']} × {r['static']} ({r['min']:.1f} … {_mx(r['max'])} mm)" for r in sg_rows] or ["- none"]
     L += ["", "## Tier 1: joint nips (reachable, < 25 mm at some step; counted)", "",
           "Min/max over the sweep for the worst 20 mm cell of the moving part against the nearest part of the parent link.", ""]
     L += _gap_table(t1, pn)
@@ -748,6 +873,10 @@ def report(rb, tr, joints_done, skipped, t_run, quick):
           "gaps": [{**r, "sides": sorted(r["sides"])} for r in gaps], "exposed": expo,
           "compliant": rb.compliant, "compliant_rule": {"wall_min_mm": TPU_WALL_MIN, "strain": TPU_STRAIN},
           "dropped": rb.dropped, "soft_unjudged": rb.unjudged}
+    if rb.guards:
+        js["soft_guard"] = {"rule": rb.guard_rule, "live": g_live, "soft_guarded": len(sg_rows), "unguarded": len(gf) - len(sg_rows),
+                            "rows": [dict(joint=r["joint"], moving=r["moving"], static=r["static"], min=r["min"], max=r["max"]) for r in sg_rows],
+                            "people_near_soft_guarded": len(sg_pn), "people_near_unguarded": (len(pf) - len(sg_pn)) if pn else None}
     if pn:
         js["people_near"] = {"ranges": win, "gap_fails": len(pf), "exposed_fails": len(ef), "reach_zones": len(pz),
                              "gaps": [{**r, "sides": sorted(r["sides"])} for r in gpn], "scan": scan}
