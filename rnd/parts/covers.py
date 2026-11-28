@@ -24,6 +24,10 @@ follow the riser hub ≈ 84 mm; both need a geometry or range decision (see comp
 
 Neck CAD pass (R17, 2026-11-27): the head's back is now round the tilt axis and the neck slot is closed by a rigid saddle
 on the neck bar at a constant 4 mm (upper.py, neck v2), so the neck boot and its two compliant() rows are gone.
+
+R17 pass (2026-11-28): the elbow bay dome is redrawn round the GIM6010 can (its flange ears stood outside the concept box)
+and the wrist boot is a round, closed boot (the can flange faced the hand): no exposed motor can left. The roll hard stop
+moved inside the front collar (roll.FRONT_STOP) and the yaw hood's front is squared off the now flat rear plate.
 """
 from __future__ import annotations
 
@@ -125,31 +129,39 @@ def pitch_frame():
 # line) and the boss's rim faced the roll link's frame across 9–14 mm (yaw_block × roll_link). A static PETG collar on the
 # body face, a surface of revolution about the roll axis, fills the pocket: its face runs 2 mm in front of the adapter
 # (r 30.3…40) and its rim (r 40…46) runs on to 2 mm short of the boss, 2 mm outside the adapter's rim. Every rotating
-# surface there then has static within 2 mm at every roll angle, the same at every angle. Fixed by 4 × M4 × 25 (ISO 4762)
-# in Ø7.5 counterbores in the rim's face into the motor's front-face tapped holes (PCD 84, unused), before the yaw block.
-FRONT_COLLAR = dict(bore=30.3, r_face=40.0, r_out=46.0, gap=2.0, screw_r=42.0, n=4, cb=(7.5, 4.0))
+# surface there then has static within 2 mm at every roll angle, the same at every angle.
+# R17 (2026-11-28): the roll hard stop moved in here (roll.FRONT_STOP): the collar now stands on the 3 mm 7075 stop ring
+# (x 25…28) and is hollow inside r 38 (the channel where the adapter's two dogs run between the ring's two blocks, whose
+# tops make the collar's face there). Its outer faces are unchanged. Held by 2 × M3 × 10 (ISO 4762) radial through its
+# outer wall (counterbored flush) into the blocks: the W14b 4 × M4 × 25 into the front-face holes were too long for
+# the 3.5 mm-deep threads (7.5 mm past a 17.5 mm grip) and those holes now take the ring's countersunk M4.
+FRONT_COLLAR = dict(bore=30.3, r_face=40.0, r_out=46.0, gap=2.0, r_chan=38.0, cb=(6.0, 3.3))
 
 
 def roll_front_collar():
     """Static collar on the inline roll motor's front face (roll-module frame; covers.pitch_frame)."""
     from . import roll
-    c = FRONT_COLLAR
-    xb = roll.X_MOT[0] + roll.MOT36["body_h"]                        # body front face (25)
+    c, f = FRONT_COLLAR, roll.FRONT_STOP
+    xb = roll.X_MOT[0] + roll.MOT36["body_h"] + f["base_t"]          # on the stop ring (body front face 25 + 3)
     xf = roll.X_ADAPT[0] - c["gap"]                                  # face, 2 mm in front of the adapter
     xr = roll.X_ARM_F[0] - c["gap"]                                  # rim end, 2 mm short of the clevis boss
     ax = lambda x, r, L: Pos(x, roll.ROLL_Y, 0) * Rot(0, 90, 0) * Cylinder(r, L, align=(Align.CENTER, Align.CENTER, Align.MIN))
     p = ax(xb, c["r_out"], xf - xb) + ax(xf, c["r_out"], xr - xf) - ax(xf, c["r_face"], xr - xf + 1)
-    p -= ax(xb - 1, c["bore"], xr - xb + 2)
-    for k in range(c["n"]):
-        a = math.radians(45 + 360 / c["n"] * k)
-        y, z = roll.ROLL_Y + c["screw_r"] * math.cos(a), c["screw_r"] * math.sin(a)
-        p -= Pos(xb - 1, y, z) * Rot(0, 90, 0) * Cylinder(2.25, xr - xb + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        p -= Pos(xr - c["cb"][1], y, z) * Rot(0, 90, 0) * Cylinder(c["cb"][0] / 2, c["cb"][1] + 1, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    p -= ax(xb - 1, c["r_chan"], xr - xb + 2)                       # the stop channel + blocks (r ≤ 37.5) inside
+    m3 = f["collar_m3"]
+    for a0, a1 in roll.front_stop_angles()["block"]:
+        am = (a0 + a1) / 2
+        rot = Rot(am + 180.0, 0, 0)
+        p -= Pos(m3["x"], *roll._ang(am, c["r_chan"] - 1)) * rot * Cylinder(1.7, c["r_out"] - c["r_chan"] + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+        p -= Pos(m3["x"], *roll._ang(am, c["r_out"] - c["cb"][1])) * rot * Cylinder(c["cb"][0] / 2, c["cb"][1] + 1, align=(Align.CENTER, Align.CENTER, Align.MIN))
     return p
 
 
 _HOOD = []
 _FUZZ = 1e-5          # mm
+HOOD_FRONT = 3.5      # R17 (2026-11-28): the hood's front face this far from the (now flat) rear plate (x −29.5; was the box
+                      # end 5.2 mm past the can, x −33, cut back to x −35.5 round the W13 stop bushes' sweep). Tried 6 and 4:
+                      # the same two rows fail, with higher maxima (rnd/pinch.py)
 
 
 def _cut_main(h, q):
@@ -169,9 +181,9 @@ _GROW = [(0, 0, 0)] + [tuple(s * 1.5 * (i == k) for i in range(3)) for k in rang
 
 def _yaw_hood():
     """D24 inline roll (2026-11-27): rides on the roll output. A 2.2 mm hood 3 mm round the bolted yaw cartridge (can +
-    rear cap), standing on the yaw block's top plate (the yaw belt is already inside the yaw band). Cut clear of the
-    static roll link, motor housing, ferrule and spring ring swept over the roll range (3° steps, ±1.5 mm on each axis), and 1.5 mm
-    off the roll output's rear arm. Wave 5: it no longer stops at x −46.5 (that left the can's front 10 mm and the
+    rear cap), standing on the yaw block's top plate (the yaw belt is already inside the yaw band), its front squared
+    HOOD_FRONT off the rear plate (R17). Cut clear of the static roll link, motor housing, ferrule and spring ring swept
+    over the roll range (3° steps, ±1.5 mm on each axis), and 1.5 mm off the roll output's rear arm. Wave 5: it no longer stops at x −46.5 (that left the can's front 10 mm and the
     hood's front corners open); it runs over the can's front to its own box end (5.2 mm past the can), cut only by those
     swept parts. One PETG print (≈ 99 × 109 × 71 mm, in printed()); fixing still to draw: 4 × M3 tabs at its foot into
     heat-set inserts in the yaw block's top plate (inserts: next rnd/parts/roll.py edit). The inboard wedge between the yaw block
@@ -182,7 +194,7 @@ def _yaw_hood():
         mv, st, o, _, (lo, hi) = swept.joints()["roll"]
         can = [p for n, p, _ in roll.module() if n == "yaw_can"][0].bounding_box()
         t, g = WALL, 3.0
-        x0, x1, y0, y1 = can.min.X - g - t, can.max.X + g + t, can.min.Y - g - t, can.max.Y + g + t
+        x0, x1, y0, y1 = can.min.X - g - t, roll.X_PLATE[0] - HOOD_FRONT, can.min.Y - g - t, can.max.Y + g + t   # R17: front squared, HOOD_FRONT off the plate
         z0, z1 = roll.ZF + 0.5, can.max.Z + g + t
         h = Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * soft_shell(x1 - x0, y1 - y0, z1 - z0, 14, 8, t)
         h -= Pos((x0 + x1) / 2, (y0 + y1) / 2, z0) * Box(x1 - x0 - 2 * t, y1 - y0 - 2 * t, 2 * t + 1)
@@ -212,14 +224,18 @@ def _yaw_hood():
 #   ferrule boss in front of the side block (roll.FRONT_FRAME) and turning its spring bar up (roll.SPR_BAR_ANG). The
 #   lesson: a rotating cell passes only if static stays within 8 mm of it at every angle (a surface of revolution round
 #   it) or never comes within 25 mm; a flat static wall beside a rotating round boss fails both ways.
-# - Rear, open: cover_yaw × roll_gim_housing / roll_link. Tried (2026-11-28): a round-fronted hood (front half a cylinder
-#   about the yaw axis): it moved the hood's walls to 10–18 mm from the rear plate (worse: 3 rows with people near
-#   instead of 2) and uncovered roll_arm_rear. Root causes: (1) the two hard-stop bushes stand 8 mm proud of the rear
-#   plate at r 42 (roll.STOP_BUSH), the only non-round static feature behind the hood, and every hood cell within 25 mm
-#   of their sweep sees them come and go (the gap is Euclidean, the hood front cannot hide them); (2) the yaw can's front
-#   is 1.7 mm behind the rear arm, so the hood must stay within ≈ 22 mm of the roll link's ferrule boss (inboard wedge).
-#   Next: move the hard stop off the rear plate face (e.g. inside the rear arm's boss or a stop ring that is round where
-#   the hood can see it), then square the hood's front at a constant ≤ 7 mm from the plate.
+# - Rear: cover_yaw × roll_gim_housing closed (R17, 2026-11-28). Root cause was the two W13 hard-stop bushes 8 mm proud of
+#   the rear plate (the only non-round static feature in front of the hood; every hood cell within 25 mm saw them come
+#   and go, and the hood had to be cut 9.5 mm back from the plate round their sweep). The stop moved inside the front
+#   collar (roll.FRONT_STOP), the rear plate is flat and the hood's front is squared 3.5 mm off it (HOOD_FRONT): the row
+#   now holds 3.5 mm at every angle. (A round-fronted hood, tried earlier, was worse: 10–18 mm walls.)
+# - Rear, still open: cover_yaw × roll_link (0.5 … 8.9 mm; people near 0.9 … 11.2) and cover_yaw × ferrule_m (3.4 … 8.0).
+#   Both are the hood's inboard wall and top against the roll link's ferrule boss (y 8…12, x −45…45), the ferrule's
+#   spigot and the roll link's inboard frame / side block, all non-round about the roll axis and within 25 mm of the
+#   hood: the top half of the inboard wedge. Unlike the yaw block's lower half it closes as the arm rises (the hood's
+#   upper inboard corner, r 59, passes the boss at roll ≈ +22°), so the D25 +5° soft limit does not open it. Fixes, not
+#   taken: ROLL_Y + ≈ 23 mm (the inboard-wedge fix), or a narrower yaw can. Max gaps are within 0.04–0.9 mm of the
+#   8 mm line; the 20 mm world-grid cells that fail hold hood material 8.0–8.9 mm from the plate (rnd/pinch.py CELL).
 # - Inboard wedge (yaw block / band × ferrule, 2.6 / 2.7 mm at −15°): arm part against arm part, closed with people near
 #   by the D25 soft limit (≥ +5°). Full-range fixes: a roll hard stop at ≥ +5° (R16 across-body 71 → 49 %) or ROLL_Y + 23
 #   mm. upper.TORSO_RECESS (PIP_TORSO_RECESS=1) fixes only the shoulder–torso rows.
@@ -239,11 +255,51 @@ def roll_frame():
 
 
 # ---------------------------------------------------------------------------------------------- elbow + forearm
+# R17 (2026-11-28, rnd/pinch.py: arm_e_can 343 mm², arm_e_can_cap 131 mm² exposed). The elbow bay dome was still the
+# loop-23 concept box (104 × 40 × 104, soft corners r 19.6): it ran 0.3 mm³ into the can, the encoder bracket, the elbow
+# shaft and the housing, and near the housing face its rounded corners pulled in to |x| ≈ 42 while the GIM6010 can's
+# flange ears (r 49.7, horizontal) stand out to |x| 49.5, 0.5 mm wider than the housing: the probe reached the ears and
+# the rear cap's rim through the four corners. Now a cylinder about the cartridge axis, 1.8 mm round the ears, closed
+# 4 mm behind the rear cap, running on 14 mm past the housing's −Y face as a skirt beside its ±X faces (2.5 mm off them),
+# cut by the housing envelope (+0.3), the upper bone itself, the encoder bracket and board (+1) and the elbow shaft's
+# Ø44 end: the openings left are ≤ 2.5 mm. 4 × M3 bosses at r 47.6 between the ears (±45°, ±135°, where the can is r 43.3);
+# their screws go into heat-set inserts in the housing's −Y wall, as the concept's (still to draw in arm.py).
+ELBOW_DOME = dict(clear=1.8, end_gap=4.0, skirt=14.0, boss_r=47.6, boss_d=7.6, boss_ang=(45.0, 135.0, 225.0, 315.0))
+
+
+def _elbow_dome():
+    from . import arm
+    from .belt_stage import bolted_stage_v4
+    from .encoder import elbow_parts
+    c = ELBOW_DOME
+    zS = -arm.ELBOW_Z + arm.BELT_C
+    st = {n: p for n, p, _ in bolted_stage_v4(arm.STAGE, 20, "e_", arm.MOT, arm.EAR_SITE)}
+    can = st["e_can"] + st["e_can_cap"]
+    import numpy as np
+    v = np.array([(q.X, q.Y, q.Z) for q in can.vertices()])
+    r_can = float(np.hypot(v[:, 0], v[:, 2] - zS).max())                            # ears (49.7)
+    y_can = float(v[:, 1].min())                                                   # rear cap face (−65.4)
+    ri, ye = r_can + c["clear"], y_can - c["end_gap"]
+    y_top = -arm.HOUSING["y"] / 2 + c["skirt"]                                     # skirt end beside the housing's ±X faces
+    ax = lambda y0, r, L: Pos(0, y0, zS) * Rot(-90, 0, 0) * Cylinder(r, L, align=MIN)
+    d = ax(ye - WALL, ri + WALL, y_top - ye + WALL) - ax(ye, ri, y_top - ye + 1)
+    for a in c["boss_ang"]:
+        t = math.radians(a)
+        x, z = c["boss_r"] * math.sin(t), zS - c["boss_r"] * math.cos(t)
+        d += Pos(x, ye - 0.01, z) * Rot(-90, 0, 0) * Cylinder(c["boss_d"] / 2, -arm.HOUSING["y"] / 2 - 0.3 - ye, align=MIN)
+        d -= Pos(x, ye - WALL - 1, z) * Rot(-90, 0, 0) * Cylinder(M3_CLEAR / 2, 40, align=MIN)
+    d -= arm._housing_solid(-0.3)
+    d -= arm.upper_bone()
+    for n, p in [(n, p) for n, p, _ in elbow_parts()[0]] + [(n, p) for n, p, _ in elbow_parts()[1]]:
+        b = p.bounding_box()
+        d -= Pos((b.min.X + b.max.X) / 2, (b.min.Y + b.max.Y) / 2, (b.min.Z + b.max.Z) / 2) * Box(b.max.X - b.min.X + 2, b.max.Y - b.min.Y + 2, b.max.Z - b.min.Z + 2)
+    d -= Pos(0, -arm.HOUSING["y"] / 2 - 30, -arm.ELBOW_Z) * Rot(-90, 0, 0) * Cylinder(22.0, 40, align=MIN)   # elbow shaft end (r 20) + 2
+    return _main(d)
+
+
 def arm_frame():
     """Rides on the upper bone.
-    - Elbow bay dome over the elbow cartridge where it leaves the housing's −Y bay (the concept shell, 2.2 mm): 4 M3
-      bosses inside its corners, screws through the dome's back into inserts in the housing wall; one piece, goes on
-      from −Y.
+    - Elbow bay dome over the elbow cartridge where it leaves the housing's −Y bay (_elbow_dome).
     - Collar door over the KX collar twist window: 2.2 mm, two snap lugs at its ends, 0.5 mm off the collar lugs.
     (An elbow side shield on the bone cap was tried: the forearm's inner face is not flat (the CF socket stands 7 mm
     proud of the link), so a static plane there makes a closing gap. The elbow scissor needs a flat forearm inner
@@ -251,15 +307,35 @@ def arm_frame():
     """
     from . import arm
     zS = -arm.ELBOW_Z + arm.BELT_C
-    d = Pos(0, -70, zS) * soft_shell(104, 40, 104, 30, 14, WALL)
-    d -= Pos(0, -52, zS) * Box(108, 6, 108)                                         # open against the housing wall
-    for sx in (1, -1):
-        for sz in (1, -1):
-            d += Pos(sx * 42, -70, zS + sz * 42) * Rot(90, 0, 0) * (Cylinder(4.5, 36) - Cylinder(M3_CLEAR / 2, 36))
+    d = _elbow_dome()
     door = Pos(arm.HOUSING["x"] / 2 + 3.9, -20.5, zS) * soft_box(WALL + 0.6, 27, 98, 1.5, 1.2)          # 0.5 mm off the collar lugs (they stand 2 mm out of the window)
     for sy in (1, -1):                                                               # snap lugs at the door's ends, clear of the collar
         door += Pos(arm.HOUSING["x"] / 2 + 1.6, -20.5 + sy * 14.5, zS) * Box(3.2, 2.0, 20)
     return [("cover_elbow_bay", d, "white"), ("cover_collar_door", door, "white")]
+
+
+# R17 (2026-11-28, rnd/pinch.py: arm_wrist_can ≈ 4,000 mm² exposed on both arms). The wrist boot (an 80 × 75 × 80 soft box
+# with r 30 corners) stopped at the forearm's rim face (y 43) and was open toward the hand, so the wrist cartridge's
+# Ø80 × 4 can flange (y 39…43, r 28.8…40, with the 6 screw heads) faced the hand in the open; at y 43 its rounded front
+# was narrower (|x| ≈ 29) than the rim (r 40), so no ring could be joined to it there. The boot is now a surface of
+# revolution about the wrist axis: a Ø88.4 cylinder (r 42 inside, 2 mm off the rim; the probe test reaches through
+# walls nearer than ≈ 3.5 mm to a part) from a 2.2 mm front face
+# (y 33…35.2, 0.8 mm in front of the screw heads, Ø54 bore round the palm boss) to a back wall 2 mm behind the wrist
+# housing (y 98…100.2), cut round the forearm (the link web and the CF socket pass through it). The palm boss (r 24)
+# turns 3 mm inside the bore (the output flange, r 25, is behind the face) and no other hand part comes nearer than
+# 3 mm (they all lie below y 30 outside r 27), so every gap between the hand and the boot is the same at every wrist
+# angle: wrist range and dexterity are unchanged. Two halves split at x = 0, 4 × M3 (bosses at r 38); they come off
+# sideways with the hand on; for a cartridge swap the hand comes off first as before (assembly_seq removes covers first).
+WRIST_BOOT = dict(bore=27.0, r_in=42.0, face=(33.0, 35.2), back=100.2, boss_r=38.0)
+
+
+def _wrist_boot():
+    from . import arm
+    c = WRIST_BOOT
+    ax = lambda y0, r, L: Pos(0, y0, -arm.FORE_L) * Rot(-90, 0, 0) * Cylinder(r, L, align=MIN)
+    y0, y1 = c["face"]
+    b = ax(y0, c["r_in"] + WALL, c["back"] - y0) - ax(y1, c["r_in"], c["back"] - WALL - y1)
+    return b - ax(y0 - 1, c["bore"], y1 - y0 + 2)
 
 
 def forearm_frame():
@@ -268,7 +344,8 @@ def forearm_frame():
       face runs 3 mm past the housing face: a closed scissor gap, so no wall goes between). Two halves split at x = 0,
       M3 at both ends.
     - Elbow hub cap: Ø80 disc over the outer face of the forearm hub (closes the elbow-shaft end).
-    - Wrist boot round the wrist cartridge, open toward the hand; two halves split at x = 0, 4 × M3.
+    - Wrist boot round the wrist cartridge, round about the wrist axis and closed toward the hand (_wrist_boot); two
+      halves split at x = 0, 4 × M3.
     """
     from . import arm
     fo = arm.forearm()
@@ -287,12 +364,11 @@ def forearm_frame():
             fair[i] = fair[i] + Pos(sx * 1.2, fy1 - WALL - 2, zz) * Box(2.0, 3.0, 5.0)
     hy = arm.FORE_Y + 11.0                                                             # forearm hub outer face (link 22 thick)
     hub_cap = Pos(0, hy + WALL / 2 + 0.2, 0) * Rot(-90, 0, 0) * (Cylinder(40, WALL) + Pos(0, 0, -WALL / 2 - 2) * (Cylinder(20.6, 4) - Cylinder(18.6, 4)))
-    boot = Pos(0, (arm.WRIST_Y0 + arm.WRIST_Y1) / 2 + 4, -arm.FORE_L) * soft_shell(80, arm.WRIST_Y1 - arm.WRIST_Y0 + 22, 80, 30, 18, WALL)
-    boot -= Pos(0, arm.WRIST_Y0 - 8, -arm.FORE_L) * Box(90, 16, 90)                     # open toward the hand
-    boot -= fo
-    yb = (arm.WRIST_Y0 + arm.WRIST_Y1) / 2 + 4
-    boot = _split_cover(boot, "x", 0.0, [(yb - 20, -arm.FORE_L + 32), (yb + 20, -arm.FORE_L + 32),
-                                         (yb - 20, -arm.FORE_L - 32), (yb + 20, -arm.FORE_L - 32)])
+    boot = _wrist_boot() - fo                                                          # R17: round, closed toward the hand
+    c = WRIST_BOOT
+    yb = (c["face"][0] + c["back"]) / 2
+    boot = _split_cover(boot, "x", 0.0, [(yb - 22, -arm.FORE_L + c["boss_r"]), (yb + 22, -arm.FORE_L + c["boss_r"]),
+                                         (yb - 22, -arm.FORE_L - c["boss_r"]), (yb + 22, -arm.FORE_L - c["boss_r"])])
     return [("cover_forearm_f", _main(fair[1]), "white"), ("cover_forearm_r", _main(fair[0]), "white"), ("cover_elbow_cap", hub_cap, "white"),
             ("cover_wrist_f", _main(boot[1]), "white"), ("cover_wrist_r", _main(boot[0]), "white")]
 
