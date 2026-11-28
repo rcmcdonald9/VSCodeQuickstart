@@ -256,7 +256,8 @@ def study_xml(d, geometry=None, build=None):
     from . import twin
     from .params import act
     a = d.arm
-    root = ET.fromstring((build or twin.build_xml)(d, geometry))
+    build = build or getattr(twin.build_xml, "_orig", twin.build_xml)        # never correct twice inside corrected_bodies
+    root = ET.fromstring(build(d, geometry))
     bodies = {b.get("name"): b for b in root.iter("body")}
 
     def cyl(parent, m, D, L, pos, axis, coll=False):
@@ -329,6 +330,7 @@ class corrected_bodies:
         from . import spring, twin
         self.orig = twin.build_xml
         f = lambda dd, geometry=None, _o=self.orig: study_xml(dd, geometry, _o)
+        f._orig = self.orig
         twin.build_xml = spring.build_xml = f
         return self
 
