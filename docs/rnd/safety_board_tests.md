@@ -69,19 +69,20 @@ The sheet asked for ≥ 1 MHz on the 100 A clamp; the BOM's Micsig CP2100A is DC
 4. The pass / fail numbers of T0–T16 (are they the right tests, are the limits right, can the bench equipment measure them).
 5. A short written verdict: build as drawn / build after the listed fixes / do not build.
 
-**Who qualifies (any one route; never the drafter, i.e. Claude or any agent in this repo, never the owner alone, never an AI review: Fable, Astra and Neon are design reviews, not this gate):**
+**Who qualifies (any one route; never the drafter, i.e. Claude or any agent in this repo, never one reviewer alone, never an AI review: Fable, Astra and Neon are design reviews, not this gate):**
 
 | Route | Who | Minimum qualification | Cost / time (ESTIMATE) |
 |---|---|---|---|
 | A. Hired EE review | one electrical engineer engaged for a fixed-scope review (freelance platform, a local electronics design consultancy, or a university power-electronics lab doing paid work) | degree-level EE plus ≥ 5 years designing power electronics, motor drives or machine safety circuits (a PE / CEng / IEng, or a TÜV functional-safety engineer, counts on its own); has designed a board that switches ≥ 20 A DC | 4–8 h, ≈ $400–1,200; 1–2 weeks |
 | B. Maker-community review | **two** independent reviewers from a public electronics community (EEVblog forum, KiCad forum, an open-source robotics / ODrive / VESC / BMS project's contributors) | each with a public track record: a published board that switches ≥ 20 A DC or a published safety / BMS / motor-controller design, linkable; both do the whole checklist (a thread of 'looks fine' replies is not a review) | free or a small honorarium; 2–4 weeks |
 | C. Bought-relay fallback | route A or B on a smaller board | as A or B | see below |
+| **D. Owner + second EE (chosen, D30)** | **the owner (an electrical engineer, primary reviewer: the whole checklist) and the owner's father (an electrical engineer, second reviewer: independently, at least the power stage, clamp loop, K1/K2/fuse ratings, discharge path and the stop state machine)** | both electrical engineers; the drafter is Claude/agents, so neither reviewer drew the board | owner's time; no fee |
 
 **Minimum evidence to accept it (all five, filed as docs/review/board_review_<date>.md with the attachments):**
 
-1. Reviewer identity and qualification (name, route A / B, a link or CV line for the qualification above) and a one-line conflict statement (no stake in the build passing).
+1. Reviewer identity and qualification (name, route A / B / D, a link or CV line for the qualification above) and a one-line conflict statement (route D: the owner has a stake in the build, which is why the second reviewer checks the high-energy parts independently and signs separately).
 2. The exact files reviewed: the KiCad project's git commit hash, and the electrical.md / safety_board_sim.md revisions.
-3. This checklist with every line signed or a defect written (route B: one per reviewer), plus the annotated schematic PDF or the reviewer's ERC / DRC report, so the review is visibly of the drawing and not of the prose.
+3. This checklist with every line signed or a defect written (routes B and D: one per reviewer), plus the annotated schematic PDF or the reviewer's ERC / DRC report, so the review is visibly of the drawing and not of the prose.
 4. A defect list with severity (stop / fix before build / note); every 'stop' and 'fix' closed by a commit the reviewer re-checks (a delta review of the changed sheets), or accepted in writing by the reviewer.
 5. The reviewer's own re-run of `python -m rnd.safety_board_sim` on the drawn values (its summary pasted in), or a statement of which numbers they re-derived by hand instead.
 
