@@ -1507,3 +1507,6 @@ One long push instead of half-hour runs. In order:
 
 ### 2026-11-28 D31: wedge skirt on by default
 - Owner approved the soft TPU comb skirt after seeing the render. `PIP_WEDGE_GUARD` now defaults to `skirt` (params.py); the 62 g of TPU sits inside the existing 1 kg TPU covers line (no cost change). Pinch reports the two hood wedge rows as soft-guarded, not passes: the rigid gate stays at 4, and with people near 0 rows are left without a guard. The second barrier is the roll collision trip ≤ 4.1 N·m with people near. Still to design: the skirt attachment (bond or clips).
+
+### 2026-11-28 D32: base OFF-delay timer = board timers
+- Owner: "definitely the timers for now". `PIP_BASE_TIMER=board` (two independent board-level timers cross-checked at power-up, ≈ $8, ±20 %, set 2.25 s); the certified Omron G9SA (+$593, 13-week lead) stays switchable. The BOM, M1 kit and readiness text no longer say "pending". Robot total unchanged at $6,543 (board option). D31 skirt-default checks: rnd.bom, basket, test_params and run_all pass; the full pinch run with the skirt default comes with W21b.

@@ -19,7 +19,7 @@
 
 **W15b base channel + W14b pinch parts (2026-11-28): $6,366 → $6,485 landed (+$118); with D20 $6,633 → $6,751.** The base moved off K1 for the category-1 base stop (electrical.md *Base channel*, docs/sw/base_stop.md): +$100 of lines (+$115 landed) with the `board` timer; the W14b roll front collars' 8 × M4 × 25 +$2 of lines (removed again in W16c), their PETG (net ≈ +70 g) inside the PETG bundles already bought (no extra bundle). Robot only: the M1 kit changes only in its Step-1 test kit (M1_BENCH_ARM.md).
 
-**Owner decision pending: the U20 2.0 s OFF-delay timer** (`PIP_BASE_TIMER`; the BOM uses `board`, provisionally):
+**D32 (owner, 2026-11-28): the U20 2.0 s OFF-delay timer is the board timer pair for now** (`PIP_BASE_TIMER`; the BOM uses `board`; the certified G9SA stays an option):
 
 | PIP_BASE_TIMER | U20 | Unit $ | Robot (landed) | With D20 | |
 |---|---|---|---|---|---|
@@ -33,7 +33,7 @@
 | Base channel (W15b) logic: U22 base watchdog WD_B (SN74LVC1G123, 25 ms, GPIO23), U26 DISC_B comparator + 50 ms RC (shorted Q9 → BMS discharge-off request), U27 photoMOS (AQV252G class: LATCH into U20 channel 1), R8 1 kΩ 3 W base bleeder | 1 | 8.00 | 8.00 | ESTIMATE (DigiKey-class): U22 SN74LVC1G123 ≈ $1 + C0G/RC, U26 comparator + 50 ms RC ≈ $1.5, U27 AQV252G-class photoMOS ≈ $4, R8 1 kΩ 3 W ≈ $1 |
 | Base channel (W15b) S1c/d, S2c/d: 2 more NC contact blocks per mushroom (U20's two channels start from the button itself) | 4 | 6.00 | 24.00 | ESTIMATE: snap-on NC contact block for the 22 mm mushrooms (IDEC / Schneider ZB5-class generic ≈ $4–8) |
 | Base channel (W15b) SB1 ARM / reset pushbutton becomes 2-pole (SB1b resets U20): the difference | 1 | 3.00 | 3.00 | ESTIMATE: SB1 ARM / reset pushbutton NO → 2-pole NO (SB1b resets U20), the price difference |
-| Base channel (W15b) U20 base OFF-delay timer, **pending owner decision** (PIP_BASE_TIMER=board, provisional default board; the other option's total is in cost_down.md / bom.json): two independent board-level OFF-delay timers (an SN74LVC1G123 RC timer + an independent crystal-timed counter; either one drops Q9's enable), cross-checked at every power-up, set 2.25 s, ± 20 %, **not a certified safety part** | 1 | 8.00 | 8.00 | ESTIMATE ≈ $8 for both (electrical.md: board-level dual timer); cross-check = the supervisor compares both edges at ARM (T17) |
+| Base channel (W15b) U20 base OFF-delay timer, D32 owner decision: board timers for now (PIP_BASE_TIMER=board; the G9SA option's total is in cost_down.md / bom.json): two independent board-level OFF-delay timers (an SN74LVC1G123 RC timer + an independent crystal-timed counter; either one drops Q9's enable), cross-checked at every power-up, set 2.25 s, ± 20 %, **not a certified safety part** | 1 | 8.00 | 8.00 | ESTIMATE ≈ $8 for both (electrical.md: board-level dual timer); cross-check = the supervisor compares both edges at ARM (T17) |
 
 **Waves 12–13 refresh (2026-11-28, the merged design after Astra review #3): $6,609 → $6,366 landed (−$243, D29 included); with D20 $6,633.** Where the money goes, the top-10 savings and the **D29 outcome** ($6,713 → $6,366): [cost_down.md](cost_down.md). Line changes (before → after, $ of lines, no contingency):
 
@@ -51,7 +51,7 @@
 
 Refresh lines +$89 before contingency. Step-1 test equipment (scope, probes, the 20 A CC supply, dummy banks) is tooling: it is in the M1 kit, not here.
 
-**Options (priced, not in the total; owner decision pending, CAD behind a params switch):**
+**Options (priced, not in the total; D32: board timers for now, CAD behind a params switch):**
 
 | Option | Qty | Unit $ | Line $ | Landed $ | Source | Note |
 |---|---|---|---|---|---|---|
@@ -156,7 +156,7 @@ Together −$787 → $5,756 (+$256 against the $5,500 limit); the belt-roll row 
 | Wheels & power | Base channel (W15b) logic: U22 base watchdog WD_B (SN74LVC1G123, 25 ms, GPIO23), U26 DISC_B comparator + 50 ms RC (shorted Q9 → BMS discharge-off request), U27 photoMOS (AQV252G class: LATCH into U20 channel 1), R8 1 kΩ 3 W base bleeder | 1 | 8.00 | 8 | ESTIMATE (DigiKey-class): U22 SN74LVC1G123 ≈ $1 + C0G/RC, U26 comparator + 50 ms RC ≈ $1.5, U27 AQV252G-class photoMOS ≈ $4, R8 1 kΩ 3 W ≈ $1 |
 | Wheels & power | Base channel (W15b) S1c/d, S2c/d: 2 more NC contact blocks per mushroom (U20's two channels start from the button itself) | 4 | 6.00 | 24 | ESTIMATE: snap-on NC contact block for the 22 mm mushrooms (IDEC / Schneider ZB5-class generic ≈ $4–8) |
 | Wheels & power | Base channel (W15b) SB1 ARM / reset pushbutton becomes 2-pole (SB1b resets U20): the difference | 1 | 3.00 | 3 | ESTIMATE: SB1 ARM / reset pushbutton NO → 2-pole NO (SB1b resets U20), the price difference |
-| Wheels & power | Base channel (W15b) U20 base OFF-delay timer, **pending owner decision** (PIP_BASE_TIMER=board, provisional default board; the other option's total is in cost_down.md / bom.json): two independent board-level OFF-delay timers (an SN74LVC1G123 RC timer + an independent crystal-timed counter; either one drops Q9's enable), cross-checked at every power-up, set 2.25 s, ± 20 %, **not a certified safety part** | 1 | 8.00 | 8 | ESTIMATE ≈ $8 for both (electrical.md: board-level dual timer); cross-check = the supervisor compares both edges at ARM (T17) |
+| Wheels & power | Base channel (W15b) U20 base OFF-delay timer, D32 owner decision: board timers for now (PIP_BASE_TIMER=board; the G9SA option's total is in cost_down.md / bom.json): two independent board-level OFF-delay timers (an SN74LVC1G123 RC timer + an independent crystal-timed counter; either one drops Q9's enable), cross-checked at every power-up, set 2.25 s, ± 20 %, **not a certified safety part** | 1 | 8.00 | 8 | ESTIMATE ≈ $8 for both (electrical.md: board-level dual timer); cross-check = the supervisor compares both edges at ARM (T17) |
 | Wheels & power | DC-DC 24→12 V 10 A (head servos), 24→5 V 5 A | 1 | 30.00 | 30 | ESTIMATE |
 | Wheels & power | D14 elbow-node power: 24→12 V 6 A buck (two stalled STS3215 draw 5.4 A, Astra #16) + half-duplex TTL transceiver (one per arm) | 2 | 10.00 | 20 | ESTIMATE |
 | Wheels & power | Connectors (Neon #2 F10): XT90 (pack), 5 × XT60 (2 arm detach, 3 base ↔ upper), 2 × 10-pin + 1 × 12-pin pogo blocks (USB on the arm plugs), JST-GH/VH, wire | 1 | 62.00 | 62 | ESTIMATE |

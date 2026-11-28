@@ -167,7 +167,7 @@ BASE_LOGIC = (8.0, "ESTIMATE (DigiKey-class): U22 SN74LVC1G123 ≈ $1 + C0G/RC, 
                    "R8 1 kΩ 3 W ≈ $1")
 NC_BLOCK = (6.0, "ESTIMATE: snap-on NC contact block for the 22 mm mushrooms (IDEC / Schneider ZB5-class generic ≈ $4–8)")
 SB1_2POLE = (3.0, "ESTIMATE: SB1 ARM / reset pushbutton NO → 2-pole NO (SB1b resets U20), the price difference")
-# The 2.0 s OFF-delay timer U20 (owner decision pending, electrical.md 'Cost (BOM owner)'): params-style switch PIP_BASE_TIMER,
+# The 2.0 s OFF-delay timer U20 (D32, owner 2026-11-28: board timers for now; electrical.md 'Cost (BOM owner)'): params-style switch PIP_BASE_TIMER,
 # read here because only the BOM and the M1 docs use it (no CAD or analysis does). Default "board" PROVISIONALLY.
 BASE_TIMERS = {
     "board": (8.0, "two independent board-level OFF-delay timers (an SN74LVC1G123 RC timer + an independent crystal-timed counter; "
