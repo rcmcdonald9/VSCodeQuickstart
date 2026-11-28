@@ -6,8 +6,8 @@
 
 - Bench supply: the SE-1000-24 set to 25.2 V (and the 0–30 V / 10 A CC supply for T0 and T9); a second CC supply (0–30 V) for the clamp tests.
 - **Dummy drive load:** a capacitor bank of 2.35 mF (5 × 470 µF 35 V, the M1 drivers' input capacitance) on 0.5 m of 14 AWG at the end of the real 1.5 m arm lead + F3, plus switchable resistors: 10 Ω 50 W (RH-50, pre-charge fault), 5.6 Ω and 2.2 Ω 50 W on the heatsink.
-- **Regen source:** the CC supply in series with a 1N5822-class diode into the dummy drive bank (it can push current *into* the bus, which the SE-1000 cannot sink); a 30 V / 20 A CC supply gives ≈ 500 W of simulated regen. For energy tests: a 22 mF 50 V bank charged to 30 V (9.9 J … repeat 10× in 1 s for the pulse duty).
-- 4-channel scope (≥ 100 MHz, 1 GS/s) with a ≥ 100 V differential probe, a 100 A current clamp (DC, ≥ 1 MHz) and a 30 A clamp; a function generator (3.3 V square, 250 Hz = the 500 Hz heartbeat toggle) for GPIO17; a thermocouple on the resistor plate; DMM; a stopwatch log (the scope timebase is the reference, not any software timestamp).
+- **Regen source:** the 0–30 V / 20 A CC supply in series with a **40 A Schottky** (Vishay VS-40CPQ060-N3, 60 V, both 20 A legs in parallel, on a small heatsink: ≈ 0.5 V × 30 A ≈ 15 W for 200 ms; the 1N5822 named before is a 3 A part) into the dummy drive bank (it pushes current *into* the bus, which the SE-1000 cannot sink); ≈ 500 W of simulated regen. **The 20 A supply cannot make T12's 30 A step:** the extra 10 A comes from the energy bank (T12). Energy bank: 22 mF 50 V, charged to 30 V for the dumps (9.9 J … repeat 10× in 1 s for the pulse duty) and to 32.5 V for the 30 A step, switched in through 0.33 Ω and a second VS-40CPQ060-N3.
+- 4-channel scope (≥ 100 MHz, 1 GS/s) with a ≥ 100 V differential probe, a 100 A DC current clamp (**≥ 500 kHz**: the Micsig CP2100A's 800 kHz is enough, see *Current-clamp bandwidth* below) and a 30 A clamp; a function generator (3.3 V square, 250 Hz = the 500 Hz heartbeat toggle) for GPIO17; a thermocouple on the resistor plate; DMM; a stopwatch log (the scope timebase is the reference, not any software timestamp).
 - Scope points: **TP1 VBUS at the board**, **TP2 VBUS at the dummy drive bank** (end of the arm lead), **TP3 Q1 drain** (diff probe, shortest ground), **TP4 Q1 gate**, TP5 WD_OK, TP6 Q4 gate, **TP7 Q4 drain**, TP8 AUX (opto output), TP9 FORCE, TP10 LATCH, TP11 K2_DRIVE; current: clamp leg 1, supply lead, K1 coil.
 
 ## Tests (pass / fail)
@@ -26,13 +26,36 @@
 | T9 | No self re-arm | (a) tap a mushroom for < 50 ms while armed; (b) unplug and replug the K1 coil while armed; (c) restore the heartbeat after T5; (d) supply off/on | LATCH, K1, K2 | after each: LATCH 0, K1 and K2 stay open until SB1 is pressed again | U10 CLR̄ terms |
 | T10 | Clamp threshold and hysteresis | CC supply (no SE-1000) into VBUS through 1 Ω, ramp 24 → 28 V at 1 V/s | TP4 gate on / off levels at TP1 | on 26.00 V ± 1 %, off 25.70 V ± 1 % (never on below 25.5 V) | divider / TL431 |
 | T11 | Clamp switching edge | regen source 20 A into TP2, clamp chopping | TP3 drain overshoot, TP4 gate edge, freewheel current | TP3 ≤ 48 V (simulated 28.1 V); gate edge 0.2–0.5 µs; no ringing > 5 V after 1 µs | layout loop / R_G / diode |
-| T12 | Regen at the drive | regen source at TP2: 10, 20, 30 A steps for 200 ms; then the 22 mF / 30 V bank dumped into TP2 10× in 1 s | TP1 and **TP2** max, resistor plate temperature | TP2 ≤ 27.1 V at 24 A (the 611 W regen limit; simulated 26.79 V at the lead end, 27.47 V at the elbow at 598 W); chopper 1–20 kHz, never MHz bursts on TP4; plate ≤ 60 °C after the 10 dumps; TH1 opens at 85 °C ± 5 (heat gun) | filter / on-time / regen limit (design changes 0, 5) |
+| T12 | Regen at the drive | regen source at TP2: 10 and 20 A steps for 200 ms from the 20 A supply; **30 A = the 20 A supply + the 22 mF bank at 32.5 V through 0.33 Ω** (15 → 10 A extra over 2.9 ms = 13 chopper cycles at the simulated 4.5 kHz; the drive-end voltage settles within the first cycles, so read the 30 A point in that window); then the bank at 30 V dumped into TP2 10× in 1 s | TP1 and **TP2** max, resistor plate temperature | TP2 ≤ 27.1 V at 24 A (the 611 W regen limit; simulated 26.79 V at the lead end, 27.47 V at the elbow at 598 W); chopper 1–20 kHz, never MHz bursts on TP4; plate ≤ 60 °C after the 10 dumps; TH1 opens at 85 °C ± 5 (heat gun) | filter / on-time / regen limit (design changes 0, 5) |
 | T13 | Loss of clamp power | armed, running; pull F2 (12 V / 3.3 V logic) for 1 s | K1, LATCH, TP4 | K1 opens (WD_OK has no supply), board comes back disarmed; with design change 4: 12 V UVLO opens K1 before the 3.3 V rail falls | UVLO |
 | T14 | AUX faults | (a) cut the AUX opto wire while running; (b) short the AUX opto output while stopped and press ARM | K1, FORCE, supply current | (a) stop (FORCE + K1 opens; the supply may latch: acceptable); (b) ARM refused (design change 2) | AUX logic |
 | T15 | Welded K1 (simulated) | replace K1's main contact with a 10 AWG link (coil still driven), stop the heartbeat | FORCE, supply state | design change 3: FORCE 30–40 ms after Q4 off, the SE-1000 latches off (power removed) | discrepancy monitor |
 | T16 | Supply trip | with the dummy bank and 2.2 Ω, raise the load until the SE-1000 trips (≥ 43.8 A) | board state after the trip and after re-power | board disarmed after re-power (T1); no fuse operated; wiring ≤ 60 °C | POR / wiring |
 
 Order: T0–T2 at 1 A current limit; T3–T9 on the SE-1000 with the dummy bank; T10–T12 with the CC regen source; T13–T16 last. Only then does the first drive (Step 1) get power, with the catch cradle set (electrical.md *Category-0 drop protection*).
+
+**Robot board only (base channel, §6 of safety_board_sim.md):** before the base is powered; not part of the Step-1 gate (the M1 bench has no base).
+
+| # | Test | Setup and stimulus | Measure | Pass | Fail → |
+|---|---|---|---|---|---|
+| T17 | Base SS1 delay (U20) | base channel populated, a 1.9 mF dummy bank (4 × 470 µF) + 2.2 Ω on VBUS_B; armed; stop by each mushroom (each of its channels c, d), by the arm heartbeat, by the base heartbeat (GPIO23); 20 runs | K1 AUX, Q9 enable, VBUS_B, U20 contacts | K1 opens ≤ 10 ms on a mushroom while Q9 stays on; Q9 off 1.8–2.2 s after the stop (U20 set 2.0 s; the longest software ramp is 1.6 s); heartbeats restored during the delay do not cancel it; only ARM re-enables; ARM refused without the base heartbeat | U20 setting / wiring, WD_B |
+| T18 | Base clamp leg and FORCE_B | CC supply into VBUS_B through 1 Ω (ramp 24 → 28 V at 1 V/s); then a T17 stop with the dummy bank charged | Q10 gate on / off at VBUS_B; FORCE_B width; far end of the dummy bank | on 26.00 V ± 1 %, off 25.70 V ± 1 %; FORCE_B 100 ms ± 20 % on every Q9 opening; dummy bank < 10 V ≤ 3 ms after Q9 off (simulated 1.5 ms) | base comparator / U25 |
+| T19 | Shorted base switch, soft-start, caster feed | (a) link across Q9, T17 stop; (b) ARM into the empty dummy bank; (c) 4 caster solenoids on VBUS_B, released, then a T17 stop | DISC_B, supply current, VBUS_B rise, solenoid current | (a) DISC_B 50 ms ± 20 % after the enable drops; (b) inrush ≤ 12 A, VBUS_B rises in ≈ 50 ms; (c) solenoids drop (casters lock) when Q9 opens and never before it while the Pi holds them released | LM5069 / DISC_B / caster feed |
+
+## Current-clamp bandwidth (which clamp each test needs)
+
+The sheet asked for ≥ 1 MHz on the 100 A clamp; the BOM's Micsig CP2100A is DC–800 kHz (first-order rise ≈ 0.44 µs, time constant 0.20 µs). No pass / fail line reads a current edge: edges are timed on voltages (TP3/TP4 with the 100 MHz probe). What the clamp must read is the amplitude of each current event, which the simulation's own time scales set:
+
+| Test | Current read | Fastest feature (simulation) | CP2100A reads | |
+|---|---|---|---|---|
+| T3 | pre-charge inrush (supply lead) | RC decay τ = 23 ms | 100 % | ✅ |
+| T6 | K1 coil current to drop-out | 1.6 ms decay | 100 % | ✅ |
+| T7 | forced discharge, clamp leg 1 (≈ 41 A) | RC decay τ = 1.3 ms | 100 % | ✅ |
+| T11 / T12 | clamp leg 1 on-pulses (≈ 44 A) | ≥ 50 µs flat top (min on-time; chopper 4.5 kHz) | 100 % | ✅ |
+| T11 | freewheel diode current after turn-off | L/R decay τ = 1.8 µs (NH-50 1 µH / 0.56 Ω) | 76 % | ⚠️ informational only |
+| T16 | supply lead at the SE-1000 trip | the supply's ms shutdown | 100 % | ✅ |
+
+**Verdict: 800 kHz is enough; the requirement becomes ≥ 500 kHz.** The only feature it cannot follow is the freewheel diode's µs decay in T11, which no pass line uses: the freewheel peak equals the leg current at turn-off (the resistor's inductance keeps the current continuous), and that is read on the ≥ 50 µs flat top. A CP2100B (2.5 MHz, ≈ €699) is not needed.
 
 ## Independent review checklist (schematic + layout, before the board parts are ordered)
 
@@ -50,6 +73,7 @@ A person who did not draw the board signs each line (name, date) or writes the d
 - [ ] U16 minimum on-time (50 µs, triggered by OV ↑) ORed with OV and FORCE before the UCC27524; nothing else can hold the gate on.
 - [ ] U17 discrepancy monitor: XOR(Q4 gate, AUX), RC 30 ms (> the contactor's 25 ms max operate time), into U6's trigger and U10's CLR̄.
 - [ ] U18 12 V UVLO and U19 branch-current trip (16 A, 5 s) into U10's CLR̄; F3 still in series for shorts.
+- [ ] Robot board: the base branch is fed by Q9 from VIN, **not** from VBUS after K1; Q9's enable only through U20's two OFF-delay contacts in series; U20's input on the mushrooms' own NC blocks (c, d) + the LATCH photoMOS; WD_B into U10's CLR̄ and D; caster solenoids on VBUS_B; the base clamp leg and FORCE_B on VBUS_B and nowhere else (no diode from VBUS_B to VBUS).
 - [ ] UCC27524 supply from U2 with the 12 V UVLO into the coil chain; gate resistors per MOSFET; Kelvin source not required but source returns to the film cap.
 - [ ] Freewheel Schottky across **each** NH-50 (anode at the drain, cathode at VBUS); IFSM, V_RRM ≥ 60 V.
 - [ ] Ideal diode U1/Q6 orientation (blocks VBUS → PSU), its gate supply, reverse-recovery behaviour on a fast regen edge.

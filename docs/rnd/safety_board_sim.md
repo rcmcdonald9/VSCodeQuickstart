@@ -8,22 +8,22 @@ Board VBUS (C1 4.7 mF, C2 10 µF film, SMDJ33A, 1 kΩ bleeder, 3 × NH-50 0.56 �
 
 | Board | Case | Regen peak / energy (run) | Clamp on / off at VBUS | **Highest drive** (node) | Lowest drive | Drain peak | Leg current | Energy per NH-50 | Chopper f | |
 |---|---|---|---|---|---|---|---|---|---|---|
-| M1 | proposed, envelope, high corner | 1328 W / 119 J (284 ms) | 26.26 / 25.96 V | **29.07 V** (arm E) | 25.39 V | 28.1 V | 44 A | 49 J | 3.4 kHz | ❌ |
+| M1 | proposed, envelope, high corner | 1328 W / 119 J (284 ms) | 26.26 / 25.96 V | **29.07 V** (arm E) | 25.24 V | 28.1 V | 44 A | 49 J | 3.4 kHz | ❌ |
 | M1 | v3 as drawn, envelope, high corner | 1328 W | 27.27 / 26.06 V | **simulation aborted at 0.90 ms**: the gate toggles at 32 MHz (comparator ringing on the clamp's own ESR step) | – | 32.7 V | 29 A | – | 32 MHz | ❌ |
 | M1 | v3 thresholds + filter + on-time, envelope, high corner | 1328 W / 119 J (50 ms) | 27.27 / 26.06 V | **29.89 V** (arm E) | 26.76 V | 29.2 V | 45 A | 17 J | 6.1 kHz | ❌ |
-| M1 | proposed, decel profile, high corner | 1328 W / 52 J (50 ms) | 26.26 / 25.96 V | **29.02 V** (arm E) | 25.65 V | 28.2 V | 44 A | 17 J | 6.7 kHz | ❌ |
+| M1 | proposed, decel profile, high corner | 1328 W / 52 J (50 ms) | 26.26 / 25.96 V | **29.02 V** (arm E) | 25.64 V | 28.1 V | 44 A | 17 J | 6.7 kHz | ❌ |
 | M1 | proposed, envelope ×0.25, high corner | 332 W / 30 J (50 ms) | 26.26 / 25.96 V | **26.87 V** (arm E) | 25.44 V | 27.9 V | 44 A | 6 J | 2.6 kHz | ✅ |
 | M1 | proposed, envelope ×0.45, high corner | 598 W / 53 J (50 ms) | 26.26 / 25.96 V | **27.47 V** (arm E) | 25.68 V | 28.0 V | 44 A | 11 J | 4.5 kHz | ✅ |
-| M1 | proposed, envelope ×1.25, high corner | 1660 W / 148 J (50 ms) | 26.26 / 25.96 V | **29.75 V** (arm E) | 26.56 V | 28.3 V | 44 A | 28 J | 11.4 kHz | ❌ |
+| M1 | proposed, envelope ×1.25, high corner | 1660 W / 149 J (50 ms) | 26.26 / 25.96 V | **29.75 V** (arm E) | 26.56 V | 28.3 V | 44 A | 28 J | 11.4 kHz | ❌ |
 | M1 | proposed, envelope, low corner | 1328 W / 119 J (50 ms) | 25.74 / 25.44 V | **28.64 V** (arm E) | 26.01 V | 27.6 V | 44 A | 30 J | 12.3 kHz | ❌ |
-| robot | proposed, envelope, high corner | 2767 W / 323 J (526 ms) | 26.26 / 25.96 V | **28.42 V** (left arm E) | 24.84 V | 30.5 V | 45 A | 112 J | 4.1 kHz | ❌ |
+| robot | proposed, envelope, high corner | 2767 W / 324 J (526 ms) | 26.26 / 25.96 V | **28.42 V** (left arm E) | 24.84 V | 30.6 V | 45 A | 112 J | 4.2 kHz | ❌ |
 | robot | v3 as drawn, envelope, high corner | 2767 W | 27.27 / 26.06 V | **simulation aborted at 0.87 ms**: the gate toggles at 22 MHz (comparator ringing on the clamp's own ESR step) | – | 33.3 V | 39 A | – | 22 MHz | ❌ |
-| robot | v3 thresholds + filter + on-time, envelope, high corner | 2767 W / 323 J (50 ms) | 27.27 / 26.06 V | **29.34 V** (left arm E) | 25.48 V | 31.4 V | 47 A | 39 J | 13.5 kHz | ❌ |
-| robot | proposed, decel profile, high corner | 2767 W / 142 J (50 ms) | 26.26 / 25.96 V | **28.29 V** (left arm E) | 24.87 V | 30.5 V | 45 A | 33 J | 13.1 kHz | ❌ |
+| robot | v3 thresholds + filter + on-time, envelope, high corner | 2767 W / 324 J (50 ms) | 27.27 / 26.06 V | **29.32 V** (left arm E) | 25.48 V | 31.4 V | 47 A | 39 J | 13.5 kHz | ❌ |
+| robot | proposed, decel profile, high corner | 2767 W / 142 J (50 ms) | 26.26 / 25.96 V | **28.29 V** (left arm E) | 24.87 V | 30.6 V | 45 A | 34 J | 13.1 kHz | ❌ |
 | robot | proposed, envelope ×0.25, high corner | 692 W / 81 J (50 ms) | 26.26 / 25.96 V | **26.68 V** (left arm E) | 24.87 V | 29.5 V | 45 A | 11 J | 4.5 kHz | ✅ |
-| robot | proposed, envelope ×0.45, high corner | 1245 W / 146 J (50 ms) | 26.26 / 25.96 V | **27.15 V** (left arm E) | 24.82 V | 29.8 V | 45 A | 20 J | 7.7 kHz | ✅ |
-| robot | proposed, envelope ×1.25, high corner | 3459 W / 404 J (50 ms) | 26.26 / 25.96 V | **28.91 V** (left arm E) | 24.92 V | 30.2 V | 45 A | 51 J | 19.6 kHz | ❌ |
-| robot | proposed, envelope, low corner | 2767 W / 323 J (50 ms) | 25.74 / 25.44 V | **28.01 V** (left arm E) | 24.71 V | 29.6 V | 44 A | 51 J | 19.8 kHz | ❌ |
+| robot | proposed, envelope ×0.45, high corner | 1245 W / 146 J (50 ms) | 26.26 / 25.96 V | **27.15 V** (left arm E) | 24.91 V | 29.8 V | 45 A | 20 J | 7.7 kHz | ✅ |
+| robot | proposed, envelope ×1.25, high corner | 3459 W / 405 J (50 ms) | 26.26 / 25.96 V | **28.91 V** (left arm E) | 24.92 V | 30.2 V | 45 A | 51 J | 19.7 kHz | ❌ |
+| robot | proposed, envelope, low corner | 2767 W / 324 J (50 ms) | 25.74 / 25.44 V | **28.01 V** (left arm E) | 24.71 V | 29.6 V | 44 A | 51 J | 19.8 kHz | ❌ |
 
 Nodes: T = shoulder pitch drive (end of the bench lead / lift umbilical), R = roll (after the pitch spiral and the detach plug), Y = yaw, E = elbow drive + node, W = DM-J4310. Limits: drive ≤ 28 V − 0.5 V = 27.5 V (GIM6010 12–28 V); MOSFET drain ≤ 48 V (80 % of 60 V); the lowest drive voltage is shown for the ESR dips; the off threshold at the low corner must clear a full pack (> 25.4 V); NH-50 ≤ 312 J per pulse (25 % of the 5 s overload rating).
 
@@ -32,7 +32,7 @@ Nodes: T = shoulder pitch drive (end of the bench lead / lift umbilical), R = ro
 | Bus | Regen power with every drive ≤ 27.5 V (proposed board, high corner) | Worst-case need (all joints at peak) | Rated-limit stop (×0.45) |
 |---|---|---|---|
 | M1 | **611 W** | 1328 W | 598 W ✅ |
-| robot | **1663 W** | 2767 W | 1245 W ✅ |
+| robot | **1667 W** | 2767 W | 1245 W ✅ |
 
 ## 2. Pre-charge
 
@@ -180,6 +180,80 @@ The bench supply latches off at 43.8–52.1 A; F1 (60 A) never acts on the bench
 | AUX stuck closed, then ARM | v3 + fixes | ARM refused (¬AUX on the ARM condition) | ✅ |
 | K1 main contacts welded, heartbeat stops | v3 + fixes | FORCE 53 ms after the last edge: the clamp loads the supply at 135 A → the bench supply latches off (≥ 43.8 A); on the robot the pack keeps the bus up: needs a second break (BMS discharge FET off) | ✅ |
 | 12 V gate-driver supply lost (U2 / F2) while running | v3 + fixes | 12 V UVLO → STOP: K1 opens, LATCH cleared (the bus then has no clamp: the 1 kΩ bleeder and the SMDJ33A only) | ✅ |
+| mushroom pressed while running (base channel) | v3 + fixes + base channel (robot) | K1 open at +10 ms (arm category 0); the base switch stays on through the ramp and opens at +2.000 s (U20 OFF-delay 2.0 s); FORCE_B fires | ✅ |
+| base heartbeat stops while running (arm loop alive) | v3 + fixes + base channel (robot) | WD_B low → STOP: K1 open at +33 ms, base switch off at +2.023 s (the drives' CAN timeout ramps the base meanwhile) | ✅ |
+| heartbeats return during the SS1 delay | v3 + fixes + base channel (robot) | base switch off at +2.023 s anyway, K1 open, LATCH False: only ARM re-energises U20 | ✅ |
+| ARM without the base heartbeat | v3 + fixes + base channel (robot) | LATCH False | ✅ |
+| Q9 (base switch) shorted, mushroom pressed | v3 + fixes + base channel (robot) | enable off at +2.000 s but the base bus stays: DISC_B at +2.050 s → GPIO + the BMS discharge FET off over CAN (second break, as for a welded K1); the drives are already disabled / quick-stopped | ✅ |
+
+## 6. Base channel: the category-1 base stop (W14a docs/sw/base_stop.md)
+
+**Netlist (robot board; electrical.md *Safety board*, refs U20–U26, Q9–Q10).** The base branch no longer hangs after K1. **Q9 base switch** (TI LM5069-1 hot-swap controller (latch-off) + IRFB7530 (60 V, 2 mΩ) + 1 mΩ sense: its soft-start into the drives' 1.9 mF is the base pre-charge, 35 A circuit breaker) feeds VBUS_B → F 20 A → the 4 wheel cartridges and the 4 caster-lock solenoids. Its enable runs through the two OFF-delay safety contacts of **U20, Omron G9SA-321-T075 AC/DC24 time-delay safety relay (dual-channel input, OFF-delay safety contacts settable 0.5–7.5 s, set 2.0 s)**; U20's dual-channel input is the mushrooms' third and fourth NC contact blocks (S1c/S2c, S1d/S2d) with a photoMOS driven by LATCH in channel 1. So **any e-stop or board STOP starts a fixed delay and the base keeps power during it**, and after 2.0 s U20 removes the base enable whatever the software does; only ARM (SB1's second contact on U20's reset) re-energises it. **WD_B** (a second SN74LVC1G123, 25 ms, GPIO23 toggled by `base_heartbeat_ok()`) is a board STOP term and an ARM condition: a dead base loop stops the arm (category 0) and starts the base delay. **Base clamp leg Q10** on VBUS_B (one more leg of the same parts, same window) with **FORCE_B**, a 100 ms one-shot on the enable's falling edge, and **DISC_B**, the base bus still up 50 ms after the enable dropped (a shorted Q9) → GPIO + the BMS discharge FET off over CAN, the robot's second break.
+
+### E-stop sequence (board event model at 0.1 ms + the base's speed; arm watchdog at +20 %)
+
+Transit: 31.9 kg (twin), 0.8 m/s with the casters released, ramp at 0.5 m/s² (CASTER_RELEASED_A, the limit in force); basket: +9.07 kg at 0.3 m/s, ramp at 0.3 m/s² (load mode). Arm torque off = K1 open + far drive below UVLO (§3) + 1 ms. Base power off = U20's delayed contacts open (Q9 off; FORCE_B then empties VBUS_B in 1.5 ms). Caster lock: *today* = forced at the fault latch (SW-T2); *proposed* = when the base is at ≤ 0.25 m/s or its power is off.
+
+| Case | Arm torque off | Base stopped | Base power off | Speed at power off | Distance | Casters lock, today (s @ m/s) | Casters lock, proposed | |
+|---|---|---|---|---|---|---|---|---|
+| mushroom, Pi alive: transit 0.8 m/s, casters released | 14 ms | 1.60 s | 2.00 s | 0.00 m/s | 0.64 m | 0.00 @ 0.80 | 1.10 @ 0.25 | ✅ |
+| supervisor fault (e.g. over-temperature), Pi alive: transit | 42 ms | 1.60 s | 2.03 s | 0.00 m/s | 0.64 m | 0.00 @ 0.80 | 1.10 @ 0.25 | ✅ |
+| mushroom, U20 at −10 % | 14 ms | 1.60 s | 1.80 s | 0.00 m/s | 0.64 m | 0.00 @ 0.80 | 1.10 @ 0.25 | ✅ |
+| mushroom, U20 at +10 % | 14 ms | 1.60 s | 2.20 s | 0.00 m/s | 0.64 m | 0.00 @ 0.80 | 1.10 @ 0.25 | ✅ |
+| Pi hung (both heartbeats stop), drive quick-stop written to 0.5 m/s² | 42 ms | 1.63 s | 2.03 s | 0.00 m/s | 0.66 m | 2.03 @ 0.00 | 1.13 @ 0.25 | ✅ |
+| Pi hung, drive quick-stop at its default 0.3 m/s² | 42 ms | 3.39 s | 2.03 s | 0.20 m/s | 1.16 m | 2.03 @ 0.20 | 1.86 @ 0.25 | ✅ |
+| Pi hung, default quick-stop, U20 at −10 % | 42 ms | 3.60 s | 1.83 s | 0.26 m/s | 1.21 m | 1.83 @ 0.26 | 1.83 @ 0.26 | ✅ |
+| mushroom, R2d basket carry 9.07 kg at 0.3 m/s | 14 ms | 1.00 s | 2.00 s | 0.00 m/s | 0.15 m | 0.00 @ 0.30 | 0.17 @ 0.25 | ✅ |
+| pack / supply lost (BMS trip): everything off, base coasts | — (no power) | 5.44 s | 0 s (all power) | 0.80 m/s | 2.17 m | 0.00 @ 0.80 | 0.00 @ 0.80 | ⚠️ residual |
+
+Pass: the base is stopped before U20 removes its power, or at most ≈ 0.25 m/s is left (then it coasts out with the casters locked). U20 at its low corner (1.8 s) still clears the longest software ramp (1.6 s; with the 0.3 s grace 1.9 s, which only matters if the wheels never report a stop). With the Pi hung the drives' own CAN-timeout quick-stop does the ramp: at 0.5 m/s² it stops in time; at the 0.3 m/s² default it leaves ≤ 0.26 m/s at the timer, which coasts out. A pack / supply loss is the residual case: the base coasts from full speed with the casters spring-locked (no stop function survives losing all power; the planner's speed is the only bound).
+
+### Regen on the base bus during the ramp (ngspice)
+
+With K1 open the arm's clamp and FORCE are on the other bus, so the base's braking energy goes to VIN. On the robot VIN is the pack, which absorbs it, unless the BMS has its charge FET off (pack full after docking / over-voltage, charging below 0 °C, a BMS fault): then only the always-on logic load and the drives' idle draw take it.
+
+| Pack | Logic load | Drive idle | Base clamp leg | Regen peak / energy | Highest drive voltage | Clamp energy (ramp) | Q9 off → drives < UVLO | |
+|---|---|---|---|---|---|---|---|---|
+| sinks (charge FET on) | 8 W | ×1.0 | no | 12.8 W / 10.2 J | **25.21 V** | – | idle draw only (> 30 ms) | ✅ |
+| cannot sink (charge FET off) | 8 W | ×1.0 | no | 12.8 W / 10.2 J | **25.31 V** | – | idle draw only (> 30 ms) | ✅ |
+| cannot sink (charge FET off) | 4 W | ×0.5 | no | 12.8 W / 10.2 J | **36.45 V** | – | idle draw only (> 30 ms) | ❌ |
+| cannot sink (charge FET off) | 0 W | ×0.5 | no | 12.8 W / 10.2 J | **45.17 V** | – | idle draw only (> 30 ms) | ❌ |
+| cannot sink (charge FET off) | 0 W | ×0.5 | yes | 12.8 W / 10.2 J | **26.26 V** | 7.1 J | 1.5 ms | ✅ |
+| cannot sink (charge FET off) | 8 W | ×1.0 | yes | 12.8 W / 10.2 J | **25.31 V** | 0.0 J | 1.5 ms | ✅ |
+
+**Reading:** the ramp returns only ≈ 10 J at ≤ 13 W, but with the pack unable to sink it the bus rises unless something on VIN burns it: the logic load (8 W ESTIMATE) and the drives' idle draw just cover it at the estimates, and at half of them the drives see 36–45 V. **So the base bus gets its own clamp leg** (one more NH-50 leg, same window, its own FORCE_B), which holds 26.3 V with no logic load at all and empties VBUS_B within ms when Q9 opens. It must not be the arm clamp through a diode: FORCE on K1's opening would then empty the base bus too (base_stop.md item 5).
+
+### No phase-short braking (requirement 4)
+
+A wheel drive that shorts its phases on disable or power loss brakes each GIM6010-8 with its back-EMF into its own winding (output Ke ≈ Kt 0.48 N·m/A, 2 × 0.35 Ω line to line, ESTIMATE): at 0.8 m/s ≈ 5 A per motor, **≈ 2.8 m/s²** on the unloaded robot, falling ∝ speed. Tip table (tip.md): transit tips at 3.5 m/s², the R2d basket at 1.0 m/s² (a basket carry at 0.3 m/s would see ≈ 0.8 m/s²). It stays under 0.5 m/s² only below 0.14 m/s. **Drive configuration requirement:** on disable, after the CAN-timeout quick-stop and at UVLO the drive floats its phases (coast); no brake-on-disable / short-brake mode. Verify at bench bring-up with the GIM's CAN timeout (sw.gim_discover).
+
+### Caster lock at speed (W14a open point; D18b, tip.md)
+
+**Engaging the lock itself is harmless at any speed:** the spring tips the plate onto the Ø8 rod, which on a flat floor is not moving vertically, so there is no shock in the lock and no braking force (a locked foot carries the same 5 N preload as a released one, ≈ 1 N of PTFE drag). **Travelling locked at speed is not harmless:** locked, the foot can follow the floor down but not be pushed up, so any step edge in its path (rug edge, tile lip, a cable, the far side of a dip it ratcheted into) is a rigid floor-level snag. At speed the base cannot be lifted over the 44° flank in time, so the model is a dead stop at the leading caster(s), with angular momentum about the snag line kept and the impulse taken over 3 mm of contact compliance (ESTIMATE). Limits: snag energy ≤ 25% of the tip-over energy; force per foot ≤ ½ × 880 N (two Ø8 rods yielding at a 40 mm lever, ESTIMATE; the printed guide is not rated: bench).
+
+| State | Speed | Worst heading (casters on the snag line) | COM behind the line | Energy / tip energy | Pitch reached | Max force per foot (any heading) | |
+|---|---|---|---|---|---|---|---|
+| unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.12 m/s | 0° (2) | 132 mm | 2% | 0.2° | 82 N | ✅ |
+| unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.25 m/s | 0° (2) | 132 mm | 8% | 0.7° | 354 N | ✅ |
+| unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.30 m/s | 0° (2) | 132 mm | 11% | 1.1° | 510 N | ❌ |
+| unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.50 m/s | 0° (2) | 132 mm | 31% | 3.2° | 1416 N | ❌ |
+| unloaded transit, arms parked, lift mid (31.9 kg, COM h 0.39 m) | 0.80 m/s | 0° (2) | 132 mm | 80% | 10.3° | 3624 N | ❌ |
+| unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.12 m/s | 0° (2) | 132 mm | 3% | 0.2° | 73 N | ✅ |
+| unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.25 m/s | 0° (2) | 132 mm | 11% | 0.8° | 319 N | ✅ |
+| unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.30 m/s | 0° (2) | 132 mm | 16% | 1.2° | 459 N | ❌ |
+| unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.50 m/s | 0° (2) | 132 mm | 45% | 3.5° | 1276 N | ❌ |
+| unloaded transit, arms parked, lift top (31.9 kg, COM h 0.55 m) | 0.80 m/s | 0° (2) | 132 mm | 116% **tips** | 13.5° | 3266 N | ❌ |
+
+**Verdict: the casters must not lock at 0.8 m/s.** A snag at 0.8 m/s uses 80%–116% of the tip energy (it tips with the lift at the top; the tip speed is 0.74 m/s) and puts ≈ 3.6 kN on a foot whose rods yield at ≈ 880 N. The lowest allowed speed over the states and headings is 0.28 m/s (energy 0.37, rod force 0.28 m/s), so **the forced lock waits for ≤ 0.25 m/s** ✅. The locked-travel cap itself (CASTER_LOCKED_V 0.3 m/s) is just over the rod-force limit on the diagonal heading (one foot takes the whole snag): bench-test a locked foot into a 10 mm step at 0.3 m/s before trusting it, or lower the cap to 0.25 m/s.
+
+**Requirement for the software owner (SW-T2 change, sw/safety.py `_caster_tick`):**
+
+1. A forced lock (a latched fault, a person approaching or near, a payload past the mode's limit) does **not** de-energise the solenoids while the base moves faster than **V_CASTER_LOCK = 0.25 m/s**. The casters stay released, the base ramps at the released limit (CASTER_RELEASED_A 0.5 m/s², or the fault ramp's own rate if lower), and the lock engages when the measured speed (odometry, `limit_base(v_meas=…)`; without odometry the ramp's command) is ≤ 0.25 m/s: ≈ 1.1 s and 0.58 m into a 0.8 m/s ramp. No re-seat pulse.
+2. A threshold release (≤ 0.12 m/s) is already below the limit, so it locks at once as today.
+3. Hardware still locks without software. The solenoids hang on VBUS_B, so they drop when U20 opens Q9 (≤ 2.2 s; by then even the drives' default quick-stop has the base ≤ 0.26 m/s), and at any power loss (spring-applied). The solenoid driver's gate comes from the Pi through a pull-down, so a dead Pi cannot hold the casters released past U20.
+4. Count it ("caster lock deferred") and keep `casters_locked()` False until it engages, so the planner and tip.py see the real state.
+5. Residual: a total power loss in transit spring-locks the casters at up to 0.8 m/s. Transit runs only unloaded with the arms parked and nobody near. Park the lift low for transit: a snag with the lift mid uses less of the tip energy than with it at the top (table).
+
 
 ## Design changes from this simulation
 
@@ -190,3 +264,6 @@ The bench supply latches off at 43.8–52.1 A; F1 (60 A) never acts on the bench
 4. **12 V supervision:** a 10.5 V UVLO comparator on the gate-driver supply in series with WD_OK (or U2's power-good into U8): without the 12 V the clamp and FORCE are dead while the contactor can still close.
 5. **Regen at the drive, not just at the board:** the board clamps its own node; each drive sits behind its harness resistance, so regen current lifts it above the board. The branch limits above are a requirement on the drive torque limits and the planner (≤ that regen power per branch during a controlled stop), and the bench scopes the bus **at the drive** (T8). If a joint needs more, it needs a thicker branch or a local clamp.
 6. **Branch fuse vs the in-arm 16 AWG:** a 20 A slow-blow leaves the clock-spring 16 AWG unprotected from ≈ 18 A to ≈ 35 A (it may take minutes at 22–30 A; section 4), and a 15 A fuse still leaves ≈ 20 A for up to 600 s (and is under 1.25 × the arm's 14.8 A sustained). The fuse stays 20 A for shorts; overloads get a **branch current monitor**: a Hall sensor per arm branch on the board (ACS724-30A class) → 5 s RC → comparator at 16 A → STOP (into U10's CLR̄, latched). Needed before the arm's own harness is powered (Step 2); Step 1 (≤ 13.8 A peak on a 14 AWG lead) is protected by the 20 A fuse and the supply latch as it is.
+7. **Base channel off K1 (robot board, §6; W14a base_stop.md items 1–2):** Q9 solid-state base switch (LM5069-1 + IRFB7530; its soft-start is the base pre-charge) from VIN, enabled through the OFF-delay safety contacts of U20 (Omron G9SA-321-T075, set 2.0 s), whose dual-channel input is a third and fourth NC block on each mushroom plus LATCH; WD_B (base heartbeat, 25 ms) is a STOP and ARM term; caster solenoids on VBUS_B. E-stop: arm torque off at 14 ms (mushroom) / 42 ms (hung loop), base ramped, base power off at 2.0 s ± 10 % at the latest. Not on the M1 bench (no base).
+8. **Base clamp leg + FORCE_B + DISC_B** (§6 regen): with the BMS charge FET off the base's ramp energy has nowhere to go but the logic load; at half the load / idle estimates the drives see 36–45 V. One more NH-50 leg on VBUS_B holds 26.3 V; FORCE_B empties VBUS_B when Q9 opens; DISC_B catches a shorted Q9 (→ BMS discharge FET off, the second break).
+9. **Requirements outside the board:** wheel drives float their phases on disable / CAN timeout / UVLO (a phase short brakes ≈ 2.8 m/s² at 0.8 m/s); drive quick-stop on CAN timeout ≤ 0.3 m/s² by default, written to the supervisor's base_stop_decel() (≤ 0.5) when it changes; SW-T2's forced caster lock waits for ≤ 0.25 m/s (a locked caster at 0.8 m/s turns a floor step into a snag that can tip the robot).

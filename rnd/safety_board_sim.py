@@ -24,6 +24,11 @@ same circuits run as a python ODE model (explicit, 1 µs steps, ideal switches; 
    thermal response (first-order, hot conductor), per branch and per segment.
 5. **Logic single faults** (python model of the netlist): reset, brownout / power-on, broken / stuck AUX, welded K1,
    loss of the 12 V clamp supply, watchdog tolerance.
+6. **Base channel, category-1 base stop** (W15, docs/sw/base_stop.md): the e-stop sequence with the base on its own switch
+   behind a 2.0 s OFF-delay safety relay (board event model + the base's speed: arm torque off, base ramped, base power
+   off), the base bus's regen during the ramp in ngspice (pack sinking or not, with and without a base clamp leg), the
+   phase-short braking a drive must not do, and whether the D18b caster lock may engage at speed (snag model on the twin's
+   mass and inertia).
 
 Everything here is a model of a board that does not exist yet: it decides whether the netlist is worth building and what
 the bench must measure (docs/rnd/safety_board_tests.md); it is not evidence that the built board works.
@@ -557,8 +562,18 @@ class Board:
     this study proposes (¬AUX on the ARM condition; FORCE also from a K1 that fails to open)."""
     DT = 1e-4
 
-    def __init__(self, which="M1", fix=False, wd_scale=1.0, faults=()):
+    def __init__(self, which="M1", fix=False, wd_scale=1.0, faults=(), base=False, ss1_scale=1.0):
         self.which, self.fix, self.faults = which, fix, set(faults)
+        # base channel (robot board, §6): own watchdog WD_B, U20 OFF-delay safety relay, Q9 base switch, FORCE_B
+        self.base = base
+        self.t_ss1 = el.BASE_SS1["t_set"] * ss1_scale
+        self.last_hb_b = None
+        self.u20_in = self.u20_out = False
+        self.u20_off_t = None
+        self.base_on = False
+        self.force_b_until = -1.0
+        self.disc_b_t = None
+        self.base_log = []
         self.t = 0.0
         self.wd_t = el.WATCHDOG["t_nom"] * wd_scale
         self.s_pressed = False
@@ -594,6 +609,15 @@ class Board:
         return self.logic_on and self.last_hb is not None and self.t - self.last_hb <= self.wd_t
 
     @property
+    def wd_b_ok(self):
+        return (not self.base) or (self.logic_on and self.last_hb_b is not None and self.t - self.last_hb_b <= self.wd_t)
+
+    @property
+    def vbus_b(self):
+        """Base bus present: Q9 on (soft-started), or a shorted Q9 (fault q9_short) with VIN up."""
+        return self.base_on or "q9_short" in self.faults
+
+    @property
     def pre_ok(self):
         return self.vbus >= self.vin - PRE_OK_DV
 
@@ -601,13 +625,16 @@ class Board:
     def force(self):
         return self.t < self.force_until and "no_12v" not in self.faults
 
-    def heartbeat(self):
-        self.last_hb = self.t
+    def heartbeat(self, arm=True, base=True):
+        if arm:
+            self.last_hb = self.t
+        if base:
+            self.last_hb_b = self.t
 
     def press_arm(self):
         if not self.logic_on:
             return False
-        d = (not self.s_pressed) and self.wd_ok and self.th1 and (not self.fix or not self.aux)
+        d = (not self.s_pressed) and self.wd_ok and self.wd_b_ok and self.th1 and (not self.fix or not self.aux)
         clr = self.t < self.por_until
         if d and not clr:
             self.latch = True
@@ -632,6 +659,7 @@ class Board:
         self.t += self.DT
         t = self.t
         stop = self.s_pressed or not self.wd_ok or not self.th1 or not self.logic_on or (self.fix and "no_12v" in self.faults)   # fix 4: 12 V UVLO
+        stop = stop or not self.wd_b_ok                       # base channel: a lost base heartbeat is a board STOP too
         if self.latch and (stop or self.pre_timeout or t < self.por_until or self.force):
             self.latch = False
             self.events.append((t, "LATCH cleared"))
@@ -686,14 +714,48 @@ class Board:
             i -= (self.vbus / r_cl if clamp else 0.0) + el.N_DRIVERS[self.which] * el.I_IDLE_DRIVER * self.vbus / el.V_FULL + self.vbus / el.R_BLEED
             self.vbus = max(self.vbus + self.DT * i / el.c_bus(self.which), 0.0)
         self.log.append((t, self.latch, self.k1, self.k2, self.force, self.vbus))
+        if self.base:
+            self._base_step(t)
+
+    def _base_step(self, t):
+        """U20 (G9SA): input = mushroom channels c/d closed ∧ LATCH (photoMOS in channel 1); its OFF-delay contacts feed Q9's
+        enable, so they open t_ss1 after the input drops and close again only with the input back (ARM). FORCE_B: a 100 ms
+        one-shot on the enable's falling edge. DISC_B: base bus present > 50 ms with the enable off (shorted Q9)."""
+        u_in = (not self.s_pressed) and self.latch and self.logic_on
+        if self.u20_in and not u_in:
+            self.u20_off_t = t
+            self.events.append((t, "U20 input off (SS1 delay starts)"))
+        if u_in:
+            self.u20_out, self.u20_off_t = True, None
+        elif self.u20_out and self.u20_off_t is not None and t - self.u20_off_t >= self.t_ss1:
+            self.u20_out = False
+        self.u20_in = u_in
+        on = self.u20_out
+        if self.base_on and not on:
+            self.force_b_until = t + el.T_FORCE
+            self.events.append((t, "base switch off"))
+            self.events.append((t, "FORCE_B"))
+        elif on and not self.base_on:
+            self.events.append((t, "base switch on"))
+        self.base_on = on
+        if self.vbus_b and not on:
+            if self.disc_b_t is None:
+                self.disc_b_t, self.disc_b_fired = t, False
+            if t - self.disc_b_t > 0.050 and not self.disc_b_fired:
+                self.disc_b_fired = True
+                self.events.append((t, "DISC_B"))
+        else:
+            self.disc_b_t = None
+        self.base_log.append((t, u_in, self.u20_out, self.base_on, t < self.force_b_until))
 
 
-def _run_hb(b, secs, hb=True, period=0.002):
+def _run_hb(b, secs, hb=True, period=0.002, hb_b=None):
+    hb_b = hb if hb_b is None else hb_b
     n = int(round(secs / b.DT))
     k = int(round(period / b.DT))
     for i in range(n):
-        if hb and i % k == 0:
-            b.heartbeat()
+        if (hb or hb_b) and i % k == 0:
+            b.heartbeat(arm=hb, base=hb_b)
         b.step()
 
 
@@ -790,6 +852,312 @@ def logic_scenarios():
     return res
 
 
+# ---------------------------------------------------------------------------------------------------- 6. base channel (category-1 base stop)
+G = 9.81
+CRR_HARD = 0.015            # rolling resistance of the omni wheels coasting on a hard floor (ESTIMATE; drive.py: carpet 0.05–0.10)
+SNAG_DELTA = 0.003          # m, contact compliance of a locked caster meeting a step edge: printed foot + PTFE pad + guide (ESTIMATE)
+ROD = dict(d=0.008, n=2, lever=0.040, sy=350e6)   # D18b guide rods Ø8 h6 (BOM), lever foot contact → lower guide (ESTIMATE), yield (ESTIMATE)
+F_ROD = ROD["n"] * ROD["sy"] * math.pi * ROD["d"] ** 3 / 32 / ROD["lever"]     # N horizontal at one foot that yields its two rods
+SNAG_FRAC = 0.25            # snag kinetic energy ≤ 25 % of the tip-over energy (a factor 2 on speed)
+V_CASTER_LOCK = 0.25        # m/s: proposed SW-T2 rule: a forced lock waits until the base is this slow (≤ the snag limit below, rounded down)
+T_SEQ = 6.0                 # s simulated after the trigger (long enough for a coast from 0.8 m/s)
+
+
+def _sw():
+    from sw import safety as s
+    return s
+
+
+def base_state(lift="mid", load=0.0):
+    """M, COM, inertia about the COM (MuJoCo twin via rnd.tip.Body) for a base-stop state: arms parked (TUCK)."""
+    from . import tip
+    from .twin import TUCK
+    d = tip.design_after()
+    B = tip.Body(d)
+    mj, m, dat = B.mj, B.m, B.d
+    lid = mj.mj_name2id(m, mj.mjtObj.mjOBJ_JOINT, "lift")
+    q = np.array([B.lift_mid if lift == "mid" else float(m.jnt_range[lid][1])] + [TUCK[j] for j in tip.ARM_J])
+    M, c, p = B.com(q, load)
+    I = np.zeros((3, 3))
+    for b in range(1, m.nbody):
+        R = dat.ximat[b].reshape(3, 3)
+        r = dat.xipos[b] - c
+        I += R @ np.diag(m.body_inertia[b]) @ R.T + m.body_mass[b] * (r @ r * np.eye(3) - np.outer(r, r))
+    r = p - c
+    I += load * (r @ r * np.eye(3) - np.outer(r, r))
+    return dict(M=float(M), c=c, I=I, d=d, lift=lift, load=load)
+
+
+def caster_snag(states, speeds=(0.12, 0.25, 0.30, 0.50, 0.80)):
+    """A locked D18b caster can follow the floor down but not be pushed up (tip.md), so a step edge in its path (a rug edge,
+    tile lip, cable, a dip's far side) meets a rigid foot: at speed the base cannot be lifted over it in time and the
+    caster becomes a floor-level snag. Model: a dead stop at the leading caster(s), angular momentum about the snag line
+    conserved, then the robot pitches about it. Tip energy = raising the COM over that line; force = the horizontal
+    impulse over the contact compliance SNAG_DELTA (triangular pulse), shared by the casters on the snag line."""
+    s = _sw()
+    rows = []
+    for st in states:
+        d, M, c, I = st["d"], st["M"], st["c"], st["I"]
+        h, rc = float(c[2]), d.base.caster_r
+        label = f"{'unloaded transit' if st['load'] == 0 else '%.1f kg' % st['load']}, arms parked, lift {st['lift']}"
+        for az in range(0, 360, 45):
+            u = np.array([math.cos(math.radians(az)), math.sin(math.radians(az)), 0.0])
+            lead = [math.cos(math.radians(az - ca)) for ca in (45, 135, 225, 315)]
+            xp = rc * max(lead)
+            n_snag = sum(1 for x_ in lead if x_ > max(lead) - 1e-6)
+            x = xp - float(c[:2] @ u[:2])
+            n = np.array([-u[1], u[0], 0.0])
+            Ip = float(n @ I @ n) + M * (h * h + x * x)
+            rho = math.hypot(h, x)
+            pe = M * G * (rho - h)
+            a0 = math.atan2(x, h)
+            for v in speeds:
+                L = M * v * h
+                ke = L * L / (2 * Ip)
+                theta = a0 - math.acos(min(math.cos(a0) + ke / (M * G * rho), 1.0)) if ke < pe else a0
+                J = M * v * (1 - M * h * h / Ip)
+                rows.append(dict(state=label, az=az, v=v, n_snag=n_snag, x=x, h=h, M=M, frac=ke / pe, theta_deg=math.degrees(theta), J=J,
+                                 F_each=J * v / SNAG_DELTA / n_snag, v_tip=math.sqrt(pe * 2 * Ip) / (M * h),
+                                 v_frac=math.sqrt(SNAG_FRAC * pe * 2 * Ip) / (M * h),
+                                 v_force=math.sqrt(0.5 * F_ROD * SNAG_DELTA * n_snag * Ip / (M * (Ip - M * h * h)))))
+    worst = {}
+    for r in rows:                      # per state and speed: the heading with the most tip energy, and the largest force of any heading
+        k = (r["state"], r["v"])
+        if k not in worst or r["frac"] > worst[k]["frac"]:
+            worst[k] = dict(r, F_max=worst.get(k, {}).get("F_max", 0.0))
+        worst[k]["F_max"] = max(worst[k]["F_max"], r["F_each"])
+    ok_at = lambda r: r["frac"] <= SNAG_FRAC and r["F_each"] <= 0.5 * F_ROD
+    v_frac, v_force = min(r["v_frac"] for r in rows), min(r["v_force"] for r in rows)
+    return dict(rows=sorted(worst.values(), key=lambda r: (r["state"], r["v"])), F_rod=F_ROD, delta=SNAG_DELTA, frac_lim=SNAG_FRAC,
+                v_lock=V_CASTER_LOCK, v_locked_cap=s.CASTER_LOCKED_V, v_frac=v_frac, v_force=v_force, v_allow=min(v_frac, v_force),
+                v_tip=min(r["v_tip"] for r in rows),
+                lock_ok=all(ok_at(r) for r in rows if r["v"] <= V_CASTER_LOCK + 1e-9),
+                locked_cap_ok=all(ok_at(r) for r in rows if r["v"] <= s.CASTER_LOCKED_V + 1e-9),
+                fast_ok=all(ok_at(r) for r in rows))
+
+
+def _base_profile(v0, a, t0):
+    """Regen power per kg at the base drives during a ramp from v0 at a (m/s²) starting at t0: P/M = a·v(t). No copper,
+    rolling or drivetrain loss is credited (conservative)."""
+    T = v0 / a
+    return [(0.0, 0.0), (max(t0 - 1e-4, 0.0), 0.0)] + [(t0 + T * k / 40, a * (v0 - a * T * k / 40)) for k in range(41)] + [(t0 + T + 1e-3, 0.0)]
+
+
+def base_sequence(name, v0, a_sw, M, pi_alive=True, trigger="mushroom", a_qs=None, ss1_scale=1.0, wd_scale=1.2, power_lost=False):
+    """E-stop sequence on the robot board with the base channel (event model, 0.1 ms) + the base's speed.
+    trigger: 'mushroom' (S1 pressed and held) or 'fault' (the supervisor latches; the arm heartbeat stops at once).
+    Pi alive: the supervisor ramps the base at a_sw and keeps the base heartbeat until the base is stopped (sw/safety.py 17).
+    Pi hung: both heartbeats stop; the wheel drives' CAN timeout fires and they quick-stop at a_qs while still powered.
+    Power lost: everything off at once and the base coasts (drives float their phases: requirement 4)."""
+    s = _sw()
+    b = Board("robot", fix=True, base=True, wd_scale=wd_scale, ss1_scale=ss1_scale)
+    _run_hb(b, 0.15)
+    b.press_arm()
+    _run_hb(b, 0.4)
+    assert b.k1 and b.base_on, "arming failed"
+    t0, dt = b.t, b.DT
+    k_hb = int(round(1 / el.WATCHDOG["loop_hz"] / dt))
+    v, x, latched, t_ramp0, t_stop = v0, 0.0, False, None, None
+    lock_prop = lock_today = None
+    hb_a = hb_b = True
+    t_sense = 1 / el.WATCHDOG["loop_hz"] if trigger == "mushroom" else 0.0     # ESTOP_SENSE seen on the next cycle
+    trace = []
+    if power_lost:
+        b.power(False)
+    for i in range(int(T_SEQ / dt)):
+        tt = b.t - t0
+        if trigger == "mushroom":
+            b.s_pressed = True
+        if pi_alive and not power_lost:
+            if not latched and tt >= t_sense:
+                latched, t_ramp0, hb_a = True, tt, False
+            hb_b = (not latched) or v > s.V_STOPPED
+            if i % k_hb == 0 and (hb_a or hb_b):
+                b.heartbeat(arm=hb_a, base=hb_b)
+        powered = b.base_on and not power_lost
+        if powered and pi_alive and latched:
+            a = a_sw
+        elif powered and not pi_alive:
+            a = a_qs if tt >= el.DRIVE_QS["can_timeout"] else 0.0
+        elif powered:
+            a = 0.0
+        else:
+            a = CRR_HARD * G
+        v = max(v - a * dt, 0.0)
+        x += v * dt
+        if t_stop is None and v == 0.0:
+            t_stop = tt
+        if lock_prop is None and (v <= V_CASTER_LOCK or not powered):
+            lock_prop = (tt, v)
+        if lock_today is None and (latched or not powered):
+            lock_today = (tt, v)
+        if i % 50 == 0:
+            trace.append((round(tt, 4), round(v, 4), int(b.k1), int(b.base_on)))
+        b.step()
+    ev = [(t - t0, e) for t, e in b.events if t > t0]
+    t_k1 = next((t for t, e in ev if e == "K1 open"), None)
+    t_off = next((t for t, e in ev if e == "base switch off"), None)
+    v_off = next((vv for tt, vv, _, _ in trace if t_off is not None and tt >= t_off), 0.0)
+    return dict(name=name, v0=v0, a_sw=a_sw, a_qs=a_qs, M=M, pi_alive=pi_alive, trigger=trigger, ss1_scale=ss1_scale, power_lost=power_lost,
+                t_k1_open=t_k1, t_base_off=t_off, v_at_base_off=v_off, t_ramp_start=t_ramp0, t_stopped=t_stop, x_stop=x,
+                lock_proposed=lock_prop, lock_today=lock_today, E_kin=0.5 * M * v0 ** 2)
+
+
+def base_regen(M, v0, a, t_ramp0, t_off, sink=True, clamp=True, corner="high", logic_w=None, idle_scale=1.0):
+    """ngspice: the robot's VIN (pack + BMS; or the pack with the BMS charge FET off, so it can only discharge) with the
+    always-on logic load and its capacitance → Q9 base switch (on until t_off, then only its body diode) → VBUS_B (+ the
+    base clamp leg and FORCE_B) → F 20 A + 14 AWG 0.5 m → the 4 wheel drives' 470 µF + idle draw + the ramp's regen P(t)/V."""
+    v_in = el.V_FULL
+    logic_w = el.LOGIC_MIN_W if logic_w is None else logic_w
+    seg, R, Lh, node, n_drv, _ = next(ss for bn, ss in branches("robot") if bn == "base")[0]
+    prof = _base_profile(v0, a, t_ramp0)
+    t_end = t_off + 0.03
+    rise, fall = corners("fix")[corner]
+    pk = el.pack_check(1.0, 1.0)["r_pack"]
+    L = [f"* base regen sink={sink} clamp={clamp}", MODELS.format(rz=R_Z1, vz=V_Z1, q4bv=33)]
+    L += [f"VPACK pack 0 {v_in}", f"RPACK pack vin {pk:.4f}"] if sink else [f"VPACK pack 0 {v_in + 0.2}", "DPACK pack vin DIDEAL"]
+    L += [f"CVIN vin cvx {el.C_VIN_ROBOT} IC={v_in}", "RCVIN cvx 0 20m", f"BLOG vin 0 I = {max(logic_w, 1e-6)} / max(v(vin), 10)",
+          f"VQ9C q9c 0 PWL(0 1 {t_off:.6f} 1 {t_off + 1e-5:.6f} 0)", "BQ9 vin vbb I = (v(vin) - v(vbb)) * max(min(v(q9c), 1), 0) / 2m",
+          "RQ9OFF vin vbb 1e7", "DQ9 vbb vin DIDEAL",
+          f"C2B vbb c2ba 10u IC={v_in}", f"RC2B c2ba 0 {C2_ESR}", f"RBLB vbb 0 {el.R_BLEED}",
+          f"RHB vbb hb {R:.6f}", f"LHB hb nb {max(Lh, 1e-9):.3e}", f"CDB nb cdb {n_drv * el.C_DRIVER:.4e} IC={v_in}", f"RCDB cdb 0 {ESR_DRV / n_drv:.4f}",
+          f"RQB nb 0 {el.V_FULL / (n_drv * el.I_IDLE_DRIVER * idle_scale):.2f}",
+          "VPB pb 0 PWL(" + " ".join(f"{t:.6f} {p * M:.3f}" for t, p in prof) + ")", "BRGB 0 nb I = v(pb) / max(v(nb), 5)"]
+    vec = ["v(vbb)", "v(nb)", "v(vin)", "i(VPACK)"]
+    if clamp:
+        f0 = t_off + T_AUX_LAG
+        L += ["VIRB vbb rba 0", f"RRB rba rbb {el.CLAMP['r_each']}", f"LRB rbb db {el.NH50['L']}", f"LDB db dbm {L_LEAD}", "MB dbm gb sb sb IRFB7530",
+              f"LSB sb 0 {L_LEAD}", f"LFB db fb {L_LEAD}", "VIFB fb fbb 0", "DFB fbb vbb DSCH", f"RGB drvb gb {R_GATE}",
+              "RFLB vbb vsenb 100", f"CFLB vsenb 0 {CMP_FILTER / 100:.3e}", "SCMPB v33 cmprb vsenb 0 SWHB",
+              "BTONB tchgb 0 V = 3.4 * 0.5 * (1 + tanh(20 * (v(cmpb) - 1.65)))", "DTONB tchgb tmrb DSIG", "CTONB tmrb 0 1n",
+              f"RTONB tmrb 0 {T_ON_MIN / (1e-9 * math.log(3.0 / 1.65)):.0f}", "V33 v33 0 3.3", "RPDB cmprb 0 1k", "RDLB cmprb cmpb 1k", f"CDLB cmpb 0 {T_CMP_RC / 1e3}",
+              f"VFB forceb 0 PWL(0 0 {f0:.6f} 0 {f0 + 1e-7:.7f} 3.3 {f0 + el.T_FORCE:.6f} 3.3 {f0 + el.T_FORCE + 1e-7:.7f} 0)",
+              "BDRVB drvib 0 V = 12 * 0.5 * (1 + tanh(20 * (max(max(v(cmpb), v(tmrb)), v(forceb)) - 1.65)))", f"RDRVB drvib drvb {R_DRV}",
+              f".model SWHB sw(vt={(rise + fall) / 2:.4f} vh={(rise - fall) / 2:.4f} ron=1 roff=1e9)"]
+        vec += ["i(VIRB)"]
+    L += [".options method=gear reltol=2e-3 abstol=1e-6 vntol=1e-4 itl4=100 chgtol=1e-14",
+          f".ic v(vbb)={v_in} v(nb)={v_in} v(vin)={v_in}", f".tran 5u {t_end:.4f} 0 10u uic"]
+    E_in = M * float(np.trapezoid([p for _, p in prof], [t for t, _ in prof]))
+    out = dict(sink=sink, clamp=clamp, corner=corner, M=M, v0=v0, a=a, t_off=t_off, E_regen=E_in, P_peak=M * a * v0, method="ngspice",
+               logic_w=logic_w, idle_scale=idle_scale)
+    if not NGSPICE:
+        C = n_drv * el.C_DRIVER + el.C_VIN_ROBOT
+        e_net = 0.0 if sink else max(E_in - logic_w * v0 / a / 2, 0.0)
+        vmax = math.sqrt(v_in ** 2 + 2 * e_net / C)
+        return out | dict(v_drive_max=min(vmax, rise) if clamp else vmax, v_bus_max=min(vmax, rise) if clamp else vmax,
+                          method="python estimate (no ngspice)", t_uvlo_after_off=None, e_leg=None)
+    d = run_spice("\n".join(L), vec, f"base_{int(sink)}{int(clamp)}_{logic_w:.0f}")
+    t = d["time"]
+    before, after = t <= t_off, t > t_off
+
+    def cross(vv):
+        b_ = after & (vv < el.V_UVLO)
+        return float(t[np.argmax(b_)] - t_off) if b_.any() else None
+    e_leg = float(np.trapezoid(d["i(VIRB)"] ** 2 * el.CLAMP["r_each"], t)) if clamp else 0.0
+    e_leg_ramp = float(np.trapezoid(np.where(before, d["i(VIRB)"] ** 2 * el.CLAMP["r_each"], 0.0), t)) if clamp else 0.0
+    return out | dict(v_drive_max=float(d["v(nb)"][before].max()), v_bus_max=float(d["v(vbb)"][before].max()), v_vin_max=float(d["v(vin)"][before].max()),
+                      t_uvlo_after_off=cross(d["v(nb)"]), e_leg=e_leg, e_leg_ramp=e_leg_ramp,
+                      i_into_pack=float(max(np.max(-d["i(VPACK)"]), 0.0)) if sink else 0.0, v_nb_end=float(d["v(nb)"][-1]))
+
+
+def base_logic_scenarios():
+    """The base channel's logic on the robot board (U20, WD_B, Q9, FORCE_B, DISC_B): event model, nominal tolerances."""
+    res, tag = [], "v3 + fixes + base channel (robot)"
+
+    def armed(**kw):
+        b = Board("robot", fix=True, base=True, **kw)
+        _run_hb(b, 0.15)
+        b.press_arm()
+        _run_hb(b, 0.4)
+        return b
+
+    def evs(b, t0):
+        out = {}
+        for t, e in b.events:
+            if t > t0 and e not in out:
+                out[e] = t - t0
+        return out
+    t_ss1 = el.BASE_SS1["t_set"]
+    # B1 mushroom held, Pi alive (the base heartbeat continues: the supervisor ramps the base)
+    b = armed()
+    t0 = b.t
+    b.s_pressed = True
+    _run_hb(b, t_ss1 + 0.3, hb=False, hb_b=True)
+    ev = evs(b, t0)
+    ok = "K1 open" in ev and "base switch off" in ev and abs(ev["base switch off"] - t_ss1) < 0.01 and "FORCE_B" in ev
+    res.append(dict(case="mushroom pressed while running (base channel)", variant=tag, ok=ok,
+                    detail=f"K1 open at +{1e3 * ev.get('K1 open', math.nan):.0f} ms (arm category 0); the base switch stays on through the ramp and "
+                           f"opens at +{ev.get('base switch off', math.nan):.3f} s (U20 OFF-delay {t_ss1:.1f} s); FORCE_B fires"))
+    # B2 base heartbeat lost alone (base loop dead, arm loop alive)
+    b = armed()
+    t0 = b.t
+    _run_hb(b, t_ss1 + 0.3, hb=True, hb_b=False)
+    ev = evs(b, t0)
+    res.append(dict(case="base heartbeat stops while running (arm loop alive)", variant=tag, ok="K1 open" in ev and "base switch off" in ev,
+                    detail=f"WD_B low → STOP: K1 open at +{1e3 * ev.get('K1 open', math.nan):.0f} ms, base switch off at +{ev.get('base switch off', math.nan):.3f} s "
+                           "(the drives' CAN timeout ramps the base meanwhile)"))
+    # B3 heartbeats come back during the delay: no self re-arm, still off at expiry
+    b = armed()
+    t0 = b.t
+    _run_hb(b, 0.2, hb=False)
+    _run_hb(b, t_ss1 + 0.5)
+    ev = evs(b, t0)
+    res.append(dict(case="heartbeats return during the SS1 delay", variant=tag, ok=(not b.base_on) and (not b.k1) and "base switch off" in ev,
+                    detail=f"base switch off at +{ev.get('base switch off', math.nan):.3f} s anyway, K1 open, LATCH {b.latch}: only ARM re-energises U20"))
+    # B4 ARM refused without the base heartbeat
+    b = Board("robot", fix=True, base=True)
+    _run_hb(b, 0.15, hb=True, hb_b=False)
+    r = b.press_arm()
+    res.append(dict(case="ARM without the base heartbeat", variant=tag, ok=not r, detail=f"LATCH {r}"))
+    # B5 Q9 shorted: the base bus stays after the delay → DISC_B
+    b = armed(faults=("q9_short",))
+    t0 = b.t
+    b.s_pressed = True
+    _run_hb(b, t_ss1 + 0.3, hb=False, hb_b=True)
+    ev = evs(b, t0)
+    res.append(dict(case="Q9 (base switch) shorted, mushroom pressed", variant=tag, ok="DISC_B" in ev,
+                    detail=f"enable off at +{ev.get('base switch off', math.nan):.3f} s but the base bus stays: DISC_B at +{ev.get('DISC_B', math.nan):.3f} s → GPIO + "
+                           "the BMS discharge FET off over CAN (second break, as for a welded K1); the drives are already disabled / quick-stopped"))
+    return res
+
+
+def base_section():
+    """§6: e-stop sequence with the base channel, regen on the base bus, caster lock at speed."""
+    s = _sw()
+    st_mid, st_top = base_state("mid"), base_state("top")
+    M = st_mid["M"]
+    a_tr = min(s.CASTER_RELEASED_A, s.Supervisor.base_stop_decel_for(0.0))       # transit, casters released: the limit in force
+    a_bk = min(s.A_LOAD, s.Supervisor.base_stop_decel_for(9.07))                  # basket carry: load-mode cap vs the tip table
+    v_tr, v_bk = s.BASE_V_MAX, s.CASTER_LOCKED_V
+    qs = el.DRIVE_QS
+    seqs = [base_sequence("mushroom, Pi alive: transit 0.8 m/s, casters released", v_tr, a_tr, M),
+            base_sequence("supervisor fault (e.g. over-temperature), Pi alive: transit", v_tr, a_tr, M, trigger="fault"),
+            base_sequence("mushroom, U20 at −10 %", v_tr, a_tr, M, ss1_scale=1 - el.BASE_SS1["tol"]),
+            base_sequence("mushroom, U20 at +10 %", v_tr, a_tr, M, ss1_scale=1 + el.BASE_SS1["tol"]),
+            base_sequence(f"Pi hung (both heartbeats stop), drive quick-stop written to {qs['a_max']:.1f} m/s²", v_tr, a_tr, M, pi_alive=False, trigger="fault", a_qs=qs["a_max"]),
+            base_sequence(f"Pi hung, drive quick-stop at its default {qs['a_default']:.1f} m/s²", v_tr, a_tr, M, pi_alive=False, trigger="fault", a_qs=qs["a_default"]),
+            base_sequence(f"Pi hung, default quick-stop, U20 at −10 %", v_tr, a_tr, M, pi_alive=False, trigger="fault", a_qs=qs["a_default"], ss1_scale=1 - el.BASE_SS1["tol"]),
+            base_sequence("mushroom, R2d basket carry 9.07 kg at 0.3 m/s", v_bk, a_bk, M + 9.07),
+            base_sequence("pack / supply lost (BMS trip): everything off, base coasts", v_tr, a_tr, M, pi_alive=False, trigger="fault", power_lost=True)]
+    s0 = seqs[0]
+    regen = []
+    for sink, clamp, lw, ids in ((True, False, None, 1.0), (False, False, None, 1.0), (False, False, 4.0, 0.5), (False, False, 0.0, 0.5),
+                                 (False, True, 0.0, 0.5), (False, True, None, 1.0)):
+        regen.append(base_regen(M, v_tr, a_tr, s0["t_ramp_start"], s0["t_base_off"], sink=sink, clamp=clamp, logic_w=lw, idle_scale=ids))
+    snag = caster_snag([st_mid, st_top])
+    # phase-short braking (requirement 4): back-EMF into the shorted winding, x-drive wheels at 45°
+    g = el.MOTOR_CU["GIM6010-8"]
+    r_w = st_mid["d"].base.wheel_d / 2
+    w = v_tr * math.cos(math.radians(45)) / r_w
+    i_sc = g[0] * w / (2 * g[1])                         # output Ke ≈ Kt; line-to-line R = 2 R_phase (ESTIMATE)
+    F = 4 * g[0] * i_sc / r_w * math.cos(math.radians(45))
+    a_short = min(F / M, 0.5 * G)
+    v_short_ok = 0.5 / (F / M / v_tr)
+    return dict(M=M, h_mid=float(st_mid["c"][2]), h_top=float(st_top["c"][2]), a_transit=a_tr, a_basket=a_bk, seqs=seqs, regen=regen, snag=snag,
+                phase_short=dict(a=a_short, a_lin=F / M, v_ok=v_short_ok, i=i_sc), ss1=el.BASE_SS1, qs=qs,
+                ramp_max=v_tr / a_tr, grace=s.BASE_STOP_GRACE)
+
+
 # ---------------------------------------------------------------------------------------------------- report
 def run(quick=False):
     R = dict(method="ngspice " + (NGSPICE or "") if NGSPICE else "python ODE (ngspice not installed)", date=__import__("time").strftime("%Y-%m-%d"))
@@ -816,7 +1184,8 @@ def run(quick=False):
     R["discharge"] = [discharge_sim("M1"), discharge_sim("robot")]
     R["stop_chain"] = {w: stop_chain(w, R["coil"][1], d) for w, d in zip(("M1", "robot"), R["discharge"])}
     R["fuses"] = fuse_coordination()
-    R["logic"] = logic_scenarios()
+    R["logic"] = logic_scenarios() + base_logic_scenarios()
+    R["base"] = base_section()
     for d in R["dumps"]:
         d.pop("nodes", None)
     return R
@@ -923,8 +1292,108 @@ def report_md(R):
         L.append("")
     L += ["## 5. Logic single faults (python model of the netlist)", "", "| Scenario | Netlist | Result | |", "|---|---|---|---|"]
     L += [f"| {r['case']} | {r['variant']} | {r['detail']} | {'✅' if r['ok'] else '❌'} |" for r in R["logic"]]
+    L += base_md(R["base"])
     L += ["", "## Design changes from this simulation", ""] + DESIGN_CHANGES + [""]
     return "\n".join(L)
+
+
+def base_md(B):
+    """§6 of the report: the base channel, the e-stop sequence, the base bus regen and the caster lock at speed."""
+    ss1, qs, sn, ps = B["ss1"], B["qs"], B["snag"], B["phase_short"]
+    t_min = ss1["t_set"] * (1 - ss1["tol"])
+    ok = lambda b: "✅" if b else "❌"
+    rc = next((r for r in B["regen"] if r["clamp"]), {})
+    nc = [r for r in B["regen"] if not r["sink"] and not r["clamp"]]
+    L = ["", "## 6. Base channel: the category-1 base stop (W14a docs/sw/base_stop.md)", "",
+         "**Netlist (robot board; electrical.md *Safety board*, refs U20–U26, Q9–Q10).** The base branch no longer hangs after K1. "
+         f"**Q9 base switch** ({el.BASE_SWITCH['name']}: its soft-start into the drives' 1.9 mF is the base pre-charge, {el.BASE_SWITCH['i_limit']:.0f} A circuit breaker) "
+         "feeds VBUS_B → F 20 A → the 4 wheel cartridges and the 4 caster-lock solenoids. Its enable runs through the two OFF-delay safety contacts of "
+         f"**U20, {ss1['name']}**; U20's dual-channel input is the mushrooms' third and fourth NC contact blocks (S1c/S2c, S1d/S2d) with a photoMOS "
+         "driven by LATCH in channel 1. So **any e-stop or board STOP starts a fixed delay and the base keeps power during it**, and after "
+         f"{ss1['t_set']:.1f} s U20 removes the base enable whatever the software does; only ARM (SB1's second contact on U20's reset) re-energises it. "
+         "**WD_B** (a second SN74LVC1G123, 25 ms, GPIO23 toggled by `base_heartbeat_ok()`) is a board STOP term and an ARM condition: a dead base loop "
+         "stops the arm (category 0) and starts the base delay. **Base clamp leg Q10** on VBUS_B (one more leg of the same parts, same window) with "
+         "**FORCE_B**, a 100 ms one-shot on the enable's falling edge, and **DISC_B**, the base bus still up 50 ms after the enable dropped (a shorted Q9) → "
+         "GPIO + the BMS discharge FET off over CAN, the robot's second break.", "",
+         "### E-stop sequence (board event model at 0.1 ms + the base's speed; arm watchdog at +20 %)", "",
+         f"Transit: {B['M']:.1f} kg (twin), 0.8 m/s with the casters released, ramp at {B['a_transit']:.1f} m/s² (CASTER_RELEASED_A, the limit in force); "
+         f"basket: +9.07 kg at 0.3 m/s, ramp at {B['a_basket']:.1f} m/s² (load mode). Arm torque off = K1 open + far drive below UVLO (§3) + 1 ms. "
+         f"Base power off = U20's delayed contacts open (Q9 off; FORCE_B then empties VBUS_B in {_f(rc.get('t_uvlo_after_off') and 1e3 * rc['t_uvlo_after_off'], 1, ' ms')}). "
+         f"Caster lock: *today* = forced at the fault latch (SW-T2); *proposed* = when the base is at ≤ {V_CASTER_LOCK} m/s or its power is off.", "",
+         "| Case | Arm torque off | Base stopped | Base power off | Speed at power off | Distance | Casters lock, today (s @ m/s) | Casters lock, proposed | |",
+         "|---|---|---|---|---|---|---|---|---|"]
+    t_uv = 2.8e-3 + 1e-3
+    for q in B["seqs"]:
+        arm = "— (no power)" if q["power_lost"] else f"{(q['t_k1_open'] + t_uv) * 1e3:.0f} ms"
+        stop = f"{q['t_stopped']:.2f} s" if q["t_stopped"] is not None else "coasts out"
+        good = (q["t_stopped"] is not None and q["t_stopped"] <= q["t_base_off"]) or q["v_at_base_off"] <= V_CASTER_LOCK + 0.011
+        lt, lp = q["lock_today"], q["lock_proposed"]
+        off = (f"0 s (all power)", f"{q['v0']:.2f} m/s") if q["power_lost"] else (f"{q['t_base_off']:.2f} s", f"{q['v_at_base_off']:.2f} m/s")
+        L.append(f"| {q['name']} | {arm} | {stop} | {off[0]} | {off[1]} | {q['x_stop']:.2f} m | "
+                 f"{lt[0]:.2f} @ {lt[1]:.2f} | {lp[0]:.2f} @ {lp[1]:.2f} | {'⚠️ residual' if q['power_lost'] else ok(good)} |")
+    L += ["", f"Pass: the base is stopped before U20 removes its power, or at most ≈ {V_CASTER_LOCK} m/s is left (then it coasts out with the casters locked). "
+          f"U20 at its low corner ({t_min:.1f} s) still clears the longest software ramp ({B['ramp_max']:.1f} s; with the {B['grace']:.1f} s grace "
+          f"{B['ramp_max'] + B['grace']:.1f} s, which only matters if the wheels never report a stop). With the Pi hung the drives' own CAN-timeout "
+          f"quick-stop does the ramp: at {qs['a_max']:.1f} m/s² it stops in time; at the {qs['a_default']:.1f} m/s² default it leaves ≤ 0.26 m/s at the "
+          "timer, which coasts out. A pack / supply loss is the residual case: the base coasts from full speed with the casters spring-locked "
+          "(no stop function survives losing all power; the planner's speed is the only bound).", "",
+          "### Regen on the base bus during the ramp (ngspice)", "",
+          "With K1 open the arm's clamp and FORCE are on the other bus, so the base's braking energy goes to VIN. On the robot VIN is the pack, which "
+          "absorbs it, unless the BMS has its charge FET off (pack full after docking / over-voltage, charging below 0 °C, a BMS fault): then only "
+          "the always-on logic load and the drives' idle draw take it.", "",
+          "| Pack | Logic load | Drive idle | Base clamp leg | Regen peak / energy | Highest drive voltage | Clamp energy (ramp) | Q9 off → drives < UVLO | |",
+          "|---|---|---|---|---|---|---|---|---|"]
+    for r in B["regen"]:
+        L.append(f"| {'sinks (charge FET on)' if r['sink'] else 'cannot sink (charge FET off)'} | {r['logic_w']:.0f} W | ×{r['idle_scale']:.1f} | {'yes' if r['clamp'] else 'no'} | "
+                 f"{r['P_peak']:.1f} W / {r['E_regen']:.1f} J | **{r['v_drive_max']:.2f} V** | {_f(r.get('e_leg_ramp'), 1, ' J') if r['clamp'] else '–'} | "
+                 f"{_f(r.get('t_uvlo_after_off') and r['t_uvlo_after_off'] * 1e3, 1, ' ms') if r['clamp'] else 'idle draw only (> 30 ms)'} | {ok(r['v_drive_max'] <= el.V_DRIVE_MAX - 0.5)} |")
+    L += ["", f"**Reading:** the ramp returns only ≈ {B['regen'][0]['E_regen']:.0f} J at ≤ {B['regen'][0]['P_peak']:.0f} W, but with the pack unable to sink it the bus "
+          f"rises unless something on VIN burns it: the logic load ({el.LOGIC_MIN_W:.0f} W ESTIMATE) and the drives' idle draw just cover it at the estimates, and at "
+          f"half of them the drives see {min(r['v_drive_max'] for r in nc[1:]):.0f}–{max(r['v_drive_max'] for r in nc):.0f} V. **So the base bus gets its own clamp leg** "
+          f"(one more NH-50 leg, same window, its own FORCE_B), which holds {rc.get('v_drive_max', float('nan')):.1f} V with no logic load at all and empties VBUS_B "
+          "within ms when Q9 opens. It must not be the arm clamp through a diode: FORCE on K1's opening would then empty the base bus too (base_stop.md item 5).", "",
+          "### No phase-short braking (requirement 4)", "",
+          f"A wheel drive that shorts its phases on disable or power loss brakes each GIM6010-8 with its back-EMF into its own winding (output Ke ≈ Kt "
+          f"{el.MOTOR_CU['GIM6010-8'][0]:.2f} N·m/A, 2 × {el.MOTOR_CU['GIM6010-8'][1]} Ω line to line, ESTIMATE): at 0.8 m/s ≈ {ps['i']:.0f} A per motor, "
+          f"**≈ {ps['a_lin']:.1f} m/s²** on the unloaded robot, falling ∝ speed. Tip table (tip.md): transit tips at 3.5 m/s², the R2d basket at 1.0 m/s² "
+          f"(a basket carry at 0.3 m/s would see ≈ {ps['a_lin'] * 0.3 / 0.8 * B['M'] / (B['M'] + 9.07):.1f} m/s²). It stays under 0.5 m/s² only below "
+          f"{ps['v_ok']:.2f} m/s. **Drive configuration requirement:** on disable, after the CAN-timeout quick-stop and at UVLO the drive floats its "
+          "phases (coast); no brake-on-disable / short-brake mode. Verify at bench bring-up with the GIM's CAN timeout (sw.gim_discover).", "",
+          "### Caster lock at speed (W14a open point; D18b, tip.md)", "",
+          "**Engaging the lock itself is harmless at any speed:** the spring tips the plate onto the Ø8 rod, which on a flat floor is not moving "
+          "vertically, so there is no shock in the lock and no braking force (a locked foot carries the same 5 N preload as a released one, ≈ 1 N of "
+          "PTFE drag). **Travelling locked at speed is not harmless:** locked, the foot can follow the floor down but not be pushed up, so any "
+          "step edge in its path (rug edge, tile lip, a cable, the far side of a dip it ratcheted into) is a rigid floor-level snag. At speed the base "
+          "cannot be lifted over the 44° flank in time, so the model is a dead stop at the leading caster(s), with angular momentum about the snag line kept and the "
+          f"impulse taken over {sn['delta'] * 1e3:.0f} mm of contact compliance (ESTIMATE). Limits: snag energy ≤ {sn['frac_lim']:.0%} of the tip-over energy; force per "
+          f"foot ≤ ½ × {sn['F_rod']:.0f} N (two Ø8 rods yielding at a {ROD['lever'] * 1e3:.0f} mm lever, ESTIMATE; the printed guide is not rated: bench).", "",
+          "| State | Speed | Worst heading (casters on the snag line) | COM behind the line | Energy / tip energy | Pitch reached | Max force per foot (any heading) | |",
+          "|---|---|---|---|---|---|---|---|"]
+    for r in sn["rows"]:
+        good = r["frac"] <= sn["frac_lim"] and r["F_max"] <= 0.5 * sn["F_rod"]
+        L.append(f"| {r['state']} ({r['M']:.1f} kg, COM h {r['h']:.2f} m) | {r['v']:.2f} m/s | {r['az']}° ({r['n_snag']}) | {r['x'] * 1e3:.0f} mm | "
+                 f"{r['frac']:.0%}{' **tips**' if r['frac'] >= 1 else ''} | {r['theta_deg']:.1f}° | {r['F_max']:.0f} N | {ok(good)} |")
+    fast = [r for r in sn["rows"] if abs(r["v"] - 0.8) < 1e-9]
+    L += ["", f"**Verdict: the casters must not lock at 0.8 m/s.** A snag at 0.8 m/s uses {min(r['frac'] for r in fast):.0%}–{max(r['frac'] for r in fast):.0%} of the "
+          f"tip energy (it tips with the lift at the top; the tip speed is {sn['v_tip']:.2f} m/s) and puts ≈ {max(r['F_max'] for r in fast) / 1e3:.1f} kN on a foot whose "
+          f"rods yield at ≈ {sn['F_rod']:.0f} N. The lowest allowed speed over the states and headings is {sn['v_allow']:.2f} m/s (energy {sn['v_frac']:.2f}, rod force "
+          f"{sn['v_force']:.2f} m/s), so **the forced lock waits for ≤ {V_CASTER_LOCK} m/s** {ok(sn['lock_ok'])}. The locked-travel cap itself "
+          f"(CASTER_LOCKED_V {sn['v_locked_cap']} m/s) is {'within' if sn['locked_cap_ok'] else 'just over'} the rod-force limit on the diagonal heading "
+          "(one foot takes the whole snag): bench-test a locked foot into a 10 mm step at 0.3 m/s before trusting it, or lower the cap to 0.25 m/s.", "",
+          "**Requirement for the software owner (SW-T2 change, sw/safety.py `_caster_tick`):**", "",
+          f"1. A forced lock (a latched fault, a person approaching or near, a payload past the mode's limit) does **not** de-energise the "
+          f"solenoids while the base moves faster than **V_CASTER_LOCK = {V_CASTER_LOCK} m/s**. The casters stay released, the base ramps at the "
+          f"released limit (CASTER_RELEASED_A {B['a_transit']:.1f} m/s², or the fault ramp's own rate if lower), and the lock engages when the measured "
+          f"speed (odometry, `limit_base(v_meas=…)`; without odometry the ramp's command) is ≤ {V_CASTER_LOCK} m/s: ≈ "
+          f"{(0.8 - V_CASTER_LOCK) / B['a_transit']:.1f} s and {(0.8 ** 2 - V_CASTER_LOCK ** 2) / (2 * B['a_transit']):.2f} m into a 0.8 m/s ramp. No re-seat pulse.",
+          "2. A threshold release (≤ 0.12 m/s) is already below the limit, so it locks at once as today.",
+          f"3. Hardware still locks without software. The solenoids hang on VBUS_B, so they drop when U20 opens Q9 (≤ {ss1['t_set'] * (1 + ss1['tol']):.1f} s; "
+          "by then even the drives' default quick-stop has the base ≤ 0.26 m/s), and at any power loss (spring-applied). The solenoid driver's gate "
+          "comes from the Pi through a pull-down, so a dead Pi cannot hold the casters released past U20.",
+          "4. Count it (\"caster lock deferred\") and keep `casters_locked()` False until it engages, so the planner and tip.py see the real state.",
+          "5. Residual: a total power loss in transit spring-locks the casters at up to 0.8 m/s. Transit runs only unloaded with the arms parked and "
+          "nobody near. Park the lift low for transit: a snag with the lift mid uses less of the tip energy than with it at the top (table).", ""]
+    return L
 
 
 DESIGN_CHANGES = [
@@ -951,7 +1420,50 @@ DESIGN_CHANGES = [
     "for shorts; overloads get a **branch current monitor**: a Hall sensor per arm branch on the board (ACS724-30A class) → 5 s RC → comparator at "
     "16 A → STOP (into U10's CLR̄, latched). Needed before the arm's own harness is powered (Step 2); Step 1 (≤ 13.8 A peak on a 14 AWG lead) is "
     "protected by the 20 A fuse and the supply latch as it is.",
+    "7. **Base channel off K1 (robot board, §6; W14a base_stop.md items 1–2):** Q9 solid-state base switch (LM5069-1 + IRFB7530; its soft-start is the "
+    "base pre-charge) from VIN, enabled through the OFF-delay safety contacts of U20 (Omron G9SA-321-T075, set 2.0 s), whose dual-channel input is a "
+    "third and fourth NC block on each mushroom plus LATCH; WD_B (base heartbeat, 25 ms) is a STOP and ARM term; caster solenoids on VBUS_B. "
+    "E-stop: arm torque off at 14 ms (mushroom) / 42 ms (hung loop), base ramped, base power off at 2.0 s ± 10 % at the latest. Not on the M1 bench (no base).",
+    "8. **Base clamp leg + FORCE_B + DISC_B** (§6 regen): with the BMS charge FET off the base's ramp energy has nowhere to go but the logic load; "
+    "at half the load / idle estimates the drives see 36–45 V. One more NH-50 leg on VBUS_B holds 26.3 V; FORCE_B empties VBUS_B when Q9 opens; "
+    "DISC_B catches a shorted Q9 (→ BMS discharge FET off, the second break).",
+    "9. **Requirements outside the board:** wheel drives float their phases on disable / CAN timeout / UVLO (a phase short brakes ≈ 2.8 m/s² at "
+    "0.8 m/s); drive quick-stop on CAN timeout ≤ 0.3 m/s² by default, written to the supervisor's base_stop_decel() (≤ 0.5) when it changes; "
+    "SW-T2's forced caster lock waits for ≤ 0.25 m/s (a locked caster at 0.8 m/s turns a floor step into a snag that can tip the robot).",
 ]
+
+
+CLAMP_BW = 800e3            # Hz, Micsig CP2100A (m1_kit.py CLAMP_100A)
+
+
+def _read_exp(tau, bw=CLAMP_BW):
+    """Peak a first-order probe of bandwidth bw reads on an exponential decay of time constant tau (step onset), as a fraction."""
+    tc = 1 / (2 * math.pi * bw)
+    if tau <= tc * 1.0001:
+        return tau / (tau + tc)
+    ts = tau * tc * math.log(tau / tc) / (tau - tc)
+    return tau / (tau - tc) * (math.exp(-ts / tau) - math.exp(-ts / tc))
+
+
+def _read_pulse(w, bw=CLAMP_BW):
+    """Fraction of a flat-top pulse of width w a first-order probe reaches."""
+    return 1 - math.exp(-w / (1 / (2 * math.pi * bw)))
+
+
+def clamp_bw_rows(R):
+    """Each test that uses the 100 A clamp: the fastest current feature from the simulation, and what the CP2100A reads."""
+    C = el.c_bus("M1")
+    coil = R["coil"][1]
+    d045 = next(d for d in R["dumps"] if d["which"] == "M1" and d["variant"] == "fix" and d["scale"] == 0.45 and d["corner"] == "high")
+    tau_fw = el.NH50["L"] / el.CLAMP["r_each"]
+    tau_dis = el.CLAMP["r_each"] / 3 * C
+    rows = [("T3", "pre-charge inrush (supply lead)", f"RC decay τ = {el.R_PRE * C * 1e3:.0f} ms", _read_exp(el.R_PRE * C)),
+            ("T6", "K1 coil current to drop-out", f"{coil['t_dropout'] * 1e3:.1f} ms decay", _read_exp(coil["t_dropout"])),
+            ("T7", "forced discharge, clamp leg 1 (≈ 41 A)", f"RC decay τ = {tau_dis * 1e3:.1f} ms", _read_exp(tau_dis)),
+            ("T11 / T12", "clamp leg 1 on-pulses (≈ 44 A)", f"≥ {T_ON_MIN * 1e6:.0f} µs flat top (min on-time; chopper {d045['f_sw_mean'] / 1e3:.1f} kHz)", _read_pulse(T_ON_MIN)),
+            ("T11", "freewheel diode current after turn-off", f"L/R decay τ = {tau_fw * 1e6:.1f} µs (NH-50 1 µH / 0.56 Ω)", _read_exp(tau_fw)),
+            ("T16", "supply lead at the SE-1000 trip", "the supply's ms shutdown", _read_exp(1e-3))]
+    return [(a, b, c, f"{100 * r:.0f} %", r >= 0.98) for a, b, c, r in rows]
 
 
 def tests_md(R):
@@ -965,6 +1477,14 @@ def tests_md(R):
     sc = R["stop_chain"]["M1"]
     wd = el.WATCHDOG["t_nom"]
     tau_pre = el.R_PRE * el.c_bus("M1")
+    # T12's 30 A step: the 20 A supply + the 22 mF bank through a resistor, 15 → 10 A extra over ≥ 3 ms (≥ 10 chopper cycles)
+    v_lim_tp2 = d045["drives"]["n0T"] + 0.3
+    bank = dict(C=0.022, r=0.33, i0=15.0, i1=10.0)
+    bank["v0"] = v_lim_tp2 + 0.5 + bank["i0"] * bank["r"]
+    bank["t"] = bank["r"] * bank["C"] * math.log(bank["i0"] / bank["i1"])
+    bank["cycles"] = bank["t"] * d045["f_sw_mean"]
+    clamp_rows = clamp_bw_rows(R)
+    B = R.get("base")
     L = ["# Safety board: motorless bench tests (generated by `python -m rnd.safety_board_sim`)", "",
          "**Step-1 gate (M1_READINESS exit criterion 1):** every test below passes on the built board, with no motor connected, before any drive is "
          "powered from it. Numbers come from the simulation ([safety_board_sim.md](safety_board_sim.md)) with tolerances; a reading outside the pass band "
@@ -973,10 +1493,13 @@ def tests_md(R):
          "- Bench supply: the SE-1000-24 set to 25.2 V (and the 0–30 V / 10 A CC supply for T0 and T9); a second CC supply (0–30 V) for the clamp tests.",
          "- **Dummy drive load:** a capacitor bank of 2.35 mF (5 × 470 µF 35 V, the M1 drivers' input capacitance) on 0.5 m of 14 AWG at the end of the real "
          "1.5 m arm lead + F3, plus switchable resistors: 10 Ω 50 W (RH-50, pre-charge fault), 5.6 Ω and 2.2 Ω 50 W on the heatsink.",
-         "- **Regen source:** the CC supply in series with a 1N5822-class diode into the dummy drive bank (it can push current *into* the bus, which the "
-         "SE-1000 cannot sink); a 30 V / 20 A CC supply gives ≈ 500 W of simulated regen. For energy tests: a 22 mF 50 V bank charged to 30 V (9.9 J … "
-         "repeat 10× in 1 s for the pulse duty).",
-         "- 4-channel scope (≥ 100 MHz, 1 GS/s) with a ≥ 100 V differential probe, a 100 A current clamp (DC, ≥ 1 MHz) and a 30 A clamp; a function generator "
+         "- **Regen source:** the 0–30 V / 20 A CC supply in series with a **40 A Schottky** (Vishay VS-40CPQ060-N3, 60 V, both 20 A legs in parallel, "
+         f"on a small heatsink: ≈ 0.5 V × 30 A ≈ 15 W for 200 ms; the 1N5822 named before is a 3 A part) into the dummy drive bank (it pushes current "
+         "*into* the bus, which the SE-1000 cannot sink); ≈ 500 W of simulated regen. **The 20 A supply cannot make T12's 30 A step:** the extra "
+         f"10 A comes from the energy bank (T12). Energy bank: 22 mF 50 V, charged to 30 V for the dumps (9.9 J … repeat 10× in 1 s for the pulse duty) "
+         f"and to {bank['v0']:.1f} V for the 30 A step, switched in through {bank['r']} Ω and a second VS-40CPQ060-N3.",
+         "- 4-channel scope (≥ 100 MHz, 1 GS/s) with a ≥ 100 V differential probe, a 100 A DC current clamp (**≥ 500 kHz**: the Micsig CP2100A's 800 kHz "
+         "is enough, see *Current-clamp bandwidth* below) and a 30 A clamp; a function generator "
          "(3.3 V square, 250 Hz = the 500 Hz heartbeat toggle) for GPIO17; a thermocouple on the resistor plate; DMM; a stopwatch log (the scope timebase is "
          "the reference, not any software timestamp).",
          "- Scope points: **TP1 VBUS at the board**, **TP2 VBUS at the dummy drive bank** (end of the arm lead), **TP3 Q1 drain** (diff probe, shortest ground), "
@@ -1015,7 +1538,10 @@ def tests_md(R):
          "TP4 gate on / off levels at TP1", f"on {corners('fix')['nominal'][0]:.2f} V ± 1 %, off {corners('fix')['nominal'][1]:.2f} V ± 1 % (never on below 25.5 V)", "divider / TL431"),
         ("T11", "Clamp switching edge", "regen source 20 A into TP2, clamp chopping", "TP3 drain overshoot, TP4 gate edge, freewheel current",
          f"TP3 ≤ 48 V (simulated {d_m1['v_drain_max']:.1f} V); gate edge 0.2–0.5 µs; no ringing > 5 V after 1 µs", "layout loop / R_G / diode"),
-        ("T12", "Regen at the drive", "regen source at TP2: 10, 20, 30 A steps for 200 ms; then the 22 mF / 30 V bank dumped into TP2 10× in 1 s",
+        ("T12", "Regen at the drive", "regen source at TP2: 10 and 20 A steps for 200 ms from the 20 A supply; **30 A = the 20 A supply + the 22 mF bank "
+         f"at {bank['v0']:.1f} V through {bank['r']} Ω** ({bank['i0']:.0f} → {bank['i1']:.0f} A extra over {bank['t'] * 1e3:.1f} ms = {bank['cycles']:.0f} chopper cycles at the "
+         f"simulated {d045['f_sw_mean'] / 1e3:.1f} kHz; the drive-end voltage settles within the first cycles, so read the 30 A point in that window); "
+         "then the bank at 30 V dumped into TP2 10× in 1 s",
          "TP1 and **TP2** max, resistor plate temperature", f"TP2 ≤ {d045['drives']['n0T'] + 0.3:.1f} V at {lim / 26:.0f} A (the {lim:.0f} W regen limit; simulated "
          f"{d045['drives']['n0T']:.2f} V at the lead end, {d045['v_drive_max']:.2f} V at the elbow at {d045['regen_P']:.0f} W); chopper 1–20 kHz, never MHz bursts on TP4; "
          "plate ≤ 60 °C after the 10 dumps; TH1 opens at 85 °C ± 5 (heat gun)", "filter / on-time / regen limit (design changes 0, 5)"),
@@ -1030,7 +1556,39 @@ def tests_md(R):
     ]
     L += [f"| {a} | {b} | {c} | {d} | {e} | {f} |" for a, b, c, d, e, f in T]
     L += ["", "Order: T0–T2 at 1 A current limit; T3–T9 on the SE-1000 with the dummy bank; T10–T12 with the CC regen source; T13–T16 last. "
-          "Only then does the first drive (Step 1) get power, with the catch cradle set (electrical.md *Category-0 drop protection*).", "",
+          "Only then does the first drive (Step 1) get power, with the catch cradle set (electrical.md *Category-0 drop protection*).", ""]
+    if B:
+        ss1 = el.BASE_SS1
+        lo, hi = ss1["t_set"] * (1 - ss1["tol"]), ss1["t_set"] * (1 + ss1["tol"])
+        rc = next((r for r in B["regen"] if r["clamp"]), {})
+        TB = [
+            ("T17", "Base SS1 delay (U20)", "base channel populated, a 1.9 mF dummy bank (4 × 470 µF) + 2.2 Ω on VBUS_B; armed; stop by each mushroom (each of its "
+             "channels c, d), by the arm heartbeat, by the base heartbeat (GPIO23); 20 runs", "K1 AUX, Q9 enable, VBUS_B, U20 contacts",
+             f"K1 opens ≤ 10 ms on a mushroom while Q9 stays on; Q9 off {lo:.1f}–{hi:.1f} s after the stop (U20 set {ss1['t_set']:.1f} s; the longest software ramp is "
+             f"{B['ramp_max']:.1f} s); heartbeats restored during the delay do not cancel it; only ARM re-enables; ARM refused without the base heartbeat",
+             "U20 setting / wiring, WD_B"),
+            ("T18", "Base clamp leg and FORCE_B", "CC supply into VBUS_B through 1 Ω (ramp 24 → 28 V at 1 V/s); then a T17 stop with the dummy bank charged",
+             "Q10 gate on / off at VBUS_B; FORCE_B width; far end of the dummy bank", f"on 26.00 V ± 1 %, off 25.70 V ± 1 %; FORCE_B 100 ms ± 20 % on every Q9 "
+             f"opening; dummy bank < 10 V ≤ {max(3.0, 2 * 1e3 * (rc.get('t_uvlo_after_off') or 0.0015)):.0f} ms after Q9 off (simulated "
+             f"{_f(rc.get('t_uvlo_after_off') and 1e3 * rc['t_uvlo_after_off'], 1, ' ms')})", "base comparator / U25"),
+            ("T19", "Shorted base switch, soft-start, caster feed", "(a) link across Q9, T17 stop; (b) ARM into the empty dummy bank; (c) 4 caster "
+             "solenoids on VBUS_B, released, then a T17 stop", "DISC_B, supply current, VBUS_B rise, solenoid current",
+             f"(a) DISC_B 50 ms ± 20 % after the enable drops; (b) inrush ≤ {el.BASE_SWITCH['i_limit'] / 3:.0f} A, VBUS_B rises in ≈ {el.BASE_SWITCH['t_soft'] * 1e3:.0f} ms; "
+             "(c) solenoids drop (casters lock) when Q9 opens and never before it while the Pi holds them released", "LM5069 / DISC_B / caster feed"),
+        ]
+        L += ["**Robot board only (base channel, §6 of safety_board_sim.md):** before the base is powered; not part of the Step-1 gate (the M1 bench has no base).", "",
+              "| # | Test | Setup and stimulus | Measure | Pass | Fail → |", "|---|---|---|---|---|---|"]
+        L += [f"| {a} | {b} | {c} | {d} | {e} | {f} |" for a, b, c, d, e, f in TB]
+        L.append("")
+    L += ["## Current-clamp bandwidth (which clamp each test needs)", "",
+          "The sheet asked for ≥ 1 MHz on the 100 A clamp; the BOM's Micsig CP2100A is DC–800 kHz (first-order rise ≈ 0.44 µs, time constant "
+          f"{1e6 / (2 * math.pi * CLAMP_BW):.2f} µs). No pass / fail line reads a current edge: edges are timed on voltages (TP3/TP4 with the 100 MHz probe). "
+          "What the clamp must read is the amplitude of each current event, which the simulation's own time scales set:", "",
+          "| Test | Current read | Fastest feature (simulation) | CP2100A reads | |", "|---|---|---|---|---|"]
+    L += [f"| {a} | {b} | {c} | {d} | {'✅' if ok else '⚠️ informational only'} |" for a, b, c, d, ok in clamp_rows]
+    L += ["", "**Verdict: 800 kHz is enough; the requirement becomes ≥ 500 kHz.** The only feature it cannot follow is the freewheel diode's µs decay "
+          "in T11, which no pass line uses: the freewheel peak equals the leg current at turn-off (the resistor's inductance keeps the current continuous), "
+          "and that is read on the ≥ 50 µs flat top. A CP2100B (2.5 MHz, ≈ €699) is not needed.", "",
           "## Independent review checklist (schematic + layout, before the board parts are ordered)", "",
           "A person who did not draw the board signs each line (name, date) or writes the defect. The reviewer gets the KiCad project, this file, "
           "safety_board_sim.md and electrical.md's netlist; nothing is checked against a description of the board.", "",
@@ -1045,6 +1603,9 @@ def tests_md(R):
           "- [ ] U16 minimum on-time (50 µs, triggered by OV ↑) ORed with OV and FORCE before the UCC27524; nothing else can hold the gate on.",
           "- [ ] U17 discrepancy monitor: XOR(Q4 gate, AUX), RC 30 ms (> the contactor's 25 ms max operate time), into U6's trigger and U10's CLR̄.",
           "- [ ] U18 12 V UVLO and U19 branch-current trip (16 A, 5 s) into U10's CLR̄; F3 still in series for shorts.",
+          "- [ ] Robot board: the base branch is fed by Q9 from VIN, **not** from VBUS after K1; Q9's enable only through U20's two OFF-delay contacts in series; "
+          "U20's input on the mushrooms' own NC blocks (c, d) + the LATCH photoMOS; WD_B into U10's CLR̄ and D; caster solenoids on VBUS_B; the base clamp leg and "
+          "FORCE_B on VBUS_B and nowhere else (no diode from VBUS_B to VBUS).",
           "- [ ] UCC27524 supply from U2 with the 12 V UVLO into the coil chain; gate resistors per MOSFET; Kelvin source not required but source returns to the film cap.",
           "- [ ] Freewheel Schottky across **each** NH-50 (anode at the drain, cathode at VBUS); IFSM, V_RRM ≥ 60 V.",
           "- [ ] Ideal diode U1/Q6 orientation (blocks VBUS → PSU), its gate supply, reverse-recovery behaviour on a fast regen edge.",

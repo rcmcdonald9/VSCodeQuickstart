@@ -168,6 +168,26 @@ R_PATH = 0.010                       # BMS MOSFETs + XT90 + 10 AWG pack leads (�
 # Software pack-current budget (the supervisor sums the drives' estimated bus currents and scales the torque limits):
 SW_PACK = dict(i_peak=70.0, i_avg=28.0, t_avg=30.0, t_cell_max=60.0)   # A instantaneous; A over a 30 s rolling mean; °C cell (BMS NTC)
 V_UVLO = 10.0                        # driver under-voltage lockout: ESTIMATE (GIM range starts at 12 V)
+# ---- Base channel for the category-1 base stop (W14a docs/sw/base_stop.md; W15 electrical, rnd/safety_board_sim.py §6).
+# The base no longer hangs after K1: it has its own solid-state switch from VIN whose enable runs through the OFF-delay
+# safety contacts of a rated time-delay safety relay (the hardware SS1 ceiling). Any board STOP or e-stop starts the delay;
+# the base ramps (supervisor, or the drives' own CAN-timeout quick-stop) while its power stays on; the relay then removes
+# base power whatever the software does. Never a capacitor hold-up (electrical.md *Stop category*).
+BASE_SS1 = dict(t_set=2.0, tol=0.10, name="Omron G9SA-321-T075 AC/DC24 time-delay safety relay (dual-channel input, OFF-delay safety contacts "
+                                           "settable 0.5–7.5 s, set 2.0 s)", price=501.38,
+                src="DigiKey $501.38 (13-week lead), RS UK £344.61 ex VAT (2026-11-28 search); OFF-delay accuracy not found in the listings: "
+                    "± 10 % ESTIMATE, board test T17 measures it")
+BASE_SS1_ALT = dict(name="board-level dual timer (SN74LVC1G123 RC + an independent crystal-timed counter, either one drops the enable), set 2.25 s", tol=0.20,
+                    price=8.0, src="ESTIMATE (DigiKey-class); not a rated part: the cost-down option the owner may trade the G9SA for")
+BASE_SWITCH = dict(name="TI LM5069-1 hot-swap controller (latch-off) + IRFB7530 (60 V, 2 mΩ) + 1 mΩ sense", i_limit=35.0, t_soft=0.050,
+                   price=9.0, src="ESTIMATE (DigiKey-class: LM5069 ≈ $4, IRFB7530 ≈ $3, shunt + passives ≈ $2)")
+BASE_CLAMP_LEG = dict(name="1 × IRFB7530 + 1 × Vishay NH-50 0.56 Ω ∥ VS-40CPQ060-N3, TLV3202 (on 26.0 / off 25.7 V) + 2 µs filter + 50 µs "
+                           "min on-time + UCC27517 gate driver; FORCE_B 100 ms on the base switch's opening edge", price=48.0,
+                      src="ESTIMATE: NH-50 $30 (clamp line) + IRFB7530 $3 + VS-40CPQ060 $1.9 + TLV3202 / LVC1G123 / UCC27517 / passives ≈ $13")
+DRIVE_QS = dict(a_default=0.3, a_max=0.5, can_timeout=float(_BU.get("can_timeout_s", 0.030)))   # wheel-drive quick-stop (m/s² at the rim): default / never above
+LOGIC_MIN_W = 8.0                    # W, the always-on logic branch at its lowest (Pi 5 idle ≈ 3, lidar ≈ 2, screen ≈ 2, nodes ≈ 1): ESTIMATE
+C_VIN_ROBOT = 1.0e-3                 # F on the robot's VIN side (BMS output, DC-DC inputs): ESTIMATE
+CASTER_SOLENOID_A = 0.4              # A each, JF-1039 24 V pull solenoid (BOM line), 4 on the base channel while released
 
 
 def _arm_inertias(d=BASELINE, payload_hand=PAYLOAD_20LB / 2):
@@ -422,6 +442,14 @@ def safety_board_lines():
         "Watchdog:                   GPIO17 heartbeat ─ U5a 74LVC1G17 ─ U5 SN74LVC1G123 B (rising edge), Ā = GND, CLR̄ = 3V3 (R4·C3) → WD_OK",
         "Monitored reset:            SB1 ARM (NO) → U10 SN74LVC1G74 D-FF set only if S1b, S2b closed ∧ WD_OK; CLR̄ low on any STOP, FORCE (any K1 opening), TH1, PRE_TIMEOUT, power-on (R9·C9)",
         "Feedback to the Pi:         K1 aux (NO) ─ U12 PC817 ─ AUX (logic, high = closed) + GPIO27 (AUX_OK);  S1b/S2b ch2 ─ U13 PC817 ─ GPIO22 (ESTOP_SENSE)",
+        "",
+        "Base channel (robot board, W15; not populated on the M1 bench):",
+        "VIN ─ Q9 IRFB7530 (U21 LM5069-1: soft-start, 35 A breaker) ─ VBUS_B ─┬─ F 20A ─► 4 wheel cartridges;  4 caster solenoids (Q11–Q14, gates from the Pi, pull-downs)",
+        "                                                                    ├─ R7 0.56Ω NH-50 ∥ D7 VS-40CPQ060 ── Q10 IRFB7530 ── GND   (U23 TLV3202 on 26.0 / off 25.7 V + 2µs RC ∨ U24 50µs ∨ FORCE_B → U22b UCC27517)",
+        "                                                                    └─ R8 1kΩ bleeder; divider → U26 DISC_B (VBUS_B up ∧ ¬EN for > 50 ms → GPIO24 + BMS discharge-off request)",
+        "U21 EN ← +24V_L ─ U20 delayed contact 1 ─ U20 delayed contact 2   (U20 G9SA-321-T075, OFF-delay 2.0 s; ch1 = S1c ─ S2c ─ U27 photoMOS (LATCH), ch2 = S1d ─ S2d; reset = SB1b)",
+        "Base watchdog:              GPIO23 base heartbeat ─ U22 SN74LVC1G123 (25 ms) → WD_B: STOP term on U10 CLR̄ and a term of U10 D (ARM)",
+        "FORCE_B:                    U25 SN74LVC1G123 100 ms one-shot on U21 EN falling → Q10 gate",
         "```"]
     nets = [
         ("F1", MAIN_FUSE["name"], "PSU+ / pack+ → F1_OUT", "sized for the robot pack (≥ 1.25 × 37 A sustained, carries the 74 A peak, backs up the BMS short-circuit trip); "
@@ -464,6 +492,19 @@ def safety_board_lines():
         ("U2, U3", "24 → 12 V 1 A buck + 3.3 V LDO (e.g. MCP1703A-3302)", "F2 (1 A) from VIN", "logic supply of its own (the watchdog must not share the Pi's rail); nothing else may hang on it"),
         ("U12, U13", "2 × PC817 opto", "K1 aux → AUX (to U6 / U8 / U11) and GPIO27 (AUX_OK); S1b/S2b → GPIO22 (ESTOP_SENSE)", "sw/bringup.py `--estop gpiod:gpiochip0:17:27`; 22 for the button sense"),
         ("F3", f"{BENCH_FUSE} A ATO", "VBUS → arm lead (14 AWG)", "arm branch (sustained ≈ 15 A, Bench supply above)"),
+        ("U20", BASE_SS1["name"], "ch1: S1c/S2c + U27 photoMOS (LATCH); ch2: S1d/S2d; reset SB1b; 2 OFF-delay N/O in series → U21 EN",
+         f"hardware SS1 ceiling: base power off {BASE_SS1['t_set']:.1f} s ± {BASE_SS1['tol']:.0%} (ESTIMATE until T17) after any e-stop or board STOP; a rated relay, not a capacitor hold-up"),
+        ("S1c/d, S2c/d", "2 more NC contact blocks per mushroom", "U20 channels 1 and 2", "the base delay starts from the button itself, not from the logic"),
+        ("U27", "photoMOS relay (AQV252G class, 60 V 2.5 A)", "in U20 ch1, LED driven by LATCH", "any board STOP (watchdog, WD_B, TH1, UV12, OC, DISC, POR) also starts the base delay"),
+        ("Q9, U21", BASE_SWITCH["name"], "VIN → VBUS_B; EN through U20", f"base switch: soft-start {BASE_SWITCH['t_soft'] * 1e3:.0f} ms into the drives' 1.9 mF (the base pre-charge), "
+         f"{BASE_SWITCH['i_limit']:.0f} A circuit breaker (latch-off); its body diode returns base regen to VIN after it opens"),
+        ("U22", "SN74LVC1G123, 25 ms (as U5)", "B = GPIO23 base heartbeat (`base_heartbeat_ok()`), Q = WD_B", "base watchdog: WD_B low = STOP; ARM needs it"),
+        ("Q10, R7, D7, U23, U24, U22b", BASE_CLAMP_LEG["name"], "VBUS_B → R7 → Q10 → GND", "base clamp leg: holds VBUS_B ≤ 26.3 V when the pack cannot sink the ramp's regen (safety_board_sim.md §6)"),
+        ("U25", "SN74LVC1G123 one-shot, 100 ms", "Ā = U21 EN (falling)", "FORCE_B: empties VBUS_B in ≈ 1.5 ms once the base switch opens"),
+        ("U26", "comparator + RC (50 ms)", "VBUS_B divider ∧ ¬EN → DISC_B (GPIO24)", "shorted Q9: the Pi sends the BMS discharge-off request (the robot's second break, as for a welded K1)"),
+        ("R8", "1 kΩ 3 W", "VBUS_B → GND", "base bus bleeder"),
+        ("Q11–Q14", "4 × logic-level MOSFET + flyback diode (BOM line 'D18b solenoid drivers')", "VBUS_B → caster solenoids; gates from the Pi with 100 kΩ pull-downs",
+         "caster release only while VBUS_B is up: U20 opening (≤ 2.2 s) or any power loss locks the casters"),
     ]
     seq = [
         ("OFF / STOPPED", "K1 open, K2 open, LATCH 0 (also after power-up: R9·C9)", "after any stop: FORCE fires once for 100 ms, then the bleeder holds VBUS near 0 V"),
@@ -472,6 +513,8 @@ def safety_board_lines():
         ("RUN", "PRE_OK → Q4 on → K1 closes; aux closes → K2 drops out; Q4 now holds on AUX", "drives powered; a bus sag cannot open K1 (PRE_OK has left the hold term), the bring-up enables the drives only after this"),
         ("STOP (any)", "mushroom, WD_OK low, TH1, PRE_TIMEOUT, the Pi (stops the heartbeat), or K1 dropping out for any other reason (coil dip, shock)",
          "Q4 off → K1 opens (≤ 10 ms) → aux falls → FORCE 100 ms (bus < UVLO in ≈ 2 ms) **and LATCH cleared** → K2 stays open; only SB1 re-arms"),
+        ("BASE RAMP (robot)", "any STOP above, or WD_B low (the base loop died)", f"U20's input drops: the base keeps power while the supervisor (or the drives' "
+         f"quick-stop) ramps it; after {BASE_SS1['t_set']:.1f} s U20 opens Q9's enable → FORCE_B → the casters lock; only SB1 re-arms (U20 reset)"),
     ]
     L = ["### Safety board (Fable M2; Neon review #2 finding 1 fixes)",
          "Block diagram and netlist of the mandatory bench board. It is a design to be built and reviewed on perfboard / a 2-layer board, not a certified "
@@ -489,7 +532,48 @@ def safety_board_lines():
          "reaches VIN − 3 V and K1 closes; a 10 Ω RH-50 dummy load across VBUS holds it under VIN − 3 V and trips PRE_TIMEOUT; heartbeat stopped → K1 opens within "
          f"{t_wd * 1.2 * 1e3:.0f} ms; FORCE pulse seen on the scope at every opening and never during pre-charge; **K1 coil interrupted by hand while armed → LATCH clears and "
          "K2 stays open** (no self re-arm); supply switched off and on → board comes up disarmed; clamp at 26.0 V from a lab supply through 1 Ω with the drain voltage "
-         "on the scope (≤ 48 V). **The full procedure with pass/fail numbers is [safety_board_tests.md](safety_board_tests.md)** (Step-1 gate).", ""] + sim_lines()
+         "on the scope (≤ 48 V). **The full procedure with pass/fail numbers is [safety_board_tests.md](safety_board_tests.md)** (Step-1 gate).", ""] + base_channel_lines() + sim_lines()
+    return L
+
+
+def base_channel_lines():
+    """W15: the base's own power channel for the category-1 base stop (docs/sw/base_stop.md), with the sequence numbers
+    from rnd/safety_board_sim.py §6 (cached JSON)."""
+    import json
+    p = DOCS / "safety_board_sim.json"
+    B = json.loads(p.read_text()).get("base") if p.exists() else None
+    S, qs = BASE_SS1, DRIVE_QS
+    L = ["### Base channel: category-1 base stop (W15; docs/sw/base_stop.md hardware items 1–6)",
+         "The base used to hang after K1, so every e-stop cut it at once (and a drive that shorts its phases would then brake it hard enough to tip). "
+         "Now (netlist above, *Base channel*):", "",
+         "| base_stop.md item | Hardware / drive answer | |", "|---|---|---|",
+         f"| 1. separate base power / enable channel | Q9 solid-state base switch from VIN ({BASE_SWITCH['name']}), not on K1; own watchdog WD_B on GPIO23 "
+         "(`base_heartbeat_ok()`), a STOP and ARM term | ✅ |",
+         f"| 2. hardware-timed SS1 ceiling | Q9's enable only through U20's OFF-delay safety contacts ({S['name']}); its input is the mushrooms' own NC blocks + LATCH, "
+         f"so any e-stop or board STOP removes base power {S['t_set']:.1f} s ± {S['tol']:.0%} later whatever the software does ({S['src']}) | ✅ |",
+         f"| 3. drive-side ramp when the software is gone | **drive configuration requirement:** quick-stop on CAN timeout ({qs['can_timeout'] * 1e3:.0f} ms) and on disable at "
+         f"≤ {qs['a_default']} m/s² at the rim by default; the supervisor writes base_stop_decel() (≤ {qs['a_max']} m/s²) to the drives whenever it changes. "
+         "A drive that can only disable or short its phases fails; verify at bench bring-up (sw.gim_discover) | ⚠️ unverified on the GIM |",
+         "| 4. no phase-short braking | **drive configuration requirement:** phases float on disable, after the quick-stop and at UVLO (a short brakes ≈ 2.8 m/s² "
+         "at 0.8 m/s: safety_board_sim.md §6) | ⚠️ unverified |",
+         "| 5. regen on the base branch | the ramp returns ≈ 10 J at ≤ 13 W into VIN (the pack); with the BMS charge FET off a base clamp leg Q10 (same parts and window as "
+         "the arm clamp) holds VBUS_B ≤ 26.3 V; never a diode into the arm clamp (FORCE would empty the base bus) | ✅ |",
+         "| 6. odometry into the supervisor | software (sw/); the board only needs the base heartbeat | – |",
+         "", f"**Cost (BOM owner):** U20 ${S['price']:.0f} is most of it; the board-level alternative ({BASE_SS1_ALT['name']}, ≈ ${BASE_SS1_ALT['price']:.0f}, ± 20 %, not rated) "
+         "is the owner's trade. The caster solenoids (4 × 0.4 A when released) move to VBUS_B; the base branch's fuse stays 20 A.", ""]
+    if B:
+        L += ["| E-stop sequence (safety_board_sim.md §6) | Arm torque off | Base stopped | Base power off | Speed left |", "|---|---|---|---|---|"]
+        for q in B["seqs"]:
+            if q["power_lost"]:
+                continue
+            L.append(f"| {q['name']} | {(q['t_k1_open'] + 0.0038) * 1e3:.0f} ms | {'%.2f s' % q['t_stopped'] if q['t_stopped'] is not None else 'coasts out'} | "
+                     f"{q['t_base_off']:.2f} s | {q['v_at_base_off']:.2f} m/s |")
+        sn = B["snag"]
+        L += ["", f"**Caster lock (W14a open point):** engaging the D18b lock is harmless at any speed, but travelling locked at 0.8 m/s turns any floor step "
+              f"into a floor-level snag: {max(r['frac'] for r in sn['rows'] if r['v'] == 0.8):.0%} of the tip energy with the lift up (it tips), ≈ "
+              f"{max(r['F_max'] for r in sn['rows'] if r['v'] == 0.8) / 1e3:.1f} kN on a foot (rods ≈ {sn['F_rod']:.0f} N). Requirement for sw/ (SW-T2): a forced lock waits "
+              f"until the base is ≤ {sn['v_lock']} m/s (limit {sn['v_allow']:.2f} m/s); the hardware locks at U20's opening and at power loss anyway "
+              "(safety_board_sim.md §6).", ""]
     return L
 
 
@@ -660,7 +744,7 @@ def a5v2_section(d=BASELINE):
           f"- **Mechanical catch:** an adjustable padded cradle (EVA foam on a bolted aluminium bar) set ≤ {dc_m1['gap'] * 1000:.0f} mm under the forearm or hand in every pose under test, "
           f"or a Dyneema tether from the stand with ≤ {dc_m1['gap'] * 1000:.0f} mm slack: drop energy ≤ {dc_m1['E_catch']:.1f} J. Rated ≥ {dc_m1['wll']:.0f} N (10 × the arm's weight).",
           "- Payload tray under the gripper; belt guards on; the stand bolted to the bench; operator outside the whole fall envelope (remote button).",
-          "- On the robot (later): SS1 (controlled stop, then torque off) with a rated delay relay; the lift pawl holds the torso.", ""]
+          "- On the robot: the arms stay category 0 and the base is SS1 through its own channel (*Base channel* above); the lift pawl holds the torso.", ""]
     return L
 
 
@@ -710,11 +794,14 @@ def report(d=BASELINE):
          "## Power distribution (24 V class, 6S Li-ion)", "",
          "```",
          "6S2P 10 Ah pack ─ JK-B2A8S20P BMS (200 A) ─ XT90 ─ MAIN FUSE 60 A ─┬─ LOGIC branch (always on): 5 V 5 A DC-DC → Pi 5, cameras, lidar, CAN/TTL adapters",
+         "                                                         ├─ BASE CHANNEL (W15, NOT on the contactor): Q9 base switch (LM5069-1 + IRFB7530, soft-start = base pre-charge) enabled through U20's OFF-delay safety contacts (G9SA-321-T075, 2.0 s)",
+         "                                                         │    └─ VBUS_B ─┬─ base clamp leg Q10 (1 × NH-50, 26.0 / 25.7 V) + FORCE_B on the switch's opening edge",
+         "                                                         │               ├─ F 20 A → base: 4 wheel cartridges (CAN bus A; stop category 1: ramp, then U20 removes power)",
+         "                                                         │               └─ 4 × caster-lock solenoids (released only while powered: U20 opening locks them)",
          "                                                         └─ E-STOP CONTACTOR (ALEV100, DC-rated; coil: mushroom NC ×2 in series → watchdog MOSFET; aux contact → feedback + discharge)",
          "                                                            └─ PRE-CHARGE branch around it: relay K_PRE (opens on every stop) + 3.3 Ω RH-50 (A5 v2: switched, never permanent)",
          "                                                              ├─ REGEN CLAMP / BUS DISCHARGE on the motor bus: TLV3202 comparator on 26.0 / off 25.7 V ± 1 %, 2 µs filter, 50 µs min on-time → 3 × IRFB7530 → 3 × 0.56 Ω NH-50, each with a freewheel Schottky (Neon #2 F1); forced on by a 100 ms one-shot on the contactor's opening edge (never while K_PRE is closed)",
          "                                                              ├─ 12 V 10 A DC-DC → STS3215 servos (A5: now downstream of the contactor)",
-         "                                                              ├─ F 20 A → base: 4 wheel cartridges (CAN bus A)",
          "                                                              ├─ F 10 A → lift cartridge + pawl solenoid (CAN bus A)",
          "                                                              ├─ F 20 A → left arm via detach plug (CAN bus B, TTL bus 1)",
          "                                                              └─ F 20 A → right arm via detach plug (CAN bus C, TTL bus 2)",
@@ -735,11 +822,14 @@ def report(d=BASELINE):
           "## E-stop behaviour (A5, loop 40: external review finding 6)",
           "- **Two-channel mushrooms (torso back, base rear).** Channel 1 opens the contactor coil loop directly (hardware, no software in the path). "
           "Channel 2 tells the Pi and the sensor nodes, which command a controlled stop. Motor power drops; logic stays up to log and report.",
-          "- **Stop category:** loop 39 had a *safe stop 1* with a 0.5 s capacitor hold-up. A capacitor delay is not a dependable timer, so the **default is now "
-          "category 0** (power cut at once). The arms go limp; the balancer and belt friction slow the fall (≈ 0.3 s to the stop at the hanging pose; a 1 kg payload "
-          "is released by the gripper's own back-drive). SS1 can return later with a rated delay relay.",
-          "- **Everything that moves is downstream of the contactor:** loop 39 fed the 12 V servo converter from the logic branch, so the wrists, grippers and head "
-          "kept power in an e-stop. It now sits after the contactor.",
+          "- **Stop category:** loop 39 had a *safe stop 1* with a 0.5 s capacitor hold-up. A capacitor delay is not a dependable timer, so the **arms, lift and "
+          "servos are category 0** (power cut at once). The arms go limp; the balancer and belt friction slow the fall (≈ 0.3 s to the stop at the hanging pose; a 1 kg payload "
+          "is released by the gripper's own back-drive). **The base is category 1 (W15, docs/sw/base_stop.md):** a hard base stop tips the robot (tip.md), so the base has "
+          f"its own switch behind a rated OFF-delay safety relay ({BASE_SS1['name'].split(' AC')[0]}, {BASE_SS1['t_set']:.1f} s): the supervisor (or, with the Pi dead, the "
+          "drives' own CAN-timeout quick-stop) ramps it down while it keeps power, then the relay removes base power whatever the software does "
+          "(*Base channel* below; safety_board_sim.md §6).",
+          "- **Everything that moves is downstream of the contactor, except the base:** loop 39 fed the 12 V servo converter from the logic branch, so the wrists, grippers and head "
+          "kept power in an e-stop. It now sits after the contactor. The base sits after its own time-limited switch (stop category 1).",
           "- **Torso:** the lift pawl is spring-applied, so it drops in and the torso holds (A15 reviews the pawl itself).",
           "- Not a certified safety function. The bench arm runs inside a marked keep-out zone until SW2 is measured.",
           ""] + a5v2_section() + [
