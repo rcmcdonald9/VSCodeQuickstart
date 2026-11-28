@@ -1462,3 +1462,8 @@ One long push instead of half-hour runs. In order:
   - C14 drive stub: output tilt ≤ 18 kN·m/rad (ESTIMATE) keeps the hinged stub; 8 × M3 holds 16.5 N·m + 360 N.
   - C1/C2/C5 retired (KX, eccentric); joints.md coupons queued.
 - **W16c BOM:** stop bushes out; 19.5 mm adapter blank, 7075 front stop rings and countersunk screws in. Robot **$6,485 → $6,541** ($6,808 with D20, $7,109 with the G9SA). Build guide step 7b updated.
+
+### 2026-11-28 W17b merged (safety board netlist v4)
+- **Race fixed (Fable #2 major):** a RUN latch U28 makes K2_DRIVE = LATCH ∧ ¬RUN ∧ ¬PRE_TIMEOUT, so an uncommanded K1 drop-out fires FORCE on its own edge. Coil unplugged: FORCE went from 30.0 ms to 0.5 ms after AUX, and the far end drops below 10 V in 31.5 → **2.0 ms** (T7 ≤ 4 ms), with no pre-charge re-close. v3 also re-armed itself on a 20 ms coil dip; v4 doesn't. Every W13b/W15b row still passes.
+- **AUX debounce U29** (from a 3 ms / 1 ms bounce ESTIMATE; T3 measures it): t_stable 2.1–5.7 ms, fall ≤ 0.48 ms. Discrepancy window 30 → 40 ms ± 10 %; a welded K1 is caught in ≤ 44 ms. Stop chain 45.0 → 45.5 ms (≤ 50).
+- **Review gate G-SB defined** (safety_board_tests.md): a hired EE (≈ $400–1,200, ESTIMATE) or two qualified community reviewers, five pieces of evidence filed in docs/review/, and a 3-week fallback to a bought safety relay. **Owner chooses the route and the person.** Also: bench supply 24.0 V, RH-50 accepted as an NH-50 alternate, U10 terms unified, docs match one caster solenoid and the W16a deferred lock. BOM queue: +$1.50/board logic (U28, U29, BAT54, C0G, resistors). Open: the real ALEV100 bounce and 74LVC1G17 thresholds; the JF-1264B current and duty rating.
