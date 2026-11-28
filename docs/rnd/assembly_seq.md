@@ -80,10 +80,10 @@ Whole robot (rnd/parts/robot.py), left arm, service pose lift 0.75, pitch 0, elb
 | elbow | seat cap -Y M4 x +30 (bone cap off) | service | ✅ straight Ø12 × 50 | — |
 | elbow | seat cap +Y M3 x -30 (bone cap off) | service | ✅ straight Ø12 × 50 | — |
 | elbow | seat cap +Y M3 x +30 (bone cap off) | service | ✅ straight Ø12 × 50 | — |
-| elbow | forearm pinch M5 y 66.5 | service | ✅ straight Ø12 × 50 | — |
-| elbow | forearm pinch M5 y 66.5 (head −X) | service | ✅ straight Ø12 × 50 | — |
-| elbow | forearm pinch M5 y 77.5 | service | ✅ straight Ø12 × 50 | — |
-| elbow | forearm pinch M5 y 77.5 (head −X) | service | ✅ straight Ø12 × 50 | — |
+| elbow | forearm pinch M5 y 85.0 | service | ✅ straight Ø12 × 50 | — |
+| elbow | forearm pinch M5 y 85.0 (head −X) | service | ✅ straight Ø12 × 50 | — |
+| elbow | forearm pinch M5 y 96.0 | service | ✅ straight Ø12 × 50 | — |
+| elbow | forearm pinch M5 y 96.0 (head −X) | service | ✅ straight Ø12 × 50 | — |
 | yaw | yaw tie M3 30° (bench: yaw block off the roll output) | service | ✅ straight Ø12 × 50 | — |
 | yaw | yaw tie M3 90° (bench: yaw block off the roll output) | service | ✅ straight Ø12 × 50 | — |
 | yaw | yaw tie M3 150° (bench: yaw block off the roll output) | service | ✅ straight Ø12 × 50 | — |
