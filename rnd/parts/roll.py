@@ -737,8 +737,8 @@ YF = dict(hex_af=24.0, hex_h=8.0, bore_r=8.0, spigot_r_in=8.0)
 # metal, raised to 1.2 kN (the print no longer limits it); the print is sandwiched with a 0.05 mm squeeze. The sleeve
 # leaves 0.65 mm of wall to the Ø16 ribbon bore. Rows: rnd/joints.py.
 YAW_TIE = dict(n=6, r=11.0, ang0=30.0, d=3.0, pitch=0.5, As=5.03, hole=3.4, tap=2.5, grade="12.9", proof=970.0, preload=1200.0, preload_bare=1000.0,
-               ring=(8.5, 16.8, 2.0), cb_r=17.0, head_h=3.0, top_gap=0.5, L=40.0, tau_flange=207.0, sleeve=(4.6, 3.2), sleeve_hole=4.7, squeeze=0.05,
-               bell="M3", n_bell=0)   # M3 (encoder): L 45 → 40 with the tube top 2.5 mm lower
+               ring=(8.5, 16.8, 2.0), cb_r=17.0, head_h=3.0, top_gap=0.5, L=40.0, tau_flange=331.0, sleeve=(4.6, 3.2), sleeve_hole=4.7, squeeze=0.05,
+               bell="M3", n_bell=0, ring_mat="C45+QT", flange_mat="7075-T6")   # M3 (encoder): L 45 → 40 with the tube top 2.5 mm lower. Astra #3 m9 (2026-11-28): the sleeve feet reach 352 MPa on the flange's spigot top at a fault (6061-T6 R_p 240): flange 6061-T6 → 7075-T6 (R_p 460; a washer under each sleeve does not fit: Ø6 breaks into the Ø16 ribbon bore), tau_flange 207 → 331; clamp ring S235 → C45+QT (rnd/joints.py face_rows)
 from .shoulder import _stack_h
 YAW_TIE["stack_h"] = _stack_h(YAW_TIE["bell"], YAW_TIE["n_bell"], YAW_TIE["preload"])
 YAW_TIE["cb_depth"] = YAW_TIE["ring"][2] + YAW_TIE["stack_h"] + YAW_TIE["head_h"] + YAW_TIE["top_gap"]    # 5.5 mm
@@ -760,7 +760,7 @@ def yaw_tie_levels():
 
 
 def yaw_tie_ring() -> Part:
-    """C1: steel clamp ring (laser-cut S235, r 8.5–16.8 × 2, 6 × Ø3.4) under the 6 screw heads, at the counterbore floor."""
+    """C1: steel clamp ring (laser-cut C45+QT strip, was S235: Astra #3 m9, the sleeve ends reach ≈ 400 MPa on it at a fault; r 8.5–16.8 × 2, 6 × Ø3.4) under the 6 screw heads, at the counterbore floor."""
     r0, r1, th = YAW_TIE["ring"]
     z = yaw_tie_levels()["seat"]
     p = Pos(0, ROLL_Y, z) * (Cylinder(r1, th, align=MIN) - Cylinder(r0, th, align=MIN))
@@ -770,7 +770,7 @@ def yaw_tie_ring() -> Part:
 
 
 def yaw_flange() -> Part:
-    """Upper-arm flange (6061-T6 since C1; the upper bone bolts to it inside the stop slot), on the yaw tube's lower end: a
+    """Upper-arm flange (7075-T6 since Astra #3 m9, 6061-T6 since C1; the upper bone bolts to it inside the stop slot), on the yaw tube's lower end: a
     Ø64 × FL_REC recess in its top clears the bearing-B boss; in it, the hollow hex spigot goes up into the tube's socket
     (torque); 6 × M3 tapped holes at the hex corners take the YAW_TIE screws from the tube's top (bending, axial). Hard-stop
     slot (blind, 3.5 mm deep in its top) for the fixed Ø6 stop pin: software ±150°, hard ±155°."""
@@ -933,7 +933,7 @@ def masses(density=1.27, split=False):
     caps = 0.0 if INLINE else roll_clevis_cap(0).volume + roll_clevis_cap(1).volume
     yaw = {"clevis + caps + yaw block plates + posts (printed)": pr(clevis_and_yaw_block().volume + caps + yaw_plate_bot().volume, 0.6),
            "yaw shaft + 40T + spring hub (one piece), spring ring (printed)": pr(yaw_shaft().volume, 0.7) + pr(yaw_spring_ring().volume, 0.8),
-           "C1 yaw flange (6061-T6) + steel clamp ring + 6 × M3 × 40 12.9 + 6 crush sleeves": yaw_flange().volume * 2.7e-6 + yaw_tie_ring().volume * 7.85e-6
+           "C1 yaw flange (7075-T6, Astra #3 m9) + C45+QT clamp ring + 6 × M3 × 40 12.9 + 6 crush sleeves": yaw_flange().volume * 2.81e-6 + yaw_tie_ring().volume * 7.85e-6
            + 6 * (5.03 * YAW_TIE["L"] + 45) * 7.85e-6 + YAW_TIE["n"] * math.pi / 4 * (YAW_TIE["sleeve"][0] ** 2 - YAW_TIE["sleeve"][1] ** 2) * 30.0 * 7.85e-6,
            "yaw D26 direct stage + bolted can flange/nose/cap": d13 + sock, "2 × 61808 + stop pin + belt + screws + ribbon (ESTIMATE)": 0.075}
     if split:

@@ -184,7 +184,8 @@ def pitch_hub() -> Part:
 
 def hub_clamp_ring() -> Part:
     """C1: clamp ring (6061-T6 plate, laser/waterjet cut, r 11–21 × 2, 4 × Ø4.5) under the HUB_TIE nuts, in the detach-face
-    recess: spreads the 4 × 1.5 kN over ≈ 1.0e3 mm² of the printed hub (≈ 6 MPa)."""
+    recess: spreads the 4 × 1.5 kN over ≈ 1.0e3 mm² of the printed hub (≈ 6 MPa). Astra #3 m9 (2026-11-28): C45+QT (laser cut
+    from 2 mm QT strip), was 6061-T6: the M4 nut face reaches ≈ 380 MPa on it at the stall row (rnd/joints.py face_rows)."""
     r0, r1, t = HUB_TIE["ring"]
     y = Y_FER + 18 - HUB_TIE["recess"]
     p = Pos(0, y, 0) * _rot_y(Cylinder(r1, t, align=MIN) - Cylinder(r0, t, align=MIN))
@@ -404,8 +405,8 @@ def masses(density=1.27):
     m = {"bracket body + bolted outer wall (walls, web, cage)": bracket().volume / 1e6 * density * 0.6,
          "pitch shaft + integral 60T + pitch hub (ferrule) + clock-spring ring": (pitch_shaft().volume + pitch_hub().volume + spring_ring().volume) / 1e6 * density * 0.7,
          "balancer crank (HUB_TIE crank_mat) + Ø6 pin B": crank().volume * HUB_TIE["crank_density"],
-         "C1 hub tie: 4 × M4 10.9 studs + nuts + 8 crush sleeves (steel) + 6061 clamp ring": (4 * 8.78 * hub_tie_length() + 4 * 100.0) * 7.85e-6
-         + hub_clamp_ring().volume * 2.7e-6 + HUB_TIE["n"] * math.pi / 4 * (HUB_TIE["sleeve"][0] ** 2 - HUB_TIE["sleeve"][1] ** 2) * (Y_TUBE_END - Y_TUBE_IN + hub_print_under_ring()) * 7.85e-6,
+         "C1 hub tie: 4 × M4 10.9 studs + nuts + 8 crush sleeves (steel) + C45+QT clamp ring (Astra #3 m9)": (4 * 8.78 * hub_tie_length() + 4 * 100.0) * 7.85e-6
+         + hub_clamp_ring().volume * 7.85e-6 + HUB_TIE["n"] * math.pi / 4 * (HUB_TIE["sleeve"][0] ** 2 - HUB_TIE["sleeve"][1] ** 2) * (Y_TUBE_END - Y_TUBE_IN + hub_print_under_ring()) * 7.85e-6,
          "D26 integral pinion shaft (C45+QT) + idler + can nose/flange/cap": (oldham + can_extra) / 1e3,
          "D26 exit-slot key (printed) + 6061 strap + 4 × M4": slot_key().volume / 1e6 * density * 0.8 + slot_strap().volume * 2.7e-6 + 0.004,
          "bearings 2×61808 + 2×61804 (ESTIMATE)": 0.056,

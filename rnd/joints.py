@@ -456,7 +456,7 @@ def joint_models():
              [(L_hub, math.pi * (20.0 ** 2 - h["tube_r_in"] ** 2)), (L_hub2, math.pi * (h["ring"][1] ** 2 - h["ring"][0] ** 2))],
              L_hub + L_hub2, 3),
             ("yaw flange ↔ tube", y, 14.1, 20.0, L_yaw, L_yaw, y["L"] - lv["engaged"] / 2,
-             dict(what=f"6061-T6 flange ({lv['engaged']:.1f} mm tapped, {lv['engaged'] - y['pitch']:.1f} effective)", L_e=lv["engaged"] - y["pitch"],
+             dict(what=f"{y.get('flange_mat', '6061-T6')} flange ({lv['engaged']:.1f} mm tapped, {lv['engaged'] - y['pitch']:.1f} effective)", L_e=lv["engaged"] - y["pitch"],
                   tau=y["tau_flange"], tau_ext=TAU[y["grade"]]),
              [(roll.YF["hex_h"], math.pi * (20.0 ** 2 - 14.1 ** 2)), (L_yaw - roll.YF["hex_h"], math.pi * (20.0 ** 2 - 8.0 ** 2))],
              L_yaw - roll.YF["hex_h"], 2)):
@@ -579,6 +579,118 @@ def joint_rows(loads):
 
 
 # ------------------------------------------------------------------------------------------------ M1: inline roll
+# ------------------------------------------------------------------------------------------------ C1 faces (Astra #3 m9)
+# A sleeve below its own yield says nothing about the softer face it stands on. Per interface: contact pressure = force /
+# the annulus that bears it, against the face material's 0.2 % proof stress R_p (guaranteed minimum): service ≤ R_p (no
+# plastic set, so the preload loses only the VDI 2230 asperity embedding already counted), fault ≤ 1.1 R_p (onset of local
+# yield under a flat annular punch with the surrounding metal as constraint, ESTIMATE). Forces: bolt force on the head /
+# nut face, sleeve force S on the sleeve's two end faces (joint_rows' clamp models, worst of fresh and life preload).
+FACE_MAT = {"6061-T6": (240.0, "EN 485-2 EN AW-6061 T6 plate R_p0.2 ≥ 240"), "7075-T6": (460.0, "EN 485-2 EN AW-7075 T651 R_p0.2 ≥ 460"),
+            "S235": (235.0, "EN 10025-2 R_eH ≥ 235"), "C45+QT": (490.0, "EN 10083-2 +QT d ≤ 16 R_e ≥ 490"),
+            "42CrMo4+QT": (750.0, "EN 10083-3 +QT R_p0.2 ≥ 750"), "ISO 7092 200 HV": (450.0, "≈ 200 HV steel washer, R_p ≈ 450 (ESTIMATE)")}
+FAULT_FACE = 1.1
+# Fixes (2026-11-28): both clamp rings → C45+QT (2 mm, laser cut from QT strip; were 6061-T6 at the pitch, S235 at the
+# yaw); the yaw flange 6061-T6 → 7075-T6 (its spigot top is the sleeves' foot; a hardened washer under each sleeve does not
+# fit: Ø6 at r 11 breaks into the Ø16 ribbon bore). Geometry unchanged.
+C1_FACES = {
+    "pitch hub ↔ tube": [("M4 nut (d_w 5.9) on the clamp ring", "bolt", (5.9, 4.5), "C45+QT", "6061-T6"),
+                         ("sleeve end on the clamp ring", "sleeve", (7.0, 4.5), "C45+QT", "6061-T6"),
+                         ("sleeve end on the 7075-T6 crank", "sleeve", (7.0, 4.3), "7075-T6", "7075-T6"),
+                         ("sleeve ↔ sleeve butt (hub ↔ tube face)", "sleeve", (7.0, 4.3), "42CrMo4+QT", "42CrMo4+QT")],
+    "yaw flange ↔ tube": [("M3 head (d_w 5.07) on the clamp ring", "bolt", (5.07, 3.4), "C45+QT", "S235"),
+                          ("sleeve end on the clamp ring", "sleeve", (4.6, 3.4), "C45+QT", "S235"),
+                          ("sleeve foot on the flange's spigot top", "sleeve", (4.6, 3.2), "7075-T6", "6061-T6")],
+}
+
+
+def ring_squeeze(name):
+    """Clamp ring between two studs as a beam on the printed stack (an elastic foundation pre-squeezed by the design squeeze):
+    how much of the squeeze it imposes between the studs, and its bending stress, for the ring's material before / after."""
+    from .parts import roll, shoulder
+    t = shoulder.HUB_TIE if name.startswith("pitch") else roll.YAW_TIE
+    r0, r1, th = t["ring"]
+    L_p = joint_models()[name]["L_print"]
+    span = 2 * math.pi * t["r"] / t["n"]
+    w = r1 - r0
+    I = w * th ** 3 / 12
+    k = E_PRINT / L_p * w                                          # N/mm per mm of ring length
+    out = {}
+    for lab, E in (("6061-T6", 69e3), ("steel", 205e3)):
+        c = span ** 4 / (384 * E * I)
+        dlt = c * k / (1 + c * k) * t["squeeze"]
+        q = k * (t["squeeze"] - dlt)
+        out[lab] = dict(share=1 - dlt / t["squeeze"], sigma=q * span ** 2 / 12 / (w * th ** 2 / 6))
+    return out
+
+
+def face_rows(loads):
+    """Per C1 joint and interface: contact pressure at the worst service and fault rows, before / after the fixes."""
+    rows = []
+    JM = joint_models()
+    for name, J in JM.items():
+        t = J["t"]
+        fresh, life = J["make"](t["preload"], J["u0p"]), J["models"]
+        Fsv = Ssv = Fft = Sft = 0.0
+        for case, L in loads[name].items():
+            N, M = max(L["N"], 0.0), L["M"]
+            chk = [m.check(N, M) for m in fresh + life]
+            Fb, S = max(c["F_bolt"] for c in chk), max(c["S"] for c in chk)
+            if case in SERVICE:
+                Fsv, Ssv = max(Fsv, Fb), max(Ssv, S)
+            else:
+                Fft, Sft = max(Fft, Fb), max(Sft, S)
+        for lab, kind, (do, di), mat, before in C1_FACES[name]:
+            A = math.pi / 4 * (do ** 2 - di ** 2)
+            Fs, Ff = (Fsv, Fft) if kind == "bolt" else (Ssv, Sft)
+            ps, pf = Fs / A, Ff / A
+            r = dict(joint=name, face=lab, A=A, p_service=ps, p_fault=pf)
+            for tag, m in (("after", mat), ("before", before)):
+                if m is None:
+                    continue
+                Rp = FACE_MAT[m][0]
+                r[tag] = dict(mat=m, Rp=Rp, sf=min(Rp / ps, FAULT_FACE * Rp / pf), ok=ps <= Rp and pf <= FAULT_FACE * Rp)
+            rows.append(r)
+    return rows
+
+
+def face_report(loads):
+    from .parts import roll, shoulder
+    L = ["", "## C1: contact faces, clamp rings, sleeve lengths (Astra #3 major 9)", "",
+         f"Contact pressure on each face that a bolt head, nut or sleeve end stands on, at the worst service and fault rows above, "
+         f"against the face's R_p (service ≤ R_p: no plastic set; fault ≤ {FAULT_FACE} R_p: onset of local indentation, ESTIMATE). "
+         "Sources: " + "; ".join(f"{k} {v[1]}" for k, v in FACE_MAT.items()) + ".", "",
+         "| Joint | Face | Area | p service / fault | Before | After | |", "|---|---|---|---|---|---|---|"]
+    for r in face_rows(loads):
+        b, a = r.get("before"), r.get("after")
+        fb = f"{b['mat']}: {b['sf']:.2f}× {'✅' if b['ok'] else '❌'}" if b else "—"
+        fa = f"{a['mat']}: {a['sf']:.2f}×" if a else "(removed)"
+        L.append(f"| {r['joint']} | {r['face']} | {r['A']:.1f} mm² | {r['p_service']:.0f} / {r['p_fault']:.0f} MPa | {fb} | {fa} | "
+                 f"{('✅' if a['ok'] else '❌') if a else ''} |")
+    for name in ("pitch hub ↔ tube", "yaw flange ↔ tube"):
+        rs = ring_squeeze(name)
+        t = shoulder.HUB_TIE if name.startswith("pitch") else roll.YAW_TIE
+        L.append(f"- {name}: clamp ring r {t['ring'][0]}–{t['ring'][1]} × {t['ring'][2]:.0f} between studs on the print (beam on an elastic "
+                 f"foundation): it imposes {rs['6061-T6']['share']:.0%} of the {t['squeeze']} mm squeeze between studs in 6061 "
+                 f"({rs['6061-T6']['sigma']:.0f} MPa), {rs['steel']['share']:.0%} in steel ({rs['steel']['sigma']:.0f} MPa). The sleeves and the nut "
+                 "or head are coaxial, so the clamp load goes through the ring's thickness, not its span; only the print's light squeeze "
+                 "bends it, and the service rows already take that squeeze as crept away.")
+    JM = joint_models()
+    L += [f"- Squeeze, one dimension: the pitch's two sleeves per stud (tube + hub) are faced so that TOGETHER they are "
+          f"{shoulder.HUB_TIE['squeeze']} ± 0.02 mm shorter than the measured tube + hub print stack (the tube sleeve to the tube "
+          "print − 0.025, then the hub sleeve to the remainder, micrometer); before, each was specified 0.05 short, i.e. 0.10 in "
+          f"total against the model's 0.05. The yaw has one sleeve per screw: {roll.YAW_TIE['squeeze']} ± 0.02 under the print, the "
+          "same micrometer check.",
+          "- Unequal sleeves and preload scatter: each stud's nut closes its own bolt ↔ sleeve loop, so a ± 0.02 mm sleeve-length "
+          "spread changes only the local print squeeze, not the sleeve preload. The real scatter is the tightening: a click "
+          "wrench gives ± 20 % (VDI 2230 α_A ≈ 1.6, ESTIMATE). With every bolt at −20 % the service preload margins become "
+          + "; ".join(f"{n} {J['F_life'] * 0.8 / required_preload(J, 0.0, max(L_['M'] for c, L_ in loads[n].items() if c in SERVICE)):.2f}×"
+                      for n, J in JM.items())
+          + " (no gap); a single low bolt is between that and nominal.",
+          "- Not drawn yet (arm track): the upper bone ↔ yaw flange screws, the detach clamp, the elbow core / clamp and the wrist "
+          "output bearing in the same wrench chain — those rows stay open (review major 9)."]
+    return L
+
+
 def huth_k(t1, E1, t2, E2, d, E3=E_STEEL, n=1, a=2 / 3, b=3.0):
     """Shear stiffness (N/mm) of a pin/bolt joining two plates, Huth (1986, ASTM STP 927; b = 3.0 bolted metallic)."""
     C = ((t1 + t2) / (2 * d)) ** a * (b / n) * (1 / (t1 * E1) + 1 / (n * t2 * E2) + 1 / (2 * t1 * E3) + 1 / (2 * n * t2 * E3))
@@ -754,12 +866,12 @@ def report(loads=None):
          f"- **Pitch hub ↔ pitch tube** (rnd/parts/shoulder.py HUB_TIE): {h['n']} × M{h['d']:.0f} class {h['grade']} studs (DIN 976-1, cut to {shoulder.hub_tie_length():.1f} mm) "
          f"on r {h['r']} at {h['ang0']:.0f}° + k·90°, Loctite 270 into the {h['crank_mat']} balancer crank (tapped through {h['crank_t']:.0f} mm, stud end flush with its inboard face), "
          f"each in two steel crush sleeves Ø{SLEEVE_STOCK['pitch']['sleeve'][0]} / Ø{SLEEVE_STOCK['pitch']['sleeve'][1]} ({SLEEVE_STOCK['pitch']['mat']}; one through the tube wall r {h['tube_r_in']:.0f}–20, one through "
-         f"the hub, butting at the hub ↔ tube face, each {h['squeeze']} mm shorter than its print), M4 nuts (ISO 4032 class 8, Loctite 243) on a 6061 clamp ring "
+         f"the hub, butting at the hub ↔ tube face, together {h['squeeze']} ± 0.02 mm shorter than the measured tube + hub print stack), M4 nuts (ISO 4032 class 8, Loctite 243) on a C45+QT clamp ring (was 6061-T6, Astra #3 m9) "
          f"r {h['ring'][0]:.0f}–{h['ring'][1]:.0f} × {h['ring'][2]:.0f} in a {h['recess']:.1f} mm recess of the detach face; {h['preload'] / 1e3:.1f} kN each (≈ 1.3 N·m, ESTIMATE). "
          "Assembly: tube into the inner wall → crank + studs from the inboard side → tube sleeves over the studs → belt → outer wall → hub over the double-D, hub sleeves → ring, nuts.",
-         f"- **Yaw flange ↔ yaw tube** (rnd/parts/roll.py YAW_TIE): 6061-T6 flange (its hex spigot stays the torque path). "
+         f"- **Yaw flange ↔ yaw tube** (rnd/parts/roll.py YAW_TIE): 7075-T6 flange (was 6061-T6: Astra #3 m9, the sleeve feet on its spigot top; its hex spigot stays the torque path). "
          f"{y['n']} × M{y['d']:.0f} × {y['L']:.0f} ISO 4762 class {y['grade']} go down from the tube's top end in steel crush sleeves Ø{y['sleeve'][0]} / Ø{y['sleeve'][1]} (ring → the "
-         f"flange's spigot top, {y['squeeze']} mm shorter than the print), heads on a steel clamp ring "
+         f"flange's spigot top, {y['squeeze']} mm shorter than the print), heads on a C45+QT clamp ring (was S235, Astra #3 m9) "
          f"r {y['ring'][0]}–{y['ring'][1]} × {y['ring'][2]:.0f} in a Ø{2 * y['cb_r']:.0f} × {y['cb_depth']:.1f} counterbore (heads {y['top_gap']} mm under the top), through Ø{y['hole']} holes in the "
          f"wall into M3 threads tapped at the hex corners (r {y['r']:.0f}) of the flange's spigot + plate ({lv['engaged']:.1f} mm engaged, Loctite 243); {y['preload'] / 1e3:.1f} kN each "
          "(≈ 0.5 N·m). Tightened from above on the bench, before the yaw block goes onto the roll output.",
@@ -780,6 +892,7 @@ def report(loads=None):
     L += [f"| {r['joint']} | {r['case']} | {r['N']:.0f} | {r['M']:.1f} | {r['pose']} | {r['before']:.2f}× | {r['text']} | {r['margin']:.2f}× | {'✅' if r['verdict'] else '❌'} |"
           for r in jr if not r["case"].startswith("preload")]
     lb = loads.get("roll bearings", {})
+    L += face_report(loads)
     L += ["", "## M1: inline GIM8108-36", "", "| Item | Before | After | |", "|---|---|---|---|"]
     L += [f"| {r['item']} | {r['before']} | {r['after']} | {'✅' if r['ok'] else '❌'} |" for r in rr]
     L += [""] + [f"- **{r['item']}:** {r['basis']}" for r in rr]
@@ -788,9 +901,9 @@ def report(loads=None):
               "| Case | 61806 | Motor bearing (with the 61806) | Motor alone: radial | Motor alone: tilting | Roll torque | Pose |", "|---|---|---|---|---|---|---|"]
         L += [f"| {c} | {v['R1']:.0f} | {v['R2']:.0f} | {v['F']:.0f} | {v['Mm']:.1f} | {v['T']:.1f} | {v['note']} |" for c, v in lb.items()]
     L += ["", "Coupons to add (docs/COUPONS.md): a printed tube clamped as wave 3 (no sleeves) at 8.8 MPa, 1000 h at 40 °C with a load washer (measures φ, "
-          "the ESTIMATE behind the 'before' rows), the sleeved joint's moment to gap, the 6061 threads of the yaw flange, the stop bush in its print "
+          "the ESTIMATE behind the 'before' rows), the sleeved joint's moment to gap, the 7075 threads of the yaw flange, the stop bush in its print "
           "foundation at 2.4 kN, the output dowels' slip torque on a seller motor."]
-    ok = all(r["verdict"] for r in jr) and all(r["ok"] for r in rr)
+    ok = all(r["verdict"] for r in jr) and all(r["ok"] for r in rr) and all(r["after"]["ok"] for r in face_rows(loads) if "after" in r)
     return "\n".join(L), ok, jr, rr, lb
 
 
