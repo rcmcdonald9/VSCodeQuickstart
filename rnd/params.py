@@ -241,7 +241,10 @@ def with_arm_motors(d: Design, name: str) -> Design:
     v = ARM_MOTOR_SETS[name]
     j = dict(d.arm.joints)
     j["shoulder_pitch"], j["elbow"] = v["shoulder_pitch"], v["elbow"]
-    keep = {k: v[k] for k in ("elbow_teeth", "elbow_belt_c", "bone_mass_upper", "pitch_module_mass")}
+    keep = {k: v[k] for k in ("elbow_teeth", "elbow_belt_c", "pitch_module_mass")}
+    # Astra #3 major 15: the bone mass keeps the roll drive's delta (inline roll: + 0.010 kg, the longer neck), as the direct
+    # Arm() construction does (bone_mass_upper = _AM + _RD); rnd/test_params.py checks both ways give identical params.
+    keep["bone_mass_upper"] = v["bone_mass_upper"] + ROLL_DRIVES[d.arm.roll_drive]["bone_upper_dm"]
     old = ARM_MOTOR_SETS[d.arm.arm_motors]                                   # inline-yaw sets (inline study): yaw actuator + deltas
     j["upper_yaw"] = v.get("upper_yaw") or (("GIM6010-8", 2.0) if "upper_yaw" in old else d.arm.joints["upper_yaw"])
     keep["yaw_stage_mass"] = d.arm.yaw_stage_mass - old.get("yaw_stage_dm", 0.0) + v.get("yaw_stage_dm", 0.0)
